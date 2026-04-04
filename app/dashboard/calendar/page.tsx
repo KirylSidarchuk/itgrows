@@ -132,6 +132,23 @@ export default function CalendarPage() {
   // Publishing state: postId -> boolean
   const [publishingIds, setPublishingIds] = useState<Set<string>>(new Set())
 
+  // Preview modal state
+  const [previewPost, setPreviewPost] = useState<ScheduledPost | null>(null)
+  const [previewOpen, setPreviewOpen] = useState(false)
+  const [previewGenerating, setPreviewGenerating] = useState(false)
+  const [previewError, setPreviewError] = useState("")
+  const [previewTitle, setPreviewTitle] = useState("")
+  const [previewContent, setPreviewContent] = useState("")
+  const [previewMeta, setPreviewMeta] = useState("")
+  const [previewArticle, setPreviewArticle] = useState<{
+    keyword: string
+    title: string
+    content: string
+    metaDescription: string
+    keywords: string[]
+  } | null>(null)
+  const [previewPublishing, setPreviewPublishing] = useState(false)
+
   const loadPosts = useCallback(async () => {
     setLoading(true)
     const local = readLocalPosts()
@@ -357,6 +374,111 @@ export default function CalendarPage() {
     }
   }
 
+  const handlePreview = async (post: ScheduledPost) => {
+    setPreviewPost(post)
+    setPreviewOpen(true)
+    setPreviewGenerating(true)
+    setPreviewError("")
+    setPreviewTitle("")
+    setPreviewContent("")
+    setPreviewMeta("")
+    setPreviewArticle(null)
+
+    try {
+      const genRes = await fetch("/api/seo/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ keyword: post.keyword, language: post.language, tone: post.tone }),
+      })
+      if (!genRes.ok) {
+        const err = (await genRes.json()) as { error?: string }
+        throw new Error(err.error ?? "Generation failed")
+      }
+      const article = (await genRes.json()) as {
+        keyword: string
+        title: string
+        content: string
+        metaDescription: string
+        keywords: string[]
+      }
+      setPreviewArticle(article)
+      setPreviewTitle(article.title)
+      setPreviewContent(article.content)
+      setPreviewMeta(article.metaDescription)
+    } catch (e) {
+      setPreviewError(e instanceof Error ? e.message : "Generation failed")
+    } finally {
+      setPreviewGenerating(false)
+    }
+  }
+
+  const handlePreviewPublish = async () => {
+    if (!previewPost || !previewArticle) return
+    setPreviewPublishing(true)
+
+    const post = previewPost
+    const article = { ...previewArticle, title: previewTitle, content: previewContent, metaDescription: previewMeta }
+
+    const updateLocal = (id: string, updates: Partial<ScheduledPost>) => {
+      setPosts((prev) => {
+        const updated = prev.map((p) => (p.id === id ? { ...p, ...updates } : p))
+        writeLocalPosts(updated)
+        return updated
+      })
+    }
+
+    try {
+      const taskId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+      try {
+        const existingTasks = JSON.parse(localStorage.getItem("itgrows_tasks_v2") || "[]") as unknown[]
+        existingTasks.unshift({
+          id: taskId,
+          title: `Scheduled: ${article.title || post.keyword}`,
+          description: `Scheduled article targeting "${post.keyword}"`,
+          type: "seo_article",
+          status: "done",
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          articleData: article,
+        })
+        localStorage.setItem("itgrows_tasks_v2", JSON.stringify(existingTasks))
+      } catch {
+        // ignore
+      }
+
+      const pubRes = await fetch("/api/blog/posts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(article),
+      })
+
+      let slug = ""
+      if (pubRes.ok) {
+        const pubData = (await pubRes.json()) as { post?: { slug?: string } }
+        slug = pubData.post?.slug ?? ""
+      }
+
+      updateLocal(post.id, { status: "published", taskId, blogPostSlug: slug || undefined })
+      await fetch("/api/schedule", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: post.id, status: "published", taskId, blogPostSlug: slug || undefined }),
+      }).catch(() => {})
+
+      setPreviewOpen(false)
+    } catch {
+      updateLocal(post.id, { status: "failed" })
+      await fetch("/api/schedule", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: post.id, status: "failed" }),
+      }).catch(() => {})
+      setPreviewError("Publishing failed. Please try again.")
+    } finally {
+      setPreviewPublishing(false)
+    }
+  }
+
   // Group posts by date for list view
   const groupedByDate = posts.reduce<Record<string, ScheduledPost[]>>((acc, post) => {
     const d = post.scheduledDate
@@ -506,24 +628,44 @@ export default function CalendarPage() {
                           </td>
                           <td className="px-6 py-4 text-right">
                             {post.status === "scheduled" && (
-                              <Button
-                                size="sm"
-                                disabled={publishingIds.has(post.id)}
-                                onClick={() => handlePublishNow(post)}
-                                className="text-xs bg-violet-600/20 hover:bg-violet-600/40 text-violet-300 border border-violet-500/30 hover:border-violet-400/50"
-                              >
-                                Publish Now
-                              </Button>
+                              <div className="flex items-center justify-end gap-2">
+                                <Button
+                                  size="sm"
+                                  disabled={publishingIds.has(post.id)}
+                                  onClick={() => handlePreview(post)}
+                                  className="text-xs bg-slate-600/30 hover:bg-slate-600/50 text-slate-300 border border-slate-500/40 hover:border-slate-400/60"
+                                >
+                                  Preview
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  disabled={publishingIds.has(post.id)}
+                                  onClick={() => handlePublishNow(post)}
+                                  className="text-xs bg-violet-600/20 hover:bg-violet-600/40 text-violet-300 border border-violet-500/30 hover:border-violet-400/50"
+                                >
+                                  Publish Now
+                                </Button>
+                              </div>
                             )}
                             {post.status === "failed" && (
-                              <Button
-                                size="sm"
-                                disabled={publishingIds.has(post.id)}
-                                onClick={() => handlePublishNow(post)}
-                                className="text-xs bg-red-600/20 hover:bg-red-600/40 text-red-300 border border-red-500/30"
-                              >
-                                Retry
-                              </Button>
+                              <div className="flex items-center justify-end gap-2">
+                                <Button
+                                  size="sm"
+                                  disabled={publishingIds.has(post.id)}
+                                  onClick={() => handlePreview(post)}
+                                  className="text-xs bg-slate-600/30 hover:bg-slate-600/50 text-slate-300 border border-slate-500/40 hover:border-slate-400/60"
+                                >
+                                  Preview
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  disabled={publishingIds.has(post.id)}
+                                  onClick={() => handlePublishNow(post)}
+                                  className="text-xs bg-red-600/20 hover:bg-red-600/40 text-red-300 border border-red-500/30"
+                                >
+                                  Retry
+                                </Button>
+                              </div>
                             )}
                             {post.status === "published" && post.blogPostSlug && (
                               <a
@@ -788,6 +930,122 @@ export default function CalendarPage() {
 
             </CardContent>
           </Card>
+        </div>
+      )}
+      {/* PREVIEW MODAL */}
+      {previewOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+          <div className="w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-2xl bg-slate-900 border border-white/10 shadow-2xl flex flex-col">
+            {/* Header */}
+            <div className="flex items-center justify-between px-8 py-5 border-b border-white/10 shrink-0">
+              <div>
+                <h2 className="text-xl font-bold text-white">Article Preview</h2>
+                {previewPost && (
+                  <p className="text-sm text-slate-400 mt-0.5">
+                    Keyword: <span className="text-slate-300">{previewPost.keyword}</span>
+                  </p>
+                )}
+              </div>
+              <button
+                onClick={() => setPreviewOpen(false)}
+                disabled={previewPublishing}
+                className="text-slate-400 hover:text-white transition-colors text-2xl leading-none"
+                aria-label="Close"
+              >
+                ×
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="flex-1 px-8 py-6 space-y-6">
+              {/* Spinner while generating */}
+              {previewGenerating && (
+                <div className="flex flex-col items-center justify-center py-16 gap-4">
+                  <span className="inline-block w-10 h-10 border-2 border-white/20 border-t-violet-400 rounded-full animate-spin" />
+                  <p className="text-slate-300 text-sm">Generating article...</p>
+                </div>
+              )}
+
+              {/* Error */}
+              {!previewGenerating && previewError && (
+                <div className="rounded-xl border border-red-500/30 bg-red-600/10 p-4">
+                  <p className="text-red-300 text-sm">{previewError}</p>
+                </div>
+              )}
+
+              {/* Article fields */}
+              {!previewGenerating && previewArticle && (
+                <>
+                  {/* Title */}
+                  <div className="space-y-2">
+                    <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Title</label>
+                    <input
+                      type="text"
+                      value={previewTitle}
+                      onChange={(e) => setPreviewTitle(e.target.value)}
+                      disabled={previewPublishing}
+                      className="w-full bg-slate-800 border border-white/10 rounded-lg px-4 py-3 text-white text-lg font-semibold focus:outline-none focus:border-violet-500 transition-colors"
+                    />
+                  </div>
+
+                  {/* Meta description */}
+                  <div className="space-y-2">
+                    <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                      Meta Description
+                    </label>
+                    <input
+                      type="text"
+                      value={previewMeta}
+                      onChange={(e) => setPreviewMeta(e.target.value)}
+                      disabled={previewPublishing}
+                      className="w-full bg-slate-800 border border-white/10 rounded-lg px-4 py-2.5 text-slate-300 text-sm focus:outline-none focus:border-violet-500 transition-colors"
+                    />
+                  </div>
+
+                  {/* Content */}
+                  <div className="space-y-2">
+                    <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Content</label>
+                    <textarea
+                      value={previewContent}
+                      onChange={(e) => setPreviewContent(e.target.value)}
+                      disabled={previewPublishing}
+                      rows={20}
+                      className="w-full bg-slate-800 border border-white/10 rounded-lg px-4 py-3 text-slate-200 text-sm font-mono leading-relaxed focus:outline-none focus:border-violet-500 transition-colors resize-y"
+                    />
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* Footer actions */}
+            {!previewGenerating && (
+              <div className="flex items-center justify-end gap-3 px-8 py-5 border-t border-white/10 shrink-0">
+                <button
+                  onClick={() => setPreviewOpen(false)}
+                  disabled={previewPublishing}
+                  className="px-5 py-2.5 rounded-lg text-sm font-medium border border-white/10 text-slate-400 hover:text-white hover:bg-white/5 transition-colors disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                {previewArticle && (
+                  <button
+                    onClick={handlePreviewPublish}
+                    disabled={previewPublishing}
+                    className="px-6 py-2.5 rounded-lg text-sm font-semibold bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-white transition-all disabled:opacity-50 flex items-center gap-2"
+                  >
+                    {previewPublishing ? (
+                      <>
+                        <span className="inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        Publishing...
+                      </>
+                    ) : (
+                      "Publish"
+                    )}
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>
