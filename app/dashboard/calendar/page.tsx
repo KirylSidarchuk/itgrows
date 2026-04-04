@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import { getUser } from "@/lib/auth"
+import { getConnectedSites, getDefaultSite } from "@/lib/connectedSites"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -23,6 +24,14 @@ interface ScheduledPost {
   blogPostSlug?: string
 }
 
+interface TopicSuggestion {
+  title: string
+  description: string
+  keyword: string
+}
+
+type ModalStep = "no-site" | "analyzing" | "topics" | "configure"
+
 const STORAGE_KEY = "itgrows_schedule"
 
 function getTodayString(): string {
@@ -32,7 +41,6 @@ function getTodayString(): string {
 function getWeekDates(offset = 0): string[] {
   const today = new Date()
   const day = today.getDay()
-  // Mon=0 ... Sun=6 (adjust from Sun=0)
   const mondayOffset = (day === 0 ? -6 : 1 - day) + offset * 7
   return Array.from({ length: 7 }, (_, i) => {
     const d = new Date(today)
@@ -74,7 +82,6 @@ const LANG_LABELS: Record<Language, string> = {
 function mergePosts(local: ScheduledPost[], remote: ScheduledPost[]): ScheduledPost[] {
   const map = new Map<string, ScheduledPost>()
   for (const p of local) map.set(p.id, p)
-  // Remote overrides local
   for (const p of remote) map.set(p.id, p)
   return Array.from(map.values()).sort((a, b) => a.scheduledDate.localeCompare(b.scheduledDate))
 }
@@ -110,8 +117,13 @@ export default function CalendarPage() {
   const [showModal, setShowModal] = useState(false)
   const [loading, setLoading] = useState(true)
 
-  // Form state
-  const [keyword, setKeyword] = useState("")
+  // Modal state
+  const [modalStep, setModalStep] = useState<ModalStep>("analyzing")
+  const [analyzeError, setAnalyzeError] = useState("")
+  const [topics, setTopics] = useState<TopicSuggestion[]>([])
+  const [selectedTopic, setSelectedTopic] = useState<TopicSuggestion | null>(null)
+
+  // Configure step state
   const [language, setLanguage] = useState<Language>("en")
   const [tone, setTone] = useState<Tone>("Professional")
   const [scheduledDate, setScheduledDate] = useState(getTodayString())
@@ -143,16 +155,68 @@ export default function CalendarPage() {
     loadPosts()
   }, [loadPosts])
 
-  const handleSchedule = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!keyword.trim()) return
+  const openModal = useCallback(async () => {
+    // Reset modal state
+    setAnalyzeError("")
+    setTopics([])
+    setSelectedTopic(null)
+    setLanguage("en")
+    setTone("Professional")
+    setScheduledDate(getTodayString())
+    setScheduling(false)
+
+    const sites = getConnectedSites()
+    const defaultSite = getDefaultSite()
+
+    if (sites.length === 0 || !defaultSite) {
+      setModalStep("no-site")
+      setShowModal(true)
+      return
+    }
+
+    // Has a default site — start analyzing
+    setModalStep("analyzing")
+    setShowModal(true)
+
+    try {
+      const res = await fetch("/api/seo/analyze", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: defaultSite.url }),
+      })
+      const data = (await res.json()) as { topics?: TopicSuggestion[]; error?: string }
+      if (!res.ok || data.error) {
+        setAnalyzeError(data.error ?? "Failed to analyze website")
+        setTopics([])
+      } else {
+        setTopics(data.topics ?? [])
+      }
+      setModalStep("topics")
+    } catch {
+      setAnalyzeError("Network error. Please try again.")
+      setModalStep("topics")
+    }
+  }, [])
+
+  const handleSelectTopic = (topic: TopicSuggestion) => {
+    setSelectedTopic(topic)
+    setModalStep("configure")
+  }
+
+  const handleSchedule = async () => {
+    if (!selectedTopic) return
 
     setScheduling(true)
     try {
       const res = await fetch("/api/schedule", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ keyword: keyword.trim(), language, tone, scheduledDate }),
+        body: JSON.stringify({
+          keyword: selectedTopic.keyword,
+          language,
+          tone,
+          scheduledDate,
+        }),
       })
 
       let newPost: ScheduledPost
@@ -160,10 +224,9 @@ export default function CalendarPage() {
         const data = (await res.json()) as { post: ScheduledPost }
         newPost = data.post
       } else {
-        // Fallback: create locally
         newPost = {
           id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-          keyword: keyword.trim(),
+          keyword: selectedTopic.keyword,
           language,
           tone,
           scheduledDate,
@@ -174,15 +237,11 @@ export default function CalendarPage() {
       const updated = mergePosts(readLocalPosts(), [newPost])
       setPosts(updated)
       writeLocalPosts(updated)
-
-      setKeyword("")
-      setScheduledDate(getTodayString())
       setShowModal(false)
     } catch {
-      // Fallback: create locally
       const newPost: ScheduledPost = {
         id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-        keyword: keyword.trim(),
+        keyword: selectedTopic.keyword,
         language,
         tone,
         scheduledDate,
@@ -202,7 +261,6 @@ export default function CalendarPage() {
 
     setPublishingIds((prev) => new Set(prev).add(post.id))
 
-    // Update status to generating
     const updateLocal = (id: string, updates: Partial<ScheduledPost>) => {
       setPosts((prev) => {
         const updated = prev.map((p) => (p.id === id ? { ...p, ...updates } : p))
@@ -213,7 +271,6 @@ export default function CalendarPage() {
 
     updateLocal(post.id, { status: "generating" })
 
-    // PATCH remote
     await fetch("/api/schedule", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -221,7 +278,6 @@ export default function CalendarPage() {
     }).catch(() => {})
 
     try {
-      // Generate article
       const genRes = await fetch("/api/seo/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -239,7 +295,6 @@ export default function CalendarPage() {
         keywords: string[]
       }
 
-      // Save as task in itgrows_tasks_v2
       const taskId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
       try {
         const existingTasks = JSON.parse(localStorage.getItem("itgrows_tasks_v2") || "[]") as unknown[]
@@ -258,7 +313,6 @@ export default function CalendarPage() {
         // ignore
       }
 
-      // Publish to blog
       const pubRes = await fetch("/api/blog/posts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -271,7 +325,6 @@ export default function CalendarPage() {
         slug = pubData.post?.slug ?? ""
       }
 
-      // Update status to published
       updateLocal(post.id, { status: "published", taskId, blogPostSlug: slug || undefined })
       await fetch("/api/schedule", {
         method: "PATCH",
@@ -344,7 +397,7 @@ export default function CalendarPage() {
               </button>
             </div>
             <Button
-              onClick={() => setShowModal(true)}
+              onClick={openModal}
               className="bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-white"
             >
               + Schedule Article
@@ -369,7 +422,7 @@ export default function CalendarPage() {
               Schedule your first article to get started with content automation.
             </p>
             <Button
-              onClick={() => setShowModal(true)}
+              onClick={openModal}
               className="bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-white"
             >
               + Schedule Article
@@ -486,7 +539,6 @@ export default function CalendarPage() {
         {/* CALENDAR VIEW */}
         {!loading && view === "calendar" && (
           <div className="space-y-6">
-            {/* Week headers */}
             <div className="grid grid-cols-7 gap-1 mb-1">
               {dayNames.map((d) => (
                 <div key={d} className="text-center text-xs font-semibold text-slate-400 uppercase py-2">
@@ -544,110 +596,186 @@ export default function CalendarPage() {
       {/* MODAL */}
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <Card className="w-full max-w-md bg-slate-900 border-white/10 shadow-2xl">
+          <Card className="w-full max-w-lg bg-slate-900 border-white/10 shadow-2xl">
             <CardHeader className="border-b border-white/10">
               <CardTitle className="text-white">Schedule Article</CardTitle>
             </CardHeader>
             <CardContent className="pt-6">
-              <form onSubmit={handleSchedule} className="space-y-5">
-                {/* Keyword */}
-                <div className="space-y-2">
-                  <Label className="text-slate-300">Keyword / Topic</Label>
-                  <Input
-                    placeholder="e.g. best AI tools for marketing 2026"
-                    value={keyword}
-                    onChange={(e) => setKeyword(e.target.value)}
-                    required
-                    disabled={scheduling}
-                    className="bg-slate-800 border-white/10 text-white placeholder:text-slate-500 focus:border-violet-500"
-                  />
-                </div>
 
-                {/* Language */}
-                <div className="space-y-2">
-                  <Label className="text-slate-300">Language</Label>
-                  <div className="flex gap-2">
-                    {(["en", "ru", "uk"] as Language[]).map((l) => (
-                      <button
-                        key={l}
-                        type="button"
-                        disabled={scheduling}
-                        onClick={() => setLanguage(l)}
-                        className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all border ${
-                          language === l
-                            ? "bg-violet-600/30 border-violet-500 text-violet-300"
-                            : "border-white/10 text-slate-400 hover:border-white/20 hover:text-slate-200"
-                        }`}
-                      >
-                        {l === "en" ? "English" : l === "ru" ? "Russian" : "Ukrainian"}
-                      </button>
-                    ))}
+              {/* Step: no connected site */}
+              {modalStep === "no-site" && (
+                <div className="space-y-5">
+                  <div className="rounded-xl border border-amber-500/30 bg-amber-600/10 p-4">
+                    <p className="text-amber-300 text-sm leading-relaxed">
+                      Connect your website in Settings first to auto-generate topics
+                    </p>
+                  </div>
+                  <div className="flex gap-3">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setShowModal(false)}
+                      className="flex-1 border-white/10 text-slate-400 hover:text-white hover:bg-white/5"
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      onClick={() => router.push("/dashboard/settings")}
+                      className="flex-1 bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-white"
+                    >
+                      Go to Settings
+                    </Button>
                   </div>
                 </div>
+              )}
 
-                {/* Tone */}
-                <div className="space-y-2">
-                  <Label className="text-slate-300">Tone</Label>
-                  <div className="flex gap-2">
-                    {(["Professional", "Casual", "Expert"] as Tone[]).map((t) => (
-                      <button
-                        key={t}
-                        type="button"
-                        disabled={scheduling}
-                        onClick={() => setTone(t)}
-                        className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all border ${
-                          tone === t
-                            ? "bg-pink-600/30 border-pink-500 text-pink-300"
-                            : "border-white/10 text-slate-400 hover:border-white/20 hover:text-slate-200"
-                        }`}
-                      >
-                        {t}
-                      </button>
-                    ))}
+              {/* Step: analyzing */}
+              {modalStep === "analyzing" && (
+                <div className="flex flex-col items-center justify-center py-10 gap-4">
+                  <span className="inline-block w-8 h-8 border-2 border-white/20 border-t-violet-400 rounded-full animate-spin" />
+                  <p className="text-slate-300 text-sm">Analyzing your site...</p>
+                </div>
+              )}
+
+              {/* Step: topic suggestions */}
+              {modalStep === "topics" && (
+                <div className="space-y-4">
+                  {analyzeError ? (
+                    <div className="rounded-xl border border-red-500/30 bg-red-600/10 p-4">
+                      <p className="text-red-300 text-sm">{analyzeError}</p>
+                    </div>
+                  ) : (
+                    <p className="text-slate-400 text-sm">Choose a topic to schedule:</p>
+                  )}
+
+                  {topics.length > 0 && (
+                    <div className="space-y-3">
+                      {topics.map((topic, i) => (
+                        <button
+                          key={i}
+                          type="button"
+                          onClick={() => handleSelectTopic(topic)}
+                          className="w-full text-left rounded-xl border border-white/10 bg-slate-800/60 p-4 hover:border-violet-500/50 hover:bg-slate-800/80 transition-all"
+                        >
+                          <h3 className="text-white font-semibold text-sm mb-1">{topic.title}</h3>
+                          <p className="text-slate-400 text-xs leading-relaxed">{topic.description}</p>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
+                  {topics.length === 0 && !analyzeError && (
+                    <p className="text-slate-400 text-sm">No topics returned. Please try again.</p>
+                  )}
+
+                  <div className="pt-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setShowModal(false)}
+                      className="w-full border-white/10 text-slate-400 hover:text-white hover:bg-white/5"
+                    >
+                      Cancel
+                    </Button>
                   </div>
                 </div>
+              )}
 
-                {/* Date */}
-                <div className="space-y-2">
-                  <Label className="text-slate-300">Publish Date</Label>
-                  <Input
-                    type="date"
-                    value={scheduledDate}
-                    onChange={(e) => setScheduledDate(e.target.value)}
-                    required
-                    disabled={scheduling}
-                    min={getTodayString()}
-                    className="bg-slate-800 border-white/10 text-white focus:border-violet-500 [color-scheme:dark]"
-                  />
-                </div>
+              {/* Step: configure language / tone / date */}
+              {modalStep === "configure" && selectedTopic && (
+                <div className="space-y-5">
+                  {/* Selected topic summary */}
+                  <div className="rounded-xl border border-violet-500/30 bg-violet-600/10 p-4">
+                    <p className="text-xs text-violet-400 uppercase tracking-wider mb-1">Selected topic</p>
+                    <p className="text-white font-semibold text-sm">{selectedTopic.title}</p>
+                  </div>
 
-                {/* Buttons */}
-                <div className="flex gap-3 pt-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setShowModal(false)}
-                    disabled={scheduling}
-                    className="flex-1 border-white/10 text-slate-400 hover:text-white hover:bg-white/5"
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    type="submit"
-                    disabled={scheduling || !keyword.trim()}
-                    className="flex-1 bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-white"
-                  >
-                    {scheduling ? (
-                      <span className="flex items-center gap-2">
-                        <span className="inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                        Scheduling...
-                      </span>
-                    ) : (
-                      "Schedule"
-                    )}
-                  </Button>
+                  {/* Language */}
+                  <div className="space-y-2">
+                    <Label className="text-slate-300">Language</Label>
+                    <div className="flex gap-2">
+                      {(["en", "ru", "uk"] as Language[]).map((l) => (
+                        <button
+                          key={l}
+                          type="button"
+                          disabled={scheduling}
+                          onClick={() => setLanguage(l)}
+                          className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all border ${
+                            language === l
+                              ? "bg-violet-600/30 border-violet-500 text-violet-300"
+                              : "border-white/10 text-slate-400 hover:border-white/20 hover:text-slate-200"
+                          }`}
+                        >
+                          {l === "en" ? "English" : l === "ru" ? "Russian" : "Ukrainian"}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Tone */}
+                  <div className="space-y-2">
+                    <Label className="text-slate-300">Tone</Label>
+                    <div className="flex gap-2">
+                      {(["Professional", "Casual", "Expert"] as Tone[]).map((t) => (
+                        <button
+                          key={t}
+                          type="button"
+                          disabled={scheduling}
+                          onClick={() => setTone(t)}
+                          className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all border ${
+                            tone === t
+                              ? "bg-pink-600/30 border-pink-500 text-pink-300"
+                              : "border-white/10 text-slate-400 hover:border-white/20 hover:text-slate-200"
+                          }`}
+                        >
+                          {t}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Publish Date */}
+                  <div className="space-y-2">
+                    <Label className="text-slate-300">Publish Date</Label>
+                    <Input
+                      type="date"
+                      value={scheduledDate}
+                      onChange={(e) => setScheduledDate(e.target.value)}
+                      disabled={scheduling}
+                      min={getTodayString()}
+                      className="bg-slate-800 border-white/10 text-white focus:border-violet-500 [color-scheme:dark]"
+                    />
+                  </div>
+
+                  {/* Buttons */}
+                  <div className="flex gap-3 pt-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setModalStep("topics")}
+                      disabled={scheduling}
+                      className="flex-1 border-white/10 text-slate-400 hover:text-white hover:bg-white/5"
+                    >
+                      Back
+                    </Button>
+                    <Button
+                      onClick={handleSchedule}
+                      disabled={scheduling || !scheduledDate}
+                      className="flex-1 bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-white"
+                    >
+                      {scheduling ? (
+                        <span className="flex items-center gap-2">
+                          <span className="inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                          Scheduling...
+                        </span>
+                      ) : (
+                        "Schedule"
+                      )}
+                    </Button>
+                  </div>
                 </div>
-              </form>
+              )}
+
             </CardContent>
           </Card>
         </div>
