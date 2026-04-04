@@ -186,6 +186,32 @@ export default function SeoAutopilotPage() {
         })
       )
 
+      // Save as task in tasks list
+      const articleData = {
+        keyword: bestKeyword,
+        title: genData.title,
+        content: genData.content,
+        metaDescription: genData.metaDescription,
+        keywords: genData.keywords,
+      }
+      const newTask = {
+        id: Date.now().toString(),
+        title: `SEO Article: ${genData.title || bestKeyword}`,
+        description: `SEO article targeting "${bestKeyword}" keyword`,
+        type: "seo_article" as const,
+        status: "done" as const,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        articleData,
+      }
+      try {
+        const existingTasks = JSON.parse(localStorage.getItem("ge_tasks") || "[]")
+        existingTasks.unshift(newTask)
+        localStorage.setItem("ge_tasks", JSON.stringify(existingTasks))
+      } catch {
+        // ignore
+      }
+
       // Navigate to results
       setTimeout(() => {
         router.push("/dashboard/seo/results")

@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { getUser } from "@/lib/auth"
 import { getTasks, updateTaskStatus, type Task, type TaskStatus } from "@/lib/tasks"
+import { FileText } from "lucide-react"
 
 const typeLabels: Record<string, string> = {
   seo_article: "SEO Article",
@@ -83,18 +84,32 @@ export default function TasksPage() {
         <div className="space-y-3">
           {filtered.length === 0 && (
             <Card className="bg-slate-800/60 border-white/10">
-              <CardContent className="py-12 text-center">
-                <p className="text-slate-400 mb-4">No tasks yet.</p>
-                <Link href="/dashboard/new-task">
+              <CardContent className="py-16 text-center">
+                <FileText className="w-12 h-12 text-slate-500 mx-auto mb-4" />
+                <p className="text-white font-medium text-lg mb-1">No tasks yet</p>
+                <p className="text-slate-400 text-sm mb-6">Generate your first SEO article to get started</p>
+                <Link href="/dashboard/seo">
                   <Button className="bg-violet-600 hover:bg-violet-500 text-white">
-                    Create your first task
+                    Go to SEO Autopilot
                   </Button>
                 </Link>
               </CardContent>
             </Card>
           )}
-          {filtered.map((task) => (
-            <Card key={task.id} className="bg-slate-800/60 border-white/10 hover:border-white/20 transition-colors">
+          {filtered.map((task) => {
+            const isClickable = task.type === "seo_article" && task.status === "done" && task.articleData
+            const handleClick = () => {
+              if (isClickable) {
+                sessionStorage.setItem("seo_result", JSON.stringify(task.articleData))
+                router.push("/dashboard/seo/results")
+              }
+            }
+            return (
+            <Card
+              key={task.id}
+              className={`bg-slate-800/60 border-white/10 hover:border-white/20 transition-colors ${isClickable ? "cursor-pointer" : ""}`}
+              onClick={isClickable ? handleClick : undefined}
+            >
               <CardContent className="p-5">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex items-start gap-3 flex-1 min-w-0">
@@ -109,10 +124,13 @@ export default function TasksPage() {
                         <span className="text-slate-500 text-xs">
                           {new Date(task.createdAt).toLocaleDateString()}
                         </span>
+                        {isClickable && (
+                          <span className="text-violet-400 text-xs">Click to view article →</span>
+                        )}
                       </div>
                     </div>
                   </div>
-                  <div className="flex flex-col items-end gap-2 shrink-0">
+                  <div className="flex flex-col items-end gap-2 shrink-0" onClick={(e) => e.stopPropagation()}>
                     <StatusBadge status={task.status} />
                     <select
                       value={task.status}
@@ -127,7 +145,8 @@ export default function TasksPage() {
                 </div>
               </CardContent>
             </Card>
-          ))}
+            )
+          })}
         </div>
       </div>
     </div>

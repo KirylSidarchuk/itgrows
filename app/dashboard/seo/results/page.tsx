@@ -32,6 +32,20 @@ export default function SeoResultsPage() {
       return
     }
     try {
+      // First check sessionStorage (when navigating from tasks list)
+      const sessionData = sessionStorage.getItem("seo_result")
+      if (sessionData) {
+        const articleData = JSON.parse(sessionData) as ArticleResult["article"]
+        sessionStorage.removeItem("seo_result")
+        setResult({
+          article: articleData,
+          publishUrl: "",
+          platform: "none",
+          keyword: articleData.keyword,
+        })
+        return
+      }
+      // Fall back to last generated result from localStorage
       const saved = localStorage.getItem("ge_seo_last_result")
       if (saved) {
         setResult(JSON.parse(saved) as ArticleResult)
