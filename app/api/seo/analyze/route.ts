@@ -125,34 +125,31 @@ Current year: ${currentYear}`
     const llmData = (await llmResponse.json()) as ChatCompletionResponse
     const rawContent = llmData.choices?.[0]?.message?.content ?? ""
 
-    // Parse JSON from LLM response — handle markdown code blocks and various formats
+    // Parse JSON from LLM response
     let topics: TopicSuggestion[] = []
+    let parseError = ""
     try {
       // Strip markdown code fences if present
       const stripped = rawContent
         .replace(/```json\s*/gi, "")
         .replace(/```\s*/g, "")
         .trim()
-      // Try to find JSON array
-      const jsonMatch = stripped.match(/\[[\s\S]*\]/)
-      if (jsonMatch) {
-        const parsed = JSON.parse(jsonMatch[0])
-        if (Array.isArray(parsed)) {
-          topics = parsed as TopicSuggestion[]
-        }
-      } else {
-        // Maybe the whole response is a JSON array
-        const parsed = JSON.parse(stripped)
+      // Find first [ and last ] to extract the JSON array
+      const start = stripped.indexOf("[")
+      const end = stripped.lastIndexOf("]")
+      if (start !== -1 && end !== -1 && end > start) {
+        const jsonStr = stripped.slice(start, end + 1)
+        const parsed = JSON.parse(jsonStr)
         if (Array.isArray(parsed)) {
           topics = parsed as TopicSuggestion[]
         }
       }
-    } catch {
-      // fallback — return empty topics, log raw for debugging
-      console.error("[seo/analyze] Failed to parse LLM response:", rawContent.slice(0, 500))
+    } catch (e) {
+      parseError = e instanceof Error ? e.message : String(e)
+      console.error("[seo/analyze] Failed to parse LLM response:", parseError, rawContent.slice(0, 500))
     }
 
-    return NextResponse.json({ siteInfo, topics, _debug: rawContent.slice(0, 200) })
+    return NextResponse.json({ siteInfo, topics, _debug: rawContent.slice(0, 300), _parseError: parseError })
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error"
     return NextResponse.json({ error: message }, { status: 500 })
