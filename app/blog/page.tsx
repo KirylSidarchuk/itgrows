@@ -178,14 +178,7 @@ export default function BlogPage() {
             <div className="text-center py-20 text-slate-500">Loading articles...</div>
           ) : posts.length === 0 ? (
             <div className="text-center py-20">
-              <p className="text-slate-600 text-lg mb-4">
-                No articles yet. Be the first to generate one!
-              </p>
-              <Link href="/dashboard/seo">
-                <button className="px-6 py-3 bg-violet-600 hover:bg-violet-500 text-white rounded-xl transition-colors text-sm font-medium">
-                  Generate Article
-                </button>
-              </Link>
+              <p className="text-slate-600 text-lg">Coming soon.</p>
             </div>
           ) : (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
