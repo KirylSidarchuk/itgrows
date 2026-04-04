@@ -312,7 +312,7 @@ export default function SeoResultsPage() {
             <Link href="/dashboard/seo">
               <Button
                 variant="outline"
-                className="border-violet-500/30 text-violet-300 hover:bg-violet-900/20"
+                className="border-white/30 text-black bg-white hover:bg-gray-100"
               >
                 Publish to Platform
               </Button>
