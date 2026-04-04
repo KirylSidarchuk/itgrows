@@ -112,7 +112,7 @@ Current year: ${currentYear}`
       body: JSON.stringify({
         model: LLM_MODEL,
         messages: [{ role: "user", content: prompt }],
-        max_tokens: 1024,
+        max_tokens: 2048,
         temperature: 0.7,
       }),
     })
