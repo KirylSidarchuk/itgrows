@@ -98,6 +98,11 @@ export default function DashboardPage() {
               <CardTitle className="text-white text-lg">Quick Actions</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
+              <Link href="/dashboard/seo">
+                <Button className="w-full bg-gradient-to-r from-violet-600/30 to-pink-600/30 hover:from-violet-600/50 hover:to-pink-600/50 border border-violet-500/30 text-white justify-start gap-3">
+                  <span>🔍</span> SEO Autopilot
+                </Button>
+              </Link>
               <Link href="/dashboard/new-task">
                 <Button className="w-full bg-white/10 hover:bg-white/20 text-white justify-start gap-3">
                   <span>✍️</span> Create SEO Article
