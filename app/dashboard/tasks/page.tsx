@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { getUser } from "@/lib/auth"
@@ -36,6 +36,13 @@ export default function TasksPage() {
       return
     }
     setTasks(getTasks())
+
+    // Poll localStorage every 500ms to pick up background generation updates
+    const interval = setInterval(() => {
+      setTasks(getTasks())
+    }, 500)
+
+    return () => clearInterval(interval)
   }, [router])
 
   const handleStatusChange = (id: string, status: TaskStatus) => {
@@ -88,63 +95,89 @@ export default function TasksPage() {
                 <FileText className="w-12 h-12 text-slate-500 mx-auto mb-4" />
                 <p className="text-white font-medium text-lg mb-1">No tasks yet</p>
                 <p className="text-slate-400 text-sm mb-6">Generate your first SEO article to get started</p>
-                <Link href="/dashboard/seo">
+                <Link href="/dashboard/new-task">
                   <Button className="bg-violet-600 hover:bg-violet-500 text-white">
-                    Go to SEO Autopilot
+                    New Task
                   </Button>
                 </Link>
               </CardContent>
             </Card>
           )}
           {filtered.map((task) => {
-            const isClickable = task.type === "seo_article" && task.status === "done" && task.articleData
-            const handleClick = () => {
-              if (isClickable) {
+            const isDone = task.type === "seo_article" && task.status === "done" && !!task.articleData
+            const isInProgress = task.status === "in_progress"
+
+            const handleCardClick = () => {
+              if (isDone && task.articleData) {
                 sessionStorage.setItem("seo_result", JSON.stringify(task.articleData))
                 router.push("/dashboard/seo/results")
               }
             }
+
             return (
-            <Card
-              key={task.id}
-              className={`bg-slate-800/60 border-white/10 hover:border-white/20 transition-colors ${isClickable ? "cursor-pointer" : ""}`}
-              onClick={isClickable ? handleClick : undefined}
-            >
-              <CardContent className="p-5">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex items-start gap-3 flex-1 min-w-0">
-                    <span className="text-2xl mt-0.5">{typeIcons[task.type]}</span>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="text-white font-medium truncate">{task.title}</h3>
-                      <p className="text-slate-400 text-sm mt-1 line-clamp-2">{task.description}</p>
-                      <div className="flex items-center gap-3 mt-3">
-                        <Badge className="bg-slate-700 text-slate-300 border-0 text-xs">
-                          {typeLabels[task.type]}
-                        </Badge>
-                        <span className="text-slate-500 text-xs">
-                          {new Date(task.createdAt).toLocaleDateString()}
-                        </span>
-                        {isClickable && (
-                          <span className="text-violet-400 text-xs">Click to view article →</span>
-                        )}
+              <Card
+                key={task.id}
+                className={`bg-slate-800/60 border-white/10 hover:border-white/20 transition-colors ${isDone ? "cursor-pointer" : ""}`}
+                onClick={isDone ? handleCardClick : undefined}
+              >
+                <CardContent className="p-5">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex items-start gap-3 flex-1 min-w-0">
+                      <span className="text-2xl mt-0.5">{typeIcons[task.type]}</span>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-white font-medium truncate">{task.title}</h3>
+                        <p className="text-slate-400 text-sm mt-1 line-clamp-2">{task.description}</p>
+                        <div className="flex items-center gap-3 mt-3">
+                          <Badge className="bg-slate-700 text-slate-300 border-0 text-xs">
+                            {typeLabels[task.type]}
+                          </Badge>
+                          <span className="text-slate-500 text-xs">
+                            {new Date(task.createdAt).toLocaleDateString()}
+                          </span>
+                          {isDone && (
+                            <span className="text-violet-400 text-xs">Click to view article →</span>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  <div className="flex flex-col items-end gap-2 shrink-0" onClick={(e) => e.stopPropagation()}>
-                    <StatusBadge status={task.status} />
-                    <select
-                      value={task.status}
-                      onChange={(e) => handleStatusChange(task.id, e.target.value as TaskStatus)}
-                      className="text-xs bg-slate-700 border border-white/10 text-slate-300 rounded px-2 py-1 cursor-pointer"
+
+                    <div
+                      className="flex flex-col items-end gap-2 shrink-0"
+                      onClick={(e) => e.stopPropagation()}
                     >
-                      <option value="pending">Pending</option>
-                      <option value="in_progress">In Progress</option>
-                      <option value="done">Done</option>
-                    </select>
+                      <StatusBadge status={task.status} spinning={isInProgress} />
+
+                      {isDone && (
+                        <Button
+                          size="sm"
+                          className="bg-violet-600 hover:bg-violet-500 text-white text-xs px-3 py-1 h-7"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            if (task.articleData) {
+                              sessionStorage.setItem("seo_result", JSON.stringify(task.articleData))
+                              router.push("/dashboard/seo/results")
+                            }
+                          }}
+                        >
+                          View
+                        </Button>
+                      )}
+
+                      {!isDone && (
+                        <select
+                          value={task.status}
+                          onChange={(e) => handleStatusChange(task.id, e.target.value as TaskStatus)}
+                          className="text-xs bg-slate-700 border border-white/10 text-slate-300 rounded px-2 py-1 cursor-pointer"
+                        >
+                          <option value="pending">Pending</option>
+                          <option value="in_progress">In Progress</option>
+                          <option value="done">Done</option>
+                        </select>
+                      )}
+                    </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
             )
           })}
         </div>
@@ -153,7 +186,7 @@ export default function TasksPage() {
   )
 }
 
-function StatusBadge({ status }: { status: string }) {
+function StatusBadge({ status, spinning }: { status: string; spinning?: boolean }) {
   const styles: Record<string, string> = {
     pending: "bg-slate-700 text-slate-300 border-0",
     in_progress: "bg-yellow-900/50 text-yellow-400 border-0",
@@ -165,7 +198,10 @@ function StatusBadge({ status }: { status: string }) {
     done: "Done",
   }
   return (
-    <Badge className={`text-xs ${styles[status]}`}>
+    <Badge className={`text-xs flex items-center gap-1.5 ${styles[status]}`}>
+      {spinning && (
+        <span className="w-3 h-3 rounded-full border border-yellow-400 border-t-transparent animate-spin inline-block" />
+      )}
       {labels[status]}
     </Badge>
   )

@@ -24,6 +24,9 @@ export default function SeoResultsPage() {
   const router = useRouter()
   const [result, setResult] = useState<ArticleResult | null>(null)
   const [previewMode, setPreviewMode] = useState<"html" | "raw">("html")
+  const [taskId, setTaskId] = useState<string | null>(null)
+  const [isEditing, setIsEditing] = useState(false)
+  const [editContent, setEditContent] = useState("")
 
   useEffect(() => {
     const u = getUser()
@@ -37,6 +40,9 @@ export default function SeoResultsPage() {
       if (sessionData) {
         const articleData = JSON.parse(sessionData) as ArticleResult["article"]
         sessionStorage.removeItem("seo_result")
+        const tid = sessionStorage.getItem("seo_result_task_id") ?? null
+        sessionStorage.removeItem("seo_result_task_id")
+        setTaskId(tid)
         setResult({
           article: articleData,
           publishUrl: "",
@@ -56,6 +62,58 @@ export default function SeoResultsPage() {
       router.push("/dashboard/seo")
     }
   }, [router])
+
+  const handleEditStart = () => {
+    if (!result) return
+    setEditContent(result.article.content)
+    setIsEditing(true)
+  }
+
+  const handleEditCancel = () => {
+    setIsEditing(false)
+    setEditContent("")
+  }
+
+  const handleEditSave = () => {
+    if (!result) return
+    const updatedArticle = { ...result.article, content: editContent }
+    const updatedResult = { ...result, article: updatedArticle }
+    setResult(updatedResult)
+
+    // Update in localStorage itgrows_tasks_v2 if we have a task ID
+    if (taskId) {
+      try {
+        const tasks = JSON.parse(localStorage.getItem("itgrows_tasks_v2") || "[]") as Array<{
+          id: string
+          updatedAt: string
+          articleData?: { keyword: string; title: string; content: string; metaDescription: string; keywords: string[] }
+        }>
+        const idx = tasks.findIndex((t) => t.id === taskId)
+        if (idx !== -1 && tasks[idx].articleData) {
+          tasks[idx].articleData!.content = editContent
+          tasks[idx].updatedAt = new Date().toISOString()
+          localStorage.setItem("itgrows_tasks_v2", JSON.stringify(tasks))
+        }
+      } catch {
+        // ignore
+      }
+    }
+
+    // Also update ge_seo_last_result if that was the source
+    try {
+      const saved = localStorage.getItem("ge_seo_last_result")
+      if (saved) {
+        const parsed = JSON.parse(saved) as ArticleResult
+        parsed.article.content = editContent
+        localStorage.setItem("ge_seo_last_result", JSON.stringify(parsed))
+      }
+    } catch {
+      // ignore
+    }
+
+    setIsEditing(false)
+    setEditContent("")
+  }
 
   if (!result) return null
 
@@ -193,7 +251,13 @@ export default function SeoResultsPage() {
             </div>
           </CardHeader>
           <CardContent>
-            {previewMode === "html" ? (
+            {isEditing ? (
+              <textarea
+                value={editContent}
+                onChange={(e) => setEditContent(e.target.value)}
+                className="w-full min-h-[500px] bg-slate-900/60 text-slate-200 text-xs font-mono p-4 rounded-lg border border-violet-500/40 focus:outline-none focus:border-violet-500 resize-y"
+              />
+            ) : previewMode === "html" ? (
               <div
                 className="prose prose-invert prose-sm max-w-none text-slate-200 [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:text-white [&_h1]:mb-4 [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:text-violet-300 [&_h2]:mt-6 [&_h2]:mb-3 [&_h3]:text-lg [&_h3]:font-medium [&_h3]:text-pink-300 [&_h3]:mt-4 [&_h3]:mb-2 [&_p]:mb-3 [&_p]:leading-relaxed [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:mb-3 [&_li]:mb-1 [&_strong]:text-white"
                 dangerouslySetInnerHTML={{ __html: article.content }}
@@ -208,15 +272,42 @@ export default function SeoResultsPage() {
 
         {/* Action buttons */}
         <div className="mt-6 flex flex-wrap gap-3">
-          <Button
-            onClick={() => {
-              navigator.clipboard.writeText(article.content).catch(() => {})
-            }}
-            variant="outline"
-            className="border-white/10 text-slate-300 hover:bg-white/5"
-          >
-            Copy HTML
-          </Button>
+          {!isEditing && (
+            <Button
+              onClick={() => {
+                navigator.clipboard.writeText(article.content).catch(() => {})
+              }}
+              variant="outline"
+              className="border-white/10 text-slate-300 hover:bg-white/5"
+            >
+              Copy HTML
+            </Button>
+          )}
+          {!isEditing ? (
+            <Button
+              onClick={handleEditStart}
+              variant="outline"
+              className="border-white/10 text-slate-300 hover:bg-white/5"
+            >
+              Edit
+            </Button>
+          ) : (
+            <>
+              <Button
+                onClick={handleEditSave}
+                className="bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-white"
+              >
+                Save
+              </Button>
+              <Button
+                onClick={handleEditCancel}
+                variant="outline"
+                className="border-white/10 text-slate-300 hover:bg-white/5"
+              >
+                Cancel
+              </Button>
+            </>
+          )}
           {!publishUrl && (
             <Link href="/dashboard/seo">
               <Button

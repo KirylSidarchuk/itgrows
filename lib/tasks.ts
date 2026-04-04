@@ -62,3 +62,14 @@ export function updateTaskStatus(id: string, status: TaskStatus): void {
     saveTasks(tasks)
   }
 }
+
+export function updateTaskArticle(id: string, articleData: ArticleData): void {
+  const tasks = getTasks()
+  const idx = tasks.findIndex((t) => t.id === id)
+  if (idx !== -1) {
+    tasks[idx].status = "done"
+    tasks[idx].articleData = articleData
+    tasks[idx].updatedAt = new Date().toISOString()
+    saveTasks(tasks)
+  }
+}
