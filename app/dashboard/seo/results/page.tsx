@@ -160,7 +160,7 @@ export default function SeoResultsPage() {
       if (data.post) {
         setBlogSlug(siteSlug ? `${siteSlug}/${data.post.slug}` : data.post.slug)
         setBlogPublished(true)
-        setPublishedSiteName(siteName ?? "itgrows.ai Blog")
+        setPublishedSiteName(siteName ?? "ItGrows.ai Blog")
 
         if (!data.success || data.storage === "none") {
           try {
@@ -191,7 +191,7 @@ export default function SeoResultsPage() {
         localStorage.setItem("itgrows_published_posts", JSON.stringify(existing))
         setBlogSlug(siteSlug ? `${siteSlug}/${rawSlug}` : rawSlug)
         setBlogPublished(true)
-        setPublishedSiteName(siteName ?? "itgrows.ai Blog")
+        setPublishedSiteName(siteName ?? "ItGrows.ai Blog")
       }
     } catch {
       const rawSlug = slugify(article.title)
@@ -217,7 +217,7 @@ export default function SeoResultsPage() {
       }
       setBlogSlug(siteSlug ? `${siteSlug}/${rawSlug}` : rawSlug)
       setBlogPublished(true)
-      setPublishedSiteName(siteName ?? "itgrows.ai Blog")
+      setPublishedSiteName(siteName ?? "ItGrows.ai Blog")
     }
   }
 
@@ -301,10 +301,10 @@ export default function SeoResultsPage() {
       <div className="max-w-4xl mx-auto">
         <div className="mb-8 flex items-start justify-between">
           <div>
-            <h1 className="text-3xl font-bold mb-1 bg-gradient-to-r from-violet-400 to-pink-400 bg-clip-text text-transparent">
+            <h1 className="text-3xl font-bold mb-1 bg-gradient-to-r from-violet-600 to-pink-500 bg-clip-text text-transparent">
               Article Generated
             </h1>
-            <p className="text-slate-400">
+            <p className="text-slate-600">
               {publishUrl
                 ? `Published to ${platformLabelMap[platform] ?? platform}`
                 : "Ready to publish or copy"}
@@ -321,15 +321,15 @@ export default function SeoResultsPage() {
 
         {/* Published URL banner */}
         {publishUrl && (
-          <div className="mb-6 flex items-center gap-3 p-4 rounded-xl bg-green-900/20 border border-green-500/30">
+          <div className="mb-6 flex items-center gap-3 p-4 rounded-xl bg-green-50 border border-green-300">
             <span className="text-2xl">✅</span>
             <div className="flex-1 min-w-0">
-              <p className="text-green-400 font-medium text-sm">Successfully published!</p>
+              <p className="text-green-700 font-medium text-sm">Successfully published!</p>
               <a
                 href={publishUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-slate-300 hover:text-white text-sm truncate block underline"
+                className="text-slate-600 hover:text-[#1b1916] text-sm truncate block underline"
               >
                 {publishUrl}
               </a>
@@ -342,7 +342,7 @@ export default function SeoResultsPage() {
             >
               <Button
                 variant="outline"
-                className="border-green-500/30 text-green-400 hover:bg-green-900/20 text-sm"
+                className="border-green-300 text-green-700 hover:bg-green-50 text-sm"
               >
                 Open Post
               </Button>
@@ -352,16 +352,16 @@ export default function SeoResultsPage() {
 
         {/* Blog published banner */}
         {blogPublished && (
-          <div className="mb-6 flex items-center gap-3 p-4 rounded-xl bg-violet-900/20 border border-violet-500/30">
+          <div className="mb-6 flex items-center gap-3 p-4 rounded-xl bg-violet-50 border border-violet-200">
             <span className="text-2xl">🚀</span>
             <div className="flex-1 min-w-0">
-              <p className="text-violet-400 font-medium text-sm">
-                Published to {publishedSiteName ?? "itgrows.ai Blog"}!
+              <p className="text-violet-700 font-medium text-sm">
+                Published to {publishedSiteName ?? "ItGrows.ai Blog"}!
               </p>
               {blogSlug && (
                 <Link
                   href={`/blog/${blogSlug}`}
-                  className="text-slate-300 hover:text-white text-sm truncate block underline"
+                  className="text-slate-600 hover:text-[#1b1916] text-sm truncate block underline"
                 >
                   itgrows.ai/blog/{blogSlug}
                 </Link>
@@ -371,7 +371,7 @@ export default function SeoResultsPage() {
               <Link href={`/blog/${blogSlug}`} className="shrink-0">
                 <Button
                   variant="outline"
-                  className="border-violet-500/30 text-violet-300 hover:bg-violet-900/20 text-sm"
+                  className="border-violet-300 text-violet-700 hover:bg-violet-50 text-sm"
                 >
                   View →
                 </Button>
@@ -382,10 +382,10 @@ export default function SeoResultsPage() {
 
         {/* No site connected modal */}
         {noSiteModal && (
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
-            <div className="bg-slate-800 border border-white/10 rounded-2xl p-6 max-w-sm w-full mx-4 shadow-2xl">
-              <h3 className="text-white font-semibold text-lg mb-2">No Site Connected</h3>
-              <p className="text-slate-400 text-sm mb-5">
+          <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
+            <div className="bg-white border border-black/10 rounded-2xl p-6 max-w-sm w-full mx-4 shadow-xl">
+              <h3 className="text-[#1b1916] font-semibold text-lg mb-2">No Site Connected</h3>
+              <p className="text-slate-600 text-sm mb-5">
                 Add your website in Settings to publish articles automatically.
               </p>
               <div className="flex flex-col gap-2">
@@ -396,14 +396,14 @@ export default function SeoResultsPage() {
                 </Link>
                 <Button
                   onClick={handlePublishItgrowsFallback}
-                  className="w-full bg-slate-700 hover:bg-slate-600 text-white"
+                  className="w-full bg-[#ebe9e5] hover:bg-[#dedad4] text-[#1b1916] border border-black/10"
                 >
-                  Publish to itgrows.ai Blog
+                  Publish to ItGrows.ai Blog
                 </Button>
                 <Button
                   onClick={() => setNoSiteModal(false)}
                   variant="ghost"
-                  className="w-full text-slate-400 hover:text-white"
+                  className="w-full text-slate-500 hover:text-[#1b1916]"
                 >
                   Cancel
                 </Button>
@@ -414,14 +414,14 @@ export default function SeoResultsPage() {
 
         {/* Meta info */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-          <Card className="bg-slate-800/60 border-white/10">
+          <Card className="bg-white border-black/10">
             <CardHeader className="pb-2">
-              <CardTitle className="text-slate-300 text-sm font-medium uppercase tracking-wider">
+              <CardTitle className="text-slate-600 text-sm font-medium uppercase tracking-wider">
                 Meta Description
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-white text-sm leading-relaxed">
+              <p className="text-[#1b1916] text-sm leading-relaxed">
                 {article.metaDescription || "—"}
               </p>
               <p className="text-slate-500 text-xs mt-2">
@@ -430,9 +430,9 @@ export default function SeoResultsPage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-slate-800/60 border-white/10">
+          <Card className="bg-white border-black/10">
             <CardHeader className="pb-2">
-              <CardTitle className="text-slate-300 text-sm font-medium uppercase tracking-wider">
+              <CardTitle className="text-slate-600 text-sm font-medium uppercase tracking-wider">
                 Keywords Used
               </CardTitle>
             </CardHeader>
@@ -442,7 +442,7 @@ export default function SeoResultsPage() {
                   article.keywords.map((kw) => (
                     <span
                       key={kw}
-                      className="px-2 py-1 rounded-md bg-violet-900/40 border border-violet-500/30 text-violet-300 text-xs"
+                      className="px-2 py-1 rounded-md bg-violet-100 border border-violet-200 text-violet-700 text-xs"
                     >
                       {kw}
                     </span>
@@ -456,16 +456,16 @@ export default function SeoResultsPage() {
         </div>
 
         {/* Article preview */}
-        <Card className="bg-slate-800/60 border-white/10">
+        <Card className="bg-white border-black/10">
           <CardHeader className="flex flex-row items-center justify-between pb-3">
-            <CardTitle className="text-white text-lg">{article.title || "Article"}</CardTitle>
+            <CardTitle className="text-[#1b1916] text-lg">{article.title || "Article"}</CardTitle>
             <div className="flex gap-2">
               <button
                 onClick={() => setPreviewMode("html")}
                 className={`px-3 py-1 rounded-lg text-xs font-medium transition-all border ${
                   previewMode === "html"
-                    ? "bg-violet-600/30 border-violet-500 text-violet-300"
-                    : "border-white/10 text-slate-400 hover:border-white/20"
+                    ? "bg-violet-100 border-violet-400 text-violet-700"
+                    : "border-slate-200 text-slate-500 hover:border-slate-300"
                 }`}
               >
                 Preview
@@ -474,8 +474,8 @@ export default function SeoResultsPage() {
                 onClick={() => setPreviewMode("raw")}
                 className={`px-3 py-1 rounded-lg text-xs font-medium transition-all border ${
                   previewMode === "raw"
-                    ? "bg-violet-600/30 border-violet-500 text-violet-300"
-                    : "border-white/10 text-slate-400 hover:border-white/20"
+                    ? "bg-violet-100 border-violet-400 text-violet-700"
+                    : "border-slate-200 text-slate-500 hover:border-slate-300"
                 }`}
               >
                 HTML
@@ -487,15 +487,15 @@ export default function SeoResultsPage() {
               <textarea
                 value={editContent}
                 onChange={(e) => setEditContent(e.target.value)}
-                className="w-full min-h-[500px] bg-slate-900/60 text-slate-200 text-xs font-mono p-4 rounded-lg border border-violet-500/40 focus:outline-none focus:border-violet-500 resize-y"
+                className="w-full min-h-[500px] bg-[#ebe9e5] text-[#1b1916] text-xs font-mono p-4 rounded-lg border border-violet-300 focus:outline-none focus:border-violet-500 resize-y"
               />
             ) : previewMode === "html" ? (
               <div
-                className="prose prose-invert prose-sm max-w-none text-slate-200 [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:text-white [&_h1]:mb-4 [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:text-violet-300 [&_h2]:mt-6 [&_h2]:mb-3 [&_h3]:text-lg [&_h3]:font-medium [&_h3]:text-pink-300 [&_h3]:mt-4 [&_h3]:mb-2 [&_p]:mb-3 [&_p]:leading-relaxed [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:mb-3 [&_li]:mb-1 [&_strong]:text-white"
+                className="prose prose-slate max-w-none text-slate-700 [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:text-[#1b1916] [&_h1]:mb-4 [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:text-violet-700 [&_h2]:mt-6 [&_h2]:mb-3 [&_h3]:text-lg [&_h3]:font-medium [&_h3]:text-pink-700 [&_h3]:mt-4 [&_h3]:mb-2 [&_p]:mb-3 [&_p]:leading-relaxed [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:mb-3 [&_li]:mb-1 [&_strong]:text-[#1b1916]"
                 dangerouslySetInnerHTML={{ __html: article.content }}
               />
             ) : (
-              <pre className="text-xs text-slate-300 overflow-auto max-h-96 whitespace-pre-wrap font-mono bg-slate-900/60 p-4 rounded-lg">
+              <pre className="text-xs text-slate-700 overflow-auto max-h-96 whitespace-pre-wrap font-mono bg-[#ebe9e5] p-4 rounded-lg">
                 {article.content}
               </pre>
             )}
@@ -510,7 +510,7 @@ export default function SeoResultsPage() {
                 navigator.clipboard.writeText(article.content).catch(() => {})
               }}
               variant="outline"
-              className="border-white/30 text-black bg-white hover:bg-gray-100"
+              className="border-black/20 text-[#1b1916] bg-white hover:bg-[#ebe9e5]"
             >
               Copy HTML
             </Button>
@@ -519,7 +519,7 @@ export default function SeoResultsPage() {
             <Button
               onClick={handleEditStart}
               variant="outline"
-              className="border-white/30 text-black bg-white hover:bg-gray-100"
+              className="border-black/20 text-[#1b1916] bg-white hover:bg-[#ebe9e5]"
             >
               Edit
             </Button>
@@ -534,7 +534,7 @@ export default function SeoResultsPage() {
               <Button
                 onClick={handleEditCancel}
                 variant="outline"
-                className="border-white/30 text-black bg-white hover:bg-gray-100"
+                className="border-black/20 text-[#1b1916] bg-white hover:bg-[#ebe9e5]"
               >
                 Cancel
               </Button>
@@ -555,9 +555,9 @@ export default function SeoResultsPage() {
             </Button>
           )}
           {!isEditing && blogPublished && (
-            <span className="flex items-center gap-2 text-green-400 font-medium text-sm px-1">
-              <span className="text-green-400">✓</span>
-              Published on {publishedSiteName ?? "itgrows.ai Blog"}
+            <span className="flex items-center gap-2 text-green-600 font-medium text-sm px-1">
+              <span className="text-green-600">✓</span>
+              Published on {publishedSiteName ?? "ItGrows.ai Blog"}
             </span>
           )}
           <Link href="/dashboard/seo">

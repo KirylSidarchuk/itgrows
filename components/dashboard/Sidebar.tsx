@@ -30,7 +30,7 @@ export default function Sidebar() {
       <div className="p-6 border-b border-black/10">
         <Link href="/">
           <span className="text-xl font-bold bg-gradient-to-r from-violet-600 to-pink-500 bg-clip-text text-transparent">
-            itgrows.ai
+            ItGrows.ai
           </span>
         </Link>
       </div>

@@ -35,7 +35,7 @@ export default function LoginPage() {
         <div className="text-center mb-8">
           <Link href="/">
             <span className="text-2xl font-bold bg-gradient-to-r from-violet-600 to-pink-500 bg-clip-text text-transparent">
-              itgrows.ai
+              ItGrows.ai
             </span>
           </Link>
         </div>

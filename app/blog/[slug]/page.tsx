@@ -137,7 +137,7 @@ export default function BlogPostPage() {
 
       {/* Footer */}
       <footer className="border-t border-black/10 px-6 py-8 text-center text-slate-500 text-sm bg-[#ebe9e5]">
-        <p>© 2026 itgrows.ai. All rights reserved.</p>
+        <p>© 2026 ItGrows.ai. All rights reserved.</p>
       </footer>
     </div>
   )

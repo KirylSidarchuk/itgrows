@@ -63,39 +63,39 @@ export default function SubscriptionPage() {
   if (!user) return null
 
   const planColors: Record<string, string> = {
-    starter: "bg-blue-900/40 text-blue-300 border-blue-700",
-    pro: "bg-violet-900/40 text-violet-300 border-violet-700",
-    agency: "bg-amber-900/40 text-amber-300 border-amber-700",
+    starter: "bg-blue-100 text-blue-700 border-blue-200",
+    pro: "bg-violet-100 text-violet-700 border-violet-200",
+    agency: "bg-amber-100 text-amber-700 border-amber-200",
   }
 
   return (
     <div className="p-8">
       <div className="max-w-4xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-1">Subscription</h1>
-          <p className="text-slate-400">Manage your plan and billing</p>
+          <h1 className="text-3xl font-bold mb-1 text-[#1b1916]">Subscription</h1>
+          <p className="text-slate-600">Manage your plan and billing</p>
         </div>
 
         {/* Current plan */}
-        <Card className="bg-slate-800/60 border-white/10 mb-8">
+        <Card className="bg-white border-black/10 mb-8">
           <CardHeader>
-            <CardTitle className="text-white">Current Plan</CardTitle>
+            <CardTitle className="text-[#1b1916]">Current Plan</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between flex-wrap gap-4">
               <div>
                 <div className="flex items-center gap-3 mb-2">
                   <Badge className={`capitalize text-sm px-3 py-1 ${planColors[user.plan]}`}>{user.plan}</Badge>
-                  <span className="text-slate-400 text-sm">Active</span>
+                  <span className="text-slate-500 text-sm">Active</span>
                 </div>
-                <p className="text-slate-400 text-sm">
+                <p className="text-slate-600 text-sm">
                   Next renewal: {new Date(user.planExpiry).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}
                 </p>
               </div>
               <div className="text-right">
-                <p className="text-3xl font-bold text-white">
+                <p className="text-3xl font-bold text-[#1b1916]">
                   {plans.find((p) => p.id === user.plan)?.price}
-                  <span className="text-slate-400 text-base font-normal">/month</span>
+                  <span className="text-slate-500 text-base font-normal">/month</span>
                 </p>
               </div>
             </div>
@@ -103,13 +103,13 @@ export default function SubscriptionPage() {
         </Card>
 
         {upgraded && (
-          <div className="mb-6 p-4 rounded-xl bg-green-900/20 border border-green-500/30 text-green-400 text-sm">
+          <div className="mb-6 p-4 rounded-xl bg-green-50 border border-green-300 text-green-700 text-sm">
             ✅ Plan upgraded to <span className="font-semibold capitalize">{upgraded}</span> successfully!
           </div>
         )}
 
         {/* Plan selection */}
-        <h2 className="text-xl font-semibold mb-4">Change Plan</h2>
+        <h2 className="text-xl font-semibold mb-4 text-[#1b1916]">Change Plan</h2>
         <div className="grid md:grid-cols-3 gap-6">
           {plans.map((plan) => {
             const isCurrent = user.plan === plan.id
@@ -119,24 +119,24 @@ export default function SubscriptionPage() {
                 key={plan.id}
                 className={`border ${
                   plan.highlight
-                    ? "border-violet-500 bg-violet-950/30"
+                    ? "border-violet-400 bg-violet-50"
                     : isCurrent
-                    ? "border-green-500/40 bg-green-950/20"
-                    : "border-white/10 bg-slate-800/60"
+                    ? "border-green-400 bg-green-50"
+                    : "border-black/10 bg-white"
                 }`}
               >
                 <CardHeader>
-                  <CardTitle className="text-white">{plan.name}</CardTitle>
+                  <CardTitle className="text-[#1b1916]">{plan.name}</CardTitle>
                   <div className="flex items-end gap-1">
-                    <span className="text-4xl font-extrabold text-white">{plan.price}</span>
-                    <span className="text-slate-400 mb-1">{plan.period}</span>
+                    <span className="text-4xl font-extrabold text-[#1b1916]">{plan.price}</span>
+                    <span className="text-slate-500 mb-1">{plan.period}</span>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <ul className="space-y-2">
                     {plan.features.map((f, i) => (
-                      <li key={i} className="flex items-center gap-2 text-sm text-slate-300">
-                        <span className="text-green-400">✓</span>
+                      <li key={i} className="flex items-center gap-2 text-sm text-slate-600">
+                        <span className="text-green-600">✓</span>
                         {f}
                       </li>
                     ))}
@@ -146,10 +146,10 @@ export default function SubscriptionPage() {
                     disabled={isCurrent || isUpgrading !== null}
                     className={`w-full ${
                       isCurrent
-                        ? "bg-green-900/30 text-green-400 border border-green-500/30 cursor-default"
+                        ? "bg-green-100 text-green-700 border border-green-300 cursor-default"
                         : plan.highlight
                         ? "bg-violet-600 hover:bg-violet-500 text-white"
-                        : "bg-white/10 hover:bg-white/20 text-white"
+                        : "bg-[#ebe9e5] hover:bg-[#dedad4] text-[#1b1916] border border-black/10"
                     }`}
                   >
                     {isCurrent ? "Current Plan" : isUpgrading ? "Upgrading..." : "Switch to " + plan.name}
@@ -161,20 +161,20 @@ export default function SubscriptionPage() {
         </div>
 
         {/* Billing info */}
-        <Card className="bg-slate-800/60 border-white/10 mt-8">
+        <Card className="bg-white border-black/10 mt-8">
           <CardHeader>
-            <CardTitle className="text-white text-lg">Billing Information</CardTitle>
+            <CardTitle className="text-[#1b1916] text-lg">Billing Information</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="flex justify-between text-sm">
-              <span className="text-slate-400">Payment method</span>
-              <span className="text-white">•••• •••• •••• 4242</span>
+              <span className="text-slate-500">Payment method</span>
+              <span className="text-[#1b1916]">•••• •••• •••• 4242</span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-slate-400">Billing email</span>
-              <span className="text-white">{user.email}</span>
+              <span className="text-slate-500">Billing email</span>
+              <span className="text-[#1b1916]">{user.email}</span>
             </div>
-            <Button variant="outline" className="mt-4 border-white/10 text-slate-300 hover:bg-white/5">
+            <Button variant="outline" className="mt-4 border-slate-200 text-slate-600 hover:bg-[#ebe9e5]">
               Update Payment Method
             </Button>
           </CardContent>

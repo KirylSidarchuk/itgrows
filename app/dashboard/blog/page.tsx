@@ -134,7 +134,7 @@ export default function DashboardBlogPage() {
                       <td className="px-6 py-4 text-sm text-slate-500">
                         {post.siteSlug
                           ? post.siteSlug.split("-").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ")
-                          : "itgrows.ai Blog"}
+                          : "ItGrows.ai Blog"}
                       </td>
                       <td className="px-6 py-4 text-sm text-slate-500">{formatDate(post.publishedAt)}</td>
                       <td className="px-6 py-4">

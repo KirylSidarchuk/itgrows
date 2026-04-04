@@ -21,7 +21,7 @@ export default function SupportPage() {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "support",
-      text: "Hi there! 👋 I'm your itgrows.ai support assistant. How can I help you today?",
+      text: "Hi there! 👋 I'm your ItGrows.ai support assistant. How can I help you today?",
       ts: new Date().toISOString(),
     },
   ])
@@ -120,7 +120,7 @@ export default function SupportPage() {
                 <div className="py-8 text-center">
                   <p className="text-4xl mb-4">🙏</p>
                   <h3 className="text-white text-lg font-semibold mb-2">Thank you!</h3>
-                  <p className="text-slate-400 text-sm">Your feedback helps us improve itgrows.ai.</p>
+                  <p className="text-slate-400 text-sm">Your feedback helps us improve ItGrows.ai.</p>
                   <Button
                     onClick={() => setFeedbackSent(false)}
                     variant="outline"

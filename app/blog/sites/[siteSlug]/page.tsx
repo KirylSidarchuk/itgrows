@@ -89,7 +89,7 @@ export default function SiteBlogPage() {
               {displayName}
             </span>{" "}Blog
           </h1>
-          <p className="text-slate-400 text-lg">Powered by itgrows.ai</p>
+          <p className="text-slate-400 text-lg">Powered by ItGrows.ai</p>
         </div>
       </section>
 
@@ -132,7 +132,7 @@ export default function SiteBlogPage() {
       </section>
 
       <footer className="border-t border-white/10 px-6 py-8 text-center text-slate-500 text-sm">
-        <p>Powered by <Link href="/" className="text-violet-400 hover:text-violet-300 transition-colors">itgrows.ai</Link> &mdash; &copy; 2026</p>
+        <p>Powered by <Link href="/" className="text-violet-400 hover:text-violet-300 transition-colors">ItGrows.ai</Link> &mdash; &copy; 2026</p>
       </footer>
     </div>
   )

@@ -286,12 +286,12 @@ export async function POST(req) {
                   href="/api/wp-plugin/download"
                   className="text-violet-400 hover:text-violet-300 underline"
                 >
-                  Download itgrows.ai WordPress Plugin
+                  Download ItGrows.ai WordPress Plugin
                 </a>
               </li>
               <li>Go to WP Admin → Plugins → Add New → Upload Plugin → Install → Activate</li>
               <li>
-                Go to <span className="text-violet-300">Settings → itgrows.ai</span> → Copy the
+                Go to <span className="text-violet-300">Settings → ItGrows.ai</span> → Copy the
                 Site Token shown there
               </li>
               <li>Paste it below</li>
@@ -579,7 +579,7 @@ export default function SettingsPage() {
                 )}
               </CardTitle>
               <p className="text-slate-400 text-sm mt-1">
-                Add your website to automatically publish articles from itgrows.ai
+                Add your website to automatically publish articles from ItGrows.ai
               </p>
               {defaultSite && (
                 <p className="text-green-400 text-xs mt-1">Default: {defaultSite.name}</p>

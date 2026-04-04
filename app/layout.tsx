@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "itgrows.ai — AI Content Automation",
+  title: "ItGrows.ai — AI Content Automation",
   description: "AI creates SEO articles, social posts, and images — then auto-publishes them and runs your Google Ads.",
 };
 

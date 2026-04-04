@@ -129,7 +129,7 @@ export default function DashboardPage() {
                 <div>
                   <p className="text-[#1b1916] font-medium text-sm">Connect your website to start publishing</p>
                   <p className="text-slate-600 text-xs mt-0.5">
-                    Link your WordPress, Shopify, Webflow or itgrows.ai Blog for one-click article publishing.
+                    Link your WordPress, Shopify, Webflow or ItGrows.ai Blog for one-click article publishing.
                   </p>
                 </div>
               </div>

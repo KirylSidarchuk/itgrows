@@ -32,7 +32,7 @@ const features = [
   {
     icon: "🔄",
     title: "Fully Automated Workflows",
-    desc: "Set your goals once. itgrows.ai handles research, creation, publishing, and reporting.",
+    desc: "Set your goals once. ItGrows.ai handles research, creation, publishing, and reporting.",
   },
 ]
 
@@ -115,7 +115,7 @@ export default function HomePage() {
       <nav className="border-b border-black/10 px-6 py-4" style={{ backgroundColor: "#f3f2f1" }}>
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <span className="text-xl font-bold bg-gradient-to-r from-violet-600 to-cyan-600 bg-clip-text text-transparent">
-            itgrows.ai
+            ItGrows.ai
           </span>
           <div className="hidden md:flex items-center gap-6 text-sm text-slate-500">
             <a href="#features" className="hover:text-[#1b1916] transition-colors">Features</a>
@@ -149,7 +149,7 @@ export default function HomePage() {
             </span>
           </h1>
           <p className="text-xl text-slate-600 max-w-2xl mx-auto mb-10 leading-relaxed">
-            itgrows.ai creates SEO articles, social posts, and images — then automatically publishes them and runs your Google Ads. Full content marketing on autopilot.
+            ItGrows.ai creates SEO articles, social posts, and images — then automatically publishes them and runs your Google Ads. Full content marketing on autopilot.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/signup">
@@ -283,7 +283,7 @@ export default function HomePage() {
             </span>
           </h2>
           <p className="text-slate-600 text-lg mb-10">
-            Join thousands of businesses already growing with itgrows.ai.
+            Join thousands of businesses already growing with ItGrows.ai.
           </p>
           <Link href="/signup">
             <Button size="lg" className="bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-white px-10 py-6 text-lg rounded-xl">
@@ -295,7 +295,7 @@ export default function HomePage() {
 
       {/* Footer */}
       <footer className="border-t border-black/10 px-6 py-8 text-center text-slate-500 text-sm" style={{ backgroundColor: "#ebe9e5" }}>
-        <p>© 2026 itgrows.ai. All rights reserved.</p>
+        <p>© 2026 ItGrows.ai. All rights reserved.</p>
       </footer>
     </div>
   )
