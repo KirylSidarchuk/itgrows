@@ -135,7 +135,12 @@ export default function SeoResultsPage() {
     setEditContent("")
   }
 
-  const publishToItgrowsBlog = async (article: ArticleResult["article"], siteName?: string) => {
+  const publishToItgrowsBlog = async (
+    article: ArticleResult["article"],
+    siteName?: string,
+    siteId?: string,
+    siteSlug?: string,
+  ) => {
     try {
       const res = await fetch("/api/blog/posts", {
         method: "POST",
@@ -146,12 +151,14 @@ export default function SeoResultsPage() {
           metaDescription: article.metaDescription,
           keywords: article.keywords,
           keyword: article.keyword,
+          ...(siteId ? { siteId } : {}),
+          ...(siteSlug ? { siteSlug } : {}),
         }),
       })
       const data = (await res.json()) as { success: boolean; post?: BlogPost; storage?: string; error?: string }
 
       if (data.post) {
-        setBlogSlug(data.post.slug)
+        setBlogSlug(siteSlug ? `${siteSlug}/${data.post.slug}` : data.post.slug)
         setBlogPublished(true)
         setPublishedSiteName(siteName ?? "itgrows.ai Blog")
 
@@ -165,9 +172,10 @@ export default function SeoResultsPage() {
           }
         }
       } else {
+        const rawSlug = slugify(article.title)
         const post: BlogPost = {
           id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-          slug: slugify(article.title),
+          slug: rawSlug,
           title: article.title,
           content: article.content,
           metaDescription: article.metaDescription || "",
@@ -175,18 +183,21 @@ export default function SeoResultsPage() {
           keyword: article.keyword || "",
           publishedAt: new Date().toISOString(),
           status: "published",
+          ...(siteId ? { siteId } : {}),
+          ...(siteSlug ? { siteSlug } : {}),
         }
         const existing = JSON.parse(localStorage.getItem("itgrows_published_posts") || "[]") as BlogPost[]
         existing.unshift(post)
         localStorage.setItem("itgrows_published_posts", JSON.stringify(existing))
-        setBlogSlug(post.slug)
+        setBlogSlug(siteSlug ? `${siteSlug}/${rawSlug}` : rawSlug)
         setBlogPublished(true)
         setPublishedSiteName(siteName ?? "itgrows.ai Blog")
       }
     } catch {
+      const rawSlug = slugify(article.title)
       const post: BlogPost = {
         id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-        slug: slugify(article.title),
+        slug: rawSlug,
         title: article.title,
         content: article.content,
         metaDescription: article.metaDescription || "",
@@ -194,6 +205,8 @@ export default function SeoResultsPage() {
         keyword: article.keyword || "",
         publishedAt: new Date().toISOString(),
         status: "published",
+        ...(siteId ? { siteId } : {}),
+        ...(siteSlug ? { siteSlug } : {}),
       }
       try {
         const existing = JSON.parse(localStorage.getItem("itgrows_published_posts") || "[]") as BlogPost[]
@@ -202,7 +215,7 @@ export default function SeoResultsPage() {
       } catch {
         // ignore
       }
-      setBlogSlug(post.slug)
+      setBlogSlug(siteSlug ? `${siteSlug}/${rawSlug}` : rawSlug)
       setBlogPublished(true)
       setPublishedSiteName(siteName ?? "itgrows.ai Blog")
     }
@@ -223,12 +236,13 @@ export default function SeoResultsPage() {
     const { article } = result
 
     if (defaultSite.platform === "itgrows_blog") {
-      await publishToItgrowsBlog(article, defaultSite.name)
+      await publishToItgrowsBlog(article, defaultSite.name, defaultSite.id, defaultSite.siteSlug)
       setBlogPublishing(false)
       return
     }
 
     // WordPress or custom sites via /api/publish with siteToken
+    // Also mirror to hosted itgrows blog
     try {
       const pubRes = await fetch("/api/publish", {
         method: "POST",
@@ -245,19 +259,18 @@ export default function SeoResultsPage() {
       if (pubRes.ok) {
         const pubData = (await pubRes.json()) as { success?: boolean; url?: string }
         if (pubData.success) {
-          setBlogSlug(null)
-          setBlogPublished(true)
-          setPublishedSiteName(defaultSite.name)
+          // Also publish to hosted itgrows blog as a mirror
+          await publishToItgrowsBlog(article, defaultSite.name, defaultSite.id, defaultSite.siteSlug)
         } else {
           // Fallback to internal blog
-          await publishToItgrowsBlog(article, defaultSite.name)
+          await publishToItgrowsBlog(article, defaultSite.name, defaultSite.id, defaultSite.siteSlug)
         }
       } else {
         // Fallback to internal blog
-        await publishToItgrowsBlog(article, defaultSite.name)
+        await publishToItgrowsBlog(article, defaultSite.name, defaultSite.id, defaultSite.siteSlug)
       }
     } catch {
-      await publishToItgrowsBlog(article, defaultSite.name)
+      await publishToItgrowsBlog(article, defaultSite.name, defaultSite.id, defaultSite.siteSlug)
     } finally {
       setBlogPublishing(false)
     }

@@ -7,6 +7,10 @@ interface PublishRequest {
   title: string
   content: string
   metaDescription?: string
+  siteId?: string
+  siteSlug?: string
+  keywords?: string[]
+  keyword?: string
 }
 
 interface PublishResult {
@@ -26,7 +30,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: "Invalid request body" }, { status: 400 })
   }
 
-  const { siteUrl, siteToken, platform, title, content, metaDescription } = body
+  const { siteUrl, siteToken, platform, title, content, metaDescription, siteId, siteSlug, keywords, keyword } = body
 
   if (!siteUrl || !siteToken || !title || !content) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
@@ -64,6 +68,30 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     }
 
     const data = (await res.json()) as PublishResult
+
+    // If publish to external site succeeded and we have site context,
+    // also mirror the article to the itgrows hosted blog
+    if (data.success && (siteId || siteSlug)) {
+      try {
+        const baseUrl = req.nextUrl.origin
+        await fetch(`${baseUrl}/api/blog/posts`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            title,
+            content,
+            metaDescription: metaDescription ?? "",
+            keywords: keywords ?? [],
+            keyword: keyword ?? "",
+            ...(siteId ? { siteId } : {}),
+            ...(siteSlug ? { siteSlug } : {}),
+          }),
+        })
+      } catch {
+        // mirroring is best-effort — don't fail the main response
+      }
+    }
+
     return NextResponse.json(data)
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Request failed"

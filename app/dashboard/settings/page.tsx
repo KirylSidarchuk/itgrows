@@ -13,6 +13,7 @@ import {
   saveConnectedSites,
   platformLabel,
   generateSiteToken,
+  generateSiteSlug,
 } from "@/lib/connectedSites"
 import type { DetectedPlatform, DetectPlatformResult } from "@/app/api/detect-platform/route"
 
@@ -149,6 +150,7 @@ function AddSiteWizard({ onSaved, onCancel }: AddSiteWizardProps) {
       url: normalUrl,
       platform: detected === "wordpress" ? "wordpress" : detected === "shopify" ? "shopify" : detected === "webflow" ? "webflow" : "custom",
       siteToken: token,
+      siteSlug: generateSiteSlug(derivedName, normalUrl),
       isDefault: false,
       connectedAt: new Date().toISOString(),
     }
@@ -162,6 +164,7 @@ function AddSiteWizard({ onSaved, onCancel }: AddSiteWizardProps) {
       url: normalUrl,
       platform: "shopify",
       siteToken: shopifyAccessToken.trim(),
+      siteSlug: generateSiteSlug(derivedName, normalUrl),
       isDefault: false,
       connectedAt: new Date().toISOString(),
     }
@@ -175,6 +178,7 @@ function AddSiteWizard({ onSaved, onCancel }: AddSiteWizardProps) {
       url: normalUrl,
       platform: "webflow",
       siteToken: webflowApiToken.trim(),
+      siteSlug: generateSiteSlug(derivedName, normalUrl),
       isDefault: false,
       connectedAt: new Date().toISOString(),
     }
@@ -600,40 +604,57 @@ export default function SettingsPage() {
             )}
 
             {sites.map((site) => (
-              <div
-                key={site.id}
-                className="flex items-center justify-between p-4 rounded-xl bg-slate-700/40 border border-white/10"
-              >
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
-                    <span className="text-white font-medium text-sm">{site.name}</span>
-                    {site.isDefault && (
-                      <span className="px-2 py-0.5 rounded-full bg-green-900/40 border border-green-500/30 text-green-400 text-xs">
-                        Default
+              <div key={site.id} className="space-y-2">
+                <div className="flex items-center justify-between p-4 rounded-xl bg-slate-700/40 border border-white/10">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-white font-medium text-sm">{site.name}</span>
+                      {site.isDefault && (
+                        <span className="px-2 py-0.5 rounded-full bg-green-900/40 border border-green-500/30 text-green-400 text-xs">
+                          Default
+                        </span>
+                      )}
+                      <span className="px-2 py-0.5 rounded-full bg-violet-900/40 border border-violet-500/30 text-violet-300 text-xs">
+                        {platformLabel(site.platform)}
                       </span>
-                    )}
-                    <span className="px-2 py-0.5 rounded-full bg-violet-900/40 border border-violet-500/30 text-violet-300 text-xs">
-                      {platformLabel(site.platform)}
-                    </span>
+                    </div>
+                    <p className="text-slate-400 text-xs mt-0.5 truncate">{site.url}</p>
                   </div>
-                  <p className="text-slate-400 text-xs mt-0.5 truncate">{site.url}</p>
-                </div>
-                <div className="flex items-center gap-2 ml-3 shrink-0">
-                  {!site.isDefault && (
+                  <div className="flex items-center gap-2 ml-3 shrink-0">
+                    {!site.isDefault && (
+                      <button
+                        onClick={() => handleSetDefault(site.id)}
+                        className="text-xs text-slate-400 hover:text-violet-300 transition-colors"
+                      >
+                        Set default
+                      </button>
+                    )}
                     <button
-                      onClick={() => handleSetDefault(site.id)}
-                      className="text-xs text-slate-400 hover:text-violet-300 transition-colors"
+                      onClick={() => handleDelete(site.id)}
+                      className="text-xs text-red-400 hover:text-red-300 transition-colors"
                     >
-                      Set default
+                      Remove
                     </button>
-                  )}
-                  <button
-                    onClick={() => handleDelete(site.id)}
-                    className="text-xs text-red-400 hover:text-red-300 transition-colors"
-                  >
-                    Remove
-                  </button>
+                  </div>
                 </div>
+                {site.siteSlug && (
+                  <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-green-900/10 border border-green-500/20 text-sm">
+                    <span className="text-green-400 shrink-0">&#10003; Connected!</span>
+                    <span className="text-slate-400 text-xs">Your hosted blog is ready at:</span>
+                    <a
+                      href={`/blog/${site.siteSlug}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-violet-300 hover:text-violet-200 text-xs font-mono truncate flex-1"
+                    >
+                      itgrows.ai/blog/{site.siteSlug}
+                    </a>
+                    <CopyButton
+                      text={`https://itgrows.ai/blog/${site.siteSlug}`}
+                      label="Copy link"
+                    />
+                  </div>
+                )}
               </div>
             ))}
 

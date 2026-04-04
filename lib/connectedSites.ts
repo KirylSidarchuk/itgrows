@@ -4,8 +4,14 @@ export interface ConnectedSite {
   url: string
   platform: "wordpress" | "shopify" | "webflow" | "custom" | "itgrows_blog"
   siteToken: string // unique UUID for this site
+  siteSlug: string  // slug for hosted blog URL: /blog/[siteSlug]
   isDefault: boolean
   connectedAt: string
+}
+
+export function generateSiteSlug(name: string, url: string): string {
+  const base = name || (() => { try { return new URL(url).hostname } catch { return url } })()
+  return base.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")
 }
 
 const STORAGE_KEY = "itgrows_connected_sites"

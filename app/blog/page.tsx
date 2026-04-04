@@ -16,12 +16,27 @@ function formatDate(iso: string): string {
   })
 }
 
+interface ClientBlog {
+  siteSlug: string
+  displayName: string
+  count: number
+}
+
+function slugToDisplayName(slug: string): string {
+  return slug
+    .split("-")
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ")
+}
+
 export default function BlogPage() {
   const [posts, setPosts] = useState<BlogPost[]>([])
+  const [clientBlogs, setClientBlogs] = useState<ClientBlog[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     async function fetchPosts() {
+      let allPosts: BlogPost[] = []
       try {
         const res = await fetch("/api/blog/posts")
         const data = (await res.json()) as { posts: BlogPost[]; storage: string }
@@ -31,25 +46,38 @@ export default function BlogPage() {
           try {
             const local = localStorage.getItem("itgrows_published_posts")
             if (local) {
-              setPosts(JSON.parse(local) as BlogPost[])
+              allPosts = JSON.parse(local) as BlogPost[]
             }
           } catch {
             // ignore
           }
         } else {
-          setPosts(data.posts)
+          allPosts = data.posts
         }
       } catch {
         // On error, try localStorage
         try {
           const local = localStorage.getItem("itgrows_published_posts")
           if (local) {
-            setPosts(JSON.parse(local) as BlogPost[])
+            allPosts = JSON.parse(local) as BlogPost[]
           }
         } catch {
           // ignore
         }
       } finally {
+        // Build client blog list from unique siteSlug values
+        const slugMap = new Map<string, number>()
+        for (const p of allPosts) {
+          if (p.siteSlug) {
+            slugMap.set(p.siteSlug, (slugMap.get(p.siteSlug) ?? 0) + 1)
+          }
+        }
+        const blogs: ClientBlog[] = []
+        slugMap.forEach((count, siteSlug) => {
+          blogs.push({ siteSlug, displayName: slugToDisplayName(siteSlug), count })
+        })
+        setClientBlogs(blogs)
+        setPosts(allPosts)
         setLoading(false)
       }
     }
@@ -114,9 +142,39 @@ export default function BlogPage() {
         </div>
       </section>
 
-      {/* Posts */}
+      {/* Featured Client Blogs */}
+      {!loading && clientBlogs.length > 0 && (
+        <section className="px-6 pb-12">
+          <div className="max-w-6xl mx-auto">
+            <h2 className="text-2xl font-bold text-white mb-6">Featured Blogs</h2>
+            <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {clientBlogs.map((blog) => (
+                <Link
+                  key={blog.siteSlug}
+                  href={`/blog/${blog.siteSlug}`}
+                  className="block group"
+                >
+                  <div className="bg-slate-800/60 border border-white/10 rounded-2xl p-5 hover:border-violet-500/40 hover:bg-slate-800 transition-all">
+                    <h3 className="text-white font-semibold text-base mb-1 group-hover:text-violet-300 transition-colors">
+                      {blog.displayName} Blog
+                    </h3>
+                    <p className="text-slate-500 text-xs">
+                      {blog.count} {blog.count === 1 ? "article" : "articles"}
+                    </p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Latest Articles */}
       <section className="px-6 pb-24">
         <div className="max-w-6xl mx-auto">
+          {clientBlogs.length > 0 && !loading && (
+            <h2 className="text-2xl font-bold text-white mb-6">Latest Articles</h2>
+          )}
           {loading ? (
             <div className="text-center py-20 text-slate-400">Loading articles...</div>
           ) : posts.length === 0 ? (
@@ -134,8 +192,11 @@ export default function BlogPage() {
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {posts.map((post) => {
                 const excerpt = stripHtml(post.content).slice(0, 150)
+                const href = post.siteSlug
+                  ? `/blog/${post.siteSlug}/${post.slug}`
+                  : `/blog/${post.slug}`
                 return (
-                  <Link key={post.id} href={`/blog/${post.slug}`} className="block group">
+                  <Link key={post.id} href={href} className="block group">
                     <div className="h-full bg-slate-800/60 border border-white/10 rounded-2xl p-6 hover:border-violet-500/40 hover:bg-slate-800 transition-all">
                       <div className="flex flex-wrap gap-1.5 mb-3">
                         {post.keywords.slice(0, 3).map((kw) => (
@@ -154,7 +215,12 @@ export default function BlogPage() {
                         {excerpt}
                         {excerpt.length >= 150 ? "…" : ""}
                       </p>
-                      <p className="text-slate-500 text-xs">{formatDate(post.publishedAt)}</p>
+                      <div className="flex items-center justify-between">
+                        <p className="text-slate-500 text-xs">{formatDate(post.publishedAt)}</p>
+                        {post.siteSlug && (
+                          <span className="text-xs text-violet-400">{slugToDisplayName(post.siteSlug)}</span>
+                        )}
+                      </div>
                     </div>
                   </Link>
                 )

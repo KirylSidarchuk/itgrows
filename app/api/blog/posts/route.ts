@@ -10,6 +10,8 @@ export interface BlogPost {
   keyword: string
   publishedAt: string
   status: "published"
+  siteId?: string    // id from ConnectedSite, if published for a client
+  siteSlug?: string  // client slug for URL: /blog/[siteSlug]/[slug]
 }
 
 function slugify(text: string): string {
@@ -59,14 +61,20 @@ async function saveBlobPosts(posts: BlogPost[]): Promise<boolean> {
   }
 }
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   const hasBlobToken = !!process.env.BLOB_READ_WRITE_TOKEN
 
   if (!hasBlobToken) {
     return NextResponse.json({ posts: [], storage: "none" })
   }
 
-  const posts = await getBlobPosts()
+  const { searchParams } = new URL(req.url)
+  const siteId = searchParams.get("siteId")
+
+  let posts = await getBlobPosts()
+  if (siteId) {
+    posts = posts.filter((p) => p.siteId === siteId)
+  }
   return NextResponse.json({ posts, storage: "blob" })
 }
 
@@ -78,6 +86,8 @@ export async function POST(req: NextRequest) {
       metaDescription: string
       keywords: string[]
       keyword: string
+      siteId?: string
+      siteSlug?: string
     }
 
     if (!body.title || !body.content) {
@@ -94,6 +104,8 @@ export async function POST(req: NextRequest) {
       keyword: body.keyword || "",
       publishedAt: new Date().toISOString(),
       status: "published",
+      ...(body.siteId ? { siteId: body.siteId } : {}),
+      ...(body.siteSlug ? { siteSlug: body.siteSlug } : {}),
     }
 
     const hasBlobToken = !!process.env.BLOB_READ_WRITE_TOKEN
