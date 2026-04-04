@@ -22,7 +22,7 @@ export interface Task {
   articleData?: ArticleData
 }
 
-const STORAGE_KEY = "ge_tasks"
+const STORAGE_KEY = "itgrows_tasks_v2"
 
 export function getTasks(): Task[] {
   if (typeof window === "undefined") return []

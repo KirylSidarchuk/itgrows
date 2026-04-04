@@ -205,9 +205,9 @@ export default function SeoAutopilotPage() {
         articleData,
       }
       try {
-        const existingTasks = JSON.parse(localStorage.getItem("ge_tasks") || "[]")
+        const existingTasks = JSON.parse(localStorage.getItem("itgrows_tasks_v2") || "[]")
         existingTasks.unshift(newTask)
-        localStorage.setItem("ge_tasks", JSON.stringify(existingTasks))
+        localStorage.setItem("itgrows_tasks_v2", JSON.stringify(existingTasks))
       } catch {
         // ignore
       }
