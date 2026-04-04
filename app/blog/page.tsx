@@ -94,7 +94,7 @@ export default function BlogPage() {
             href="/"
             className="text-xl font-bold bg-gradient-to-r from-violet-600 to-pink-500 bg-clip-text text-transparent"
           >
-            itgrows.ai
+            ItGrows.ai
           </Link>
           <div className="hidden md:flex items-center gap-6 text-sm text-slate-600">
             <a href="/#features" className="hover:text-[#1b1916] transition-colors">
@@ -130,7 +130,7 @@ export default function BlogPage() {
         <div className="absolute top-10 left-1/2 -translate-x-1/2 w-[500px] h-[200px] bg-violet-400/10 rounded-full blur-3xl pointer-events-none" />
         <div className="relative max-w-3xl mx-auto">
           <h1 className="text-5xl font-extrabold mb-4 tracking-tight text-[#1b1916]">
-            itgrows.ai{" "}
+            ItGrows.ai{" "}
             <span className="bg-gradient-to-r from-violet-600 to-pink-500 bg-clip-text text-transparent">
               Blog
             </span>
