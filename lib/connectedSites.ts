@@ -2,19 +2,17 @@ export interface ConnectedSite {
   id: string
   name: string
   url: string
-  platform: "wordpress" | "shopify" | "webflow" | "itgrows_blog"
-  credentials?: {
-    username?: string
-    appPassword?: string
-    accessToken?: string
-    blogId?: string
-    apiToken?: string
-    collectionId?: string
-  }
+  platform: "wordpress" | "shopify" | "webflow" | "custom" | "itgrows_blog"
+  siteToken: string // unique UUID for this site
   isDefault: boolean
+  connectedAt: string
 }
 
 const STORAGE_KEY = "itgrows_connected_sites"
+
+export function generateSiteToken(): string {
+  return "igt_" + crypto.randomUUID().replace(/-/g, "")
+}
 
 export function getConnectedSites(): ConnectedSite[] {
   if (typeof window === "undefined") return []
@@ -46,6 +44,7 @@ export function platformLabel(platform: ConnectedSite["platform"]): string {
     wordpress: "WordPress",
     shopify: "Shopify",
     webflow: "Webflow",
+    custom: "Custom Website",
     itgrows_blog: "itgrows.ai Blog",
   }
   return labels[platform]

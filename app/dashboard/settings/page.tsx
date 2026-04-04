@@ -12,71 +12,33 @@ import {
   getConnectedSites,
   saveConnectedSites,
   platformLabel,
+  generateSiteToken,
 } from "@/lib/connectedSites"
 import type { DetectedPlatform, DetectPlatformResult } from "@/app/api/detect-platform/route"
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-type Platform = ConnectedSite["platform"]
-type FormStep = "url" | "detecting" | "detected" | "credentials"
-
-// Platforms that have full integration support
-type SupportedPlatform = "wordpress" | "shopify" | "webflow"
-
-const SUPPORTED_PLATFORMS: SupportedPlatform[] = ["wordpress", "shopify", "webflow"]
-
-const PLATFORM_META: Record<
-  SupportedPlatform,
-  { label: string; icon: string; description: string }
-> = {
-  wordpress: {
-    label: "WordPress",
-    icon: "🌐",
-    description: "We can automatically publish articles to your WordPress blog.",
-  },
-  shopify: {
-    label: "Shopify",
-    icon: "🛒",
-    description: "We can automatically publish articles to your Shopify blog.",
-  },
-  webflow: {
-    label: "Webflow",
-    icon: "⚡",
-    description: "We can automatically publish articles to your Webflow CMS collection.",
-  },
-}
-
-function isSupportedPlatform(p: DetectedPlatform): p is SupportedPlatform {
-  return SUPPORTED_PLATFORMS.includes(p as SupportedPlatform)
-}
+type FormStep = "url" | "detecting" | "detected"
 
 function generateId(): string {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 8)
 }
 
-// ─── Integration guides ───────────────────────────────────────────────────────
-
-function WordPressGuide() {
-  return (
-    <div className="rounded-xl bg-slate-700/30 border border-white/10 p-4 space-y-2 text-sm">
-      <p className="text-slate-300 font-medium">How to get Application Password</p>
-      <ol className="list-decimal list-inside space-y-1 text-slate-400">
-        <li>Go to WordPress Admin → Users → Your Profile</li>
-        <li>Scroll down to &quot;Application Passwords&quot;</li>
-        <li>Enter name <span className="text-violet-300">itgrows.ai</span> → click Add</li>
-        <li>Copy the generated password and paste it below</li>
-      </ol>
-    </div>
-  )
-}
+// ─── Shopify guide ────────────────────────────────────────────────────────────
 
 function ShopifyGuide() {
   return (
     <div className="rounded-xl bg-slate-700/30 border border-white/10 p-4 space-y-2 text-sm">
-      <p className="text-slate-300 font-medium">How to get Access Token &amp; Blog ID</p>
+      <p className="text-slate-300 font-medium">How to get your Shopify API Token</p>
+      <p className="text-slate-400 text-xs">
+        This is an API token, not your password. It is safe to share with third-party apps.
+      </p>
       <ol className="list-decimal list-inside space-y-1 text-slate-400">
         <li>Go to Shopify Admin → Settings → Apps and sales channels → Develop apps</li>
-        <li>Create a new app → configure Admin API scopes: <span className="text-violet-300">write_content</span></li>
+        <li>
+          Create a new app → configure Admin API scopes:{" "}
+          <span className="text-violet-300">write_content</span>
+        </li>
         <li>Install app → copy the Admin API access token</li>
         <li>Find Blog ID: Admin → Online Store → Blog posts → the URL contains the blog ID</li>
       </ol>
@@ -87,13 +49,37 @@ function ShopifyGuide() {
 function WebflowGuide() {
   return (
     <div className="rounded-xl bg-slate-700/30 border border-white/10 p-4 space-y-2 text-sm">
-      <p className="text-slate-300 font-medium">How to get API Token &amp; Collection ID</p>
+      <p className="text-slate-300 font-medium">How to get your Webflow API Token</p>
+      <p className="text-slate-400 text-xs">
+        This is an API token, not your password. It is safe to share with third-party apps.
+      </p>
       <ol className="list-decimal list-inside space-y-1 text-slate-400">
         <li>Go to Webflow → Site Settings → Integrations → API Access</li>
         <li>Generate a new API key and copy it</li>
         <li>Find Collection ID: CMS → your blog collection → settings</li>
       </ol>
     </div>
+  )
+}
+
+// ─── Copy button ──────────────────────────────────────────────────────────────
+
+function CopyButton({ text, label }: { text: string; label: string }) {
+  const [copied, setCopied] = useState(false)
+  const handleCopy = () => {
+    navigator.clipboard.writeText(text).catch(() => {})
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+  return (
+    <Button
+      onClick={handleCopy}
+      size="sm"
+      variant="outline"
+      className="border-violet-500/40 text-violet-300 hover:bg-violet-500/10 text-xs"
+    >
+      {copied ? "Copied!" : label}
+    </Button>
   )
 }
 
@@ -107,30 +93,27 @@ interface AddSiteWizardProps {
 function AddSiteWizard({ onSaved, onCancel }: AddSiteWizardProps) {
   const [step, setStep] = useState<FormStep>("url")
   const [inputUrl, setInputUrl] = useState("")
-
-  // Detection result
-  const [detected, setDetected] = useState<DetectedPlatform>("unknown")
-  const [selectedPlatform, setSelectedPlatform] = useState<SupportedPlatform>("wordpress")
-
-  // Credentials
+  const [detected, setDetected] = useState<DetectedPlatform>("custom")
   const [siteName, setSiteName] = useState("")
-  const [wpUsername, setWpUsername] = useState("")
-  const [wpAppPassword, setWpAppPassword] = useState("")
+
+  // WordPress plugin flow
+  const [wpToken, setWpToken] = useState("")
+
+  // Custom / Next.js snippet flow — pre-generate a token
+  const [generatedToken] = useState(() => generateSiteToken())
+
+  // Shopify fields
   const [shopifyAccessToken, setShopifyAccessToken] = useState("")
   const [shopifyBlogId, setShopifyBlogId] = useState("")
+
+  // Webflow fields
   const [webflowApiToken, setWebflowApiToken] = useState("")
   const [webflowCollectionId, setWebflowCollectionId] = useState("")
-
-  const [notifyRequested, setNotifyRequested] = useState(false)
-
-  const activePlatform: SupportedPlatform =
-    isSupportedPlatform(detected) ? detected : selectedPlatform
 
   // ── Step 1: detect ────────────────────────────────────────────────────────
   const handleAnalyze = async () => {
     if (!inputUrl.trim()) return
     setStep("detecting")
-
     try {
       const res = await fetch("/api/detect-platform", {
         method: "POST",
@@ -139,63 +122,63 @@ function AddSiteWizard({ onSaved, onCancel }: AddSiteWizardProps) {
       })
       const data: DetectPlatformResult = await res.json()
       setDetected(data.platform)
-      if (isSupportedPlatform(data.platform)) {
-        setSelectedPlatform(data.platform)
-      }
     } catch {
-      setDetected("unknown")
+      setDetected("custom")
     }
-
     setStep("detected")
   }
 
-  // ── Step 3: save ──────────────────────────────────────────────────────────
-  const handleAddSite = () => {
-    const platform = activePlatform
-    const credentials: ConnectedSite["credentials"] = {}
+  const normalUrl = inputUrl.trim().startsWith("http")
+    ? inputUrl.trim()
+    : "https://" + inputUrl.trim()
 
-    if (platform === "wordpress") {
-      credentials.username = wpUsername
-      credentials.appPassword = wpAppPassword
-    } else if (platform === "shopify") {
-      credentials.accessToken = shopifyAccessToken
-      credentials.blogId = shopifyBlogId
-    } else if (platform === "webflow") {
-      credentials.apiToken = webflowApiToken
-      credentials.collectionId = webflowCollectionId
+  const derivedName = (() => {
+    if (siteName.trim()) return siteName.trim()
+    try {
+      return new URL(normalUrl).hostname
+    } catch {
+      return normalUrl
     }
+  })()
 
-    const normalUrl = inputUrl.trim().startsWith("http")
-      ? inputUrl.trim()
-      : "https://" + inputUrl.trim()
-
-    const derivedName =
-      siteName.trim() ||
-      (() => {
-        try {
-          return new URL(normalUrl).hostname
-        } catch {
-          return normalUrl
-        }
-      })()
-
+  // ── Step 3: save ──────────────────────────────────────────────────────────
+  const handleConnect = (token: string) => {
     const newSite: ConnectedSite = {
       id: generateId(),
       name: derivedName,
       url: normalUrl,
-      platform: platform as Platform,
-      credentials: Object.keys(credentials).length > 0 ? credentials : undefined,
+      platform: detected === "wordpress" ? "wordpress" : detected === "shopify" ? "shopify" : detected === "webflow" ? "webflow" : "custom",
+      siteToken: token,
       isDefault: false,
+      connectedAt: new Date().toISOString(),
     }
-
     onSaved(newSite)
   }
 
-  const canSave = (): boolean => {
-    if (activePlatform === "wordpress") return !!(wpUsername.trim() && wpAppPassword.trim())
-    if (activePlatform === "shopify") return !!(shopifyAccessToken.trim() && shopifyBlogId.trim())
-    if (activePlatform === "webflow") return !!(webflowApiToken.trim() && webflowCollectionId.trim())
-    return false
+  const handleConnectShopify = () => {
+    const newSite: ConnectedSite = {
+      id: generateId(),
+      name: derivedName,
+      url: normalUrl,
+      platform: "shopify",
+      siteToken: shopifyAccessToken.trim(),
+      isDefault: false,
+      connectedAt: new Date().toISOString(),
+    }
+    onSaved(newSite)
+  }
+
+  const handleConnectWebflow = () => {
+    const newSite: ConnectedSite = {
+      id: generateId(),
+      name: derivedName,
+      url: normalUrl,
+      platform: "webflow",
+      siteToken: webflowApiToken.trim(),
+      isDefault: false,
+      connectedAt: new Date().toISOString(),
+    }
+    onSaved(newSite)
   }
 
   // ── Render: Step 1 — URL ──────────────────────────────────────────────────
@@ -203,7 +186,6 @@ function AddSiteWizard({ onSaved, onCancel }: AddSiteWizardProps) {
     return (
       <div className="space-y-5 pt-4 border-t border-white/10">
         <h3 className="text-white font-semibold text-base">Connect Your Website</h3>
-
         <div className="space-y-2">
           <Label className="text-slate-300 text-sm">Website URL</Label>
           <Input
@@ -214,7 +196,6 @@ function AddSiteWizard({ onSaved, onCancel }: AddSiteWizardProps) {
             className="bg-slate-700 border-white/10 text-white placeholder:text-slate-500 focus:border-violet-500 text-sm"
           />
         </div>
-
         <div className="flex gap-3">
           <Button
             onClick={handleAnalyze}
@@ -246,19 +227,8 @@ function AddSiteWizard({ onSaved, onCancel }: AddSiteWizardProps) {
             fill="none"
             viewBox="0 0 24 24"
           >
-            <circle
-              className="opacity-25"
-              cx="12"
-              cy="12"
-              r="10"
-              stroke="currentColor"
-              strokeWidth="4"
-            />
-            <path
-              className="opacity-75"
-              fill="currentColor"
-              d="M4 12a8 8 0 018-8v8H4z"
-            />
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
           </svg>
           <span className="text-slate-300 text-sm">Detecting your platform...</span>
         </div>
@@ -266,208 +236,74 @@ function AddSiteWizard({ onSaved, onCancel }: AddSiteWizardProps) {
     )
   }
 
-  // ── Render: Step 3 — Detected + credentials ───────────────────────────────
-  const isUnsupported =
-    detected === "wix" || detected === "squarespace"
-  const isUnknown = detected === "unknown"
+  // ── Render: Step 3 — Platform-specific install flow ───────────────────────
+
+  const snippetCode = `// Add to your API routes or server
+// itgrows.ai publishing endpoint
+export async function POST(req) {
+  const { token, title, content, metaDescription } = await req.json()
+  if (token !== process.env.ITGROWS_SITE_TOKEN) {
+    return Response.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+  // Save article to your database/CMS here
+  console.log('New article from itgrows.ai:', title)
+  return Response.json({ success: true })
+}`
 
   return (
     <div className="space-y-5 pt-4 border-t border-white/10">
-      {/* Detection result card */}
-      <div className="rounded-xl bg-slate-700/40 border border-white/10 p-4 space-y-1">
-        {isSupportedPlatform(detected) ? (
-          <>
-            <div className="flex items-center gap-2">
-              <span className="text-2xl">{PLATFORM_META[detected].icon}</span>
-              <span className="text-white font-semibold">
-                {PLATFORM_META[detected].label} detected
-              </span>
-            </div>
-            <p className="text-slate-400 text-xs">{inputUrl}</p>
-            <p className="text-green-400 text-sm flex items-center gap-1 mt-1">
-              <span>&#10003;</span> {PLATFORM_META[detected].description}
-            </p>
-          </>
-        ) : isUnsupported ? (
-          <>
-            <div className="flex items-center gap-2">
-              <span className="text-2xl">{detected === "wix" ? "🔲" : "⬛"}</span>
-              <span className="text-white font-semibold capitalize">{detected} detected</span>
-            </div>
-            <p className="text-slate-400 text-xs">{inputUrl}</p>
-          </>
-        ) : (
-          <>
-            <p className="text-slate-300 font-medium">Platform not detected</p>
-            <p className="text-slate-400 text-xs">{inputUrl}</p>
-          </>
-        )}
+      {/* Detection badge */}
+      <div className="rounded-xl bg-slate-700/40 border border-white/10 p-4 flex items-center gap-3">
+        <span className="text-green-400 text-lg">&#10003;</span>
+        <div>
+          <p className="text-white font-semibold text-sm">
+            {detected === "wordpress"
+              ? "WordPress detected"
+              : detected === "shopify"
+              ? "Shopify detected"
+              : detected === "webflow"
+              ? "Webflow detected"
+              : detected === "nextjs"
+              ? "Next.js / React detected"
+              : "Custom website detected"}
+          </p>
+          <p className="text-slate-400 text-xs">{inputUrl}</p>
+        </div>
       </div>
 
-      {/* Unsupported platforms */}
-      {isUnsupported && (
-        <div className="rounded-xl bg-amber-900/20 border border-amber-500/20 p-4 text-sm text-amber-300 space-y-3">
-          <p>
-            Direct API integration with{" "}
-            <span className="capitalize font-medium">{detected}</span> is not supported yet.
-            We&apos;ll notify you when it&apos;s available.
-          </p>
-          {!notifyRequested ? (
-            <Button
-              onClick={() => setNotifyRequested(true)}
-              size="sm"
-              className="bg-amber-600/30 border border-amber-500/40 text-amber-200 hover:bg-amber-600/50"
-            >
-              Notify Me
-            </Button>
-          ) : (
-            <p className="text-green-400 text-xs">&#10003; You&apos;re on the list!</p>
-          )}
-        </div>
-      )}
-
-      {/* Unknown → manual platform selection */}
-      {isUnknown && (
-        <div className="space-y-2">
-          <p className="text-slate-400 text-sm">Select manually:</p>
-          <div className="flex gap-2 flex-wrap">
-            {SUPPORTED_PLATFORMS.map((p) => (
-              <button
-                key={p}
-                type="button"
-                onClick={() => setSelectedPlatform(p)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl border text-sm transition-all ${
-                  selectedPlatform === p
-                    ? "border-violet-500 bg-violet-500/10 text-white"
-                    : "border-white/10 bg-slate-700/40 text-slate-300 hover:border-white/20"
-                }`}
-              >
-                <span>{PLATFORM_META[p].icon}</span>
-                {PLATFORM_META[p].label}
-              </button>
-            ))}
+      {/* ── WordPress ── */}
+      {detected === "wordpress" && (
+        <div className="space-y-4">
+          <div className="rounded-xl bg-slate-700/30 border border-white/10 p-4 space-y-3 text-sm">
+            <p className="text-slate-300 font-medium">Install our free plugin:</p>
+            <ol className="list-decimal list-inside space-y-2 text-slate-400">
+              <li>
+                <a
+                  href="/api/wp-plugin/download"
+                  className="text-violet-400 hover:text-violet-300 underline"
+                >
+                  Download itgrows.ai WordPress Plugin
+                </a>
+              </li>
+              <li>Go to WP Admin → Plugins → Add New → Upload Plugin → Install → Activate</li>
+              <li>
+                Go to <span className="text-violet-300">Settings → itgrows.ai</span> → Copy the
+                Site Token shown there
+              </li>
+              <li>Paste it below</li>
+            </ol>
           </div>
-        </div>
-      )}
 
-      {/* Credentials section — only for supported platforms */}
-      {(isSupportedPlatform(detected) || isUnknown) && (
-        <>
-          {/* WordPress */}
-          {activePlatform === "wordpress" && (
-            <div className="space-y-4">
-              <WordPressGuide />
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-2">
-                  <Label className="text-slate-300 text-sm">Username</Label>
-                  <Input
-                    placeholder="admin"
-                    value={wpUsername}
-                    onChange={(e) => setWpUsername(e.target.value)}
-                    className="bg-slate-700 border-white/10 text-white placeholder:text-slate-500 focus:border-violet-500 text-sm"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <div className="flex items-center gap-1">
-                    <Label className="text-slate-300 text-sm">Application Password</Label>
-                    <a
-                      href="https://make.wordpress.org/core/2020/11/05/application-passwords-integration-guide/"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-violet-400 hover:text-violet-300 text-xs"
-                    >
-                      How to get Application Password →
-                    </a>
-                  </div>
-                  <Input
-                    type="password"
-                    placeholder="xxxx xxxx xxxx xxxx"
-                    value={wpAppPassword}
-                    onChange={(e) => setWpAppPassword(e.target.value)}
-                    className="bg-slate-700 border-white/10 text-white placeholder:text-slate-500 focus:border-violet-500 text-sm"
-                  />
-                </div>
-              </div>
-            </div>
-          )}
+          <div className="space-y-2">
+            <Label className="text-slate-300 text-sm">Site Token (from WP Admin)</Label>
+            <Input
+              placeholder="igt_..."
+              value={wpToken}
+              onChange={(e) => setWpToken(e.target.value)}
+              className="bg-slate-700 border-white/10 text-white placeholder:text-slate-500 focus:border-violet-500 text-sm font-mono"
+            />
+          </div>
 
-          {/* Shopify */}
-          {activePlatform === "shopify" && (
-            <div className="space-y-4">
-              <ShopifyGuide />
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-2">
-                  <div className="flex items-center gap-1">
-                    <Label className="text-slate-300 text-sm">Access Token</Label>
-                    <a
-                      href="https://help.shopify.com/en/manual/apps/app-types/custom-apps"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-violet-400 hover:text-violet-300 text-xs"
-                    >
-                      How to get →
-                    </a>
-                  </div>
-                  <Input
-                    type="password"
-                    placeholder="shpat_..."
-                    value={shopifyAccessToken}
-                    onChange={(e) => setShopifyAccessToken(e.target.value)}
-                    className="bg-slate-700 border-white/10 text-white placeholder:text-slate-500 focus:border-violet-500 text-sm"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-slate-300 text-sm">Blog ID</Label>
-                  <Input
-                    placeholder="123456789"
-                    value={shopifyBlogId}
-                    onChange={(e) => setShopifyBlogId(e.target.value)}
-                    className="bg-slate-700 border-white/10 text-white placeholder:text-slate-500 focus:border-violet-500 text-sm"
-                  />
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Webflow */}
-          {activePlatform === "webflow" && (
-            <div className="space-y-4">
-              <WebflowGuide />
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-2">
-                  <div className="flex items-center gap-1">
-                    <Label className="text-slate-300 text-sm">API Token</Label>
-                    <a
-                      href="https://developers.webflow.com/docs/access-token"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-violet-400 hover:text-violet-300 text-xs"
-                    >
-                      How to get →
-                    </a>
-                  </div>
-                  <Input
-                    type="password"
-                    placeholder="your-webflow-token"
-                    value={webflowApiToken}
-                    onChange={(e) => setWebflowApiToken(e.target.value)}
-                    className="bg-slate-700 border-white/10 text-white placeholder:text-slate-500 focus:border-violet-500 text-sm"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-slate-300 text-sm">Collection ID</Label>
-                  <Input
-                    placeholder="collection-id"
-                    value={webflowCollectionId}
-                    onChange={(e) => setWebflowCollectionId(e.target.value)}
-                    className="bg-slate-700 border-white/10 text-white placeholder:text-slate-500 focus:border-violet-500 text-sm"
-                  />
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Optional site name */}
           <div className="space-y-2">
             <Label className="text-slate-300 text-sm">
               Site Name <span className="text-slate-500">(optional)</span>
@@ -482,11 +318,11 @@ function AddSiteWizard({ onSaved, onCancel }: AddSiteWizardProps) {
 
           <div className="flex gap-3 pt-1">
             <Button
-              onClick={handleAddSite}
-              disabled={!canSave()}
+              onClick={() => handleConnect(wpToken.trim())}
+              disabled={!wpToken.trim()}
               className="bg-violet-600 hover:bg-violet-500 text-white"
             >
-              Add Site
+              Connect
             </Button>
             <Button
               onClick={() => setStep("url")}
@@ -496,18 +332,177 @@ function AddSiteWizard({ onSaved, onCancel }: AddSiteWizardProps) {
               ← Change URL
             </Button>
           </div>
-        </>
+        </div>
       )}
 
-      {/* Unsupported: only show Change URL */}
-      {isUnsupported && (
-        <Button
-          onClick={() => setStep("url")}
-          variant="outline"
-          className="border-white/20 text-slate-300 hover:bg-white/5"
-        >
-          ← Change URL
-        </Button>
+      {/* ── Custom / Next.js ── */}
+      {(detected === "custom" || detected === "nextjs") && (
+        <div className="space-y-4">
+          <div className="rounded-xl bg-slate-700/30 border border-white/10 p-4 space-y-3 text-sm">
+            <p className="text-slate-300 font-medium">
+              Add this snippet to your site to enable publishing:
+            </p>
+            <div className="relative">
+              <pre className="text-xs text-slate-300 bg-slate-900/60 rounded-lg p-3 overflow-auto font-mono whitespace-pre-wrap">
+                {snippetCode}
+              </pre>
+              <div className="mt-2">
+                <CopyButton text={snippetCode} label="Copy Snippet" />
+              </div>
+            </div>
+            <div className="mt-2">
+              <p className="text-slate-400 text-xs mb-2">Set environment variable:</p>
+              <div className="flex items-center gap-2">
+                <code className="text-xs text-violet-300 bg-slate-900/60 rounded px-2 py-1 font-mono">
+                  ITGROWS_SITE_TOKEN={generatedToken}
+                </code>
+                <CopyButton text={`ITGROWS_SITE_TOKEN=${generatedToken}`} label="Copy" />
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label className="text-slate-300 text-sm">
+              Site Name <span className="text-slate-500">(optional)</span>
+            </Label>
+            <Input
+              placeholder="My Blog"
+              value={siteName}
+              onChange={(e) => setSiteName(e.target.value)}
+              className="bg-slate-700 border-white/10 text-white placeholder:text-slate-500 focus:border-violet-500 text-sm"
+            />
+          </div>
+
+          <div className="flex gap-3 pt-1">
+            <Button
+              onClick={() => handleConnect(generatedToken)}
+              className="bg-violet-600 hover:bg-violet-500 text-white"
+            >
+              I&apos;ve installed it — Connect
+            </Button>
+            <Button
+              onClick={() => setStep("url")}
+              variant="outline"
+              className="border-white/20 text-slate-300 hover:bg-white/5"
+            >
+              ← Change URL
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* ── Shopify ── */}
+      {detected === "shopify" && (
+        <div className="space-y-4">
+          <ShopifyGuide />
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-2">
+              <Label className="text-slate-300 text-sm">Access Token</Label>
+              <Input
+                type="password"
+                placeholder="shpat_..."
+                value={shopifyAccessToken}
+                onChange={(e) => setShopifyAccessToken(e.target.value)}
+                className="bg-slate-700 border-white/10 text-white placeholder:text-slate-500 focus:border-violet-500 text-sm"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-slate-300 text-sm">Blog ID</Label>
+              <Input
+                placeholder="123456789"
+                value={shopifyBlogId}
+                onChange={(e) => setShopifyBlogId(e.target.value)}
+                className="bg-slate-700 border-white/10 text-white placeholder:text-slate-500 focus:border-violet-500 text-sm"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label className="text-slate-300 text-sm">
+              Site Name <span className="text-slate-500">(optional)</span>
+            </Label>
+            <Input
+              placeholder="My Store"
+              value={siteName}
+              onChange={(e) => setSiteName(e.target.value)}
+              className="bg-slate-700 border-white/10 text-white placeholder:text-slate-500 focus:border-violet-500 text-sm"
+            />
+          </div>
+
+          <div className="flex gap-3 pt-1">
+            <Button
+              onClick={handleConnectShopify}
+              disabled={!shopifyAccessToken.trim() || !shopifyBlogId.trim()}
+              className="bg-violet-600 hover:bg-violet-500 text-white"
+            >
+              Connect
+            </Button>
+            <Button
+              onClick={() => setStep("url")}
+              variant="outline"
+              className="border-white/20 text-slate-300 hover:bg-white/5"
+            >
+              ← Change URL
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* ── Webflow ── */}
+      {detected === "webflow" && (
+        <div className="space-y-4">
+          <WebflowGuide />
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-2">
+              <Label className="text-slate-300 text-sm">API Token</Label>
+              <Input
+                type="password"
+                placeholder="your-webflow-token"
+                value={webflowApiToken}
+                onChange={(e) => setWebflowApiToken(e.target.value)}
+                className="bg-slate-700 border-white/10 text-white placeholder:text-slate-500 focus:border-violet-500 text-sm"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-slate-300 text-sm">Collection ID</Label>
+              <Input
+                placeholder="collection-id"
+                value={webflowCollectionId}
+                onChange={(e) => setWebflowCollectionId(e.target.value)}
+                className="bg-slate-700 border-white/10 text-white placeholder:text-slate-500 focus:border-violet-500 text-sm"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label className="text-slate-300 text-sm">
+              Site Name <span className="text-slate-500">(optional)</span>
+            </Label>
+            <Input
+              placeholder="My Site"
+              value={siteName}
+              onChange={(e) => setSiteName(e.target.value)}
+              className="bg-slate-700 border-white/10 text-white placeholder:text-slate-500 focus:border-violet-500 text-sm"
+            />
+          </div>
+
+          <div className="flex gap-3 pt-1">
+            <Button
+              onClick={handleConnectWebflow}
+              disabled={!webflowApiToken.trim() || !webflowCollectionId.trim()}
+              className="bg-violet-600 hover:bg-violet-500 text-white"
+            >
+              Connect
+            </Button>
+            <Button
+              onClick={() => setStep("url")}
+              variant="outline"
+              className="border-white/20 text-slate-300 hover:bg-white/5"
+            >
+              ← Change URL
+            </Button>
+          </div>
+        </div>
       )}
     </div>
   )

@@ -4,9 +4,8 @@ export type DetectedPlatform =
   | "wordpress"
   | "shopify"
   | "webflow"
-  | "wix"
-  | "squarespace"
-  | "unknown"
+  | "nextjs"
+  | "custom"
 
 export interface DetectPlatformResult {
   platform: DetectedPlatform
@@ -108,33 +107,28 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       })
     }
 
-    // --- Wix ---
-    if (html.includes("wix.com") || html.includes("_wix_")) {
-      return NextResponse.json<DetectPlatformResult>({
-        platform: "wix",
-        confidence: "high",
-      })
-    }
-
-    // --- Squarespace ---
+    // --- Next.js / React ---
     if (
-      html.includes("squarespace.com") ||
-      html.includes("static.squarespace")
+      html.includes("__next") ||
+      html.includes("__next_data__") ||
+      html.includes("_next/static") ||
+      html.includes('"next"') ||
+      html.includes("react")
     ) {
       return NextResponse.json<DetectPlatformResult>({
-        platform: "squarespace",
+        platform: "nextjs",
         confidence: "high",
       })
     }
 
     return NextResponse.json<DetectPlatformResult>({
-      platform: "unknown",
+      platform: "custom",
       confidence: "low",
     })
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Fetch failed"
     return NextResponse.json(
-      { platform: "unknown", confidence: "low", error: message },
+      { platform: "custom", confidence: "low", error: message },
       { status: 200 }
     )
   }

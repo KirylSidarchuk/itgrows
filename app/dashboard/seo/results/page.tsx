@@ -228,36 +228,30 @@ export default function SeoResultsPage() {
       return
     }
 
-    // WordPress or other platforms via /api/seo/publish
+    // WordPress or custom sites via /api/publish with siteToken
     try {
-      const credentials =
-        defaultSite.platform === "wordpress"
-          ? {
-              siteUrl: defaultSite.url,
-              username: defaultSite.credentials?.username ?? "",
-              appPassword: defaultSite.credentials?.appPassword ?? "",
-            }
-          : defaultSite.platform === "shopify"
-          ? {
-              storeUrl: defaultSite.url,
-              accessToken: defaultSite.credentials?.accessToken ?? "",
-              blogId: defaultSite.credentials?.blogId ?? "",
-            }
-          : {
-              apiToken: defaultSite.credentials?.apiToken ?? "",
-              collectionId: defaultSite.credentials?.collectionId ?? "",
-            }
-
-      const pubRes = await fetch("/api/seo/publish", {
+      const pubRes = await fetch("/api/publish", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ platform: defaultSite.platform, credentials, article }),
+        body: JSON.stringify({
+          siteUrl: defaultSite.url,
+          siteToken: defaultSite.siteToken,
+          platform: defaultSite.platform,
+          title: article.title,
+          content: article.content,
+          metaDescription: article.metaDescription,
+        }),
       })
       if (pubRes.ok) {
-        const pubData = (await pubRes.json()) as { url?: string }
-        setBlogSlug(pubData.url ? null : null)
-        setBlogPublished(true)
-        setPublishedSiteName(defaultSite.name)
+        const pubData = (await pubRes.json()) as { success?: boolean; url?: string }
+        if (pubData.success) {
+          setBlogSlug(null)
+          setBlogPublished(true)
+          setPublishedSiteName(defaultSite.name)
+        } else {
+          // Fallback to internal blog
+          await publishToItgrowsBlog(article, defaultSite.name)
+        }
       } else {
         // Fallback to internal blog
         await publishToItgrowsBlog(article, defaultSite.name)
