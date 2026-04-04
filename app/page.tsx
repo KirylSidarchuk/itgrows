@@ -1,56 +1,39 @@
 import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 const features = [
   {
-    icon: "✍️",
     title: "AI Content Creation",
-    desc: "Generate SEO-optimized articles, blog posts, and social media content in seconds with our advanced AI.",
+    desc: "Generate SEO-optimized articles, blog posts, and social media content in seconds with our advanced AI models trained on top-performing content.",
   },
   {
-    icon: "📱",
     title: "Auto-Publishing",
-    desc: "Automatically publish to your website, Instagram, Twitter, LinkedIn, and Facebook on your schedule.",
+    desc: "Automatically publish to your website, Instagram, Twitter, LinkedIn, and Facebook on a schedule you define. No manual work required.",
   },
   {
-    icon: "🎯",
     title: "Google Ads on Autopilot",
-    desc: "AI configures and optimizes your Google Ads campaigns continuously for maximum ROI.",
+    desc: "AI configures and continuously optimizes your Google Ads campaigns for maximum ROI — without a single hour of manual management.",
   },
   {
-    icon: "🖼️",
-    title: "AI Image & Video Generation",
-    desc: "Create stunning visuals for your content automatically — no designer needed.",
-  },
-  {
-    icon: "📊",
-    title: "Growth Analytics",
-    desc: "Track traffic, engagement, and conversions in one dashboard. Know exactly what's working.",
-  },
-  {
-    icon: "🔄",
-    title: "Fully Automated Workflows",
-    desc: "Set your goals once. itgrows.ai handles research, creation, publishing, and reporting.",
+    title: "AI Image Generation",
+    desc: "Create on-brand visuals for every piece of content automatically. No designer, no stock photos, no delays.",
   },
 ]
 
 const steps = [
   {
     num: "01",
-    title: "Tell Us Your Goals",
-    desc: "Share your niche, audience, and business objectives. Takes 5 minutes.",
+    title: "Tell us your goals",
+    desc: "Share your niche, audience, and objectives. Takes five minutes. Our AI builds a full growth strategy from there.",
   },
   {
     num: "02",
-    title: "AI Gets to Work",
-    desc: "Our AI generates content, schedules posts, and configures ad campaigns automatically.",
+    title: "AI gets to work",
+    desc: "Content is generated, scheduled, and published. Ad campaigns launch and self-optimize. Everything runs without you.",
   },
   {
     num: "03",
-    title: "Watch Your Traffic Grow",
-    desc: "Sit back as organic traffic, social followers, and leads increase month over month.",
+    title: "Watch your traffic grow",
+    desc: "Organic traffic rises. Social following builds. Leads come in. You review the dashboard and focus on what matters.",
   },
 ]
 
@@ -59,16 +42,16 @@ const plans = [
     name: "Starter",
     price: "$49",
     period: "/month",
-    desc: "Perfect for solo entrepreneurs",
+    desc: "For solo entrepreneurs",
     features: [
-      "10 AI articles/month",
-      "30 social posts/month",
+      "10 AI articles per month",
+      "30 social posts per month",
       "1 Google Ads campaign",
-      "5 AI images/month",
+      "5 AI images per month",
       "1 website integration",
       "Email support",
     ],
-    cta: "Start Free Trial",
+    cta: "Start free trial",
     highlight: false,
   },
   {
@@ -77,22 +60,22 @@ const plans = [
     period: "/month",
     desc: "For growing businesses",
     features: [
-      "50 AI articles/month",
+      "50 AI articles per month",
       "Unlimited social posts",
       "5 Google Ads campaigns",
-      "50 AI images/month",
+      "50 AI images per month",
       "5 website integrations",
       "Priority support",
       "Advanced analytics",
     ],
-    cta: "Get Started",
+    cta: "Get started",
     highlight: true,
   },
   {
     name: "Agency",
     price: "$399",
     period: "/month",
-    desc: "For agencies & power users",
+    desc: "For agencies and power users",
     features: [
       "Unlimited AI articles",
       "Unlimited social posts",
@@ -103,200 +86,273 @@ const plans = [
       "White-label reports",
       "API access",
     ],
-    cta: "Contact Sales",
+    cta: "Contact sales",
     highlight: false,
   },
 ]
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
+    <div style={{ minHeight: "100vh", backgroundColor: "#1b1916", color: "#f3f2f1", fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" }}>
+
       {/* Nav */}
-      <nav className="border-b border-white/10 px-6 py-4">
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <span className="text-xl font-bold bg-gradient-to-r from-violet-400 to-cyan-400 bg-clip-text text-transparent">
+      <nav style={{ borderBottom: "1px solid rgba(243,242,241,0.08)", padding: "0 2rem" }}>
+        <div style={{ maxWidth: "1200px", margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", height: "64px" }}>
+          <span style={{ fontSize: "1.1rem", fontWeight: 700, letterSpacing: "-0.02em", color: "#f3f2f1" }}>
             itgrows.ai
           </span>
-          <div className="hidden md:flex items-center gap-6 text-sm text-slate-400">
-            <a href="#features" className="hover:text-white transition-colors">Features</a>
-            <a href="#how-it-works" className="hover:text-white transition-colors">How it works</a>
-            <a href="#pricing" className="hover:text-white transition-colors">Pricing</a>
-            <Link href="/blog" className="hover:text-white transition-colors">Blog</Link>
-          </div>
-          <div className="flex items-center gap-3">
-            <Link href="/login">
-              <Button variant="ghost" className="text-slate-300 hover:text-white">Login</Button>
-            </Link>
-            <Link href="/signup">
-              <Button className="bg-violet-600 hover:bg-violet-500 text-white">Get Started</Button>
-            </Link>
+          <div style={{ display: "flex", alignItems: "center", gap: "2.5rem" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "2rem" }}>
+              <a href="#features" style={{ fontSize: "0.875rem", color: "rgba(243,242,241,0.6)", textDecoration: "none", transition: "color 0.15s" }}
+                onMouseEnter={e => (e.currentTarget.style.color = "#f3f2f1")}
+                onMouseLeave={e => (e.currentTarget.style.color = "rgba(243,242,241,0.6)")}>
+                Features
+              </a>
+              <a href="#pricing" style={{ fontSize: "0.875rem", color: "rgba(243,242,241,0.6)", textDecoration: "none" }}
+                onMouseEnter={e => (e.currentTarget.style.color = "#f3f2f1")}
+                onMouseLeave={e => (e.currentTarget.style.color = "rgba(243,242,241,0.6)")}>
+                Pricing
+              </a>
+              <Link href="/blog" style={{ fontSize: "0.875rem", color: "rgba(243,242,241,0.6)", textDecoration: "none" }}
+                onMouseEnter={e => (e.currentTarget.style.color = "#f3f2f1")}
+                onMouseLeave={e => (e.currentTarget.style.color = "rgba(243,242,241,0.6)")}>
+                Blog
+              </Link>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+              <Link href="/login" style={{ fontSize: "0.875rem", color: "rgba(243,242,241,0.6)", textDecoration: "none" }}
+                onMouseEnter={e => (e.currentTarget.style.color = "#f3f2f1")}
+                onMouseLeave={e => (e.currentTarget.style.color = "rgba(243,242,241,0.6)")}>
+                Sign in
+              </Link>
+              <Link href="/signup" style={{
+                fontSize: "0.875rem",
+                fontWeight: 600,
+                color: "#1b1916",
+                backgroundColor: "#f3f2f1",
+                padding: "0.5rem 1.25rem",
+                borderRadius: "6px",
+                textDecoration: "none",
+                transition: "background-color 0.15s",
+              }}
+                onMouseEnter={e => (e.currentTarget.style.backgroundColor = "#e0deda")}
+                onMouseLeave={e => (e.currentTarget.style.backgroundColor = "#f3f2f1")}>
+                Get started
+              </Link>
+            </div>
           </div>
         </div>
       </nav>
 
       {/* Hero */}
-      <section className="relative px-6 pt-24 pb-32 text-center overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-violet-950/40 to-transparent pointer-events-none" />
-        <div className="absolute top-10 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-violet-600/20 rounded-full blur-3xl pointer-events-none" />
-        <div className="relative max-w-4xl mx-auto">
-          <Badge className="mb-6 bg-violet-900/60 text-violet-300 border-violet-700 text-sm px-4 py-1">
-            AI-Powered Content Automation
-          </Badge>
-          <h1 className="text-5xl md:text-7xl font-extrabold leading-tight mb-6 tracking-tight">
-            Your Business Grows
-            <span className="block bg-gradient-to-r from-violet-400 via-pink-400 to-cyan-400 bg-clip-text text-transparent">
-              While You Sleep
-            </span>
-          </h1>
-          <p className="text-xl text-slate-400 max-w-2xl mx-auto mb-10 leading-relaxed">
-            itgrows.ai creates SEO articles, social posts, and images — then automatically publishes them and runs your Google Ads. Full content marketing on autopilot.
+      <section style={{ padding: "7rem 2rem 8rem", maxWidth: "1200px", margin: "0 auto" }}>
+        <div style={{ maxWidth: "820px" }}>
+          <p style={{ fontSize: "0.8125rem", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "#7c6af7", marginBottom: "2rem" }}>
+            AI Growth Platform
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/signup">
-              <Button size="lg" className="bg-violet-600 hover:bg-violet-500 text-white px-8 py-6 text-lg rounded-xl">
-                Start Free 14-Day Trial
-              </Button>
+          <h1 style={{ fontSize: "clamp(2.75rem, 6vw, 5rem)", fontWeight: 700, lineHeight: 1.08, letterSpacing: "-0.03em", color: "#f3f2f1", margin: "0 0 2rem 0" }}>
+            We help ambitious<br />brands grow with AI.
+          </h1>
+          <p style={{ fontSize: "1.25rem", lineHeight: 1.6, color: "rgba(243,242,241,0.55)", maxWidth: "560px", margin: "0 0 3rem 0" }}>
+            itgrows.ai creates SEO content, social posts, and ad campaigns — then publishes and optimizes everything automatically. Full-stack content marketing, on autopilot.
+          </p>
+          <div style={{ display: "flex", alignItems: "center", gap: "1.25rem", flexWrap: "wrap" }}>
+            <Link href="/signup" style={{
+              display: "inline-block",
+              fontSize: "0.9375rem",
+              fontWeight: 600,
+              color: "#1b1916",
+              backgroundColor: "#f3f2f1",
+              padding: "0.875rem 2rem",
+              borderRadius: "6px",
+              textDecoration: "none",
+            }}>
+              Start free — no card needed
             </Link>
-            <a href="#how-it-works">
-              <Button size="lg" variant="outline" className="bg-white border-white text-black hover:bg-gray-100 px-8 py-6 text-lg rounded-xl">
-                See How It Works
-              </Button>
+            <a href="#how-it-works" style={{
+              display: "inline-block",
+              fontSize: "0.9375rem",
+              color: "rgba(243,242,241,0.6)",
+              textDecoration: "none",
+              borderBottom: "1px solid rgba(243,242,241,0.2)",
+              paddingBottom: "1px",
+            }}>
+              See how it works
             </a>
           </div>
-          <p className="mt-5 text-sm text-slate-500">No credit card required • Cancel anytime</p>
         </div>
       </section>
+
+      {/* Divider */}
+      <div style={{ borderTop: "1px solid rgba(243,242,241,0.08)" }} />
 
       {/* Features */}
-      <section id="features" className="px-6 py-24 bg-slate-900/50">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <Badge className="mb-4 bg-cyan-900/40 text-cyan-400 border-cyan-800">Powerful Features</Badge>
-            <h2 className="text-4xl font-bold mb-4">Everything You Need to Dominate Your Niche</h2>
-            <p className="text-slate-400 text-lg max-w-2xl mx-auto">
-              One platform. Unlimited content. Real growth.
-            </p>
-          </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {features.map((f, i) => (
-              <Card key={i} className="bg-slate-800/60 border-white/10 hover:border-violet-500/50 transition-all hover:bg-slate-800">
-                <CardHeader>
-                  <div className="text-3xl mb-3">{f.icon}</div>
-                  <CardTitle className="text-white text-lg">{f.title}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-slate-400 text-sm leading-relaxed">{f.desc}</p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+      <section id="features" style={{ padding: "6rem 2rem", maxWidth: "1200px", margin: "0 auto" }}>
+        <div style={{ marginBottom: "4rem" }}>
+          <h2 style={{ fontSize: "clamp(1.75rem, 3vw, 2.5rem)", fontWeight: 700, letterSpacing: "-0.025em", color: "#f3f2f1", margin: "0 0 1rem 0" }}>
+            Everything you need.<br />Nothing you don&apos;t.
+          </h2>
+          <p style={{ fontSize: "1.0625rem", color: "rgba(243,242,241,0.5)", maxWidth: "440px", lineHeight: 1.65 }}>
+            One platform handles content creation, publishing, advertising, and analytics — end to end.
+          </p>
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: "1px", border: "1px solid rgba(243,242,241,0.08)", borderRadius: "12px", overflow: "hidden" }}>
+          {features.map((f, i) => (
+            <div key={i} style={{
+              padding: "2.5rem 2rem",
+              backgroundColor: "#1b1916",
+              borderRight: "1px solid rgba(243,242,241,0.08)",
+              borderBottom: "1px solid rgba(243,242,241,0.08)",
+              transition: "background-color 0.15s",
+            }}
+              onMouseEnter={e => (e.currentTarget.style.backgroundColor = "#221f1b")}
+              onMouseLeave={e => (e.currentTarget.style.backgroundColor = "#1b1916")}>
+              <h3 style={{ fontSize: "1rem", fontWeight: 600, color: "#f3f2f1", margin: "0 0 0.875rem 0", letterSpacing: "-0.01em" }}>{f.title}</h3>
+              <p style={{ fontSize: "0.875rem", color: "rgba(243,242,241,0.5)", lineHeight: 1.65, margin: 0 }}>{f.desc}</p>
+            </div>
+          ))}
         </div>
       </section>
+
+      {/* Divider */}
+      <div style={{ borderTop: "1px solid rgba(243,242,241,0.08)" }} />
 
       {/* How it works */}
-      <section id="how-it-works" className="px-6 py-24">
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-16">
-            <Badge className="mb-4 bg-pink-900/40 text-pink-400 border-pink-800">Simple Process</Badge>
-            <h2 className="text-4xl font-bold mb-4">Up and Running in Minutes</h2>
-            <p className="text-slate-400 text-lg">Three steps to automated content growth</p>
-          </div>
-          <div className="grid md:grid-cols-3 gap-8">
-            {steps.map((s, i) => (
-              <div key={i} className="relative text-center">
-                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-600 to-pink-600 flex items-center justify-center text-2xl font-black mx-auto mb-6">
-                  {s.num}
-                </div>
-                <h3 className="text-xl font-semibold mb-3">{s.title}</h3>
-                <p className="text-slate-400 text-sm leading-relaxed">{s.desc}</p>
-              </div>
-            ))}
-          </div>
+      <section id="how-it-works" style={{ padding: "6rem 2rem", maxWidth: "1200px", margin: "0 auto" }}>
+        <div style={{ marginBottom: "4rem" }}>
+          <h2 style={{ fontSize: "clamp(1.75rem, 3vw, 2.5rem)", fontWeight: 700, letterSpacing: "-0.025em", color: "#f3f2f1", margin: "0 0 1rem 0" }}>
+            Up and running in minutes.
+          </h2>
+          <p style={{ fontSize: "1.0625rem", color: "rgba(243,242,241,0.5)", lineHeight: 1.65 }}>
+            Three steps. Then it runs itself.
+          </p>
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "3rem" }}>
+          {steps.map((s, i) => (
+            <div key={i}>
+              <p style={{ fontSize: "0.75rem", fontWeight: 700, letterSpacing: "0.12em", color: "#7c6af7", margin: "0 0 1.25rem 0" }}>{s.num}</p>
+              <h3 style={{ fontSize: "1.125rem", fontWeight: 600, color: "#f3f2f1", margin: "0 0 0.75rem 0", letterSpacing: "-0.015em" }}>{s.title}</h3>
+              <p style={{ fontSize: "0.9rem", color: "rgba(243,242,241,0.5)", lineHeight: 1.7, margin: 0 }}>{s.desc}</p>
+            </div>
+          ))}
         </div>
       </section>
+
+      {/* Divider */}
+      <div style={{ borderTop: "1px solid rgba(243,242,241,0.08)" }} />
 
       {/* Pricing */}
-      <section id="pricing" className="px-6 py-24 bg-slate-900/50">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <Badge className="mb-4 bg-violet-900/40 text-violet-400 border-violet-800">Pricing</Badge>
-            <h2 className="text-4xl font-bold mb-4">Simple, Transparent Pricing</h2>
-            <p className="text-slate-400 text-lg">Start free. Scale as you grow.</p>
-          </div>
-          <div className="grid md:grid-cols-3 gap-8 items-start">
-            {plans.map((p, i) => (
-              <Card
-                key={i}
-                className={`relative border ${
-                  p.highlight
-                    ? "border-violet-500 bg-gradient-to-b from-violet-950/80 to-slate-800/80 shadow-2xl shadow-violet-500/20"
-                    : "border-white/10 bg-slate-800/60"
-                }`}
-              >
-                {p.highlight && (
-                  <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                    <Badge className="bg-violet-600 text-white border-0 px-4 py-1">Most Popular</Badge>
-                  </div>
-                )}
-                <CardHeader className="pb-2">
-                  <p className="text-slate-400 text-sm">{p.desc}</p>
-                  <CardTitle className="text-white text-2xl">{p.name}</CardTitle>
-                  <div className="flex items-end gap-1 mt-2">
-                    <span className="text-5xl font-extrabold">{p.price}</span>
-                    <span className="text-slate-400 mb-2">{p.period}</span>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <Link href="/signup">
-                    <Button
-                      className={`w-full ${
-                        p.highlight
-                          ? "bg-violet-600 hover:bg-violet-500 text-white"
-                          : "bg-white/10 hover:bg-white/20 text-white"
-                      }`}
-                    >
-                      {p.cta}
-                    </Button>
-                  </Link>
-                  <ul className="space-y-3 pt-2">
-                    {p.features.map((f, j) => (
-                      <li key={j} className="flex items-center gap-3 text-sm text-slate-300">
-                        <span className="text-green-400 font-bold">✓</span>
-                        {f}
-                      </li>
-                    ))}
-                  </ul>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+      <section id="pricing" style={{ padding: "6rem 2rem", maxWidth: "1200px", margin: "0 auto" }}>
+        <div style={{ marginBottom: "4rem" }}>
+          <h2 style={{ fontSize: "clamp(1.75rem, 3vw, 2.5rem)", fontWeight: 700, letterSpacing: "-0.025em", color: "#f3f2f1", margin: "0 0 1rem 0" }}>
+            Simple, transparent pricing.
+          </h2>
+          <p style={{ fontSize: "1.0625rem", color: "rgba(243,242,241,0.5)", lineHeight: 1.65 }}>
+            Start free. Scale when you&apos;re ready.
+          </p>
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "1.5rem" }}>
+          {plans.map((p, i) => (
+            <div key={i} style={{
+              border: p.highlight ? "1px solid rgba(124,106,247,0.5)" : "1px solid rgba(243,242,241,0.1)",
+              borderRadius: "12px",
+              padding: "2.5rem 2rem",
+              backgroundColor: p.highlight ? "rgba(124,106,247,0.05)" : "transparent",
+              position: "relative",
+            }}>
+              {p.highlight && (
+                <div style={{
+                  position: "absolute",
+                  top: "-12px",
+                  left: "2rem",
+                  fontSize: "0.75rem",
+                  fontWeight: 700,
+                  letterSpacing: "0.06em",
+                  textTransform: "uppercase",
+                  color: "#1b1916",
+                  backgroundColor: "#7c6af7",
+                  padding: "0.25rem 0.75rem",
+                  borderRadius: "4px",
+                }}>
+                  Most popular
+                </div>
+              )}
+              <p style={{ fontSize: "0.8125rem", color: "rgba(243,242,241,0.45)", margin: "0 0 0.5rem 0" }}>{p.desc}</p>
+              <p style={{ fontSize: "1.125rem", fontWeight: 700, color: "#f3f2f1", margin: "0 0 1rem 0", letterSpacing: "-0.01em" }}>{p.name}</p>
+              <div style={{ display: "flex", alignItems: "baseline", gap: "0.25rem", marginBottom: "2rem" }}>
+                <span style={{ fontSize: "3rem", fontWeight: 700, letterSpacing: "-0.04em", color: "#f3f2f1", lineHeight: 1 }}>{p.price}</span>
+                <span style={{ fontSize: "0.875rem", color: "rgba(243,242,241,0.45)" }}>{p.period}</span>
+              </div>
+              <Link href="/signup" style={{
+                display: "block",
+                textAlign: "center",
+                fontSize: "0.875rem",
+                fontWeight: 600,
+                color: p.highlight ? "#1b1916" : "#f3f2f1",
+                backgroundColor: p.highlight ? "#7c6af7" : "rgba(243,242,241,0.1)",
+                padding: "0.75rem 1.5rem",
+                borderRadius: "6px",
+                textDecoration: "none",
+                marginBottom: "2rem",
+                transition: "background-color 0.15s",
+              }}>
+                {p.cta}
+              </Link>
+              <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+                {p.features.map((f, j) => (
+                  <li key={j} style={{ display: "flex", alignItems: "flex-start", gap: "0.75rem", fontSize: "0.875rem", color: "rgba(243,242,241,0.6)" }}>
+                    <span style={{ color: "#7c6af7", fontWeight: 700, flexShrink: 0, marginTop: "1px" }}>&#10003;</span>
+                    {f}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
         </div>
       </section>
 
+      {/* Divider */}
+      <div style={{ borderTop: "1px solid rgba(243,242,241,0.08)" }} />
+
       {/* Bottom CTA */}
-      <section className="px-6 py-24 text-center">
-        <div className="max-w-3xl mx-auto">
-          <h2 className="text-4xl md:text-5xl font-extrabold mb-6">
-            Ready to Put Your{" "}
-            <span className="bg-gradient-to-r from-violet-400 to-cyan-400 bg-clip-text text-transparent">
-              Growth on Autopilot?
-            </span>
+      <section style={{ padding: "7rem 2rem", maxWidth: "1200px", margin: "0 auto" }}>
+        <div style={{ maxWidth: "640px" }}>
+          <h2 style={{ fontSize: "clamp(2rem, 4vw, 3.25rem)", fontWeight: 700, letterSpacing: "-0.03em", color: "#f3f2f1", margin: "0 0 1.5rem 0", lineHeight: 1.1 }}>
+            Ready to put your growth on autopilot?
           </h2>
-          <p className="text-slate-400 text-lg mb-10">
-            Join thousands of businesses already growing with itgrows.ai.
+          <p style={{ fontSize: "1.125rem", color: "rgba(243,242,241,0.5)", margin: "0 0 2.5rem 0", lineHeight: 1.65 }}>
+            Join thousands of businesses already growing with itgrows.ai. Start free, no credit card required.
           </p>
-          <Link href="/signup">
-            <Button size="lg" className="bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-white px-10 py-6 text-lg rounded-xl">
-              Start Your Free Trial Today
-            </Button>
+          <Link href="/signup" style={{
+            display: "inline-block",
+            fontSize: "0.9375rem",
+            fontWeight: 600,
+            color: "#1b1916",
+            backgroundColor: "#f3f2f1",
+            padding: "0.875rem 2rem",
+            borderRadius: "6px",
+            textDecoration: "none",
+          }}>
+            Start free today
           </Link>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-white/10 px-6 py-8 text-center text-slate-500 text-sm">
-        <p>© 2026 itgrows.ai. All rights reserved.</p>
-      </footer>
+      <div style={{ borderTop: "1px solid rgba(243,242,241,0.08)" }}>
+        <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "2rem", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "1rem" }}>
+          <span style={{ fontSize: "0.875rem", fontWeight: 700, color: "#f3f2f1" }}>itgrows.ai</span>
+          <div style={{ display: "flex", gap: "2rem" }}>
+            <a href="#features" style={{ fontSize: "0.8125rem", color: "rgba(243,242,241,0.4)", textDecoration: "none" }}>Features</a>
+            <a href="#pricing" style={{ fontSize: "0.8125rem", color: "rgba(243,242,241,0.4)", textDecoration: "none" }}>Pricing</a>
+            <Link href="/blog" style={{ fontSize: "0.8125rem", color: "rgba(243,242,241,0.4)", textDecoration: "none" }}>Blog</Link>
+          </div>
+          <p style={{ fontSize: "0.8125rem", color: "rgba(243,242,241,0.3)", margin: 0 }}>
+            &copy; 2026 itgrows.ai. All rights reserved.
+          </p>
+        </div>
+      </div>
+
     </div>
   )
 }
