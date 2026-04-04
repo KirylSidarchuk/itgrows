@@ -30,21 +30,24 @@ function buildPrompt(keyword: string, language: string, tone: string): string {
     uk: "Ukrainian",
   }
   const lang = langLabel[language] ?? "English"
+  const currentYear = new Date().getFullYear()
 
   return `You are an expert SEO content writer. Write a comprehensive SEO-optimized article in ${lang}.
 
 Topic/Keyword: "${keyword}"
 Tone: ${tone}
 Length: 1500-2000 words
+Current year: ${currentYear}
 
 Requirements:
-1. Start with an H1 title (use # for H1)
-2. Include an engaging introduction paragraph
+1. Start with an H1 title (use # for H1) — use "${currentYear}" in the title if it adds SEO value, never use older years
+2. Include an engaging introduction paragraph with up-to-date information
 3. Use H2 sections (## heading) for main topics — at least 4 H2 sections
 4. Use H3 subsections (### heading) where relevant
 5. Include a conclusion section
 6. Naturally incorporate the main keyword and related terms throughout
 7. Write in ${lang}
+8. IMPORTANT: All information must reflect the current state as of ${currentYear}. Do not reference outdated statistics, old versions, or past trends as if they are current.
 
 After the article, on a new line write exactly:
 META_DESCRIPTION: [a compelling meta description of 150-160 characters that includes the main keyword]
