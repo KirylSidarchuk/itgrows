@@ -8,11 +8,13 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { getUser, type User } from "@/lib/auth"
 import { getTasks, type Task } from "@/lib/tasks"
+import { getConnectedSites } from "@/lib/connectedSites"
 
 export default function DashboardPage() {
   const router = useRouter()
   const [user, setUser] = useState<User | null>(null)
   const [tasks, setTasks] = useState<Task[]>([])
+  const [hasConnectedSites, setHasConnectedSites] = useState(true)
 
   useEffect(() => {
     const u = getUser()
@@ -22,6 +24,7 @@ export default function DashboardPage() {
     }
     setUser(u)
     setTasks(getTasks())
+    setHasConnectedSites(getConnectedSites().length > 0)
   }, [router])
 
   if (!user) return null
@@ -116,6 +119,28 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Connect website hint */}
+        {!hasConnectedSites && (
+          <Card className="bg-gradient-to-r from-violet-900/30 to-cyan-900/30 border border-violet-500/20 mb-8">
+            <CardContent className="flex items-center justify-between py-5">
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">🔗</span>
+                <div>
+                  <p className="text-white font-medium text-sm">Connect your website to start publishing</p>
+                  <p className="text-slate-400 text-xs mt-0.5">
+                    Link your WordPress, Shopify, Webflow or itgrows.ai Blog for one-click article publishing.
+                  </p>
+                </div>
+              </div>
+              <Link href="/dashboard/settings" className="shrink-0 ml-4">
+                <Button className="bg-violet-600 hover:bg-violet-500 text-white text-sm">
+                  Go to Settings
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Recent Tasks */}
         <Card className="bg-slate-800/60 border-white/10">

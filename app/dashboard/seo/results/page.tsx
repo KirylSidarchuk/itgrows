@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { getUser } from "@/lib/auth"
 import type { BlogPost } from "@/app/api/blog/posts/route"
+import { getDefaultSite, platformLabel } from "@/lib/connectedSites"
 
 interface ArticleResult {
   article: {
@@ -31,6 +32,8 @@ export default function SeoResultsPage() {
   const [blogPublishing, setBlogPublishing] = useState(false)
   const [blogPublished, setBlogPublished] = useState(false)
   const [blogSlug, setBlogSlug] = useState<string | null>(null)
+  const [publishedSiteName, setPublishedSiteName] = useState<string | null>(null)
+  const [noSiteModal, setNoSiteModal] = useState(false)
 
   function slugify(text: string): string {
     return (
@@ -132,11 +135,7 @@ export default function SeoResultsPage() {
     setEditContent("")
   }
 
-  const handlePublishToBlog = async () => {
-    if (!result || blogPublishing || blogPublished) return
-    setBlogPublishing(true)
-    const { article } = result
-
+  const publishToItgrowsBlog = async (article: ArticleResult["article"], siteName?: string) => {
     try {
       const res = await fetch("/api/blog/posts", {
         method: "POST",
@@ -154,8 +153,8 @@ export default function SeoResultsPage() {
       if (data.post) {
         setBlogSlug(data.post.slug)
         setBlogPublished(true)
+        setPublishedSiteName(siteName ?? "itgrows.ai Blog")
 
-        // If storage is none or failed, save to localStorage as fallback
         if (!data.success || data.storage === "none") {
           try {
             const existing = JSON.parse(localStorage.getItem("itgrows_published_posts") || "[]") as BlogPost[]
@@ -166,7 +165,6 @@ export default function SeoResultsPage() {
           }
         }
       } else {
-        // Fallback: create post locally and save to localStorage
         const post: BlogPost = {
           id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
           slug: slugify(article.title),
@@ -183,9 +181,9 @@ export default function SeoResultsPage() {
         localStorage.setItem("itgrows_published_posts", JSON.stringify(existing))
         setBlogSlug(post.slug)
         setBlogPublished(true)
+        setPublishedSiteName(siteName ?? "itgrows.ai Blog")
       }
     } catch {
-      // Network error: save to localStorage
       const post: BlogPost = {
         id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
         slug: slugify(article.title),
@@ -206,16 +204,85 @@ export default function SeoResultsPage() {
       }
       setBlogSlug(post.slug)
       setBlogPublished(true)
+      setPublishedSiteName(siteName ?? "itgrows.ai Blog")
+    }
+  }
+
+  const handlePublishToBlog = async () => {
+    if (!result || blogPublishing || blogPublished) return
+
+    const defaultSite = getDefaultSite()
+
+    // No connected sites → show modal
+    if (!defaultSite) {
+      setNoSiteModal(true)
+      return
+    }
+
+    setBlogPublishing(true)
+    const { article } = result
+
+    if (defaultSite.platform === "itgrows_blog") {
+      await publishToItgrowsBlog(article, defaultSite.name)
+      setBlogPublishing(false)
+      return
+    }
+
+    // WordPress or other platforms via /api/seo/publish
+    try {
+      const credentials =
+        defaultSite.platform === "wordpress"
+          ? {
+              siteUrl: defaultSite.url,
+              username: defaultSite.credentials?.username ?? "",
+              appPassword: defaultSite.credentials?.appPassword ?? "",
+            }
+          : defaultSite.platform === "shopify"
+          ? {
+              storeUrl: defaultSite.url,
+              accessToken: defaultSite.credentials?.accessToken ?? "",
+              blogId: defaultSite.credentials?.blogId ?? "",
+            }
+          : {
+              apiToken: defaultSite.credentials?.apiToken ?? "",
+              collectionId: defaultSite.credentials?.collectionId ?? "",
+            }
+
+      const pubRes = await fetch("/api/seo/publish", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ platform: defaultSite.platform, credentials, article }),
+      })
+      if (pubRes.ok) {
+        const pubData = (await pubRes.json()) as { url?: string }
+        setBlogSlug(pubData.url ? null : null)
+        setBlogPublished(true)
+        setPublishedSiteName(defaultSite.name)
+      } else {
+        // Fallback to internal blog
+        await publishToItgrowsBlog(article, defaultSite.name)
+      }
+    } catch {
+      await publishToItgrowsBlog(article, defaultSite.name)
     } finally {
       setBlogPublishing(false)
     }
+  }
+
+  const handlePublishItgrowsFallback = async () => {
+    if (!result || blogPublishing || blogPublished) return
+    setNoSiteModal(false)
+    setBlogPublishing(true)
+    const { article } = result
+    await publishToItgrowsBlog(article)
+    setBlogPublishing(false)
   }
 
   if (!result) return null
 
   const { article, publishUrl, platform } = result
 
-  const platformLabel: Record<string, string> = {
+  const platformLabelMap: Record<string, string> = {
     wordpress: "WordPress",
     shopify: "Shopify",
     webflow: "Webflow",
@@ -232,7 +299,7 @@ export default function SeoResultsPage() {
             </h1>
             <p className="text-slate-400">
               {publishUrl
-                ? `Published to ${platformLabel[platform] ?? platform}`
+                ? `Published to ${platformLabelMap[platform] ?? platform}`
                 : "Ready to publish or copy"}
             </p>
           </div>
@@ -277,26 +344,64 @@ export default function SeoResultsPage() {
         )}
 
         {/* Blog published banner */}
-        {blogPublished && blogSlug && (
+        {blogPublished && (
           <div className="mb-6 flex items-center gap-3 p-4 rounded-xl bg-violet-900/20 border border-violet-500/30">
             <span className="text-2xl">🚀</span>
             <div className="flex-1 min-w-0">
-              <p className="text-violet-400 font-medium text-sm">Published to blog!</p>
-              <Link
-                href={`/blog/${blogSlug}`}
-                className="text-slate-300 hover:text-white text-sm truncate block underline"
-              >
-                itgrows.ai/blog/{blogSlug}
-              </Link>
+              <p className="text-violet-400 font-medium text-sm">
+                Published to {publishedSiteName ?? "itgrows.ai Blog"}!
+              </p>
+              {blogSlug && (
+                <Link
+                  href={`/blog/${blogSlug}`}
+                  className="text-slate-300 hover:text-white text-sm truncate block underline"
+                >
+                  itgrows.ai/blog/{blogSlug}
+                </Link>
+              )}
             </div>
-            <Link href={`/blog/${blogSlug}`} className="shrink-0">
-              <Button
-                variant="outline"
-                className="border-violet-500/30 text-violet-300 hover:bg-violet-900/20 text-sm"
-              >
-                View Post
-              </Button>
-            </Link>
+            {blogSlug && (
+              <Link href={`/blog/${blogSlug}`} className="shrink-0">
+                <Button
+                  variant="outline"
+                  className="border-violet-500/30 text-violet-300 hover:bg-violet-900/20 text-sm"
+                >
+                  View →
+                </Button>
+              </Link>
+            )}
+          </div>
+        )}
+
+        {/* No site connected modal */}
+        {noSiteModal && (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
+            <div className="bg-slate-800 border border-white/10 rounded-2xl p-6 max-w-sm w-full mx-4 shadow-2xl">
+              <h3 className="text-white font-semibold text-lg mb-2">No Site Connected</h3>
+              <p className="text-slate-400 text-sm mb-5">
+                Add your website in Settings to publish articles automatically.
+              </p>
+              <div className="flex flex-col gap-2">
+                <Link href="/dashboard/settings">
+                  <Button className="w-full bg-violet-600 hover:bg-violet-500 text-white">
+                    Go to Settings
+                  </Button>
+                </Link>
+                <Button
+                  onClick={handlePublishItgrowsFallback}
+                  className="w-full bg-slate-700 hover:bg-slate-600 text-white"
+                >
+                  Publish to itgrows.ai Blog
+                </Button>
+                <Button
+                  onClick={() => setNoSiteModal(false)}
+                  variant="ghost"
+                  className="w-full text-slate-400 hover:text-white"
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
           </div>
         )}
 
@@ -438,7 +543,14 @@ export default function SeoResultsPage() {
                   : "bg-gradient-to-r from-cyan-600 to-violet-600 hover:from-cyan-500 hover:to-violet-500 text-white"
               }
             >
-              {blogPublished ? "Published to Blog ✓" : blogPublishing ? "Publishing..." : "Publish to Blog"}
+              {blogPublished
+                ? `Published to ${publishedSiteName ?? "Blog"} ✓`
+                : blogPublishing
+                ? "Publishing..."
+                : (() => {
+                    const site = getDefaultSite()
+                    return site ? `Publish to ${site.name}` : "Publish to Blog"
+                  })()}
             </Button>
           )}
           {!publishUrl && !isEditing && (

@@ -2,11 +2,13 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
+import Link from "next/link"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { getUser } from "@/lib/auth"
+import { getConnectedSites, type ConnectedSite } from "@/lib/connectedSites"
 
 type Platform = "wordpress" | "shopify" | "webflow" | "none"
 type Language = "en" | "ru" | "uk"
@@ -49,8 +51,10 @@ export default function SeoAutopilotPage() {
   useEffect(() => {
     const u = getUser()
     if (!u) router.push("/login")
+    setConnectedSites(getConnectedSites())
   }, [router])
 
+  const [connectedSites, setConnectedSites] = useState<ConnectedSite[]>([])
   const [topic, setTopic] = useState("")
   const [language, setLanguage] = useState<Language>("en")
   const [tone, setTone] = useState<Tone>("Professional")
@@ -354,6 +358,58 @@ export default function SeoAutopilotPage() {
               <CardTitle className="text-white text-base">Publish To</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
+              {/* Connected sites */}
+              {connectedSites.length > 0 ? (
+                <div className="space-y-2">
+                  <p className="text-slate-400 text-xs font-medium uppercase tracking-wider">Connected Sites</p>
+                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                    {connectedSites.map((site) => (
+                      <button
+                        key={site.id}
+                        type="button"
+                        disabled={isRunning}
+                        onClick={() => setPlatform("none")}
+                        className="flex items-center gap-3 p-3 rounded-xl border border-green-500/30 bg-green-900/10 hover:bg-green-900/20 text-left transition-all"
+                      >
+                        <span className="text-lg">
+                          {site.platform === "wordpress" ? "🌐" :
+                           site.platform === "shopify" ? "🛒" :
+                           site.platform === "webflow" ? "⚡" : "✨"}
+                        </span>
+                        <div className="min-w-0">
+                          <div className="text-white text-xs font-medium truncate">{site.name}</div>
+                          <div className="text-slate-400 text-xs truncate">{site.url}</div>
+                        </div>
+                        {site.isDefault && (
+                          <span className="ml-auto shrink-0 text-green-400 text-xs">Default</span>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                  <p className="text-slate-500 text-xs">
+                    Article will be published to the default site after generation.
+                    <Link href="/dashboard/settings" className="text-violet-400 hover:text-violet-300 ml-1">
+                      Manage sites
+                    </Link>
+                  </p>
+                </div>
+              ) : (
+                <div className="flex items-center justify-between p-3 rounded-xl bg-slate-700/40 border border-white/10">
+                  <div>
+                    <p className="text-slate-300 text-sm font-medium">Connect your site</p>
+                    <p className="text-slate-500 text-xs">For one-click publishing after generation</p>
+                  </div>
+                  <Link href="/dashboard/settings">
+                    <Button
+                      type="button"
+                      className="bg-violet-600/30 hover:bg-violet-600/50 border border-violet-500/30 text-violet-300 text-xs"
+                    >
+                      Settings
+                    </Button>
+                  </Link>
+                </div>
+              )}
+
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                 {(
                   [
