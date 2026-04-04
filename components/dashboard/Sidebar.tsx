@@ -10,6 +10,7 @@ const navItems = [
   { href: "/dashboard/new-task", label: "New Task", icon: "➕" },
   { href: "/dashboard/seo", label: "SEO Autopilot", icon: "🔍" },
   { href: "/dashboard/calendar", label: "Calendar", icon: "📅" },
+  { href: "/dashboard/blog", label: "Blog Articles", icon: "📝" },
   { href: "/dashboard/subscription", label: "Subscription", icon: "💳" },
   { href: "/dashboard/support", label: "Support", icon: "💬" },
   { href: "/dashboard/settings", label: "Settings", icon: "⚙️" },
@@ -25,10 +26,10 @@ export default function Sidebar() {
   }
 
   return (
-    <aside className="w-64 min-h-screen bg-slate-900 border-r border-white/10 flex flex-col">
-      <div className="p-6 border-b border-white/10">
+    <aside className="w-64 min-h-screen bg-white border-r border-black/10 flex flex-col">
+      <div className="p-6 border-b border-black/10">
         <Link href="/">
-          <span className="text-xl font-bold bg-gradient-to-r from-violet-400 to-cyan-400 bg-clip-text text-transparent">
+          <span className="text-xl font-bold bg-gradient-to-r from-violet-600 to-pink-500 bg-clip-text text-transparent">
             itgrows.ai
           </span>
         </Link>
@@ -42,8 +43,8 @@ export default function Sidebar() {
               href={item.href}
               className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
                 isActive
-                  ? "bg-violet-600/20 text-violet-300 border border-violet-500/30"
-                  : "text-slate-400 hover:text-white hover:bg-white/5"
+                  ? "bg-violet-100 text-violet-700 border border-violet-200"
+                  : "text-slate-600 hover:text-[#1b1916] hover:bg-[#ebe9e5]"
               }`}
             >
               <span className="text-base">{item.icon}</span>
@@ -52,10 +53,10 @@ export default function Sidebar() {
           )
         })}
       </nav>
-      <div className="p-4 border-t border-white/10">
+      <div className="p-4 border-t border-black/10">
         <button
           onClick={handleLogout}
-          className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-slate-400 hover:text-white hover:bg-white/5 transition-colors"
+          className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-slate-600 hover:text-[#1b1916] hover:bg-[#ebe9e5] transition-colors"
         >
           <span>🚪</span>
           Logout

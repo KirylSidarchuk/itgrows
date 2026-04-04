@@ -36,24 +36,24 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-[#f3f2f1] flex items-center justify-center px-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <Link href="/">
-            <span className="text-2xl font-bold bg-gradient-to-r from-violet-400 to-cyan-400 bg-clip-text text-transparent">
+            <span className="text-2xl font-bold bg-gradient-to-r from-violet-600 to-pink-500 bg-clip-text text-transparent">
               itgrows.ai
             </span>
           </Link>
         </div>
-        <Card className="bg-slate-900 border-white/10">
+        <Card className="bg-white border-black/10 shadow-sm">
           <CardHeader>
-            <CardTitle className="text-white text-2xl">Start your free trial</CardTitle>
-            <CardDescription className="text-slate-400">14 days free. No credit card required.</CardDescription>
+            <CardTitle className="text-[#1b1916] text-2xl">Start your free trial</CardTitle>
+            <CardDescription className="text-slate-500">14 days free. No credit card required.</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="name" className="text-slate-300">Full Name</Label>
+                <Label htmlFor="name" className="text-[#1b1916]">Full Name</Label>
                 <Input
                   id="name"
                   type="text"
@@ -61,11 +61,11 @@ export default function SignupPage() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   required
-                  className="bg-slate-800 border-white/10 text-white placeholder:text-slate-500 focus:border-violet-500"
+                  className="bg-white border-slate-200 text-[#1b1916] placeholder:text-slate-400 focus:border-violet-500"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="email" className="text-slate-300">Email</Label>
+                <Label htmlFor="email" className="text-[#1b1916]">Email</Label>
                 <Input
                   id="email"
                   type="email"
@@ -73,11 +73,11 @@ export default function SignupPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="bg-slate-800 border-white/10 text-white placeholder:text-slate-500 focus:border-violet-500"
+                  className="bg-white border-slate-200 text-[#1b1916] placeholder:text-slate-400 focus:border-violet-500"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="password" className="text-slate-300">Password</Label>
+                <Label htmlFor="password" className="text-[#1b1916]">Password</Label>
                 <Input
                   id="password"
                   type="password"
@@ -85,16 +85,16 @@ export default function SignupPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="bg-slate-800 border-white/10 text-white placeholder:text-slate-500 focus:border-violet-500"
+                  className="bg-white border-slate-200 text-[#1b1916] placeholder:text-slate-400 focus:border-violet-500"
                 />
               </div>
               {error && (
-                <p className="text-red-400 text-sm">{error}</p>
+                <p className="text-red-500 text-sm">{error}</p>
               )}
               <Button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-violet-600 hover:bg-violet-500 text-white"
+                className="w-full bg-[#1b1916] hover:bg-[#2d2a25] text-[#f3f2f1]"
               >
                 {loading ? "Creating account..." : "Create Free Account"}
               </Button>
@@ -102,9 +102,9 @@ export default function SignupPage() {
             <p className="mt-4 text-xs text-slate-500 text-center">
               By signing up, you agree to our Terms of Service and Privacy Policy.
             </p>
-            <p className="mt-4 text-center text-sm text-slate-400">
+            <p className="mt-4 text-center text-sm text-slate-500">
               Already have an account?{" "}
-              <Link href="/login" className="text-violet-400 hover:text-violet-300">
+              <Link href="/login" className="text-violet-600 hover:text-violet-500">
                 Sign in
               </Link>
             </p>

@@ -57,17 +57,17 @@ export default function BlogPostPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
-        <p className="text-slate-400">Loading...</p>
+      <div className="min-h-screen bg-[#f3f2f1] flex items-center justify-center">
+        <p className="text-slate-500">Loading...</p>
       </div>
     )
   }
 
   if (notFound || !post) {
     return (
-      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center gap-4">
-        <p className="text-slate-400 text-lg">Article not found.</p>
-        <Link href="/blog" className="text-violet-400 hover:underline text-sm">
+      <div className="min-h-screen bg-[#f3f2f1] flex flex-col items-center justify-center gap-4">
+        <p className="text-slate-600 text-lg">Article not found.</p>
+        <Link href="/blog" className="text-violet-600 hover:underline text-sm">
           ← Back to Blog
         </Link>
       </div>
@@ -75,19 +75,19 @@ export default function BlogPostPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100">
+    <div className="min-h-screen bg-[#f3f2f1] text-[#1b1916]">
       {/* Header */}
-      <header className="border-b border-white/10 px-6 py-4">
+      <header className="border-b border-black/10 px-6 py-4 bg-[#f3f2f1]">
         <div className="max-w-3xl mx-auto flex items-center justify-between">
           <Link
             href="/"
-            className="text-xl font-bold bg-gradient-to-r from-violet-400 to-cyan-400 bg-clip-text text-transparent"
+            className="text-xl font-bold bg-gradient-to-r from-violet-600 to-pink-500 bg-clip-text text-transparent"
           >
             itgrows.ai
           </Link>
           <Link
             href="/blog"
-            className="text-sm text-slate-400 hover:text-white transition-colors flex items-center gap-1"
+            className="text-sm text-slate-600 hover:text-[#1b1916] transition-colors flex items-center gap-1"
           >
             ← Back to Blog
           </Link>
@@ -102,7 +102,7 @@ export default function BlogPostPage() {
             {post.keywords.map((kw) => (
               <span
                 key={kw}
-                className="px-2.5 py-1 rounded-md bg-violet-900/40 border border-violet-500/30 text-violet-300 text-xs font-medium"
+                className="px-2.5 py-1 rounded-md bg-violet-100 border border-violet-200 text-violet-700 text-xs font-medium"
               >
                 {kw}
               </span>
@@ -110,24 +110,24 @@ export default function BlogPostPage() {
           </div>
 
           {/* Title */}
-          <h1 className="text-4xl font-extrabold leading-tight mb-4 text-white">
+          <h1 className="text-4xl font-extrabold leading-tight mb-4 text-[#1b1916]">
             {post.title}
           </h1>
 
           {/* Date */}
-          <p className="text-slate-400 text-sm mb-10">{formatDate(post.publishedAt)}</p>
+          <p className="text-slate-500 text-sm mb-10">{formatDate(post.publishedAt)}</p>
 
           {/* Content */}
           <div
-            className="prose prose-invert prose-slate max-w-none prose-headings:font-bold prose-h1:text-3xl prose-h2:text-2xl prose-h3:text-xl prose-p:leading-relaxed prose-p:text-slate-300 prose-li:text-slate-300 prose-strong:text-white prose-a:text-violet-400 prose-a:no-underline hover:prose-a:underline"
+            className="prose prose-slate max-w-none prose-headings:font-bold prose-h1:text-3xl prose-h2:text-2xl prose-h3:text-xl prose-p:leading-relaxed prose-p:text-slate-700 prose-li:text-slate-700 prose-strong:text-[#1b1916] prose-a:text-violet-600 prose-a:no-underline hover:prose-a:underline"
             dangerouslySetInnerHTML={{ __html: post.content }}
           />
 
           {/* Back link */}
-          <div className="mt-12 pt-8 border-t border-white/10">
+          <div className="mt-12 pt-8 border-t border-black/10">
             <Link
               href="/blog"
-              className="inline-flex items-center gap-2 text-violet-400 hover:text-violet-300 font-medium text-sm transition-colors"
+              className="inline-flex items-center gap-2 text-violet-600 hover:text-violet-500 font-medium text-sm transition-colors"
             >
               ← Back to Blog
             </Link>
@@ -136,7 +136,7 @@ export default function BlogPostPage() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-white/10 px-6 py-8 text-center text-slate-500 text-sm">
+      <footer className="border-t border-black/10 px-6 py-8 text-center text-slate-500 text-sm bg-[#ebe9e5]">
         <p>© 2026 itgrows.ai. All rights reserved.</p>
       </footer>
     </div>
