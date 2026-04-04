@@ -125,18 +125,34 @@ Current year: ${currentYear}`
     const llmData = (await llmResponse.json()) as ChatCompletionResponse
     const rawContent = llmData.choices?.[0]?.message?.content ?? ""
 
-    // Parse JSON from LLM response
+    // Parse JSON from LLM response — handle markdown code blocks and various formats
     let topics: TopicSuggestion[] = []
     try {
-      const jsonMatch = rawContent.match(/\[[\s\S]*\]/)
+      // Strip markdown code fences if present
+      const stripped = rawContent
+        .replace(/```json\s*/gi, "")
+        .replace(/```\s*/g, "")
+        .trim()
+      // Try to find JSON array
+      const jsonMatch = stripped.match(/\[[\s\S]*\]/)
       if (jsonMatch) {
-        topics = JSON.parse(jsonMatch[0]) as TopicSuggestion[]
+        const parsed = JSON.parse(jsonMatch[0])
+        if (Array.isArray(parsed)) {
+          topics = parsed as TopicSuggestion[]
+        }
+      } else {
+        // Maybe the whole response is a JSON array
+        const parsed = JSON.parse(stripped)
+        if (Array.isArray(parsed)) {
+          topics = parsed as TopicSuggestion[]
+        }
       }
     } catch {
-      // fallback — return empty topics
+      // fallback — return empty topics, log raw for debugging
+      console.error("[seo/analyze] Failed to parse LLM response:", rawContent.slice(0, 500))
     }
 
-    return NextResponse.json({ siteInfo, topics })
+    return NextResponse.json({ siteInfo, topics, _debug: rawContent.slice(0, 200) })
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error"
     return NextResponse.json({ error: message }, { status: 500 })
