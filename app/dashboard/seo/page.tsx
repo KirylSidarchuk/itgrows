@@ -265,7 +265,7 @@ export default function SeoAutopilotPage() {
               <div className="space-y-2">
                 <Label className="text-slate-300">Topic / Keyword</Label>
                 <Input
-                  placeholder="e.g. best AI tools for marketing 2025"
+                  placeholder="e.g. best AI tools for marketing 2026"
                   value={topic}
                   onChange={(e) => setTopic(e.target.value)}
                   required
