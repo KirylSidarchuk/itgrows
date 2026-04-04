@@ -6,6 +6,7 @@ const LLM_API_KEY = "any-key"
 
 interface AnalyzeRequest {
   url: string
+  usedKeywords?: string[]
 }
 
 interface TopicSuggestion {
@@ -50,7 +51,7 @@ function extractMetaContent(html: string, name: string): string {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json() as AnalyzeRequest
-    const { url } = body
+    const { url, usedKeywords = [] } = body
 
     if (!url || typeof url !== "string") {
       return NextResponse.json({ error: "url is required" }, { status: 400 })
@@ -97,11 +98,11 @@ Description: ${metaDescription}
 H1: ${h1}
 Main content: ${mainText}
 
-Suggest 3 SEO article topics that would drive traffic to this site.
+Suggest 3 NEW SEO article topics that would drive traffic to this site.
 Return ONLY a JSON array (no markdown, no extra text): [{"title": "...", "description": "...", "keyword": "..."}]
 Topics should be specific, relevant, and have good search volume potential.
 Each description should be 1-2 sentences.
-Current year: ${currentYear}`
+Current year: ${currentYear}${usedKeywords.length > 0 ? `\n\nIMPORTANT: Do NOT suggest topics similar to these already-published articles:\n${usedKeywords.map(k => `- ${k}`).join("\n")}\nSuggest completely different topics.` : ""}`
 
     const llmResponse = await fetch(`${LLM_BASE_URL}/chat/completions`, {
       method: "POST",

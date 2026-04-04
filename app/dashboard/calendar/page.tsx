@@ -178,11 +178,21 @@ export default function CalendarPage() {
     setModalStep("analyzing")
     setShowModal(true)
 
+    // Collect already used keywords from tasks + schedule to avoid repeating
+    const existingTasks: Array<{ title?: string; keyword?: string }> =
+      JSON.parse(localStorage.getItem("itgrows_tasks_v2") || "[]")
+    const scheduledPosts: Array<{ keyword?: string }> =
+      JSON.parse(localStorage.getItem("itgrows_schedule") || "[]")
+    const usedKeywords = [
+      ...existingTasks.map((t) => t.title ?? ""),
+      ...scheduledPosts.map((s) => s.keyword ?? ""),
+    ].filter(Boolean)
+
     try {
       const res = await fetch("/api/seo/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url: defaultSite.url }),
+        body: JSON.stringify({ url: defaultSite.url, usedKeywords }),
       })
       const data = (await res.json()) as { topics?: TopicSuggestion[]; error?: string }
       if (!res.ok || data.error) {
