@@ -62,19 +62,20 @@ function parseArticle(raw: string): {
   metaDescription: string
   keywords: string[]
 } {
-  const metaMatch = raw.match(/META_DESCRIPTION:\s*(.+?)(?:\n|$)/i)
-  const keywordsMatch = raw.match(/KEYWORDS:\s*(.+?)(?:\n|$)/i)
+  // More flexible regex: handles bold (**META_DESCRIPTION:**), colons, line breaks
+  const metaMatch = raw.match(/\*{0,2}META[_\s]?DESCRIPTION\*{0,2}:?\*{0,2}\s*([^\n]+)/i)
+  const keywordsMatch = raw.match(/\*{0,2}KEYWORDS\*{0,2}:?\*{0,2}\s*([^\n]+)/i)
 
-  const metaDescription = metaMatch ? metaMatch[1].trim() : ""
-  const keywordsRaw = keywordsMatch ? keywordsMatch[1].trim() : ""
+  const metaDescription = metaMatch ? metaMatch[1].replace(/^\*+|\*+$/g, "").trim() : ""
+  const keywordsRaw = keywordsMatch ? keywordsMatch[1].replace(/^\*+|\*+$/g, "").trim() : ""
   const keywords = keywordsRaw
-    ? keywordsRaw.split(",").map((k) => k.trim()).filter(Boolean)
+    ? keywordsRaw.split(/[,;]/).map((k) => k.trim()).filter(Boolean)
     : []
 
   // Remove meta/keywords lines from body
   const bodyRaw = raw
-    .replace(/META_DESCRIPTION:.*$/im, "")
-    .replace(/KEYWORDS:.*$/im, "")
+    .replace(/\*{0,2}META[_\s]?DESCRIPTION\*{0,2}:?\*{0,2}.*$/im, "")
+    .replace(/\*{0,2}KEYWORDS\*{0,2}:?\*{0,2}.*$/im, "")
     .trim()
 
   // Extract title from first H1
@@ -170,12 +171,18 @@ export async function POST(req: NextRequest) {
 
     const parsed = parseArticle(rawContent)
 
+    // Debug: log last 500 chars of raw to see if META/KEYWORDS present
+    console.log("[seo/generate] raw tail:", rawContent.slice(-500))
+    console.log("[seo/generate] metaDescription:", parsed.metaDescription)
+    console.log("[seo/generate] keywords:", parsed.keywords)
+
     return NextResponse.json({
       keyword,
       title: parsed.title,
       content: parsed.content,
       metaDescription: parsed.metaDescription,
       keywords: parsed.keywords,
+      _rawTail: rawContent.slice(-300), // temp debug field
     })
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error"
