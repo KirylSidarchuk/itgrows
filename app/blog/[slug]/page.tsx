@@ -13,33 +13,22 @@ function formatDate(iso: string): string {
   })
 }
 
-export default function SiteBlogPostPage() {
-  const { siteSlug, slug } = useParams<{ siteSlug: string; slug: string }>()
+export default function BlogPostPage() {
+  const { slug } = useParams<{ slug: string }>()
   const [post, setPost] = useState<BlogPost | null>(null)
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
 
-  const displayName = siteSlug
-    ? siteSlug
-        .split("-")
-        .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-        .join(" ")
-    : ""
-
   useEffect(() => {
-    if (!slug || !siteSlug) return
+    if (!slug) return
 
     async function fetchPost() {
       try {
-        // Try the dedicated slug endpoint first
         const res = await fetch(`/api/blog/posts/${slug}`)
         if (res.ok) {
           const data = (await res.json()) as { post: BlogPost }
-          // Verify it belongs to this siteSlug
-          if (data.post.siteSlug === siteSlug) {
-            setPost(data.post)
-            return
-          }
+          setPost(data.post)
+          return
         }
       } catch {
         // fall through
@@ -50,7 +39,7 @@ export default function SiteBlogPostPage() {
         const local = localStorage.getItem("itgrows_published_posts")
         if (local) {
           const posts = JSON.parse(local) as BlogPost[]
-          const found = posts.find((p) => p.slug === slug && p.siteSlug === siteSlug)
+          const found = posts.find((p) => p.slug === slug)
           if (found) {
             setPost(found)
             return
@@ -64,7 +53,7 @@ export default function SiteBlogPostPage() {
     }
 
     fetchPost().finally(() => setLoading(false))
-  }, [slug, siteSlug])
+  }, [slug])
 
   if (loading) {
     return (
@@ -78,8 +67,8 @@ export default function SiteBlogPostPage() {
     return (
       <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center gap-4">
         <p className="text-slate-400 text-lg">Article not found.</p>
-        <Link href={`/blog/${siteSlug}`} className="text-violet-400 hover:underline text-sm">
-          ← Back to {displayName} Blog
+        <Link href="/blog" className="text-violet-400 hover:underline text-sm">
+          ← Back to Blog
         </Link>
       </div>
     )
@@ -97,10 +86,10 @@ export default function SiteBlogPostPage() {
             itgrows.ai
           </Link>
           <Link
-            href={`/blog/${siteSlug}`}
+            href="/blog"
             className="text-sm text-slate-400 hover:text-white transition-colors flex items-center gap-1"
           >
-            ← Back to {displayName} Blog
+            ← Back to Blog
           </Link>
         </div>
       </header>
@@ -137,10 +126,10 @@ export default function SiteBlogPostPage() {
           {/* Back link */}
           <div className="mt-12 pt-8 border-t border-white/10">
             <Link
-              href={`/blog/${siteSlug}`}
+              href="/blog"
               className="inline-flex items-center gap-2 text-violet-400 hover:text-violet-300 font-medium text-sm transition-colors"
             >
-              ← Back to {displayName} Blog
+              ← Back to Blog
             </Link>
           </div>
         </div>
@@ -148,13 +137,7 @@ export default function SiteBlogPostPage() {
 
       {/* Footer */}
       <footer className="border-t border-white/10 px-6 py-8 text-center text-slate-500 text-sm">
-        <p>
-          Powered by{" "}
-          <Link href="/" className="text-violet-400 hover:text-violet-300 transition-colors">
-            itgrows.ai
-          </Link>{" "}
-          &mdash; &copy; 2026
-        </p>
+        <p>© 2026 itgrows.ai. All rights reserved.</p>
       </footer>
     </div>
   )

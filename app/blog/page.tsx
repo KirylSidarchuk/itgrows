@@ -151,7 +151,7 @@ export default function BlogPage() {
               {clientBlogs.map((blog) => (
                 <Link
                   key={blog.siteSlug}
-                  href={`/blog/${blog.siteSlug}`}
+                  href={`/blog/sites/${blog.siteSlug}`}
                   className="block group"
                 >
                   <div className="bg-slate-800/60 border border-white/10 rounded-2xl p-5 hover:border-violet-500/40 hover:bg-slate-800 transition-all">
@@ -193,7 +193,7 @@ export default function BlogPage() {
               {posts.map((post) => {
                 const excerpt = stripHtml(post.content).slice(0, 150)
                 const href = post.siteSlug
-                  ? `/blog/${post.siteSlug}/${post.slug}`
+                  ? `/blog/sites/${post.siteSlug}/${post.slug}`
                   : `/blog/${post.slug}`
                 return (
                   <Link key={post.id} href={href} className="block group">
