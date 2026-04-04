@@ -7,8 +7,8 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { getUser } from "@/lib/auth"
-import { getTasks, updateTaskStatus, type Task, type TaskStatus } from "@/lib/tasks"
-import { FileText } from "lucide-react"
+import { getTasks, updateTaskStatus, deleteTask, type Task, type TaskStatus } from "@/lib/tasks"
+import { FileText, Trash2 } from "lucide-react"
 
 const typeLabels: Record<string, string> = {
   seo_article: "SEO Article",
@@ -47,6 +47,11 @@ export default function TasksPage() {
 
   const handleStatusChange = (id: string, status: TaskStatus) => {
     updateTaskStatus(id, status)
+    setTasks(getTasks())
+  }
+
+  const handleDelete = (id: string) => {
+    deleteTask(id)
     setTasks(getTasks())
   }
 
@@ -174,6 +179,13 @@ export default function TasksPage() {
                           <option value="done">Done</option>
                         </select>
                       )}
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleDelete(task.id) }}
+                        className="ml-2 p-1 text-slate-500 hover:text-red-400 transition-colors"
+                        title="Delete task"
+                      >
+                        <Trash2 size={14} />
+                      </button>
                     </div>
                   </div>
                 </CardContent>

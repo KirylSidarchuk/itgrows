@@ -53,6 +53,11 @@ export function addTask(task: Omit<Task, "id" | "createdAt" | "updatedAt" | "sta
   return newTask
 }
 
+export function deleteTask(id: string): void {
+  const tasks = getTasks()
+  saveTasks(tasks.filter((t) => t.id !== id))
+}
+
 export function updateTaskStatus(id: string, status: TaskStatus): void {
   const tasks = getTasks()
   const idx = tasks.findIndex((t) => t.id === id)
