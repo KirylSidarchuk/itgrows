@@ -29,8 +29,8 @@ function generateId(): string {
 
 function ShopifyGuide() {
   return (
-    <div className="rounded-xl bg-slate-700/30 border border-white/10 p-4 space-y-2 text-sm">
-      <p className="text-slate-300 font-medium">How to get your Shopify API Token</p>
+    <div className="rounded-xl bg-[#ebe9e5] border border-black/10 p-4 space-y-2 text-sm">
+      <p className="text-slate-700 font-medium">How to get your Shopify API Token</p>
       <p className="text-slate-400 text-xs">
         This is an API token, not your password. It is safe to share with third-party apps.
       </p>
@@ -49,8 +49,8 @@ function ShopifyGuide() {
 
 function WebflowGuide() {
   return (
-    <div className="rounded-xl bg-slate-700/30 border border-white/10 p-4 space-y-2 text-sm">
-      <p className="text-slate-300 font-medium">How to get your Webflow API Token</p>
+    <div className="rounded-xl bg-[#ebe9e5] border border-black/10 p-4 space-y-2 text-sm">
+      <p className="text-slate-700 font-medium">How to get your Webflow API Token</p>
       <p className="text-slate-400 text-xs">
         This is an API token, not your password. It is safe to share with third-party apps.
       </p>
@@ -188,30 +188,30 @@ function AddSiteWizard({ onSaved, onCancel }: AddSiteWizardProps) {
   // ── Render: Step 1 — URL ──────────────────────────────────────────────────
   if (step === "url") {
     return (
-      <div className="space-y-5 pt-4 border-t border-white/10">
-        <h3 className="text-white font-semibold text-base">Connect Your Website</h3>
+      <div className="space-y-5 pt-4 border-t border-black/10">
+        <h3 className="text-[#1b1916] font-semibold text-base">Connect Your Website</h3>
         <div className="space-y-2">
-          <Label className="text-slate-300 text-sm">Website URL</Label>
+          <Label className="text-slate-700 text-sm">Website URL</Label>
           <Input
             placeholder="https://yoursite.com"
             value={inputUrl}
             onChange={(e) => setInputUrl(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleAnalyze()}
-            className="bg-slate-700 border-white/10 text-white placeholder:text-slate-500 focus:border-violet-500 text-sm"
+            className="bg-[#ebe9e5] border-black/10 text-[#1b1916] placeholder:text-slate-500 focus:border-violet-500 text-sm"
           />
         </div>
         <div className="flex gap-3">
           <Button
             onClick={handleAnalyze}
             disabled={!inputUrl.trim()}
-            className="bg-violet-600 hover:bg-violet-500 text-white"
+            className="bg-violet-600 hover:bg-violet-500 text-[#1b1916]"
           >
             Analyze &amp; Connect
           </Button>
           <Button
             onClick={onCancel}
             variant="outline"
-            className="border-white/20 text-slate-300 hover:bg-white/5"
+            className="border-black/20 text-slate-700 hover:bg-[#ebe9e5]"
           >
             Cancel
           </Button>
@@ -223,7 +223,7 @@ function AddSiteWizard({ onSaved, onCancel }: AddSiteWizardProps) {
   // ── Render: Step 2 — Detecting ────────────────────────────────────────────
   if (step === "detecting") {
     return (
-      <div className="space-y-4 pt-4 border-t border-white/10">
+      <div className="space-y-4 pt-4 border-t border-black/10">
         <div className="flex items-center gap-3 py-6">
           <svg
             className="animate-spin h-5 w-5 text-violet-400 shrink-0"
@@ -234,7 +234,7 @@ function AddSiteWizard({ onSaved, onCancel }: AddSiteWizardProps) {
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
           </svg>
-          <span className="text-slate-300 text-sm">Detecting your platform...</span>
+          <span className="text-slate-700 text-sm">Detecting your platform...</span>
         </div>
       </div>
     )
@@ -255,12 +255,12 @@ export async function POST(req) {
 }`
 
   return (
-    <div className="space-y-5 pt-4 border-t border-white/10">
+    <div className="space-y-5 pt-4 border-t border-black/10">
       {/* Detection badge */}
-      <div className="rounded-xl bg-slate-700/40 border border-white/10 p-4 flex items-center gap-3">
+      <div className="rounded-xl bg-[#ebe9e5] border border-black/10 p-4 flex items-center gap-3">
         <span className="text-green-400 text-lg">&#10003;</span>
         <div>
-          <p className="text-white font-semibold text-sm">
+          <p className="text-[#1b1916] font-semibold text-sm">
             {detected === "wordpress"
               ? "WordPress detected"
               : detected === "shopify"
@@ -278,8 +278,8 @@ export async function POST(req) {
       {/* ── WordPress ── */}
       {detected === "wordpress" && (
         <div className="space-y-4">
-          <div className="rounded-xl bg-slate-700/30 border border-white/10 p-4 space-y-3 text-sm">
-            <p className="text-slate-300 font-medium">Install our free plugin:</p>
+          <div className="rounded-xl bg-[#ebe9e5] border border-black/10 p-4 space-y-3 text-sm">
+            <p className="text-slate-700 font-medium">Install our free plugin:</p>
             <ol className="list-decimal list-inside space-y-2 text-slate-400">
               <li>
                 <a
@@ -299,24 +299,24 @@ export async function POST(req) {
           </div>
 
           <div className="space-y-2">
-            <Label className="text-slate-300 text-sm">Site Token (from WP Admin)</Label>
+            <Label className="text-slate-700 text-sm">Site Token (from WP Admin)</Label>
             <Input
               placeholder="igt_..."
               value={wpToken}
               onChange={(e) => setWpToken(e.target.value)}
-              className="bg-slate-700 border-white/10 text-white placeholder:text-slate-500 focus:border-violet-500 text-sm font-mono"
+              className="bg-[#ebe9e5] border-black/10 text-[#1b1916] placeholder:text-slate-500 focus:border-violet-500 text-sm font-mono"
             />
           </div>
 
           <div className="space-y-2">
-            <Label className="text-slate-300 text-sm">
+            <Label className="text-slate-700 text-sm">
               Site Name <span className="text-slate-500">(optional)</span>
             </Label>
             <Input
               placeholder="My Blog"
               value={siteName}
               onChange={(e) => setSiteName(e.target.value)}
-              className="bg-slate-700 border-white/10 text-white placeholder:text-slate-500 focus:border-violet-500 text-sm"
+              className="bg-[#ebe9e5] border-black/10 text-[#1b1916] placeholder:text-slate-500 focus:border-violet-500 text-sm"
             />
           </div>
 
@@ -324,14 +324,14 @@ export async function POST(req) {
             <Button
               onClick={() => handleConnect(wpToken.trim())}
               disabled={!wpToken.trim()}
-              className="bg-violet-600 hover:bg-violet-500 text-white"
+              className="bg-violet-600 hover:bg-violet-500 text-[#1b1916]"
             >
               Connect
             </Button>
             <Button
               onClick={() => setStep("url")}
               variant="outline"
-              className="border-white/20 text-slate-300 hover:bg-white/5"
+              className="border-black/20 text-slate-700 hover:bg-[#ebe9e5]"
             >
               ← Change URL
             </Button>
@@ -342,12 +342,12 @@ export async function POST(req) {
       {/* ── Custom / Next.js ── */}
       {(detected === "custom" || detected === "nextjs") && (
         <div className="space-y-4">
-          <div className="rounded-xl bg-slate-700/30 border border-white/10 p-4 space-y-3 text-sm">
-            <p className="text-slate-300 font-medium">
+          <div className="rounded-xl bg-[#ebe9e5] border border-black/10 p-4 space-y-3 text-sm">
+            <p className="text-slate-700 font-medium">
               Add this snippet to your site to enable publishing:
             </p>
             <div className="relative">
-              <pre className="text-xs text-slate-300 bg-slate-900/60 rounded-lg p-3 overflow-auto font-mono whitespace-pre-wrap">
+              <pre className="text-xs text-slate-700 bg-[#ebe9e5] rounded-lg p-3 overflow-auto font-mono whitespace-pre-wrap">
                 {snippetCode}
               </pre>
               <div className="mt-2">
@@ -357,7 +357,7 @@ export async function POST(req) {
             <div className="mt-2">
               <p className="text-slate-400 text-xs mb-2">Set environment variable:</p>
               <div className="flex items-center gap-2">
-                <code className="text-xs text-violet-300 bg-slate-900/60 rounded px-2 py-1 font-mono">
+                <code className="text-xs text-violet-300 bg-[#ebe9e5] rounded px-2 py-1 font-mono">
                   ITGROWS_SITE_TOKEN={generatedToken}
                 </code>
                 <CopyButton text={`ITGROWS_SITE_TOKEN=${generatedToken}`} label="Copy" />
@@ -366,28 +366,28 @@ export async function POST(req) {
           </div>
 
           <div className="space-y-2">
-            <Label className="text-slate-300 text-sm">
+            <Label className="text-slate-700 text-sm">
               Site Name <span className="text-slate-500">(optional)</span>
             </Label>
             <Input
               placeholder="My Blog"
               value={siteName}
               onChange={(e) => setSiteName(e.target.value)}
-              className="bg-slate-700 border-white/10 text-white placeholder:text-slate-500 focus:border-violet-500 text-sm"
+              className="bg-[#ebe9e5] border-black/10 text-[#1b1916] placeholder:text-slate-500 focus:border-violet-500 text-sm"
             />
           </div>
 
           <div className="flex gap-3 pt-1">
             <Button
               onClick={() => handleConnect(generatedToken)}
-              className="bg-violet-600 hover:bg-violet-500 text-white"
+              className="bg-violet-600 hover:bg-violet-500 text-[#1b1916]"
             >
               I&apos;ve installed it — Connect
             </Button>
             <Button
               onClick={() => setStep("url")}
               variant="outline"
-              className="border-white/20 text-slate-300 hover:bg-white/5"
+              className="border-black/20 text-slate-700 hover:bg-[#ebe9e5]"
             >
               ← Change URL
             </Button>
@@ -401,35 +401,35 @@ export async function POST(req) {
           <ShopifyGuide />
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
-              <Label className="text-slate-300 text-sm">Access Token</Label>
+              <Label className="text-slate-700 text-sm">Access Token</Label>
               <Input
                 type="password"
                 placeholder="shpat_..."
                 value={shopifyAccessToken}
                 onChange={(e) => setShopifyAccessToken(e.target.value)}
-                className="bg-slate-700 border-white/10 text-white placeholder:text-slate-500 focus:border-violet-500 text-sm"
+                className="bg-[#ebe9e5] border-black/10 text-[#1b1916] placeholder:text-slate-500 focus:border-violet-500 text-sm"
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-slate-300 text-sm">Blog ID</Label>
+              <Label className="text-slate-700 text-sm">Blog ID</Label>
               <Input
                 placeholder="123456789"
                 value={shopifyBlogId}
                 onChange={(e) => setShopifyBlogId(e.target.value)}
-                className="bg-slate-700 border-white/10 text-white placeholder:text-slate-500 focus:border-violet-500 text-sm"
+                className="bg-[#ebe9e5] border-black/10 text-[#1b1916] placeholder:text-slate-500 focus:border-violet-500 text-sm"
               />
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label className="text-slate-300 text-sm">
+            <Label className="text-slate-700 text-sm">
               Site Name <span className="text-slate-500">(optional)</span>
             </Label>
             <Input
               placeholder="My Store"
               value={siteName}
               onChange={(e) => setSiteName(e.target.value)}
-              className="bg-slate-700 border-white/10 text-white placeholder:text-slate-500 focus:border-violet-500 text-sm"
+              className="bg-[#ebe9e5] border-black/10 text-[#1b1916] placeholder:text-slate-500 focus:border-violet-500 text-sm"
             />
           </div>
 
@@ -437,14 +437,14 @@ export async function POST(req) {
             <Button
               onClick={handleConnectShopify}
               disabled={!shopifyAccessToken.trim() || !shopifyBlogId.trim()}
-              className="bg-violet-600 hover:bg-violet-500 text-white"
+              className="bg-violet-600 hover:bg-violet-500 text-[#1b1916]"
             >
               Connect
             </Button>
             <Button
               onClick={() => setStep("url")}
               variant="outline"
-              className="border-white/20 text-slate-300 hover:bg-white/5"
+              className="border-black/20 text-slate-700 hover:bg-[#ebe9e5]"
             >
               ← Change URL
             </Button>
@@ -458,35 +458,35 @@ export async function POST(req) {
           <WebflowGuide />
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
-              <Label className="text-slate-300 text-sm">API Token</Label>
+              <Label className="text-slate-700 text-sm">API Token</Label>
               <Input
                 type="password"
                 placeholder="your-webflow-token"
                 value={webflowApiToken}
                 onChange={(e) => setWebflowApiToken(e.target.value)}
-                className="bg-slate-700 border-white/10 text-white placeholder:text-slate-500 focus:border-violet-500 text-sm"
+                className="bg-[#ebe9e5] border-black/10 text-[#1b1916] placeholder:text-slate-500 focus:border-violet-500 text-sm"
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-slate-300 text-sm">Collection ID</Label>
+              <Label className="text-slate-700 text-sm">Collection ID</Label>
               <Input
                 placeholder="collection-id"
                 value={webflowCollectionId}
                 onChange={(e) => setWebflowCollectionId(e.target.value)}
-                className="bg-slate-700 border-white/10 text-white placeholder:text-slate-500 focus:border-violet-500 text-sm"
+                className="bg-[#ebe9e5] border-black/10 text-[#1b1916] placeholder:text-slate-500 focus:border-violet-500 text-sm"
               />
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label className="text-slate-300 text-sm">
+            <Label className="text-slate-700 text-sm">
               Site Name <span className="text-slate-500">(optional)</span>
             </Label>
             <Input
               placeholder="My Site"
               value={siteName}
               onChange={(e) => setSiteName(e.target.value)}
-              className="bg-slate-700 border-white/10 text-white placeholder:text-slate-500 focus:border-violet-500 text-sm"
+              className="bg-[#ebe9e5] border-black/10 text-[#1b1916] placeholder:text-slate-500 focus:border-violet-500 text-sm"
             />
           </div>
 
@@ -494,14 +494,14 @@ export async function POST(req) {
             <Button
               onClick={handleConnectWebflow}
               disabled={!webflowApiToken.trim() || !webflowCollectionId.trim()}
-              className="bg-violet-600 hover:bg-violet-500 text-white"
+              className="bg-violet-600 hover:bg-violet-500 text-[#1b1916]"
             >
               Connect
             </Button>
             <Button
               onClick={() => setStep("url")}
               variant="outline"
-              className="border-white/20 text-slate-300 hover:bg-white/5"
+              className="border-black/20 text-slate-700 hover:bg-[#ebe9e5]"
             >
               ← Change URL
             </Button>
@@ -560,15 +560,15 @@ export default function SettingsPage() {
     <div className="p-8">
       <div className="max-w-3xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-1 text-white">Settings</h1>
+          <h1 className="text-3xl font-bold mb-1 text-[#1b1916]">Settings</h1>
           <p className="text-slate-400">Manage your account preferences and integrations.</p>
         </div>
 
         {/* Connected Sites */}
-        <Card className="bg-slate-800/60 border-white/10">
+        <Card className="bg-white border-black/10">
           <CardHeader className="flex flex-row items-start justify-between">
             <div>
-              <CardTitle className="text-white text-lg flex items-center gap-2">
+              <CardTitle className="text-[#1b1916] text-lg flex items-center gap-2">
                 {defaultSite ? (
                   <>
                     <span className="text-green-400">&#10003;</span>
@@ -588,7 +588,7 @@ export default function SettingsPage() {
             {!showWizard && (
               <Button
                 onClick={() => setShowWizard(true)}
-                className="bg-violet-600 hover:bg-violet-500 text-white text-sm shrink-0"
+                className="bg-violet-600 hover:bg-violet-500 text-[#1b1916] text-sm shrink-0"
               >
                 + Add Site
               </Button>
@@ -605,10 +605,10 @@ export default function SettingsPage() {
 
             {sites.map((site) => (
               <div key={site.id} className="space-y-2">
-                <div className="flex items-center justify-between p-4 rounded-xl bg-slate-700/40 border border-white/10">
+                <div className="flex items-center justify-between p-4 rounded-xl bg-[#ebe9e5] border border-black/10">
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
-                      <span className="text-white font-medium text-sm">{site.name}</span>
+                      <span className="text-[#1b1916] font-medium text-sm">{site.name}</span>
                       {site.isDefault && (
                         <span className="px-2 py-0.5 rounded-full bg-green-900/40 border border-green-500/30 text-green-400 text-xs">
                           Default

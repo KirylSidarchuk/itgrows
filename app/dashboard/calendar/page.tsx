@@ -60,7 +60,7 @@ function formatDateFull(dateStr: string): string {
 }
 
 const STATUS_STYLES: Record<PostStatus, string> = {
-  scheduled: "bg-slate-600/40 text-slate-300 border border-slate-500/40",
+  scheduled: "bg-slate-100 text-slate-700 border border-slate-300",
   generating: "bg-yellow-600/30 text-yellow-300 border border-yellow-500/40",
   published: "bg-green-600/30 text-green-300 border border-green-500/40",
   failed: "bg-red-600/30 text-red-300 border border-red-500/40",
@@ -506,23 +506,23 @@ export default function CalendarPage() {
           </div>
           <div className="flex items-center gap-3 shrink-0">
             {/* View toggle */}
-            <div className="flex rounded-lg border border-white/10 overflow-hidden">
+            <div className="flex rounded-lg border border-black/10 overflow-hidden">
               <button
                 onClick={() => setView("list")}
                 className={`px-4 py-2 text-sm font-medium transition-colors ${
                   view === "list"
                     ? "bg-violet-600/30 text-violet-300"
-                    : "text-slate-400 hover:text-white hover:bg-white/5"
+                    : "text-slate-400 hover:text-[#1b1916] hover:bg-[#ebe9e5]"
                 }`}
               >
                 List
               </button>
               <button
                 onClick={() => setView("calendar")}
-                className={`px-4 py-2 text-sm font-medium transition-colors border-l border-white/10 ${
+                className={`px-4 py-2 text-sm font-medium transition-colors border-l border-black/10 ${
                   view === "calendar"
                     ? "bg-violet-600/30 text-violet-300"
-                    : "text-slate-400 hover:text-white hover:bg-white/5"
+                    : "text-slate-400 hover:text-[#1b1916] hover:bg-[#ebe9e5]"
                 }`}
               >
                 Calendar
@@ -530,7 +530,7 @@ export default function CalendarPage() {
             </div>
             <Button
               onClick={openModal}
-              className="bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-white"
+              className="bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-[#1b1916]"
             >
               + Schedule Article
             </Button>
@@ -540,7 +540,7 @@ export default function CalendarPage() {
         {/* Loading */}
         {loading && (
           <div className="flex items-center justify-center py-16 text-slate-400">
-            <span className="inline-block w-5 h-5 border-2 border-white/20 border-t-violet-400 rounded-full animate-spin mr-3" />
+            <span className="inline-block w-5 h-5 border-2 border-black/20 border-t-violet-400 rounded-full animate-spin mr-3" />
             Loading schedule...
           </div>
         )}
@@ -549,13 +549,13 @@ export default function CalendarPage() {
         {!loading && posts.length === 0 && (
           <div className="text-center py-20">
             <div className="text-5xl mb-4">📅</div>
-            <h3 className="text-xl font-semibold text-white mb-2">No articles scheduled</h3>
+            <h3 className="text-xl font-semibold text-[#1b1916] mb-2">No articles scheduled</h3>
             <p className="text-slate-400 mb-6">
               Schedule your first article to get started with content automation.
             </p>
             <Button
               onClick={openModal}
-              className="bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-white"
+              className="bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-[#1b1916]"
             >
               + Schedule Article
             </Button>
@@ -564,11 +564,11 @@ export default function CalendarPage() {
 
         {/* LIST VIEW */}
         {!loading && posts.length > 0 && view === "list" && (
-          <Card className="bg-slate-800/60 border-white/10">
+          <Card className="bg-white border-black/10">
             <CardContent className="p-0">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-white/10">
+                  <tr className="border-b border-black/10">
                     <th className="text-left px-6 py-4 text-xs font-semibold text-slate-400 uppercase tracking-wider">
                       Date
                     </th>
@@ -589,11 +589,11 @@ export default function CalendarPage() {
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-white/5">
+                <tbody className="divide-y divide-black/5">
                   {sortedDates.map((date) => (
                     <>
                       {/* Date group header */}
-                      <tr key={`group-${date}`} className="bg-slate-700/20">
+                      <tr key={`group-${date}`} className="bg-[#ebe9e5]/20">
                         <td
                           colSpan={6}
                           className="px-6 py-2 text-xs font-semibold text-slate-400 uppercase tracking-wider"
@@ -605,13 +605,13 @@ export default function CalendarPage() {
                         </td>
                       </tr>
                       {groupedByDate[date].map((post) => (
-                        <tr key={post.id} className="hover:bg-white/[0.02] transition-colors">
-                          <td className="px-6 py-4 text-sm text-slate-300">{formatDate(date)}</td>
+                        <tr key={post.id} className="hover:bg-[#ebe9e5] transition-colors">
+                          <td className="px-6 py-4 text-sm text-slate-700">{formatDate(date)}</td>
                           <td className="px-6 py-4">
-                            <span className="text-sm text-white font-medium">{post.keyword}</span>
+                            <span className="text-sm text-[#1b1916] font-medium">{post.keyword}</span>
                           </td>
                           <td className="px-6 py-4">
-                            <span className="text-xs font-mono bg-slate-700/60 text-slate-300 px-2 py-1 rounded">
+                            <span className="text-xs font-mono bg-[#ebe9e5] text-slate-700 px-2 py-1 rounded">
                               {LANG_LABELS[post.language as Language] ?? post.language.toUpperCase()}
                             </span>
                           </td>
@@ -633,7 +633,7 @@ export default function CalendarPage() {
                                   size="sm"
                                   disabled={publishingIds.has(post.id)}
                                   onClick={() => handlePreview(post)}
-                                  className="text-xs bg-slate-600/30 hover:bg-slate-600/50 text-slate-300 border border-slate-500/40 hover:border-slate-400/60"
+                                  className="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 hover:border-slate-400"
                                 >
                                   Preview
                                 </Button>
@@ -653,7 +653,7 @@ export default function CalendarPage() {
                                   size="sm"
                                   disabled={publishingIds.has(post.id)}
                                   onClick={() => handlePreview(post)}
-                                  className="text-xs bg-slate-600/30 hover:bg-slate-600/50 text-slate-300 border border-slate-500/40 hover:border-slate-400/60"
+                                  className="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 hover:border-slate-400"
                                 >
                                   Preview
                                 </Button>
@@ -713,8 +713,8 @@ export default function CalendarPage() {
                         isToday
                           ? "border-violet-500/50 bg-violet-600/10"
                           : isPast
-                          ? "border-white/5 bg-slate-800/20"
-                          : "border-white/10 bg-slate-800/40"
+                          ? "border-black/5 bg-[#ebe9e5]"
+                          : "border-black/10 bg-white"
                       }`}
                     >
                       <div
@@ -748,9 +748,9 @@ export default function CalendarPage() {
       {/* MODAL */}
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <Card className="w-full max-w-lg bg-slate-900 border-white/10 shadow-2xl">
-            <CardHeader className="border-b border-white/10">
-              <CardTitle className="text-white">Schedule Article</CardTitle>
+          <Card className="w-full max-w-lg bg-white border-black/10 shadow-2xl">
+            <CardHeader className="border-b border-black/10">
+              <CardTitle className="text-[#1b1916]">Schedule Article</CardTitle>
             </CardHeader>
             <CardContent className="pt-6">
 
@@ -767,13 +767,13 @@ export default function CalendarPage() {
                       type="button"
                       variant="outline"
                       onClick={() => setShowModal(false)}
-                      className="flex-1 border-white/10 text-slate-400 hover:text-white hover:bg-white/5"
+                      className="flex-1 border-black/10 text-slate-400 hover:text-[#1b1916] hover:bg-[#ebe9e5]"
                     >
                       Cancel
                     </Button>
                     <Button
                       onClick={() => router.push("/dashboard/settings")}
-                      className="flex-1 bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-white"
+                      className="flex-1 bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-[#1b1916]"
                     >
                       Go to Settings
                     </Button>
@@ -784,8 +784,8 @@ export default function CalendarPage() {
               {/* Step: analyzing */}
               {modalStep === "analyzing" && (
                 <div className="flex flex-col items-center justify-center py-10 gap-4">
-                  <span className="inline-block w-8 h-8 border-2 border-white/20 border-t-violet-400 rounded-full animate-spin" />
-                  <p className="text-slate-300 text-sm">Analyzing your site...</p>
+                  <span className="inline-block w-8 h-8 border-2 border-black/20 border-t-violet-400 rounded-full animate-spin" />
+                  <p className="text-slate-700 text-sm">Analyzing your site...</p>
                 </div>
               )}
 
@@ -807,9 +807,9 @@ export default function CalendarPage() {
                           key={i}
                           type="button"
                           onClick={() => handleSelectTopic(topic)}
-                          className="w-full text-left rounded-xl border border-white/10 bg-slate-800/60 p-4 hover:border-violet-500/50 hover:bg-slate-800/80 transition-all"
+                          className="w-full text-left rounded-xl border border-black/10 bg-white p-4 hover:border-violet-500/50 hover:bg-white transition-all"
                         >
-                          <h3 className="text-white font-semibold text-sm mb-1">{topic.title}</h3>
+                          <h3 className="text-[#1b1916] font-semibold text-sm mb-1">{topic.title}</h3>
                           <p className="text-slate-400 text-xs leading-relaxed">{topic.description}</p>
                         </button>
                       ))}
@@ -825,7 +825,7 @@ export default function CalendarPage() {
                       type="button"
                       variant="outline"
                       onClick={() => setShowModal(false)}
-                      className="w-full border-white/10 text-slate-400 hover:text-white hover:bg-white/5"
+                      className="w-full border-black/10 text-slate-400 hover:text-[#1b1916] hover:bg-[#ebe9e5]"
                     >
                       Cancel
                     </Button>
@@ -839,12 +839,12 @@ export default function CalendarPage() {
                   {/* Selected topic summary */}
                   <div className="rounded-xl border border-violet-500/30 bg-violet-600/10 p-4">
                     <p className="text-xs text-violet-400 uppercase tracking-wider mb-1">Selected topic</p>
-                    <p className="text-white font-semibold text-sm">{selectedTopic.title}</p>
+                    <p className="text-[#1b1916] font-semibold text-sm">{selectedTopic.title}</p>
                   </div>
 
                   {/* Language */}
                   <div className="space-y-2">
-                    <Label className="text-slate-300">Language</Label>
+                    <Label className="text-slate-700">Language</Label>
                     <div className="flex gap-2">
                       {(["en", "ru", "uk"] as Language[]).map((l) => (
                         <button
@@ -855,7 +855,7 @@ export default function CalendarPage() {
                           className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all border ${
                             language === l
                               ? "bg-violet-600/30 border-violet-500 text-violet-300"
-                              : "border-white/10 text-slate-400 hover:border-white/20 hover:text-slate-200"
+                              : "border-black/10 text-slate-400 hover:border-black/20 hover:text-[#1b1916]"
                           }`}
                         >
                           {l === "en" ? "English" : l === "ru" ? "Russian" : "Ukrainian"}
@@ -866,7 +866,7 @@ export default function CalendarPage() {
 
                   {/* Tone */}
                   <div className="space-y-2">
-                    <Label className="text-slate-300">Tone</Label>
+                    <Label className="text-slate-700">Tone</Label>
                     <div className="flex gap-2">
                       {(["Professional", "Casual", "Expert"] as Tone[]).map((t) => (
                         <button
@@ -877,7 +877,7 @@ export default function CalendarPage() {
                           className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all border ${
                             tone === t
                               ? "bg-pink-600/30 border-pink-500 text-pink-300"
-                              : "border-white/10 text-slate-400 hover:border-white/20 hover:text-slate-200"
+                              : "border-black/10 text-slate-400 hover:border-black/20 hover:text-[#1b1916]"
                           }`}
                         >
                           {t}
@@ -888,14 +888,14 @@ export default function CalendarPage() {
 
                   {/* Publish Date */}
                   <div className="space-y-2">
-                    <Label className="text-slate-300">Publish Date</Label>
+                    <Label className="text-slate-700">Publish Date</Label>
                     <Input
                       type="date"
                       value={scheduledDate}
                       onChange={(e) => setScheduledDate(e.target.value)}
                       disabled={scheduling}
                       min={getTodayString()}
-                      className="bg-slate-800 border-white/10 text-white focus:border-violet-500 [color-scheme:dark]"
+                      className="bg-white border-black/10 text-[#1b1916] focus:border-violet-500 [color-scheme:dark]"
                     />
                   </div>
 
@@ -906,14 +906,14 @@ export default function CalendarPage() {
                       variant="outline"
                       onClick={() => setModalStep("topics")}
                       disabled={scheduling}
-                      className="flex-1 border-white/10 text-slate-400 hover:text-white hover:bg-white/5"
+                      className="flex-1 border-black/10 text-slate-400 hover:text-[#1b1916] hover:bg-[#ebe9e5]"
                     >
                       Back
                     </Button>
                     <Button
                       onClick={handleSchedule}
                       disabled={scheduling || !scheduledDate}
-                      className="flex-1 bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-white"
+                      className="flex-1 bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-[#1b1916]"
                     >
                       {scheduling ? (
                         <span className="flex items-center gap-2">
@@ -935,21 +935,21 @@ export default function CalendarPage() {
       {/* PREVIEW MODAL */}
       {previewOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-          <div className="w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-2xl bg-slate-900 border border-white/10 shadow-2xl flex flex-col">
+          <div className="w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-2xl bg-white border border-black/10 shadow-2xl flex flex-col">
             {/* Header */}
-            <div className="flex items-center justify-between px-8 py-5 border-b border-white/10 shrink-0">
+            <div className="flex items-center justify-between px-8 py-5 border-b border-black/10 shrink-0">
               <div>
-                <h2 className="text-xl font-bold text-white">Article Preview</h2>
+                <h2 className="text-xl font-bold text-[#1b1916]">Article Preview</h2>
                 {previewPost && (
                   <p className="text-sm text-slate-400 mt-0.5">
-                    Keyword: <span className="text-slate-300">{previewPost.keyword}</span>
+                    Keyword: <span className="text-slate-700">{previewPost.keyword}</span>
                   </p>
                 )}
               </div>
               <button
                 onClick={() => setPreviewOpen(false)}
                 disabled={previewPublishing}
-                className="text-slate-400 hover:text-white transition-colors text-2xl leading-none"
+                className="text-slate-400 hover:text-[#1b1916] transition-colors text-2xl leading-none"
                 aria-label="Close"
               >
                 ×
@@ -961,8 +961,8 @@ export default function CalendarPage() {
               {/* Spinner while generating */}
               {previewGenerating && (
                 <div className="flex flex-col items-center justify-center py-16 gap-4">
-                  <span className="inline-block w-10 h-10 border-2 border-white/20 border-t-violet-400 rounded-full animate-spin" />
-                  <p className="text-slate-300 text-sm">Generating article...</p>
+                  <span className="inline-block w-10 h-10 border-2 border-black/20 border-t-violet-400 rounded-full animate-spin" />
+                  <p className="text-slate-700 text-sm">Generating article...</p>
                 </div>
               )}
 
@@ -984,7 +984,7 @@ export default function CalendarPage() {
                       value={previewTitle}
                       onChange={(e) => setPreviewTitle(e.target.value)}
                       disabled={previewPublishing}
-                      className="w-full bg-slate-800 border border-white/10 rounded-lg px-4 py-3 text-white text-lg font-semibold focus:outline-none focus:border-violet-500 transition-colors"
+                      className="w-full bg-white border border-black/10 rounded-lg px-4 py-3 text-[#1b1916] text-lg font-semibold focus:outline-none focus:border-violet-500 transition-colors"
                     />
                   </div>
 
@@ -998,7 +998,7 @@ export default function CalendarPage() {
                       value={previewMeta}
                       onChange={(e) => setPreviewMeta(e.target.value)}
                       disabled={previewPublishing}
-                      className="w-full bg-slate-800 border border-white/10 rounded-lg px-4 py-2.5 text-slate-300 text-sm focus:outline-none focus:border-violet-500 transition-colors"
+                      className="w-full bg-white border border-black/10 rounded-lg px-4 py-2.5 text-slate-700 text-sm focus:outline-none focus:border-violet-500 transition-colors"
                     />
                   </div>
 
@@ -1010,7 +1010,7 @@ export default function CalendarPage() {
                       onChange={(e) => setPreviewContent(e.target.value)}
                       disabled={previewPublishing}
                       rows={20}
-                      className="w-full bg-slate-800 border border-white/10 rounded-lg px-4 py-3 text-slate-200 text-sm font-mono leading-relaxed focus:outline-none focus:border-violet-500 transition-colors resize-y"
+                      className="w-full bg-white border border-black/10 rounded-lg px-4 py-3 text-[#1b1916] text-sm font-mono leading-relaxed focus:outline-none focus:border-violet-500 transition-colors resize-y"
                     />
                   </div>
                 </>
@@ -1019,11 +1019,11 @@ export default function CalendarPage() {
 
             {/* Footer actions */}
             {!previewGenerating && (
-              <div className="flex items-center justify-end gap-3 px-8 py-5 border-t border-white/10 shrink-0">
+              <div className="flex items-center justify-end gap-3 px-8 py-5 border-t border-black/10 shrink-0">
                 <button
                   onClick={() => setPreviewOpen(false)}
                   disabled={previewPublishing}
-                  className="px-5 py-2.5 rounded-lg text-sm font-medium border border-white/10 text-slate-400 hover:text-white hover:bg-white/5 transition-colors disabled:opacity-50"
+                  className="px-5 py-2.5 rounded-lg text-sm font-medium border border-black/10 text-slate-400 hover:text-[#1b1916] hover:bg-[#ebe9e5] transition-colors disabled:opacity-50"
                 >
                   Cancel
                 </button>
@@ -1031,7 +1031,7 @@ export default function CalendarPage() {
                   <button
                     onClick={handlePreviewPublish}
                     disabled={previewPublishing}
-                    className="px-6 py-2.5 rounded-lg text-sm font-semibold bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-white transition-all disabled:opacity-50 flex items-center gap-2"
+                    className="px-6 py-2.5 rounded-lg text-sm font-semibold bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-[#1b1916] transition-all disabled:opacity-50 flex items-center gap-2"
                   >
                     {previewPublishing ? (
                       <>

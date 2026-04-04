@@ -127,22 +127,22 @@ function SeoArticleFlow() {
   // ── Step: URL input ──────────────────────────────────────────────────────────
   if (step === "url") {
     return (
-      <Card className="bg-slate-800/60 border-white/10">
+      <Card className="bg-white border-black/10">
         <CardHeader>
-          <CardTitle className="text-white">Website Analysis</CardTitle>
+          <CardTitle className="text-[#1b1916]">Website Analysis</CardTitle>
           <p className="text-slate-400 text-sm mt-1">
             Enter your website URL and we&apos;ll suggest the best article topics for your audience
           </p>
         </CardHeader>
         <CardContent className="space-y-5">
           <div className="space-y-2">
-            <Label className="text-slate-300">Your website URL</Label>
+            <Label className="text-slate-700">Your website URL</Label>
             <Input
               placeholder="https://yoursite.com"
               value={url}
               onChange={(e) => setUrl(e.target.value)}
               onKeyDown={(e) => { if (e.key === "Enter") handleAnalyze() }}
-              className="bg-slate-700 border-white/10 text-white placeholder:text-slate-500 focus:border-violet-500"
+              className="bg-[#ebe9e5] border-black/10 text-[#1b1916] placeholder:text-slate-500 focus:border-violet-500"
             />
           </div>
 
@@ -153,7 +153,7 @@ function SeoArticleFlow() {
           {analyzing ? (
             <div className="flex items-center gap-3 py-4">
               <div className="w-5 h-5 rounded-full border-2 border-violet-500 border-t-transparent animate-spin" />
-              <span className="text-slate-300 text-sm">Analyzing your website...</span>
+              <span className="text-slate-700 text-sm">Analyzing your website...</span>
             </div>
           ) : (
             <div className="flex gap-3">
@@ -161,14 +161,14 @@ function SeoArticleFlow() {
                 type="button"
                 variant="outline"
                 onClick={() => window.history.back()}
-                className="border-white/10 text-slate-300 hover:bg-white/5"
+                className="border-black/10 text-slate-700 hover:bg-[#ebe9e5]"
               >
                 Cancel
               </Button>
               <Button
                 onClick={handleAnalyze}
                 disabled={!url.trim()}
-                className="flex-1 bg-violet-600 hover:bg-violet-500 text-white"
+                className="flex-1 bg-violet-600 hover:bg-violet-500 text-[#1b1916]"
               >
                 Analyze Website
               </Button>
@@ -184,7 +184,7 @@ function SeoArticleFlow() {
     return (
       <div className="space-y-6">
         <div>
-          <h2 className="text-xl font-semibold text-white mb-1">Topic Suggestions</h2>
+          <h2 className="text-xl font-semibold text-[#1b1916] mb-1">Topic Suggestions</h2>
           <p className="text-slate-400 text-sm">
             Based on{" "}
             <span className="text-violet-300">{siteInfo?.title || url}</span>
@@ -195,13 +195,13 @@ function SeoArticleFlow() {
           {topics.map((topic, i) => (
             <div
               key={i}
-              className="rounded-xl border border-white/10 bg-slate-800/60 p-5 hover:border-violet-500/50 hover:bg-slate-800/80 transition-all"
+              className="rounded-xl border border-black/10 bg-white p-5 hover:border-violet-500/50 hover:bg-white transition-all"
             >
-              <h3 className="text-white font-semibold text-base mb-2">{topic.title}</h3>
+              <h3 className="text-[#1b1916] font-semibold text-base mb-2">{topic.title}</h3>
               <p className="text-slate-400 text-sm mb-4 leading-relaxed">{topic.description}</p>
               <Button
                 onClick={() => handleChooseTopic(topic)}
-                className="bg-violet-600 hover:bg-violet-500 text-white text-sm"
+                className="bg-violet-600 hover:bg-violet-500 text-[#1b1916] text-sm"
               >
                 Generate Article
               </Button>
@@ -214,7 +214,7 @@ function SeoArticleFlow() {
         <Button
           variant="outline"
           onClick={() => { setStep("url"); setAnalyzeError("") }}
-          className="border-white/10 text-slate-300 hover:bg-white/5"
+          className="border-black/10 text-slate-700 hover:bg-[#ebe9e5]"
         >
           ← Try another URL
         </Button>
@@ -227,11 +227,11 @@ function SeoArticleFlow() {
     <Card className="bg-green-900/20 border-green-500/30">
       <CardContent className="py-12 text-center">
         <p className="text-4xl mb-4">✓</p>
-        <h3 className="text-white text-xl font-semibold mb-2">Your article is being written</h3>
+        <h3 className="text-[#1b1916] text-xl font-semibold mb-2">Your article is being written</h3>
         <p className="text-slate-400 mb-6">Track the progress in the Tasks section</p>
         <Button
           onClick={() => router.push("/dashboard/tasks")}
-          className="bg-violet-600 hover:bg-violet-500 text-white"
+          className="bg-violet-600 hover:bg-violet-500 text-[#1b1916]"
         >
           Go to Tasks
         </Button>
@@ -264,7 +264,7 @@ function GenericTaskForm({ type, onBack }: { type: TaskType; onBack: () => void 
       <Card className="bg-green-900/20 border-green-500/30">
         <CardContent className="py-12 text-center">
           <p className="text-4xl mb-4">✅</p>
-          <h3 className="text-white text-xl font-semibold mb-2">Task created!</h3>
+          <h3 className="text-[#1b1916] text-xl font-semibold mb-2">Task created!</h3>
           <p className="text-slate-400">Redirecting to your tasks...</p>
         </CardContent>
       </Card>
@@ -272,32 +272,32 @@ function GenericTaskForm({ type, onBack }: { type: TaskType; onBack: () => void 
   }
 
   return (
-    <Card className="bg-slate-800/60 border-white/10">
+    <Card className="bg-white border-black/10">
       <CardHeader>
-        <CardTitle className="text-white">Task Details</CardTitle>
+        <CardTitle className="text-[#1b1916]">Task Details</CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
-            <Label htmlFor="title" className="text-slate-300">Task Title</Label>
+            <Label htmlFor="title" className="text-slate-700">Task Title</Label>
             <Input
               id="title"
               placeholder="e.g. Write article about AI marketing trends"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               required
-              className="bg-slate-700 border-white/10 text-white placeholder:text-slate-500 focus:border-violet-500"
+              className="bg-[#ebe9e5] border-black/10 text-[#1b1916] placeholder:text-slate-500 focus:border-violet-500"
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="description" className="text-slate-300">Description</Label>
+            <Label htmlFor="description" className="text-slate-700">Description</Label>
             <Textarea
               id="description"
               placeholder="Describe what you need — target keywords, audience, tone, length, platforms, etc."
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={4}
-              className="bg-slate-700 border-white/10 text-white placeholder:text-slate-500 focus:border-violet-500 resize-none"
+              className="bg-[#ebe9e5] border-black/10 text-[#1b1916] placeholder:text-slate-500 focus:border-violet-500 resize-none"
             />
           </div>
           <div className="flex gap-3">
@@ -305,14 +305,14 @@ function GenericTaskForm({ type, onBack }: { type: TaskType; onBack: () => void 
               type="button"
               variant="outline"
               onClick={onBack}
-              className="border-white/10 text-slate-300 hover:bg-white/5"
+              className="border-black/10 text-slate-700 hover:bg-[#ebe9e5]"
             >
               Back
             </Button>
             <Button
               type="submit"
               disabled={loading || !title}
-              className="flex-1 bg-violet-600 hover:bg-violet-500 text-white"
+              className="flex-1 bg-violet-600 hover:bg-violet-500 text-[#1b1916]"
             >
               {loading ? "Creating..." : "Create Task"}
             </Button>
@@ -344,10 +344,10 @@ export default function NewTaskPage() {
                 key={t.value}
                 type="button"
                 onClick={() => setType(t.value as TaskType)}
-                className="p-4 rounded-xl border border-white/10 bg-slate-700/40 hover:border-violet-500 hover:bg-violet-500/10 text-left transition-all"
+                className="p-4 rounded-xl border border-black/10 bg-[#ebe9e5] hover:border-violet-500 hover:bg-violet-500/10 text-left transition-all"
               >
                 <div className="text-2xl mb-2">{t.icon}</div>
-                <div className="text-white text-sm font-medium">{t.label}</div>
+                <div className="text-[#1b1916] text-sm font-medium">{t.label}</div>
                 <div className="text-slate-400 text-xs mt-1">{t.desc}</div>
               </button>
             ))}
@@ -356,7 +356,7 @@ export default function NewTaskPage() {
             <Button
               variant="outline"
               onClick={() => router.back()}
-              className="border-white/10 text-slate-300 hover:bg-white/5"
+              className="border-black/10 text-slate-700 hover:bg-[#ebe9e5]"
             >
               Cancel
             </Button>
@@ -372,7 +372,7 @@ export default function NewTaskPage() {
         <div className="mb-8">
           <button
             onClick={() => setType(null)}
-            className="text-slate-400 hover:text-white text-sm mb-3 flex items-center gap-1 transition-colors"
+            className="text-slate-400 hover:text-[#1b1916] text-sm mb-3 flex items-center gap-1 transition-colors"
           >
             ← Back
           </button>

@@ -21,7 +21,7 @@ export default function SupportPage() {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "support",
-      text: "Hi there! 👋 I'm your ItGrows.ai support assistant. How can I help you today?",
+      text: "Hi there! 👋 I'm your itgrows.ai support assistant. How can I help you today?",
       ts: new Date().toISOString(),
     },
   ])
@@ -58,23 +58,23 @@ export default function SupportPage() {
     <div className="p-8">
       <div className="max-w-4xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-1">Support & Feedback</h1>
-          <p className="text-slate-400">We&apos;re here to help you grow</p>
+          <h1 className="text-3xl font-bold mb-1 text-[#1b1916]">Support & Feedback</h1>
+          <p className="text-slate-600">We&apos;re here to help you grow</p>
         </div>
 
         <div className="grid md:grid-cols-2 gap-6 mb-8">
           {/* Live Chat */}
-          <Card className="bg-slate-800/60 border-white/10 flex flex-col h-[500px]">
-            <CardHeader className="border-b border-white/10 pb-4">
+          <Card className="bg-white border-black/10 flex flex-col h-[500px]">
+            <CardHeader className="border-b border-black/10 pb-4">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-600 to-pink-600 flex items-center justify-center text-sm">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-600 to-pink-600 flex items-center justify-center text-sm text-white">
                   GE
                 </div>
                 <div>
-                  <CardTitle className="text-white text-base">Live Support</CardTitle>
+                  <CardTitle className="text-[#1b1916] text-base">Live Support</CardTitle>
                   <div className="flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-green-400"></span>
-                    <span className="text-slate-400 text-xs">Online</span>
+                    <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                    <span className="text-slate-500 text-xs">Online</span>
                   </div>
                 </div>
               </div>
@@ -87,7 +87,7 @@ export default function SupportPage() {
                       className={`max-w-[80%] px-4 py-2 rounded-2xl text-sm ${
                         msg.role === "user"
                           ? "bg-violet-600 text-white rounded-br-sm"
-                          : "bg-slate-700 text-slate-200 rounded-bl-sm"
+                          : "bg-[#ebe9e5] text-[#1b1916] rounded-bl-sm"
                       }`}
                     >
                       {msg.text}
@@ -101,7 +101,7 @@ export default function SupportPage() {
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && sendMessage()}
-                  className="bg-slate-700 border-white/10 text-white placeholder:text-slate-500 focus:border-violet-500"
+                  className="bg-white border-slate-200 text-[#1b1916] placeholder:text-slate-400 focus:border-violet-500"
                 />
                 <Button onClick={sendMessage} className="bg-violet-600 hover:bg-violet-500 text-white shrink-0">
                   Send
@@ -111,20 +111,20 @@ export default function SupportPage() {
           </Card>
 
           {/* Feedback form */}
-          <Card className="bg-slate-800/60 border-white/10">
+          <Card className="bg-white border-black/10">
             <CardHeader>
-              <CardTitle className="text-white">Send Feedback</CardTitle>
+              <CardTitle className="text-[#1b1916]">Send Feedback</CardTitle>
             </CardHeader>
             <CardContent>
               {feedbackSent ? (
                 <div className="py-8 text-center">
                   <p className="text-4xl mb-4">🙏</p>
-                  <h3 className="text-white text-lg font-semibold mb-2">Thank you!</h3>
-                  <p className="text-slate-400 text-sm">Your feedback helps us improve ItGrows.ai.</p>
+                  <h3 className="text-[#1b1916] text-lg font-semibold mb-2">Thank you!</h3>
+                  <p className="text-slate-600 text-sm">Your feedback helps us improve itgrows.ai.</p>
                   <Button
                     onClick={() => setFeedbackSent(false)}
                     variant="outline"
-                    className="mt-6 border-white/10 text-slate-300 hover:bg-white/5"
+                    className="mt-6 border-slate-200 text-slate-600 hover:bg-[#ebe9e5]"
                   >
                     Send Another
                   </Button>
@@ -132,7 +132,7 @@ export default function SupportPage() {
               ) : (
                 <form onSubmit={(e) => { e.preventDefault(); sendFeedback() }} className="space-y-4">
                   <div className="space-y-2">
-                    <Label className="text-slate-300">Category</Label>
+                    <Label className="text-[#1b1916]">Category</Label>
                     <div className="flex flex-wrap gap-2">
                       {["Bug Report", "Feature Request", "General Feedback", "Billing"].map((tag) => (
                         <button
@@ -142,7 +142,7 @@ export default function SupportPage() {
                           className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors border ${
                             subject === tag
                               ? "bg-violet-600 text-white border-violet-600"
-                              : "border-white/10 text-slate-400 hover:border-white/30"
+                              : "border-slate-200 text-slate-600 hover:border-slate-300"
                           }`}
                         >
                           {tag}
@@ -151,7 +151,7 @@ export default function SupportPage() {
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="feedback" className="text-slate-300">Message</Label>
+                    <Label htmlFor="feedback" className="text-[#1b1916]">Message</Label>
                     <Textarea
                       id="feedback"
                       placeholder="Tell us what's on your mind..."
@@ -159,7 +159,7 @@ export default function SupportPage() {
                       onChange={(e) => setFeedbackText(e.target.value)}
                       rows={5}
                       required
-                      className="bg-slate-700 border-white/10 text-white placeholder:text-slate-500 focus:border-violet-500 resize-none"
+                      className="bg-white border-slate-200 text-[#1b1916] placeholder:text-slate-400 focus:border-violet-500 resize-none"
                     />
                   </div>
                   <Button type="submit" className="w-full bg-violet-600 hover:bg-violet-500 text-white">
@@ -172,15 +172,15 @@ export default function SupportPage() {
         </div>
 
         {/* FAQ */}
-        <Card className="bg-slate-800/60 border-white/10">
+        <Card className="bg-white border-black/10">
           <CardHeader>
-            <CardTitle className="text-white">Frequently Asked Questions</CardTitle>
+            <CardTitle className="text-[#1b1916]">Frequently Asked Questions</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             {faqs.map((faq, i) => (
-              <div key={i} className="border-b border-white/5 pb-4 last:border-0 last:pb-0">
-                <h4 className="text-white font-medium mb-2">{faq.q}</h4>
-                <p className="text-slate-400 text-sm leading-relaxed">{faq.a}</p>
+              <div key={i} className="border-b border-black/5 pb-4 last:border-0 last:pb-0">
+                <h4 className="text-[#1b1916] font-medium mb-2">{faq.q}</h4>
+                <p className="text-slate-600 text-sm leading-relaxed">{faq.a}</p>
               </div>
             ))}
           </CardContent>
