@@ -275,20 +275,30 @@ export default function SeoAutopilotPage() {
 
         {/* Generate button */}
         {!analyzing && (
-          <button
-            onClick={handleGenerate}
-            disabled={!selected || generating}
-            className="w-full h-12 rounded-xl text-base font-semibold bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-white disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
-          >
-            {generating ? (
-              <>
-                <span className="inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                Generating article...
-              </>
-            ) : (
-              selected ? `Generate: ${selected.keyword}` : "Select a topic above"
+          <>
+            <button
+              onClick={handleGenerate}
+              disabled={!selected || generating}
+              className="w-full h-12 rounded-xl text-base font-semibold bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-white disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
+            >
+              {generating ? (
+                <>
+                  <span className="inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  Generating article...
+                </>
+              ) : (
+                selected ? `Generate: ${selected.keyword}` : "Select a topic above"
+              )}
+            </button>
+            {generating && (
+              <p className="text-center text-slate-500 text-sm mt-3">
+                Article status will appear in{" "}
+                <Link href="/dashboard/tasks" className="text-violet-600 hover:underline">
+                  Tasks
+                </Link>
+              </p>
             )}
-          </button>
+          </>
         )}
       </div>
     </div>
