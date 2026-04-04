@@ -6,6 +6,7 @@ import Link from "next/link"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { getUser } from "@/lib/auth"
+import type { BlogPost } from "@/app/api/blog/posts/route"
 
 interface ArticleResult {
   article: {
@@ -27,6 +28,22 @@ export default function SeoResultsPage() {
   const [taskId, setTaskId] = useState<string | null>(null)
   const [isEditing, setIsEditing] = useState(false)
   const [editContent, setEditContent] = useState("")
+  const [blogPublishing, setBlogPublishing] = useState(false)
+  const [blogPublished, setBlogPublished] = useState(false)
+  const [blogSlug, setBlogSlug] = useState<string | null>(null)
+
+  function slugify(text: string): string {
+    return (
+      text
+        .toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, "")
+        .replace(/\s+/g, "-")
+        .replace(/-+/g, "-")
+        .trim() +
+      "-" +
+      Date.now().toString(36)
+    )
+  }
 
   useEffect(() => {
     const u = getUser()
@@ -115,6 +132,85 @@ export default function SeoResultsPage() {
     setEditContent("")
   }
 
+  const handlePublishToBlog = async () => {
+    if (!result || blogPublishing || blogPublished) return
+    setBlogPublishing(true)
+    const { article } = result
+
+    try {
+      const res = await fetch("/api/blog/posts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: article.title,
+          content: article.content,
+          metaDescription: article.metaDescription,
+          keywords: article.keywords,
+          keyword: article.keyword,
+        }),
+      })
+      const data = (await res.json()) as { success: boolean; post?: BlogPost; storage?: string; error?: string }
+
+      if (data.post) {
+        setBlogSlug(data.post.slug)
+        setBlogPublished(true)
+
+        // If storage is none or failed, save to localStorage as fallback
+        if (!data.success || data.storage === "none") {
+          try {
+            const existing = JSON.parse(localStorage.getItem("itgrows_published_posts") || "[]") as BlogPost[]
+            existing.unshift(data.post)
+            localStorage.setItem("itgrows_published_posts", JSON.stringify(existing))
+          } catch {
+            // ignore
+          }
+        }
+      } else {
+        // Fallback: create post locally and save to localStorage
+        const post: BlogPost = {
+          id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+          slug: slugify(article.title),
+          title: article.title,
+          content: article.content,
+          metaDescription: article.metaDescription || "",
+          keywords: article.keywords || [],
+          keyword: article.keyword || "",
+          publishedAt: new Date().toISOString(),
+          status: "published",
+        }
+        const existing = JSON.parse(localStorage.getItem("itgrows_published_posts") || "[]") as BlogPost[]
+        existing.unshift(post)
+        localStorage.setItem("itgrows_published_posts", JSON.stringify(existing))
+        setBlogSlug(post.slug)
+        setBlogPublished(true)
+      }
+    } catch {
+      // Network error: save to localStorage
+      const post: BlogPost = {
+        id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        slug: slugify(article.title),
+        title: article.title,
+        content: article.content,
+        metaDescription: article.metaDescription || "",
+        keywords: article.keywords || [],
+        keyword: article.keyword || "",
+        publishedAt: new Date().toISOString(),
+        status: "published",
+      }
+      try {
+        const existing = JSON.parse(localStorage.getItem("itgrows_published_posts") || "[]") as BlogPost[]
+        existing.unshift(post)
+        localStorage.setItem("itgrows_published_posts", JSON.stringify(existing))
+      } catch {
+        // ignore
+      }
+      setBlogSlug(post.slug)
+      setBlogPublished(true)
+    } finally {
+      setBlogPublishing(false)
+    }
+  }
+
   if (!result) return null
 
   const { article, publishUrl, platform } = result
@@ -177,6 +273,30 @@ export default function SeoResultsPage() {
                 Open Post
               </Button>
             </a>
+          </div>
+        )}
+
+        {/* Blog published banner */}
+        {blogPublished && blogSlug && (
+          <div className="mb-6 flex items-center gap-3 p-4 rounded-xl bg-violet-900/20 border border-violet-500/30">
+            <span className="text-2xl">🚀</span>
+            <div className="flex-1 min-w-0">
+              <p className="text-violet-400 font-medium text-sm">Published to blog!</p>
+              <Link
+                href={`/blog/${blogSlug}`}
+                className="text-slate-300 hover:text-white text-sm truncate block underline"
+              >
+                itgrows.ai/blog/{blogSlug}
+              </Link>
+            </div>
+            <Link href={`/blog/${blogSlug}`} className="shrink-0">
+              <Button
+                variant="outline"
+                className="border-violet-500/30 text-violet-300 hover:bg-violet-900/20 text-sm"
+              >
+                View Post
+              </Button>
+            </Link>
           </div>
         )}
 
@@ -308,7 +428,20 @@ export default function SeoResultsPage() {
               </Button>
             </>
           )}
-          {!publishUrl && (
+          {!isEditing && (
+            <Button
+              onClick={handlePublishToBlog}
+              disabled={blogPublishing || blogPublished}
+              className={
+                blogPublished
+                  ? "bg-green-700 text-white cursor-not-allowed opacity-80"
+                  : "bg-gradient-to-r from-cyan-600 to-violet-600 hover:from-cyan-500 hover:to-violet-500 text-white"
+              }
+            >
+              {blogPublished ? "Published to Blog ✓" : blogPublishing ? "Publishing..." : "Publish to Blog"}
+            </Button>
+          )}
+          {!publishUrl && !isEditing && (
             <Link href="/dashboard/seo">
               <Button
                 variant="outline"

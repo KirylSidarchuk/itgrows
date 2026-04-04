@@ -121,6 +121,7 @@ export default function HomePage() {
             <a href="#features" className="hover:text-white transition-colors">Features</a>
             <a href="#how-it-works" className="hover:text-white transition-colors">How it works</a>
             <a href="#pricing" className="hover:text-white transition-colors">Pricing</a>
+            <Link href="/blog" className="hover:text-white transition-colors">Blog</Link>
           </div>
           <div className="flex items-center gap-3">
             <Link href="/login">
