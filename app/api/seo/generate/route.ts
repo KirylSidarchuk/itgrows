@@ -85,7 +85,24 @@ function parseArticle(raw: string): {
   // Convert simple markdown to HTML
   const content = markdownToHtml(bodyRaw)
 
-  return { title, content, metaDescription, keywords }
+  // Fallback: extract meta description from first paragraph if not found
+  const finalMeta = metaDescription || (() => {
+    const firstPara = bodyRaw
+      .replace(/^#{1,3}\s+.+$/gm, "") // remove headings
+      .split("\n")
+      .map(l => l.trim())
+      .filter(l => l.length > 40)[0] || ""
+    return firstPara.slice(0, 160)
+  })()
+
+  // Fallback: extract keywords from H2 headings if not found
+  const finalKeywords = keywords.length > 0 ? keywords : (() => {
+    return bodyRaw.match(/^##\s+(.+)$/gm)
+      ?.map(h => h.replace(/^##\s+/, "").trim())
+      .slice(0, 6) ?? []
+  })()
+
+  return { title, content, metaDescription: finalMeta, keywords: finalKeywords }
 }
 
 function markdownToHtml(md: string): string {
@@ -152,7 +169,7 @@ export async function POST(req: NextRequest) {
       body: JSON.stringify({
         model: LLM_MODEL,
         messages,
-        max_tokens: 4096,
+        max_tokens: 8192,
         temperature: 0.7,
       }),
     })
