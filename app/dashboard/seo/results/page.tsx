@@ -278,7 +278,7 @@ export default function SeoResultsPage() {
                 navigator.clipboard.writeText(article.content).catch(() => {})
               }}
               variant="outline"
-              className="border-white/10 text-slate-300 hover:bg-white/5"
+              className="border-white/30 text-black bg-white hover:bg-gray-100"
             >
               Copy HTML
             </Button>
@@ -287,7 +287,7 @@ export default function SeoResultsPage() {
             <Button
               onClick={handleEditStart}
               variant="outline"
-              className="border-white/10 text-slate-300 hover:bg-white/5"
+              className="border-white/30 text-black bg-white hover:bg-gray-100"
             >
               Edit
             </Button>
@@ -302,7 +302,7 @@ export default function SeoResultsPage() {
               <Button
                 onClick={handleEditCancel}
                 variant="outline"
-                className="border-white/10 text-slate-300 hover:bg-white/5"
+                className="border-white/30 text-black bg-white hover:bg-gray-100"
               >
                 Cancel
               </Button>
