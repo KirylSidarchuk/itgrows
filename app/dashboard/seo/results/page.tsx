@@ -540,19 +540,13 @@ export default function SeoResultsPage() {
               </Button>
             </>
           )}
-          {!isEditing && (
+          {!isEditing && !blogPublished && (
             <Button
               onClick={handlePublishToBlog}
-              disabled={blogPublishing || blogPublished}
-              className={
-                blogPublished
-                  ? "bg-green-700 text-white cursor-not-allowed opacity-80"
-                  : "bg-gradient-to-r from-cyan-600 to-violet-600 hover:from-cyan-500 hover:to-violet-500 text-white"
-              }
+              disabled={blogPublishing}
+              className="bg-gradient-to-r from-cyan-600 to-violet-600 hover:from-cyan-500 hover:to-violet-500 text-white"
             >
-              {blogPublished
-                ? `Published to ${publishedSiteName ?? "Blog"} ✓`
-                : blogPublishing
+              {blogPublishing
                 ? "Publishing..."
                 : (() => {
                     const site = getDefaultSite()
@@ -560,15 +554,11 @@ export default function SeoResultsPage() {
                   })()}
             </Button>
           )}
-          {!publishUrl && !isEditing && (
-            <Link href="/dashboard/seo">
-              <Button
-                variant="outline"
-                className="border-white/30 text-black bg-white hover:bg-gray-100"
-              >
-                Publish to Platform
-              </Button>
-            </Link>
+          {!isEditing && blogPublished && (
+            <span className="flex items-center gap-2 text-green-400 font-medium text-sm px-1">
+              <span className="text-green-400">✓</span>
+              Published on {publishedSiteName ?? "itgrows.ai Blog"}
+            </span>
           )}
           <Link href="/dashboard/seo">
             <Button className="bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-white">
