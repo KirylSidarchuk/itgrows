@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
     const verifyUrl = `${baseUrl}/api/verify-email?token=${token}&email=${encodeURIComponent(email.toLowerCase())}`
 
     await resend.emails.send({
-      from: "ItGrows.ai <onboarding@resend.dev>",
+      from: "ItGrows.ai <noreply@itgrows.ai>",
       to: email,
       subject: "Confirm your ItGrows.ai account",
       html: `
