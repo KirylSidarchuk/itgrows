@@ -1,8 +1,8 @@
 "use client"
 
 import Link from "next/link"
-import { usePathname, useRouter } from "next/navigation"
-import { logout } from "@/lib/auth"
+import { usePathname } from "next/navigation"
+import { signOut } from "next-auth/react"
 
 const navItems = [
   { href: "/dashboard", label: "Overview", icon: "🏠" },
@@ -18,12 +18,6 @@ const navItems = [
 
 export default function Sidebar() {
   const pathname = usePathname()
-  const router = useRouter()
-
-  const handleLogout = () => {
-    logout()
-    router.push("/login")
-  }
 
   return (
     <aside className="w-64 min-h-screen bg-white border-r border-black/10 flex flex-col">
@@ -55,7 +49,7 @@ export default function Sidebar() {
       </nav>
       <div className="p-4 border-t border-black/10">
         <button
-          onClick={handleLogout}
+          onClick={() => signOut({ callbackUrl: "/login" })}
           className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-slate-600 hover:text-[#1b1916] hover:bg-[#ebe9e5] transition-colors"
         >
           <span>🚪</span>

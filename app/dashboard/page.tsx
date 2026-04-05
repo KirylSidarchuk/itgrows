@@ -1,31 +1,24 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
+import { useState } from "react"
 import Link from "next/link"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { getUser, type User } from "@/lib/auth"
-import { getTasks, type Task } from "@/lib/tasks"
-import { getConnectedSites } from "@/lib/connectedSites"
+import { useSession } from "next-auth/react"
 
 export default function DashboardPage() {
-  const router = useRouter()
-  const [user, setUser] = useState<User | null>(null)
-  const [tasks, setTasks] = useState<Task[]>([])
+  const { data: session } = useSession()
+  const [tasks, setTasks] = useState<{ id: string; title: string; type: string; status: string }[]>([])
   const [hasConnectedSites, setHasConnectedSites] = useState(true)
 
-  useEffect(() => {
-    const u = getUser()
-    if (!u) {
-      router.push("/login")
-      return
-    }
-    setUser(u)
-    setTasks(getTasks())
-    setHasConnectedSites(getConnectedSites().length > 0)
-  }, [router])
+  const user = session?.user
+    ? {
+        name: session.user.name ?? session.user.email?.split("@")[0] ?? "User",
+        plan: (session.user as { plan?: string }).plan ?? "starter",
+        planExpiry: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+      }
+    : null
 
   if (!user) return null
 
