@@ -3,8 +3,6 @@
 import { useState, useEffect, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
-import { getUser } from "@/lib/auth"
-import { getDefaultSite } from "@/lib/connectedSites"
 
 type Language = "en" | "ru" | "uk"
 type Tone = "Professional" | "Casual" | "Expert"
@@ -23,6 +21,16 @@ interface GeneratedArticle {
   keywords: string[]
 }
 
+interface ConnectedSite {
+  id: string
+  url: string
+  isDefault: boolean
+}
+
+interface Task {
+  title: string
+}
+
 export default function SeoAutopilotPage() {
   const router = useRouter()
 
@@ -35,6 +43,7 @@ export default function SeoAutopilotPage() {
   const [tone, setTone] = useState<Tone>("Professional")
   const [generating, setGenerating] = useState(false)
   const [generateError, setGenerateError] = useState("")
+  const [defaultSite, setDefaultSite] = useState<ConnectedSite | null>(null)
 
   const analyze = useCallback(async (siteUrl: string) => {
     setAnalyzing(true)
@@ -42,16 +51,17 @@ export default function SeoAutopilotPage() {
     setTopics([])
     setSelected(null)
 
-    const usedKeywords = (() => {
-      try {
-        const tasks = JSON.parse(localStorage.getItem("itgrows_tasks_v2") || "[]") as Array<{ title?: string }>
-        const scheduled = JSON.parse(localStorage.getItem("itgrows_schedule") || "[]") as Array<{ keyword?: string }>
-        return [
-          ...tasks.map(t => t.title ?? ""),
-          ...scheduled.map(s => s.keyword ?? ""),
-        ].filter(Boolean)
-      } catch { return [] }
-    })()
+    // Get used keywords from DB
+    const usedKeywords: string[] = []
+    try {
+      const res = await fetch("/api/tasks")
+      if (res.ok) {
+        const data = await res.json() as { tasks?: Task[] }
+        for (const t of data.tasks ?? []) {
+          if (t.title) usedKeywords.push(t.title)
+        }
+      }
+    } catch { /* ignore */ }
 
     try {
       const res = await fetch("/api/seo/analyze", {
@@ -73,18 +83,25 @@ export default function SeoAutopilotPage() {
   }, [])
 
   useEffect(() => {
-    const u = getUser()
-    if (!u) { router.push("/login"); return }
-
-    const site = getDefaultSite()
-    if (!site) {
-      setHasSite(false)
-      setAnalyzing(false)
-      return
-    }
-    setHasSite(true)
-    analyze(site.url)
-  }, [router, analyze])
+    fetch("/api/sites")
+      .then((r) => r.json())
+      .then((data: { sites?: ConnectedSite[] }) => {
+        const sites = data.sites ?? []
+        const site = sites.find((s) => s.isDefault) ?? sites[0] ?? null
+        if (!site) {
+          setHasSite(false)
+          setAnalyzing(false)
+          return
+        }
+        setDefaultSite(site)
+        setHasSite(true)
+        analyze(site.url)
+      })
+      .catch(() => {
+        setHasSite(false)
+        setAnalyzing(false)
+      })
+  }, [analyze])
 
   const handleGenerate = async () => {
     if (!selected || generating) return
@@ -103,31 +120,30 @@ export default function SeoAutopilotPage() {
       }
       const article = (await res.json()) as GeneratedArticle
 
-      // Save as task
-      const taskData = {
-        id: Date.now().toString(),
-        title: `SEO Article: ${article.title || selected.keyword}`,
-        description: `SEO article targeting "${selected.keyword}"`,
-        type: "seo_article" as const,
-        status: "done" as const,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        articleData: {
-          keyword: selected.keyword,
-          title: article.title,
-          content: article.content,
-          metaDescription: article.metaDescription,
-          keywords: article.keywords,
-        },
+      // Save as task via API
+      const articleData = {
+        keyword: selected.keyword,
+        title: article.title,
+        content: article.content,
+        metaDescription: article.metaDescription,
+        keywords: article.keywords,
       }
       try {
-        const tasks = JSON.parse(localStorage.getItem("itgrows_tasks_v2") || "[]")
-        tasks.unshift(taskData)
-        localStorage.setItem("itgrows_tasks_v2", JSON.stringify(tasks))
+        await fetch("/api/tasks", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            title: `SEO Article: ${article.title || selected.keyword}`,
+            description: `SEO article targeting "${selected.keyword}"`,
+            type: "seo_article",
+            status: "done",
+            articleData,
+          }),
+        })
       } catch { /* ignore */ }
 
       // Save for results page
-      sessionStorage.setItem("seo_result", JSON.stringify(taskData.articleData))
+      sessionStorage.setItem("seo_result", JSON.stringify(articleData))
       router.push("/dashboard/seo/results")
     } catch (err) {
       setGenerateError(err instanceof Error ? err.message : "Unexpected error")
@@ -145,7 +161,7 @@ export default function SeoAutopilotPage() {
           <div className="bg-white border border-black/10 rounded-2xl p-10 text-center">
             <div className="text-4xl mb-4">🔗</div>
             <h2 className="text-xl font-semibold text-[#1b1916] mb-2">Connect your website first</h2>
-            <p className="text-slate-500 text-sm mb-6">We'll analyze your site and suggest the best SEO topics for you</p>
+            <p className="text-slate-500 text-sm mb-6">We&apos;ll analyze your site and suggest the best SEO topics for you</p>
             <Link href="/dashboard/settings">
               <button className="px-6 py-3 bg-violet-600 hover:bg-violet-500 text-white rounded-xl text-sm font-medium transition-colors">
                 Go to Settings →
@@ -165,9 +181,9 @@ export default function SeoAutopilotPage() {
             <h1 className="text-3xl font-bold mb-1 bg-gradient-to-r from-violet-600 to-pink-500 bg-clip-text text-transparent">SEO Autopilot</h1>
             <p className="text-slate-600">Choose a topic and generate your article</p>
           </div>
-          {!analyzing && !generating && (
+          {!analyzing && !generating && defaultSite && (
             <button
-              onClick={() => { const site = getDefaultSite(); if (site) analyze(site.url) }}
+              onClick={() => analyze(defaultSite.url)}
               className="text-sm text-violet-600 hover:text-violet-500 transition-colors"
             >
               ↻ Refresh topics
@@ -187,12 +203,14 @@ export default function SeoAutopilotPage() {
         {!analyzing && analyzeError && (
           <div className="bg-red-50 border border-red-200 rounded-2xl p-6 text-center mb-6">
             <p className="text-red-600 text-sm mb-4">{analyzeError}</p>
-            <button
-              onClick={() => { const site = getDefaultSite(); if (site) analyze(site.url) }}
-              className="text-sm text-violet-600 hover:underline"
-            >
-              Try again
-            </button>
+            {defaultSite && (
+              <button
+                onClick={() => analyze(defaultSite.url)}
+                className="text-sm text-violet-600 hover:underline"
+              >
+                Try again
+              </button>
+            )}
           </div>
         )}
 

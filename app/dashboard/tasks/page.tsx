@@ -1,14 +1,25 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { getUser } from "@/lib/auth"
-import { getTasks, updateTaskStatus, deleteTask, type Task, type TaskStatus } from "@/lib/tasks"
 import { FileText, Trash2 } from "lucide-react"
+
+interface Task {
+  id: string
+  title: string
+  description: string | null
+  type: string
+  status: string
+  articleData: Record<string, unknown> | null
+  createdAt: string
+  updatedAt: string
+}
+
+type TaskStatus = "pending" | "in_progress" | "done"
 
 const typeLabels: Record<string, string> = {
   seo_article: "SEO Article",
@@ -28,31 +39,49 @@ export default function TasksPage() {
   const router = useRouter()
   const [tasks, setTasks] = useState<Task[]>([])
   const [filter, setFilter] = useState<string>("all")
+  const [loading, setLoading] = useState(true)
+
+  const fetchTasks = useCallback(async () => {
+    try {
+      const res = await fetch("/api/tasks")
+      if (!res.ok) return
+      const data = await res.json() as { tasks?: Task[] }
+      setTasks(data.tasks ?? [])
+    } catch {
+      // ignore
+    }
+  }, [])
 
   useEffect(() => {
-    const u = getUser()
-    if (!u) {
-      router.push("/login")
-      return
-    }
-    setTasks(getTasks())
+    fetchTasks().finally(() => setLoading(false))
 
-    // Poll localStorage every 500ms to pick up background generation updates
-    const interval = setInterval(() => {
-      setTasks(getTasks())
-    }, 500)
-
+    // Poll every 3s to pick up background generation updates
+    const interval = setInterval(fetchTasks, 3000)
     return () => clearInterval(interval)
-  }, [router])
+  }, [fetchTasks])
 
-  const handleStatusChange = (id: string, status: TaskStatus) => {
-    updateTaskStatus(id, status)
-    setTasks(getTasks())
+  const handleStatusChange = async (id: string, status: TaskStatus) => {
+    try {
+      const res = await fetch(`/api/tasks/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status }),
+      })
+      if (res.ok) {
+        setTasks((prev) => prev.map((t) => t.id === id ? { ...t, status } : t))
+      }
+    } catch {
+      // ignore
+    }
   }
 
-  const handleDelete = (id: string) => {
-    deleteTask(id)
-    setTasks(getTasks())
+  const handleDelete = async (id: string) => {
+    try {
+      await fetch(`/api/tasks/${id}`, { method: "DELETE" })
+      setTasks((prev) => prev.filter((t) => t.id !== id))
+    } catch {
+      // ignore
+    }
   }
 
   const filtered = filter === "all" ? tasks : tasks.filter((t) => t.status === filter)
@@ -94,7 +123,7 @@ export default function TasksPage() {
 
         {/* Task list */}
         <div className="space-y-3">
-          {filtered.length === 0 && (
+          {!loading && filtered.length === 0 && (
             <Card className="bg-white border-black/10">
               <CardContent className="py-16 text-center">
                 <FileText className="w-12 h-12 text-slate-400 mx-auto mb-4" />

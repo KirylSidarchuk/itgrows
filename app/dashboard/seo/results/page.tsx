@@ -5,9 +5,8 @@ import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { getUser } from "@/lib/auth"
+import { platformLabel } from "@/lib/connectedSites"
 import type { BlogPost } from "@/app/api/blog/posts/route"
-import { getDefaultSite, platformLabel } from "@/lib/connectedSites"
 
 interface ArticleResult {
   article: {
@@ -22,6 +21,16 @@ interface ArticleResult {
   keyword: string
 }
 
+interface ConnectedSite {
+  id: string
+  name: string
+  url: string
+  platform: string
+  siteToken: string
+  siteSlug: string | null
+  isDefault: boolean
+}
+
 export default function SeoResultsPage() {
   const router = useRouter()
   const [result, setResult] = useState<ArticleResult | null>(null)
@@ -34,6 +43,7 @@ export default function SeoResultsPage() {
   const [blogSlug, setBlogSlug] = useState<string | null>(null)
   const [publishedSiteName, setPublishedSiteName] = useState<string | null>(null)
   const [noSiteModal, setNoSiteModal] = useState(false)
+  const [defaultSite, setDefaultSite] = useState<ConnectedSite | null>(null)
 
   function slugify(text: string): string {
     return (
@@ -49,13 +59,8 @@ export default function SeoResultsPage() {
   }
 
   useEffect(() => {
-    const u = getUser()
-    if (!u) {
-      router.push("/login")
-      return
-    }
+    // Load article from sessionStorage
     try {
-      // First check sessionStorage (when navigating from tasks list)
       const sessionData = sessionStorage.getItem("seo_result")
       if (sessionData) {
         const articleData = JSON.parse(sessionData) as ArticleResult["article"]
@@ -69,18 +74,22 @@ export default function SeoResultsPage() {
           platform: "none",
           keyword: articleData.keyword,
         })
-        return
-      }
-      // Fall back to last generated result from localStorage
-      const saved = localStorage.getItem("ge_seo_last_result")
-      if (saved) {
-        setResult(JSON.parse(saved) as ArticleResult)
       } else {
         router.push("/dashboard/seo")
       }
     } catch {
       router.push("/dashboard/seo")
     }
+
+    // Load default site from API
+    fetch("/api/sites")
+      .then((r) => r.json())
+      .then((data: { sites?: ConnectedSite[] }) => {
+        const sites = data.sites ?? []
+        const site = sites.find((s) => s.isDefault) ?? sites[0] ?? null
+        setDefaultSite(site)
+      })
+      .catch(() => {})
   }, [router])
 
   const handleEditStart = () => {
@@ -94,41 +103,25 @@ export default function SeoResultsPage() {
     setEditContent("")
   }
 
-  const handleEditSave = () => {
+  const handleEditSave = async () => {
     if (!result) return
     const updatedArticle = { ...result.article, content: editContent }
     const updatedResult = { ...result, article: updatedArticle }
     setResult(updatedResult)
 
-    // Update in localStorage itgrows_tasks_v2 if we have a task ID
+    // Update task in DB if we have a task ID
     if (taskId) {
       try {
-        const tasks = JSON.parse(localStorage.getItem("itgrows_tasks_v2") || "[]") as Array<{
-          id: string
-          updatedAt: string
-          articleData?: { keyword: string; title: string; content: string; metaDescription: string; keywords: string[] }
-        }>
-        const idx = tasks.findIndex((t) => t.id === taskId)
-        if (idx !== -1 && tasks[idx].articleData) {
-          tasks[idx].articleData!.content = editContent
-          tasks[idx].updatedAt = new Date().toISOString()
-          localStorage.setItem("itgrows_tasks_v2", JSON.stringify(tasks))
-        }
+        await fetch(`/api/tasks/${taskId}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            articleData: updatedArticle,
+          }),
+        })
       } catch {
         // ignore
       }
-    }
-
-    // Also update ge_seo_last_result if that was the source
-    try {
-      const saved = localStorage.getItem("ge_seo_last_result")
-      if (saved) {
-        const parsed = JSON.parse(saved) as ArticleResult
-        parsed.article.content = editContent
-        localStorage.setItem("ge_seo_last_result", JSON.stringify(parsed))
-      }
-    } catch {
-      // ignore
     }
 
     setIsEditing(false)
@@ -161,60 +154,14 @@ export default function SeoResultsPage() {
         setBlogSlug(siteSlug ? `${siteSlug}/${data.post.slug}` : data.post.slug)
         setBlogPublished(true)
         setPublishedSiteName(siteName ?? "ItGrows.ai Blog")
-
-        if (!data.success || data.storage === "none") {
-          try {
-            const existing = JSON.parse(localStorage.getItem("itgrows_published_posts") || "[]") as BlogPost[]
-            existing.unshift(data.post)
-            localStorage.setItem("itgrows_published_posts", JSON.stringify(existing))
-          } catch {
-            // ignore
-          }
-        }
       } else {
         const rawSlug = slugify(article.title)
-        const post: BlogPost = {
-          id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-          slug: rawSlug,
-          title: article.title,
-          content: article.content,
-          metaDescription: article.metaDescription || "",
-          keywords: article.keywords || [],
-          keyword: article.keyword || "",
-          publishedAt: new Date().toISOString(),
-          status: "published",
-          ...(siteId ? { siteId } : {}),
-          ...(siteSlug ? { siteSlug } : {}),
-        }
-        const existing = JSON.parse(localStorage.getItem("itgrows_published_posts") || "[]") as BlogPost[]
-        existing.unshift(post)
-        localStorage.setItem("itgrows_published_posts", JSON.stringify(existing))
         setBlogSlug(siteSlug ? `${siteSlug}/${rawSlug}` : rawSlug)
         setBlogPublished(true)
         setPublishedSiteName(siteName ?? "ItGrows.ai Blog")
       }
     } catch {
       const rawSlug = slugify(article.title)
-      const post: BlogPost = {
-        id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-        slug: rawSlug,
-        title: article.title,
-        content: article.content,
-        metaDescription: article.metaDescription || "",
-        keywords: article.keywords || [],
-        keyword: article.keyword || "",
-        publishedAt: new Date().toISOString(),
-        status: "published",
-        ...(siteId ? { siteId } : {}),
-        ...(siteSlug ? { siteSlug } : {}),
-      }
-      try {
-        const existing = JSON.parse(localStorage.getItem("itgrows_published_posts") || "[]") as BlogPost[]
-        existing.unshift(post)
-        localStorage.setItem("itgrows_published_posts", JSON.stringify(existing))
-      } catch {
-        // ignore
-      }
       setBlogSlug(siteSlug ? `${siteSlug}/${rawSlug}` : rawSlug)
       setBlogPublished(true)
       setPublishedSiteName(siteName ?? "ItGrows.ai Blog")
@@ -223,8 +170,6 @@ export default function SeoResultsPage() {
 
   const handlePublishToBlog = async () => {
     if (!result || blogPublishing || blogPublished) return
-
-    const defaultSite = getDefaultSite()
 
     // No connected sites → show modal
     if (!defaultSite) {
@@ -236,7 +181,7 @@ export default function SeoResultsPage() {
     const { article } = result
 
     if (defaultSite.platform === "itgrows_blog") {
-      await publishToItgrowsBlog(article, defaultSite.name, defaultSite.id, defaultSite.siteSlug)
+      await publishToItgrowsBlog(article, defaultSite.name, defaultSite.id, defaultSite.siteSlug ?? undefined)
       setBlogPublishing(false)
       return
     }
@@ -259,18 +204,15 @@ export default function SeoResultsPage() {
       if (pubRes.ok) {
         const pubData = (await pubRes.json()) as { success?: boolean; url?: string }
         if (pubData.success) {
-          // Also publish to hosted itgrows blog as a mirror
-          await publishToItgrowsBlog(article, defaultSite.name, defaultSite.id, defaultSite.siteSlug)
+          await publishToItgrowsBlog(article, defaultSite.name, defaultSite.id, defaultSite.siteSlug ?? undefined)
         } else {
-          // Fallback to internal blog
-          await publishToItgrowsBlog(article, defaultSite.name, defaultSite.id, defaultSite.siteSlug)
+          await publishToItgrowsBlog(article, defaultSite.name, defaultSite.id, defaultSite.siteSlug ?? undefined)
         }
       } else {
-        // Fallback to internal blog
-        await publishToItgrowsBlog(article, defaultSite.name, defaultSite.id, defaultSite.siteSlug)
+        await publishToItgrowsBlog(article, defaultSite.name, defaultSite.id, defaultSite.siteSlug ?? undefined)
       }
     } catch {
-      await publishToItgrowsBlog(article, defaultSite.name, defaultSite.id, defaultSite.siteSlug)
+      await publishToItgrowsBlog(article, defaultSite.name, defaultSite.id, defaultSite.siteSlug ?? undefined)
     } finally {
       setBlogPublishing(false)
     }
@@ -548,10 +490,9 @@ export default function SeoResultsPage() {
             >
               {blogPublishing
                 ? "Publishing..."
-                : (() => {
-                    const site = getDefaultSite()
-                    return site ? `Publish to ${site.name}` : "Publish to Blog"
-                  })()}
+                : defaultSite
+                ? `Publish to ${defaultSite.name}`
+                : "Publish to Blog"}
             </Button>
           )}
           {!isEditing && blogPublished && (

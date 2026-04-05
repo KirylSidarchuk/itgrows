@@ -1,16 +1,11 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { getUser } from "@/lib/auth"
 import {
-  type ConnectedSite,
-  getConnectedSites,
-  saveConnectedSites,
   platformLabel,
   generateSiteToken,
   generateSiteSlug,
@@ -21,8 +16,14 @@ import type { DetectedPlatform, DetectPlatformResult } from "@/app/api/detect-pl
 
 type FormStep = "url" | "detecting" | "detected"
 
-function generateId(): string {
-  return Date.now().toString(36) + Math.random().toString(36).slice(2, 8)
+interface ConnectedSite {
+  id: string
+  name: string
+  url: string
+  platform: string
+  siteToken: string
+  siteSlug: string | null
+  isDefault: boolean
 }
 
 // ─── Shopify guide ────────────────────────────────────────────────────────────
@@ -89,13 +90,15 @@ function CopyButton({ text, label }: { text: string; label: string }) {
 interface AddSiteWizardProps {
   onSaved: (site: ConnectedSite) => void
   onCancel: () => void
+  isFirstSite: boolean
 }
 
-function AddSiteWizard({ onSaved, onCancel }: AddSiteWizardProps) {
+function AddSiteWizard({ onSaved, onCancel, isFirstSite }: AddSiteWizardProps) {
   const [step, setStep] = useState<FormStep>("url")
   const [inputUrl, setInputUrl] = useState("")
   const [detected, setDetected] = useState<DetectedPlatform>("custom")
   const [siteName, setSiteName] = useState("")
+  const [saving, setSaving] = useState(false)
 
   // WordPress plugin flow
   const [wpToken, setWpToken] = useState("")
@@ -142,47 +145,71 @@ function AddSiteWizard({ onSaved, onCancel }: AddSiteWizardProps) {
     }
   })()
 
-  // ── Step 3: save ──────────────────────────────────────────────────────────
+  // ── Step 3: save via API ──────────────────────────────────────────────────
+  const saveSite = async (siteData: {
+    name: string
+    url: string
+    platform: string
+    siteToken: string
+    siteSlug: string
+    shopifyToken?: string
+    shopifyBlogId?: string
+    webflowToken?: string
+    webflowCollectionId?: string
+  }) => {
+    setSaving(true)
+    try {
+      const res = await fetch("/api/sites", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...siteData,
+          isDefault: isFirstSite,
+        }),
+      })
+      const data = await res.json() as { site?: ConnectedSite; error?: string }
+      if (data.site) {
+        onSaved(data.site)
+      }
+    } catch {
+      // ignore
+    } finally {
+      setSaving(false)
+    }
+  }
+
   const handleConnect = (token: string) => {
-    const newSite: ConnectedSite = {
-      id: generateId(),
+    saveSite({
       name: derivedName,
       url: normalUrl,
       platform: detected === "wordpress" ? "wordpress" : detected === "shopify" ? "shopify" : detected === "webflow" ? "webflow" : "custom",
       siteToken: token,
       siteSlug: generateSiteSlug(derivedName, normalUrl),
-      isDefault: false,
-      connectedAt: new Date().toISOString(),
-    }
-    onSaved(newSite)
+    })
   }
 
   const handleConnectShopify = () => {
-    const newSite: ConnectedSite = {
-      id: generateId(),
+    saveSite({
       name: derivedName,
       url: normalUrl,
       platform: "shopify",
       siteToken: shopifyAccessToken.trim(),
       siteSlug: generateSiteSlug(derivedName, normalUrl),
-      isDefault: false,
-      connectedAt: new Date().toISOString(),
-    }
-    onSaved(newSite)
+      shopifyToken: shopifyAccessToken.trim(),
+      shopifyBlogId: shopifyBlogId.trim(),
+    })
   }
 
   const handleConnectWebflow = () => {
-    const newSite: ConnectedSite = {
-      id: generateId(),
+    saveSite({
       name: derivedName,
       url: normalUrl,
       platform: "webflow",
       siteToken: webflowApiToken.trim(),
       siteSlug: generateSiteSlug(derivedName, normalUrl),
-      isDefault: false,
-      connectedAt: new Date().toISOString(),
-    }
-    onSaved(newSite)
+      webflowToken: webflowApiToken.trim(),
+      webflowCollectionId: webflowCollectionId.trim(),
+    })
   }
 
   // ── Render: Step 1 — URL ──────────────────────────────────────────────────
@@ -323,10 +350,10 @@ export async function POST(req) {
           <div className="flex gap-3 pt-1">
             <Button
               onClick={() => handleConnect(wpToken.trim())}
-              disabled={!wpToken.trim()}
+              disabled={!wpToken.trim() || saving}
               className="bg-violet-600 hover:bg-violet-500 text-[#1b1916]"
             >
-              Connect
+              {saving ? "Connecting..." : "Connect"}
             </Button>
             <Button
               onClick={() => setStep("url")}
@@ -380,9 +407,10 @@ export async function POST(req) {
           <div className="flex gap-3 pt-1">
             <Button
               onClick={() => handleConnect(generatedToken)}
+              disabled={saving}
               className="bg-violet-600 hover:bg-violet-500 text-[#1b1916]"
             >
-              I&apos;ve installed it — Connect
+              {saving ? "Connecting..." : "I've installed it — Connect"}
             </Button>
             <Button
               onClick={() => setStep("url")}
@@ -436,10 +464,10 @@ export async function POST(req) {
           <div className="flex gap-3 pt-1">
             <Button
               onClick={handleConnectShopify}
-              disabled={!shopifyAccessToken.trim() || !shopifyBlogId.trim()}
+              disabled={!shopifyAccessToken.trim() || !shopifyBlogId.trim() || saving}
               className="bg-violet-600 hover:bg-violet-500 text-[#1b1916]"
             >
-              Connect
+              {saving ? "Connecting..." : "Connect"}
             </Button>
             <Button
               onClick={() => setStep("url")}
@@ -493,10 +521,10 @@ export async function POST(req) {
           <div className="flex gap-3 pt-1">
             <Button
               onClick={handleConnectWebflow}
-              disabled={!webflowApiToken.trim() || !webflowCollectionId.trim()}
+              disabled={!webflowApiToken.trim() || !webflowCollectionId.trim() || saving}
               className="bg-violet-600 hover:bg-violet-500 text-[#1b1916]"
             >
-              Connect
+              {saving ? "Connecting..." : "Connect"}
             </Button>
             <Button
               onClick={() => setStep("url")}
@@ -515,43 +543,50 @@ export async function POST(req) {
 // ─── Settings page ────────────────────────────────────────────────────────────
 
 export default function SettingsPage() {
-  const router = useRouter()
   const [sites, setSites] = useState<ConnectedSite[]>([])
   const [showWizard, setShowWizard] = useState(false)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const u = getUser()
-    if (!u) {
-      router.push("/login")
-      return
-    }
-    setSites(getConnectedSites())
-  }, [router])
+    fetch("/api/sites")
+      .then((r) => r.json())
+      .then((data: { sites?: ConnectedSite[] }) => {
+        setSites(data.sites ?? [])
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false))
+  }, [])
 
   const handleSaved = (newSite: ConnectedSite) => {
-    const withDefault: ConnectedSite = {
-      ...newSite,
-      isDefault: sites.length === 0,
-    }
-    const updated = [...sites, withDefault]
-    setSites(updated)
-    saveConnectedSites(updated)
+    setSites((prev) => [...prev, newSite])
     setShowWizard(false)
   }
 
-  const handleDelete = (id: string) => {
-    const updated = sites.filter((s) => s.id !== id)
-    if (updated.length > 0 && !updated.some((s) => s.isDefault)) {
-      updated[0].isDefault = true
-    }
-    setSites(updated)
-    saveConnectedSites(updated)
+  const handleDelete = async (id: string) => {
+    await fetch(`/api/sites/${id}`, { method: "DELETE" }).catch(() => {})
+    setSites((prev) => {
+      const updated = prev.filter((s) => s.id !== id)
+      // If we deleted the default and there are remaining sites, promote the first
+      if (updated.length > 0 && !updated.some((s) => s.isDefault)) {
+        const firstId = updated[0].id
+        fetch(`/api/sites/${firstId}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ isDefault: true }),
+        }).catch(() => {})
+        updated[0] = { ...updated[0], isDefault: true }
+      }
+      return updated
+    })
   }
 
-  const handleSetDefault = (id: string) => {
-    const updated = sites.map((s) => ({ ...s, isDefault: s.id === id }))
-    setSites(updated)
-    saveConnectedSites(updated)
+  const handleSetDefault = async (id: string) => {
+    await fetch(`/api/sites/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ isDefault: true }),
+    }).catch(() => {})
+    setSites((prev) => prev.map((s) => ({ ...s, isDefault: s.id === id })))
   }
 
   const defaultSite = sites.find((s) => s.isDefault) ?? sites[0] ?? null
@@ -597,7 +632,10 @@ export default function SettingsPage() {
 
           <CardContent className="space-y-4">
             {/* Existing sites */}
-            {sites.length === 0 && !showWizard && (
+            {loading && (
+              <div className="text-center py-8 text-slate-500 text-sm">Loading...</div>
+            )}
+            {!loading && sites.length === 0 && !showWizard && (
               <div className="text-center py-8 text-slate-500 text-sm">
                 No sites connected yet. Click &quot;+ Add Site&quot; to get started.
               </div>
@@ -615,7 +653,7 @@ export default function SettingsPage() {
                         </span>
                       )}
                       <span className="px-2 py-0.5 rounded-full bg-violet-900/40 border border-violet-500/30 text-violet-300 text-xs">
-                        {platformLabel(site.platform)}
+                        {platformLabel(site.platform as Parameters<typeof platformLabel>[0])}
                       </span>
                     </div>
                     <p className="text-slate-400 text-xs mt-0.5 truncate">{site.url}</p>
@@ -663,6 +701,7 @@ export default function SettingsPage() {
               <AddSiteWizard
                 onSaved={handleSaved}
                 onCancel={() => setShowWizard(false)}
+                isFirstSite={sites.length === 0}
               />
             )}
           </CardContent>

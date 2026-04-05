@@ -1,15 +1,27 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { useSession } from "next-auth/react"
 
+interface Task {
+  id: string
+  title: string
+  type: string
+  status: string
+}
+
+interface ConnectedSite {
+  id: string
+  isDefault: boolean
+}
+
 export default function DashboardPage() {
   const { data: session } = useSession()
-  const [tasks, setTasks] = useState<{ id: string; title: string; type: string; status: string }[]>([])
+  const [tasks, setTasks] = useState<Task[]>([])
   const [hasConnectedSites, setHasConnectedSites] = useState(true)
 
   const user = session?.user
@@ -19,6 +31,24 @@ export default function DashboardPage() {
         planExpiry: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
       }
     : null
+
+  useEffect(() => {
+    // Load tasks from API
+    fetch("/api/tasks")
+      .then((r) => r.json())
+      .then((data: { tasks?: Task[] }) => {
+        setTasks(data.tasks ?? [])
+      })
+      .catch(() => {})
+
+    // Load sites from API
+    fetch("/api/sites")
+      .then((r) => r.json())
+      .then((data: { sites?: ConnectedSite[] }) => {
+        setHasConnectedSites((data.sites ?? []).length > 0)
+      })
+      .catch(() => {})
+  }, [])
 
   if (!user) return null
 
@@ -155,6 +185,9 @@ export default function DashboardPage() {
                 <StatusBadge status={task.status} />
               </div>
             ))}
+            {tasks.length === 0 && (
+              <p className="text-slate-500 text-sm text-center py-6">No tasks yet</p>
+            )}
           </CardContent>
         </Card>
       </div>
