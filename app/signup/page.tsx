@@ -1,7 +1,6 @@
 "use client"
 
 import { useState } from "react"
-import { signIn } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 
@@ -12,6 +11,7 @@ export default function SignupPage() {
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
+  const [done, setDone] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -33,17 +33,29 @@ export default function SignupPage() {
         setLoading(false)
         return
       }
-      // Auto sign in after signup
-      const signInRes = await signIn("credentials", { email, password, redirect: false })
-      if (signInRes?.error) {
-        router.push("/login")
-      } else {
-        router.push("/dashboard")
-      }
+      // Show check-email message instead of auto-login
+      setDone(true)
+      setLoading(false)
     } catch {
       setError("Something went wrong")
       setLoading(false)
     }
+  }
+
+  if (done) {
+    return (
+      <div className="min-h-screen bg-[#f3f2f1] flex items-center justify-center px-4">
+        <div className="w-full max-w-md text-center">
+          <Link href="/"><span className="text-2xl font-bold bg-gradient-to-r from-violet-600 to-pink-500 bg-clip-text text-transparent">ItGrows.ai</span></Link>
+          <div className="mt-8 bg-white border border-black/10 rounded-2xl p-10">
+            <div className="text-5xl mb-4">📧</div>
+            <h2 className="text-xl font-bold text-[#1b1916] mb-2">Check your email</h2>
+            <p className="text-slate-500 text-sm">We sent a confirmation link to <strong>{email}</strong>. Click it to activate your account.</p>
+            <p className="text-slate-400 text-xs mt-4">Didn&apos;t receive it? Check your spam folder.</p>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
