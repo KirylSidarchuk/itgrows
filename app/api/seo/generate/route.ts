@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 
 const LLM_BASE_URL = "http://34.60.133.229:4000"
-const LLM_MODEL = "gemini-2.0-pro"
+const LLM_MODEL = "gemini-2.0-flash"
 const LLM_API_KEY = "any-key"
 
 interface GenerateRequest {
