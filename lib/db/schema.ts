@@ -66,3 +66,16 @@ export const blogPosts = pgTable("blog_posts", {
   keywords: jsonb("keywords").notNull().default([]),
   publishedAt: timestamp("published_at").notNull().defaultNow(),
 })
+
+export const scheduledPosts = pgTable("scheduled_posts", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  keyword: text("keyword").notNull(),
+  language: text("language").notNull().default("en"),
+  tone: text("tone").notNull().default("Professional"),
+  scheduledDate: text("scheduled_date").notNull(),
+  status: text("status").notNull().default("scheduled"),
+  articleData: jsonb("article_data"),
+  publishedAt: timestamp("published_at"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+})

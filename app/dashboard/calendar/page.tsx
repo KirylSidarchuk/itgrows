@@ -32,8 +32,6 @@ interface TopicSuggestion {
 
 type ModalStep = "no-site" | "analyzing" | "topics" | "configure"
 
-const STORAGE_KEY = "itgrows_schedule"
-
 function getTodayString(): string {
   return new Date().toISOString().split("T")[0]
 }
@@ -79,29 +77,8 @@ const LANG_LABELS: Record<Language, string> = {
   uk: "UK",
 }
 
-function mergePosts(local: ScheduledPost[], remote: ScheduledPost[]): ScheduledPost[] {
-  const map = new Map<string, ScheduledPost>()
-  for (const p of local) map.set(p.id, p)
-  for (const p of remote) map.set(p.id, p)
-  return Array.from(map.values()).sort((a, b) => a.scheduledDate.localeCompare(b.scheduledDate))
-}
-
-function readLocalPosts(): ScheduledPost[] {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    if (!raw) return []
-    return JSON.parse(raw) as ScheduledPost[]
-  } catch {
-    return []
-  }
-}
-
-function writeLocalPosts(posts: ScheduledPost[]) {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(posts))
-  } catch {
-    // ignore
-  }
+function sortPosts(posts: ScheduledPost[]): ScheduledPost[] {
+  return [...posts].sort((a, b) => a.scheduledDate.localeCompare(b.scheduledDate))
 }
 
 export default function CalendarPage() {
@@ -151,19 +128,14 @@ export default function CalendarPage() {
 
   const loadPosts = useCallback(async () => {
     setLoading(true)
-    const local = readLocalPosts()
     try {
-      const res = await fetch("/api/schedule")
+      const res = await fetch("/api/schedule/posts")
       if (res.ok) {
         const data = (await res.json()) as { posts: ScheduledPost[] }
-        const merged = mergePosts(local, data.posts)
-        setPosts(merged)
-        writeLocalPosts(merged)
-      } else {
-        setPosts(local)
+        setPosts(sortPosts(data.posts))
       }
     } catch {
-      setPosts(local)
+      // ignore — leave posts empty
     }
     setLoading(false)
   }, [])
@@ -195,15 +167,8 @@ export default function CalendarPage() {
     setModalStep("analyzing")
     setShowModal(true)
 
-    // Collect already used keywords from tasks + schedule to avoid repeating
-    const existingTasks: Array<{ title?: string; keyword?: string }> =
-      JSON.parse(localStorage.getItem("itgrows_tasks_v2") || "[]")
-    const scheduledPosts: Array<{ keyword?: string }> =
-      JSON.parse(localStorage.getItem("itgrows_schedule") || "[]")
-    const usedKeywords = [
-      ...existingTasks.map((t) => t.title ?? ""),
-      ...scheduledPosts.map((s) => s.keyword ?? ""),
-    ].filter(Boolean)
+    // Collect already used keywords from scheduled posts to avoid repeating
+    const usedKeywords = posts.map((p) => p.keyword).filter(Boolean)
 
     try {
       const res = await fetch("/api/seo/analyze", {
@@ -223,7 +188,7 @@ export default function CalendarPage() {
       setAnalyzeError("Network error. Please try again.")
       setModalStep("topics")
     }
-  }, [])
+  }, [posts])
 
   const handleSelectTopic = (topic: TopicSuggestion) => {
     setSelectedTopic(topic)
@@ -235,7 +200,7 @@ export default function CalendarPage() {
 
     setScheduling(true)
     try {
-      const res = await fetch("/api/schedule", {
+      const res = await fetch("/api/schedule/posts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -246,37 +211,13 @@ export default function CalendarPage() {
         }),
       })
 
-      let newPost: ScheduledPost
       if (res.ok) {
         const data = (await res.json()) as { post: ScheduledPost }
-        newPost = data.post
-      } else {
-        newPost = {
-          id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-          keyword: selectedTopic.keyword,
-          language,
-          tone,
-          scheduledDate,
-          status: "scheduled",
-        }
+        setPosts((prev) => sortPosts([...prev, data.post]))
       }
 
-      const updated = mergePosts(readLocalPosts(), [newPost])
-      setPosts(updated)
-      writeLocalPosts(updated)
       setShowModal(false)
     } catch {
-      const newPost: ScheduledPost = {
-        id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-        keyword: selectedTopic.keyword,
-        language,
-        tone,
-        scheduledDate,
-        status: "scheduled",
-      }
-      const updated = mergePosts(readLocalPosts(), [newPost])
-      setPosts(updated)
-      writeLocalPosts(updated)
       setShowModal(false)
     } finally {
       setScheduling(false)
@@ -288,21 +229,16 @@ export default function CalendarPage() {
 
     setPublishingIds((prev) => new Set(prev).add(post.id))
 
-    const updateLocal = (id: string, updates: Partial<ScheduledPost>) => {
-      setPosts((prev) => {
-        const updated = prev.map((p) => (p.id === id ? { ...p, ...updates } : p))
-        writeLocalPosts(updated)
-        return updated
-      })
+    const updatePost = (id: string, updates: Partial<ScheduledPost>) => {
+      setPosts((prev) => prev.map((p) => (p.id === id ? { ...p, ...updates } : p)))
+      fetch(`/api/schedule/posts/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updates),
+      }).catch(() => {})
     }
 
-    updateLocal(post.id, { status: "generating" })
-
-    await fetch("/api/schedule", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id: post.id, status: "generating" }),
-    }).catch(() => {})
+    updatePost(post.id, { status: "generating" })
 
     try {
       const genRes = await fetch("/api/seo/generate", {
@@ -322,24 +258,6 @@ export default function CalendarPage() {
         keywords: string[]
       }
 
-      const taskId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
-      try {
-        const existingTasks = JSON.parse(localStorage.getItem("itgrows_tasks_v2") || "[]") as unknown[]
-        existingTasks.unshift({
-          id: taskId,
-          title: `Scheduled: ${article.title || post.keyword}`,
-          description: `Scheduled article targeting "${post.keyword}"`,
-          type: "seo_article",
-          status: "done",
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          articleData: article,
-        })
-        localStorage.setItem("itgrows_tasks_v2", JSON.stringify(existingTasks))
-      } catch {
-        // ignore
-      }
-
       const pubRes = await fetch("/api/blog/posts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -352,19 +270,9 @@ export default function CalendarPage() {
         slug = pubData.post?.slug ?? ""
       }
 
-      updateLocal(post.id, { status: "published", taskId, blogPostSlug: slug || undefined })
-      await fetch("/api/schedule", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: post.id, status: "published", taskId, blogPostSlug: slug || undefined }),
-      }).catch(() => {})
+      updatePost(post.id, { status: "published", blogPostSlug: slug || undefined })
     } catch {
-      updateLocal(post.id, { status: "failed" })
-      await fetch("/api/schedule", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: post.id, status: "failed" }),
-      }).catch(() => {})
+      updatePost(post.id, { status: "failed" })
     } finally {
       setPublishingIds((prev) => {
         const next = new Set(prev)
@@ -419,33 +327,16 @@ export default function CalendarPage() {
     const post = previewPost
     const article = { ...previewArticle, title: previewTitle, content: previewContent, metaDescription: previewMeta }
 
-    const updateLocal = (id: string, updates: Partial<ScheduledPost>) => {
-      setPosts((prev) => {
-        const updated = prev.map((p) => (p.id === id ? { ...p, ...updates } : p))
-        writeLocalPosts(updated)
-        return updated
-      })
+    const updatePost = (id: string, updates: Partial<ScheduledPost>) => {
+      setPosts((prev) => prev.map((p) => (p.id === id ? { ...p, ...updates } : p)))
+      fetch(`/api/schedule/posts/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updates),
+      }).catch(() => {})
     }
 
     try {
-      const taskId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
-      try {
-        const existingTasks = JSON.parse(localStorage.getItem("itgrows_tasks_v2") || "[]") as unknown[]
-        existingTasks.unshift({
-          id: taskId,
-          title: `Scheduled: ${article.title || post.keyword}`,
-          description: `Scheduled article targeting "${post.keyword}"`,
-          type: "seo_article",
-          status: "done",
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          articleData: article,
-        })
-        localStorage.setItem("itgrows_tasks_v2", JSON.stringify(existingTasks))
-      } catch {
-        // ignore
-      }
-
       const pubRes = await fetch("/api/blog/posts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -458,21 +349,10 @@ export default function CalendarPage() {
         slug = pubData.post?.slug ?? ""
       }
 
-      updateLocal(post.id, { status: "published", taskId, blogPostSlug: slug || undefined })
-      await fetch("/api/schedule", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: post.id, status: "published", taskId, blogPostSlug: slug || undefined }),
-      }).catch(() => {})
-
+      updatePost(post.id, { status: "published", blogPostSlug: slug || undefined })
       setPreviewOpen(false)
     } catch {
-      updateLocal(post.id, { status: "failed" })
-      await fetch("/api/schedule", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: post.id, status: "failed" }),
-      }).catch(() => {})
+      updatePost(post.id, { status: "failed" })
       setPreviewError("Publishing failed. Please try again.")
     } finally {
       setPreviewPublishing(false)
