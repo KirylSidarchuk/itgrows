@@ -9,6 +9,7 @@ function LoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const verified = searchParams.get("verified")
+  const resetDone = searchParams.get("reset")
   const errorParam = searchParams.get("error")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
@@ -44,6 +45,11 @@ function LoginForm() {
           Email confirmed! You can now sign in.
         </div>
       )}
+      {resetDone === "1" && (
+        <div className="mb-4 p-3 rounded-xl bg-green-50 border border-green-200 text-green-700 text-sm text-center">
+          Password updated! You can now sign in.
+        </div>
+      )}
       {errorParam === "token-expired" && (
         <div className="mb-4 p-3 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm text-center">
           Verification link expired. Please sign up again.
@@ -76,6 +82,9 @@ function LoginForm() {
             className="w-full px-4 py-2.5 rounded-xl border border-black/10 bg-[#f3f2f1] text-[#1b1916] text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
             placeholder="••••••••"
           />
+        </div>
+        <div className="text-right">
+          <Link href="/forgot-password" className="text-xs text-violet-600 hover:underline">Forgot password?</Link>
         </div>
         {error && <p className="text-red-500 text-sm">{error}</p>}
         <button
