@@ -194,20 +194,8 @@ export default function HomePage() {
             {features.map((f, i) => (
               <div
                 key={i}
-                className="group relative rounded-2xl p-6 transition-all duration-300 hover:-translate-y-1"
-                style={{
-                  background: "linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.02) 100%)",
-                  border: "1px solid rgba(139,92,246,0.2)",
-                  boxShadow: "0 0 0 0 rgba(139,92,246,0)",
-                }}
-                onMouseEnter={e => {
-                  (e.currentTarget as HTMLElement).style.border = "1px solid rgba(139,92,246,0.5)"
-                  ;(e.currentTarget as HTMLElement).style.boxShadow = "0 0 30px rgba(139,92,246,0.15), inset 0 0 30px rgba(139,92,246,0.03)"
-                }}
-                onMouseLeave={e => {
-                  (e.currentTarget as HTMLElement).style.border = "1px solid rgba(139,92,246,0.2)"
-                  ;(e.currentTarget as HTMLElement).style.boxShadow = "0 0 0 0 rgba(139,92,246,0)"
-                }}
+                className="group relative rounded-2xl p-6 border border-violet-500/20 hover:border-violet-500/50 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_0_30px_rgba(139,92,246,0.18),inset_0_0_30px_rgba(139,92,246,0.04)]"
+                style={{ background: "linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.02) 100%)" }}
               >
                 <div className="mb-5">
                   <Image src={f.icon} alt={f.title} width={72} height={72} className="rounded-2xl" />
