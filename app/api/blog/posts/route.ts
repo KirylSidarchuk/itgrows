@@ -1,4 +1,8 @@
 import { NextRequest, NextResponse } from "next/server"
+import { auth } from "@/auth"
+import { db } from "@/lib/db"
+import { blogPosts } from "@/lib/db/schema"
+import { eq, desc } from "drizzle-orm"
 
 export interface BlogPost {
   id: string
@@ -10,8 +14,8 @@ export interface BlogPost {
   keyword: string
   publishedAt: string
   status: "published"
-  siteId?: string    // id from ConnectedSite, if published for a client
-  siteSlug?: string  // client slug for URL: /blog/[siteSlug]/[slug]
+  siteId?: string
+  siteSlug?: string
 }
 
 function slugify(text: string): string {
@@ -27,65 +31,48 @@ function slugify(text: string): string {
   )
 }
 
-async function getBlobPosts(): Promise<BlogPost[]> {
-  const token = process.env.BLOB_READ_WRITE_TOKEN
-  if (!token) return []
-
-  try {
-    const { list } = await import("@vercel/blob")
-    const { blobs } = await list({ prefix: "blog-posts" })
-    const blogBlob = blobs.find((b) => b.pathname === "blog-posts.json")
-    if (!blogBlob) return []
-    const res = await fetch(blogBlob.url)
-    if (!res.ok) return []
-    return (await res.json()) as BlogPost[]
-  } catch {
-    return []
-  }
-}
-
-async function saveBlobPosts(posts: BlogPost[]): Promise<boolean> {
-  const token = process.env.BLOB_READ_WRITE_TOKEN
-  if (!token) return false
-
-  try {
-    const { put } = await import("@vercel/blob")
-    await put("blog-posts.json", JSON.stringify(posts), {
-      access: "public",
-      contentType: "application/json",
-      allowOverwrite: true,
-    })
-    return true
-  } catch {
-    return false
-  }
-}
-
 export async function GET(req: NextRequest) {
-  const hasBlobToken = !!process.env.BLOB_READ_WRITE_TOKEN
-
-  if (!hasBlobToken) {
-    return NextResponse.json({ posts: [], storage: "none" })
+  const session = await auth()
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
-  const { searchParams } = new URL(req.url)
-  const siteId = searchParams.get("siteId")
+  const rows = await db
+    .select()
+    .from(blogPosts)
+    .where(eq(blogPosts.userId, session.user.id))
+    .orderBy(desc(blogPosts.publishedAt))
 
-  let posts = await getBlobPosts()
-  if (siteId) {
-    posts = posts.filter((p) => p.siteId === siteId)
-  }
-  return NextResponse.json({ posts, storage: "blob" })
+  const posts: BlogPost[] = rows.map((r) => ({
+    id: r.id,
+    slug: r.slug,
+    title: r.title,
+    content: r.content,
+    metaDescription: r.metaDescription ?? "",
+    keywords: Array.isArray(r.keywords) ? (r.keywords as string[]) : [],
+    keyword: "",
+    publishedAt: r.publishedAt.toISOString(),
+    status: "published",
+    ...(r.siteId ? { siteId: r.siteId } : {}),
+    ...(r.siteSlug ? { siteSlug: r.siteSlug } : {}),
+  }))
+
+  return NextResponse.json({ posts, storage: "db" })
 }
 
 export async function POST(req: NextRequest) {
   try {
+    const session = await auth()
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
     const body = (await req.json()) as {
       title: string
       content: string
-      metaDescription: string
-      keywords: string[]
-      keyword: string
+      metaDescription?: string
+      keywords?: string[]
+      keyword?: string
       siteId?: string
       siteSlug?: string
     }
@@ -94,46 +81,37 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: "Missing title or content" }, { status: 400 })
     }
 
+    const slug = slugify(body.title)
+
+    const [inserted] = await db
+      .insert(blogPosts)
+      .values({
+        userId: session.user.id,
+        slug,
+        title: body.title,
+        content: body.content,
+        metaDescription: body.metaDescription ?? "",
+        keywords: body.keywords ?? [],
+        siteId: body.siteId ?? null,
+        siteSlug: body.siteSlug ?? null,
+      })
+      .returning()
+
     const post: BlogPost = {
-      id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-      slug: slugify(body.title),
-      title: body.title,
-      content: body.content,
-      metaDescription: body.metaDescription || "",
-      keywords: body.keywords || [],
-      keyword: body.keyword || "",
-      publishedAt: new Date().toISOString(),
+      id: inserted.id,
+      slug: inserted.slug,
+      title: inserted.title,
+      content: inserted.content,
+      metaDescription: inserted.metaDescription ?? "",
+      keywords: Array.isArray(inserted.keywords) ? (inserted.keywords as string[]) : [],
+      keyword: body.keyword ?? "",
+      publishedAt: inserted.publishedAt.toISOString(),
       status: "published",
-      ...(body.siteId ? { siteId: body.siteId } : {}),
-      ...(body.siteSlug ? { siteSlug: body.siteSlug } : {}),
+      ...(inserted.siteId ? { siteId: inserted.siteId } : {}),
+      ...(inserted.siteSlug ? { siteSlug: inserted.siteSlug } : {}),
     }
 
-    const hasBlobToken = !!process.env.BLOB_READ_WRITE_TOKEN
-
-    if (!hasBlobToken) {
-      return NextResponse.json(
-        {
-          success: false,
-          post,
-          storage: "none",
-          error: "BLOB_READ_WRITE_TOKEN not configured. Post saved client-side as fallback.",
-        },
-        { status: 200 }
-      )
-    }
-
-    const existing = await getBlobPosts()
-    existing.unshift(post)
-    const saved = await saveBlobPosts(existing)
-
-    if (!saved) {
-      return NextResponse.json(
-        { success: false, post, storage: "error", error: "Failed to save to Vercel Blob" },
-        { status: 500 }
-      )
-    }
-
-    return NextResponse.json({ success: true, post, storage: "blob" })
+    return NextResponse.json({ success: true, post, storage: "db" })
   } catch (err) {
     return NextResponse.json({ success: false, error: String(err) }, { status: 500 })
   }

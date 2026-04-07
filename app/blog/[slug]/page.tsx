@@ -1,78 +1,34 @@
-"use client"
-
-import { useEffect, useState } from "react"
-import { useParams } from "next/navigation"
+import { notFound } from "next/navigation"
 import Link from "next/link"
-import type { BlogPost } from "@/app/api/blog/posts/route"
+import { db } from "@/lib/db"
+import { blogPosts } from "@/lib/db/schema"
+import { eq } from "drizzle-orm"
 
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString("en-US", {
+function formatDate(date: Date): string {
+  return date.toLocaleDateString("en-US", {
     year: "numeric",
     month: "long",
     day: "numeric",
   })
 }
 
-export default function BlogPostPage() {
-  const { slug } = useParams<{ slug: string }>()
-  const [post, setPost] = useState<BlogPost | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [notFound, setNotFound] = useState(false)
+export default async function BlogPostPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>
+}) {
+  const { slug } = await params
 
-  useEffect(() => {
-    if (!slug) return
+  const [post] = await db
+    .select()
+    .from(blogPosts)
+    .where(eq(blogPosts.slug, slug))
 
-    async function fetchPost() {
-      try {
-        const res = await fetch(`/api/blog/posts/${slug}`)
-        if (res.ok) {
-          const data = (await res.json()) as { post: BlogPost }
-          setPost(data.post)
-          return
-        }
-      } catch {
-        // fall through
-      }
-
-      // Fallback: check localStorage
-      try {
-        const local = localStorage.getItem("itgrows_published_posts")
-        if (local) {
-          const posts = JSON.parse(local) as BlogPost[]
-          const found = posts.find((p) => p.slug === slug)
-          if (found) {
-            setPost(found)
-            return
-          }
-        }
-      } catch {
-        // ignore
-      }
-
-      setNotFound(true)
-    }
-
-    fetchPost().finally(() => setLoading(false))
-  }, [slug])
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-[#f3f2f1] flex items-center justify-center">
-        <p className="text-slate-500">Loading...</p>
-      </div>
-    )
+  if (!post) {
+    notFound()
   }
 
-  if (notFound || !post) {
-    return (
-      <div className="min-h-screen bg-[#f3f2f1] flex flex-col items-center justify-center gap-4">
-        <p className="text-slate-600 text-lg">Article not found.</p>
-        <Link href="/blog" className="text-violet-600 hover:underline text-sm">
-          ← Back to Blog
-        </Link>
-      </div>
-    )
-  }
+  const keywords = Array.isArray(post.keywords) ? (post.keywords as string[]) : []
 
   return (
     <div className="min-h-screen bg-[#f3f2f1] text-[#1b1916]">
@@ -98,16 +54,18 @@ export default function BlogPostPage() {
       <main className="px-6 py-12">
         <div className="max-w-3xl mx-auto">
           {/* Keywords */}
-          <div className="flex flex-wrap gap-2 mb-6">
-            {post.keywords.map((kw) => (
-              <span
-                key={kw}
-                className="px-2.5 py-1 rounded-md bg-violet-100 border border-violet-200 text-violet-700 text-xs font-medium"
-              >
-                {kw}
-              </span>
-            ))}
-          </div>
+          {keywords.length > 0 && (
+            <div className="flex flex-wrap gap-2 mb-6">
+              {keywords.map((kw) => (
+                <span
+                  key={kw}
+                  className="px-2.5 py-1 rounded-md bg-violet-100 border border-violet-200 text-violet-700 text-xs font-medium"
+                >
+                  {kw}
+                </span>
+              ))}
+            </div>
+          )}
 
           {/* Title */}
           <h1 className="text-4xl font-extrabold leading-tight mb-4 text-[#1b1916]">

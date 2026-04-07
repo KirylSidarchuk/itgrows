@@ -1,38 +1,9 @@
 import { NextRequest, NextResponse } from "next/server"
+import { auth } from "@/auth"
+import { db } from "@/lib/db"
+import { blogPosts } from "@/lib/db/schema"
+import { eq, and } from "drizzle-orm"
 import type { BlogPost } from "../route"
-
-async function getBlobPosts(): Promise<BlogPost[]> {
-  const token = process.env.BLOB_READ_WRITE_TOKEN
-  if (!token) return []
-
-  try {
-    const { list } = await import("@vercel/blob")
-    const { blobs } = await list({ prefix: "blog-posts" })
-    const blogBlob = blobs.find((b) => b.pathname === "blog-posts.json")
-    if (!blogBlob) return []
-    const res = await fetch(blogBlob.url)
-    if (!res.ok) return []
-    return (await res.json()) as BlogPost[]
-  } catch {
-    return []
-  }
-}
-
-async function saveBlobPosts(posts: BlogPost[]): Promise<boolean> {
-  const token = process.env.BLOB_READ_WRITE_TOKEN
-  if (!token) return false
-  try {
-    const { put } = await import("@vercel/blob")
-    await put("blog-posts.json", JSON.stringify(posts), {
-      access: "public",
-      contentType: "application/json",
-      allowOverwrite: true,
-    })
-    return true
-  } catch {
-    return false
-  }
-}
 
 export async function GET(
   _req: NextRequest,
@@ -40,11 +11,27 @@ export async function GET(
 ) {
   const { slug } = await params
 
-  const posts = await getBlobPosts()
-  const post = posts.find((p) => p.slug === slug)
+  const [row] = await db
+    .select()
+    .from(blogPosts)
+    .where(eq(blogPosts.slug, slug))
 
-  if (!post) {
+  if (!row) {
     return NextResponse.json({ error: "Post not found" }, { status: 404 })
+  }
+
+  const post: BlogPost = {
+    id: row.id,
+    slug: row.slug,
+    title: row.title,
+    content: row.content,
+    metaDescription: row.metaDescription ?? "",
+    keywords: Array.isArray(row.keywords) ? (row.keywords as string[]) : [],
+    keyword: "",
+    publishedAt: row.publishedAt.toISOString(),
+    status: "published",
+    ...(row.siteId ? { siteId: row.siteId } : {}),
+    ...(row.siteSlug ? { siteSlug: row.siteSlug } : {}),
   }
 
   return NextResponse.json({ post })
@@ -56,18 +43,19 @@ export async function DELETE(
 ) {
   const { slug } = await params
 
-  const hasBlobToken = !!process.env.BLOB_READ_WRITE_TOKEN
-  if (!hasBlobToken) {
-    return NextResponse.json({ success: true, storage: "none" })
+  const session = await auth()
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
-  const posts = await getBlobPosts()
-  const filtered = posts.filter((p) => p.slug !== slug)
+  const result = await db
+    .delete(blogPosts)
+    .where(and(eq(blogPosts.slug, slug), eq(blogPosts.userId, session.user.id)))
+    .returning()
 
-  if (filtered.length === posts.length) {
+  if (result.length === 0) {
     return NextResponse.json({ error: "Post not found" }, { status: 404 })
   }
 
-  await saveBlobPosts(filtered)
   return NextResponse.json({ success: true })
 }
