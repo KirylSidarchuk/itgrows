@@ -20,7 +20,47 @@ export async function POST(req: NextRequest) {
   }
 
   const currentYear = new Date().getFullYear()
-  const prompt = `You are an SEO expert. The current year is ${currentYear}. Given the website URL '${siteUrl}', suggest 3 blog article topics that would drive organic traffic in ${currentYear}. Use only current, up-to-date information. Do NOT reference years before ${currentYear}. Return ONLY a JSON array: [{"title": "...", "description": "..."}]`
+
+  // Fetch site content
+  let siteContext = `Website URL: ${siteUrl}`
+  try {
+    const siteRes = await fetch(siteUrl.startsWith("http") ? siteUrl : `https://${siteUrl}`, {
+      headers: { "User-Agent": "Mozilla/5.0 (compatible; ItGrows/1.0)" },
+      signal: AbortSignal.timeout(5000),
+    })
+    const html = await siteRes.text()
+
+    // Extract title
+    const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i)
+    const title = titleMatch ? titleMatch[1].trim() : ""
+
+    // Extract meta description
+    const metaMatch = html.match(/<meta[^>]+name=["']description["'][^>]+content=["']([^"']+)["']/i)
+    const metaDesc = metaMatch ? metaMatch[1].trim() : ""
+
+    // Extract H1s
+    const h1Matches = [...html.matchAll(/<h1[^>]*>([^<]+)<\/h1>/gi)].slice(0, 3).map(m => m[1].trim())
+
+    // Extract some body text
+    const bodyMatch = html.match(/<body[^>]*>([\s\S]*?)<\/body>/i)
+    const bodyText = bodyMatch
+      ? bodyMatch[1].replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 500)
+      : ""
+
+    siteContext = `Website URL: ${siteUrl}
+Title: ${title}
+Meta description: ${metaDesc}
+Headings: ${h1Matches.join(", ")}
+Page content excerpt: ${bodyText}`
+  } catch {
+    // Use URL only as fallback
+  }
+
+  const prompt = `You are an SEO expert. The current year is ${currentYear}. Analyze this website and suggest 3 highly relevant blog article topics that match its niche and would drive organic traffic in ${currentYear}.
+
+${siteContext}
+
+Use only current, up-to-date information. Topics must match the website's actual niche/industry. Do NOT suggest generic business or marketing topics unless that is clearly the site's focus. Return ONLY a JSON array: [{"title": "...", "description": "..."}]`
 
   const res = await fetch(`${LLM_BASE_URL}/v1/chat/completions`, {
     method: "POST",
