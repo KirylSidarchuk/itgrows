@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react"
 import { useRouter } from "next/navigation"
-import { getUser } from "@/lib/auth"
+import { useSession } from "next-auth/react"
 import { getConnectedSites, getDefaultSite } from "@/lib/connectedSites"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -86,11 +86,11 @@ function sortPosts(posts: ScheduledPost[]): ScheduledPost[] {
 
 export default function CalendarPage() {
   const router = useRouter()
+  const { status } = useSession()
 
   useEffect(() => {
-    const u = getUser()
-    if (!u) router.push("/login")
-  }, [router])
+    if (status === "unauthenticated") router.push("/login")
+  }, [status, router])
 
   const [posts, setPosts] = useState<ScheduledPost[]>([])
   const [view, setView] = useState<"list" | "calendar">("list")

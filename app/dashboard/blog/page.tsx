@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
-import { getUser } from "@/lib/auth"
+import { useSession } from "next-auth/react"
 import { Trash2, ExternalLink } from "lucide-react"
 import type { BlogPost } from "@/app/api/blog/posts/route"
 
@@ -21,15 +21,15 @@ function stripHtml(html: string): string {
 
 export default function DashboardBlogPage() {
   const router = useRouter()
+  const { status } = useSession()
   const [posts, setPosts] = useState<BlogPost[]>([])
   const [loading, setLoading] = useState(true)
   const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set())
 
   useEffect(() => {
-    const u = getUser()
-    if (!u) { router.push("/login"); return }
-    loadPosts()
-  }, [router])
+    if (status === "unauthenticated") { router.push("/login"); return }
+    if (status === "authenticated") loadPosts()
+  }, [status, router])
 
   async function loadPosts() {
     setLoading(true)

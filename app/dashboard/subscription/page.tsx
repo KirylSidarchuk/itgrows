@@ -2,10 +2,10 @@
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
+import { useSession } from "next-auth/react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { getUser, setUser, type User } from "@/lib/auth"
 
 const plans = [
   {
@@ -34,33 +34,29 @@ const plans = [
 
 export default function SubscriptionPage() {
   const router = useRouter()
-  const [user, setUserState] = useState<User | null>(null)
+  const { data: session, status } = useSession()
+  const [currentPlan, setCurrentPlan] = useState<"starter" | "pro" | "agency">("starter")
   const [upgrading, setUpgrading] = useState<string | null>(null)
   const [upgraded, setUpgraded] = useState<string | null>(null)
 
   useEffect(() => {
-    const u = getUser()
-    if (!u) {
+    if (status === "unauthenticated") {
       router.push("/login")
-      return
     }
-    setUserState(u)
-  }, [router])
+  }, [status, router])
 
   const handleUpgrade = (planId: "starter" | "pro" | "agency") => {
-    if (!user || user.plan === planId) return
+    if (currentPlan === planId) return
     setUpgrading(planId)
     setTimeout(() => {
-      const updated = { ...user, plan: planId }
-      setUser(updated)
-      setUserState(updated)
+      setCurrentPlan(planId)
       setUpgrading(null)
       setUpgraded(planId)
       setTimeout(() => setUpgraded(null), 3000)
     }, 1200)
   }
 
-  if (!user) return null
+  if (status !== "authenticated") return null
 
   const planColors: Record<string, string> = {
     starter: "bg-blue-100 text-blue-700 border-blue-200",
@@ -85,16 +81,16 @@ export default function SubscriptionPage() {
             <div className="flex items-center justify-between flex-wrap gap-4">
               <div>
                 <div className="flex items-center gap-3 mb-2">
-                  <Badge className={`capitalize text-sm px-3 py-1 ${planColors[user.plan]}`}>{user.plan}</Badge>
+                  <Badge className={`capitalize text-sm px-3 py-1 ${planColors[currentPlan]}`}>{currentPlan}</Badge>
                   <span className="text-slate-500 text-sm">Active</span>
                 </div>
                 <p className="text-slate-600 text-sm">
-                  Next renewal: {new Date(user.planExpiry).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}
+                  Next renewal: —
                 </p>
               </div>
               <div className="text-right">
                 <p className="text-3xl font-bold text-[#1b1916]">
-                  {plans.find((p) => p.id === user.plan)?.price}
+                  {plans.find((p) => p.id === currentPlan)?.price}
                   <span className="text-slate-500 text-base font-normal">/month</span>
                 </p>
               </div>
@@ -112,7 +108,7 @@ export default function SubscriptionPage() {
         <h2 className="text-xl font-semibold mb-4 text-[#1b1916]">Change Plan</h2>
         <div className="grid md:grid-cols-3 gap-6">
           {plans.map((plan) => {
-            const isCurrent = user.plan === plan.id
+            const isCurrent = currentPlan === plan.id
             const isUpgrading = upgrading === plan.id
             return (
               <Card
@@ -172,7 +168,7 @@ export default function SubscriptionPage() {
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-slate-500">Billing email</span>
-              <span className="text-[#1b1916]">{user.email}</span>
+              <span className="text-[#1b1916]">{session?.user?.email}</span>
             </div>
             <Button variant="outline" className="mt-4 border-slate-200 text-slate-600 hover:bg-[#ebe9e5]">
               Update Payment Method
