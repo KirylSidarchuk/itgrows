@@ -81,11 +81,6 @@ export default function SiteBlogPostPage() {
 
       <main className="px-6 py-12">
         <div className="max-w-3xl mx-auto">
-          <div className="flex flex-wrap gap-2 mb-6">
-            {post.keywords.map((kw) => (
-              <span key={kw} className="px-2.5 py-1 rounded-md bg-violet-900/40 border border-violet-500/30 text-violet-300 text-xs font-medium">{kw}</span>
-            ))}
-          </div>
           <h1 className="text-4xl font-extrabold leading-tight mb-4 text-white">{post.title}</h1>
           <p className="text-slate-400 text-sm mb-10">{formatDate(post.publishedAt)}</p>
           <div

@@ -18,6 +18,16 @@ function slugToDisplayName(slug: string): string {
     .join(" ")
 }
 
+function getExcerpt(post: { metaDescription?: string | null; content: string }): string {
+  if (post.metaDescription) return post.metaDescription.slice(0, 160)
+  const stripped = post.content
+    .replace(/<[^>]*>/g, " ")
+    .replace(/[#*_`~>]/g, "")
+    .replace(/\s+/g, " ")
+    .trim()
+  return stripped.slice(0, 160)
+}
+
 export default async function BlogPage() {
   // Main blog only shows ItGrows.ai's own posts (siteSlug = 'itgrows' or null)
   const rows = await db
@@ -137,9 +147,7 @@ export default async function BlogPage() {
           ) : (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {rows.map((post) => {
-                const excerpt = post.metaDescription
-                  ? post.metaDescription
-                  : post.content.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim().slice(0, 150)
+                const excerpt = getExcerpt(post)
                 const href = post.siteSlug
                   ? `/blog/sites/${post.siteSlug}/${post.slug}`
                   : `/blog/${post.slug}`
@@ -150,15 +158,10 @@ export default async function BlogPage() {
                         {post.title}
                       </h2>
                       <p className="text-slate-600 text-sm leading-relaxed mb-4">
-                        {excerpt.slice(0, 150)}
-                        {excerpt.length > 150 ? "…" : ""}
+                        {excerpt}
+                        {excerpt.length >= 160 ? "…" : ""}
                       </p>
-                      <div className="flex items-center justify-between">
-                        <p className="text-slate-500 text-xs">{formatDate(post.publishedAt)}</p>
-                        {post.siteSlug && (
-                          <span className="text-xs text-violet-600">{slugToDisplayName(post.siteSlug)}</span>
-                        )}
-                      </div>
+                      <p className="text-slate-500 text-xs">{formatDate(post.publishedAt)}</p>
                     </div>
                   </Link>
                 )

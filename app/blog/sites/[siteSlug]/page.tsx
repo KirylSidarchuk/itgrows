@@ -5,8 +5,14 @@ import { useParams } from "next/navigation"
 import Link from "next/link"
 import type { BlogPost } from "@/app/api/blog/posts/route"
 
-function stripHtml(html: string): string {
-  return html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim()
+function getExcerpt(post: { metaDescription?: string | null; content: string }): string {
+  if (post.metaDescription) return post.metaDescription.slice(0, 160)
+  const stripped = post.content
+    .replace(/<[^>]*>/g, " ")
+    .replace(/[#*_`~>]/g, "")
+    .replace(/\s+/g, " ")
+    .trim()
+  return stripped.slice(0, 160)
 }
 
 function formatDate(iso: string): string {
@@ -104,22 +110,15 @@ export default function SiteBlogPage() {
           ) : (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {posts.map((post) => {
-                const excerpt = stripHtml(post.content).slice(0, 150)
+                const excerpt = getExcerpt(post)
                 return (
                   <Link key={post.id} href={`/blog/sites/${siteSlug}/${post.slug}`} className="block group">
                     <div className="h-full bg-slate-800/60 border border-white/10 rounded-2xl p-6 hover:border-violet-500/40 hover:bg-slate-800 transition-all">
-                      <div className="flex flex-wrap gap-1.5 mb-3">
-                        {post.keywords.slice(0, 3).map((kw) => (
-                          <span key={kw} className="px-2 py-0.5 rounded-md bg-violet-900/40 border border-violet-500/30 text-violet-300 text-xs">
-                            {kw}
-                          </span>
-                        ))}
-                      </div>
                       <h2 className="text-white font-semibold text-lg mb-3 group-hover:text-violet-300 transition-colors leading-snug">
                         {post.title}
                       </h2>
                       <p className="text-slate-400 text-sm leading-relaxed mb-4">
-                        {excerpt}{excerpt.length >= 150 ? "…" : ""}
+                        {excerpt}{excerpt.length >= 160 ? "…" : ""}
                       </p>
                       <p className="text-slate-500 text-xs">{formatDate(post.publishedAt)}</p>
                     </div>
