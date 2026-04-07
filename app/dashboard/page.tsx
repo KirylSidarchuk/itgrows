@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -21,6 +22,7 @@ interface ConnectedSite {
 
 export default function DashboardPage() {
   const { data: session } = useSession()
+  const router = useRouter()
   const [tasks, setTasks] = useState<Task[]>([])
   const [hasConnectedSites, setHasConnectedSites] = useState(true)
 
@@ -33,6 +35,16 @@ export default function DashboardPage() {
     : null
 
   useEffect(() => {
+    // Check onboarding status and redirect if not completed
+    fetch("/api/user/profile")
+      .then((r) => r.json())
+      .then((data: { user?: { onboardingCompleted?: boolean } }) => {
+        if (data.user && !data.user.onboardingCompleted) {
+          router.push("/dashboard/onboarding")
+        }
+      })
+      .catch(() => {})
+
     // Load tasks from API
     fetch("/api/tasks")
       .then((r) => r.json())
@@ -48,7 +60,7 @@ export default function DashboardPage() {
         setHasConnectedSites((data.sites ?? []).length > 0)
       })
       .catch(() => {})
-  }, [])
+  }, [router])
 
   if (!user) return null
 

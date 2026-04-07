@@ -8,6 +8,7 @@ export const users = pgTable("users", {
   emailVerified: timestamp("email_verified"),
   plan: text("plan").notNull().default("starter"),
   planExpiry: text("plan_expiry"),
+  onboardingCompleted: boolean("onboarding_completed").default(false).notNull(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 })
 
