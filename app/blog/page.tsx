@@ -1,7 +1,7 @@
 import Link from "next/link"
 import { db } from "@/lib/db"
 import { blogPosts } from "@/lib/db/schema"
-import { desc } from "drizzle-orm"
+import { desc, eq, or, isNull } from "drizzle-orm"
 
 function formatDate(date: Date): string {
   return date.toLocaleDateString("en-US", {
@@ -19,16 +19,19 @@ function slugToDisplayName(slug: string): string {
 }
 
 export default async function BlogPage() {
+  // Main blog only shows ItGrows.ai's own posts (siteSlug = 'itgrows' or null)
   const rows = await db
     .select()
     .from(blogPosts)
+    .where(or(eq(blogPosts.siteSlug, "itgrows"), isNull(blogPosts.siteSlug)))
     .orderBy(desc(blogPosts.publishedAt))
     .limit(50)
 
-  // Build unique client blog list
+  // Client blogs (other siteSlug values) shown as separate sections
+  const allPosts = await db.select().from(blogPosts).orderBy(desc(blogPosts.publishedAt)).limit(500)
   const slugMap = new Map<string, number>()
-  for (const p of rows) {
-    if (p.siteSlug) {
+  for (const p of allPosts) {
+    if (p.siteSlug && p.siteSlug !== "itgrows") {
       slugMap.set(p.siteSlug, (slugMap.get(p.siteSlug) ?? 0) + 1)
     }
   }
