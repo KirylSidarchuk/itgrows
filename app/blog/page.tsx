@@ -1,6 +1,26 @@
 import Link from "next/link"
+import { db } from "@/lib/db"
+import { blogPosts } from "@/lib/db/schema"
+import { desc } from "drizzle-orm"
 
-export default function BlogPage() {
+function stripHtml(html: string): string {
+  return html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim()
+}
+
+function formatDate(date: Date): string {
+  return date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  })
+}
+
+export default async function BlogPage() {
+  const posts = await db
+    .select()
+    .from(blogPosts)
+    .orderBy(desc(blogPosts.publishedAt))
+
   return (
     <div className="min-h-screen bg-[#f3f2f1] text-[#1b1916]">
       {/* Nav */}
@@ -41,10 +61,36 @@ export default function BlogPage() {
         </div>
       </section>
 
-      {/* Coming soon */}
+      {/* Posts grid */}
       <section className="px-6 pb-24 pt-16">
-        <div className="max-w-6xl mx-auto text-center py-16">
-          <p className="text-slate-600 text-lg">Coming soon.</p>
+        <div className="max-w-6xl mx-auto">
+          {posts.length === 0 ? (
+            <p className="text-slate-600 text-lg text-center py-16">No posts yet.</p>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {posts.map((post) => {
+                const excerpt = stripHtml(post.content).slice(0, 150)
+                return (
+                  <Link
+                    key={post.id}
+                    href={`/blog/${post.slug}`}
+                    className="group block bg-white border border-black/10 rounded-2xl p-6 hover:border-violet-400/60 hover:shadow-md transition-all"
+                  >
+                    <p className="text-xs text-slate-400 mb-3">{formatDate(post.publishedAt)}</p>
+                    <h2 className="text-lg font-bold text-[#1b1916] mb-3 group-hover:text-violet-600 transition-colors leading-snug">
+                      {post.title}
+                    </h2>
+                    <p className="text-sm text-slate-500 leading-relaxed">
+                      {excerpt}{excerpt.length >= 150 ? "…" : ""}
+                    </p>
+                    <span className="inline-block mt-4 text-xs font-medium text-violet-600 group-hover:text-violet-500 transition-colors">
+                      Read more →
+                    </span>
+                  </Link>
+                )
+              })}
+            </div>
+          )}
         </div>
       </section>
 
