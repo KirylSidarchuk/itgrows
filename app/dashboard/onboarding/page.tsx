@@ -46,6 +46,7 @@ export default function OnboardingPage() {
   const [blogDomain, setBlogDomain] = useState("")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
+  const [loadingMsg, setLoadingMsg] = useState("")
   const [showFullArticle, setShowFullArticle] = useState(false)
   const [topicImages, setTopicImages] = useState<Record<number, string>>({})
   const [integrationMode, setIntegrationMode] = useState<'simple' | 'advanced' | null>(null)
@@ -124,11 +125,33 @@ export default function OnboardingPage() {
 
   async function handleComplete() {
     setLoading(true)
+    setError("")
+    setLoadingMsg("")
     try {
       await fetch("/api/user/onboarding-complete", { method: "POST" })
-      router.push("/dashboard")
+
+      // Save the site first (step 4 flow with blogDomain)
+      if (blogDomain.trim()) {
+        await fetch("/api/sites", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: siteUrl.trim(),
+            url: siteUrl.trim(),
+            platform: "custom",
+            isDefault: true,
+            blogDomain: blogDomain.trim(),
+          }),
+        })
+      }
+
+      // Schedule 15-article content calendar
+      setLoadingMsg("Setting up your 15-day content calendar...")
+      await fetch("/api/schedule/batch", { method: "POST" })
+
+      router.push("/dashboard/calendar")
     } catch {
-      router.push("/dashboard")
+      router.push("/dashboard/calendar")
     }
   }
 
@@ -402,6 +425,12 @@ export default function OnboardingPage() {
                 <span className="text-slate-500 text-xs mt-1 block">Enter the subdomain you configured (e.g. blog.yoursite.com)</span>
               </label>
             </div>
+
+            {loadingMsg && (
+              <p className="text-violet-600 text-sm font-medium text-center mb-3 flex items-center justify-center gap-2">
+                <span className="animate-spin">⟳</span> {loadingMsg}
+              </p>
+            )}
 
             <button
               onClick={handleComplete}

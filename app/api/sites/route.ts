@@ -4,6 +4,7 @@ import { db } from "@/lib/db"
 import { connectedSites } from "@/lib/db/schema"
 import { eq } from "drizzle-orm"
 
+
 export async function GET() {
   const session = await auth()
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
@@ -18,6 +19,32 @@ export async function POST(req: NextRequest) {
 
   const body = await req.json()
   const { name, url, platform, siteToken, siteSlug, wpUsername, wpAppPassword, shopifyToken, shopifyBlogId, webflowToken, webflowCollectionId, isDefault, blogDomain } = body
+
+  // Check if site URL already connected by another user
+  if (url) {
+    const existing = await db
+      .select({ id: connectedSites.id, userId: connectedSites.userId })
+      .from(connectedSites)
+      .where(eq(connectedSites.url, url))
+      .limit(1)
+
+    if (existing.length > 0 && existing[0].userId !== session.user.id) {
+      return NextResponse.json({ error: "This site is already connected by another account" }, { status: 409 })
+    }
+  }
+
+  // Same check for blogDomain if provided
+  if (blogDomain) {
+    const existingDomain = await db
+      .select({ id: connectedSites.id, userId: connectedSites.userId })
+      .from(connectedSites)
+      .where(eq(connectedSites.blogDomain, blogDomain))
+      .limit(1)
+
+    if (existingDomain.length > 0 && existingDomain[0].userId !== session.user.id) {
+      return NextResponse.json({ error: "This blog domain is already connected by another account" }, { status: 409 })
+    }
+  }
 
   // If setting as default, unset others
   if (isDefault) {

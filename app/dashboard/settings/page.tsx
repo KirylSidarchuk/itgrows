@@ -151,6 +151,7 @@ function AddSiteWizard({ onSaved, onCancel, isFirstSite }: AddSiteWizardProps) {
   const [detected, setDetected] = useState<DetectedPlatform>("custom")
   const [siteName, setSiteName] = useState("")
   const [saving, setSaving] = useState(false)
+  const [saveError, setSaveError] = useState("")
 
   // New flow state
   const [integrationMode, setIntegrationMode] = useState<IntegrationMode>(null)
@@ -228,6 +229,7 @@ function AddSiteWizard({ onSaved, onCancel, isFirstSite }: AddSiteWizardProps) {
     blogDomain?: string
   }) => {
     setSaving(true)
+    setSaveError("")
     try {
       const res = await fetch("/api/sites", {
         method: "POST",
@@ -238,11 +240,18 @@ function AddSiteWizard({ onSaved, onCancel, isFirstSite }: AddSiteWizardProps) {
         }),
       })
       const data = await res.json() as { site?: ConnectedSite; error?: string }
+      if (res.status === 409) {
+        setSaveError("This site is already registered with another account.")
+        return false
+      }
       if (data.site) {
         onSaved(data.site)
+        return true
       }
+      return false
     } catch {
       // ignore
+      return false
     } finally {
       setSaving(false)
     }
@@ -311,8 +320,8 @@ function AddSiteWizard({ onSaved, onCancel, isFirstSite }: AddSiteWizardProps) {
     })
   }
 
-  const handleConnectCname = () => {
-    saveSite({
+  const handleConnectCname = async () => {
+    return saveSite({
       name: derivedName,
       url: normalUrl,
       platform: "custom",
@@ -465,9 +474,13 @@ function AddSiteWizard({ onSaved, onCancel, isFirstSite }: AddSiteWizardProps) {
           <p className="text-slate-500 text-xs">Enter the subdomain you used (e.g. blog.yoursite.com)</p>
         </div>
 
+        {saveError && (
+          <p className="text-red-500 text-sm">{saveError}</p>
+        )}
+
         <div className="flex gap-3 pt-1">
           <Button
-            onClick={() => { handleConnectCname(); setStep("blog-done") }}
+            onClick={async () => { const ok = await handleConnectCname(); if (ok) setStep("blog-done") }}
             disabled={!blogDomain.trim() || saving}
             className="bg-violet-600 hover:bg-violet-500 text-white"
           >
@@ -694,6 +707,10 @@ export async function POST(req) {
             <span className="text-slate-600 text-xs">Articles will be published to:</span>
             <span className="text-violet-300 font-mono text-xs truncate">{existingBlogUrl}</span>
           </div>
+        )}
+
+        {saveError && (
+          <p className="text-red-500 text-sm">{saveError}</p>
         )}
 
         {/* ── WordPress ── */}
@@ -1037,6 +1054,10 @@ export async function POST(req) {
             className="bg-[#ebe9e5] border-black/10 text-[#1b1916] placeholder:text-slate-500 focus:border-violet-500 text-sm"
           />
         </div>
+
+        {saveError && (
+          <p className="text-red-500 text-sm">{saveError}</p>
+        )}
 
         <div className="flex gap-3 pt-1">
           <Button
