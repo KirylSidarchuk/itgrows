@@ -46,6 +46,7 @@ export default function OnboardingPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const [showFullArticle, setShowFullArticle] = useState(false)
+  const [topicImages, setTopicImages] = useState<Record<number, string>>({})
 
   const placeholderToken = `onb_${Math.random().toString(36).slice(2, 10)}`
 
@@ -70,6 +71,19 @@ export default function OnboardingPage() {
       if (!res.ok || !data.topics) throw new Error(data.error ?? "Failed to get topics")
       setTopics(data.topics)
       setStep(2)
+      // Generate images for all 3 topics in parallel (non-blocking)
+      data.topics.forEach((topic: Topic, idx: number) => {
+        fetch("/api/images/generate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ title: topic.title, keywords: [] }),
+        })
+          .then(r => r.json())
+          .then((d: { url?: string }) => {
+            if (d.url) setTopicImages(prev => ({ ...prev, [idx]: d.url! }))
+          })
+          .catch(() => {}) // silent fail
+      })
     } catch (e) {
       setError(e instanceof Error ? e.message : "Something went wrong")
     } finally {
@@ -196,14 +210,21 @@ export default function OnboardingPage() {
                 <button
                   key={i}
                   onClick={() => setSelectedTopic(topic)}
-                  className={`w-full text-left p-4 rounded-xl border-2 transition-all ${
+                  className={`w-full text-left rounded-xl border-2 overflow-hidden transition-all ${
                     selectedTopic?.title === topic.title
                       ? "border-violet-500 bg-violet-50"
                       : "border-black/10 hover:border-violet-300 bg-[#f9f8f7]"
                   }`}
                 >
-                  <p className="font-semibold text-[#1b1916] mb-1">{topic.title}</p>
-                  <p className="text-slate-600 text-sm">{topic.description}</p>
+                  {topicImages[i] ? (
+                    <img src={topicImages[i]} className="w-full h-32 object-cover rounded-t-xl mb-3" alt={topic.title} />
+                  ) : (
+                    <div className="w-full h-32 rounded-t-xl mb-3 bg-gradient-to-r from-slate-100 via-slate-200 to-slate-100 animate-pulse" />
+                  )}
+                  <div className="px-4 pb-4">
+                    <p className="font-semibold text-[#1b1916] mb-1">{topic.title}</p>
+                    <p className="text-slate-600 text-sm">{topic.description}</p>
+                  </div>
                 </button>
               ))}
             </div>
