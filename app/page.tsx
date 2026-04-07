@@ -169,28 +169,52 @@ export default function HomePage() {
       </section>
 
       {/* Features */}
-      <section id="features" className="px-6 py-24" style={{ backgroundColor: "#ebe9e5" }}>
-        <div className="max-w-6xl mx-auto">
+      <section id="features" className="relative px-6 py-28 overflow-hidden" style={{ backgroundColor: "#07071a" }}>
+        {/* Background glow blobs */}
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-violet-700/20 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-cyan-700/15 rounded-full blur-3xl pointer-events-none" />
+        {/* Subtle dot grid */}
+        <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: "radial-gradient(circle, rgba(139,92,246,0.12) 1px, transparent 1px)", backgroundSize: "40px 40px" }} />
+        <div className="relative max-w-6xl mx-auto">
           <div className="text-center mb-16">
-            <Badge className="mb-4 bg-cyan-100 text-cyan-700 border-cyan-200">Powerful Features</Badge>
-            <h2 className="text-4xl font-bold mb-4 text-[#1b1916]">Everything You Need to Dominate Your Niche</h2>
-            <p className="text-slate-600 text-lg max-w-2xl mx-auto">
+            <span className="inline-block mb-4 px-4 py-1 rounded-full text-sm font-medium border border-violet-500/40 text-violet-400 bg-violet-500/10 tracking-widest uppercase">
+              Powerful Features
+            </span>
+            <h2 className="text-4xl md:text-5xl font-bold mb-5 text-white leading-tight">
+              Everything You Need to{" "}
+              <span className="bg-gradient-to-r from-violet-400 via-pink-400 to-cyan-400 bg-clip-text text-transparent">
+                Dominate Your Niche
+              </span>
+            </h2>
+            <p className="text-slate-400 text-lg max-w-2xl mx-auto">
               One platform. Unlimited content. Real growth.
             </p>
           </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
             {features.map((f, i) => (
-              <Card key={i} className="bg-white border-black/8 hover:border-violet-400/50 transition-all hover:shadow-md">
-                <CardHeader>
-                  <div className="mb-3">
-                    <Image src={f.icon} alt={f.title} width={64} height={64} className="rounded-xl" />
-                  </div>
-                  <CardTitle className="text-[#1b1916] text-lg">{f.title}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-slate-600 text-sm leading-relaxed">{f.desc}</p>
-                </CardContent>
-              </Card>
+              <div
+                key={i}
+                className="group relative rounded-2xl p-6 transition-all duration-300 hover:-translate-y-1"
+                style={{
+                  background: "linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.02) 100%)",
+                  border: "1px solid rgba(139,92,246,0.2)",
+                  boxShadow: "0 0 0 0 rgba(139,92,246,0)",
+                }}
+                onMouseEnter={e => {
+                  (e.currentTarget as HTMLElement).style.border = "1px solid rgba(139,92,246,0.5)"
+                  ;(e.currentTarget as HTMLElement).style.boxShadow = "0 0 30px rgba(139,92,246,0.15), inset 0 0 30px rgba(139,92,246,0.03)"
+                }}
+                onMouseLeave={e => {
+                  (e.currentTarget as HTMLElement).style.border = "1px solid rgba(139,92,246,0.2)"
+                  ;(e.currentTarget as HTMLElement).style.boxShadow = "0 0 0 0 rgba(139,92,246,0)"
+                }}
+              >
+                <div className="mb-5">
+                  <Image src={f.icon} alt={f.title} width={72} height={72} className="rounded-2xl" />
+                </div>
+                <h3 className="text-white font-semibold text-lg mb-2 tracking-tight">{f.title}</h3>
+                <p className="text-slate-400 text-sm leading-relaxed">{f.desc}</p>
+              </div>
             ))}
           </div>
         </div>
