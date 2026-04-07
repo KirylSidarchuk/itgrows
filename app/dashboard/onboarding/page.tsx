@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 
 interface Topic {
@@ -49,10 +49,17 @@ export default function OnboardingPage() {
 
   const placeholderToken = `onb_${Math.random().toString(36).slice(2, 10)}`
 
+  // Restore site URL from localStorage on mount
+  useEffect(() => {
+    const saved = localStorage.getItem("onboarding_siteUrl")
+    if (saved) setSiteUrl(saved)
+  }, [])
+
   async function handleAnalyzeSite() {
     if (!siteUrl.trim()) return
     setLoading(true)
     setError("")
+    localStorage.setItem("onboarding_siteUrl", siteUrl.trim())
     try {
       const res = await fetch("/api/onboarding/topics", {
         method: "POST",

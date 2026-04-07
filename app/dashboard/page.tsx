@@ -36,11 +36,14 @@ export default function DashboardPage() {
 
   useEffect(() => {
     // Check onboarding status and redirect if not completed
-    fetch("/api/user/profile")
-      .then((r) => r.json())
+    fetch("/api/user/profile", { credentials: "include" })
+      .then((r) => {
+        if (!r.ok) throw new Error("Failed to fetch profile")
+        return r.json()
+      })
       .then((data: { user?: { onboardingCompleted?: boolean } }) => {
         if (data.user && !data.user.onboardingCompleted) {
-          router.push("/dashboard/onboarding")
+          router.replace("/dashboard/onboarding")
         }
       })
       .catch(() => {})
