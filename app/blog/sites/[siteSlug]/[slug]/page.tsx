@@ -92,7 +92,7 @@ export default function SiteBlogPostPage() {
           {/* Cover Image */}
           {post.coverImageUrl && (
             <div className="w-full h-64 md:h-96 overflow-hidden rounded-2xl mb-8">
-              <img src={post.coverImageUrl} alt={post.title} className="w-full h-full object-cover" />
+              <img src={`/api/blog/image/${post.id}`} alt={post.title} className="w-full h-full object-cover" />
             </div>
           )}
           <h1 className="text-4xl font-extrabold leading-tight mb-4 text-[#1b1916]">

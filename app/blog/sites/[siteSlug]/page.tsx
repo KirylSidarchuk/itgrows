@@ -109,7 +109,13 @@ export default function SiteBlogPage() {
                     href={`/blog/sites/${siteSlug}/${post.slug}`}
                     className="block group"
                   >
-                    <div className="h-full bg-white border border-black/10 rounded-2xl p-6 hover:border-violet-600/30 hover:shadow-sm transition-all">
+                    <div className="h-full bg-white border border-black/10 rounded-2xl overflow-hidden hover:border-violet-600/30 hover:shadow-sm transition-all">
+                      {post.coverImageUrl && (
+                        <div className="w-full h-48 overflow-hidden">
+                          <img src={`/api/blog/image/${post.id}`} alt={post.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                        </div>
+                      )}
+                      <div className="p-6">
                       <h2 className="text-[#1b1916] font-semibold text-lg mb-3 group-hover:text-violet-600 transition-colors leading-snug">
                         {post.title}
                       </h2>
@@ -117,6 +123,7 @@ export default function SiteBlogPage() {
                         {excerpt}{excerpt.length >= 160 ? "…" : ""}
                       </p>
                       <p className="text-[#1b1916]/40 text-xs">{formatDate(post.publishedAt)}</p>
+                      </div>
                     </div>
                   </Link>
                 )
