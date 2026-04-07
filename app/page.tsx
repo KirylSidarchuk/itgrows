@@ -1,36 +1,37 @@
 import Link from "next/link"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 const features = [
   {
-    icon: "✍️",
+    icon: "/icons/ai-content.jpg",
     title: "AI Content Creation",
     desc: "Generate SEO-optimized articles, blog posts, and social media content in seconds with our advanced AI.",
   },
   {
-    icon: "📱",
+    icon: "/icons/auto-publishing.jpg",
     title: "Auto-Publishing",
     desc: "Automatically publish to your website, Instagram, Twitter, LinkedIn, and Facebook on your schedule.",
   },
   {
-    icon: "🎯",
+    icon: "/icons/google-ads.jpg",
     title: "Google Ads on Autopilot",
     desc: "AI configures and optimizes your Google Ads campaigns continuously for maximum ROI.",
   },
   {
-    icon: "🖼️",
+    icon: "/icons/ai-image.jpg",
     title: "AI Image & Video Generation",
     desc: "Create stunning visuals for your content automatically — no designer needed.",
   },
   {
-    icon: "📊",
+    icon: "/icons/analytics.jpg",
     title: "Growth Analytics",
     desc: "Track traffic, engagement, and conversions in one dashboard. Know exactly what's working.",
   },
   {
-    icon: "🔄",
+    icon: "/icons/workflows.jpg",
     title: "Fully Automated Workflows",
     desc: "Set your goals once. ItGrows.ai handles research, creation, publishing, and reporting.",
   },
@@ -181,7 +182,9 @@ export default function HomePage() {
             {features.map((f, i) => (
               <Card key={i} className="bg-white border-black/8 hover:border-violet-400/50 transition-all hover:shadow-md">
                 <CardHeader>
-                  <div className="text-3xl mb-3">{f.icon}</div>
+                  <div className="mb-3">
+                    <Image src={f.icon} alt={f.title} width={64} height={64} className="rounded-xl" />
+                  </div>
                   <CardTitle className="text-[#1b1916] text-lg">{f.title}</CardTitle>
                 </CardHeader>
                 <CardContent>
