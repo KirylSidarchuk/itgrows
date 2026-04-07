@@ -122,6 +122,7 @@ export default function HomePage() {
             <a href="#features" className="hover:text-[#1b1916] transition-colors">Features</a>
             <a href="#how-it-works" className="hover:text-[#1b1916] transition-colors">How it works</a>
             <a href="#pricing" className="hover:text-[#1b1916] transition-colors">Pricing</a>
+            <a href="/#faq" className="hover:text-[#1b1916] transition-colors">FAQ</a>
             <Link href="/blog" className="hover:text-[#1b1916] transition-colors">Blog</Link>
           </div>
           <div className="flex items-center gap-3">
@@ -224,6 +225,46 @@ export default function HomePage() {
                 </div>
                 <h3 className="text-xl font-semibold mb-3 text-[#1b1916]">{s.title}</h3>
                 <p className="text-slate-600 text-sm leading-relaxed">{s.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section id="faq" className="px-6 py-24" style={{ backgroundColor: "#ebe9e5" }}>
+        <div className="max-w-3xl mx-auto">
+          <div className="text-center mb-16">
+            <Badge className="mb-4 bg-cyan-100 text-cyan-700 border-cyan-200">FAQ</Badge>
+            <h2 className="text-4xl font-bold mb-4 text-[#1b1916]">Frequently Asked Questions</h2>
+            <p className="text-slate-600 text-lg">Everything you need to know about how ItGrows.ai works.</p>
+          </div>
+          <div className="space-y-4">
+            {[
+              {
+                q: "Will articles published on my site actually rank on Google?",
+                a: "Yes — unlike other AI content tools that use JavaScript widgets (which Google often ignores), ItGrows.ai publishes articles as real HTML pages on your domain. Google crawls and indexes them just like any manually written article.",
+              },
+              {
+                q: "How is ItGrows.ai different from other AI blog tools?",
+                a: "Most competitors publish articles through JavaScript embeds that aren't properly indexed by search engines. ItGrows.ai uses a CNAME-based approach — articles live on your domain as server-rendered HTML pages, fully crawlable and indexable by Google, Bing, and other search engines.",
+              },
+              {
+                q: "Does the content match my website's niche?",
+                a: "Yes. When you connect your site, we analyze your website to understand your niche, products, and target audience. Every article is generated specifically for your business — not generic content.",
+              },
+              {
+                q: "How many articles can I publish per month?",
+                a: "With the autopilot plan, we publish 1 article per day — 30 per month. Each is unique, SEO-optimized, and tailored to your site's topic.",
+              },
+              {
+                q: "Do I need technical skills to set up?",
+                a: "No. For non-technical users, setup takes 2 minutes: just add one DNS record (CNAME) in your domain registrar. We provide step-by-step instructions for GoDaddy, Namecheap, Cloudflare, and others.",
+              },
+            ].map((item, i) => (
+              <div key={i} className="bg-white rounded-2xl border border-black/10 p-6 hover:border-violet-300 transition-colors">
+                <h3 className="text-[#1b1916] font-semibold text-base mb-3 leading-snug">{item.q}</h3>
+                <p className="text-slate-600 text-sm leading-relaxed">{item.a}</p>
               </div>
             ))}
           </div>
