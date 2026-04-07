@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
+import { auth } from "@/auth"
 
 const LLM_BASE_URL = "http://34.60.133.229:4000"
 const LLM_MODEL = "gemini-2.0-flash"
@@ -257,6 +258,18 @@ function markdownToHtml(md: string): string {
 
 export async function POST(req: NextRequest) {
   try {
+    // Allow internal server-to-server calls (from cron) via secret header
+    const internalSecret = process.env.CRON_SECRET
+    const internalHeader = req.headers.get("x-internal-secret")
+    const isInternalCall = internalSecret && internalHeader === internalSecret
+
+    if (!isInternalCall) {
+      const session = await auth()
+      if (!session?.user?.id) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+      }
+    }
+
     const body = await req.json() as GenerateRequest
     const { keyword, language = "en", tone = "Professional", siteContext } = body
 

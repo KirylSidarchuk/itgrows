@@ -1,7 +1,13 @@
 import { NextRequest, NextResponse } from "next/server"
+import { auth } from "@/auth"
 
 export async function POST(req: NextRequest) {
   try {
+    const session = await auth()
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
     const body = await req.json()
     const { topic, language = "en" } = body as { topic: string; language?: string }
 

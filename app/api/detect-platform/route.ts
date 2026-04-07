@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
+import { auth } from "@/auth"
 
 export type DetectedPlatform =
   | "wordpress"
@@ -13,6 +14,11 @@ export interface DetectPlatformResult {
 }
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
+  const session = await auth()
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  }
+
   let url: string
   try {
     const body = await req.json()

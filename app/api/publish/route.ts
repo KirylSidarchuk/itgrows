@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
+import { auth } from "@/auth"
 
 interface PublishRequest {
   siteUrl: string
@@ -23,6 +24,11 @@ interface PublishResult {
 // POST { siteUrl, siteToken, platform, title, content, metaDescription }
 // Publishes an article to a connected site using the siteToken
 export async function POST(req: NextRequest): Promise<NextResponse> {
+  const session = await auth()
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  }
+
   let body: PublishRequest
   try {
     body = (await req.json()) as PublishRequest

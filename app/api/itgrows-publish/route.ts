@@ -17,9 +17,9 @@ export async function POST(req: NextRequest) {
 
     const { token, title, content, metaDescription, keywords, keyword, siteId, siteSlug } = body
 
-    // Validate token against environment variable (optional for internal use)
+    // Validate token against environment variable
     const expectedToken = process.env.ITGROWS_SITE_TOKEN
-    if (expectedToken && token !== expectedToken) {
+    if (!expectedToken || token !== expectedToken) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 

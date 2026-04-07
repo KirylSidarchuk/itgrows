@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
+import { auth } from "@/auth"
 
 export interface ScheduledPost {
   id: string
@@ -57,12 +58,18 @@ async function saveScheduledPosts(posts: ScheduledPost[]): Promise<boolean> {
 
 // GET — return all scheduled posts
 export async function GET() {
+  const session = await auth()
+  if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+
   const posts = await getScheduledPosts()
   return NextResponse.json({ posts })
 }
 
 // POST — add a new scheduled post
 export async function POST(req: NextRequest) {
+  const session = await auth()
+  if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+
   try {
     const body = (await req.json()) as Omit<ScheduledPost, "id">
 
@@ -91,6 +98,9 @@ export async function POST(req: NextRequest) {
 
 // PATCH — update status (and optionally taskId/blogPostSlug)
 export async function PATCH(req: NextRequest) {
+  const session = await auth()
+  if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+
   try {
     const body = (await req.json()) as {
       id: string

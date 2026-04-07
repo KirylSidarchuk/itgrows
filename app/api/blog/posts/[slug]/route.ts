@@ -9,12 +9,17 @@ export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ slug: string }> }
 ) {
+  const session = await auth()
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  }
+
   const { slug } = await params
 
   const [row] = await db
     .select()
     .from(blogPosts)
-    .where(eq(blogPosts.slug, slug))
+    .where(and(eq(blogPosts.slug, slug), eq(blogPosts.userId, session.user.id)))
 
   if (!row) {
     return NextResponse.json({ error: "Post not found" }, { status: 404 })

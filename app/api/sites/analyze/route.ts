@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server"
+import { auth } from "@/auth"
 import { db } from "@/lib/db"
 import { connectedSites } from "@/lib/db/schema"
-import { eq } from "drizzle-orm"
+import { eq, and } from "drizzle-orm"
 
 export const runtime = "nodejs"
 
@@ -60,6 +61,11 @@ function extractBodyText(html: string): string {
 
 export async function POST(req: NextRequest) {
   try {
+    const session = await auth()
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
     const body = await req.json() as { siteUrl?: string; siteId?: string }
     const { siteUrl, siteId } = body
 
@@ -142,11 +148,11 @@ Body excerpt: ${bodyText}
 
     const profile = JSON.parse(stripped.slice(start, end + 1)) as SiteProfile
 
-    // Save profile to connected_sites
+    // Save profile to connected_sites — scoped to this user's site only
     await db
       .update(connectedSites)
       .set({ siteProfile: profile })
-      .where(eq(connectedSites.id, siteId))
+      .where(and(eq(connectedSites.id, siteId), eq(connectedSites.userId, session.user.id)))
 
     console.log("[sites/analyze] Profile saved for siteId:", siteId, profile)
 

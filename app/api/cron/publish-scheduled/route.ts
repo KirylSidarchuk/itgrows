@@ -7,13 +7,14 @@ import { eq, lte, and } from "drizzle-orm"
 export const runtime = "nodejs"
 
 export async function GET(req: NextRequest) {
-  // Verify authorization
+  // Verify authorization — CRON_SECRET must be set and header must match
   const cronSecret = process.env.CRON_SECRET
-  if (cronSecret) {
-    const authHeader = req.headers.get("authorization")
-    if (authHeader !== `Bearer ${cronSecret}`) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
+  if (!cronSecret) {
+    return NextResponse.json({ error: "Cron not configured" }, { status: 503 })
+  }
+  const authHeader = req.headers.get("authorization")
+  if (authHeader !== `Bearer ${cronSecret}`) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
   const baseUrl = process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"
@@ -59,10 +60,13 @@ export async function GET(req: NextRequest) {
         ? { niche: siteProfile.niche, targetAudience: siteProfile.targetAudience }
         : undefined
 
-      // Generate article
+      // Generate article (internal call — pass secret to bypass user session check)
       const genRes = await fetch(`${baseUrl}/api/seo/generate`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "x-internal-secret": cronSecret,
+        },
         body: JSON.stringify({ keyword: post.keyword, language: post.language, tone: post.tone, siteContext }),
       })
 
