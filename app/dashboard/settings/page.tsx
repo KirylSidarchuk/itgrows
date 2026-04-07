@@ -462,8 +462,8 @@ function AddSiteWizard({ onSaved, onCancel, isFirstSite }: AddSiteWizardProps) {
           />
           <ChoiceCard
             icon="☁️"
-            title="No, host it for me"
-            description={`We'll host your blog at itgrows.ai/blog/${siteSlug}`}
+            title="No, create one for me"
+            description="No problem — we'll create a blog section on your site automatically"
             onClick={() => {
               setHasBlog(false)
               setExistingBlogUrl("")
@@ -515,7 +515,7 @@ function AddSiteWizard({ onSaved, onCancel, isFirstSite }: AddSiteWizardProps) {
           <ChoiceCard
             icon="✨"
             title="No, create one for me"
-            description={`We'll create a hosted blog for you at itgrows.ai/blog/${siteSlug}`}
+            description="No problem — we'll create a blog section on your site automatically"
             onClick={() => {
               setHasBlog(false)
               setExistingBlogUrl("")
@@ -565,17 +565,14 @@ export async function POST(req) {
         {/* Blog destination info */}
         {hasBlog === false && (
           <div className="rounded-xl bg-violet-900/10 border border-violet-500/20 p-3 flex items-center gap-3 text-sm">
-            <span className="text-violet-300 shrink-0">&#10003; Hosted blog</span>
-            <span className="text-slate-600 text-xs">Your articles will appear at:</span>
-            <span className="text-violet-300 font-mono text-xs">
-              itgrows.ai/blog/{siteSlug}
-            </span>
+            <span className="text-violet-300 shrink-0">&#10003; Auto blog</span>
+            <span className="text-slate-600 text-xs">We'll create a /blog section on your site and publish articles there automatically</span>
           </div>
         )}
         {hasBlog === true && existingBlogUrl && (
           <div className="rounded-xl bg-violet-900/10 border border-violet-500/20 p-3 flex items-center gap-3 text-sm">
             <span className="text-violet-300 shrink-0">&#10003; Your blog</span>
-            <span className="text-slate-600 text-xs">Articles will publish to:</span>
+            <span className="text-slate-600 text-xs">Articles will be published to:</span>
             <span className="text-violet-300 font-mono text-xs truncate">{existingBlogUrl}</span>
           </div>
         )}
@@ -888,16 +885,13 @@ export async function POST(req) {
         {/* Blog destination */}
         {hasBlog === false && (
           <div className="rounded-xl bg-violet-900/10 border border-violet-500/20 p-3 text-sm">
-            <p className="text-slate-600 text-xs">Your articles will appear at:</p>
-            <p className="text-violet-300 font-mono text-sm mt-1">
-              itgrows.ai/blog/{siteSlug}
-            </p>
+            <p className="text-slate-600 text-xs">After adding the widget, a blog will be created on your site automatically. Your articles will appear at: <span className="text-violet-300 font-mono">yoursite.com/blog</span></p>
           </div>
         )}
         {hasBlog === true && (
           <div className="rounded-xl bg-violet-900/10 border border-violet-500/20 p-3 text-sm">
             <p className="text-slate-600 text-xs">
-              Your articles will publish directly to your existing blog
+              Your articles will be published directly to:
             </p>
             {existingBlogUrl && (
               <p className="text-violet-300 font-mono text-xs mt-1">{existingBlogUrl}</p>
@@ -1080,19 +1074,7 @@ export default function SettingsPage() {
                 {site.siteSlug && (
                   <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-green-900/10 border border-green-500/20 text-sm">
                     <span className="text-green-400 shrink-0">&#10003; Connected!</span>
-                    <span className="text-slate-600 text-xs">Your hosted blog is ready at:</span>
-                    <a
-                      href={`/blog/${site.siteSlug}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-violet-300 hover:text-violet-200 text-xs font-mono truncate flex-1"
-                    >
-                      itgrows.ai/blog/{site.siteSlug}
-                    </a>
-                    <CopyButton
-                      text={`https://itgrows.ai/blog/${site.siteSlug}`}
-                      label="Copy link"
-                    />
+                    <span className="text-slate-600 text-xs">Articles will be published to your site automatically.</span>
                   </div>
                 )}
               </div>
