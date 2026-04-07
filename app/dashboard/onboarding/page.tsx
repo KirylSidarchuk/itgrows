@@ -263,32 +263,6 @@ export default function OnboardingPage() {
               <p className="text-slate-600 text-sm">Here&apos;s a preview of what we generated</p>
             </div>
 
-            <div className="bg-[#f9f8f7] rounded-xl p-5 mb-4 border border-black/10">
-              <h3 className="text-lg font-bold text-[#1b1916] mb-3">{article.title}</h3>
-              <div
-                className="text-slate-700 text-sm leading-relaxed prose prose-sm max-w-none [&_p]:mb-2"
-                dangerouslySetInnerHTML={{ __html: getPreview(article.content) }}
-              />
-              <p className="text-violet-500 text-xs mt-3 italic">… article continues</p>
-            </div>
-
-            {/* Read full article toggle */}
-            <button
-              onClick={() => setShowFullArticle((v) => !v)}
-              className="w-full py-2 text-sm text-violet-600 hover:text-violet-800 font-medium transition-colors mb-4 flex items-center justify-center gap-1"
-            >
-              {showFullArticle ? "Collapse ↑" : "Read full article ↓"}
-            </button>
-
-            {showFullArticle && (
-              <div className="bg-white rounded-xl p-6 mb-4 border border-black/10 shadow-sm">
-                <div
-                  className="article-content"
-                  dangerouslySetInnerHTML={{ __html: article.content }}
-                />
-              </div>
-            )}
-
             {/* Keywords */}
             {article.keywords.length > 0 && (
               <div className="mb-4">
@@ -322,6 +296,32 @@ export default function OnboardingPage() {
                 />
               </div>
             </div>
+
+            <div className="bg-[#f9f8f7] rounded-xl p-5 mb-4 border border-black/10">
+              <h3 className="text-lg font-bold text-[#1b1916] mb-3">{article.title}</h3>
+              <div
+                className="text-slate-700 text-sm leading-relaxed prose prose-sm max-w-none [&_p]:mb-2"
+                dangerouslySetInnerHTML={{ __html: getPreview(article.content) }}
+              />
+              <p className="text-violet-500 text-xs mt-3 italic">… article continues</p>
+            </div>
+
+            {/* Read full article toggle */}
+            <button
+              onClick={() => setShowFullArticle((v) => !v)}
+              className="w-full py-2 text-sm text-violet-600 hover:text-violet-800 font-medium transition-colors mb-4 flex items-center justify-center gap-1"
+            >
+              {showFullArticle ? "Collapse ↑" : "Read full article ↓"}
+            </button>
+
+            {showFullArticle && (
+              <div className="bg-white rounded-xl p-6 mb-4 border border-black/10 shadow-sm">
+                <div
+                  className="article-content"
+                  dangerouslySetInnerHTML={{ __html: article.content }}
+                />
+              </div>
+            )}
 
             <button
               onClick={() => setStep(4)}
