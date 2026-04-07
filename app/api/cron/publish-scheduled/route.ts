@@ -32,6 +32,9 @@ export async function GET(req: NextRequest) {
   // Track which users had posts published this run (to check if we need to re-schedule)
   const userPublishedCounts: Record<string, number> = {}
 
+  // Cache site profiles per userId to avoid repeated DB queries
+  const siteProfileCache: Record<string, { niche?: string; targetAudience?: string } | null> = {}
+
   for (const post of duePosts) {
     try {
       // Mark as generating
@@ -40,11 +43,27 @@ export async function GET(req: NextRequest) {
         .set({ status: "generating" })
         .where(eq(scheduledPosts.id, post.id))
 
+      // Fetch site profile for this user (cached)
+      if (!(post.userId in siteProfileCache)) {
+        const userSites = await db
+          .select()
+          .from(connectedSites)
+          .where(eq(connectedSites.userId, post.userId))
+        const defaultSite = userSites.find((s) => s.isDefault) ?? userSites[0]
+        const rawProfile = defaultSite?.siteProfile as { niche?: string; targetAudience?: string } | null | undefined
+        siteProfileCache[post.userId] = rawProfile ?? null
+      }
+
+      const siteProfile = siteProfileCache[post.userId]
+      const siteContext = siteProfile?.niche
+        ? { niche: siteProfile.niche, targetAudience: siteProfile.targetAudience }
+        : undefined
+
       // Generate article
       const genRes = await fetch(`${baseUrl}/api/seo/generate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ keyword: post.keyword, language: post.language, tone: post.tone }),
+        body: JSON.stringify({ keyword: post.keyword, language: post.language, tone: post.tone, siteContext }),
       })
 
       if (!genRes.ok) {

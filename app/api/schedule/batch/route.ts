@@ -59,13 +59,15 @@ export async function POST(req: NextRequest) {
   const language = body.language || "en"
   const tone = body.tone || "Professional"
 
-  // If no siteUrl provided, look up default connected site
+  // Look up default connected site to get siteProfile
+  const sites = await db
+    .select()
+    .from(connectedSites)
+    .where(eq(connectedSites.userId, userId))
+  const defaultSite = sites.find((s) => s.isDefault) ?? sites[0]
+
+  // If no siteUrl provided, use default site URL
   if (!siteUrl) {
-    const sites = await db
-      .select()
-      .from(connectedSites)
-      .where(eq(connectedSites.userId, userId))
-    const defaultSite = sites.find((s) => s.isDefault) ?? sites[0]
     if (!defaultSite) {
       return NextResponse.json(
         { error: "No connected site found. Connect a site in Settings first." },
@@ -74,6 +76,14 @@ export async function POST(req: NextRequest) {
     }
     siteUrl = defaultSite.url
   }
+
+  // Extract site profile if available
+  const siteProfile = defaultSite?.siteProfile as {
+    niche?: string
+    products?: string[]
+    targetAudience?: string
+    topics?: string[]
+  } | null | undefined
 
   // Normalize URL
   let fetchUrl = siteUrl.trim()
@@ -112,9 +122,14 @@ export async function POST(req: NextRequest) {
   const h1Match = html.match(/<h1[^>]*>([^<]*)<\/h1>/i)
   const h1 = h1Match ? h1Match[1].trim() : ""
 
+  // Build site profile context for the prompt
+  const siteProfileContext = siteProfile?.niche
+    ? `\nSite niche: ${siteProfile.niche}\nSite products/services: ${siteProfile.products?.join(", ") || "N/A"}\nTarget audience: ${siteProfile.targetAudience || "N/A"}\nGenerate 15 unique article topics SPECIFICALLY for this niche. Topics must be directly relevant to: ${siteProfile.niche}.`
+    : `\nSite URL: ${siteUrl}`
+
   // Call LLM once asking for 15 unique topic suggestions
   const prompt = `Analyze this website and suggest 15 unique SEO article topics.
-Site: ${title}, ${metaDescription}, ${h1}
+Site: ${title}, ${metaDescription}, ${h1}${siteProfileContext}
 Already used keywords (avoid these): ${usedKeywords.join(", ") || "none"}
 Return JSON array: [{"title": "...", "keyword": "...", "description": "..."}]
 Return ONLY valid JSON, no markdown.`

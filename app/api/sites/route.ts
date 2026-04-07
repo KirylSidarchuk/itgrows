@@ -43,5 +43,12 @@ export async function POST(req: NextRequest) {
     blogDomain: blogDomain || null,
   }).returning()
 
+  // Non-blocking background site analysis
+  fetch(`${process.env.NEXTAUTH_URL || 'https://itgrows.ai'}/api/sites/analyze`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ siteUrl: body.url, siteId: site.id }),
+  }).catch(() => {}) // fire and forget
+
   return NextResponse.json({ site })
 }

@@ -4,10 +4,16 @@ const LLM_BASE_URL = "http://34.60.133.229:4000"
 const LLM_MODEL = "gemini-2.0-flash"
 const LLM_API_KEY = "any-key"
 
+interface SiteContext {
+  niche: string
+  targetAudience?: string
+}
+
 interface GenerateRequest {
   keyword: string
   language?: string
   tone?: string
+  siteContext?: SiteContext
 }
 
 interface ChatMessage {
@@ -32,7 +38,7 @@ interface SeoBreakdown {
   keyTakeaways: number
 }
 
-function buildPrompt(keyword: string, language: string, tone: string): string {
+function buildPrompt(keyword: string, language: string, tone: string, siteContext?: SiteContext): string {
   const langLabel: Record<string, string> = {
     en: "English",
     ru: "Russian",
@@ -41,7 +47,11 @@ function buildPrompt(keyword: string, language: string, tone: string): string {
   const lang = langLabel[language] ?? "English"
   const currentYear = new Date().getFullYear()
 
-  return `You are a world-class SEO content strategist and writer. Write a comprehensive, authoritative article in ${lang} that ranks well in Google, Bing, ChatGPT, and Perplexity.
+  const nicheInstruction = siteContext?.niche
+    ? `\nThis article is for a website in the ${siteContext.niche} niche${siteContext.targetAudience ? `, targeting ${siteContext.targetAudience}` : ""}. Keep content specific to this niche.`
+    : ""
+
+  return `You are a world-class SEO content strategist and writer. Write a comprehensive, authoritative article in ${lang} that ranks well in Google, Bing, ChatGPT, and Perplexity.${nicheInstruction}
 
 Topic/Keyword: "${keyword}"
 Tone: ${tone}
@@ -248,13 +258,13 @@ function markdownToHtml(md: string): string {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json() as GenerateRequest
-    const { keyword, language = "en", tone = "Professional" } = body
+    const { keyword, language = "en", tone = "Professional", siteContext } = body
 
     if (!keyword || typeof keyword !== "string") {
       return NextResponse.json({ error: "keyword is required" }, { status: 400 })
     }
 
-    const prompt = buildPrompt(keyword, language, tone)
+    const prompt = buildPrompt(keyword, language, tone, siteContext)
 
     const messages: ChatMessage[] = [
       {
