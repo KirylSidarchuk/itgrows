@@ -43,6 +43,7 @@ export default function OnboardingPage() {
   const [article, setArticle] = useState<ArticleData | null>(null)
   const [blogOption, setBlogOption] = useState<"existing" | "new" | null>(null)
   const [blogUrl, setBlogUrl] = useState("")
+  const [blogDomain, setBlogDomain] = useState("")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const [showFullArticle, setShowFullArticle] = useState(false)
@@ -341,150 +342,87 @@ export default function OnboardingPage() {
           </div>
         )}
 
-        {/* Step 4: Connect site */}
+        {/* Step 4: Connect blog via CNAME */}
         {step === 4 && (
           <div className="bg-white rounded-2xl p-8 shadow-sm border border-black/10">
-            {/* Sub-step 4a: Experience check */}
-            {connectSubStep === 'experience' && (
-              <>
-                <button
-                  onClick={() => setStep(3)}
-                  className="text-sm text-slate-500 hover:text-slate-700 mb-6 flex items-center gap-1"
-                >
-                  ← Back
-                </button>
+            <button
+              onClick={() => setStep(3)}
+              className="text-sm text-slate-500 hover:text-slate-700 mb-6 flex items-center gap-1"
+            >
+              ← Back
+            </button>
 
-                <div className="text-center mb-8">
-                  <div className="text-4xl mb-4">🔗</div>
-                  <h2 className="text-2xl font-bold text-[#1b1916] mb-2">How would you like to connect your site?</h2>
-                  <p className="text-slate-600 text-sm">Choose the approach that suits you best</p>
-                </div>
+            <div className="text-center mb-8">
+              <div className="text-4xl mb-4">🔗</div>
+              <h2 className="text-2xl font-bold text-[#1b1916] mb-2">Connect your blog</h2>
+              <p className="text-slate-600 text-sm">
+                Add a simple DNS record to host your blog on our platform — no technical setup needed.
+              </p>
+            </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <button
-                    onClick={() => { setIntegrationMode('simple'); setConnectSubStep('setup') }}
-                    className="p-5 rounded-xl border-2 text-left transition-all border-black/10 hover:border-violet-300 bg-[#f9f8f7]"
-                  >
-                    <div className="text-2xl mb-2">🧭</div>
-                    <p className="font-semibold text-[#1b1916] text-sm">Guide me step by step</p>
-                    <p className="text-slate-500 text-xs mt-1">I&apos;ll walk you through it with simple instructions</p>
-                  </button>
+            {/* DNS instruction box */}
+            <div className="bg-[#f9f8f7] rounded-xl p-5 border border-black/10 mb-6">
+              <p className="text-sm font-semibold text-[#1b1916] mb-3">Add this DNS record to your domain registrar:</p>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="text-slate-500 text-xs uppercase tracking-wide">
+                      <th className="text-left pb-2 pr-6 font-semibold">Type</th>
+                      <th className="text-left pb-2 pr-6 font-semibold">Name</th>
+                      <th className="text-left pb-2 font-semibold">Value</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td className="pr-6 py-1 font-mono text-violet-700 font-bold text-sm">CNAME</td>
+                      <td className="pr-6 py-1 font-mono text-[#1b1916] text-sm">blog</td>
+                      <td className="py-1 font-mono text-[#1b1916] text-xs">blogs.itgrows.ai</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <p className="text-slate-500 text-xs mt-3">
+                You can use any subdomain (e.g. <code className="bg-violet-50 text-violet-700 px-1 rounded">blog</code>, <code className="bg-violet-50 text-violet-700 px-1 rounded">news</code>)
+              </p>
+            </div>
 
-                  <button
-                    onClick={() => { setIntegrationMode('advanced'); setConnectSubStep('setup') }}
-                    className="p-5 rounded-xl border-2 text-left transition-all border-black/10 hover:border-violet-300 bg-[#f9f8f7]"
-                  >
-                    <div className="text-2xl mb-2">⚙️</div>
-                    <p className="font-semibold text-[#1b1916] text-sm">I&apos;ll do it myself</p>
-                    <p className="text-slate-500 text-xs mt-1">I have coding experience</p>
-                  </button>
-                </div>
-              </>
-            )}
+            {/* Blog domain input */}
+            <div className="mb-6">
+              <label className="block">
+                <span className="text-sm font-medium text-[#1b1916] mb-1 block">
+                  Your blog URL (after adding DNS):
+                </span>
+                <input
+                  type="text"
+                  placeholder="e.g. blog.yoursite.com"
+                  value={blogDomain}
+                  onChange={(e) => setBlogDomain(e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl border border-black/15 bg-[#f9f8f7] focus:outline-none focus:ring-2 focus:ring-violet-400 text-[#1b1916] placeholder:text-slate-400 font-mono text-sm"
+                />
+                <span className="text-slate-500 text-xs mt-1 block">Enter the subdomain you configured (e.g. blog.yoursite.com)</span>
+              </label>
+            </div>
 
-            {/* Sub-step 4b: Blog check + integration details */}
-            {connectSubStep === 'setup' && (
-              <>
-                <button
-                  onClick={() => setConnectSubStep('experience')}
-                  className="text-sm text-slate-500 hover:text-slate-700 mb-6 flex items-center gap-1"
-                >
-                  ← Back
-                </button>
+            <button
+              onClick={handleComplete}
+              disabled={loading}
+              className="w-full py-3 rounded-xl bg-violet-600 hover:bg-violet-500 disabled:opacity-50 text-white font-semibold transition-colors flex items-center justify-center gap-2"
+            >
+              {loading ? (
+                <>
+                  <span className="animate-spin">⟳</span> Setting up…
+                </>
+              ) : (
+                "Done! Take me to my dashboard →"
+              )}
+            </button>
 
-                <div className="text-center mb-8">
-                  <div className="text-4xl mb-4">🔗</div>
-                  <h2 className="text-2xl font-bold text-[#1b1916] mb-2">Connect your site to publish</h2>
-                  <p className="text-slate-600 text-sm">Choose how you&apos;d like to publish your content</p>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4 mb-6">
-                  <button
-                    onClick={() => setBlogOption("existing")}
-                    className={`p-5 rounded-xl border-2 text-left transition-all ${
-                      blogOption === "existing"
-                        ? "border-violet-500 bg-violet-50"
-                        : "border-black/10 hover:border-violet-300 bg-[#f9f8f7]"
-                    }`}
-                  >
-                    <div className="text-2xl mb-2">📝</div>
-                    <p className="font-semibold text-[#1b1916] text-sm">I have a blog</p>
-                    <p className="text-slate-500 text-xs mt-1">Connect your existing website</p>
-                  </button>
-
-                  <button
-                    onClick={() => setBlogOption("new")}
-                    className={`p-5 rounded-xl border-2 text-left transition-all ${
-                      blogOption === "new"
-                        ? "border-violet-500 bg-violet-50"
-                        : "border-black/10 hover:border-violet-300 bg-[#f9f8f7]"
-                    }`}
-                  >
-                    <div className="text-2xl mb-2">✨</div>
-                    <p className="font-semibold text-[#1b1916] text-sm">I don&apos;t have a blog yet</p>
-                    <p className="text-slate-500 text-xs mt-1">We&apos;ll create one on your site</p>
-                  </button>
-                </div>
-
-                {blogOption === "existing" && (
-                  <div className="mb-6">
-                    <label className="block">
-                      <span className="text-sm font-medium text-[#1b1916] mb-1 block">Your blog URL</span>
-                      <input
-                        type="text"
-                        placeholder="e.g. https://myblog.com"
-                        value={blogUrl}
-                        onChange={(e) => setBlogUrl(e.target.value)}
-                        className="w-full px-4 py-3 rounded-xl border border-black/15 bg-[#f9f8f7] focus:outline-none focus:ring-2 focus:ring-violet-400 text-[#1b1916] placeholder:text-slate-400"
-                      />
-                    </label>
-                  </div>
-                )}
-
-                {blogOption && integrationMode === 'simple' && (
-                  <div className="mb-6 bg-[#f9f8f7] rounded-xl p-4 border border-black/10">
-                    <p className="text-sm font-semibold text-[#1b1916] mb-3">Follow these steps to add the widget:</p>
-                    <ol className="list-decimal list-inside space-y-2 text-sm text-slate-600 mb-4">
-                      <li>Open your website&apos;s HTML editor or theme settings</li>
-                      <li>Find the <code className="bg-violet-50 text-violet-700 px-1 rounded">&lt;head&gt;</code> or <code className="bg-violet-50 text-violet-700 px-1 rounded">&lt;body&gt;</code> section</li>
-                      <li>Paste the script tag below just before the closing tag</li>
-                      <li>Save your changes and reload your site</li>
-                    </ol>
-                    <p className="text-sm font-medium text-[#1b1916] mb-2">Add this to your site&apos;s HTML:</p>
-                    <code className="text-xs text-violet-700 bg-violet-50 p-3 rounded-lg block overflow-x-auto whitespace-nowrap">
-                      {`<script src="https://itgrows.ai/widget.js?token=${placeholderToken}" defer></script>`}
-                    </code>
-                  </div>
-                )}
-
-                {blogOption && integrationMode === 'advanced' && (
-                  <div className="mb-6 bg-[#f9f8f7] rounded-xl p-4 border border-black/10">
-                    <p className="text-sm font-medium text-[#1b1916] mb-2">Embed code:</p>
-                    <code className="text-xs text-violet-700 bg-violet-50 p-3 rounded-lg block overflow-x-auto whitespace-nowrap mb-3">
-                      {`<script src="https://itgrows.ai/widget.js?token=${placeholderToken}" defer></script>`}
-                    </code>
-                    <p className="text-sm font-medium text-[#1b1916] mb-2">API token:</p>
-                    <code className="text-xs text-violet-700 bg-violet-50 p-3 rounded-lg block overflow-x-auto whitespace-nowrap">
-                      {placeholderToken}
-                    </code>
-                  </div>
-                )}
-
-                <button
-                  onClick={handleComplete}
-                  disabled={loading}
-                  className="w-full py-3 rounded-xl bg-violet-600 hover:bg-violet-500 disabled:opacity-50 text-white font-semibold transition-colors flex items-center justify-center gap-2"
-                >
-                  {loading ? (
-                    <>
-                      <span className="animate-spin">⟳</span> Setting up…
-                    </>
-                  ) : (
-                    "Done! Take me to my dashboard →"
-                  )}
-                </button>
-              </>
-            )}
+            <button
+              onClick={handleComplete}
+              className="w-full mt-3 py-2 text-sm text-slate-500 hover:text-slate-700 transition-colors"
+            >
+              Skip for now →
+            </button>
           </div>
         )}
       </div>

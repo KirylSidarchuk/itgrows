@@ -40,6 +40,7 @@ export const connectedSites = pgTable("connected_sites", {
   webflowToken: text("webflow_token"),
   webflowCollectionId: text("webflow_collection_id"),
   isDefault: boolean("is_default").notNull().default(false),
+  blogDomain: text("blog_domain"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 })
 

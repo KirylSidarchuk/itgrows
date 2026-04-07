@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
   const body = await req.json()
-  const { name, url, platform, siteToken, siteSlug, wpUsername, wpAppPassword, shopifyToken, shopifyBlogId, webflowToken, webflowCollectionId, isDefault } = body
+  const { name, url, platform, siteToken, siteSlug, wpUsername, wpAppPassword, shopifyToken, shopifyBlogId, webflowToken, webflowCollectionId, isDefault, blogDomain } = body
 
   // If setting as default, unset others
   if (isDefault) {
@@ -40,6 +40,7 @@ export async function POST(req: NextRequest) {
     webflowToken: webflowToken || null,
     webflowCollectionId: webflowCollectionId || null,
     isDefault: !!isDefault,
+    blogDomain: blogDomain || null,
   }).returning()
 
   return NextResponse.json({ site })

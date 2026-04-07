@@ -17,11 +17,13 @@ import type { DetectedPlatform, DetectPlatformResult } from "@/app/api/detect-pl
 type WizardStep =
   | "url"
   | "detecting"
-  | "experience"      // Step 2: technical or not?
-  | "blog-advanced"   // Step 3A: blog check for advanced
-  | "blog-simple"     // Step 3B: blog check for simple
-  | "setup-advanced"  // Step 4A: platform-specific code setup
-  | "setup-simple"    // Step 4B: simple embed guide
+  | "blog-cname"      // Step 2: CNAME DNS setup (main flow)
+  | "blog-done"       // Step 3: confirmation
+  | "experience"      // Advanced Step 2: technical or not?
+  | "blog-advanced"   // Advanced Step 3A: blog check for advanced
+  | "blog-simple"     // Advanced Step 3B: blog check for simple
+  | "setup-advanced"  // Advanced Step 4A: platform-specific code setup
+  | "setup-simple"    // Advanced Step 4B: simple embed guide
 
 type IntegrationMode = "simple" | "advanced" | null
 
@@ -155,6 +157,9 @@ function AddSiteWizard({ onSaved, onCancel, isFirstSite }: AddSiteWizardProps) {
   const [hasBlog, setHasBlog] = useState<boolean | null>(null)
   const [existingBlogUrl, setExistingBlogUrl] = useState("")
 
+  // Blog domain (CNAME flow)
+  const [blogDomain, setBlogDomain] = useState("")
+
   // WordPress plugin flow
   const [wpToken, setWpToken] = useState("")
 
@@ -203,7 +208,7 @@ function AddSiteWizard({ onSaved, onCancel, isFirstSite }: AddSiteWizardProps) {
     } catch {
       setDetected("custom")
     }
-    setStep("experience")
+    setStep("blog-cname")
   }
 
   // ── Save via API ──────────────────────────────────────────────────────────
@@ -220,6 +225,7 @@ function AddSiteWizard({ onSaved, onCancel, isFirstSite }: AddSiteWizardProps) {
     integrationMode?: IntegrationMode
     hasBlog?: boolean | null
     existingBlogUrl?: string
+    blogDomain?: string
   }) => {
     setSaving(true)
     try {
@@ -302,6 +308,17 @@ function AddSiteWizard({ onSaved, onCancel, isFirstSite }: AddSiteWizardProps) {
       integrationMode: "simple",
       hasBlog,
       existingBlogUrl: hasBlog ? existingBlogUrl : "",
+    })
+  }
+
+  const handleConnectCname = () => {
+    saveSite({
+      name: derivedName,
+      url: normalUrl,
+      platform: "custom",
+      siteToken: generatedToken,
+      siteSlug,
+      blogDomain: blogDomain.trim(),
     })
   }
 
@@ -399,7 +416,109 @@ function AddSiteWizard({ onSaved, onCancel, isFirstSite }: AddSiteWizardProps) {
   }
 
   // ─────────────────────────────────────────────────────────────────────────
-  // STEP 2 — Experience check
+  // STEP 2 — CNAME blog setup (main flow)
+  // ─────────────────────────────────────────────────────────────────────────
+  if (step === "blog-cname") {
+    return (
+      <div className="space-y-5 pt-4 border-t border-black/10">
+        <DetectionBadge />
+        <div>
+          <h3 className="text-[#1b1916] font-semibold text-base mb-1">Set up your blog</h3>
+          <p className="text-slate-600 text-xs">
+            Add a DNS record to your domain to host your blog on our platform. No technical setup needed.
+          </p>
+        </div>
+
+        {/* DNS instruction box */}
+        <div className="rounded-xl bg-[#ebe9e5] border border-black/10 p-5 space-y-3">
+          <p className="text-[#1b1916] font-semibold text-sm">Add this DNS record to your domain registrar:</p>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm border-collapse">
+              <thead>
+                <tr className="text-slate-500 text-xs uppercase tracking-wide">
+                  <th className="text-left pb-2 pr-6 font-semibold">Type</th>
+                  <th className="text-left pb-2 pr-6 font-semibold">Name</th>
+                  <th className="text-left pb-2 font-semibold">Value</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td className="pr-6 py-1 font-mono text-violet-700 font-bold">CNAME</td>
+                  <td className="pr-6 py-1 font-mono text-[#1b1916]">blog</td>
+                  <td className="py-1 font-mono text-[#1b1916] text-xs">blogs.itgrows.ai</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p className="text-slate-500 text-xs">You can use any subdomain name (e.g. <code className="bg-white/60 px-1 rounded text-violet-700">blog</code>, <code className="bg-white/60 px-1 rounded text-violet-700">news</code>, <code className="bg-white/60 px-1 rounded text-violet-700">articles</code>)</p>
+        </div>
+
+        {/* Blog URL input */}
+        <div className="space-y-2">
+          <Label className="text-slate-700 text-sm font-medium">Your blog URL (after adding DNS):</Label>
+          <Input
+            placeholder="e.g. blog.yoursite.com"
+            value={blogDomain}
+            onChange={(e) => setBlogDomain(e.target.value)}
+            className="bg-[#ebe9e5] border-black/10 text-[#1b1916] placeholder:text-slate-500 focus:border-violet-500 text-sm font-mono"
+          />
+          <p className="text-slate-500 text-xs">Enter the subdomain you used (e.g. blog.yoursite.com)</p>
+        </div>
+
+        <div className="flex gap-3 pt-1">
+          <Button
+            onClick={() => { handleConnectCname(); setStep("blog-done") }}
+            disabled={!blogDomain.trim() || saving}
+            className="bg-violet-600 hover:bg-violet-500 text-white"
+          >
+            {saving ? "Saving..." : "I've added the DNS record →"}
+          </Button>
+          <BackButton onClick={() => setStep("url")} />
+        </div>
+
+        {/* Advanced setup link */}
+        <div className="pt-2 border-t border-black/10">
+          <button
+            onClick={() => setStep("experience")}
+            className="text-xs text-slate-500 hover:text-violet-600 transition-colors underline"
+          >
+            Advanced Setup (WordPress, Shopify, Webflow, custom code)
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // STEP 3 — Done (CNAME flow)
+  // ─────────────────────────────────────────────────────────────────────────
+  if (step === "blog-done") {
+    const displayDomain = blogDomain.trim()
+    return (
+      <div className="space-y-5 pt-4 border-t border-black/10">
+        <div className="text-center py-4">
+          <div className="text-4xl mb-4">🎉</div>
+          <h3 className="text-[#1b1916] font-bold text-xl mb-2">You&apos;re all set!</h3>
+          <p className="text-slate-600 text-sm mb-4">
+            Your blog will be live at:
+          </p>
+          <div className="inline-block bg-violet-50 border border-violet-200 rounded-xl px-5 py-3 font-mono text-violet-700 text-sm font-semibold">
+            {displayDomain || "your blog domain"}
+          </div>
+          <p className="text-slate-500 text-xs mt-3">DNS changes can take up to 24 hours to propagate.</p>
+        </div>
+        <Button
+          onClick={onCancel}
+          className="w-full bg-violet-600 hover:bg-violet-500 text-white"
+        >
+          Done
+        </Button>
+      </div>
+    )
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // STEP 2 — Experience check (Advanced flow)
   // ─────────────────────────────────────────────────────────────────────────
   if (step === "experience") {
     return (
@@ -433,7 +552,7 @@ function AddSiteWizard({ onSaved, onCancel, isFirstSite }: AddSiteWizardProps) {
             }}
           />
         </div>
-        <BackButton onClick={() => setStep("url")} />
+        <BackButton onClick={() => setStep("blog-cname")} />
       </div>
     )
   }
