@@ -11,6 +11,8 @@ interface Topic {
 interface ArticleData {
   title: string
   content: string
+  keywords: string[]
+  seoScore: number
 }
 
 function ProgressDots({ step }: { step: number }) {
@@ -77,9 +79,16 @@ export default function OnboardingPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ keyword: selectedTopic.title, siteUrl, tone: "Professional" }),
       })
-      const data = await res.json() as { title?: string; content?: string; error?: string }
+      const data = await res.json() as { title?: string; content?: string; keywords?: string[]; seoScore?: number; error?: string }
       if (!res.ok || !data.content) throw new Error(data.error ?? "Failed to generate article")
-      setArticle({ title: data.title ?? selectedTopic.title, content: data.content })
+      const wordCount = (data.content ?? "").replace(/<[^>]+>/g, " ").split(/\s+/).filter(Boolean).length
+      const fallbackScore = Math.min(100, Math.max(50, Math.round(40 + wordCount / 40)))
+      setArticle({
+        title: data.title ?? selectedTopic.title,
+        content: data.content,
+        keywords: data.keywords ?? [],
+        seoScore: data.seoScore ?? fallbackScore,
+      })
       setStep(3)
     } catch (e) {
       setError(e instanceof Error ? e.message : "Something went wrong")
@@ -225,13 +234,47 @@ export default function OnboardingPage() {
               <p className="text-slate-600 text-sm">Here&apos;s a preview of what we generated</p>
             </div>
 
-            <div className="bg-[#f9f8f7] rounded-xl p-5 mb-6 border border-black/10">
+            <div className="bg-[#f9f8f7] rounded-xl p-5 mb-4 border border-black/10">
               <h3 className="text-lg font-bold text-[#1b1916] mb-3">{article.title}</h3>
               <div
                 className="text-slate-700 text-sm leading-relaxed prose prose-sm max-w-none [&_p]:mb-2"
                 dangerouslySetInnerHTML={{ __html: getPreview(article.content) }}
               />
               <p className="text-violet-500 text-xs mt-3 italic">… article continues</p>
+            </div>
+
+            {/* Keywords */}
+            {article.keywords.length > 0 && (
+              <div className="mb-4">
+                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Target Keywords</p>
+                <div className="flex flex-wrap gap-2">
+                  {article.keywords.slice(0, 8).map((kw, i) => (
+                    <span
+                      key={i}
+                      className="bg-violet-100 text-violet-700 text-xs px-2 py-1 rounded-full animate-[fadeIn_0.4s_ease_both]"
+                      style={{ animationDelay: `${i * 60}ms` }}
+                    >
+                      {kw}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* SEO Score */}
+            <div className="mb-6 bg-[#f9f8f7] rounded-xl p-4 border border-black/10">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">SEO Score ✨</p>
+                <span className={`text-sm font-bold ${article.seoScore >= 80 ? "text-green-600" : article.seoScore >= 60 ? "text-yellow-600" : "text-red-500"}`}>
+                  {article.seoScore} / 100
+                </span>
+              </div>
+              <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden">
+                <div
+                  className={`h-full rounded-full transition-all duration-700 ease-out ${article.seoScore >= 80 ? "bg-gradient-to-r from-green-400 to-green-500" : article.seoScore >= 60 ? "bg-gradient-to-r from-yellow-400 to-yellow-500" : "bg-gradient-to-r from-red-400 to-red-500"}`}
+                  style={{ width: `${article.seoScore}%` }}
+                />
+              </div>
             </div>
 
             <button
