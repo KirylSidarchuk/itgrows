@@ -45,6 +45,7 @@ export default function OnboardingPage() {
   const [blogUrl, setBlogUrl] = useState("")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
+  const [showFullArticle, setShowFullArticle] = useState(false)
 
   const placeholderToken = `onb_${Math.random().toString(36).slice(2, 10)}`
 
@@ -242,6 +243,23 @@ export default function OnboardingPage() {
               />
               <p className="text-violet-500 text-xs mt-3 italic">… article continues</p>
             </div>
+
+            {/* Read full article toggle */}
+            <button
+              onClick={() => setShowFullArticle((v) => !v)}
+              className="w-full py-2 text-sm text-violet-600 hover:text-violet-800 font-medium transition-colors mb-4 flex items-center justify-center gap-1"
+            >
+              {showFullArticle ? "Collapse ↑" : "Read full article ↓"}
+            </button>
+
+            {showFullArticle && (
+              <div className="bg-white rounded-xl p-6 mb-4 border border-black/10 shadow-sm">
+                <div
+                  className="article-content"
+                  dangerouslySetInnerHTML={{ __html: article.content }}
+                />
+              </div>
+            )}
 
             {/* Keywords */}
             {article.keywords.length > 0 && (
