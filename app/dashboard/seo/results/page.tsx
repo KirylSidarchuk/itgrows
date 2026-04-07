@@ -8,6 +8,15 @@ import { Button } from "@/components/ui/button"
 import { platformLabel } from "@/lib/connectedSites"
 import type { BlogPost } from "@/app/api/blog/posts/route"
 
+interface SeoBreakdown {
+  wordCount: number
+  headings: number
+  keywords: number
+  meta: number
+  faq: number
+  keyTakeaways: number
+}
+
 interface ArticleResult {
   article: {
     keyword: string
@@ -15,6 +24,8 @@ interface ArticleResult {
     content: string
     metaDescription: string
     keywords: string[]
+    seoScore?: number
+    seoBreakdown?: SeoBreakdown
   }
   publishUrl: string
   platform: string
@@ -354,47 +365,139 @@ export default function SeoResultsPage() {
           </div>
         )}
 
-        {/* Meta info */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-          <Card className="bg-white border-black/10">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-slate-600 text-sm font-medium uppercase tracking-wider">
-                Meta Description
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-[#1b1916] text-sm leading-relaxed">
-                {article.metaDescription || "—"}
-              </p>
-              <p className="text-slate-500 text-xs mt-2">
-                {article.metaDescription?.length ?? 0} characters
-              </p>
-            </CardContent>
-          </Card>
+        {/* Meta + SEO Score layout */}
+        <div className="flex flex-col lg:flex-row gap-4 mb-6">
+          {/* Left: meta description + keywords */}
+          <div className="flex-1 flex flex-col gap-4">
+            <Card className="bg-white border-black/10">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-slate-600 text-sm font-medium uppercase tracking-wider">
+                  Meta Description
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-[#1b1916] text-sm leading-relaxed">
+                  {article.metaDescription || "—"}
+                </p>
+                <p className="text-slate-500 text-xs mt-2">
+                  {article.metaDescription?.length ?? 0} characters
+                </p>
+              </CardContent>
+            </Card>
 
-          <Card className="bg-white border-black/10">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-slate-600 text-sm font-medium uppercase tracking-wider">
-                Keywords Used
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-wrap gap-2">
-                {article.keywords?.length ? (
-                  article.keywords.map((kw) => (
-                    <span
-                      key={kw}
-                      className="px-2 py-1 rounded-md bg-violet-100 border border-violet-200 text-violet-700 text-xs"
-                    >
-                      {kw}
-                    </span>
-                  ))
-                ) : (
-                  <span className="text-slate-500 text-sm">No keywords extracted</span>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+            {/* Target Keywords pills */}
+            <Card className="bg-white border-black/10">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-slate-600 text-sm font-medium uppercase tracking-wider">
+                  Target Keywords
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-wrap gap-2">
+                  {article.keywords?.length ? (
+                    article.keywords.map((kw) => (
+                      <span
+                        key={kw}
+                        className="px-3 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-violet-100 to-pink-100 border border-violet-200 text-violet-700"
+                      >
+                        {kw}
+                      </span>
+                    ))
+                  ) : (
+                    <span className="text-slate-500 text-sm">No keywords extracted</span>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Right: SEO Score widget */}
+          {article.seoScore !== undefined && article.seoBreakdown && (
+            <div className="lg:w-72 shrink-0">
+              <Card className="bg-white border-black/10 h-full">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-slate-600 text-sm font-medium uppercase tracking-wider">
+                    SEO Score
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {/* Circular score */}
+                  <div className="flex justify-center mb-5">
+                    <div className="relative flex items-center justify-center w-24 h-24">
+                      <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 96 96">
+                        <circle
+                          cx="48" cy="48" r="40"
+                          fill="none"
+                          stroke="#e5e7eb"
+                          strokeWidth="8"
+                        />
+                        <circle
+                          cx="48" cy="48" r="40"
+                          fill="none"
+                          stroke={
+                            article.seoScore >= 80
+                              ? "#22c55e"
+                              : article.seoScore >= 60
+                              ? "#eab308"
+                              : "#ef4444"
+                          }
+                          strokeWidth="8"
+                          strokeLinecap="round"
+                          strokeDasharray={`${2 * Math.PI * 40}`}
+                          strokeDashoffset={`${2 * Math.PI * 40 * (1 - article.seoScore / 100)}`}
+                        />
+                      </svg>
+                      <div className="text-center">
+                        <span
+                          className={`text-2xl font-bold ${
+                            article.seoScore >= 80
+                              ? "text-green-600"
+                              : article.seoScore >= 60
+                              ? "text-yellow-600"
+                              : "text-red-500"
+                          }`}
+                        >
+                          {article.seoScore}
+                        </span>
+                        <span className="text-slate-400 text-xs block">/100</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Breakdown bars */}
+                  <div className="space-y-2.5">
+                    {[
+                      { label: "Word Count", score: article.seoBreakdown.wordCount, max: 25 },
+                      { label: "Headings", score: article.seoBreakdown.headings, max: 20 },
+                      { label: "Keywords", score: article.seoBreakdown.keywords, max: 20 },
+                      { label: "Meta Desc", score: article.seoBreakdown.meta, max: 15 },
+                      { label: "FAQ Section", score: article.seoBreakdown.faq, max: 10 },
+                      { label: "Key Takeaways", score: article.seoBreakdown.keyTakeaways, max: 10 },
+                    ].map(({ label, score, max }) => (
+                      <div key={label}>
+                        <div className="flex justify-between text-xs mb-1">
+                          <span className="text-slate-600">{label}</span>
+                          <span className="text-slate-500 font-medium">{score}/{max}</span>
+                        </div>
+                        <div className="h-1.5 rounded-full bg-slate-100 overflow-hidden">
+                          <div
+                            className={`h-full rounded-full transition-all ${
+                              score / max >= 0.8
+                                ? "bg-green-500"
+                                : score / max >= 0.5
+                                ? "bg-yellow-400"
+                                : "bg-red-400"
+                            }`}
+                            style={{ width: `${(score / max) * 100}%` }}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
         </div>
 
         {/* Article preview */}

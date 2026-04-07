@@ -23,6 +23,15 @@ interface ChatCompletionResponse {
   }>
 }
 
+interface SeoBreakdown {
+  wordCount: number
+  headings: number
+  keywords: number
+  meta: number
+  faq: number
+  keyTakeaways: number
+}
+
 function buildPrompt(keyword: string, language: string, tone: string): string {
   const langLabel: Record<string, string> = {
     en: "English",
@@ -32,28 +41,122 @@ function buildPrompt(keyword: string, language: string, tone: string): string {
   const lang = langLabel[language] ?? "English"
   const currentYear = new Date().getFullYear()
 
-  return `You are an expert SEO content writer. Write a comprehensive SEO-optimized article in ${lang}.
+  return `You are a world-class SEO content strategist and writer. Write a comprehensive, authoritative article in ${lang} that ranks well in Google, Bing, ChatGPT, and Perplexity.
 
 Topic/Keyword: "${keyword}"
 Tone: ${tone}
-Length: 1500-2000 words
+Target length: 1800-2200 words
 Current year: ${currentYear}
 
-Requirements:
-1. Start with an H1 title (use # for H1) — use "${currentYear}" in the title if it adds SEO value, never use older years
-2. Include an engaging introduction paragraph with up-to-date information
-3. Use H2 sections (## heading) for main topics — at least 4 H2 sections
-4. Use H3 subsections (### heading) where relevant
-5. Include a conclusion section
-6. Naturally incorporate the main keyword and related terms throughout
-7. Write in ${lang}
-8. IMPORTANT: All information must reflect the current state as of ${currentYear}. Do not reference outdated statistics, old versions, or past trends as if they are current.
+=== CONTENT STRUCTURE (follow exactly) ===
 
-After the article, on a new line write exactly:
-META_DESCRIPTION: [a compelling meta description of 150-160 characters that includes the main keyword]
-KEYWORDS: [comma-separated list of 5-8 SEO keywords used in the article]
+1. H1 TITLE — compelling, includes main keyword, mentions ${currentYear} if relevant
+2. INTRODUCTION (first ~150 words):
+   - Open with a clear, direct answer to what the reader wants to know (search intent answer)
+   - This is critical for AI search engines (ChatGPT, Perplexity) — give the core answer immediately
+   - Include a hook with a relevant statistic or compelling fact
+
+3. KEY TAKEAWAYS section (bullet list, 4-6 bullets):
+   - Add a ## Key Takeaways heading right after the intro
+   - Summarize the most important points readers will learn
+   - This helps both readers and AI engines quickly grasp value
+
+4. MAIN BODY — minimum 4 H2 sections, use H3 subsections where appropriate:
+   - Each H2 covers a distinct, valuable subtopic
+   - Use H3s to break down complex H2 sections
+   - Include real statistics, examples, case studies
+   - Provide actionable, practical advice readers can implement
+   - Naturally weave in semantic/LSI keywords related to the main topic
+   - Demonstrate Experience, Expertise, Authoritativeness, Trustworthiness (E-E-A-T):
+     * Cite specific data points, years, percentages
+     * Mention well-known tools, platforms, or industry standards
+     * Use authoritative language that signals deep expertise
+     * Include nuanced insights that generic articles miss
+
+5. FAQ SECTION — add at the very end of the article body:
+   - Use ## Frequently Asked Questions as the heading
+   - Include exactly 5 questions and detailed answers
+   - Questions should match what people ask in Google/ChatGPT searches
+   - Answers should be 2-4 sentences each, clear and direct
+
+6. CONCLUSION:
+   - Brief wrap-up with a clear call to action
+
+=== AFTER THE ARTICLE ===
+On new lines after the article, write exactly these two lines:
+META_DESCRIPTION: [a compelling meta description of 120-160 characters including the main keyword]
+KEYWORDS: [comma-separated list of 10-15 SEO keywords and phrases used in the article]
+
+=== IMPORTANT RULES ===
+- Use # for H1, ## for H2, ### for H3
+- All information must reflect ${currentYear} — no outdated stats or old versions
+- Write in ${lang}
+- Do NOT add any commentary before or after the article
+- Hit the 1800-2200 word target — longer articles rank better
 
 Write the full article now:`
+}
+
+function computeSeoScore(
+  content: string,
+  keywords: string[],
+  metaDescription: string,
+): { score: number; breakdown: SeoBreakdown } {
+  // Word count score (0-25)
+  const wordCount = content
+    .replace(/<[^>]+>/g, " ")
+    .split(/\s+/)
+    .filter(Boolean).length
+  let wordCountScore = 10
+  if (wordCount >= 1800) wordCountScore = 25
+  else if (wordCount >= 1500) wordCountScore = 20
+
+  // Heading structure score (0-20)
+  const hasH1 = /<h1[\s>]/i.test(content)
+  const h2Matches = content.match(/<h2[\s>]/gi) ?? []
+  const h3Matches = content.match(/<h3[\s>]/gi) ?? []
+  let headingsScore = 0
+  if (hasH1) headingsScore += 5
+  if (h2Matches.length >= 3) headingsScore += 10
+  else if (h2Matches.length >= 1) headingsScore += 5
+  if (h3Matches.length >= 2) headingsScore += 5
+
+  // Keywords score (0-20)
+  let keywordsScore = 5
+  if (keywords.length >= 10) keywordsScore = 20
+  else if (keywords.length >= 5) keywordsScore = 15
+
+  // Meta description score (0-15)
+  let metaScore = 0
+  if (metaDescription) {
+    const len = metaDescription.length
+    if (len >= 120 && len <= 160) metaScore = 15
+    else metaScore = 8
+  }
+
+  // FAQ section score (0-10)
+  const hasFaq =
+    /frequently asked questions/i.test(content) ||
+    /faq/i.test(content)
+  const faqScore = hasFaq ? 10 : 0
+
+  // Key Takeaways score (0-10)
+  const hasKeyTakeaways = /key takeaways/i.test(content)
+  const keyTakeawaysScore = hasKeyTakeaways ? 10 : 0
+
+  const total = wordCountScore + headingsScore + keywordsScore + metaScore + faqScore + keyTakeawaysScore
+
+  return {
+    score: Math.min(100, total),
+    breakdown: {
+      wordCount: wordCountScore,
+      headings: headingsScore,
+      keywords: keywordsScore,
+      meta: metaScore,
+      faq: faqScore,
+      keyTakeaways: keyTakeawaysScore,
+    },
+  }
 }
 
 function parseArticle(raw: string): {
@@ -187,11 +290,17 @@ export async function POST(req: NextRequest) {
     }
 
     const parsed = parseArticle(rawContent)
+    const { score: seoScore, breakdown: seoBreakdown } = computeSeoScore(
+      parsed.content,
+      parsed.keywords,
+      parsed.metaDescription,
+    )
 
     // Debug: log last 500 chars of raw to see if META/KEYWORDS present
     console.log("[seo/generate] raw tail:", rawContent.slice(-500))
     console.log("[seo/generate] metaDescription:", parsed.metaDescription)
     console.log("[seo/generate] keywords:", parsed.keywords)
+    console.log("[seo/generate] seoScore:", seoScore, "breakdown:", seoBreakdown)
 
     return NextResponse.json({
       keyword,
@@ -199,7 +308,8 @@ export async function POST(req: NextRequest) {
       content: parsed.content,
       metaDescription: parsed.metaDescription,
       keywords: parsed.keywords,
-      _rawTail: rawContent.slice(-300), // temp debug field
+      seoScore,
+      seoBreakdown,
     })
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error"

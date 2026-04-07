@@ -13,12 +13,23 @@ interface TopicSuggestion {
   keyword: string
 }
 
+interface SeoBreakdown {
+  wordCount: number
+  headings: number
+  keywords: number
+  meta: number
+  faq: number
+  keyTakeaways: number
+}
+
 interface GeneratedArticle {
   keyword: string
   title: string
   content: string
   metaDescription: string
   keywords: string[]
+  seoScore?: number
+  seoBreakdown?: SeoBreakdown
 }
 
 interface ConnectedSite {
@@ -127,6 +138,8 @@ export default function SeoAutopilotPage() {
         content: article.content,
         metaDescription: article.metaDescription,
         keywords: article.keywords,
+        seoScore: article.seoScore,
+        seoBreakdown: article.seoBreakdown,
       }
       try {
         await fetch("/api/tasks", {
