@@ -52,17 +52,7 @@ Return ONLY the image prompt, nothing else.`
     return NextResponse.json({ error: "No image in response", raw: imgData }, { status: 500 })
   }
 
-  // Upload to image service on VM
-  const uploadRes = await fetch(`${req.nextUrl.origin}/api/images/upload`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", "Cookie": req.headers.get("cookie") || "" },
-    body: JSON.stringify({
-      base64: inlineData.data,
-      mimeType: inlineData.mimeType || "image/jpeg",
-      filename: `covers/${Date.now()}-${session.user.id}.jpg`,
-    }),
-  })
-
-  const uploadData = await uploadRes.json()
-  return NextResponse.json({ url: uploadData.url, prompt: imagePrompt })
+  const mimeType = inlineData.mimeType || "image/jpeg"
+  const dataUrl = `data:${mimeType};base64,${inlineData.data}`
+  return NextResponse.json({ url: dataUrl, prompt: imagePrompt })
 }
