@@ -449,22 +449,22 @@ export default function CalendarPage() {
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-black/10">
-                    <th className="text-left px-6 py-4 text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                    <th className="text-left px-6 py-4 text-xs font-semibold text-[#1b1916] uppercase tracking-wider">
                       Date
                     </th>
-                    <th className="text-left px-6 py-4 text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                    <th className="text-left px-6 py-4 text-xs font-semibold text-[#1b1916] uppercase tracking-wider">
                       Keyword
                     </th>
-                    <th className="text-left px-6 py-4 text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                    <th className="text-left px-6 py-4 text-xs font-semibold text-[#1b1916] uppercase tracking-wider">
                       Language
                     </th>
-                    <th className="text-left px-6 py-4 text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                    <th className="text-left px-6 py-4 text-xs font-semibold text-[#1b1916] uppercase tracking-wider">
                       Tone
                     </th>
-                    <th className="text-left px-6 py-4 text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                    <th className="text-left px-6 py-4 text-xs font-semibold text-[#1b1916] uppercase tracking-wider">
                       Status
                     </th>
-                    <th className="text-right px-6 py-4 text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                    <th className="text-right px-6 py-4 text-xs font-semibold text-[#1b1916] uppercase tracking-wider">
                       Actions
                     </th>
                   </tr>
@@ -476,7 +476,7 @@ export default function CalendarPage() {
                       <tr key={`group-${date}`} className="bg-[#ebe9e5]/20">
                         <td
                           colSpan={6}
-                          className="px-6 py-2 text-xs font-semibold text-slate-600 uppercase tracking-wider"
+                          className="px-6 py-2 text-xs font-semibold text-[#1b1916] uppercase tracking-wider"
                         >
                           {formatDateFull(date)}
                           {date === getTodayString() && (
@@ -495,7 +495,7 @@ export default function CalendarPage() {
                               {LANG_LABELS[post.language as Language] ?? post.language.toUpperCase()}
                             </span>
                           </td>
-                          <td className="px-6 py-4 text-sm text-slate-600">{post.tone}</td>
+                          <td className="px-6 py-4 text-sm text-[#1b1916]">{post.tone}</td>
                           <td className="px-6 py-4">
                             <span
                               className={`inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full ${STATUS_STYLES[post.status]}`}
@@ -573,7 +573,7 @@ export default function CalendarPage() {
           <div className="space-y-6">
             <div className="grid grid-cols-7 gap-1 mb-1">
               {dayNames.map((d) => (
-                <div key={d} className="text-center text-xs font-semibold text-slate-600 uppercase py-2">
+                <div key={d} className="text-center text-xs font-semibold text-[#1b1916] uppercase py-2">
                   {d}
                 </div>
               ))}
@@ -599,7 +599,7 @@ export default function CalendarPage() {
                     >
                       <div
                         className={`text-xs font-semibold mb-1.5 ${
-                          isToday ? "text-violet-300" : isPast ? "text-slate-600" : "text-slate-600"
+                          isToday ? "text-violet-600" : isPast ? "text-[#1b1916]" : "text-[#1b1916]"
                         }`}
                       >
                         {formatDate(dateStr)}
@@ -821,8 +821,8 @@ export default function CalendarPage() {
               <div>
                 <h2 className="text-xl font-bold text-[#1b1916]">Article Preview</h2>
                 {previewPost && (
-                  <p className="text-sm text-slate-600 mt-0.5">
-                    Keyword: <span className="text-slate-700">{previewPost.keyword}</span>
+                  <p className="text-sm text-[#1b1916] mt-0.5">
+                    Keyword: <span className="text-[#1b1916] font-medium">{previewPost.keyword}</span>
                   </p>
                 )}
               </div>
@@ -858,7 +858,7 @@ export default function CalendarPage() {
                 <>
                   {/* Title */}
                   <div className="space-y-2">
-                    <label className="text-xs font-semibold text-slate-600 uppercase tracking-wider">Title</label>
+                    <label className="text-xs font-semibold text-[#1b1916] uppercase tracking-wider">Title</label>
                     <input
                       type="text"
                       value={previewTitle}
@@ -870,7 +870,7 @@ export default function CalendarPage() {
 
                   {/* Meta description */}
                   <div className="space-y-2">
-                    <label className="text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                    <label className="text-xs font-semibold text-[#1b1916] uppercase tracking-wider">
                       Meta Description
                     </label>
                     <input
@@ -884,7 +884,7 @@ export default function CalendarPage() {
 
                   {/* Content */}
                   <div className="space-y-2">
-                    <label className="text-xs font-semibold text-slate-600 uppercase tracking-wider">Content</label>
+                    <label className="text-xs font-semibold text-[#1b1916] uppercase tracking-wider">Content</label>
                     <textarea
                       value={previewContent}
                       onChange={(e) => setPreviewContent(e.target.value)}
@@ -903,7 +903,7 @@ export default function CalendarPage() {
                 <button
                   onClick={() => setPreviewOpen(false)}
                   disabled={previewPublishing}
-                  className="px-5 py-2.5 rounded-lg text-sm font-medium border border-black/10 text-slate-600 hover:text-[#1b1916] hover:bg-[#ebe9e5] transition-colors disabled:opacity-50"
+                  className="px-5 py-2.5 rounded-lg text-sm font-medium border border-black/10 text-[#1b1916] hover:text-[#1b1916] hover:bg-[#ebe9e5] transition-colors disabled:opacity-50"
                 >
                   Cancel
                 </button>

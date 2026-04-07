@@ -170,7 +170,7 @@ export default function TasksPage() {
                           <Badge className="bg-[#ebe9e5] text-slate-700 border-0 text-xs">
                             {typeLabels[task.type]}
                           </Badge>
-                          <span className="text-slate-500 text-xs">
+                          <span className="text-[#1b1916] text-xs">
                             {new Date(task.createdAt).toLocaleDateString()}
                           </span>
                           {isDone && (
@@ -278,11 +278,11 @@ function RankingProgressTracker({ seoTasks }: { seoTasks: Task[] }) {
         <h2 className="text-[#1b1916] font-semibold text-base flex items-center gap-2">
           <span>📈</span> Expected Ranking Progress
         </h2>
-        <span className="text-slate-500 text-xs">
+        <span className="text-[#1b1916] text-xs">
           Week {weeks > 0 ? weeks : "< 1"} since publish
         </span>
       </div>
-      <p className="text-slate-500 text-xs mb-5 truncate">
+      <p className="text-[#1b1916] text-xs mb-5 truncate">
         {latestTask.title}
       </p>
 
@@ -338,14 +338,14 @@ function RankingProgressTracker({ seoTasks }: { seoTasks: Task[] }) {
                 <div className="text-center px-0.5">
                   <p
                     className={`text-xs font-semibold leading-tight ${
-                      isCompleted || isCurrent ? "text-violet-700" : "text-slate-400"
+                      isCompleted || isCurrent ? "text-violet-700" : "text-slate-700"
                     }`}
                   >
                     {stage.label}
                   </p>
                   <p
                     className={`text-xs leading-tight mt-0.5 hidden sm:block ${
-                      isFuture ? "text-slate-300" : "text-slate-400"
+                      isFuture ? "text-slate-700" : "text-[#1b1916]"
                     }`}
                   >
                     Wk {stage.weekEnd ? `${stage.weekStart}-${stage.weekEnd}` : `${stage.weekStart}+`}

@@ -92,7 +92,7 @@ export default function DashboardPage() {
           </Card>
           <Card className="bg-white border-black/10">
             <CardContent className="pt-6">
-              <p className="text-3xl font-bold text-slate-500">{pending}</p>
+              <p className="text-3xl font-bold text-[#1b1916]">{pending}</p>
               <p className="text-slate-600 text-sm mt-1">Pending</p>
             </CardContent>
           </Card>
@@ -107,7 +107,7 @@ export default function DashboardPage() {
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
                 <Badge className={`capitalize ${planColors[user.plan]}`}>{user.plan}</Badge>
-                <span className="text-slate-500 text-sm">
+                <span className="text-[#1b1916] text-sm">
                   Renews {new Date(user.planExpiry).toLocaleDateString()}
                 </span>
               </div>
@@ -180,13 +180,13 @@ export default function DashboardPage() {
               <div key={task.id} className="flex items-center justify-between py-3 border-b border-black/5 last:border-0">
                 <div>
                   <p className="text-[#1b1916] text-sm font-medium">{task.title}</p>
-                  <p className="text-slate-500 text-xs mt-0.5">{task.type.replace("_", " ")}</p>
+                  <p className="text-[#1b1916] text-xs mt-0.5">{task.type.replace("_", " ")}</p>
                 </div>
                 <StatusBadge status={task.status} />
               </div>
             ))}
             {tasks.length === 0 && (
-              <p className="text-slate-500 text-sm text-center py-6">No tasks yet</p>
+              <p className="text-[#1b1916] text-sm text-center py-6">No tasks yet</p>
             )}
           </CardContent>
         </Card>

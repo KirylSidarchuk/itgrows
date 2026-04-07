@@ -356,7 +356,7 @@ export default function SeoResultsPage() {
                 <Button
                   onClick={() => setNoSiteModal(false)}
                   variant="ghost"
-                  className="w-full text-slate-500 hover:text-[#1b1916]"
+                  className="w-full text-[#1b1916] hover:text-[#1b1916]"
                 >
                   Cancel
                 </Button>
@@ -371,7 +371,7 @@ export default function SeoResultsPage() {
           <div className="flex-1 flex flex-col gap-4">
             <Card className="bg-white border-black/10">
               <CardHeader className="pb-2">
-                <CardTitle className="text-slate-600 text-sm font-medium uppercase tracking-wider">
+                <CardTitle className="text-[#1b1916] text-sm font-medium uppercase tracking-wider">
                   Meta Description
                 </CardTitle>
               </CardHeader>
@@ -379,7 +379,7 @@ export default function SeoResultsPage() {
                 <p className="text-[#1b1916] text-sm leading-relaxed">
                   {article.metaDescription || "—"}
                 </p>
-                <p className="text-slate-500 text-xs mt-2">
+                <p className="text-[#1b1916] text-xs mt-2">
                   {article.metaDescription?.length ?? 0} characters
                 </p>
               </CardContent>
@@ -388,7 +388,7 @@ export default function SeoResultsPage() {
             {/* Target Keywords pills */}
             <Card className="bg-white border-black/10">
               <CardHeader className="pb-2">
-                <CardTitle className="text-slate-600 text-sm font-medium uppercase tracking-wider">
+                <CardTitle className="text-[#1b1916] text-sm font-medium uppercase tracking-wider">
                   Target Keywords
                 </CardTitle>
               </CardHeader>
@@ -404,7 +404,7 @@ export default function SeoResultsPage() {
                       </span>
                     ))
                   ) : (
-                    <span className="text-slate-500 text-sm">No keywords extracted</span>
+                    <span className="text-[#1b1916] text-sm">No keywords extracted</span>
                   )}
                 </div>
               </CardContent>
@@ -416,7 +416,7 @@ export default function SeoResultsPage() {
             <div className="lg:w-72 shrink-0">
               <Card className="bg-white border-black/10 h-full">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-slate-600 text-sm font-medium uppercase tracking-wider">
+                  <CardTitle className="text-[#1b1916] text-sm font-medium uppercase tracking-wider">
                     SEO Score
                   </CardTitle>
                 </CardHeader>
@@ -459,7 +459,7 @@ export default function SeoResultsPage() {
                         >
                           {article.seoScore}
                         </span>
-                        <span className="text-slate-400 text-xs block">/100</span>
+                        <span className="text-[#1b1916] text-xs block">/100</span>
                       </div>
                     </div>
                   </div>
@@ -476,8 +476,8 @@ export default function SeoResultsPage() {
                     ].map(({ label, score, max }) => (
                       <div key={label}>
                         <div className="flex justify-between text-xs mb-1">
-                          <span className="text-slate-600">{label}</span>
-                          <span className="text-slate-500 font-medium">{score}/{max}</span>
+                          <span className="text-[#1b1916]">{label}</span>
+                          <span className="text-[#1b1916] font-medium">{score}/{max}</span>
                         </div>
                         <div className="h-1.5 rounded-full bg-slate-100 overflow-hidden">
                           <div
@@ -510,7 +510,7 @@ export default function SeoResultsPage() {
                 className={`px-3 py-1 rounded-lg text-xs font-medium transition-all border ${
                   previewMode === "html"
                     ? "bg-violet-100 border-violet-400 text-violet-700"
-                    : "border-slate-200 text-slate-500 hover:border-slate-300"
+                    : "border-slate-200 text-[#1b1916] hover:border-slate-300"
                 }`}
               >
                 Preview
@@ -520,7 +520,7 @@ export default function SeoResultsPage() {
                 className={`px-3 py-1 rounded-lg text-xs font-medium transition-all border ${
                   previewMode === "raw"
                     ? "bg-violet-100 border-violet-400 text-violet-700"
-                    : "border-slate-200 text-slate-500 hover:border-slate-300"
+                    : "border-slate-200 text-[#1b1916] hover:border-slate-300"
                 }`}
               >
                 HTML

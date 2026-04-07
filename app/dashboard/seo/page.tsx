@@ -174,7 +174,7 @@ export default function SeoAutopilotPage() {
           <div className="bg-white border border-black/10 rounded-2xl p-10 text-center">
             <div className="text-4xl mb-4">🔗</div>
             <h2 className="text-xl font-semibold text-[#1b1916] mb-2">Connect your website first</h2>
-            <p className="text-slate-500 text-sm mb-6">We&apos;ll analyze your site and suggest the best SEO topics for you</p>
+            <p className="text-[#1b1916] text-sm mb-6">We&apos;ll analyze your site and suggest the best SEO topics for you</p>
             <Link href="/dashboard/settings">
               <button className="px-6 py-3 bg-violet-600 hover:bg-violet-500 text-white rounded-xl text-sm font-medium transition-colors">
                 Go to Settings →
@@ -230,7 +230,7 @@ export default function SeoAutopilotPage() {
         {/* Topic cards */}
         {!analyzing && topics.length > 0 && (
           <div className="space-y-3 mb-6">
-            <p className="text-sm font-medium text-slate-500 uppercase tracking-wider">Suggested topics</p>
+            <p className="text-sm font-medium text-[#1b1916] uppercase tracking-wider">Suggested topics</p>
             {topics.map((topic, i) => (
               <button
                 key={i}
@@ -252,7 +252,7 @@ export default function SeoAutopilotPage() {
                   </div>
                   <div>
                     <h3 className="text-[#1b1916] font-semibold text-sm mb-1">{topic.title}</h3>
-                    <p className="text-slate-500 text-xs leading-relaxed">{topic.description}</p>
+                    <p className="text-[#1b1916] text-xs leading-relaxed">{topic.description}</p>
                     <span className="inline-block mt-2 text-xs bg-violet-100 text-violet-700 px-2 py-0.5 rounded-md font-medium">
                       {topic.keyword}
                     </span>
@@ -268,7 +268,7 @@ export default function SeoAutopilotPage() {
           <div className="bg-white border border-black/10 rounded-2xl p-5 mb-6 space-y-4">
             <div className="flex gap-6">
               <div className="space-y-2">
-                <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Language</p>
+                <p className="text-xs font-medium text-[#1b1916] uppercase tracking-wider">Language</p>
                 <div className="flex gap-2">
                   {(["en", "ru", "uk"] as Language[]).map(l => (
                     <button key={l} onClick={() => setLanguage(l)}
@@ -281,7 +281,7 @@ export default function SeoAutopilotPage() {
                 </div>
               </div>
               <div className="space-y-2">
-                <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Tone</p>
+                <p className="text-xs font-medium text-[#1b1916] uppercase tracking-wider">Tone</p>
                 <div className="flex gap-2">
                   {(["Professional", "Casual", "Expert"] as Tone[]).map(t => (
                     <button key={t} onClick={() => setTone(t)}
@@ -322,7 +322,7 @@ export default function SeoAutopilotPage() {
               )}
             </button>
             {generating && (
-              <p className="text-center text-slate-500 text-sm mt-3">
+              <p className="text-center text-[#1b1916] text-sm mt-3">
                 Article status will appear in{" "}
                 <Link href="/dashboard/tasks" className="text-violet-600 hover:underline">
                   Tasks

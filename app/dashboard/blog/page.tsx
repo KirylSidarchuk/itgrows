@@ -82,7 +82,7 @@ export default function DashboardBlogPage() {
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-3xl font-bold mb-1">Blog Articles</h1>
-            <p className="text-slate-500">Manage your published articles</p>
+            <p className="text-[#1b1916]">Manage your published articles</p>
           </div>
           <Link href="/dashboard/seo">
             <button className="px-4 py-2 bg-violet-600 hover:bg-violet-500 text-white rounded-lg text-sm font-medium transition-colors">
@@ -92,10 +92,10 @@ export default function DashboardBlogPage() {
         </div>
 
         {loading ? (
-          <div className="text-center py-20 text-slate-500">Loading articles...</div>
+          <div className="text-center py-20 text-[#1b1916]">Loading articles...</div>
         ) : posts.length === 0 ? (
           <div className="text-center py-20 border border-dashed border-slate-200 rounded-2xl">
-            <p className="text-slate-500 text-lg mb-4">No articles published yet</p>
+            <p className="text-[#1b1916] text-lg mb-4">No articles published yet</p>
             <Link href="/dashboard/seo">
               <button className="px-5 py-2.5 bg-violet-600 hover:bg-violet-500 text-white rounded-lg text-sm font-medium transition-colors">
                 Generate First Article
@@ -107,11 +107,11 @@ export default function DashboardBlogPage() {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-black/8">
-                  <th className="text-left px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Title</th>
-                  <th className="text-left px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Keyword</th>
-                  <th className="text-left px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Site</th>
-                  <th className="text-left px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Date</th>
-                  <th className="text-right px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Actions</th>
+                  <th className="text-left px-6 py-4 text-xs font-semibold text-[#1b1916] uppercase tracking-wider">Title</th>
+                  <th className="text-left px-6 py-4 text-xs font-semibold text-[#1b1916] uppercase tracking-wider">Keyword</th>
+                  <th className="text-left px-6 py-4 text-xs font-semibold text-[#1b1916] uppercase tracking-wider">Site</th>
+                  <th className="text-left px-6 py-4 text-xs font-semibold text-[#1b1916] uppercase tracking-wider">Date</th>
+                  <th className="text-right px-6 py-4 text-xs font-semibold text-[#1b1916] uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-black/5">
@@ -131,12 +131,12 @@ export default function DashboardBlogPage() {
                           {post.keyword || "—"}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-sm text-slate-500">
+                      <td className="px-6 py-4 text-sm text-[#1b1916]">
                         {post.siteSlug
                           ? post.siteSlug.split("-").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ")
                           : "ItGrows.ai Blog"}
                       </td>
-                      <td className="px-6 py-4 text-sm text-slate-500">{formatDate(post.publishedAt)}</td>
+                      <td className="px-6 py-4 text-sm text-[#1b1916]">{formatDate(post.publishedAt)}</td>
                       <td className="px-6 py-4">
                         <div className="flex items-center justify-end gap-2">
                           <Link href={href} target="_blank">

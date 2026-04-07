@@ -337,7 +337,7 @@ export async function POST(req) {
 
           <div className="space-y-2">
             <Label className="text-slate-700 text-sm">
-              Site Name <span className="text-slate-500">(optional)</span>
+              Site Name <span className="text-[#1b1916]">(optional)</span>
             </Label>
             <Input
               placeholder="My Blog"
@@ -394,7 +394,7 @@ export async function POST(req) {
 
           <div className="space-y-2">
             <Label className="text-slate-700 text-sm">
-              Site Name <span className="text-slate-500">(optional)</span>
+              Site Name <span className="text-[#1b1916]">(optional)</span>
             </Label>
             <Input
               placeholder="My Blog"
@@ -451,7 +451,7 @@ export async function POST(req) {
 
           <div className="space-y-2">
             <Label className="text-slate-700 text-sm">
-              Site Name <span className="text-slate-500">(optional)</span>
+              Site Name <span className="text-[#1b1916]">(optional)</span>
             </Label>
             <Input
               placeholder="My Store"
@@ -508,7 +508,7 @@ export async function POST(req) {
 
           <div className="space-y-2">
             <Label className="text-slate-700 text-sm">
-              Site Name <span className="text-slate-500">(optional)</span>
+              Site Name <span className="text-[#1b1916]">(optional)</span>
             </Label>
             <Input
               placeholder="My Site"
@@ -633,10 +633,10 @@ export default function SettingsPage() {
           <CardContent className="space-y-4">
             {/* Existing sites */}
             {loading && (
-              <div className="text-center py-8 text-slate-500 text-sm">Loading...</div>
+              <div className="text-center py-8 text-[#1b1916] text-sm">Loading...</div>
             )}
             {!loading && sites.length === 0 && !showWizard && (
-              <div className="text-center py-8 text-slate-500 text-sm">
+              <div className="text-center py-8 text-[#1b1916] text-sm">
                 No sites connected yet. Click &quot;+ Add Site&quot; to get started.
               </div>
             )}
