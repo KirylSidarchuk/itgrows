@@ -57,11 +57,11 @@ export default async function BlogPostPage({
           </h1>
 
           {/* Date */}
-          <p className="text-slate-500 text-sm mb-10">{formatDate(post.publishedAt)}</p>
+          <p className="text-[#1b1916]/60 text-sm mb-10">{formatDate(post.publishedAt)}</p>
 
           {/* Content */}
           <div
-            className="prose prose-slate max-w-none prose-headings:font-bold prose-h1:text-3xl prose-h2:text-2xl prose-h3:text-xl prose-p:leading-relaxed prose-p:text-slate-700 prose-li:text-slate-700 prose-strong:text-[#1b1916] prose-a:text-violet-600 prose-a:no-underline hover:prose-a:underline"
+            className="article-content"
             dangerouslySetInnerHTML={{ __html: post.content }}
           />
 

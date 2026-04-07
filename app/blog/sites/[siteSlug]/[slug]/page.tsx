@@ -38,15 +38,6 @@ export default function SiteBlogPostPage() {
         }
       } catch { /* fall through */ }
 
-      try {
-        const local = localStorage.getItem("itgrows_published_posts")
-        if (local) {
-          const posts = JSON.parse(local) as BlogPost[]
-          const found = posts.find((p) => p.slug === slug && p.siteSlug === siteSlug)
-          if (found) { setPost(found); return }
-        }
-      } catch { /* ignore */ }
-
       setNotFound(true)
     }
 
@@ -54,49 +45,78 @@ export default function SiteBlogPostPage() {
   }, [slug, siteSlug])
 
   if (loading) {
-    return <div className="min-h-screen bg-slate-950 flex items-center justify-center"><p className="text-slate-400">Loading...</p></div>
+    return (
+      <div className="min-h-screen bg-[#f3f2f1] flex items-center justify-center">
+        <p className="text-slate-500">Loading...</p>
+      </div>
+    )
   }
 
   if (notFound || !post) {
     return (
-      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center gap-4">
-        <p className="text-slate-400 text-lg">Article not found.</p>
-        <Link href={`/blog/sites/${siteSlug}`} className="text-violet-400 hover:underline text-sm">← Back to {displayName} Blog</Link>
+      <div className="min-h-screen bg-[#f3f2f1] flex flex-col items-center justify-center gap-4">
+        <p className="text-[#1b1916]/60 text-lg">Article not found.</p>
+        <Link
+          href={`/blog/sites/${siteSlug}`}
+          className="text-violet-600 hover:text-violet-500 hover:underline text-sm transition-colors"
+        >
+          ← Back to {displayName} Blog
+        </Link>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100">
-      <header className="border-b border-white/10 px-6 py-4">
+    <div className="min-h-screen bg-[#f3f2f1] text-[#1b1916]">
+      {/* Header */}
+      <header className="border-b border-black/10 px-6 py-4 bg-[#f3f2f1]">
         <div className="max-w-3xl mx-auto flex items-center justify-between">
-          <Link href="/" className="text-xl font-bold bg-gradient-to-r from-violet-400 to-cyan-400 bg-clip-text text-transparent">
+          <Link
+            href="/"
+            className="text-xl font-bold bg-gradient-to-r from-violet-600 to-pink-500 bg-clip-text text-transparent"
+          >
             itgrows.ai
           </Link>
-          <Link href={`/blog/sites/${siteSlug}`} className="text-sm text-slate-400 hover:text-white transition-colors">
+          <Link
+            href={`/blog/sites/${siteSlug}`}
+            className="text-sm text-slate-600 hover:text-[#1b1916] transition-colors"
+          >
             ← Back to {displayName} Blog
           </Link>
         </div>
       </header>
 
+      {/* Article */}
       <main className="px-6 py-12">
         <div className="max-w-3xl mx-auto">
-          <h1 className="text-4xl font-extrabold leading-tight mb-4 text-white">{post.title}</h1>
-          <p className="text-slate-400 text-sm mb-10">{formatDate(post.publishedAt)}</p>
+          <h1 className="text-4xl font-extrabold leading-tight mb-4 text-[#1b1916]">
+            {post.title}
+          </h1>
+          <p className="text-[#1b1916]/60 text-sm mb-10">{formatDate(post.publishedAt)}</p>
           <div
-            className="prose prose-invert prose-slate max-w-none prose-headings:font-bold prose-h2:text-2xl prose-h3:text-xl prose-p:leading-relaxed prose-p:text-slate-300 prose-li:text-slate-300 prose-strong:text-white prose-a:text-violet-400 prose-a:no-underline hover:prose-a:underline"
+            className="article-content"
             dangerouslySetInnerHTML={{ __html: post.content }}
           />
-          <div className="mt-12 pt-8 border-t border-white/10">
-            <Link href={`/blog/sites/${siteSlug}`} className="inline-flex items-center gap-2 text-violet-400 hover:text-violet-300 font-medium text-sm transition-colors">
+          <div className="mt-12 pt-8 border-t border-black/10">
+            <Link
+              href={`/blog/sites/${siteSlug}`}
+              className="inline-flex items-center gap-2 text-violet-600 hover:text-violet-500 font-medium text-sm transition-colors"
+            >
               ← Back to {displayName} Blog
             </Link>
           </div>
         </div>
       </main>
 
-      <footer className="border-t border-white/10 px-6 py-8 text-center text-slate-500 text-sm">
-        <p>Powered by <Link href="/" className="text-violet-400 hover:text-violet-300 transition-colors">ItGrows.ai</Link> &mdash; &copy; 2026</p>
+      {/* Footer */}
+      <footer className="border-t border-black/10 px-6 py-8 text-center text-[#1b1916]/60 text-sm bg-[#ebe9e5]">
+        <p>
+          Powered by{" "}
+          <Link href="/" className="text-violet-600 hover:text-violet-500 transition-colors">
+            ItGrows.ai
+          </Link>{" "}
+          &mdash; &copy; 2026
+        </p>
       </footer>
     </div>
   )
