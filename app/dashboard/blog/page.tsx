@@ -124,7 +124,7 @@ export default function DashboardBlogPage() {
                     <tr key={post.id} className="hover:bg-slate-50 transition-colors">
                       <td className="px-6 py-4">
                         <p className="text-[#1b1916] font-medium text-sm leading-snug">{post.title}</p>
-                        <p className="text-slate-400 text-xs mt-0.5 truncate max-w-xs">{excerpt}…</p>
+                        <p className="text-slate-600 text-xs mt-0.5 truncate max-w-xs">{excerpt}…</p>
                       </td>
                       <td className="px-6 py-4">
                         <span className="text-xs bg-violet-100 text-violet-700 px-2 py-1 rounded-md font-medium">
@@ -140,14 +140,14 @@ export default function DashboardBlogPage() {
                       <td className="px-6 py-4">
                         <div className="flex items-center justify-end gap-2">
                           <Link href={href} target="_blank">
-                            <button className="p-1.5 text-slate-400 hover:text-violet-600 transition-colors" title="View article">
+                            <button className="p-1.5 text-slate-600 hover:text-violet-600 transition-colors" title="View article">
                               <ExternalLink size={15} />
                             </button>
                           </Link>
                           <button
                             onClick={() => handleDelete(post)}
                             disabled={deletingIds.has(post.id)}
-                            className="p-1.5 text-slate-400 hover:text-red-500 transition-colors disabled:opacity-40"
+                            className="p-1.5 text-slate-600 hover:text-red-500 transition-colors disabled:opacity-40"
                             title="Delete article"
                           >
                             <Trash2 size={15} />

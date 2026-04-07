@@ -32,10 +32,10 @@ function ShopifyGuide() {
   return (
     <div className="rounded-xl bg-[#ebe9e5] border border-black/10 p-4 space-y-2 text-sm">
       <p className="text-slate-700 font-medium">How to get your Shopify API Token</p>
-      <p className="text-slate-400 text-xs">
+      <p className="text-slate-600 text-xs">
         This is an API token, not your password. It is safe to share with third-party apps.
       </p>
-      <ol className="list-decimal list-inside space-y-1 text-slate-400">
+      <ol className="list-decimal list-inside space-y-1 text-slate-600">
         <li>Go to Shopify Admin → Settings → Apps and sales channels → Develop apps</li>
         <li>
           Create a new app → configure Admin API scopes:{" "}
@@ -52,10 +52,10 @@ function WebflowGuide() {
   return (
     <div className="rounded-xl bg-[#ebe9e5] border border-black/10 p-4 space-y-2 text-sm">
       <p className="text-slate-700 font-medium">How to get your Webflow API Token</p>
-      <p className="text-slate-400 text-xs">
+      <p className="text-slate-600 text-xs">
         This is an API token, not your password. It is safe to share with third-party apps.
       </p>
-      <ol className="list-decimal list-inside space-y-1 text-slate-400">
+      <ol className="list-decimal list-inside space-y-1 text-slate-600">
         <li>Go to Webflow → Site Settings → Integrations → API Access</li>
         <li>Generate a new API key and copy it</li>
         <li>Find Collection ID: CMS → your blog collection → settings</li>
@@ -298,7 +298,7 @@ export async function POST(req) {
               ? "Next.js / React detected"
               : "Custom website detected"}
           </p>
-          <p className="text-slate-400 text-xs">{inputUrl}</p>
+          <p className="text-slate-600 text-xs">{inputUrl}</p>
         </div>
       </div>
 
@@ -307,7 +307,7 @@ export async function POST(req) {
         <div className="space-y-4">
           <div className="rounded-xl bg-[#ebe9e5] border border-black/10 p-4 space-y-3 text-sm">
             <p className="text-slate-700 font-medium">Install our free plugin:</p>
-            <ol className="list-decimal list-inside space-y-2 text-slate-400">
+            <ol className="list-decimal list-inside space-y-2 text-slate-600">
               <li>
                 <a
                   href="/api/wp-plugin/download"
@@ -382,7 +382,7 @@ export async function POST(req) {
               </div>
             </div>
             <div className="mt-2">
-              <p className="text-slate-400 text-xs mb-2">Set environment variable:</p>
+              <p className="text-slate-600 text-xs mb-2">Set environment variable:</p>
               <div className="flex items-center gap-2">
                 <code className="text-xs text-violet-300 bg-[#ebe9e5] rounded px-2 py-1 font-mono">
                   ITGROWS_SITE_TOKEN={generatedToken}
@@ -596,7 +596,7 @@ export default function SettingsPage() {
       <div className="max-w-3xl mx-auto">
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-1 text-[#1b1916]">Settings</h1>
-          <p className="text-slate-400">Manage your account preferences and integrations.</p>
+          <p className="text-slate-600">Manage your account preferences and integrations.</p>
         </div>
 
         {/* Connected Sites */}
@@ -613,7 +613,7 @@ export default function SettingsPage() {
                   "Your Connected Sites"
                 )}
               </CardTitle>
-              <p className="text-slate-400 text-sm mt-1">
+              <p className="text-slate-600 text-sm mt-1">
                 Add your website to automatically publish articles from ItGrows.ai
               </p>
               {defaultSite && (
@@ -656,13 +656,13 @@ export default function SettingsPage() {
                         {platformLabel(site.platform as Parameters<typeof platformLabel>[0])}
                       </span>
                     </div>
-                    <p className="text-slate-400 text-xs mt-0.5 truncate">{site.url}</p>
+                    <p className="text-slate-600 text-xs mt-0.5 truncate">{site.url}</p>
                   </div>
                   <div className="flex items-center gap-2 ml-3 shrink-0">
                     {!site.isDefault && (
                       <button
                         onClick={() => handleSetDefault(site.id)}
-                        className="text-xs text-slate-400 hover:text-violet-300 transition-colors"
+                        className="text-xs text-slate-600 hover:text-violet-300 transition-colors"
                       >
                         Set default
                       </button>
@@ -678,7 +678,7 @@ export default function SettingsPage() {
                 {site.siteSlug && (
                   <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-green-900/10 border border-green-500/20 text-sm">
                     <span className="text-green-400 shrink-0">&#10003; Connected!</span>
-                    <span className="text-slate-400 text-xs">Your hosted blog is ready at:</span>
+                    <span className="text-slate-600 text-xs">Your hosted blog is ready at:</span>
                     <a
                       href={`/blog/${site.siteSlug}`}
                       target="_blank"

@@ -126,7 +126,7 @@ export default function TasksPage() {
           {!loading && filtered.length === 0 && (
             <Card className="bg-white border-black/10">
               <CardContent className="py-16 text-center">
-                <FileText className="w-12 h-12 text-slate-400 mx-auto mb-4" />
+                <FileText className="w-12 h-12 text-slate-600 mx-auto mb-4" />
                 <p className="text-[#1b1916] font-medium text-lg mb-1">No tasks yet</p>
                 <p className="text-slate-600 text-sm mb-6">Generate your first SEO article to get started</p>
                 <Link href="/dashboard/new-task">
@@ -210,7 +210,7 @@ export default function TasksPage() {
                       )}
                       <button
                         onClick={(e) => { e.stopPropagation(); handleDelete(task.id) }}
-                        className="ml-2 p-1 text-slate-400 hover:text-red-500 transition-colors"
+                        className="ml-2 p-1 text-slate-600 hover:text-red-500 transition-colors"
                         title="Delete task"
                       >
                         <Trash2 size={14} />

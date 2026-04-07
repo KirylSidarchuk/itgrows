@@ -130,7 +130,7 @@ function SeoArticleFlow() {
       <Card className="bg-white border-black/10">
         <CardHeader>
           <CardTitle className="text-[#1b1916]">Website Analysis</CardTitle>
-          <p className="text-slate-400 text-sm mt-1">
+          <p className="text-slate-600 text-sm mt-1">
             Enter your website URL and we&apos;ll suggest the best article topics for your audience
           </p>
         </CardHeader>
@@ -185,7 +185,7 @@ function SeoArticleFlow() {
       <div className="space-y-6">
         <div>
           <h2 className="text-xl font-semibold text-[#1b1916] mb-1">Topic Suggestions</h2>
-          <p className="text-slate-400 text-sm">
+          <p className="text-slate-600 text-sm">
             Based on{" "}
             <span className="text-violet-300">{siteInfo?.title || url}</span>
             {" "}— choose an article to generate
@@ -198,7 +198,7 @@ function SeoArticleFlow() {
               className="rounded-xl border border-black/10 bg-white p-5 hover:border-violet-500/50 hover:bg-white transition-all"
             >
               <h3 className="text-[#1b1916] font-semibold text-base mb-2">{topic.title}</h3>
-              <p className="text-slate-400 text-sm mb-4 leading-relaxed">{topic.description}</p>
+              <p className="text-slate-600 text-sm mb-4 leading-relaxed">{topic.description}</p>
               <Button
                 onClick={() => handleChooseTopic(topic)}
                 className="bg-violet-600 hover:bg-violet-500 text-[#1b1916] text-sm"
@@ -208,7 +208,7 @@ function SeoArticleFlow() {
             </div>
           ))}
           {topics.length === 0 && (
-            <p className="text-slate-400 text-sm">No topics returned. Please try again.</p>
+            <p className="text-slate-600 text-sm">No topics returned. Please try again.</p>
           )}
         </div>
         <Button
@@ -228,7 +228,7 @@ function SeoArticleFlow() {
       <CardContent className="py-12 text-center">
         <p className="text-4xl mb-4">✓</p>
         <h3 className="text-[#1b1916] text-xl font-semibold mb-2">Your article is being written</h3>
-        <p className="text-slate-400 mb-6">Track the progress in the Tasks section</p>
+        <p className="text-slate-600 mb-6">Track the progress in the Tasks section</p>
         <Button
           onClick={() => router.push("/dashboard/tasks")}
           className="bg-violet-600 hover:bg-violet-500 text-[#1b1916]"
@@ -265,7 +265,7 @@ function GenericTaskForm({ type, onBack }: { type: TaskType; onBack: () => void 
         <CardContent className="py-12 text-center">
           <p className="text-4xl mb-4">✅</p>
           <h3 className="text-[#1b1916] text-xl font-semibold mb-2">Task created!</h3>
-          <p className="text-slate-400">Redirecting to your tasks...</p>
+          <p className="text-slate-600">Redirecting to your tasks...</p>
         </CardContent>
       </Card>
     )
@@ -336,7 +336,7 @@ export default function NewTaskPage() {
         <div className="max-w-2xl mx-auto">
           <div className="mb-8">
             <h1 className="text-3xl font-bold mb-1">New Task</h1>
-            <p className="text-slate-400">Choose what you want to create</p>
+            <p className="text-slate-600">Choose what you want to create</p>
           </div>
           <div className="grid grid-cols-2 gap-3">
             {taskTypes.map((t) => (
@@ -348,7 +348,7 @@ export default function NewTaskPage() {
               >
                 <div className="text-2xl mb-2">{t.icon}</div>
                 <div className="text-[#1b1916] text-sm font-medium">{t.label}</div>
-                <div className="text-slate-400 text-xs mt-1">{t.desc}</div>
+                <div className="text-slate-600 text-xs mt-1">{t.desc}</div>
               </button>
             ))}
           </div>
@@ -372,12 +372,12 @@ export default function NewTaskPage() {
         <div className="mb-8">
           <button
             onClick={() => setType(null)}
-            className="text-slate-400 hover:text-[#1b1916] text-sm mb-3 flex items-center gap-1 transition-colors"
+            className="text-slate-600 hover:text-[#1b1916] text-sm mb-3 flex items-center gap-1 transition-colors"
           >
             ← Back
           </button>
           <h1 className="text-3xl font-bold mb-1">New Task</h1>
-          <p className="text-slate-400">
+          <p className="text-slate-600">
             {taskTypes.find((t) => t.value === type)?.label}
           </p>
         </div>
