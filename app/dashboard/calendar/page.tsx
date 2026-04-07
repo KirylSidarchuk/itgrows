@@ -143,7 +143,10 @@ export default function CalendarPage() {
       const res = await fetch("/api/schedule/posts")
       if (res.ok) {
         const data = (await res.json()) as { posts: ScheduledPost[] }
-        setPosts(sortPosts(data.posts))
+        setPosts(sortPosts(data.posts.map((p: any) => ({
+          ...p,
+          blogPostSlug: p.blogPostSlug || p.articleData?.blogPostSlug,
+        }))))
       }
     } catch {
       // ignore — leave posts empty
@@ -327,6 +330,14 @@ export default function CalendarPage() {
       }
 
       updatePost(post.id, { status: "published", blogPostSlug: slug || undefined })
+      // Persist blogPostSlug to DB
+      if (slug) {
+        await fetch(`/api/schedule/posts/${post.id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ articleData: { blogPostSlug: slug }, status: "published" }),
+        })
+      }
     } catch {
       updatePost(post.id, { status: "failed" })
     } finally {
@@ -437,6 +448,14 @@ export default function CalendarPage() {
       }
 
       updatePost(post.id, { status: "published", blogPostSlug: slug || undefined })
+      // Persist blogPostSlug to DB
+      if (slug) {
+        await fetch(`/api/schedule/posts/${post.id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ articleData: { blogPostSlug: slug }, status: "published" }),
+        })
+      }
       setPreviewOpen(false)
     } catch {
       updatePost(post.id, { status: "failed" })
