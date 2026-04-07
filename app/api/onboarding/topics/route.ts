@@ -19,7 +19,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "siteUrl is required" }, { status: 400 })
   }
 
-  const prompt = `You are an SEO expert. Given the website URL '${siteUrl}', suggest 3 blog article topics that would drive organic traffic. Return ONLY a JSON array: [{"title": "...", "description": "..."}]`
+  const currentYear = new Date().getFullYear()
+  const prompt = `You are an SEO expert. The current year is ${currentYear}. Given the website URL '${siteUrl}', suggest 3 blog article topics that would drive organic traffic in ${currentYear}. Use only current, up-to-date information. Do NOT reference years before ${currentYear}. Return ONLY a JSON array: [{"title": "...", "description": "..."}]`
 
   const res = await fetch(`${LLM_BASE_URL}/v1/chat/completions`, {
     method: "POST",
