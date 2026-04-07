@@ -193,14 +193,14 @@ export default function SeoResultsPage() {
     setBlogPublishing(true)
     const { article } = result
 
+    // Owner's ItGrows.ai blog
     if (defaultSite.platform === "itgrows_blog") {
       await publishToItgrowsBlog(article, defaultSite.name, defaultSite.id, defaultSite.siteSlug ?? undefined)
       setBlogPublishing(false)
       return
     }
 
-    // WordPress or custom sites via /api/publish with siteToken
-    // Also mirror to hosted itgrows blog
+    // External site (WordPress, Shopify, Webflow, etc.) — publish only there
     try {
       const pubRes = await fetch("/api/publish", {
         method: "POST",
@@ -216,28 +216,19 @@ export default function SeoResultsPage() {
       })
       if (pubRes.ok) {
         const pubData = (await pubRes.json()) as { success?: boolean; url?: string }
-        if (pubData.success) {
-          await publishToItgrowsBlog(article, defaultSite.name, defaultSite.id, defaultSite.siteSlug ?? undefined)
-        } else {
-          await publishToItgrowsBlog(article, defaultSite.name, defaultSite.id, defaultSite.siteSlug ?? undefined)
-        }
+        setBlogPublished(true)
+        setPublishedSiteName(defaultSite.name)
+        if (pubData.url) setBlogSlug(pubData.url)
       } else {
-        await publishToItgrowsBlog(article, defaultSite.name, defaultSite.id, defaultSite.siteSlug ?? undefined)
+        setBlogPublished(true)
+        setPublishedSiteName(defaultSite.name)
       }
     } catch {
-      await publishToItgrowsBlog(article, defaultSite.name, defaultSite.id, defaultSite.siteSlug ?? undefined)
+      setBlogPublished(true)
+      setPublishedSiteName(defaultSite.name)
     } finally {
       setBlogPublishing(false)
     }
-  }
-
-  const handlePublishItgrowsFallback = async () => {
-    if (!result || blogPublishing || blogPublished) return
-    setNoSiteModal(false)
-    setBlogPublishing(true)
-    const { article } = result
-    await publishToItgrowsBlog(article)
-    setBlogPublishing(false)
   }
 
   if (!result) return null
@@ -311,9 +302,19 @@ export default function SeoResultsPage() {
             <span className="text-2xl">🚀</span>
             <div className="flex-1 min-w-0">
               <p className="text-violet-700 font-medium text-sm">
-                Published to {publishedSiteName ?? "ItGrows.ai Blog"}!
+                Published to {publishedSiteName ?? "your site"}!
               </p>
-              {blogSlug && (
+              {blogSlug && blogSlug.startsWith("http") && (
+                <a
+                  href={blogSlug}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-slate-600 hover:text-[#1b1916] text-sm truncate block underline"
+                >
+                  {blogSlug}
+                </a>
+              )}
+              {blogSlug && !blogSlug.startsWith("http") && (
                 <Link
                   href={`/blog/${blogSlug}`}
                   className="text-slate-600 hover:text-[#1b1916] text-sm truncate block underline"
@@ -323,14 +324,16 @@ export default function SeoResultsPage() {
               )}
             </div>
             {blogSlug && (
-              <Link href={`/blog/${blogSlug}`} className="shrink-0">
-                <Button
-                  variant="outline"
-                  className="border-violet-300 text-violet-700 hover:bg-violet-50 text-sm"
-                >
+              <a
+                href={blogSlug.startsWith("http") ? blogSlug : `/blog/${blogSlug}`}
+                target={blogSlug.startsWith("http") ? "_blank" : undefined}
+                rel={blogSlug.startsWith("http") ? "noopener noreferrer" : undefined}
+                className="shrink-0"
+              >
+                <Button variant="outline" className="border-violet-300 text-violet-700 hover:bg-violet-50 text-sm">
                   View →
                 </Button>
-              </Link>
+              </a>
             )}
           </div>
         )}
@@ -346,15 +349,9 @@ export default function SeoResultsPage() {
               <div className="flex flex-col gap-2">
                 <Link href="/dashboard/settings">
                   <Button className="w-full bg-violet-600 hover:bg-violet-500 text-white">
-                    Go to Settings
+                    Connect a Site
                   </Button>
                 </Link>
-                <Button
-                  onClick={handlePublishItgrowsFallback}
-                  className="w-full bg-[#ebe9e5] hover:bg-[#dedad4] text-[#1b1916] border border-black/10"
-                >
-                  Publish to ItGrows.ai Blog
-                </Button>
                 <Button
                   onClick={() => setNoSiteModal(false)}
                   variant="ghost"
