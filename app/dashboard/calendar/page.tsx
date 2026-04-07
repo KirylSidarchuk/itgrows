@@ -8,10 +8,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Trash2 } from "lucide-react"
 
 type Language = "en" | "ru" | "uk"
-type Tone = "Professional" | "Casual" | "Expert"
+type Tone = "Professional" | "Casual" | "Friendly" | "Authoritative" | "Educational" | "Conversational"
 type PostStatus = "scheduled" | "generating" | "published" | "failed"
+
+const TONE_OPTIONS: Tone[] = ["Professional", "Casual", "Friendly", "Authoritative", "Educational", "Conversational"]
 
 interface ScheduledPost {
   id: string
@@ -59,9 +62,9 @@ function formatDateFull(dateStr: string): string {
 
 const STATUS_STYLES: Record<PostStatus, string> = {
   scheduled: "bg-slate-100 text-slate-700 border border-slate-300",
-  generating: "bg-yellow-600/30 text-yellow-300 border border-yellow-500/40",
-  published: "bg-green-600/30 text-green-300 border border-green-500/40",
-  failed: "bg-red-600/30 text-red-300 border border-red-500/40",
+  generating: "bg-yellow-100 text-yellow-800 border border-yellow-300",
+  published: "bg-green-100 text-green-800 border border-green-300",
+  failed: "bg-red-100 text-red-800 border border-red-300",
 }
 
 const STATUS_LABELS: Record<PostStatus, string> = {
@@ -96,6 +99,7 @@ export default function CalendarPage() {
 
   // Auto-publish / batch scheduling state
   const [batchStatus, setBatchStatus] = useState<"idle" | "loading" | "success" | "no-site">("idle")
+  const [batchTone, setBatchTone] = useState<Tone>("Professional")
   const [defaultSiteUrl, setDefaultSiteUrl] = useState<string | null>(null)
   const [sitesChecked, setSitesChecked] = useState(false)
 
@@ -113,6 +117,8 @@ export default function CalendarPage() {
 
   // Publishing state: postId -> boolean
   const [publishingIds, setPublishingIds] = useState<Set<string>>(new Set())
+  const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set())
+  const [updatingToneIds, setUpdatingToneIds] = useState<Set<string>>(new Set())
 
   // Preview modal state
   const [previewPost, setPreviewPost] = useState<ScheduledPost | null>(null)
@@ -181,7 +187,7 @@ export default function CalendarPage() {
       const res = await fetch("/api/schedule/batch", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ siteUrl: defaultSiteUrl }),
+        body: JSON.stringify({ siteUrl: defaultSiteUrl, tone: batchTone }),
       })
       if (res.ok) {
         setBatchStatus("success")
@@ -192,7 +198,7 @@ export default function CalendarPage() {
     } catch {
       setBatchStatus("idle")
     }
-  }, [defaultSiteUrl, loadPosts])
+  }, [defaultSiteUrl, batchTone, loadPosts])
 
   const openModal = useCallback(async () => {
     // Reset modal state
@@ -329,6 +335,37 @@ export default function CalendarPage() {
         next.delete(post.id)
         return next
       })
+    }
+  }
+
+  const handleDelete = async (post: ScheduledPost) => {
+    if (!confirm(`Delete "${post.keyword}"?`)) return
+    setDeletingIds(prev => new Set(prev).add(post.id))
+    try {
+      await fetch(`/api/schedule/posts/${post.id}`, { method: "DELETE" })
+      setPosts(prev => prev.filter(p => p.id !== post.id))
+    } catch {
+      // ignore
+    } finally {
+      setDeletingIds(prev => { const s = new Set(prev); s.delete(post.id); return s })
+    }
+  }
+
+  const handleToneChange = async (post: ScheduledPost, newTone: Tone) => {
+    if (updatingToneIds.has(post.id)) return
+    setUpdatingToneIds((prev) => new Set(prev).add(post.id))
+    setPosts((prev) => prev.map((p) => (p.id === post.id ? { ...p, tone: newTone } : p)))
+    try {
+      await fetch(`/api/schedule/posts/${post.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tone: newTone }),
+      })
+    } catch {
+      // revert on error
+      setPosts((prev) => prev.map((p) => (p.id === post.id ? { ...p, tone: post.tone } : p)))
+    } finally {
+      setUpdatingToneIds((prev) => { const s = new Set(prev); s.delete(post.id); return s })
     }
   }
 
@@ -471,39 +508,62 @@ export default function CalendarPage() {
         {sitesChecked && (
           <Card className="mb-8 bg-white border-black/10">
             <CardContent className="p-6">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
-                  <h2 className="text-lg font-semibold text-[#1b1916] mb-1">Auto-Publishing</h2>
-                  <p className="text-sm text-slate-600">
-                    Generate and publish 1 article per day automatically. We&apos;ll plan 15 articles based on your site.
-                  </p>
-                </div>
-                <div className="shrink-0">
-                  {batchStatus === "no-site" && (
-                    <p className="text-sm text-amber-600 font-medium">
-                      Connect a site in Settings first
+              <div className="flex flex-col gap-4">
+                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+                  <div>
+                    <h2 className="text-lg font-semibold text-[#1b1916] mb-1">Auto-Publishing</h2>
+                    <p className="text-sm text-slate-600">
+                      Generate and publish 1 article per day automatically. We&apos;ll plan 15 articles based on your site.
                     </p>
-                  )}
-                  {batchStatus === "idle" && (
+                  </div>
+                  <div className="shrink-0">
+                    {batchStatus === "no-site" && (
+                      <p className="text-sm text-amber-600 font-medium">
+                        Connect a site in Settings first
+                      </p>
+                    )}
+                    {batchStatus === "loading" && (
+                      <span className="flex items-center gap-2 text-sm text-slate-600">
+                        <span className="inline-block w-4 h-4 border-2 border-black/20 border-t-violet-400 rounded-full animate-spin" />
+                        Scheduling...
+                      </span>
+                    )}
+                    {batchStatus === "success" && (
+                      <p className="text-sm text-green-600 font-medium">
+                        15 articles scheduled! First one publishes tomorrow.
+                      </p>
+                    )}
+                  </div>
+                </div>
+                {batchStatus === "idle" && (
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                    <div className="flex-1 space-y-1.5">
+                      <p className="text-xs font-semibold text-slate-600 uppercase tracking-wider">Tone for all 15 articles</p>
+                      <div className="flex flex-wrap gap-2">
+                        {TONE_OPTIONS.map((t) => (
+                          <button
+                            key={t}
+                            type="button"
+                            onClick={() => setBatchTone(t)}
+                            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all border ${
+                              batchTone === t
+                                ? "bg-pink-600/30 border-pink-500 text-pink-900"
+                                : "border-black/10 text-slate-600 hover:border-black/20 hover:text-[#1b1916]"
+                            }`}
+                          >
+                            {t}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
                     <Button
                       onClick={handleBatchSchedule}
-                      className="bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-white whitespace-nowrap"
+                      className="bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-white whitespace-nowrap shrink-0"
                     >
                       Schedule 15 Articles
                     </Button>
-                  )}
-                  {batchStatus === "loading" && (
-                    <span className="flex items-center gap-2 text-sm text-slate-600">
-                      <span className="inline-block w-4 h-4 border-2 border-black/20 border-t-violet-400 rounded-full animate-spin" />
-                      Scheduling...
-                    </span>
-                  )}
-                  {batchStatus === "success" && (
-                    <p className="text-sm text-green-600 font-medium">
-                      15 articles scheduled! First one publishes tomorrow.
-                    </p>
-                  )}
-                </div>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -587,7 +647,22 @@ export default function CalendarPage() {
                               {LANG_LABELS[post.language as Language] ?? post.language.toUpperCase()}
                             </span>
                           </td>
-                          <td className="px-6 py-4 text-sm text-[#1b1916]">{post.tone}</td>
+                          <td className="px-6 py-4">
+                            {(post.status === "scheduled" || post.status === "failed") ? (
+                              <select
+                                value={post.tone}
+                                disabled={updatingToneIds.has(post.id)}
+                                onChange={(e) => handleToneChange(post, e.target.value as Tone)}
+                                className="text-xs border border-black/10 rounded-lg px-2 py-1 bg-white text-slate-700 focus:outline-none focus:border-violet-500 transition-colors disabled:opacity-50 cursor-pointer"
+                              >
+                                {TONE_OPTIONS.map((t) => (
+                                  <option key={t} value={t}>{t}</option>
+                                ))}
+                              </select>
+                            ) : (
+                              <span className="text-sm text-[#1b1916]">{post.tone}</span>
+                            )}
+                          </td>
                           <td className="px-6 py-4">
                             <span
                               className={`inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full ${STATUS_STYLES[post.status]}`}
@@ -599,56 +674,31 @@ export default function CalendarPage() {
                             </span>
                           </td>
                           <td className="px-6 py-4 text-right">
-                            {post.status === "scheduled" && (
-                              <div className="flex items-center justify-end gap-2">
-                                <Button
-                                  size="sm"
-                                  disabled={publishingIds.has(post.id)}
-                                  onClick={() => handlePreview(post)}
-                                  className="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 hover:border-slate-400"
-                                >
-                                  Preview
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  disabled={publishingIds.has(post.id)}
-                                  onClick={() => handlePublishNow(post)}
-                                  className="text-xs bg-violet-600/20 hover:bg-violet-600/40 text-violet-300 border border-violet-500/30 hover:border-violet-400/50"
-                                >
-                                  Publish Now
-                                </Button>
-                              </div>
-                            )}
-                            {post.status === "failed" && (
-                              <div className="flex items-center justify-end gap-2">
-                                <Button
-                                  size="sm"
-                                  disabled={publishingIds.has(post.id)}
-                                  onClick={() => handlePreview(post)}
-                                  className="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 hover:border-slate-400"
-                                >
-                                  Preview
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  disabled={publishingIds.has(post.id)}
-                                  onClick={() => handlePublishNow(post)}
-                                  className="text-xs bg-red-600/20 hover:bg-red-600/40 text-red-300 border border-red-500/30"
-                                >
-                                  Retry
-                                </Button>
-                              </div>
-                            )}
-                            {post.status === "published" && post.blogPostSlug && (
-                              <a
-                                href={`/blog/${post.blogPostSlug}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-xs text-green-400 hover:text-green-300 underline"
+                            <div className="flex items-center justify-end gap-2">
+                              {post.status === "scheduled" && (
+                                <>
+                                  <Button size="sm" disabled={publishingIds.has(post.id)} onClick={() => handlePreview(post)} className="text-xs bg-slate-100 hover:bg-slate-200 text-[#1b1916] border border-slate-300">Preview</Button>
+                                  <Button size="sm" disabled={publishingIds.has(post.id)} onClick={() => handlePublishNow(post)} className="text-xs bg-violet-100 hover:bg-violet-200 text-violet-800 border border-violet-300">Publish Now</Button>
+                                </>
+                              )}
+                              {post.status === "failed" && (
+                                <>
+                                  <Button size="sm" disabled={publishingIds.has(post.id)} onClick={() => handlePreview(post)} className="text-xs bg-slate-100 hover:bg-slate-200 text-[#1b1916] border border-slate-300">Preview</Button>
+                                  <Button size="sm" disabled={publishingIds.has(post.id)} onClick={() => handlePublishNow(post)} className="text-xs bg-red-100 hover:bg-red-200 text-red-800 border border-red-300">Retry</Button>
+                                </>
+                              )}
+                              {post.status === "published" && post.blogPostSlug && (
+                                <a href={`/blog/${post.blogPostSlug}`} target="_blank" rel="noopener noreferrer" className="text-xs text-violet-600 hover:text-violet-800 underline font-medium">View Post</a>
+                              )}
+                              <button
+                                disabled={deletingIds.has(post.id)}
+                                onClick={() => handleDelete(post)}
+                                className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50"
+                                title="Delete"
                               >
-                                View Post
-                              </a>
-                            )}
+                                <Trash2 size={14} />
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       ))}
@@ -839,14 +889,14 @@ export default function CalendarPage() {
                   {/* Tone */}
                   <div className="space-y-2">
                     <Label className="text-slate-700">Tone</Label>
-                    <div className="flex gap-2">
-                      {(["Professional", "Casual", "Expert"] as Tone[]).map((t) => (
+                    <div className="grid grid-cols-3 gap-2">
+                      {TONE_OPTIONS.map((t) => (
                         <button
                           key={t}
                           type="button"
                           disabled={scheduling}
                           onClick={() => setTone(t)}
-                          className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all border ${
+                          className={`py-2 rounded-lg text-sm font-medium transition-all border ${
                             tone === t
                               ? "bg-pink-600/30 border-pink-500 text-pink-900"
                               : "border-black/10 text-slate-600 hover:border-black/20 hover:text-[#1b1916]"
