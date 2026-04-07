@@ -14,7 +14,16 @@ import type { DetectedPlatform, DetectPlatformResult } from "@/app/api/detect-pl
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-type FormStep = "url" | "detecting" | "detected"
+type WizardStep =
+  | "url"
+  | "detecting"
+  | "experience"      // Step 2: technical or not?
+  | "blog-advanced"   // Step 3A: blog check for advanced
+  | "blog-simple"     // Step 3B: blog check for simple
+  | "setup-advanced"  // Step 4A: platform-specific code setup
+  | "setup-simple"    // Step 4B: simple embed guide
+
+type IntegrationMode = "simple" | "advanced" | null
 
 interface ConnectedSite {
   id: string
@@ -85,6 +94,47 @@ function CopyButton({ text, label }: { text: string; label: string }) {
   )
 }
 
+// ─── Big choice card ──────────────────────────────────────────────────────────
+
+function ChoiceCard({
+  title,
+  description,
+  icon,
+  onClick,
+}: {
+  title: string
+  description: string
+  icon: string
+  onClick: () => void
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className="flex flex-col items-start gap-2 p-5 rounded-2xl bg-[#ebe9e5] border border-black/10 hover:border-violet-500/50 hover:bg-violet-50/30 transition-all text-left w-full group"
+    >
+      <span className="text-2xl">{icon}</span>
+      <span className="text-[#1b1916] font-semibold text-sm group-hover:text-violet-700 transition-colors">
+        {title}
+      </span>
+      <span className="text-slate-600 text-xs leading-relaxed">{description}</span>
+    </button>
+  )
+}
+
+// ─── Back button ──────────────────────────────────────────────────────────────
+
+function BackButton({ onClick }: { onClick: () => void }) {
+  return (
+    <Button
+      onClick={onClick}
+      variant="outline"
+      className="border-black/20 text-slate-700 hover:bg-[#ebe9e5]"
+    >
+      ← Back
+    </Button>
+  )
+}
+
 // ─── Add-site wizard ──────────────────────────────────────────────────────────
 
 interface AddSiteWizardProps {
@@ -94,11 +144,16 @@ interface AddSiteWizardProps {
 }
 
 function AddSiteWizard({ onSaved, onCancel, isFirstSite }: AddSiteWizardProps) {
-  const [step, setStep] = useState<FormStep>("url")
+  const [step, setStep] = useState<WizardStep>("url")
   const [inputUrl, setInputUrl] = useState("")
   const [detected, setDetected] = useState<DetectedPlatform>("custom")
   const [siteName, setSiteName] = useState("")
   const [saving, setSaving] = useState(false)
+
+  // New flow state
+  const [integrationMode, setIntegrationMode] = useState<IntegrationMode>(null)
+  const [hasBlog, setHasBlog] = useState<boolean | null>(null)
+  const [existingBlogUrl, setExistingBlogUrl] = useState("")
 
   // WordPress plugin flow
   const [wpToken, setWpToken] = useState("")
@@ -113,6 +168,25 @@ function AddSiteWizard({ onSaved, onCancel, isFirstSite }: AddSiteWizardProps) {
   // Webflow fields
   const [webflowApiToken, setWebflowApiToken] = useState("")
   const [webflowCollectionId, setWebflowCollectionId] = useState("")
+
+  // ── Derived values ────────────────────────────────────────────────────────
+
+  const normalUrl = inputUrl.trim().startsWith("http")
+    ? inputUrl.trim()
+    : "https://" + inputUrl.trim()
+
+  const derivedName = (() => {
+    if (siteName.trim()) return siteName.trim()
+    try {
+      return new URL(normalUrl).hostname
+    } catch {
+      return normalUrl
+    }
+  })()
+
+  const siteSlug = generateSiteSlug(derivedName, normalUrl)
+
+  const widgetEmbedCode = `<script src="https://itgrows.ai/widget.js?token=${generatedToken}" defer></script>`
 
   // ── Step 1: detect ────────────────────────────────────────────────────────
   const handleAnalyze = async () => {
@@ -129,23 +203,10 @@ function AddSiteWizard({ onSaved, onCancel, isFirstSite }: AddSiteWizardProps) {
     } catch {
       setDetected("custom")
     }
-    setStep("detected")
+    setStep("experience")
   }
 
-  const normalUrl = inputUrl.trim().startsWith("http")
-    ? inputUrl.trim()
-    : "https://" + inputUrl.trim()
-
-  const derivedName = (() => {
-    if (siteName.trim()) return siteName.trim()
-    try {
-      return new URL(normalUrl).hostname
-    } catch {
-      return normalUrl
-    }
-  })()
-
-  // ── Step 3: save via API ──────────────────────────────────────────────────
+  // ── Save via API ──────────────────────────────────────────────────────────
   const saveSite = async (siteData: {
     name: string
     url: string
@@ -156,6 +217,9 @@ function AddSiteWizard({ onSaved, onCancel, isFirstSite }: AddSiteWizardProps) {
     shopifyBlogId?: string
     webflowToken?: string
     webflowCollectionId?: string
+    integrationMode?: IntegrationMode
+    hasBlog?: boolean | null
+    existingBlogUrl?: string
   }) => {
     setSaving(true)
     try {
@@ -182,9 +246,19 @@ function AddSiteWizard({ onSaved, onCancel, isFirstSite }: AddSiteWizardProps) {
     saveSite({
       name: derivedName,
       url: normalUrl,
-      platform: detected === "wordpress" ? "wordpress" : detected === "shopify" ? "shopify" : detected === "webflow" ? "webflow" : "custom",
+      platform:
+        detected === "wordpress"
+          ? "wordpress"
+          : detected === "shopify"
+          ? "shopify"
+          : detected === "webflow"
+          ? "webflow"
+          : "custom",
       siteToken: token,
-      siteSlug: generateSiteSlug(derivedName, normalUrl),
+      siteSlug,
+      integrationMode,
+      hasBlog,
+      existingBlogUrl: hasBlog ? existingBlogUrl : "",
     })
   }
 
@@ -194,9 +268,12 @@ function AddSiteWizard({ onSaved, onCancel, isFirstSite }: AddSiteWizardProps) {
       url: normalUrl,
       platform: "shopify",
       siteToken: shopifyAccessToken.trim(),
-      siteSlug: generateSiteSlug(derivedName, normalUrl),
+      siteSlug,
       shopifyToken: shopifyAccessToken.trim(),
       shopifyBlogId: shopifyBlogId.trim(),
+      integrationMode,
+      hasBlog,
+      existingBlogUrl: hasBlog ? existingBlogUrl : "",
     })
   }
 
@@ -206,13 +283,65 @@ function AddSiteWizard({ onSaved, onCancel, isFirstSite }: AddSiteWizardProps) {
       url: normalUrl,
       platform: "webflow",
       siteToken: webflowApiToken.trim(),
-      siteSlug: generateSiteSlug(derivedName, normalUrl),
+      siteSlug,
       webflowToken: webflowApiToken.trim(),
       webflowCollectionId: webflowCollectionId.trim(),
+      integrationMode,
+      hasBlog,
+      existingBlogUrl: hasBlog ? existingBlogUrl : "",
     })
   }
 
-  // ── Render: Step 1 — URL ──────────────────────────────────────────────────
+  const handleConnectSimple = () => {
+    saveSite({
+      name: derivedName,
+      url: normalUrl,
+      platform: detected === "wordpress" ? "wordpress" : detected === "shopify" ? "shopify" : detected === "webflow" ? "webflow" : "custom",
+      siteToken: generatedToken,
+      siteSlug,
+      integrationMode: "simple",
+      hasBlog,
+      existingBlogUrl: hasBlog ? existingBlogUrl : "",
+    })
+  }
+
+  // ── Detection badge (shared) ──────────────────────────────────────────────
+  const DetectionBadge = () => (
+    <div className="rounded-xl bg-[#ebe9e5] border border-black/10 p-4 flex items-center gap-3">
+      <span className="text-green-400 text-lg">&#10003;</span>
+      <div>
+        <p className="text-[#1b1916] font-semibold text-sm">
+          {detected === "wordpress"
+            ? "WordPress detected"
+            : detected === "shopify"
+            ? "Shopify detected"
+            : detected === "webflow"
+            ? "Webflow detected"
+            : detected === "nextjs"
+            ? "Next.js / React detected"
+            : "Custom website detected"}
+        </p>
+        <p className="text-slate-600 text-xs">{inputUrl}</p>
+      </div>
+    </div>
+  )
+
+  // ── Blog URL input (shared between 3A and 3B) ─────────────────────────────
+  const BlogUrlInput = () => (
+    <div className="space-y-2 pt-1">
+      <Label className="text-slate-700 text-sm">Blog URL</Label>
+      <Input
+        placeholder="https://yoursite.com/blog"
+        value={existingBlogUrl}
+        onChange={(e) => setExistingBlogUrl(e.target.value)}
+        className="bg-[#ebe9e5] border-black/10 text-[#1b1916] placeholder:text-slate-500 focus:border-violet-500 text-sm"
+      />
+    </div>
+  )
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // STEP 1 — URL entry
+  // ─────────────────────────────────────────────────────────────────────────
   if (step === "url") {
     return (
       <div className="space-y-5 pt-4 border-t border-black/10">
@@ -247,7 +376,9 @@ function AddSiteWizard({ onSaved, onCancel, isFirstSite }: AddSiteWizardProps) {
     )
   }
 
-  // ── Render: Step 2 — Detecting ────────────────────────────────────────────
+  // ─────────────────────────────────────────────────────────────────────────
+  // DETECTING
+  // ─────────────────────────────────────────────────────────────────────────
   if (step === "detecting") {
     return (
       <div className="space-y-4 pt-4 border-t border-black/10">
@@ -267,9 +398,155 @@ function AddSiteWizard({ onSaved, onCancel, isFirstSite }: AddSiteWizardProps) {
     )
   }
 
-  // ── Render: Step 3 — Platform-specific install flow ───────────────────────
+  // ─────────────────────────────────────────────────────────────────────────
+  // STEP 2 — Experience check
+  // ─────────────────────────────────────────────────────────────────────────
+  if (step === "experience") {
+    return (
+      <div className="space-y-5 pt-4 border-t border-black/10">
+        <DetectionBadge />
+        <div>
+          <h3 className="text-[#1b1916] font-semibold text-base mb-1">
+            Do you have experience working with code?
+          </h3>
+          <p className="text-slate-600 text-xs">
+            We&apos;ll tailor the setup process to your experience level.
+          </p>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <ChoiceCard
+            icon="🛠️"
+            title="Yes, I'm technical"
+            description="I can edit code, use APIs, and install plugins. Show me the advanced setup."
+            onClick={() => {
+              setIntegrationMode("advanced")
+              setStep("blog-advanced")
+            }}
+          />
+          <ChoiceCard
+            icon="👋"
+            title="No, guide me step by step"
+            description="I'm not a developer. Walk me through a simple copy-paste setup."
+            onClick={() => {
+              setIntegrationMode("simple")
+              setStep("blog-simple")
+            }}
+          />
+        </div>
+        <BackButton onClick={() => setStep("url")} />
+      </div>
+    )
+  }
 
-  const snippetCode = `// Add to your API routes or server
+  // ─────────────────────────────────────────────────────────────────────────
+  // STEP 3A — Blog check for Advanced flow
+  // ─────────────────────────────────────────────────────────────────────────
+  if (step === "blog-advanced") {
+    return (
+      <div className="space-y-5 pt-4 border-t border-black/10">
+        <DetectionBadge />
+        <div>
+          <h3 className="text-[#1b1916] font-semibold text-base mb-1">
+            Does your site have a blog section?
+          </h3>
+          <p className="text-slate-600 text-xs">
+            This determines where your AI-generated articles will be published.
+          </p>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <ChoiceCard
+            icon="📝"
+            title="Yes, I have a blog"
+            description="I already have a blog on my site. Publish articles there."
+            onClick={() => setHasBlog(true)}
+          />
+          <ChoiceCard
+            icon="☁️"
+            title="No, host it for me"
+            description={`We'll host your blog at itgrows.ai/blog/${siteSlug}`}
+            onClick={() => {
+              setHasBlog(false)
+              setExistingBlogUrl("")
+              setStep("setup-advanced")
+            }}
+          />
+        </div>
+
+        {hasBlog === true && (
+          <div className="space-y-4">
+            <BlogUrlInput />
+            <Button
+              onClick={() => setStep("setup-advanced")}
+              disabled={!existingBlogUrl.trim()}
+              className="bg-violet-600 hover:bg-violet-500 text-[#1b1916]"
+            >
+              Continue →
+            </Button>
+          </div>
+        )}
+
+        <BackButton onClick={() => setStep("experience")} />
+      </div>
+    )
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // STEP 3B — Blog check for Simple flow
+  // ─────────────────────────────────────────────────────────────────────────
+  if (step === "blog-simple") {
+    return (
+      <div className="space-y-5 pt-4 border-t border-black/10">
+        <DetectionBadge />
+        <div>
+          <h3 className="text-[#1b1916] font-semibold text-base mb-1">
+            Does your website have a blog?
+          </h3>
+          <p className="text-slate-600 text-xs">
+            We need to know where to publish your articles.
+          </p>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <ChoiceCard
+            icon="📝"
+            title="Yes, I have a blog"
+            description="I already have a blog page on my website."
+            onClick={() => setHasBlog(true)}
+          />
+          <ChoiceCard
+            icon="✨"
+            title="No, create one for me"
+            description={`We'll create a hosted blog for you at itgrows.ai/blog/${siteSlug}`}
+            onClick={() => {
+              setHasBlog(false)
+              setExistingBlogUrl("")
+              setStep("setup-simple")
+            }}
+          />
+        </div>
+
+        {hasBlog === true && (
+          <div className="space-y-4">
+            <BlogUrlInput />
+            <Button
+              onClick={() => setStep("setup-simple")}
+              disabled={!existingBlogUrl.trim()}
+              className="bg-violet-600 hover:bg-violet-500 text-[#1b1916]"
+            >
+              Continue →
+            </Button>
+          </div>
+        )}
+
+        <BackButton onClick={() => setStep("experience")} />
+      </div>
+    )
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // STEP 4A — Advanced integration setup (platform-specific)
+  // ─────────────────────────────────────────────────────────────────────────
+  if (step === "setup-advanced") {
+    const snippetCode = `// Add to your API routes or server
 // itgrows.ai publishing endpoint
 export async function POST(req) {
   const { token, title, content, metaDescription } = await req.json()
@@ -281,263 +558,388 @@ export async function POST(req) {
   return Response.json({ success: true })
 }`
 
-  return (
-    <div className="space-y-5 pt-4 border-t border-black/10">
-      {/* Detection badge */}
-      <div className="rounded-xl bg-[#ebe9e5] border border-black/10 p-4 flex items-center gap-3">
-        <span className="text-green-400 text-lg">&#10003;</span>
+    return (
+      <div className="space-y-5 pt-4 border-t border-black/10">
+        <DetectionBadge />
+
+        {/* Blog destination info */}
+        {hasBlog === false && (
+          <div className="rounded-xl bg-violet-900/10 border border-violet-500/20 p-3 flex items-center gap-3 text-sm">
+            <span className="text-violet-300 shrink-0">&#10003; Hosted blog</span>
+            <span className="text-slate-600 text-xs">Your articles will appear at:</span>
+            <span className="text-violet-300 font-mono text-xs">
+              itgrows.ai/blog/{siteSlug}
+            </span>
+          </div>
+        )}
+        {hasBlog === true && existingBlogUrl && (
+          <div className="rounded-xl bg-violet-900/10 border border-violet-500/20 p-3 flex items-center gap-3 text-sm">
+            <span className="text-violet-300 shrink-0">&#10003; Your blog</span>
+            <span className="text-slate-600 text-xs">Articles will publish to:</span>
+            <span className="text-violet-300 font-mono text-xs truncate">{existingBlogUrl}</span>
+          </div>
+        )}
+
+        {/* ── WordPress ── */}
+        {detected === "wordpress" && (
+          <div className="space-y-4">
+            <div className="rounded-xl bg-[#ebe9e5] border border-black/10 p-4 space-y-3 text-sm">
+              <p className="text-slate-700 font-medium">Install our free plugin:</p>
+              <ol className="list-decimal list-inside space-y-2 text-slate-600">
+                <li>
+                  <a
+                    href="/api/wp-plugin/download"
+                    className="text-violet-400 hover:text-violet-300 underline"
+                  >
+                    Download ItGrows.ai WordPress Plugin
+                  </a>
+                </li>
+                <li>Go to WP Admin → Plugins → Add New → Upload Plugin → Install → Activate</li>
+                <li>
+                  Go to <span className="text-violet-300">Settings → ItGrows.ai</span> → Copy the
+                  Site Token shown there
+                </li>
+                <li>Paste it below</li>
+              </ol>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-slate-700 text-sm">Site Token (from WP Admin)</Label>
+              <Input
+                placeholder="igt_..."
+                value={wpToken}
+                onChange={(e) => setWpToken(e.target.value)}
+                className="bg-[#ebe9e5] border-black/10 text-[#1b1916] placeholder:text-slate-500 focus:border-violet-500 text-sm font-mono"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-slate-700 text-sm">
+                Site Name <span className="text-[#1b1916]">(optional)</span>
+              </Label>
+              <Input
+                placeholder="My Blog"
+                value={siteName}
+                onChange={(e) => setSiteName(e.target.value)}
+                className="bg-[#ebe9e5] border-black/10 text-[#1b1916] placeholder:text-slate-500 focus:border-violet-500 text-sm"
+              />
+            </div>
+
+            <div className="flex gap-3 pt-1">
+              <Button
+                onClick={() => handleConnect(wpToken.trim())}
+                disabled={!wpToken.trim() || saving}
+                className="bg-violet-600 hover:bg-violet-500 text-[#1b1916]"
+              >
+                {saving ? "Connecting..." : "Connect"}
+              </Button>
+              <BackButton onClick={() => setStep("blog-advanced")} />
+            </div>
+          </div>
+        )}
+
+        {/* ── Custom / Next.js ── */}
+        {(detected === "custom" || detected === "nextjs") && (
+          <div className="space-y-4">
+            <div className="rounded-xl bg-[#ebe9e5] border border-black/10 p-4 space-y-3 text-sm">
+              <p className="text-slate-700 font-medium">
+                Add this snippet to your site to enable publishing:
+              </p>
+              <div className="relative">
+                <pre className="text-xs text-slate-700 bg-[#ebe9e5] rounded-lg p-3 overflow-auto font-mono whitespace-pre-wrap">
+                  {snippetCode}
+                </pre>
+                <div className="mt-2">
+                  <CopyButton text={snippetCode} label="Copy Snippet" />
+                </div>
+              </div>
+              <div className="mt-2">
+                <p className="text-slate-600 text-xs mb-2">Set environment variable:</p>
+                <div className="flex items-center gap-2">
+                  <code className="text-xs text-violet-300 bg-[#ebe9e5] rounded px-2 py-1 font-mono">
+                    ITGROWS_SITE_TOKEN={generatedToken}
+                  </code>
+                  <CopyButton text={`ITGROWS_SITE_TOKEN=${generatedToken}`} label="Copy" />
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-slate-700 text-sm">
+                Site Name <span className="text-[#1b1916]">(optional)</span>
+              </Label>
+              <Input
+                placeholder="My Blog"
+                value={siteName}
+                onChange={(e) => setSiteName(e.target.value)}
+                className="bg-[#ebe9e5] border-black/10 text-[#1b1916] placeholder:text-slate-500 focus:border-violet-500 text-sm"
+              />
+            </div>
+
+            <div className="flex gap-3 pt-1">
+              <Button
+                onClick={() => handleConnect(generatedToken)}
+                disabled={saving}
+                className="bg-violet-600 hover:bg-violet-500 text-[#1b1916]"
+              >
+                {saving ? "Connecting..." : "I've installed it — Connect"}
+              </Button>
+              <BackButton onClick={() => setStep("blog-advanced")} />
+            </div>
+          </div>
+        )}
+
+        {/* ── Shopify ── */}
+        {detected === "shopify" && (
+          <div className="space-y-4">
+            <ShopifyGuide />
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label className="text-slate-700 text-sm">Access Token</Label>
+                <Input
+                  type="password"
+                  placeholder="shpat_..."
+                  value={shopifyAccessToken}
+                  onChange={(e) => setShopifyAccessToken(e.target.value)}
+                  className="bg-[#ebe9e5] border-black/10 text-[#1b1916] placeholder:text-slate-500 focus:border-violet-500 text-sm"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-slate-700 text-sm">Blog ID</Label>
+                <Input
+                  placeholder="123456789"
+                  value={shopifyBlogId}
+                  onChange={(e) => setShopifyBlogId(e.target.value)}
+                  className="bg-[#ebe9e5] border-black/10 text-[#1b1916] placeholder:text-slate-500 focus:border-violet-500 text-sm"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-slate-700 text-sm">
+                Site Name <span className="text-[#1b1916]">(optional)</span>
+              </Label>
+              <Input
+                placeholder="My Store"
+                value={siteName}
+                onChange={(e) => setSiteName(e.target.value)}
+                className="bg-[#ebe9e5] border-black/10 text-[#1b1916] placeholder:text-slate-500 focus:border-violet-500 text-sm"
+              />
+            </div>
+
+            <div className="flex gap-3 pt-1">
+              <Button
+                onClick={handleConnectShopify}
+                disabled={!shopifyAccessToken.trim() || !shopifyBlogId.trim() || saving}
+                className="bg-violet-600 hover:bg-violet-500 text-[#1b1916]"
+              >
+                {saving ? "Connecting..." : "Connect"}
+              </Button>
+              <BackButton onClick={() => setStep("blog-advanced")} />
+            </div>
+          </div>
+        )}
+
+        {/* ── Webflow ── */}
+        {detected === "webflow" && (
+          <div className="space-y-4">
+            <WebflowGuide />
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label className="text-slate-700 text-sm">API Token</Label>
+                <Input
+                  type="password"
+                  placeholder="your-webflow-token"
+                  value={webflowApiToken}
+                  onChange={(e) => setWebflowApiToken(e.target.value)}
+                  className="bg-[#ebe9e5] border-black/10 text-[#1b1916] placeholder:text-slate-500 focus:border-violet-500 text-sm"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-slate-700 text-sm">Collection ID</Label>
+                <Input
+                  placeholder="collection-id"
+                  value={webflowCollectionId}
+                  onChange={(e) => setWebflowCollectionId(e.target.value)}
+                  className="bg-[#ebe9e5] border-black/10 text-[#1b1916] placeholder:text-slate-500 focus:border-violet-500 text-sm"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-slate-700 text-sm">
+                Site Name <span className="text-[#1b1916]">(optional)</span>
+              </Label>
+              <Input
+                placeholder="My Site"
+                value={siteName}
+                onChange={(e) => setSiteName(e.target.value)}
+                className="bg-[#ebe9e5] border-black/10 text-[#1b1916] placeholder:text-slate-500 focus:border-violet-500 text-sm"
+              />
+            </div>
+
+            <div className="flex gap-3 pt-1">
+              <Button
+                onClick={handleConnectWebflow}
+                disabled={!webflowApiToken.trim() || !webflowCollectionId.trim() || saving}
+                className="bg-violet-600 hover:bg-violet-500 text-[#1b1916]"
+              >
+                {saving ? "Connecting..." : "Connect"}
+              </Button>
+              <BackButton onClick={() => setStep("blog-advanced")} />
+            </div>
+          </div>
+        )}
+      </div>
+    )
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // STEP 4B — Simple widget guide
+  // ─────────────────────────────────────────────────────────────────────────
+  if (step === "setup-simple") {
+    const platformInstructions: Record<string, { step2: string; step3: string }> = {
+      wordpress: {
+        step2: "Log in to your WordPress Admin (yoursite.com/wp-admin)",
+        step3: "Go to Appearance → Theme Editor → find footer.php and paste the code before </body>",
+      },
+      webflow: {
+        step2: "Log in to Webflow and open your project",
+        step3: "Go to Project Settings → Custom Code → Footer Code section",
+      },
+      shopify: {
+        step2: "Log in to your Shopify Admin",
+        step3: "Go to Online Store → Themes → Edit Code → open theme.liquid and paste before </body>",
+      },
+    }
+
+    const platformKey =
+      detected === "wordpress"
+        ? "wordpress"
+        : detected === "webflow"
+        ? "webflow"
+        : detected === "shopify"
+        ? "shopify"
+        : null
+
+    const instructions = platformKey ? platformInstructions[platformKey] : null
+
+    return (
+      <div className="space-y-5 pt-4 border-t border-black/10">
+        <DetectionBadge />
+
         <div>
-          <p className="text-[#1b1916] font-semibold text-sm">
-            {detected === "wordpress"
-              ? "WordPress detected"
-              : detected === "shopify"
-              ? "Shopify detected"
-              : detected === "webflow"
-              ? "Webflow detected"
-              : detected === "nextjs"
-              ? "Next.js / React detected"
-              : "Custom website detected"}
+          <h3 className="text-[#1b1916] font-semibold text-base mb-1">
+            Add the widget to your site
+          </h3>
+          <p className="text-slate-600 text-xs">
+            Follow these steps to connect your site. No coding knowledge required.
           </p>
-          <p className="text-slate-600 text-xs">{inputUrl}</p>
+        </div>
+
+        <div className="space-y-3">
+          {/* Step 1 */}
+          <div className="rounded-xl bg-[#ebe9e5] border border-black/10 p-4 space-y-2">
+            <div className="flex items-center gap-2">
+              <span className="w-6 h-6 rounded-full bg-violet-600 text-white text-xs font-bold flex items-center justify-center shrink-0">
+                1
+              </span>
+              <p className="text-slate-700 font-medium text-sm">Here&apos;s your unique embed code:</p>
+            </div>
+            <div className="flex items-start gap-2 mt-2">
+              <code className="text-xs text-violet-300 bg-white/60 rounded-lg px-3 py-2 font-mono flex-1 break-all border border-black/10">
+                {widgetEmbedCode}
+              </code>
+              <CopyButton text={widgetEmbedCode} label="Copy" />
+            </div>
+          </div>
+
+          {/* Step 2 */}
+          <div className="rounded-xl bg-[#ebe9e5] border border-black/10 p-4 flex items-start gap-3">
+            <span className="w-6 h-6 rounded-full bg-violet-600 text-white text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">
+              2
+            </span>
+            <p className="text-slate-700 text-sm">
+              {instructions ? instructions.step2 : "Log in to your website's admin panel"}
+            </p>
+          </div>
+
+          {/* Step 3 */}
+          <div className="rounded-xl bg-[#ebe9e5] border border-black/10 p-4 flex items-start gap-3">
+            <span className="w-6 h-6 rounded-full bg-violet-600 text-white text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">
+              3
+            </span>
+            <p className="text-slate-700 text-sm">
+              {instructions
+                ? instructions.step3
+                : "Find where to add custom code/scripts (usually in Settings → Custom Code)"}
+            </p>
+          </div>
+
+          {/* Step 4 */}
+          <div className="rounded-xl bg-[#ebe9e5] border border-black/10 p-4 flex items-start gap-3">
+            <span className="w-6 h-6 rounded-full bg-violet-600 text-white text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">
+              4
+            </span>
+            <p className="text-slate-700 text-sm">Paste the code and save your changes</p>
+          </div>
+        </div>
+
+        {/* Blog destination */}
+        {hasBlog === false && (
+          <div className="rounded-xl bg-violet-900/10 border border-violet-500/20 p-3 text-sm">
+            <p className="text-slate-600 text-xs">Your articles will appear at:</p>
+            <p className="text-violet-300 font-mono text-sm mt-1">
+              itgrows.ai/blog/{siteSlug}
+            </p>
+          </div>
+        )}
+        {hasBlog === true && (
+          <div className="rounded-xl bg-violet-900/10 border border-violet-500/20 p-3 text-sm">
+            <p className="text-slate-600 text-xs">
+              Your articles will publish directly to your existing blog
+            </p>
+            {existingBlogUrl && (
+              <p className="text-violet-300 font-mono text-xs mt-1">{existingBlogUrl}</p>
+            )}
+          </div>
+        )}
+
+        {/* Help link */}
+        <p className="text-slate-600 text-xs">
+          Need help?{" "}
+          <a href="#" className="text-violet-400 hover:text-violet-300 underline">
+            Watch our setup guide
+          </a>
+        </p>
+
+        <div className="space-y-2">
+          <Label className="text-slate-700 text-sm">
+            Site Name <span className="text-[#1b1916]">(optional)</span>
+          </Label>
+          <Input
+            placeholder="My Site"
+            value={siteName}
+            onChange={(e) => setSiteName(e.target.value)}
+            className="bg-[#ebe9e5] border-black/10 text-[#1b1916] placeholder:text-slate-500 focus:border-violet-500 text-sm"
+          />
+        </div>
+
+        <div className="flex gap-3 pt-1">
+          <Button
+            onClick={handleConnectSimple}
+            disabled={saving}
+            className="bg-violet-600 hover:bg-violet-500 text-[#1b1916]"
+          >
+            {saving ? "Connecting..." : "I've added it — Connect"}
+          </Button>
+          <BackButton onClick={() => setStep("blog-simple")} />
         </div>
       </div>
+    )
+  }
 
-      {/* ── WordPress ── */}
-      {detected === "wordpress" && (
-        <div className="space-y-4">
-          <div className="rounded-xl bg-[#ebe9e5] border border-black/10 p-4 space-y-3 text-sm">
-            <p className="text-slate-700 font-medium">Install our free plugin:</p>
-            <ol className="list-decimal list-inside space-y-2 text-slate-600">
-              <li>
-                <a
-                  href="/api/wp-plugin/download"
-                  className="text-violet-400 hover:text-violet-300 underline"
-                >
-                  Download ItGrows.ai WordPress Plugin
-                </a>
-              </li>
-              <li>Go to WP Admin → Plugins → Add New → Upload Plugin → Install → Activate</li>
-              <li>
-                Go to <span className="text-violet-300">Settings → ItGrows.ai</span> → Copy the
-                Site Token shown there
-              </li>
-              <li>Paste it below</li>
-            </ol>
-          </div>
-
-          <div className="space-y-2">
-            <Label className="text-slate-700 text-sm">Site Token (from WP Admin)</Label>
-            <Input
-              placeholder="igt_..."
-              value={wpToken}
-              onChange={(e) => setWpToken(e.target.value)}
-              className="bg-[#ebe9e5] border-black/10 text-[#1b1916] placeholder:text-slate-500 focus:border-violet-500 text-sm font-mono"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label className="text-slate-700 text-sm">
-              Site Name <span className="text-[#1b1916]">(optional)</span>
-            </Label>
-            <Input
-              placeholder="My Blog"
-              value={siteName}
-              onChange={(e) => setSiteName(e.target.value)}
-              className="bg-[#ebe9e5] border-black/10 text-[#1b1916] placeholder:text-slate-500 focus:border-violet-500 text-sm"
-            />
-          </div>
-
-          <div className="flex gap-3 pt-1">
-            <Button
-              onClick={() => handleConnect(wpToken.trim())}
-              disabled={!wpToken.trim() || saving}
-              className="bg-violet-600 hover:bg-violet-500 text-[#1b1916]"
-            >
-              {saving ? "Connecting..." : "Connect"}
-            </Button>
-            <Button
-              onClick={() => setStep("url")}
-              variant="outline"
-              className="border-black/20 text-slate-700 hover:bg-[#ebe9e5]"
-            >
-              ← Change URL
-            </Button>
-          </div>
-        </div>
-      )}
-
-      {/* ── Custom / Next.js ── */}
-      {(detected === "custom" || detected === "nextjs") && (
-        <div className="space-y-4">
-          <div className="rounded-xl bg-[#ebe9e5] border border-black/10 p-4 space-y-3 text-sm">
-            <p className="text-slate-700 font-medium">
-              Add this snippet to your site to enable publishing:
-            </p>
-            <div className="relative">
-              <pre className="text-xs text-slate-700 bg-[#ebe9e5] rounded-lg p-3 overflow-auto font-mono whitespace-pre-wrap">
-                {snippetCode}
-              </pre>
-              <div className="mt-2">
-                <CopyButton text={snippetCode} label="Copy Snippet" />
-              </div>
-            </div>
-            <div className="mt-2">
-              <p className="text-slate-600 text-xs mb-2">Set environment variable:</p>
-              <div className="flex items-center gap-2">
-                <code className="text-xs text-violet-300 bg-[#ebe9e5] rounded px-2 py-1 font-mono">
-                  ITGROWS_SITE_TOKEN={generatedToken}
-                </code>
-                <CopyButton text={`ITGROWS_SITE_TOKEN=${generatedToken}`} label="Copy" />
-              </div>
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label className="text-slate-700 text-sm">
-              Site Name <span className="text-[#1b1916]">(optional)</span>
-            </Label>
-            <Input
-              placeholder="My Blog"
-              value={siteName}
-              onChange={(e) => setSiteName(e.target.value)}
-              className="bg-[#ebe9e5] border-black/10 text-[#1b1916] placeholder:text-slate-500 focus:border-violet-500 text-sm"
-            />
-          </div>
-
-          <div className="flex gap-3 pt-1">
-            <Button
-              onClick={() => handleConnect(generatedToken)}
-              disabled={saving}
-              className="bg-violet-600 hover:bg-violet-500 text-[#1b1916]"
-            >
-              {saving ? "Connecting..." : "I've installed it — Connect"}
-            </Button>
-            <Button
-              onClick={() => setStep("url")}
-              variant="outline"
-              className="border-black/20 text-slate-700 hover:bg-[#ebe9e5]"
-            >
-              ← Change URL
-            </Button>
-          </div>
-        </div>
-      )}
-
-      {/* ── Shopify ── */}
-      {detected === "shopify" && (
-        <div className="space-y-4">
-          <ShopifyGuide />
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-2">
-              <Label className="text-slate-700 text-sm">Access Token</Label>
-              <Input
-                type="password"
-                placeholder="shpat_..."
-                value={shopifyAccessToken}
-                onChange={(e) => setShopifyAccessToken(e.target.value)}
-                className="bg-[#ebe9e5] border-black/10 text-[#1b1916] placeholder:text-slate-500 focus:border-violet-500 text-sm"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label className="text-slate-700 text-sm">Blog ID</Label>
-              <Input
-                placeholder="123456789"
-                value={shopifyBlogId}
-                onChange={(e) => setShopifyBlogId(e.target.value)}
-                className="bg-[#ebe9e5] border-black/10 text-[#1b1916] placeholder:text-slate-500 focus:border-violet-500 text-sm"
-              />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label className="text-slate-700 text-sm">
-              Site Name <span className="text-[#1b1916]">(optional)</span>
-            </Label>
-            <Input
-              placeholder="My Store"
-              value={siteName}
-              onChange={(e) => setSiteName(e.target.value)}
-              className="bg-[#ebe9e5] border-black/10 text-[#1b1916] placeholder:text-slate-500 focus:border-violet-500 text-sm"
-            />
-          </div>
-
-          <div className="flex gap-3 pt-1">
-            <Button
-              onClick={handleConnectShopify}
-              disabled={!shopifyAccessToken.trim() || !shopifyBlogId.trim() || saving}
-              className="bg-violet-600 hover:bg-violet-500 text-[#1b1916]"
-            >
-              {saving ? "Connecting..." : "Connect"}
-            </Button>
-            <Button
-              onClick={() => setStep("url")}
-              variant="outline"
-              className="border-black/20 text-slate-700 hover:bg-[#ebe9e5]"
-            >
-              ← Change URL
-            </Button>
-          </div>
-        </div>
-      )}
-
-      {/* ── Webflow ── */}
-      {detected === "webflow" && (
-        <div className="space-y-4">
-          <WebflowGuide />
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-2">
-              <Label className="text-slate-700 text-sm">API Token</Label>
-              <Input
-                type="password"
-                placeholder="your-webflow-token"
-                value={webflowApiToken}
-                onChange={(e) => setWebflowApiToken(e.target.value)}
-                className="bg-[#ebe9e5] border-black/10 text-[#1b1916] placeholder:text-slate-500 focus:border-violet-500 text-sm"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label className="text-slate-700 text-sm">Collection ID</Label>
-              <Input
-                placeholder="collection-id"
-                value={webflowCollectionId}
-                onChange={(e) => setWebflowCollectionId(e.target.value)}
-                className="bg-[#ebe9e5] border-black/10 text-[#1b1916] placeholder:text-slate-500 focus:border-violet-500 text-sm"
-              />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label className="text-slate-700 text-sm">
-              Site Name <span className="text-[#1b1916]">(optional)</span>
-            </Label>
-            <Input
-              placeholder="My Site"
-              value={siteName}
-              onChange={(e) => setSiteName(e.target.value)}
-              className="bg-[#ebe9e5] border-black/10 text-[#1b1916] placeholder:text-slate-500 focus:border-violet-500 text-sm"
-            />
-          </div>
-
-          <div className="flex gap-3 pt-1">
-            <Button
-              onClick={handleConnectWebflow}
-              disabled={!webflowApiToken.trim() || !webflowCollectionId.trim() || saving}
-              className="bg-violet-600 hover:bg-violet-500 text-[#1b1916]"
-            >
-              {saving ? "Connecting..." : "Connect"}
-            </Button>
-            <Button
-              onClick={() => setStep("url")}
-              variant="outline"
-              className="border-black/20 text-slate-700 hover:bg-[#ebe9e5]"
-            >
-              ← Change URL
-            </Button>
-          </div>
-        </div>
-      )}
-    </div>
-  )
+  return null
 }
 
 // ─── Settings page ────────────────────────────────────────────────────────────
