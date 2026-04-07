@@ -143,20 +143,9 @@ export default async function BlogPage() {
                 const href = post.siteSlug
                   ? `/blog/sites/${post.siteSlug}/${post.slug}`
                   : `/blog/${post.slug}`
-                const keywords = Array.isArray(post.keywords) ? (post.keywords as string[]) : []
                 return (
                   <Link key={post.id} href={href} className="block group">
                     <div className="h-full bg-white border border-black/10 rounded-2xl p-6 hover:shadow-sm hover:border-violet-300 transition-all">
-                      <div className="flex flex-wrap gap-1.5 mb-3">
-                        {keywords.slice(0, 3).map((kw) => (
-                          <span
-                            key={kw}
-                            className="px-2 py-0.5 rounded-md bg-violet-100 border border-violet-200 text-violet-700 text-xs"
-                          >
-                            {kw}
-                          </span>
-                        ))}
-                      </div>
                       <h2 className="text-[#1b1916] font-semibold text-lg mb-3 group-hover:text-violet-600 transition-colors leading-snug">
                         {post.title}
                       </h2>

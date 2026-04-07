@@ -28,8 +28,6 @@ export default async function BlogPostPage({
     notFound()
   }
 
-  const keywords = Array.isArray(post.keywords) ? (post.keywords as string[]) : []
-
   return (
     <div className="min-h-screen bg-[#f3f2f1] text-[#1b1916]">
       {/* Header */}
@@ -53,20 +51,6 @@ export default async function BlogPostPage({
       {/* Article */}
       <main className="px-6 py-12">
         <div className="max-w-3xl mx-auto">
-          {/* Keywords */}
-          {keywords.length > 0 && (
-            <div className="flex flex-wrap gap-2 mb-6">
-              {keywords.map((kw) => (
-                <span
-                  key={kw}
-                  className="px-2.5 py-1 rounded-md bg-violet-100 border border-violet-200 text-violet-700 text-xs font-medium"
-                >
-                  {kw}
-                </span>
-              ))}
-            </div>
-          )}
-
           {/* Title */}
           <h1 className="text-4xl font-extrabold leading-tight mb-4 text-[#1b1916]">
             {post.title}
