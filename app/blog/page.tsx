@@ -1,56 +1,6 @@
 import Link from "next/link"
-import { db } from "@/lib/db"
-import { blogPosts } from "@/lib/db/schema"
-import { desc, eq, or, isNull } from "drizzle-orm"
 
-function formatDate(date: Date): string {
-  return date.toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  })
-}
-
-function slugToDisplayName(slug: string): string {
-  return slug
-    .split("-")
-    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-    .join(" ")
-}
-
-function getExcerpt(post: { metaDescription?: string | null; content: string }): string {
-  if (post.metaDescription) return post.metaDescription.slice(0, 160)
-  const stripped = post.content
-    .replace(/<[^>]*>/g, " ")
-    .replace(/[#*_`~>]/g, "")
-    .replace(/\s+/g, " ")
-    .trim()
-  return stripped.slice(0, 160)
-}
-
-export default async function BlogPage() {
-  // Main blog only shows ItGrows.ai's own posts (siteSlug = 'itgrows' or null)
-  const rows = await db
-    .select()
-    .from(blogPosts)
-    .where(or(eq(blogPosts.siteSlug, "itgrows"), isNull(blogPosts.siteSlug)))
-    .orderBy(desc(blogPosts.publishedAt))
-    .limit(50)
-
-  // Client blogs (other siteSlug values) shown as separate sections
-  const allPosts = await db.select().from(blogPosts).orderBy(desc(blogPosts.publishedAt)).limit(500)
-  const slugMap = new Map<string, number>()
-  for (const p of allPosts) {
-    if (p.siteSlug && p.siteSlug !== "itgrows") {
-      slugMap.set(p.siteSlug, (slugMap.get(p.siteSlug) ?? 0) + 1)
-    }
-  }
-  const clientBlogs = Array.from(slugMap.entries()).map(([siteSlug, count]) => ({
-    siteSlug,
-    displayName: slugToDisplayName(siteSlug),
-    count,
-  }))
-
+export default function BlogPage() {
   return (
     <div className="min-h-screen bg-[#f3f2f1] text-[#1b1916]">
       {/* Nav */}
@@ -63,29 +13,17 @@ export default async function BlogPage() {
             ItGrows.ai
           </Link>
           <div className="hidden md:flex items-center gap-6 text-sm text-slate-600">
-            <a href="/#features" className="hover:text-[#1b1916] transition-colors">
-              Features
-            </a>
-            <a href="/#how-it-works" className="hover:text-[#1b1916] transition-colors">
-              How it works
-            </a>
-            <a href="/#pricing" className="hover:text-[#1b1916] transition-colors">
-              Pricing
-            </a>
-            <Link href="/blog" className="text-[#1b1916] font-medium">
-              Blog
-            </Link>
+            <a href="/#features" className="hover:text-[#1b1916] transition-colors">Features</a>
+            <a href="/#how-it-works" className="hover:text-[#1b1916] transition-colors">How it works</a>
+            <a href="/#pricing" className="hover:text-[#1b1916] transition-colors">Pricing</a>
+            <Link href="/blog" className="text-[#1b1916] font-medium">Blog</Link>
           </div>
           <div className="flex items-center gap-3">
             <Link href="/login">
-              <button className="px-4 py-2 text-slate-600 hover:text-[#1b1916] text-sm transition-colors">
-                Login
-              </button>
+              <button className="px-4 py-2 text-slate-600 hover:text-[#1b1916] text-sm transition-colors">Login</button>
             </Link>
             <Link href="/signup">
-              <button className="px-4 py-2 bg-violet-600 hover:bg-violet-500 text-white text-sm rounded-lg transition-colors">
-                Get Started
-              </button>
+              <button className="px-4 py-2 bg-violet-600 hover:bg-violet-500 text-white text-sm rounded-lg transition-colors">Get Started</button>
             </Link>
           </div>
         </div>
@@ -97,77 +35,16 @@ export default async function BlogPage() {
         <div className="relative max-w-3xl mx-auto">
           <h1 className="text-5xl font-extrabold mb-4 tracking-tight text-[#1b1916]">
             ItGrows.ai{" "}
-            <span className="bg-gradient-to-r from-violet-600 to-pink-500 bg-clip-text text-transparent">
-              Blog
-            </span>
+            <span className="bg-gradient-to-r from-violet-600 to-pink-500 bg-clip-text text-transparent">Blog</span>
           </h1>
-          <p className="text-slate-600 text-lg">
-            AI-generated insights for growing businesses
-          </p>
+          <p className="text-slate-600 text-lg">AI-generated insights for growing businesses</p>
         </div>
       </section>
 
-      {/* Featured Client Blogs */}
-      {clientBlogs.length > 0 && (
-        <section className="px-6 pb-12 pt-12">
-          <div className="max-w-6xl mx-auto">
-            <h2 className="text-2xl font-bold text-[#1b1916] mb-6">Featured Blogs</h2>
-            <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {clientBlogs.map((blog) => (
-                <Link
-                  key={blog.siteSlug}
-                  href={`/blog/sites/${blog.siteSlug}`}
-                  className="block group"
-                >
-                  <div className="bg-white border border-black/10 rounded-2xl p-5 hover:shadow-sm hover:border-violet-300 transition-all">
-                    <h3 className="text-[#1b1916] font-semibold text-base mb-1 group-hover:text-violet-600 transition-colors">
-                      {blog.displayName} Blog
-                    </h3>
-                    <p className="text-slate-500 text-xs">
-                      {blog.count} {blog.count === 1 ? "article" : "articles"}
-                    </p>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* Latest Articles */}
-      <section className="px-6 pb-24 pt-12">
-        <div className="max-w-6xl mx-auto">
-          {clientBlogs.length > 0 && (
-            <h2 className="text-2xl font-bold text-[#1b1916] mb-6">Latest Articles</h2>
-          )}
-          {rows.length === 0 ? (
-            <div className="text-center py-20">
-              <p className="text-slate-600 text-lg">Coming soon.</p>
-            </div>
-          ) : (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {rows.map((post) => {
-                const excerpt = getExcerpt(post)
-                const href = post.siteSlug
-                  ? `/blog/sites/${post.siteSlug}/${post.slug}`
-                  : `/blog/${post.slug}`
-                return (
-                  <Link key={post.id} href={href} className="block group">
-                    <div className="h-full bg-white border border-black/10 rounded-2xl p-6 hover:shadow-sm hover:border-violet-300 transition-all">
-                      <h2 className="text-[#1b1916] font-semibold text-lg mb-3 group-hover:text-violet-600 transition-colors leading-snug">
-                        {post.title}
-                      </h2>
-                      <p className="text-slate-600 text-sm leading-relaxed mb-4">
-                        {excerpt}
-                        {excerpt.length >= 160 ? "…" : ""}
-                      </p>
-                      <p className="text-slate-500 text-xs">{formatDate(post.publishedAt)}</p>
-                    </div>
-                  </Link>
-                )
-              })}
-            </div>
-          )}
+      {/* Coming soon */}
+      <section className="px-6 pb-24 pt-16">
+        <div className="max-w-6xl mx-auto text-center py-16">
+          <p className="text-slate-600 text-lg">Coming soon.</p>
         </div>
       </section>
 
