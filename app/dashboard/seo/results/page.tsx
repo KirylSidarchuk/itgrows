@@ -161,19 +161,21 @@ export default function SeoResultsPage() {
       })
       const data = (await res.json()) as { success: boolean; post?: BlogPost; storage?: string; error?: string }
 
+      const toPath = (slug: string) =>
+        siteSlug && siteSlug !== "itgrows" ? `sites/${siteSlug}/${slug}` : slug
       if (data.post) {
-        setBlogSlug(siteSlug ? `${siteSlug}/${data.post.slug}` : data.post.slug)
+        setBlogSlug(toPath(data.post.slug))
         setBlogPublished(true)
         setPublishedSiteName(siteName ?? "ItGrows.ai Blog")
       } else {
-        const rawSlug = slugify(article.title)
-        setBlogSlug(siteSlug ? `${siteSlug}/${rawSlug}` : rawSlug)
+        setBlogSlug(toPath(slugify(article.title)))
         setBlogPublished(true)
         setPublishedSiteName(siteName ?? "ItGrows.ai Blog")
       }
     } catch {
-      const rawSlug = slugify(article.title)
-      setBlogSlug(siteSlug ? `${siteSlug}/${rawSlug}` : rawSlug)
+      const toPath = (slug: string) =>
+        siteSlug && siteSlug !== "itgrows" ? `sites/${siteSlug}/${slug}` : slug
+      setBlogSlug(toPath(slugify(article.title)))
       setBlogPublished(true)
       setPublishedSiteName(siteName ?? "ItGrows.ai Blog")
     }
