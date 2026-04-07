@@ -94,6 +94,11 @@ export default function CalendarPage() {
   const [showModal, setShowModal] = useState(false)
   const [loading, setLoading] = useState(true)
 
+  // Auto-publish / batch scheduling state
+  const [batchStatus, setBatchStatus] = useState<"idle" | "loading" | "success" | "no-site">("idle")
+  const [defaultSiteUrl, setDefaultSiteUrl] = useState<string | null>(null)
+  const [sitesChecked, setSitesChecked] = useState(false)
+
   // Modal state
   const [modalStep, setModalStep] = useState<ModalStep>("analyzing")
   const [analyzeError, setAnalyzeError] = useState("")
@@ -143,6 +148,51 @@ export default function CalendarPage() {
   useEffect(() => {
     loadPosts()
   }, [loadPosts])
+
+  // Fetch default site URL for auto-publish card
+  useEffect(() => {
+    async function checkSites() {
+      try {
+        const res = await fetch("/api/sites")
+        if (res.ok) {
+          const data = (await res.json()) as {
+            sites: Array<{ url: string; isDefault: boolean }>
+          }
+          const sites = data.sites ?? []
+          const def = sites.find((s) => s.isDefault) ?? sites[0] ?? null
+          setDefaultSiteUrl(def ? def.url : null)
+          setBatchStatus(def ? "idle" : "no-site")
+        } else {
+          setBatchStatus("no-site")
+        }
+      } catch {
+        setBatchStatus("no-site")
+      } finally {
+        setSitesChecked(true)
+      }
+    }
+    checkSites()
+  }, [])
+
+  const handleBatchSchedule = useCallback(async () => {
+    if (!defaultSiteUrl) return
+    setBatchStatus("loading")
+    try {
+      const res = await fetch("/api/schedule/batch", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ siteUrl: defaultSiteUrl }),
+      })
+      if (res.ok) {
+        setBatchStatus("success")
+        await loadPosts()
+      } else {
+        setBatchStatus("idle")
+      }
+    } catch {
+      setBatchStatus("idle")
+    }
+  }, [defaultSiteUrl, loadPosts])
 
   const openModal = useCallback(async () => {
     // Reset modal state
@@ -416,6 +466,48 @@ export default function CalendarPage() {
             </Button>
           </div>
         </div>
+
+        {/* Auto-Publish Card */}
+        {sitesChecked && (
+          <Card className="mb-8 bg-white border-black/10">
+            <CardContent className="p-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <h2 className="text-lg font-semibold text-[#1b1916] mb-1">Auto-Publishing</h2>
+                  <p className="text-sm text-slate-600">
+                    Generate and publish 1 article per day automatically. We&apos;ll plan 15 articles based on your site.
+                  </p>
+                </div>
+                <div className="shrink-0">
+                  {batchStatus === "no-site" && (
+                    <p className="text-sm text-amber-600 font-medium">
+                      Connect a site in Settings first
+                    </p>
+                  )}
+                  {batchStatus === "idle" && (
+                    <Button
+                      onClick={handleBatchSchedule}
+                      className="bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-white whitespace-nowrap"
+                    >
+                      Schedule 15 Articles
+                    </Button>
+                  )}
+                  {batchStatus === "loading" && (
+                    <span className="flex items-center gap-2 text-sm text-slate-600">
+                      <span className="inline-block w-4 h-4 border-2 border-black/20 border-t-violet-400 rounded-full animate-spin" />
+                      Scheduling...
+                    </span>
+                  )}
+                  {batchStatus === "success" && (
+                    <p className="text-sm text-green-600 font-medium">
+                      15 articles scheduled! First one publishes tomorrow.
+                    </p>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Loading */}
         {loading && (
