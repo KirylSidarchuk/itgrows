@@ -640,7 +640,18 @@ export default function CalendarPage() {
                         <tr key={post.id} className="hover:bg-[#ebe9e5] transition-colors">
                           <td className="px-6 py-4 text-sm text-slate-700">{formatDate(date)}</td>
                           <td className="px-6 py-4">
-                            <span className="text-sm text-[#1b1916] font-medium">{post.keyword}</span>
+                            <div className="flex items-center gap-3">
+                              {post.status === "published" && post.blogPostSlug ? (
+                                <img
+                                  src={`/api/blog/image/by-slug/${post.blogPostSlug}`}
+                                  className="w-14 h-10 object-cover rounded-lg flex-shrink-0"
+                                  alt=""
+                                />
+                              ) : (
+                                <div className="w-14 h-10 bg-slate-100 rounded-lg flex-shrink-0" />
+                              )}
+                              <span className="text-sm text-[#1b1916] font-medium">{post.keyword}</span>
+                            </div>
                           </td>
                           <td className="px-6 py-4">
                             <span className="text-xs font-mono bg-[#ebe9e5] text-slate-700 px-2 py-1 rounded">
