@@ -16,6 +16,7 @@ export interface BlogPost {
   status: "published"
   siteId?: string
   siteSlug?: string
+  coverImageUrl?: string
 }
 
 function slugify(text: string): string {
@@ -55,6 +56,7 @@ export async function GET(req: NextRequest) {
     status: "published",
     ...(r.siteId ? { siteId: r.siteId } : {}),
     ...(r.siteSlug ? { siteSlug: r.siteSlug } : {}),
+    ...(r.coverImageUrl ? { coverImageUrl: r.coverImageUrl } : {}),
   }))
 
   return NextResponse.json({ posts, storage: "db" })
@@ -75,6 +77,7 @@ export async function POST(req: NextRequest) {
       keyword?: string
       siteId?: string
       siteSlug?: string
+      coverImageUrl?: string
     }
 
     if (!body.title || !body.content) {
@@ -94,6 +97,7 @@ export async function POST(req: NextRequest) {
         keywords: body.keywords ?? [],
         siteId: body.siteId ?? null,
         siteSlug: body.siteSlug ?? null,
+        coverImageUrl: body.coverImageUrl ?? null,
       })
       .returning()
 
@@ -109,6 +113,7 @@ export async function POST(req: NextRequest) {
       status: "published",
       ...(inserted.siteId ? { siteId: inserted.siteId } : {}),
       ...(inserted.siteSlug ? { siteSlug: inserted.siteSlug } : {}),
+      ...(inserted.coverImageUrl ? { coverImageUrl: inserted.coverImageUrl } : {}),
     }
 
     return NextResponse.json({ success: true, post, storage: "db" })

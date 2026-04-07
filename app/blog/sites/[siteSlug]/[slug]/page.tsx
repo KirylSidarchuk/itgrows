@@ -89,6 +89,12 @@ export default function SiteBlogPostPage() {
       {/* Article */}
       <main className="px-6 py-12">
         <div className="max-w-3xl mx-auto">
+          {/* Cover Image */}
+          {post.coverImageUrl && (
+            <div className="w-full h-64 md:h-96 overflow-hidden rounded-2xl mb-8">
+              <img src={post.coverImageUrl} alt={post.title} className="w-full h-full object-cover" />
+            </div>
+          )}
           <h1 className="text-4xl font-extrabold leading-tight mb-4 text-[#1b1916]">
             {post.title}
           </h1>

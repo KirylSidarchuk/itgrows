@@ -30,6 +30,7 @@ interface GeneratedArticle {
   keywords: string[]
   seoScore?: number
   seoBreakdown?: SeoBreakdown
+  coverImageUrl?: string | null
 }
 
 interface ConnectedSite {
@@ -140,6 +141,7 @@ export default function SeoAutopilotPage() {
         keywords: article.keywords,
         seoScore: article.seoScore,
         seoBreakdown: article.seoBreakdown,
+        coverImageUrl: article.coverImageUrl ?? null,
       }
       try {
         await fetch("/api/tasks", {

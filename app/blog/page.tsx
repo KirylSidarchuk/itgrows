@@ -74,18 +74,29 @@ export default async function BlogPage() {
                   <Link
                     key={post.id}
                     href={`/blog/${post.slug}`}
-                    className="group block bg-white border border-black/10 rounded-2xl p-6 hover:border-violet-400/60 hover:shadow-md transition-all"
+                    className="group block bg-white border border-black/10 rounded-2xl overflow-hidden hover:border-violet-400/60 hover:shadow-md transition-all"
                   >
-                    <p className="text-xs text-slate-400 mb-3">{formatDate(post.publishedAt)}</p>
-                    <h2 className="text-lg font-bold text-[#1b1916] mb-3 group-hover:text-violet-600 transition-colors leading-snug">
-                      {post.title}
-                    </h2>
-                    <p className="text-sm text-slate-500 leading-relaxed">
-                      {excerpt}{excerpt.length >= 150 ? "…" : ""}
-                    </p>
-                    <span className="inline-block mt-4 text-xs font-medium text-violet-600 group-hover:text-violet-500 transition-colors">
-                      Read more →
-                    </span>
+                    {post.coverImageUrl && (
+                      <div className="w-full h-48 overflow-hidden">
+                        <img
+                          src={post.coverImageUrl}
+                          alt={post.title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                      </div>
+                    )}
+                    <div className="p-6">
+                      <p className="text-xs text-slate-400 mb-3">{formatDate(post.publishedAt)}</p>
+                      <h2 className="text-lg font-bold text-[#1b1916] mb-3 group-hover:text-violet-600 transition-colors leading-snug">
+                        {post.title}
+                      </h2>
+                      <p className="text-sm text-slate-500 leading-relaxed">
+                        {excerpt}{excerpt.length >= 150 ? "…" : ""}
+                      </p>
+                      <span className="inline-block mt-4 text-xs font-medium text-violet-600 group-hover:text-violet-500 transition-colors">
+                        Read more →
+                      </span>
+                    </div>
                   </Link>
                 )
               })}

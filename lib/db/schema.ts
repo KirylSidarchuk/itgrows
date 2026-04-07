@@ -65,6 +65,7 @@ export const blogPosts = pgTable("blog_posts", {
   content: text("content").notNull(),
   metaDescription: text("meta_description"),
   keywords: jsonb("keywords").notNull().default([]),
+  coverImageUrl: text("cover_image_url"),
   publishedAt: timestamp("published_at").notNull().defaultNow(),
 })
 

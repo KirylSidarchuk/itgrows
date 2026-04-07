@@ -302,6 +302,25 @@ export async function POST(req: NextRequest) {
     console.log("[seo/generate] keywords:", parsed.keywords)
     console.log("[seo/generate] seoScore:", seoScore, "breakdown:", seoBreakdown)
 
+    // Generate cover image
+    let coverImageUrl: string | null = null
+    try {
+      const imgRes = await fetch(`${req.nextUrl.origin}/api/images/generate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Cookie": req.headers.get("cookie") || "" },
+        body: JSON.stringify({ title: parsed.title, keywords: parsed.keywords }),
+      })
+      if (imgRes.ok) {
+        const imgData = await imgRes.json()
+        coverImageUrl = imgData.url ?? null
+        console.log("[seo/generate] coverImageUrl:", coverImageUrl)
+      } else {
+        console.warn("[seo/generate] Image generation failed:", await imgRes.text())
+      }
+    } catch (imgErr) {
+      console.warn("[seo/generate] Image generation error:", imgErr)
+    }
+
     return NextResponse.json({
       keyword,
       title: parsed.title,
@@ -310,6 +329,7 @@ export async function POST(req: NextRequest) {
       keywords: parsed.keywords,
       seoScore,
       seoBreakdown,
+      coverImageUrl,
     })
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error"

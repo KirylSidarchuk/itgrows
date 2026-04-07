@@ -32,6 +32,7 @@ export async function GET(
     status: "published",
     ...(row.siteId ? { siteId: row.siteId } : {}),
     ...(row.siteSlug ? { siteSlug: row.siteSlug } : {}),
+    ...(row.coverImageUrl ? { coverImageUrl: row.coverImageUrl } : {}),
   }
 
   return NextResponse.json({ post })

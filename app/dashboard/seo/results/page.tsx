@@ -26,6 +26,7 @@ interface ArticleResult {
     keywords: string[]
     seoScore?: number
     seoBreakdown?: SeoBreakdown
+    coverImageUrl?: string | null
   }
   publishUrl: string
   platform: string
@@ -157,6 +158,7 @@ export default function SeoResultsPage() {
           keyword: article.keyword,
           ...(siteId ? { siteId } : {}),
           ...(siteSlug ? { siteSlug } : {}),
+          ...(article.coverImageUrl ? { coverImageUrl: article.coverImageUrl } : {}),
         }),
       })
       const data = (await res.json()) as { success: boolean; post?: BlogPost; storage?: string; error?: string }
@@ -360,6 +362,16 @@ export default function SeoResultsPage() {
                   Cancel
                 </Button>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* Cover Image Preview */}
+        {article.coverImageUrl && (
+          <div className="mb-6">
+            <p className="text-xs text-slate-500 uppercase tracking-wider font-medium mb-2">Cover Image</p>
+            <div className="w-full h-48 md:h-64 overflow-hidden rounded-2xl border border-black/10">
+              <img src={article.coverImageUrl} alt={article.title} className="w-full h-full object-cover" />
             </div>
           </div>
         )}
