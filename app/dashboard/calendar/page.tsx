@@ -547,7 +547,7 @@ export default function CalendarPage() {
                             onClick={() => setBatchTone(t)}
                             className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all border ${
                               batchTone === t
-                                ? "bg-pink-600/30 border-pink-500 text-pink-900"
+                                ? "bg-green-100 border-green-400 text-green-700"
                                 : "border-black/10 text-slate-600 hover:border-black/20 hover:text-[#1b1916]"
                             }`}
                           >
@@ -898,7 +898,7 @@ export default function CalendarPage() {
                           onClick={() => setTone(t)}
                           className={`py-2 rounded-lg text-sm font-medium transition-all border ${
                             tone === t
-                              ? "bg-pink-600/30 border-pink-500 text-pink-900"
+                              ? "bg-green-100 border-green-400 text-green-700"
                               : "border-black/10 text-slate-600 hover:border-black/20 hover:text-[#1b1916]"
                           }`}
                         >
