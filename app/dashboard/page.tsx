@@ -69,7 +69,6 @@ export default function DashboardPage() {
 
   const done = tasks.filter((t) => t.status === "done").length
   const inProgress = tasks.filter((t) => t.status === "in_progress").length
-  const pending = tasks.filter((t) => t.status === "pending").length
 
   const planColors: Record<string, string> = {
     starter: "bg-blue-100 text-blue-700 border-blue-200",
@@ -86,17 +85,11 @@ export default function DashboardPage() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-3 gap-4 mb-8">
           <Card className="bg-white border-black/10">
             <CardContent className="pt-6">
               <p className="text-3xl font-bold text-[#1b1916]">{tasks.length}</p>
               <p className="text-slate-600 text-sm mt-1">Total Tasks</p>
-            </CardContent>
-          </Card>
-          <Card className="bg-white border-black/10">
-            <CardContent className="pt-6">
-              <p className="text-3xl font-bold text-green-600">{done}</p>
-              <p className="text-slate-600 text-sm mt-1">Completed</p>
             </CardContent>
           </Card>
           <Card className="bg-white border-black/10">
@@ -107,8 +100,8 @@ export default function DashboardPage() {
           </Card>
           <Card className="bg-white border-black/10">
             <CardContent className="pt-6">
-              <p className="text-3xl font-bold text-[#1b1916]">{pending}</p>
-              <p className="text-slate-600 text-sm mt-1">Pending</p>
+              <p className="text-3xl font-bold text-green-600">{done}</p>
+              <p className="text-slate-600 text-sm mt-1">Completed</p>
             </CardContent>
           </Card>
         </div>
@@ -149,11 +142,14 @@ export default function DashboardPage() {
                   <span>✍️</span> Create SEO Article
                 </Button>
               </Link>
-              <Link href="/dashboard/new-task">
-                <Button className="w-full bg-[#ebe9e5] hover:bg-[#dedad4] text-[#1b1916] justify-start gap-3 border border-black/10">
+              <div className="relative">
+                <Button disabled className="w-full bg-[#ebe9e5] text-slate-400 justify-start gap-3 border border-black/10 cursor-not-allowed opacity-60">
                   <span>📱</span> Schedule Social Posts
                 </Button>
-              </Link>
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold bg-violet-100 text-violet-600 border border-violet-200 rounded-full px-2 py-0.5">
+                  Coming Soon
+                </span>
+              </div>
             </CardContent>
           </Card>
         </div>
@@ -179,6 +175,26 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
         )}
+
+        {/* Coming Soon features */}
+        <div className="grid md:grid-cols-3 gap-4 mb-8">
+          {[
+            { icon: "📱", label: "Social Media Scheduling", desc: "Auto-post articles to Instagram, LinkedIn & more" },
+            { icon: "📊", label: "Analytics & Reports", desc: "Track rankings, traffic and ROI in one place" },
+            { icon: "🎯", label: "Google Ads Automation", desc: "AI-generated ads from your published articles" },
+          ].map(f => (
+            <div key={f.label} className="relative bg-white border border-black/10 rounded-2xl p-5 overflow-hidden">
+              <div className="absolute inset-0 bg-white/60 backdrop-blur-[1px] flex items-center justify-center z-10 rounded-2xl">
+                <span className="text-xs font-bold bg-violet-600 text-white rounded-full px-3 py-1 shadow-sm tracking-wide uppercase">
+                  Coming Soon
+                </span>
+              </div>
+              <div className="text-2xl mb-2">{f.icon}</div>
+              <p className="font-semibold text-[#1b1916] text-sm mb-1">{f.label}</p>
+              <p className="text-slate-500 text-xs leading-relaxed">{f.desc}</p>
+            </div>
+          ))}
+        </div>
 
         {/* Recent Tasks */}
         <Card className="bg-white border-black/10">
