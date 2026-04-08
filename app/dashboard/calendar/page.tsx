@@ -147,6 +147,11 @@ function RankingProgressTracker({ posts }: { posts: ScheduledPost[] }) {
       <div className="flex items-center justify-between mb-1">
         <h2 className="text-[#1b1916] font-semibold text-base flex items-center gap-2">
           <span>📈</span> SEO Ranking Forecast
+          <span className="flex items-center gap-1 ml-1">
+            {["🌐", "🤖", "🔵", "🟠"].map((e, i) => (
+              <span key={i} className="text-xs opacity-50" title={["Google", "ChatGPT", "Bing", "Perplexity"][i]}>{e}</span>
+            ))}
+          </span>
         </h2>
         <div className="flex items-center gap-3">
           <span className="text-xs text-slate-500">
@@ -258,8 +263,8 @@ function RankingProgressTracker({ posts }: { posts: ScheduledPost[] }) {
         <div>
           {currentStageIdx < 0 ? (
             <>
-              <p className="text-sm font-semibold text-[#1b1916]">Article submitted to Google</p>
-              <p className="text-xs text-slate-500 mt-0.5">Indexing expected within 3–7 days. First milestone: <strong>~{getProjectedDate(publishDate, 1)}</strong></p>
+              <p className="text-sm font-semibold text-[#1b1916]">Article submitted to all search engines</p>
+              <p className="text-xs text-slate-500 mt-0.5">Google, Bing, ChatGPT & Perplexity indexing expected within 3–7 days. First milestone: <strong>~{getProjectedDate(publishDate, 1)}</strong></p>
             </>
           ) : currentStageIdx === RANKING_STAGES.length - 1 ? (
             <>
@@ -362,6 +367,14 @@ export default function CalendarPage() {
     loadPosts()
   }, [loadPosts])
 
+  // Restore cached images from sessionStorage on mount
+  useEffect(() => {
+    try {
+      const cached = sessionStorage.getItem("calendarScheduledImages")
+      if (cached) setScheduledImages(JSON.parse(cached) as Record<string, string>)
+    } catch {}
+  }, [])
+
   // Lazy-generate cover images for scheduled posts (first 5 without images)
   useEffect(() => {
     const toGenerate = posts
@@ -375,7 +388,13 @@ export default function CalendarPage() {
       })
         .then(r => r.json())
         .then((d: { url?: string }) => {
-          if (d.url) setScheduledImages(prev => ({ ...prev, [post.id]: d.url! }))
+          if (d.url) {
+            setScheduledImages(prev => {
+              const next = { ...prev, [post.id]: d.url! }
+              try { sessionStorage.setItem("calendarScheduledImages", JSON.stringify(next)) } catch {}
+              return next
+            })
+          }
         })
         .catch(() => {})
     })
@@ -1031,15 +1050,28 @@ export default function CalendarPage() {
                         {isToday && <span className="ml-1 text-violet-400">•</span>}
                       </div>
                       <div className="space-y-1">
-                        {dayPosts.map((post) => (
-                          <div
-                            key={post.id}
-                            className={`text-[10px] px-1.5 py-1 rounded font-medium truncate cursor-default ${STATUS_STYLES[post.status]}`}
-                            title={`${post.keyword} (${post.tone}, ${post.language.toUpperCase()})`}
-                          >
-                            {post.keyword}
-                          </div>
-                        ))}
+                        {dayPosts.map((post) => {
+                          const imgSrc = post.status === "published" && post.blogPostSlug
+                            ? `/api/blog/image/by-slug/${post.blogPostSlug}`
+                            : scheduledImages[post.id] ?? null
+                          return (
+                            <div
+                              key={post.id}
+                              className={`text-[10px] rounded font-medium truncate cursor-default overflow-hidden ${STATUS_STYLES[post.status]}`}
+                              title={`${post.keyword} (${post.tone}, ${post.language.toUpperCase()})`}
+                            >
+                              {imgSrc && (
+                                <img
+                                  src={imgSrc}
+                                  alt=""
+                                  className="w-full h-8 object-cover rounded-t"
+                                  style={{ opacity: post.status === "scheduled" ? 0.8 : 1 }}
+                                />
+                              )}
+                              <span className="block px-1.5 py-1 truncate">{post.keyword}</span>
+                            </div>
+                          )
+                        })}
                       </div>
                     </div>
                   )

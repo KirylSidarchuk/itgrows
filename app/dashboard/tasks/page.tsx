@@ -240,7 +240,7 @@ interface RankingStage {
 }
 
 const RANKING_STAGES: RankingStage[] = [
-  { label: "Google Indexing", detail: "Article gets discovered", weekStart: 1, weekEnd: 2 },
+  { label: "Search Indexing", detail: "Google, Bing, ChatGPT discover it", weekStart: 1, weekEnd: 2 },
   { label: "Page 3-5", detail: "Initial ranking", weekStart: 3, weekEnd: 4 },
   { label: "Page 2", detail: "Gaining authority", weekStart: 5, weekEnd: 8 },
   { label: "Top 10", detail: "Competitive zone", weekStart: 9, weekEnd: 12 },
@@ -366,7 +366,7 @@ function RankingProgressTracker({ seoTasks }: { seoTasks: Task[] }) {
           : "bg-slate-50 text-slate-600 border border-slate-200"
       }`}>
         {currentStageIdx < 0
-          ? "Your article was just published. Google will start indexing it within days."
+          ? "Your article was just published. Google, Bing, ChatGPT & Perplexity will start indexing it within days."
           : currentStageIdx === RANKING_STAGES.length - 1
           ? "Your article is in the Top 3 zone — excellent authority achieved!"
           : `Currently in: ${RANKING_STAGES[currentStageIdx].label} — ${RANKING_STAGES[currentStageIdx].detail}. Next milestone: ${RANKING_STAGES[currentStageIdx + 1].label} (Week ${RANKING_STAGES[currentStageIdx + 1].weekStart}).`
