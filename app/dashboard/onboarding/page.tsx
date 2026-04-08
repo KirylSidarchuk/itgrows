@@ -50,8 +50,9 @@ export default function OnboardingPage() {
   const [showFullArticle, setShowFullArticle] = useState(false)
   const [topicImages, setTopicImages] = useState<Record<number, string>>({})
   const [integrationMode, setIntegrationMode] = useState<'simple' | 'advanced' | null>(null)
-  const [connectSubStep, setConnectSubStep] = useState<'experience' | 'platform' | 'setup'>('experience')
+  const [connectSubStep, setConnectSubStep] = useState<'experience' | 'detecting' | 'platform' | 'setup'>('experience')
   const [selectedPlatform, setSelectedPlatform] = useState<'wordpress' | 'shopify' | 'webflow' | 'other' | null>(null)
+  const [detectedPlatform, setDetectedPlatform] = useState<string | null>(null)
   const [wpToken, setWpToken] = useState("")
   const [shopifyToken, setShopifyToken] = useState("")
   const [shopifyBlogId, setShopifyBlogId] = useState("")
@@ -196,6 +197,31 @@ export default function OnboardingPage() {
       router.push("/dashboard/calendar")
     } catch {
       router.push("/dashboard/calendar")
+    }
+  }
+
+  async function handleDetectPlatform() {
+    setBlogOption('existing')
+    setConnectSubStep('detecting')
+    try {
+      const res = await fetch("/api/detect-platform", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: siteUrl.trim() }),
+      })
+      const data = await res.json() as { platform?: string }
+      const p = data.platform ?? "custom"
+      setDetectedPlatform(p)
+      const mapped =
+        p === "wordpress" ? "wordpress" :
+        p === "shopify" ? "shopify" :
+        p === "webflow" ? "webflow" :
+        "other"
+      setSelectedPlatform(mapped)
+      setConnectSubStep('setup')
+    } catch {
+      setDetectedPlatform(null)
+      setConnectSubStep('platform')
     }
   }
 
@@ -433,7 +459,7 @@ export default function OnboardingPage() {
 
                 <div className="space-y-3 mb-6">
                   <button
-                    onClick={() => { setBlogOption('existing'); setConnectSubStep('platform') }}
+                    onClick={handleDetectPlatform}
                     className="w-full text-left rounded-xl border-2 border-black/10 hover:border-violet-400 bg-[#f9f8f7] hover:bg-violet-50 p-5 transition-all"
                   >
                     <p className="font-semibold text-[#1b1916] mb-1">Yes, I have a blog</p>
@@ -549,7 +575,16 @@ export default function OnboardingPage() {
               </>
             )}
 
-            {/* Platform selector */}
+            {/* Detecting spinner */}
+            {connectSubStep === 'detecting' && (
+              <div className="text-center py-12">
+                <div className="text-4xl mb-4 animate-spin inline-block">⟳</div>
+                <p className="text-[#1b1916] font-semibold">Detecting your platform…</p>
+                <p className="text-slate-500 text-sm mt-1">Scanning {siteUrl}</p>
+              </div>
+            )}
+
+            {/* Platform selector (fallback if not detected) */}
             {connectSubStep === 'platform' && (
               <>
                 <div className="text-center mb-6">
@@ -588,13 +623,24 @@ export default function OnboardingPage() {
             {/* Platform-specific setup */}
             {connectSubStep === 'setup' && blogOption === 'existing' && (
               <>
-                <div className="text-center mb-6">
-                  <h2 className="text-xl font-bold text-[#1b1916] mb-1">
+                <div className="text-center mb-4">
+                  <h2 className="text-xl font-bold text-[#1b1916] mb-2">
                     {selectedPlatform === 'wordpress' && '🟦 Connect WordPress'}
                     {selectedPlatform === 'shopify' && '🟢 Connect Shopify'}
                     {selectedPlatform === 'webflow' && '🔵 Connect Webflow'}
                     {selectedPlatform === 'other' && '⚙️ Connect your blog'}
                   </h2>
+                  {detectedPlatform && detectedPlatform !== 'custom' ? (
+                    <span className="inline-block text-xs bg-green-100 text-green-700 border border-green-300 rounded-full px-3 py-1">
+                      ✓ Auto-detected from {siteUrl}
+                    </span>
+                  ) : null}
+                  <button
+                    onClick={() => setConnectSubStep('platform')}
+                    className="block mx-auto mt-2 text-xs text-violet-500 hover:text-violet-700"
+                  >
+                    Wrong platform? Change →
+                  </button>
                 </div>
 
                 {selectedPlatform === 'wordpress' && (
