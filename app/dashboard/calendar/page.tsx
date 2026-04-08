@@ -124,6 +124,176 @@ function getCurrentStageIndex(weeks: number): number {
   return -1
 }
 
+const AI_STAGES = [
+  { label: "AI Crawling", icon: "🤖", weekStart: 1, weekEnd: 2, desc: "GPTBot & PerplexityBot discover your article" },
+  { label: "First Citations", icon: "💬", weekStart: 3, weekEnd: 5, desc: "Article appears in occasional AI answers" },
+  { label: "Regular Source", icon: "📚", weekStart: 6, weekEnd: 10, desc: "Consistently cited for related queries" },
+  { label: "Authority Source", icon: "⭐", weekStart: 11, weekEnd: null, desc: "Top AI source for your topic" },
+]
+
+function getCurrentAIStageIndex(weeks: number): number {
+  for (let i = AI_STAGES.length - 1; i >= 0; i--) {
+    if (weeks >= AI_STAGES[i].weekStart) return i
+  }
+  return -1
+}
+
+function AISearchTracker({ publishDate }: { publishDate: string }) {
+  const [hoveredIdx, setHoveredIdx] = useState<number | null>(null)
+
+  const weeks = getWeeksSince(publishDate)
+  const days = getDaysSince(publishDate)
+  const currentStageIdx = getCurrentAIStageIndex(weeks)
+  const progressPct = currentStageIdx < 0 ? 0 : (currentStageIdx / (AI_STAGES.length - 1)) * 100
+  const nextStage = currentStageIdx >= 0 && currentStageIdx < AI_STAGES.length - 1 ? AI_STAGES[currentStageIdx + 1] : null
+  const daysToNext = nextStage ? Math.max(0, nextStage.weekStart * 7 - days) : 0
+
+  return (
+    <div className="mt-6 border-t border-black/5 pt-5">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-1">
+        <h3 className="text-[#1b1916] font-semibold text-sm flex items-center gap-2">
+          <span>🤖</span> AI Search Visibility
+          <span className="flex items-center gap-1 ml-1">
+            <span className="text-xs opacity-50" title="ChatGPT">💬</span>
+            <span className="text-xs opacity-50" title="Perplexity">🔵</span>
+          </span>
+        </h3>
+        <div className="flex items-center gap-2">
+          <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
+            currentStageIdx >= 3 ? "bg-cyan-100 text-cyan-700" :
+            currentStageIdx >= 0 ? "bg-cyan-50 text-cyan-600" :
+            "bg-slate-100 text-slate-500"
+          }`}>
+            {currentStageIdx < 0 ? "Not yet crawled" : AI_STAGES[currentStageIdx].icon + " " + AI_STAGES[currentStageIdx].label}
+          </span>
+        </div>
+      </div>
+      <p className="text-slate-400 text-xs mb-5">ChatGPT & Perplexity citation timeline</p>
+
+      {/* Timeline */}
+      <div className="relative pb-2">
+        {/* Background track */}
+        <div className="absolute top-5 left-[12%] right-[12%] h-1 bg-slate-100 rounded-full" />
+        {/* Animated progress fill */}
+        <div
+          className="absolute top-5 left-[12%] h-1 rounded-full transition-all duration-1000 ease-out"
+          style={{
+            width: `calc(${progressPct}% * 0.76)`,
+            background: "linear-gradient(90deg, #06b6d4, #3b82f6)",
+            boxShadow: progressPct > 0 ? "0 0 8px rgba(6,182,212,0.4)" : "none",
+          }}
+        />
+
+        <div className="relative flex justify-between">
+          {AI_STAGES.map((stage, idx) => {
+            const isCompleted = currentStageIdx > idx
+            const isCurrent = currentStageIdx === idx
+            const isFuture = currentStageIdx < idx
+            const isHovered = hoveredIdx === idx
+
+            return (
+              <div
+                key={stage.label}
+                className="flex flex-col items-center gap-2 cursor-default"
+                style={{ width: `${100 / AI_STAGES.length}%` }}
+                onMouseEnter={() => setHoveredIdx(idx)}
+                onMouseLeave={() => setHoveredIdx(null)}
+              >
+                {/* Tooltip */}
+                {isHovered && (
+                  <div className="absolute -top-14 z-20 bg-[#1b1916] text-white text-xs rounded-xl px-3 py-2 whitespace-nowrap shadow-lg pointer-events-none"
+                    style={{ left: `calc(${(idx / (AI_STAGES.length - 1)) * 76 + 12}% - 60px)` }}
+                  >
+                    <p className="font-semibold">{stage.icon} {stage.label}</p>
+                    <p className="text-white/70 mt-0.5">{stage.desc}</p>
+                    <p className="text-cyan-300 mt-0.5">~{getProjectedDate(publishDate, stage.weekStart)}</p>
+                  </div>
+                )}
+
+                {/* Dot */}
+                <div className="relative">
+                  {isCurrent && (
+                    <div className="absolute inset-0 rounded-full bg-cyan-400/30 animate-ping scale-150" />
+                  )}
+                  <div className={`relative w-10 h-10 rounded-full border-2 flex items-center justify-center z-10 transition-all duration-300 ${
+                    isCompleted
+                      ? "bg-gradient-to-br from-cyan-500 to-blue-500 border-cyan-500 shadow-md shadow-cyan-200"
+                      : isCurrent
+                      ? "bg-white border-cyan-500 shadow-lg shadow-cyan-100 scale-110"
+                      : "bg-white border-slate-200 hover:border-cyan-300 hover:scale-105"
+                  }`}>
+                    {isCompleted ? (
+                      <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                      </svg>
+                    ) : isCurrent ? (
+                      <span className="text-base">{stage.icon}</span>
+                    ) : (
+                      <span className={`text-sm ${isFuture ? "opacity-30" : ""}`}>{stage.icon}</span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Label */}
+                <div className="text-center px-0.5">
+                  <p className={`text-xs font-semibold leading-tight transition-colors ${
+                    isCompleted ? "text-cyan-700" : isCurrent ? "text-cyan-600" : "text-slate-400"
+                  }`}>
+                    {stage.label}
+                  </p>
+                  <p className={`text-xs leading-tight mt-0.5 hidden sm:block ${
+                    isCompleted || isCurrent ? "text-slate-500" : "text-slate-300"
+                  }`}>
+                    ~{getProjectedDate(publishDate, stage.weekStart)}
+                  </p>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* AI Status callout */}
+      <div className={`mt-5 p-4 rounded-xl flex items-center gap-3 ${
+        currentStageIdx >= 3 ? "bg-gradient-to-r from-cyan-50 to-blue-50 border border-cyan-200"
+        : currentStageIdx >= 0 ? "bg-gradient-to-r from-cyan-50 to-blue-50 border border-cyan-200"
+        : "bg-slate-50 border border-slate-200"
+      }`}>
+        <span className="text-2xl flex-shrink-0">
+          {currentStageIdx < 0 ? "🤖" : currentStageIdx === AI_STAGES.length - 1 ? "⭐" : AI_STAGES[currentStageIdx].icon}
+        </span>
+        <div>
+          {currentStageIdx < 0 ? (
+            <>
+              <p className="text-sm font-semibold text-[#1b1916]">Not yet crawled by AI bots</p>
+              <p className="text-xs text-slate-500 mt-0.5">GPTBot & PerplexityBot usually discover content within days of publishing.</p>
+            </>
+          ) : currentStageIdx === AI_STAGES.length - 1 ? (
+            <>
+              <p className="text-sm font-semibold text-cyan-700">Authority Source — excellent! 🎉</p>
+              <p className="text-xs text-cyan-600 mt-0.5">Your content is an authority source for AI search.</p>
+            </>
+          ) : (
+            <>
+              <p className="text-sm font-semibold text-[#1b1916]">
+                Currently: <span className="text-cyan-700">{AI_STAGES[currentStageIdx].label}</span>
+                {nextStage && <span className="text-slate-500 font-normal"> → Next: <strong>{nextStage.label}</strong></span>}
+              </p>
+              <p className="text-xs text-slate-500 mt-0.5">
+                {AI_STAGES[currentStageIdx].desc}.
+                {nextStage && daysToNext > 0
+                  ? ` Next: ${nextStage.label} (~${getProjectedDate(publishDate, nextStage.weekStart)}, in ${daysToNext} days)`
+                  : nextStage ? ` Next milestone coming very soon!` : ""}
+              </p>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function RankingProgressTracker({ posts }: { posts: ScheduledPost[] }) {
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null)
 
@@ -286,6 +456,9 @@ function RankingProgressTracker({ posts }: { posts: ScheduledPost[] }) {
           )}
         </div>
       </div>
+
+      {/* AI Search Visibility Tracker */}
+      <AISearchTracker publishDate={publishDate} />
     </div>
   )
 }

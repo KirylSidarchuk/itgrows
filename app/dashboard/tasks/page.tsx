@@ -248,6 +248,21 @@ const RANKING_STAGES: RankingStage[] = [
   { label: "Top 3", detail: "Goal achieved", weekStart: 17, weekEnd: null },
 ]
 
+interface AIStage {
+  label: string
+  icon: string
+  weekStart: number
+  weekEnd: number | null
+  desc: string
+}
+
+const AI_STAGES: AIStage[] = [
+  { label: "AI Crawling", icon: "🤖", weekStart: 1, weekEnd: 2, desc: "GPTBot & PerplexityBot discover your article" },
+  { label: "First Citations", icon: "💬", weekStart: 3, weekEnd: 5, desc: "Article appears in occasional AI answers" },
+  { label: "Regular Source", icon: "📚", weekStart: 6, weekEnd: 10, desc: "Consistently cited for related queries" },
+  { label: "Authority Source", icon: "⭐", weekStart: 11, weekEnd: null, desc: "Top AI source for your topic" },
+]
+
 function getWeeksSince(dateStr: string): number {
   const created = new Date(dateStr).getTime()
   const now = Date.now()
@@ -261,6 +276,19 @@ function getCurrentStageIndex(weeks: number): number {
   return -1 // not yet indexed
 }
 
+function getCurrentAIStageIndex(weeks: number): number {
+  for (let i = AI_STAGES.length - 1; i >= 0; i--) {
+    if (weeks >= AI_STAGES[i].weekStart) return i
+  }
+  return -1
+}
+
+function getProjectedDate(dateStr: string, weekStart: number): string {
+  const d = new Date(dateStr)
+  d.setDate(d.getDate() + weekStart * 7)
+  return d.toLocaleDateString("en-US", { month: "short", day: "numeric" })
+}
+
 function RankingProgressTracker({ seoTasks }: { seoTasks: Task[] }) {
   // Use the most recent SEO article task
   const latestTask = seoTasks.slice().sort(
@@ -271,6 +299,8 @@ function RankingProgressTracker({ seoTasks }: { seoTasks: Task[] }) {
 
   const weeks = getWeeksSince(latestTask.createdAt)
   const currentStageIdx = getCurrentStageIndex(weeks)
+  const aiCurrentStageIdx = getCurrentAIStageIndex(weeks)
+  const publishDate = latestTask.createdAt
 
   return (
     <div className="mb-8 bg-white border border-black/10 rounded-2xl p-6">
@@ -371,6 +401,113 @@ function RankingProgressTracker({ seoTasks }: { seoTasks: Task[] }) {
           ? "Your article is in the Top 3 zone — excellent authority achieved!"
           : `Currently in: ${RANKING_STAGES[currentStageIdx].label} — ${RANKING_STAGES[currentStageIdx].detail}. Next milestone: ${RANKING_STAGES[currentStageIdx + 1].label} (Week ${RANKING_STAGES[currentStageIdx + 1].weekStart}).`
         }
+      </div>
+
+      {/* AI Search Visibility Tracker */}
+      <div className="mt-6 border-t border-black/5 pt-5">
+        <div className="flex items-center justify-between mb-1">
+          <h3 className="text-[#1b1916] font-semibold text-sm flex items-center gap-2">
+            <span>🤖</span> AI Search Visibility
+            <span className="flex items-center gap-1 ml-1">
+              <span className="text-xs opacity-50" title="ChatGPT">💬</span>
+              <span className="text-xs opacity-50" title="Perplexity">🔵</span>
+            </span>
+          </h3>
+          <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
+            aiCurrentStageIdx >= 3 ? "bg-cyan-100 text-cyan-700" :
+            aiCurrentStageIdx >= 0 ? "bg-cyan-50 text-cyan-600" :
+            "bg-slate-100 text-slate-500"
+          }`}>
+            {aiCurrentStageIdx < 0 ? "Not yet crawled" : AI_STAGES[aiCurrentStageIdx].icon + " " + AI_STAGES[aiCurrentStageIdx].label}
+          </span>
+        </div>
+        <p className="text-slate-400 text-xs mb-4">ChatGPT & Perplexity citation timeline</p>
+
+        {/* AI Timeline */}
+        <div className="relative">
+          <div className="absolute top-4 left-4 right-4 h-0.5 bg-slate-200" />
+          {aiCurrentStageIdx >= 0 && (
+            <div
+              className="absolute top-4 left-4 h-0.5 transition-all duration-700"
+              style={{
+                background: "linear-gradient(90deg, #06b6d4, #3b82f6)",
+                width: `calc(${(aiCurrentStageIdx / (AI_STAGES.length - 1)) * 100}% - 0px)`,
+                maxWidth: "calc(100% - 2rem)",
+              }}
+            />
+          )}
+
+          <div className="relative flex justify-between">
+            {AI_STAGES.map((stage, idx) => {
+              const isCompleted = aiCurrentStageIdx > idx
+              const isCurrent = aiCurrentStageIdx === idx
+              const isFuture = aiCurrentStageIdx < idx
+
+              return (
+                <div
+                  key={stage.label}
+                  className="flex flex-col items-center gap-2"
+                  style={{ width: `${100 / AI_STAGES.length}%` }}
+                >
+                  {/* Dot */}
+                  <div
+                    className={`relative w-8 h-8 rounded-full border-2 flex items-center justify-center z-10 transition-all ${
+                      isCompleted
+                        ? "bg-gradient-to-br from-cyan-500 to-blue-500 border-cyan-500"
+                        : isCurrent
+                        ? "bg-white border-cyan-500 animate-pulse"
+                        : "bg-white border-slate-200"
+                    }`}
+                  >
+                    {isCompleted ? (
+                      <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                      </svg>
+                    ) : isCurrent ? (
+                      <span className="text-sm">{stage.icon}</span>
+                    ) : (
+                      <div className={`w-2 h-2 rounded-full ${isFuture ? "bg-slate-200" : "bg-slate-200"}`} />
+                    )}
+                  </div>
+
+                  {/* Label */}
+                  <div className="text-center px-0.5">
+                    <p
+                      className={`text-xs font-semibold leading-tight ${
+                        isCompleted || isCurrent ? "text-cyan-700" : "text-slate-400"
+                      }`}
+                    >
+                      {stage.label}
+                    </p>
+                    <p
+                      className={`text-xs leading-tight mt-0.5 hidden sm:block ${
+                        isFuture ? "text-slate-300" : "text-slate-500"
+                      }`}
+                    >
+                      Wk {stage.weekEnd ? `${stage.weekStart}-${stage.weekEnd}` : `${stage.weekStart}+`}
+                    </p>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+
+        {/* AI Status callout */}
+        <div className={`mt-5 p-3 rounded-xl text-sm ${
+          aiCurrentStageIdx >= 3
+            ? "bg-gradient-to-r from-cyan-50 to-blue-50 text-cyan-700 border border-cyan-200"
+            : aiCurrentStageIdx >= 0
+            ? "bg-gradient-to-r from-cyan-50 to-blue-50 text-cyan-700 border border-cyan-200"
+            : "bg-slate-50 text-slate-600 border border-slate-200"
+        }`}>
+          {aiCurrentStageIdx < 0
+            ? "Your article hasn't been crawled by AI bots yet. This usually happens within days of publishing."
+            : aiCurrentStageIdx === AI_STAGES.length - 1
+            ? "Your content is an authority source for AI search — excellent!"
+            : `Currently: ${AI_STAGES[aiCurrentStageIdx].label} — ${AI_STAGES[aiCurrentStageIdx].desc}. Next: ${AI_STAGES[aiCurrentStageIdx + 1].label} (~${getProjectedDate(publishDate, AI_STAGES[aiCurrentStageIdx + 1].weekStart)})`
+          }
+        </div>
       </div>
     </div>
   )
