@@ -95,16 +95,26 @@ function sortPosts(posts: ScheduledPost[]): ScheduledPost[] {
 // ── Ranking Progress Tracker ──────────────────────────────────────────────────
 
 const RANKING_STAGES = [
-  { label: "Google Indexing", weekStart: 1, weekEnd: 2 },
-  { label: "Page 3-5", weekStart: 3, weekEnd: 4 },
-  { label: "Page 2", weekStart: 5, weekEnd: 8 },
-  { label: "Top 10", weekStart: 9, weekEnd: 12 },
-  { label: "Top 5", weekStart: 13, weekEnd: 16 },
-  { label: "Top 3", weekStart: 17, weekEnd: null },
+  { label: "Indexing", icon: "🔍", weekStart: 1, weekEnd: 2, desc: "Google discovers & indexes your article" },
+  { label: "Page 3-5", icon: "📄", weekStart: 3, weekEnd: 4, desc: "First rankings appear, building authority" },
+  { label: "Page 2", icon: "📈", weekStart: 5, weekEnd: 8, desc: "Growing visibility, more backlinks" },
+  { label: "Top 10", icon: "⭐", weekStart: 9, weekEnd: 12, desc: "Competitive zone — real organic traffic" },
+  { label: "Top 5", icon: "🏆", weekStart: 13, weekEnd: 16, desc: "High authority, significant traffic" },
+  { label: "Top 3", icon: "🥇", weekStart: 17, weekEnd: null, desc: "Goal achieved! Maximum SEO impact" },
 ]
 
 function getWeeksSince(dateStr: string): number {
   return Math.max(0, Math.floor((Date.now() - new Date(dateStr).getTime()) / (1000 * 60 * 60 * 24 * 7)))
+}
+
+function getDaysSince(dateStr: string): number {
+  return Math.max(0, Math.floor((Date.now() - new Date(dateStr).getTime()) / (1000 * 60 * 60 * 24)))
+}
+
+function getProjectedDate(publishDate: string, weekStart: number): string {
+  const d = new Date(publishDate)
+  d.setDate(d.getDate() + weekStart * 7)
+  return d.toLocaleDateString("en-US", { month: "short", day: "numeric" })
 }
 
 function getCurrentStageIndex(weeks: number): number {
@@ -115,58 +125,119 @@ function getCurrentStageIndex(weeks: number): number {
 }
 
 function RankingProgressTracker({ posts }: { posts: ScheduledPost[] }) {
+  const [hoveredIdx, setHoveredIdx] = useState<number | null>(null)
+
   const latestPublished = posts
     .filter(p => p.status === "published")
     .sort((a, b) => new Date(b.publishedAt ?? b.scheduledDate).getTime() - new Date(a.publishedAt ?? a.scheduledDate).getTime())[0]
 
   if (!latestPublished) return null
 
-  const weeks = getWeeksSince(latestPublished.publishedAt ?? latestPublished.scheduledDate)
+  const publishDate = latestPublished.publishedAt ?? latestPublished.scheduledDate
+  const weeks = getWeeksSince(publishDate)
+  const days = getDaysSince(publishDate)
   const currentStageIdx = getCurrentStageIndex(weeks)
+  const progressPct = currentStageIdx < 0 ? 0 : (currentStageIdx / (RANKING_STAGES.length - 1)) * 100
+  const nextStage = currentStageIdx < RANKING_STAGES.length - 1 ? RANKING_STAGES[currentStageIdx + 1] : null
+  const daysToNext = nextStage ? Math.max(0, nextStage.weekStart * 7 - days) : 0
 
   return (
-    <div className="mb-6 bg-white border border-black/10 rounded-2xl p-6">
+    <div className="mb-6 bg-white border border-black/10 rounded-2xl p-6 overflow-hidden">
+      {/* Header */}
       <div className="flex items-center justify-between mb-1">
         <h2 className="text-[#1b1916] font-semibold text-base flex items-center gap-2">
-          <span>📈</span> Expected Ranking Progress
+          <span>📈</span> SEO Ranking Forecast
         </h2>
-        <span className="text-[#1b1916] text-xs">Week {weeks > 0 ? weeks : "< 1"} since publish</span>
+        <div className="flex items-center gap-3">
+          <span className="text-xs text-slate-500">
+            {weeks > 0 ? `Week ${weeks} since publish` : `${days} day${days !== 1 ? "s" : ""} since publish`}
+          </span>
+          <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
+            currentStageIdx >= 5 ? "bg-green-100 text-green-700" :
+            currentStageIdx >= 0 ? "bg-violet-100 text-violet-700" :
+            "bg-slate-100 text-slate-600"
+          }`}>
+            {currentStageIdx < 0 ? "Just Published" : RANKING_STAGES[currentStageIdx].icon + " " + RANKING_STAGES[currentStageIdx].label}
+          </span>
+        </div>
       </div>
-      <p className="text-[#1b1916] text-xs mb-5 truncate">{latestPublished.keyword}</p>
+      <p className="text-slate-500 text-xs mb-6 truncate">{latestPublished.keyword}</p>
 
-      <div className="relative">
-        <div className="absolute top-4 left-4 right-4 h-0.5 bg-slate-200" />
-        {currentStageIdx >= 0 && (
-          <div
-            className="absolute top-4 left-4 h-0.5 bg-gradient-to-r from-violet-500 to-pink-500 transition-all duration-700"
-            style={{ width: `calc(${(currentStageIdx / (RANKING_STAGES.length - 1)) * 100}% - 0px)`, maxWidth: "calc(100% - 2rem)" }}
-          />
-        )}
+      {/* Timeline */}
+      <div className="relative pb-2">
+        {/* Background track */}
+        <div className="absolute top-5 left-[8%] right-[8%] h-1 bg-slate-100 rounded-full" />
+        {/* Animated progress fill */}
+        <div
+          className="absolute top-5 left-[8%] h-1 rounded-full transition-all duration-1000 ease-out"
+          style={{
+            width: `calc(${progressPct}% * 0.84)`,
+            background: "linear-gradient(90deg, #7c3aed, #a855f7, #ec4899)",
+            boxShadow: progressPct > 0 ? "0 0 8px rgba(124,58,237,0.4)" : "none",
+          }}
+        />
+
         <div className="relative flex justify-between">
           {RANKING_STAGES.map((stage, idx) => {
             const isCompleted = currentStageIdx > idx
             const isCurrent = currentStageIdx === idx
+            const isFuture = currentStageIdx < idx
+            const isHovered = hoveredIdx === idx
+
             return (
-              <div key={stage.label} className="flex flex-col items-center gap-2" style={{ width: `${100 / RANKING_STAGES.length}%` }}>
-                <div className={`relative w-8 h-8 rounded-full border-2 flex items-center justify-center z-10 transition-all ${
-                  isCompleted ? "bg-violet-600 border-violet-600" : isCurrent ? "bg-white border-violet-500 animate-pulse" : "bg-white border-slate-200"
-                }`}>
-                  {isCompleted ? (
-                    <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-                    </svg>
-                  ) : isCurrent ? (
-                    <div className="w-2.5 h-2.5 rounded-full bg-violet-500" />
-                  ) : (
-                    <div className="w-2 h-2 rounded-full bg-slate-200" />
+              <div
+                key={stage.label}
+                className="flex flex-col items-center gap-2 cursor-default"
+                style={{ width: `${100 / RANKING_STAGES.length}%` }}
+                onMouseEnter={() => setHoveredIdx(idx)}
+                onMouseLeave={() => setHoveredIdx(null)}
+              >
+                {/* Tooltip */}
+                {isHovered && (
+                  <div className="absolute -top-14 z-20 bg-[#1b1916] text-white text-xs rounded-xl px-3 py-2 whitespace-nowrap shadow-lg pointer-events-none"
+                    style={{ left: `calc(${(idx / (RANKING_STAGES.length - 1)) * 84 + 8}% - 60px)` }}
+                  >
+                    <p className="font-semibold">{stage.icon} {stage.label}</p>
+                    <p className="text-white/70 mt-0.5">{stage.desc}</p>
+                    <p className="text-violet-300 mt-0.5">~{getProjectedDate(publishDate, stage.weekStart)}</p>
+                  </div>
+                )}
+
+                {/* Dot */}
+                <div className="relative">
+                  {isCurrent && (
+                    <div className="absolute inset-0 rounded-full bg-violet-400/30 animate-ping scale-150" />
                   )}
+                  <div className={`relative w-10 h-10 rounded-full border-2 flex items-center justify-center z-10 transition-all duration-300 ${
+                    isCompleted
+                      ? "bg-gradient-to-br from-violet-600 to-pink-500 border-violet-600 shadow-md shadow-violet-200"
+                      : isCurrent
+                      ? "bg-white border-violet-500 shadow-lg shadow-violet-100 scale-110"
+                      : "bg-white border-slate-200 hover:border-violet-300 hover:scale-105"
+                  }`}>
+                    {isCompleted ? (
+                      <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                      </svg>
+                    ) : isCurrent ? (
+                      <span className="text-base">{stage.icon}</span>
+                    ) : (
+                      <span className={`text-sm ${isFuture ? "opacity-30" : ""}`}>{stage.icon}</span>
+                    )}
+                  </div>
                 </div>
+
+                {/* Label */}
                 <div className="text-center px-0.5">
-                  <p className={`text-xs font-semibold leading-tight ${isCompleted || isCurrent ? "text-violet-700" : "text-slate-700"}`}>
+                  <p className={`text-xs font-semibold leading-tight transition-colors ${
+                    isCompleted ? "text-violet-700" : isCurrent ? "text-violet-600" : "text-slate-400"
+                  }`}>
                     {stage.label}
                   </p>
-                  <p className="text-xs leading-tight mt-0.5 hidden sm:block text-slate-500">
-                    Wk {stage.weekEnd ? `${stage.weekStart}-${stage.weekEnd}` : `${stage.weekStart}+`}
+                  <p className={`text-xs leading-tight mt-0.5 hidden sm:block ${
+                    isCompleted || isCurrent ? "text-slate-500" : "text-slate-300"
+                  }`}>
+                    ~{getProjectedDate(publishDate, stage.weekStart)}
                   </p>
                 </div>
               </div>
@@ -175,17 +246,40 @@ function RankingProgressTracker({ posts }: { posts: ScheduledPost[] }) {
         </div>
       </div>
 
-      <div className={`mt-5 p-3 rounded-xl text-sm ${
-        currentStageIdx >= 5 ? "bg-green-50 text-green-700 border border-green-200"
-        : currentStageIdx >= 0 ? "bg-violet-50 text-violet-700 border border-violet-200"
-        : "bg-slate-50 text-slate-600 border border-slate-200"
+      {/* Status callout */}
+      <div className={`mt-6 p-4 rounded-xl flex items-center gap-3 ${
+        currentStageIdx >= 5 ? "bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200"
+        : currentStageIdx >= 0 ? "bg-gradient-to-r from-violet-50 to-pink-50 border border-violet-200"
+        : "bg-slate-50 border border-slate-200"
       }`}>
-        {currentStageIdx < 0
-          ? "Your article was just published. Google will start indexing it within days."
-          : currentStageIdx === RANKING_STAGES.length - 1
-          ? "Your article is in the Top 3 zone — excellent authority achieved!"
-          : `Currently in: ${RANKING_STAGES[currentStageIdx].label}. Next milestone: ${RANKING_STAGES[currentStageIdx + 1].label} (Week ${RANKING_STAGES[currentStageIdx + 1].weekStart}).`
-        }
+        <span className="text-2xl flex-shrink-0">
+          {currentStageIdx < 0 ? "🚀" : currentStageIdx === RANKING_STAGES.length - 1 ? "🥇" : RANKING_STAGES[currentStageIdx].icon}
+        </span>
+        <div>
+          {currentStageIdx < 0 ? (
+            <>
+              <p className="text-sm font-semibold text-[#1b1916]">Article submitted to Google</p>
+              <p className="text-xs text-slate-500 mt-0.5">Indexing expected within 3–7 days. First milestone: <strong>~{getProjectedDate(publishDate, 1)}</strong></p>
+            </>
+          ) : currentStageIdx === RANKING_STAGES.length - 1 ? (
+            <>
+              <p className="text-sm font-semibold text-green-700">Top 3 achieved — excellent! 🎉</p>
+              <p className="text-xs text-green-600 mt-0.5">Maximum SEO impact reached. Keep publishing to maintain authority.</p>
+            </>
+          ) : (
+            <>
+              <p className="text-sm font-semibold text-[#1b1916]">
+                Currently: <span className="text-violet-700">{RANKING_STAGES[currentStageIdx].label}</span>
+                {nextStage && <span className="text-slate-500 font-normal"> → Next: <strong>{nextStage.label}</strong></span>}
+              </p>
+              <p className="text-xs text-slate-500 mt-0.5">
+                {nextStage && daysToNext > 0
+                  ? `Expected ~${getProjectedDate(publishDate, nextStage.weekStart)} (in ${daysToNext} days)`
+                  : "Next milestone coming very soon!"}
+              </p>
+            </>
+          )}
+        </div>
       </div>
     </div>
   )
