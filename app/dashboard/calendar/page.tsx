@@ -25,6 +25,7 @@ interface ScheduledPost {
   status: PostStatus
   taskId?: string
   blogPostSlug?: string
+  publishedAt?: string | null
   articleData?: {
     keyword?: string
     title?: string
@@ -89,6 +90,105 @@ const LANG_LABELS: Record<Language, string> = {
 
 function sortPosts(posts: ScheduledPost[]): ScheduledPost[] {
   return [...posts].sort((a, b) => a.scheduledDate.localeCompare(b.scheduledDate))
+}
+
+// ── Ranking Progress Tracker ──────────────────────────────────────────────────
+
+const RANKING_STAGES = [
+  { label: "Google Indexing", weekStart: 1, weekEnd: 2 },
+  { label: "Page 3-5", weekStart: 3, weekEnd: 4 },
+  { label: "Page 2", weekStart: 5, weekEnd: 8 },
+  { label: "Top 10", weekStart: 9, weekEnd: 12 },
+  { label: "Top 5", weekStart: 13, weekEnd: 16 },
+  { label: "Top 3", weekStart: 17, weekEnd: null },
+]
+
+function getWeeksSince(dateStr: string): number {
+  return Math.max(0, Math.floor((Date.now() - new Date(dateStr).getTime()) / (1000 * 60 * 60 * 24 * 7)))
+}
+
+function getCurrentStageIndex(weeks: number): number {
+  for (let i = RANKING_STAGES.length - 1; i >= 0; i--) {
+    if (weeks >= RANKING_STAGES[i].weekStart) return i
+  }
+  return -1
+}
+
+function RankingProgressTracker({ posts }: { posts: ScheduledPost[] }) {
+  const latestPublished = posts
+    .filter(p => p.status === "published" && p.publishedAt)
+    .sort((a, b) => new Date(b.publishedAt!).getTime() - new Date(a.publishedAt!).getTime())[0]
+
+  if (!latestPublished) return null
+
+  const weeks = getWeeksSince(latestPublished.publishedAt!)
+  const currentStageIdx = getCurrentStageIndex(weeks)
+
+  return (
+    <div className="mb-6 bg-white border border-black/10 rounded-2xl p-6">
+      <div className="flex items-center justify-between mb-1">
+        <h2 className="text-[#1b1916] font-semibold text-base flex items-center gap-2">
+          <span>📈</span> Expected Ranking Progress
+        </h2>
+        <span className="text-[#1b1916] text-xs">Week {weeks > 0 ? weeks : "< 1"} since publish</span>
+      </div>
+      <p className="text-[#1b1916] text-xs mb-5 truncate">{latestPublished.keyword}</p>
+
+      <div className="relative">
+        <div className="absolute top-4 left-4 right-4 h-0.5 bg-slate-200" />
+        {currentStageIdx >= 0 && (
+          <div
+            className="absolute top-4 left-4 h-0.5 bg-gradient-to-r from-violet-500 to-pink-500 transition-all duration-700"
+            style={{ width: `calc(${(currentStageIdx / (RANKING_STAGES.length - 1)) * 100}% - 0px)`, maxWidth: "calc(100% - 2rem)" }}
+          />
+        )}
+        <div className="relative flex justify-between">
+          {RANKING_STAGES.map((stage, idx) => {
+            const isCompleted = currentStageIdx > idx
+            const isCurrent = currentStageIdx === idx
+            return (
+              <div key={stage.label} className="flex flex-col items-center gap-2" style={{ width: `${100 / RANKING_STAGES.length}%` }}>
+                <div className={`relative w-8 h-8 rounded-full border-2 flex items-center justify-center z-10 transition-all ${
+                  isCompleted ? "bg-violet-600 border-violet-600" : isCurrent ? "bg-white border-violet-500 animate-pulse" : "bg-white border-slate-200"
+                }`}>
+                  {isCompleted ? (
+                    <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                    </svg>
+                  ) : isCurrent ? (
+                    <div className="w-2.5 h-2.5 rounded-full bg-violet-500" />
+                  ) : (
+                    <div className="w-2 h-2 rounded-full bg-slate-200" />
+                  )}
+                </div>
+                <div className="text-center px-0.5">
+                  <p className={`text-xs font-semibold leading-tight ${isCompleted || isCurrent ? "text-violet-700" : "text-slate-700"}`}>
+                    {stage.label}
+                  </p>
+                  <p className="text-xs leading-tight mt-0.5 hidden sm:block text-slate-500">
+                    Wk {stage.weekEnd ? `${stage.weekStart}-${stage.weekEnd}` : `${stage.weekStart}+`}
+                  </p>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      </div>
+
+      <div className={`mt-5 p-3 rounded-xl text-sm ${
+        currentStageIdx >= 5 ? "bg-green-50 text-green-700 border border-green-200"
+        : currentStageIdx >= 0 ? "bg-violet-50 text-violet-700 border border-violet-200"
+        : "bg-slate-50 text-slate-600 border border-slate-200"
+      }`}>
+        {currentStageIdx < 0
+          ? "Your article was just published. Google will start indexing it within days."
+          : currentStageIdx === RANKING_STAGES.length - 1
+          ? "Your article is in the Top 3 zone — excellent authority achieved!"
+          : `Currently in: ${RANKING_STAGES[currentStageIdx].label}. Next milestone: ${RANKING_STAGES[currentStageIdx + 1].label} (Week ${RANKING_STAGES[currentStageIdx + 1].weekStart}).`
+        }
+      </div>
+    </div>
+  )
 }
 
 export default function CalendarPage() {
@@ -612,6 +712,9 @@ export default function CalendarPage() {
             </CardContent>
           </Card>
         )}
+
+        {/* Ranking Progress Tracker */}
+        {!loading && <RankingProgressTracker posts={posts} />}
 
         {/* Loading */}
         {loading && (
