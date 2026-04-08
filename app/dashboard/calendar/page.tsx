@@ -222,6 +222,9 @@ export default function CalendarPage() {
   const [scheduledDate, setScheduledDate] = useState(getTodayString())
   const [scheduling, setScheduling] = useState(false)
 
+  // Lazy-generated images for scheduled posts: postId -> dataUrl
+  const [scheduledImages, setScheduledImages] = useState<Record<string, string>>({})
+
   // Publishing state: postId -> boolean
   const [publishingIds, setPublishingIds] = useState<Set<string>>(new Set())
   const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set())
@@ -264,6 +267,26 @@ export default function CalendarPage() {
   useEffect(() => {
     loadPosts()
   }, [loadPosts])
+
+  // Lazy-generate cover images for scheduled posts (first 5 without images)
+  useEffect(() => {
+    const toGenerate = posts
+      .filter(p => p.status === "scheduled" && !p.blogPostSlug && !scheduledImages[p.id])
+      .slice(0, 5)
+    toGenerate.forEach(post => {
+      fetch("/api/images/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: post.keyword, keywords: [] }),
+      })
+        .then(r => r.json())
+        .then((d: { url?: string }) => {
+          if (d.url) setScheduledImages(prev => ({ ...prev, [post.id]: d.url! }))
+        })
+        .catch(() => {})
+    })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [posts.length])
 
   // Fetch default site URL for auto-publish card
   useEffect(() => {
@@ -794,8 +817,16 @@ export default function CalendarPage() {
                                   className="w-14 h-10 object-cover rounded-lg flex-shrink-0"
                                   alt=""
                                 />
+                              ) : scheduledImages[post.id] ? (
+                                <img
+                                  src={scheduledImages[post.id]}
+                                  className="w-14 h-10 object-cover rounded-lg flex-shrink-0 opacity-70"
+                                  alt=""
+                                />
                               ) : (
-                                <div className="w-14 h-10 bg-slate-100 rounded-lg flex-shrink-0" />
+                                <div className="w-14 h-10 bg-gradient-to-br from-violet-50 to-slate-100 rounded-lg flex-shrink-0 flex items-center justify-center">
+                                  <span className="text-violet-300 text-xs animate-pulse">✦</span>
+                                </div>
                               )}
                               <span className="text-sm text-[#1b1916] font-medium">{post.keyword}</span>
                             </div>

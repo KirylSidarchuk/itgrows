@@ -103,7 +103,7 @@ export default function TasksPage() {
 
         {/* Filters */}
         <div className="flex gap-2 mb-6">
-          {["all", "pending", "in_progress", "done"].map((f) => (
+          {(["all", "in_progress", "done"] as const).map((f) => (
             <button
               key={f}
               onClick={() => setFilter(f)}
@@ -113,7 +113,7 @@ export default function TasksPage() {
                   : "bg-white border border-black/10 text-slate-600 hover:text-[#1b1916] hover:bg-[#ebe9e5]"
               }`}
             >
-              {f === "all" ? "All" : f === "in_progress" ? "In Progress" : f.charAt(0).toUpperCase() + f.slice(1)}
+              {f === "all" ? "Total Tasks" : f === "in_progress" ? "In Progress" : "Completed"}
               <span className="ml-2 text-xs opacity-70">
                 {f === "all" ? tasks.length : tasks.filter((t) => t.status === f).length}
               </span>
