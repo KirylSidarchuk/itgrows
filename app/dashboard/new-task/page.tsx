@@ -327,7 +327,7 @@ function GenericTaskForm({ type, onBack }: { type: TaskType; onBack: () => void 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function NewTaskPage() {
-  const [selectedChannel, setSelectedChannel] = useState<string>("seo_article")
+  const router = useRouter()
 
   return (
     <div className="p-8">
@@ -340,7 +340,6 @@ export default function NewTaskPage() {
         {/* Channel selector */}
         <div className="grid grid-cols-3 sm:grid-cols-3 gap-3 mb-8">
           {channelCards.map((card) => {
-            const isSelected = selectedChannel === card.value
             if (!card.active) {
               return (
                 <div
@@ -360,25 +359,16 @@ export default function NewTaskPage() {
               <button
                 key={card.value}
                 type="button"
-                onClick={() => setSelectedChannel(card.value)}
-                className={`relative p-5 rounded-2xl border text-left transition-all ${
-                  isSelected
-                    ? "border-violet-400 bg-violet-50 shadow-sm"
-                    : "border-black/10 bg-white hover:border-violet-300 hover:shadow-sm"
-                }`}
+                onClick={() => router.push("/dashboard/calendar")}
+                className="relative p-5 rounded-2xl border text-left transition-all border-violet-400 bg-violet-50 shadow-sm hover:border-violet-500 hover:shadow-md"
               >
                 <div className="text-2xl mb-2">{card.icon}</div>
-                <div className={`text-sm font-medium ${isSelected ? "text-violet-700" : "text-[#1b1916]"}`}>
-                  {card.label}
-                </div>
+                <div className="text-sm font-medium text-violet-700">{card.label}</div>
                 <div className="text-slate-500 text-xs mt-1 leading-snug">{card.desc}</div>
               </button>
             )
           })}
         </div>
-
-        {/* SEO Article flow shown when SEO Article is selected */}
-        {selectedChannel === "seo_article" && <SeoArticleFlow />}
       </div>
     </div>
   )

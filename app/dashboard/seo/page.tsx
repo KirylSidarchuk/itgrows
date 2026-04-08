@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import SeoHubTabs from "@/components/dashboard/SeoHubTabs"
 
 interface ScheduledPost {
   id: string
@@ -47,8 +46,6 @@ export default function SeoAutopilotPage() {
   return (
     <div className="p-8">
       <div className="max-w-5xl mx-auto">
-        <SeoHubTabs />
-
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-1 bg-gradient-to-r from-violet-600 to-pink-500 bg-clip-text text-transparent">
             SEO Autopilot
