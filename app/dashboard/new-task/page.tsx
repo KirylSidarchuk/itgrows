@@ -48,15 +48,14 @@ export default function NewTaskPage() {
               return (
                 <div
                   key={card.value}
-                  className="relative p-6 rounded-2xl border border-black/10 bg-white/60 cursor-not-allowed overflow-hidden"
+                  className="relative p-6 rounded-2xl border border-black/10 bg-white/60 cursor-not-allowed opacity-70"
                 >
-                  <div className="absolute inset-0 bg-white/50 backdrop-blur-[2px] rounded-2xl z-10" />
-                  <span className="absolute top-3 right-3 text-xs font-bold bg-violet-100 text-violet-500 rounded-full px-2.5 py-0.5 z-20">
+                  <span className="absolute top-3 right-3 text-xs font-bold bg-violet-100 text-violet-500 rounded-full px-2.5 py-0.5">
                     Soon
                   </span>
-                  <div className="mb-3 opacity-60">{card.svgLogo ?? <span className="text-3xl">{card.icon}</span>}</div>
-                  <div className="text-[#1b1916] text-base font-semibold mb-1 opacity-60">{card.label}</div>
-                  <div className="text-slate-400 text-sm leading-snug opacity-60">{card.desc}</div>
+                  <div className="mb-3">{card.svgLogo ?? <span className="text-3xl">{card.icon}</span>}</div>
+                  <div className="text-[#1b1916] text-base font-semibold mb-1">{card.label}</div>
+                  <div className="text-slate-400 text-sm leading-snug">{card.desc}</div>
                 </div>
               )
             }
