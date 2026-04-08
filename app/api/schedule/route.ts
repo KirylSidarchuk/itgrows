@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server"
-import { auth } from "@/auth"
 
 export interface ScheduledPost {
   id: string
@@ -56,77 +55,33 @@ async function saveScheduledPosts(posts: ScheduledPost[]): Promise<boolean> {
   }
 }
 
-// GET — return all scheduled posts
+// GET — DEPRECATED: this legacy blob-based endpoint has no per-user data isolation.
+// All scheduling is now handled by /api/schedule/posts (DB-backed, userId-scoped).
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function GET() {
-  const session = await auth()
-  if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-
-  const posts = await getScheduledPosts()
-  return NextResponse.json({ posts })
+  return NextResponse.json(
+    { error: "This endpoint is deprecated. Use /api/schedule/posts instead." },
+    { status: 410 }
+  )
 }
 
-// POST — add a new scheduled post
-export async function POST(req: NextRequest) {
-  const session = await auth()
-  if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-
-  try {
-    const body = (await req.json()) as Omit<ScheduledPost, "id">
-
-    if (!body.keyword || !body.scheduledDate) {
-      return NextResponse.json({ error: "keyword and scheduledDate are required" }, { status: 400 })
-    }
-
-    const post: ScheduledPost = {
-      id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-      keyword: body.keyword,
-      language: body.language || "en",
-      tone: body.tone || "Professional",
-      scheduledDate: body.scheduledDate,
-      status: "scheduled",
-    }
-
-    const existing = await getScheduledPosts()
-    existing.push(post)
-    await saveScheduledPosts(existing)
-
-    return NextResponse.json({ post })
-  } catch (err) {
-    return NextResponse.json({ error: String(err) }, { status: 500 })
-  }
+// POST — DEPRECATED: this legacy blob-based endpoint has no per-user data isolation.
+// All scheduling is now handled by /api/schedule/posts (DB-backed, userId-scoped).
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export async function POST(_req: NextRequest) {
+  return NextResponse.json(
+    { error: "This endpoint is deprecated. Use /api/schedule/posts instead." },
+    { status: 410 }
+  )
 }
 
-// PATCH — update status (and optionally taskId/blogPostSlug)
-export async function PATCH(req: NextRequest) {
-  const session = await auth()
-  if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-
-  try {
-    const body = (await req.json()) as {
-      id: string
-      status?: ScheduledPost["status"]
-      taskId?: string
-      blogPostSlug?: string
-    }
-
-    if (!body.id) {
-      return NextResponse.json({ error: "id is required" }, { status: 400 })
-    }
-
-    const posts = await getScheduledPosts()
-    const idx = posts.findIndex((p) => p.id === body.id)
-    if (idx === -1) {
-      return NextResponse.json({ error: "Post not found" }, { status: 404 })
-    }
-
-    if (body.status) posts[idx].status = body.status
-    if (body.taskId) posts[idx].taskId = body.taskId
-    if (body.blogPostSlug) posts[idx].blogPostSlug = body.blogPostSlug
-
-    await saveScheduledPosts(posts)
-
-    return NextResponse.json({ post: posts[idx] })
-  } catch (err) {
-    return NextResponse.json({ error: String(err) }, { status: 500 })
-  }
+// PATCH — DEPRECATED: this legacy blob-based endpoint has no per-user data isolation.
+// All scheduling is now handled by /api/schedule/posts (DB-backed, userId-scoped).
+// This endpoint is intentionally disabled to prevent cross-user data modification.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export async function PATCH(_req: NextRequest) {
+  return NextResponse.json(
+    { error: "This endpoint is deprecated. Use /api/schedule/posts instead." },
+    { status: 410 }
+  )
 }
