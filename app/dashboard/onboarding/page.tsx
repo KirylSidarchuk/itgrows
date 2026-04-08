@@ -51,6 +51,7 @@ export default function OnboardingPage() {
   const [topicImages, setTopicImages] = useState<Record<number, string>>({})
   const [integrationMode, setIntegrationMode] = useState<'simple' | 'advanced' | null>(null)
   const [connectSubStep, setConnectSubStep] = useState<'experience' | 'setup'>('experience')
+  const [genTimer, setGenTimer] = useState(0)
 
   const placeholderToken = `onb_${Math.random().toString(36).slice(2, 10)}`
 
@@ -99,6 +100,14 @@ export default function OnboardingPage() {
     if (!selectedTopic) return
     setLoading(true)
     setError("")
+    setGenTimer(30)
+    const timerRef = { id: 0 as ReturnType<typeof setInterval> }
+    timerRef.id = setInterval(() => {
+      setGenTimer((t) => {
+        if (t <= 1) { clearInterval(timerRef.id); return 0 }
+        return t - 1
+      })
+    }, 1000)
     try {
       const res = await fetch("/api/seo/generate", {
         method: "POST",
@@ -115,8 +124,10 @@ export default function OnboardingPage() {
         keywords: data.keywords ?? [],
         seoScore: data.seoScore ?? fallbackScore,
       })
+      clearInterval(timerRef.id)
       setStep(3)
     } catch (e) {
+      clearInterval(timerRef.id)
       setError(e instanceof Error ? e.message : "Something went wrong")
     } finally {
       setLoading(false)
@@ -264,7 +275,8 @@ export default function OnboardingPage() {
             >
               {loading ? (
                 <>
-                  <span className="animate-spin">⟳</span> Generating article…
+                  <span className="animate-spin">⟳</span>{" "}
+                  {genTimer === 0 ? "Almost ready…" : `Generating article… ~${genTimer}s`}
                 </>
               ) : (
                 "Generate article →"
