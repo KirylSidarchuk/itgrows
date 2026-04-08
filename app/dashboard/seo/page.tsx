@@ -36,11 +36,21 @@ export default function SeoAutopilotPage() {
   const upcoming = scheduledPosts.filter(p => p.status === "scheduled").slice(0, 3)
   const recent = blogPosts.slice(0, 3)
 
+  const XLogoSvg = (
+    <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+      <rect width="32" height="32" rx="6" fill="#000"/>
+      <path d="M18.24 14.56L24.48 7h-1.48l-5.4 6.28L13.2 7H8l6.55 9.54L8 25h1.48l5.73-6.66L19.8 25H25l-6.76-10.44zm-2.03 2.36l-.66-.95-5.3-7.58H12.5l4.27 6.1.66.95 5.54 7.92h-2.26l-4.5-6.44z" fill="white"/>
+    </svg>
+  )
+
   const COMING_SOON = [
-    { icon: "🎯", label: "Google Ads", desc: "Auto-generate ads from your published articles" },
-    { icon: "💼", label: "LinkedIn", desc: "Schedule LinkedIn posts from your SEO content" },
-    { icon: "📸", label: "Instagram", desc: "Turn articles into Instagram-ready visuals" },
-    { icon: "𝕏", label: "Twitter / X", desc: "Auto-post threads from your blog content" },
+    // eslint-disable-next-line @next/next/no-img-element
+    { logo: <img src="/logos/google-ads.jpg" width={32} height={32} className="rounded-lg object-contain" alt="Google Ads" />, label: "Google Ads", desc: "Auto-generate ads from your published articles" },
+    // eslint-disable-next-line @next/next/no-img-element
+    { logo: <img src="/logos/linkedin.png" width={32} height={32} className="rounded-lg object-contain" alt="LinkedIn" />, label: "LinkedIn", desc: "Schedule LinkedIn posts from your SEO content" },
+    // eslint-disable-next-line @next/next/no-img-element
+    { logo: <img src="/logos/instagram.jpg" width={32} height={32} className="rounded-xl" alt="Instagram" />, label: "Instagram", desc: "Turn articles into Instagram-ready visuals" },
+    { logo: XLogoSvg, label: "Twitter / X", desc: "Auto-post threads from your blog content" },
   ]
 
   return (
@@ -152,10 +162,10 @@ export default function SeoAutopilotPage() {
         </div>
 
         {/* Coming Soon channels */}
-        <div>
-          <div className="flex items-center gap-3 mb-5">
+        <div className="mt-12">
+          <div className="flex items-center gap-3 mb-6">
             <div className="h-px flex-1 bg-gradient-to-r from-violet-200 to-transparent" />
-            <span className="text-sm font-bold tracking-widest uppercase bg-gradient-to-r from-violet-600 to-pink-500 bg-clip-text text-transparent">
+            <span className="text-xl font-bold tracking-widest uppercase bg-gradient-to-r from-violet-600 to-pink-500 bg-clip-text text-transparent">
               More Channels — Coming Soon
             </span>
             <div className="h-px flex-1 bg-gradient-to-l from-violet-200 to-transparent" />
@@ -164,22 +174,14 @@ export default function SeoAutopilotPage() {
             {COMING_SOON.map(item => (
               <div
                 key={item.label}
-                className="group relative rounded-2xl p-5 overflow-hidden cursor-default"
-                style={{
-                  background: "rgba(255,255,255,0.65)",
-                  backdropFilter: "blur(14px)",
-                  WebkitBackdropFilter: "blur(14px)",
-                  border: "1px solid rgba(139,92,246,0.18)",
-                  boxShadow: "0 2px 16px rgba(109,40,217,0.07)",
-                }}
+                className="group relative rounded-2xl p-5 overflow-hidden cursor-default opacity-60 border border-black/10 bg-white/60"
               >
-                <div className="absolute top-3 right-3">
-                  <span className="text-[10px] font-bold tracking-widest uppercase px-2 py-0.5 rounded-full"
-                    style={{ background: "linear-gradient(135deg,#7c3aed,#ec4899)", color: "white" }}>
-                    Soon
+                <div className="absolute inset-0 bg-white/70 backdrop-blur-[1px] rounded-2xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
+                  <span className="text-sm font-semibold bg-gradient-to-r from-violet-600 to-pink-500 bg-clip-text text-transparent">
+                    Coming Soon
                   </span>
                 </div>
-                <div className="text-2xl mb-3">{item.icon}</div>
+                <div className="mb-3">{item.logo}</div>
                 <p className="font-semibold text-[#1b1916] text-sm mb-1">{item.label}</p>
                 <p className="text-slate-500 text-xs leading-relaxed">{item.desc}</p>
               </div>
