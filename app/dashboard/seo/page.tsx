@@ -153,16 +153,33 @@ export default function SeoAutopilotPage() {
 
         {/* Coming Soon channels */}
         <div>
-          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4">More Channels — Coming Soon</p>
+          <div className="flex items-center gap-3 mb-5">
+            <div className="h-px flex-1 bg-gradient-to-r from-violet-200 to-transparent" />
+            <span className="text-sm font-bold tracking-widest uppercase bg-gradient-to-r from-violet-600 to-pink-500 bg-clip-text text-transparent">
+              More Channels — Coming Soon
+            </span>
+            <div className="h-px flex-1 bg-gradient-to-l from-violet-200 to-transparent" />
+          </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {COMING_SOON.map(item => (
-              <div key={item.label} className="relative dashboard-glass-card border-0 rounded-2xl p-5 overflow-hidden">
-                <div className="absolute inset-0 bg-white/60 backdrop-blur-[1px] flex items-center justify-center z-10 rounded-2xl">
-                  <span className="text-xs font-bold bg-violet-600 text-white rounded-full px-3 py-1 shadow-sm tracking-wide uppercase">
-                    Coming Soon
+              <div
+                key={item.label}
+                className="group relative rounded-2xl p-5 overflow-hidden cursor-default"
+                style={{
+                  background: "rgba(255,255,255,0.65)",
+                  backdropFilter: "blur(14px)",
+                  WebkitBackdropFilter: "blur(14px)",
+                  border: "1px solid rgba(139,92,246,0.18)",
+                  boxShadow: "0 2px 16px rgba(109,40,217,0.07)",
+                }}
+              >
+                <div className="absolute top-3 right-3">
+                  <span className="text-[10px] font-bold tracking-widest uppercase px-2 py-0.5 rounded-full"
+                    style={{ background: "linear-gradient(135deg,#7c3aed,#ec4899)", color: "white" }}>
+                    Soon
                   </span>
                 </div>
-                <div className="text-2xl mb-2">{item.icon}</div>
+                <div className="text-2xl mb-3">{item.icon}</div>
                 <p className="font-semibold text-[#1b1916] text-sm mb-1">{item.label}</p>
                 <p className="text-slate-500 text-xs leading-relaxed">{item.desc}</p>
               </div>
