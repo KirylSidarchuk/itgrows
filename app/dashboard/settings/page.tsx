@@ -1262,7 +1262,7 @@ export default function SettingsPage() {
     <div className="p-8">
       <div className="max-w-3xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-1 text-[#1b1916]">Settings</h1>
+          <h1 className="text-3xl font-bold mb-1 text-[#1b1916] dashboard-heading">Settings</h1>
           <p className="text-slate-600">Manage your account preferences and integrations.</p>
         </div>
 
@@ -1290,7 +1290,7 @@ export default function SettingsPage() {
             {!showWizard && (
               <Button
                 onClick={() => setShowWizard(true)}
-                className="bg-violet-600 hover:bg-violet-500 text-[#1b1916] text-sm shrink-0"
+                className="bg-violet-600 hover:bg-violet-500 text-white text-sm shrink-0"
               >
                 + Add Site
               </Button>

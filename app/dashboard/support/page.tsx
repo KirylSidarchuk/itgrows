@@ -58,7 +58,7 @@ export default function SupportPage() {
     <div className="p-8">
       <div className="max-w-4xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-1 text-[#1b1916]">Support & Feedback</h1>
+          <h1 className="text-3xl font-bold mb-1 text-[#1b1916] dashboard-heading">Support & Feedback</h1>
           <p className="text-slate-600">We&apos;re here to help you grow</p>
         </div>
 

@@ -129,6 +129,13 @@
   }
 }
 
+/* Dashboard page headings */
+.dashboard-heading {
+  font-family: var(--font-playfair), Georgia, serif;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
 /* Dashboard glass cards */
 .dashboard-glass-card {
   background: rgba(255, 255, 255, 0.72);

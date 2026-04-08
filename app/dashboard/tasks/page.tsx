@@ -91,7 +91,7 @@ export default function TasksPage() {
       <div className="max-w-5xl mx-auto">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold mb-1 text-[#1b1916]">Tasks</h1>
+            <h1 className="text-3xl font-bold mb-1 text-[#1b1916] dashboard-heading">Tasks</h1>
             <p className="text-slate-600">Manage your content automation tasks</p>
           </div>
           <Link href="/dashboard/new-task">

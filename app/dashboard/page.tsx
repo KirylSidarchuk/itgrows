@@ -80,7 +80,7 @@ export default function DashboardPage() {
     <div className="p-8">
       <div className="max-w-5xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-1 text-[#1b1916]">Good morning, {user.name} 👋</h1>
+          <h1 className="text-3xl font-bold mb-1 text-[#1b1916] dashboard-heading">Good morning, {user.name} 👋</h1>
           <p className="text-slate-600">Here&apos;s what&apos;s happening with your content automation.</p>
         </div>
 

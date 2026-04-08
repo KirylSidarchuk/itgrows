@@ -21,7 +21,7 @@ export default function NewTaskPage() {
     <div className="p-8">
       <div className="max-w-2xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-1">New Task</h1>
+          <h1 className="text-3xl font-bold mb-1 dashboard-heading">New Task</h1>
           <p className="text-slate-600">Choose what you want to create</p>
         </div>
 

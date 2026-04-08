@@ -83,7 +83,7 @@ export default function DashboardBlogPage() {
         <SeoHubTabs />
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold mb-1">Blog Articles</h1>
+            <h1 className="text-3xl font-bold mb-1 dashboard-heading">Blog Articles</h1>
             <p className="text-[#1b1916]">Manage your published articles</p>
           </div>
           <Link href="/dashboard/seo">
