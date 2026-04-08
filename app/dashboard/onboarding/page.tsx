@@ -101,10 +101,10 @@ export default function OnboardingPage() {
     setLoading(true)
     setError("")
     setGenTimer(30)
-    const timerRef = { id: 0 as ReturnType<typeof setInterval> }
+    const timerRef = { id: null as ReturnType<typeof setInterval> | null }
     timerRef.id = setInterval(() => {
       setGenTimer((t) => {
-        if (t <= 1) { clearInterval(timerRef.id); return 0 }
+        if (t <= 1) { clearInterval(timerRef.id ?? undefined); return 0 }
         return t - 1
       })
     }, 1000)
@@ -377,7 +377,7 @@ export default function OnboardingPage() {
           </div>
         )}
 
-        {/* Step 4: Connect blog via CNAME */}
+        {/* Step 4: Connect blog */}
         {step === 4 && (
           <div className="bg-white rounded-2xl p-8 shadow-sm border border-black/10">
             <button
@@ -387,83 +387,175 @@ export default function OnboardingPage() {
               ← Back
             </button>
 
-            <div className="text-center mb-8">
-              <div className="text-4xl mb-4">🔗</div>
-              <h2 className="text-2xl font-bold text-[#1b1916] mb-2">Connect your blog</h2>
-              <p className="text-slate-600 text-sm">
-                Add a simple DNS record to host your blog on our platform — no technical setup needed.
-              </p>
-            </div>
+            {/* Sub-step: do you have a blog? */}
+            {connectSubStep === 'experience' && (
+              <>
+                <div className="text-center mb-8">
+                  <div className="text-4xl mb-4">📝</div>
+                  <h2 className="text-2xl font-bold text-[#1b1916] mb-2">Where should we publish?</h2>
+                  <p className="text-slate-600 text-sm">
+                    Do you already have a blog section on your website?
+                  </p>
+                </div>
 
-            {/* DNS instruction box */}
-            <div className="bg-[#f9f8f7] rounded-xl p-5 border border-black/10 mb-6">
-              <p className="text-sm font-semibold text-[#1b1916] mb-3">Add this DNS record to your domain registrar:</p>
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="text-slate-500 text-xs uppercase tracking-wide">
-                      <th className="text-left pb-2 pr-6 font-semibold">Type</th>
-                      <th className="text-left pb-2 pr-6 font-semibold">Name</th>
-                      <th className="text-left pb-2 font-semibold">Value</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td className="pr-6 py-1 font-mono text-violet-700 font-bold text-sm">CNAME</td>
-                      <td className="pr-6 py-1 font-mono text-[#1b1916] text-sm">blog</td>
-                      <td className="py-1 font-mono text-[#1b1916] text-xs">blogs.itgrows.ai</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-              <p className="text-slate-500 text-xs mt-3">
-                You can use any subdomain (e.g. <code className="bg-violet-50 text-violet-700 px-1 rounded">blog</code>, <code className="bg-violet-50 text-violet-700 px-1 rounded">news</code>)
-              </p>
-            </div>
+                <div className="space-y-3 mb-6">
+                  <button
+                    onClick={() => { setBlogOption('existing'); setConnectSubStep('setup') }}
+                    className="w-full text-left rounded-xl border-2 border-black/10 hover:border-violet-400 bg-[#f9f8f7] hover:bg-violet-50 p-5 transition-all"
+                  >
+                    <p className="font-semibold text-[#1b1916] mb-1">Yes, I have a blog</p>
+                    <p className="text-slate-500 text-sm">I already have a blog or articles section on my site (WordPress, Webflow, custom, etc.)</p>
+                  </button>
+                  <button
+                    onClick={() => { setBlogOption('new'); setConnectSubStep('setup') }}
+                    className="w-full text-left rounded-xl border-2 border-black/10 hover:border-violet-400 bg-[#f9f8f7] hover:bg-violet-50 p-5 transition-all"
+                  >
+                    <p className="font-semibold text-[#1b1916] mb-1">No, I don't have a blog yet</p>
+                    <p className="text-slate-500 text-sm">I want ItGrows.ai to create and host my blog — just one DNS record</p>
+                  </button>
+                </div>
 
-            {/* Blog domain input */}
-            <div className="mb-6">
-              <label className="block">
-                <span className="text-sm font-medium text-[#1b1916] mb-1 block">
-                  Your blog URL (after adding DNS):
-                </span>
-                <input
-                  type="text"
-                  placeholder="e.g. blog.yoursite.com"
-                  value={blogDomain}
-                  onChange={(e) => setBlogDomain(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl border border-black/15 bg-[#f9f8f7] focus:outline-none focus:ring-2 focus:ring-violet-400 text-[#1b1916] placeholder:text-slate-400 font-mono text-sm"
-                />
-                <span className="text-slate-500 text-xs mt-1 block">Enter the subdomain you configured (e.g. blog.yoursite.com)</span>
-              </label>
-            </div>
-
-            {loadingMsg && (
-              <p className="text-violet-600 text-sm font-medium text-center mb-3 flex items-center justify-center gap-2">
-                <span className="animate-spin">⟳</span> {loadingMsg}
-              </p>
+                <button
+                  onClick={handleComplete}
+                  className="w-full py-2 text-sm text-slate-500 hover:text-slate-700 transition-colors"
+                >
+                  Skip for now →
+                </button>
+              </>
             )}
 
-            <button
-              onClick={handleComplete}
-              disabled={loading}
-              className="w-full py-3 rounded-xl bg-violet-600 hover:bg-violet-500 disabled:opacity-50 text-white font-semibold transition-colors flex items-center justify-center gap-2"
-            >
-              {loading ? (
-                <>
-                  <span className="animate-spin">⟳</span> Setting up…
-                </>
-              ) : (
-                "Done! Take me to my dashboard →"
-              )}
-            </button>
+            {/* Sub-step: setup based on choice */}
+            {connectSubStep === 'setup' && blogOption === 'new' && (
+              <>
+                <div className="text-center mb-8">
+                  <div className="text-4xl mb-4">🔗</div>
+                  <h2 className="text-2xl font-bold text-[#1b1916] mb-2">Create your blog in 2 minutes</h2>
+                  <p className="text-slate-600 text-sm">
+                    We&apos;ll host your blog for you. You just need to tell your domain where to find it — one small setting at your hosting provider.
+                  </p>
+                </div>
 
-            <button
-              onClick={handleComplete}
-              className="w-full mt-3 py-2 text-sm text-slate-500 hover:text-slate-700 transition-colors"
-            >
-              Skip for now →
-            </button>
+                <div className="bg-violet-50 rounded-xl p-4 border border-violet-200 mb-4">
+                  <p className="text-sm text-violet-800 font-medium mb-1">What is this?</p>
+                  <p className="text-sm text-violet-700">
+                    Think of it like forwarding mail. You&apos;re telling your domain (<strong>yoursite.com</strong>) that anyone going to <strong>blog.yoursite.com</strong> should be sent to our servers. We handle everything else.
+                  </p>
+                </div>
+
+                <div className="bg-[#f9f8f7] rounded-xl p-5 border border-black/10 mb-4">
+                  <p className="text-sm font-semibold text-[#1b1916] mb-1">Step 1 — Log in to your domain registrar</p>
+                  <p className="text-slate-500 text-xs mb-4">That&apos;s the service where you bought your domain (e.g. GoDaddy, Namecheap, Cloudflare). Find the DNS settings.</p>
+                  <p className="text-sm font-semibold text-[#1b1916] mb-1">Step 2 — Add a new CNAME record</p>
+                  <p className="text-slate-500 text-xs mb-3">Copy these exact values:</p>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="text-slate-500 text-xs uppercase tracking-wide">
+                          <th className="text-left pb-2 pr-6 font-semibold">Type</th>
+                          <th className="text-left pb-2 pr-6 font-semibold">Name (subdomain)</th>
+                          <th className="text-left pb-2 font-semibold">Value (points to)</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td className="pr-6 py-1 font-mono text-violet-700 font-bold text-sm">CNAME</td>
+                          <td className="pr-6 py-1 font-mono text-[#1b1916] text-sm">blog</td>
+                          <td className="py-1 font-mono text-[#1b1916] text-xs">blogs.itgrows.ai</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <p className="text-slate-500 text-xs mt-3">
+                    The "Name" is the prefix before your domain — so <code className="bg-violet-50 text-violet-700 px-1 rounded">blog</code> means the blog will live at <strong>blog.yoursite.com</strong>. You can change it to anything you like (e.g. <code className="bg-violet-50 text-violet-700 px-1 rounded">news</code> → news.yoursite.com).
+                  </p>
+                  <p className="text-slate-500 text-xs mt-2 text-violet-600 font-medium">Changes take effect in 5–30 minutes.</p>
+                </div>
+
+                <div className="mb-6">
+                  <label className="block">
+                    <span className="text-sm font-medium text-[#1b1916] mb-1 block">
+                      Step 3 — Enter your blog address below:
+                    </span>
+                    <input
+                      type="text"
+                      placeholder="e.g. blog.yoursite.com"
+                      value={blogDomain}
+                      onChange={(e) => setBlogDomain(e.target.value)}
+                      className="w-full px-4 py-3 rounded-xl border border-black/15 bg-[#f9f8f7] focus:outline-none focus:ring-2 focus:ring-violet-400 text-[#1b1916] placeholder:text-slate-400 font-mono text-sm"
+                    />
+                    <span className="text-slate-500 text-xs mt-1 block">The full address you&apos;ll use (same prefix as "Name" above + your domain)</span>
+                  </label>
+                </div>
+
+                {loadingMsg && (
+                  <p className="text-violet-600 text-sm font-medium text-center mb-3 flex items-center justify-center gap-2">
+                    <span className="animate-spin">⟳</span> {loadingMsg}
+                  </p>
+                )}
+
+                <button
+                  onClick={handleComplete}
+                  disabled={loading}
+                  className="w-full py-3 rounded-xl bg-violet-600 hover:bg-violet-500 disabled:opacity-50 text-white font-semibold transition-colors flex items-center justify-center gap-2"
+                >
+                  {loading ? (
+                    <>
+                      <span className="animate-spin">⟳</span> Setting up…
+                    </>
+                  ) : (
+                    "Done! Take me to my dashboard →"
+                  )}
+                </button>
+
+                <button
+                  onClick={handleComplete}
+                  className="w-full mt-3 py-2 text-sm text-slate-500 hover:text-slate-700 transition-colors"
+                >
+                  Skip for now →
+                </button>
+              </>
+            )}
+
+            {connectSubStep === 'setup' && blogOption === 'existing' && (
+              <>
+                <div className="text-center mb-8">
+                  <div className="text-4xl mb-4">✅</div>
+                  <h2 className="text-2xl font-bold text-[#1b1916] mb-2">Great, you're all set!</h2>
+                  <p className="text-slate-600 text-sm">
+                    Articles will be queued in your calendar. Connect your existing blog in Settings to auto-publish directly to your site.
+                  </p>
+                </div>
+
+                <div className="bg-violet-50 rounded-xl p-5 border border-violet-200 mb-6">
+                  <p className="text-sm font-semibold text-violet-800 mb-2">How it works:</p>
+                  <ol className="text-sm text-violet-700 space-y-2 list-decimal list-inside">
+                    <li>Your 15-day content calendar will be generated now</li>
+                    <li>Each day, one article is published automatically</li>
+                    <li>Go to <strong>Settings → Sites</strong> to connect your existing blog (WordPress, Webflow, Shopify, or any platform with a webhook)</li>
+                  </ol>
+                </div>
+
+                {loadingMsg && (
+                  <p className="text-violet-600 text-sm font-medium text-center mb-3 flex items-center justify-center gap-2">
+                    <span className="animate-spin">⟳</span> {loadingMsg}
+                  </p>
+                )}
+
+                <button
+                  onClick={handleComplete}
+                  disabled={loading}
+                  className="w-full py-3 rounded-xl bg-violet-600 hover:bg-violet-500 disabled:opacity-50 text-white font-semibold transition-colors flex items-center justify-center gap-2"
+                >
+                  {loading ? (
+                    <>
+                      <span className="animate-spin">⟳</span> Setting up…
+                    </>
+                  ) : (
+                    "Go to my dashboard →"
+                  )}
+                </button>
+              </>
+            )}
           </div>
         )}
       </div>
