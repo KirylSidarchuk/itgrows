@@ -48,11 +48,13 @@ export default function NewTaskPage() {
               return (
                 <div
                   key={card.value}
-                  className="relative p-6 rounded-2xl border border-black/10 bg-white/60 cursor-not-allowed opacity-70"
+                  className="group relative p-6 rounded-2xl border border-black/10 bg-white/60 cursor-not-allowed opacity-60 overflow-hidden"
                 >
-                  <span className="absolute top-3 right-3 text-xs font-bold bg-violet-100 text-violet-500 rounded-full px-2.5 py-0.5">
-                    Soon
-                  </span>
+                  <div className="absolute inset-0 bg-white/70 backdrop-blur-[1px] rounded-2xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
+                    <span className="text-sm font-semibold bg-gradient-to-r from-violet-600 to-pink-500 bg-clip-text text-transparent">
+                      Coming Soon
+                    </span>
+                  </div>
                   <div className="mb-3">{card.svgLogo ?? <span className="text-3xl">{card.icon}</span>}</div>
                   <div className="text-[#1b1916] text-base font-semibold mb-1">{card.label}</div>
                   <div className="text-slate-400 text-sm leading-snug">{card.desc}</div>
