@@ -1,341 +1,177 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import Link from "next/link"
 import SeoHubTabs from "@/components/dashboard/SeoHubTabs"
 
-type Language = "en" | "ru" | "uk"
-type Tone = "Professional" | "Casual" | "Expert"
-
-interface TopicSuggestion {
-  title: string
-  description: string
-  keyword: string
-}
-
-interface SeoBreakdown {
-  wordCount: number
-  headings: number
-  keywords: number
-  meta: number
-  faq: number
-  keyTakeaways: number
-}
-
-interface GeneratedArticle {
-  keyword: string
-  title: string
-  content: string
-  metaDescription: string
-  keywords: string[]
-  seoScore?: number
-  seoBreakdown?: SeoBreakdown
-  coverImageUrl?: string | null
-}
-
-interface ConnectedSite {
+interface ScheduledPost {
   id: string
-  url: string
-  isDefault: boolean
+  keyword: string
+  scheduledDate: string
+  status: string
 }
 
-interface Task {
+interface BlogPost {
+  id: string
   title: string
+  publishedAt: string
+  slug: string
 }
 
 export default function SeoAutopilotPage() {
   const router = useRouter()
-
-  const [hasSite, setHasSite] = useState(false)
-  const [analyzing, setAnalyzing] = useState(true)
-  const [topics, setTopics] = useState<TopicSuggestion[]>([])
-  const [analyzeError, setAnalyzeError] = useState("")
-  const [selected, setSelected] = useState<TopicSuggestion | null>(null)
-  const [language, setLanguage] = useState<Language>("en")
-  const [tone, setTone] = useState<Tone>("Professional")
-  const [generating, setGenerating] = useState(false)
-  const [generateError, setGenerateError] = useState("")
-  const [defaultSite, setDefaultSite] = useState<ConnectedSite | null>(null)
-
-  const analyze = useCallback(async (siteUrl: string) => {
-    setAnalyzing(true)
-    setAnalyzeError("")
-    setTopics([])
-    setSelected(null)
-
-    // Get used keywords from DB
-    const usedKeywords: string[] = []
-    try {
-      const res = await fetch("/api/tasks")
-      if (res.ok) {
-        const data = await res.json() as { tasks?: Task[] }
-        for (const t of data.tasks ?? []) {
-          if (t.title) usedKeywords.push(t.title)
-        }
-      }
-    } catch { /* ignore */ }
-
-    try {
-      const res = await fetch("/api/seo/analyze", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url: siteUrl, usedKeywords }),
-      })
-      const data = (await res.json()) as { topics?: TopicSuggestion[]; error?: string }
-      if (!res.ok || data.error) {
-        setAnalyzeError(data.error ?? "Failed to analyze site")
-      } else {
-        setTopics(data.topics ?? [])
-      }
-    } catch {
-      setAnalyzeError("Network error. Please try again.")
-    } finally {
-      setAnalyzing(false)
-    }
-  }, [])
+  const [scheduledPosts, setScheduledPosts] = useState<ScheduledPost[]>([])
+  const [blogPosts, setBlogPosts] = useState<BlogPost[]>([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetch("/api/sites")
-      .then((r) => r.json())
-      .then((data: { sites?: ConnectedSite[] }) => {
-        const sites = data.sites ?? []
-        const site = sites.find((s) => s.isDefault) ?? sites[0] ?? null
-        if (!site) {
-          setHasSite(false)
-          setAnalyzing(false)
-          return
-        }
-        setDefaultSite(site)
-        setHasSite(true)
-        analyze(site.url)
-      })
-      .catch(() => {
-        setHasSite(false)
-        setAnalyzing(false)
-      })
-  }, [analyze])
+    Promise.all([
+      fetch("/api/schedule/posts").then(r => r.ok ? r.json() : { posts: [] }),
+      fetch("/api/blog/posts").then(r => r.ok ? r.json() : { posts: [] }),
+    ]).then(([sched, blog]) => {
+      setScheduledPosts((sched.posts ?? []).slice(0, 4))
+      setBlogPosts((blog.posts ?? []).slice(0, 4))
+    }).catch(() => {}).finally(() => setLoading(false))
+  }, [])
 
-  const handleGenerate = async () => {
-    if (!selected || generating) return
-    setGenerating(true)
-    setGenerateError("")
+  const upcoming = scheduledPosts.filter(p => p.status === "scheduled").slice(0, 3)
+  const recent = blogPosts.slice(0, 3)
 
-    try {
-      const res = await fetch("/api/seo/generate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ keyword: selected.keyword, language, tone }),
-      })
-      if (!res.ok) {
-        const err = (await res.json()) as { error?: string }
-        throw new Error(err.error ?? "Generation failed")
-      }
-      const article = (await res.json()) as GeneratedArticle
-
-      // Save as task via API
-      const articleData = {
-        keyword: selected.keyword,
-        title: article.title,
-        content: article.content,
-        metaDescription: article.metaDescription,
-        keywords: article.keywords,
-        seoScore: article.seoScore,
-        seoBreakdown: article.seoBreakdown,
-        coverImageUrl: article.coverImageUrl ?? null,
-      }
-      try {
-        await fetch("/api/tasks", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            title: `SEO Article: ${article.title || selected.keyword}`,
-            description: `SEO article targeting "${selected.keyword}"`,
-            type: "seo_article",
-            status: "done",
-            articleData,
-          }),
-        })
-      } catch { /* ignore */ }
-
-      // Save for results page
-      sessionStorage.setItem("seo_result", JSON.stringify(articleData))
-      router.push("/dashboard/seo/results")
-    } catch (err) {
-      setGenerateError(err instanceof Error ? err.message : "Unexpected error")
-      setGenerating(false)
-    }
-  }
-
-  // No site connected
-  if (!hasSite && !analyzing) {
-    return (
-      <div className="p-8">
-        <div className="max-w-2xl mx-auto">
-          <SeoHubTabs />
-          <h1 className="text-3xl font-bold mb-1 bg-gradient-to-r from-violet-600 to-pink-500 bg-clip-text text-transparent">SEO Autopilot</h1>
-          <p className="text-slate-600 mb-8">Generate and publish SEO-optimized articles automatically</p>
-          <div className="bg-white border border-black/10 rounded-2xl p-10 text-center">
-            <div className="text-4xl mb-4">🔗</div>
-            <h2 className="text-xl font-semibold text-[#1b1916] mb-2">Connect your website first</h2>
-            <p className="text-[#1b1916] text-sm mb-6">We&apos;ll analyze your site and suggest the best SEO topics for you</p>
-            <Link href="/dashboard/settings">
-              <button className="px-6 py-3 bg-violet-600 hover:bg-violet-500 text-white rounded-xl text-sm font-medium transition-colors">
-                Go to Settings →
-              </button>
-            </Link>
-          </div>
-        </div>
-      </div>
-    )
-  }
+  const COMING_SOON = [
+    { icon: "🎯", label: "Google Ads", desc: "Auto-generate ads from your published articles" },
+    { icon: "💼", label: "LinkedIn", desc: "Schedule LinkedIn posts from your SEO content" },
+    { icon: "📸", label: "Instagram", desc: "Turn articles into Instagram-ready visuals" },
+    { icon: "𝕏", label: "Twitter / X", desc: "Auto-post threads from your blog content" },
+  ]
 
   return (
     <div className="p-8">
-      <div className="max-w-2xl mx-auto">
+      <div className="max-w-5xl mx-auto">
         <SeoHubTabs />
-        <div className="mb-8 flex items-start justify-between">
-          <div>
-            <h1 className="text-3xl font-bold mb-1 bg-gradient-to-r from-violet-600 to-pink-500 bg-clip-text text-transparent">SEO Autopilot</h1>
-            <p className="text-slate-600">Choose a topic and generate your article</p>
-          </div>
-          {!analyzing && !generating && defaultSite && (
-            <button
-              onClick={() => analyze(defaultSite.url)}
-              className="text-sm text-violet-600 hover:text-violet-500 transition-colors"
-            >
-              ↻ Refresh topics
-            </button>
-          )}
+
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold mb-1 bg-gradient-to-r from-violet-600 to-pink-500 bg-clip-text text-transparent">
+            SEO Autopilot
+          </h1>
+          <p className="text-slate-600">Your content engine — scheduled, published, and optimized automatically.</p>
         </div>
 
-        {/* Analyzing */}
-        {analyzing && (
-          <div className="bg-white border border-black/10 rounded-2xl p-12 text-center">
-            <span className="inline-block w-8 h-8 border-2 border-violet-200 border-t-violet-600 rounded-full animate-spin mb-4" />
-            <p className="text-slate-600 text-sm">Analyzing your site and finding the best topics...</p>
-          </div>
-        )}
-
-        {/* Error */}
-        {!analyzing && analyzeError && (
-          <div className="bg-red-50 border border-red-200 rounded-2xl p-6 text-center mb-6">
-            <p className="text-red-600 text-sm mb-4">{analyzeError}</p>
-            {defaultSite && (
+        <div className="grid md:grid-cols-2 gap-6 mb-8">
+          {/* Calendar card */}
+          <div className="bg-white border border-black/10 rounded-2xl p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <span className="text-xl">📅</span>
+                <h2 className="text-[#1b1916] font-semibold text-base">Content Calendar</h2>
+              </div>
               <button
-                onClick={() => analyze(defaultSite.url)}
-                className="text-sm text-violet-600 hover:underline"
+                onClick={() => router.push("/dashboard/calendar")}
+                className="text-xs text-violet-600 hover:text-violet-500 transition-colors font-medium"
               >
-                Try again
+                View all →
               </button>
-            )}
-          </div>
-        )}
-
-        {/* Topic cards */}
-        {!analyzing && topics.length > 0 && (
-          <div className="space-y-3 mb-6">
-            <p className="text-sm font-medium text-[#1b1916] uppercase tracking-wider">Suggested topics</p>
-            {topics.map((topic, i) => (
-              <button
-                key={i}
-                onClick={() => setSelected(selected?.keyword === topic.keyword ? null : topic)}
-                disabled={generating}
-                className={`w-full text-left rounded-2xl border p-5 transition-all ${
-                  selected?.keyword === topic.keyword
-                    ? "border-violet-400 bg-violet-50 shadow-sm"
-                    : "border-black/10 bg-white hover:border-violet-300 hover:shadow-sm"
-                }`}
-              >
-                <div className="flex items-start gap-3">
-                  <div className={`mt-0.5 w-4 h-4 rounded-full border-2 shrink-0 flex items-center justify-center transition-colors ${
-                    selected?.keyword === topic.keyword ? "border-violet-500 bg-violet-500" : "border-slate-300"
-                  }`}>
-                    {selected?.keyword === topic.keyword && (
-                      <div className="w-1.5 h-1.5 bg-white rounded-full" />
-                    )}
-                  </div>
-                  <div>
-                    <h3 className="text-[#1b1916] font-semibold text-sm mb-1">{topic.title}</h3>
-                    <p className="text-[#1b1916] text-xs leading-relaxed">{topic.description}</p>
-                    <span className="inline-block mt-2 text-xs bg-violet-100 text-violet-700 px-2 py-0.5 rounded-md font-medium">
-                      {topic.keyword}
+            </div>
+            {loading ? (
+              <div className="space-y-2">
+                {[1,2,3].map(i => <div key={i} className="h-10 bg-slate-100 rounded-lg animate-pulse" />)}
+              </div>
+            ) : upcoming.length === 0 ? (
+              <div className="text-center py-6">
+                <p className="text-slate-500 text-sm mb-3">No scheduled posts yet</p>
+                <button
+                  onClick={() => router.push("/dashboard/calendar")}
+                  className="px-4 py-2 bg-violet-600 hover:bg-violet-500 text-white rounded-lg text-sm font-medium transition-colors"
+                >
+                  Set up Calendar
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {upcoming.map(post => (
+                  <div key={post.id} className="flex items-center justify-between p-3 bg-[#ebe9e5] rounded-lg">
+                    <span className="text-sm text-[#1b1916] font-medium truncate flex-1">{post.keyword}</span>
+                    <span className="text-xs text-slate-500 ml-3 shrink-0">
+                      {new Date(post.scheduledDate + "T00:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" })}
                     </span>
                   </div>
-                </div>
+                ))}
+                <button
+                  onClick={() => router.push("/dashboard/calendar")}
+                  className="w-full mt-2 py-2 border border-dashed border-violet-300 text-violet-600 hover:bg-violet-50 rounded-lg text-sm font-medium transition-colors"
+                >
+                  Open Calendar
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Published Articles card */}
+          <div className="bg-white border border-black/10 rounded-2xl p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <span className="text-xl">📝</span>
+                <h2 className="text-[#1b1916] font-semibold text-base">Published Articles</h2>
+              </div>
+              <button
+                onClick={() => router.push("/dashboard/blog")}
+                className="text-xs text-violet-600 hover:text-violet-500 transition-colors font-medium"
+              >
+                View all →
               </button>
+            </div>
+            {loading ? (
+              <div className="space-y-2">
+                {[1,2,3].map(i => <div key={i} className="h-10 bg-slate-100 rounded-lg animate-pulse" />)}
+              </div>
+            ) : recent.length === 0 ? (
+              <div className="text-center py-6">
+                <p className="text-slate-500 text-sm mb-3">No published articles yet</p>
+                <button
+                  onClick={() => router.push("/dashboard/new-task")}
+                  className="px-4 py-2 bg-violet-600 hover:bg-violet-500 text-white rounded-lg text-sm font-medium transition-colors"
+                >
+                  Create Article
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {recent.map(post => (
+                  <div key={post.id} className="flex items-center justify-between p-3 bg-[#ebe9e5] rounded-lg">
+                    <span className="text-sm text-[#1b1916] font-medium truncate flex-1">{post.title}</span>
+                    <span className="text-xs text-slate-500 ml-3 shrink-0">
+                      {new Date(post.publishedAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                    </span>
+                  </div>
+                ))}
+                <button
+                  onClick={() => router.push("/dashboard/blog")}
+                  className="w-full mt-2 py-2 border border-dashed border-violet-300 text-violet-600 hover:bg-violet-50 rounded-lg text-sm font-medium transition-colors"
+                >
+                  View All Articles
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Coming Soon channels */}
+        <div>
+          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4">More Channels — Coming Soon</p>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {COMING_SOON.map(item => (
+              <div key={item.label} className="relative bg-white border border-black/10 rounded-2xl p-5 overflow-hidden">
+                <div className="absolute inset-0 bg-white/60 backdrop-blur-[1px] flex items-center justify-center z-10 rounded-2xl">
+                  <span className="text-xs font-bold bg-violet-600 text-white rounded-full px-3 py-1 shadow-sm tracking-wide uppercase">
+                    Coming Soon
+                  </span>
+                </div>
+                <div className="text-2xl mb-2">{item.icon}</div>
+                <p className="font-semibold text-[#1b1916] text-sm mb-1">{item.label}</p>
+                <p className="text-slate-500 text-xs leading-relaxed">{item.desc}</p>
+              </div>
             ))}
           </div>
-        )}
-
-        {/* Language + Tone (only when topic selected) */}
-        {selected && !generating && (
-          <div className="bg-white border border-black/10 rounded-2xl p-5 mb-6 space-y-4">
-            <div className="flex gap-6">
-              <div className="space-y-2">
-                <p className="text-xs font-medium text-[#1b1916] uppercase tracking-wider">Language</p>
-                <div className="flex gap-2">
-                  {(["en", "ru", "uk"] as Language[]).map(l => (
-                    <button key={l} onClick={() => setLanguage(l)}
-                      className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-all ${
-                        language === l ? "bg-violet-100 border-violet-400 text-violet-700" : "border-slate-200 text-slate-600 hover:border-slate-300"
-                      }`}>
-                      {l === "en" ? "EN" : l === "ru" ? "RU" : "UK"}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div className="space-y-2">
-                <p className="text-xs font-medium text-[#1b1916] uppercase tracking-wider">Tone</p>
-                <div className="flex gap-2">
-                  {(["Professional", "Casual", "Expert"] as Tone[]).map(t => (
-                    <button key={t} onClick={() => setTone(t)}
-                      className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-all ${
-                        tone === t ? "bg-pink-100 border-pink-400 text-pink-700" : "border-slate-200 text-slate-600 hover:border-slate-300"
-                      }`}>
-                      {t}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Generate error */}
-        {generateError && (
-          <div className="mb-4 p-3 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm">
-            {generateError}
-          </div>
-        )}
-
-        {/* Generate button */}
-        {!analyzing && (
-          <>
-            <button
-              onClick={handleGenerate}
-              disabled={!selected || generating}
-              className="w-full h-12 rounded-xl text-base font-semibold bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-white disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
-            >
-              {generating ? (
-                <>
-                  <span className="inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  Generating article...
-                </>
-              ) : (
-                selected ? `Generate: ${selected.keyword}` : "Select a topic above"
-              )}
-            </button>
-            {generating && (
-              <p className="text-center text-[#1b1916] text-sm mt-3">
-                Article status will appear in{" "}
-                <Link href="/dashboard/tasks" className="text-violet-600 hover:underline">
-                  Tasks
-                </Link>
-              </p>
-            )}
-          </>
-        )}
+        </div>
       </div>
     </div>
   )

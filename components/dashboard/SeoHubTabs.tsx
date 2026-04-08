@@ -2,7 +2,7 @@
 import { useRouter, usePathname } from "next/navigation"
 
 const TABS = [
-  { label: "Generate", icon: "✍️", href: "/dashboard/seo", comingSoon: false },
+  { label: "Overview", icon: "🔍", href: "/dashboard/seo", comingSoon: false },
   { label: "Calendar", icon: "📅", href: "/dashboard/calendar", comingSoon: false },
   { label: "Published", icon: "📝", href: "/dashboard/blog", comingSoon: false },
   { label: "Google Ads", icon: "🎯", href: null, comingSoon: true },
