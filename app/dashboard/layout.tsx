@@ -9,7 +9,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   }
 
   return (
-    <div className="min-h-screen text-[#1b1916] flex" style={{ background: "linear-gradient(135deg, #dff3fb 0%, #ede8fb 40%, #fde8f5 100%)" }}>
+    <div className="min-h-screen text-[#1b1916] flex" style={{ background: "linear-gradient(135deg, #c8edfb 0%, #ddd4f8 45%, #f9d8f0 100%)", minHeight: "100vh" }}>
       <Sidebar />
       <main className="flex-1 overflow-auto">{children}</main>
     </div>

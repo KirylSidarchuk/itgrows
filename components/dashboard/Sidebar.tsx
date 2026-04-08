@@ -18,7 +18,7 @@ export default function Sidebar() {
   const pathname = usePathname()
 
   return (
-    <aside className="w-72 min-h-screen flex flex-col" style={{ background: "rgba(255,255,255,0.55)", backdropFilter: "blur(20px)", borderRight: "1px solid rgba(255,255,255,0.6)" }}>
+    <aside className="w-72 min-h-screen flex flex-col" style={{ background: "rgba(255,255,255,0.60)", WebkitBackdropFilter: "blur(24px)", backdropFilter: "blur(24px)", borderRight: "1px solid rgba(255,255,255,0.7)" }}>
       <div className="px-7 py-7 border-b border-white/40">
         <Link href="/">
           <span className="text-xl font-bold bg-gradient-to-r from-violet-600 to-pink-500 bg-clip-text text-transparent">
