@@ -4,7 +4,7 @@ import { auth } from "@/auth"
 interface PublishRequest {
   siteUrl: string
   siteToken: string
-  platform: "wordpress" | "custom"
+  platform: "wordpress" | "custom" | "octobercms" | "php"
   title: string
   content: string
   metaDescription?: string
@@ -12,6 +12,7 @@ interface PublishRequest {
   siteSlug?: string
   keywords?: string[]
   keyword?: string
+  webhookUrl?: string
 }
 
 interface PublishResult {
@@ -36,10 +37,15 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: "Invalid request body" }, { status: 400 })
   }
 
-  const { siteUrl, siteToken, platform, title, content, metaDescription, siteId, siteSlug, keywords, keyword } = body
+  const { siteUrl, siteToken, platform, title, content, metaDescription, siteId, siteSlug, keywords, keyword, webhookUrl } = body
 
   if (!siteUrl || !siteToken || !title || !content) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
+  }
+
+  // Helper: generate a URL-friendly slug from the article title
+  function generateSlug(t: string): string {
+    return t.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")
   }
 
   let normalUrl = siteUrl.trim()
@@ -52,16 +58,27 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   const payload = { token: siteToken, title, content, metaDescription: metaDescription ?? "" }
 
   // Choose endpoint based on platform
-  const endpoint =
-    platform === "wordpress"
-      ? `${normalUrl}/wp-json/itgrows/v1/publish`
-      : `${normalUrl}/api/itgrows-publish`
+  let endpoint: string
+  if (platform === "wordpress") {
+    endpoint = `${normalUrl}/wp-json/itgrows/v1/publish`
+  } else if (platform === "octobercms" || platform === "php") {
+    // Use the custom webhook URL if provided, otherwise fall back to a default path
+    endpoint = webhookUrl?.trim() || `${normalUrl}/itgrows-webhook.php`
+  } else {
+    endpoint = `${normalUrl}/api/itgrows-publish`
+  }
+
+  // For octobercms/php, include the slug in the payload
+  const finalPayload =
+    platform === "octobercms" || platform === "php"
+      ? { ...payload, slug: generateSlug(title) }
+      : payload
 
   try {
     const res = await fetch(endpoint, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
+      body: JSON.stringify(finalPayload),
       signal: AbortSignal.timeout(15000),
     })
 

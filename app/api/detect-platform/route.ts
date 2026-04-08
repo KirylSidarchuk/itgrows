@@ -6,6 +6,8 @@ export type DetectedPlatform =
   | "shopify"
   | "webflow"
   | "nextjs"
+  | "octobercms"
+  | "php"
   | "custom"
 
 export interface DetectPlatformResult {
@@ -124,6 +126,28 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       return NextResponse.json<DetectPlatformResult>({
         platform: "nextjs",
         confidence: "high",
+      })
+    }
+
+    // --- October CMS ---
+    const poweredBy = headers["x-powered-by"] ?? ""
+    const server = headers["server"] ?? ""
+    if (
+      html.includes("october_session") ||
+      html.includes("october") ||
+      (poweredBy.includes("php") && server.includes("openresty"))
+    ) {
+      return NextResponse.json<DetectPlatformResult>({
+        platform: "octobercms",
+        confidence: "high",
+      })
+    }
+
+    // --- Generic PHP CMS ---
+    if (poweredBy.includes("php")) {
+      return NextResponse.json<DetectPlatformResult>({
+        platform: "php",
+        confidence: "low",
       })
     }
 

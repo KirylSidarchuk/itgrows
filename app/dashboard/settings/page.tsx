@@ -175,6 +175,9 @@ function AddSiteWizard({ onSaved, onCancel, isFirstSite }: AddSiteWizardProps) {
   const [webflowApiToken, setWebflowApiToken] = useState("")
   const [webflowCollectionId, setWebflowCollectionId] = useState("")
 
+  // October CMS / PHP webhook fields
+  const [webhookUrl, setWebhookUrl] = useState("")
+
   // ── Derived values ────────────────────────────────────────────────────────
 
   const normalUrl = inputUrl.trim().startsWith("http")
@@ -227,6 +230,7 @@ function AddSiteWizard({ onSaved, onCancel, isFirstSite }: AddSiteWizardProps) {
     hasBlog?: boolean | null
     existingBlogUrl?: string
     blogDomain?: string
+    webhookUrl?: string
   }) => {
     setSaving(true)
     setSaveError("")
@@ -268,12 +272,30 @@ function AddSiteWizard({ onSaved, onCancel, isFirstSite }: AddSiteWizardProps) {
           ? "shopify"
           : detected === "webflow"
           ? "webflow"
+          : detected === "octobercms"
+          ? "octobercms"
+          : detected === "php"
+          ? "php"
           : "custom",
       siteToken: token,
       siteSlug,
       integrationMode,
       hasBlog,
       existingBlogUrl: hasBlog ? existingBlogUrl : "",
+    })
+  }
+
+  const handleConnectPhp = () => {
+    saveSite({
+      name: derivedName,
+      url: normalUrl,
+      platform: detected === "octobercms" ? "octobercms" : "php",
+      siteToken: generatedToken,
+      siteSlug,
+      integrationMode,
+      hasBlog,
+      existingBlogUrl: hasBlog ? existingBlogUrl : "",
+      webhookUrl: webhookUrl.trim(),
     })
   }
 
@@ -311,7 +333,18 @@ function AddSiteWizard({ onSaved, onCancel, isFirstSite }: AddSiteWizardProps) {
     saveSite({
       name: derivedName,
       url: normalUrl,
-      platform: detected === "wordpress" ? "wordpress" : detected === "shopify" ? "shopify" : detected === "webflow" ? "webflow" : "custom",
+      platform:
+        detected === "wordpress"
+          ? "wordpress"
+          : detected === "shopify"
+          ? "shopify"
+          : detected === "webflow"
+          ? "webflow"
+          : detected === "octobercms"
+          ? "octobercms"
+          : detected === "php"
+          ? "php"
+          : "custom",
       siteToken: generatedToken,
       siteSlug,
       integrationMode: "simple",
@@ -345,6 +378,10 @@ function AddSiteWizard({ onSaved, onCancel, isFirstSite }: AddSiteWizardProps) {
             ? "Webflow detected"
             : detected === "nextjs"
             ? "Next.js / React detected"
+            : detected === "octobercms"
+            ? "October CMS detected"
+            : detected === "php"
+            ? "PHP / Custom CMS detected"
             : "Custom website detected"}
         </p>
         <p className="text-slate-600 text-xs">{inputUrl}</p>
@@ -923,6 +960,75 @@ export async function POST(req) {
             </div>
           </div>
         )}
+
+        {/* ── October CMS / PHP ── */}
+        {(detected === "octobercms" || detected === "php") && (
+          <div className="space-y-4">
+            <div className="rounded-xl bg-[#ebe9e5] border border-black/10 p-4 space-y-3 text-sm">
+              <p className="text-slate-700 font-medium">Step 1: Create a webhook file on your server</p>
+              <p className="text-slate-600 text-xs">Create a file at <code className="bg-white/60 px-1 rounded text-violet-700">/itgrows-webhook.php</code> in your site root with the following content:</p>
+              <div className="relative">
+                <pre className="text-xs text-slate-700 bg-white/60 rounded-lg p-3 overflow-auto font-mono whitespace-pre-wrap border border-black/10">{`<?php
+$secret = '${generatedToken}'; // Your site token
+$input = json_decode(file_get_contents('php://input'), true);
+if (!$input || $input['token'] !== $secret) { http_response_code(401); exit; }
+
+// Save article to your CMS database
+// Example for October CMS (RainLab Blog):
+// $post = new \\RainLab\\Blog\\Models\\Post;
+// $post->title = $input['title'];
+// $post->content = $input['content'];
+// $post->meta_description = $input['metaDescription'];
+// $post->published = true;
+// $post->save();
+
+http_response_code(200);
+echo json_encode(['success' => true]);
+?>`}</pre>
+                <div className="mt-2">
+                  <CopyButton
+                    text={`<?php\n$secret = '${generatedToken}';\n$input = json_decode(file_get_contents('php://input'), true);\nif (!$input || $input['token'] !== $secret) { http_response_code(401); exit; }\n\n// Save article to your CMS\n// $post->title = $input['title'];\n// $post->content = $input['content'];\n// $post->meta_description = $input['metaDescription'];\n\nhttp_response_code(200);\necho json_encode(['success' => true]);\n?>`}
+                    label="Copy PHP Code"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-slate-700 text-sm">Step 2: Enter your webhook URL</Label>
+              <Input
+                placeholder={`https://yoursite.com/itgrows-webhook.php`}
+                value={webhookUrl}
+                onChange={(e) => setWebhookUrl(e.target.value)}
+                className="bg-[#ebe9e5] border-black/10 text-[#1b1916] placeholder:text-slate-500 focus:border-violet-500 text-sm font-mono"
+              />
+              <p className="text-slate-500 text-xs">Enter the URL where you uploaded the webhook file</p>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-slate-700 text-sm">
+                Site Name <span className="text-[#1b1916]">(optional)</span>
+              </Label>
+              <Input
+                placeholder="My Site"
+                value={siteName}
+                onChange={(e) => setSiteName(e.target.value)}
+                className="bg-[#ebe9e5] border-black/10 text-[#1b1916] placeholder:text-slate-500 focus:border-violet-500 text-sm"
+              />
+            </div>
+
+            <div className="flex gap-3 pt-1">
+              <Button
+                onClick={handleConnectPhp}
+                disabled={!webhookUrl.trim() || saving}
+                className="bg-violet-600 hover:bg-violet-500 text-[#1b1916]"
+              >
+                {saving ? "Connecting..." : "I've created the file — Connect"}
+              </Button>
+              <BackButton onClick={() => setStep("blog-advanced")} />
+            </div>
+          </div>
+        )}
       </div>
     )
   }
@@ -931,6 +1037,31 @@ export async function POST(req) {
   // STEP 4B — Simple widget guide
   // ─────────────────────────────────────────────────────────────────────────
   if (step === "setup-simple") {
+    // October CMS / PHP requires a server-side webhook — redirect to advanced flow
+    if (detected === "octobercms" || detected === "php") {
+      return (
+        <div className="space-y-5 pt-4 border-t border-black/10">
+          <DetectionBadge />
+          <div className="rounded-xl bg-amber-50 border border-amber-200 p-4 space-y-2">
+            <p className="text-amber-800 font-semibold text-sm">Your platform requires a server-side setup</p>
+            <p className="text-amber-700 text-xs leading-relaxed">
+              {detected === "octobercms" ? "October CMS" : "PHP-based sites"} cannot use the simple JS widget for publishing — articles need to be saved directly to your CMS database. Please use our step-by-step guide below.
+            </p>
+          </div>
+          <Button
+            onClick={() => {
+              setIntegrationMode("advanced")
+              setStep("setup-advanced")
+            }}
+            className="bg-violet-600 hover:bg-violet-500 text-white w-full"
+          >
+            Open Step-by-Step Guide →
+          </Button>
+          <BackButton onClick={() => setStep("blog-simple")} />
+        </div>
+      )
+    }
+
     const platformInstructions: Record<string, { step2: string; step3: string }> = {
       wordpress: {
         step2: "Log in to your WordPress Admin (yoursite.com/wp-admin)",

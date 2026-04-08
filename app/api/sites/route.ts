@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
   const body = await req.json()
-  const { name, url, platform, siteToken, siteSlug, wpUsername, wpAppPassword, shopifyToken, shopifyBlogId, webflowToken, webflowCollectionId, isDefault, blogDomain } = body
+  const { name, url, platform, siteToken, siteSlug, wpUsername, wpAppPassword, shopifyToken, shopifyBlogId, webflowToken, webflowCollectionId, isDefault, blogDomain, webhookUrl } = body
 
   // Check if site URL already connected by another user
   if (url) {
@@ -68,6 +68,7 @@ export async function POST(req: NextRequest) {
     webflowCollectionId: webflowCollectionId || null,
     isDefault: !!isDefault,
     blogDomain: blogDomain || null,
+    webhookUrl: webhookUrl || null,
   }).returning()
 
   // Non-blocking background site analysis

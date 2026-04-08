@@ -2,11 +2,12 @@ export interface ConnectedSite {
   id: string
   name: string
   url: string
-  platform: "wordpress" | "shopify" | "webflow" | "custom" | "itgrows_blog"
+  platform: "wordpress" | "shopify" | "webflow" | "custom" | "itgrows_blog" | "octobercms" | "php"
   siteToken: string // unique UUID for this site
   siteSlug: string  // slug for hosted blog URL: /blog/[siteSlug]
   isDefault: boolean
   connectedAt: string
+  webhookUrl?: string
 }
 
 export function generateSiteSlug(name: string, url: string): string {
@@ -52,6 +53,8 @@ export function platformLabel(platform: ConnectedSite["platform"]): string {
     webflow: "Webflow",
     custom: "Custom Website",
     itgrows_blog: "itgrows.ai Blog",
+    octobercms: "October CMS",
+    php: "PHP / Custom CMS",
   }
   return labels[platform]
 }
