@@ -116,12 +116,12 @@ function getCurrentStageIndex(weeks: number): number {
 
 function RankingProgressTracker({ posts }: { posts: ScheduledPost[] }) {
   const latestPublished = posts
-    .filter(p => p.status === "published" && p.publishedAt)
-    .sort((a, b) => new Date(b.publishedAt!).getTime() - new Date(a.publishedAt!).getTime())[0]
+    .filter(p => p.status === "published")
+    .sort((a, b) => new Date(b.publishedAt ?? b.scheduledDate).getTime() - new Date(a.publishedAt ?? a.scheduledDate).getTime())[0]
 
   if (!latestPublished) return null
 
-  const weeks = getWeeksSince(latestPublished.publishedAt!)
+  const weeks = getWeeksSince(latestPublished.publishedAt ?? latestPublished.scheduledDate)
   const currentStageIdx = getCurrentStageIndex(weeks)
 
   return (
