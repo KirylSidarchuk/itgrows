@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Trash2 } from "lucide-react"
+import SeoHubTabs from "@/components/dashboard/SeoHubTabs"
 
 type Language = "en" | "ru" | "uk"
 type Tone = "Professional" | "Casual" | "Friendly" | "Authoritative" | "Educational" | "Conversational"
@@ -915,6 +916,7 @@ export default function CalendarPage() {
 
   return (
     <div className="p-8">
+      <SeoHubTabs />
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="mb-8 flex items-start justify-between gap-4">

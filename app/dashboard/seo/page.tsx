@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
+import SeoHubTabs from "@/components/dashboard/SeoHubTabs"
 
 type Language = "en" | "ru" | "uk"
 type Tone = "Professional" | "Casual" | "Expert"
@@ -171,6 +172,7 @@ export default function SeoAutopilotPage() {
     return (
       <div className="p-8">
         <div className="max-w-2xl mx-auto">
+          <SeoHubTabs />
           <h1 className="text-3xl font-bold mb-1 bg-gradient-to-r from-violet-600 to-pink-500 bg-clip-text text-transparent">SEO Autopilot</h1>
           <p className="text-slate-600 mb-8">Generate and publish SEO-optimized articles automatically</p>
           <div className="bg-white border border-black/10 rounded-2xl p-10 text-center">
@@ -191,6 +193,7 @@ export default function SeoAutopilotPage() {
   return (
     <div className="p-8">
       <div className="max-w-2xl mx-auto">
+        <SeoHubTabs />
         <div className="mb-8 flex items-start justify-between">
           <div>
             <h1 className="text-3xl font-bold mb-1 bg-gradient-to-r from-violet-600 to-pink-500 bg-clip-text text-transparent">SEO Autopilot</h1>

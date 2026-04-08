@@ -24,13 +24,14 @@ interface SiteInfo {
   mainText: string
 }
 
-// ─── Task type cards ──────────────────────────────────────────────────────────
+// ─── Channel cards ────────────────────────────────────────────────────────────
 
-const taskTypes = [
-  { value: "seo_article", label: "SEO Article", icon: "✍️", desc: "AI writes and publishes an SEO-optimized blog post" },
-  { value: "social_post", label: "Social Post", icon: "📱", desc: "Create and schedule posts for social media" },
-  { value: "google_ads", label: "Google Ads", icon: "🎯", desc: "Configure and launch a Google Ads campaign" },
-  { value: "image_generation", label: "Image Generation", icon: "🖼️", desc: "Generate custom AI images for your content" },
+const channelCards = [
+  { value: "seo_article", label: "SEO Article", icon: "✍️", desc: "AI writes and publishes an SEO-optimized blog post", active: true },
+  { value: "google_ads", label: "Google Ads", icon: "🎯", desc: "Configure and launch a Google Ads campaign", active: false },
+  { value: "linkedin_posts", label: "LinkedIn Posts", icon: "💼", desc: "Create and schedule LinkedIn content", active: false },
+  { value: "instagram_posts", label: "Instagram Posts", icon: "📸", desc: "Generate and schedule Instagram posts", active: false },
+  { value: "twitter_x", label: "Twitter / X", icon: "𝕏", desc: "Compose and schedule tweets", active: false },
 ]
 
 // ─── SEO Multi-step flow ───────────────────────────────────────────────────────
@@ -326,67 +327,58 @@ function GenericTaskForm({ type, onBack }: { type: TaskType; onBack: () => void 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function NewTaskPage() {
-  const router = useRouter()
-  const [type, setType] = useState<TaskType | null>(null)
-
-  // Step 0: choose task type
-  if (!type) {
-    return (
-      <div className="p-8">
-        <div className="max-w-2xl mx-auto">
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold mb-1">New Task</h1>
-            <p className="text-slate-600">Choose what you want to create</p>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            {taskTypes.map((t) => (
-              <button
-                key={t.value}
-                type="button"
-                onClick={() => setType(t.value as TaskType)}
-                className="p-4 rounded-xl border border-black/10 bg-[#ebe9e5] hover:border-violet-500 hover:bg-violet-500/10 text-left transition-all"
-              >
-                <div className="text-2xl mb-2">{t.icon}</div>
-                <div className="text-[#1b1916] text-sm font-medium">{t.label}</div>
-                <div className="text-slate-600 text-xs mt-1">{t.desc}</div>
-              </button>
-            ))}
-          </div>
-          <div className="mt-6">
-            <Button
-              variant="outline"
-              onClick={() => router.back()}
-              className="border-black/10 text-slate-700 hover:bg-[#ebe9e5]"
-            >
-              Cancel
-            </Button>
-          </div>
-        </div>
-      </div>
-    )
-  }
+  const [selectedChannel, setSelectedChannel] = useState<string>("seo_article")
 
   return (
     <div className="p-8">
       <div className="max-w-2xl mx-auto">
         <div className="mb-8">
-          <button
-            onClick={() => setType(null)}
-            className="text-slate-600 hover:text-[#1b1916] text-sm mb-3 flex items-center gap-1 transition-colors"
-          >
-            ← Back
-          </button>
           <h1 className="text-3xl font-bold mb-1">New Task</h1>
-          <p className="text-slate-600">
-            {taskTypes.find((t) => t.value === type)?.label}
-          </p>
+          <p className="text-slate-600">Choose what you want to create</p>
         </div>
 
-        {type === "seo_article" ? (
-          <SeoArticleFlow />
-        ) : (
-          <GenericTaskForm type={type} onBack={() => setType(null)} />
-        )}
+        {/* Channel selector */}
+        <div className="grid grid-cols-3 sm:grid-cols-3 gap-3 mb-8">
+          {channelCards.map((card) => {
+            const isSelected = selectedChannel === card.value
+            if (!card.active) {
+              return (
+                <div
+                  key={card.value}
+                  className="relative p-5 rounded-2xl border border-black/10 bg-white opacity-60 cursor-not-allowed"
+                >
+                  <span className="absolute top-2 right-2 text-[9px] font-bold bg-violet-100 text-violet-500 rounded-full px-1.5 leading-4">
+                    Soon
+                  </span>
+                  <div className="text-2xl mb-2">{card.icon}</div>
+                  <div className="text-[#1b1916] text-sm font-medium">{card.label}</div>
+                  <div className="text-slate-500 text-xs mt-1 leading-snug">{card.desc}</div>
+                </div>
+              )
+            }
+            return (
+              <button
+                key={card.value}
+                type="button"
+                onClick={() => setSelectedChannel(card.value)}
+                className={`relative p-5 rounded-2xl border text-left transition-all ${
+                  isSelected
+                    ? "border-violet-400 bg-violet-50 shadow-sm"
+                    : "border-black/10 bg-white hover:border-violet-300 hover:shadow-sm"
+                }`}
+              >
+                <div className="text-2xl mb-2">{card.icon}</div>
+                <div className={`text-sm font-medium ${isSelected ? "text-violet-700" : "text-[#1b1916]"}`}>
+                  {card.label}
+                </div>
+                <div className="text-slate-500 text-xs mt-1 leading-snug">{card.desc}</div>
+              </button>
+            )
+          })}
+        </div>
+
+        {/* SEO Article flow shown when SEO Article is selected */}
+        {selectedChannel === "seo_article" && <SeoArticleFlow />}
       </div>
     </div>
   )
