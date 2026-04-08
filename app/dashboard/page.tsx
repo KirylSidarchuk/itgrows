@@ -137,19 +137,21 @@ export default function DashboardPage() {
                   <span>🔍</span> SEO Autopilot
                 </Button>
               </Link>
-              <Link href="/dashboard/new-task">
-                <Button className="w-full bg-[#ebe9e5] hover:bg-[#dedad4] text-[#1b1916] justify-start gap-3 border border-black/10">
-                  <span>✍️</span> Create SEO Article
-                </Button>
-              </Link>
-              <div className="relative">
-                <Button disabled className="w-full bg-[#ebe9e5] text-slate-400 justify-start gap-3 border border-black/10 cursor-not-allowed opacity-60">
-                  <span>📱</span> Schedule Social Posts
-                </Button>
-                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold bg-violet-100 text-violet-600 border border-violet-200 rounded-full px-2 py-0.5">
-                  Coming Soon
-                </span>
-              </div>
+              {[
+                { icon: "🎯", label: "Google Ads Automation" },
+                { icon: "💼", label: "LinkedIn Posts" },
+                { icon: "📸", label: "Instagram Posts" },
+                { icon: "𝕏", label: "Twitter / X Posts" },
+              ].map((item) => (
+                <div key={item.label} className="relative">
+                  <Button disabled className="w-full bg-[#ebe9e5] text-slate-400 justify-start gap-3 border border-black/10 cursor-not-allowed opacity-60">
+                    <span>{item.icon}</span> {item.label}
+                  </Button>
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold bg-violet-100 text-violet-600 border border-violet-200 rounded-full px-2 py-0.5">
+                    Coming Soon
+                  </span>
+                </div>
+              ))}
             </CardContent>
           </Card>
         </div>
