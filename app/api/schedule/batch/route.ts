@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/auth"
 import { db } from "@/lib/db"
 import { scheduledPosts, connectedSites } from "@/lib/db/schema"
-import { eq } from "drizzle-orm"
+import { eq, and, count } from "drizzle-orm"
 
 export const runtime = "nodejs"
 
@@ -41,18 +41,40 @@ function extractMetaContent(html: string, name: string): string {
 }
 
 export async function POST(req: NextRequest) {
-  const session = await auth()
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-  }
+  // Allow internal cron calls via x-cron-secret header
+  const cronSecret = process.env.CRON_SECRET
+  const cronHeader = req.headers.get("x-cron-secret")
+  const isInternalCron = cronSecret && cronHeader === cronSecret
 
-  const userId = session.user.id
-
-  let body: { siteUrl?: string; language?: string; tone?: string } = {}
+  let body: { siteUrl?: string; language?: string; tone?: string; userId?: string } = {}
   try {
     body = await req.json()
   } catch {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 })
+  }
+
+  let userId: string
+
+  if (isInternalCron) {
+    // Internal call from cron — resolve userId from the siteUrl's owner
+    if (!body.siteUrl) {
+      return NextResponse.json({ error: "siteUrl required for internal cron calls" }, { status: 400 })
+    }
+    const matchingSite = await db
+      .select()
+      .from(connectedSites)
+      .where(eq(connectedSites.url, body.siteUrl))
+      .limit(1)
+    if (!matchingSite[0]) {
+      return NextResponse.json({ error: "Site not found" }, { status: 404 })
+    }
+    userId = matchingSite[0].userId
+  } else {
+    const session = await auth()
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+    userId = session.user.id
   }
 
   let siteUrl = body.siteUrl
@@ -75,6 +97,19 @@ export async function POST(req: NextRequest) {
       )
     }
     siteUrl = defaultSite.url
+  }
+
+  // Bug 8: Guard against duplicate scheduled posts — if >= 5 already scheduled, skip
+  const [scheduledCountRow] = await db
+    .select({ value: count() })
+    .from(scheduledPosts)
+    .where(and(eq(scheduledPosts.userId, userId), eq(scheduledPosts.status, "scheduled")))
+  const scheduledCount = scheduledCountRow?.value ?? 0
+  if (scheduledCount >= 5) {
+    return NextResponse.json(
+      { success: false, message: "Calendar is already populated" },
+      { status: 200 }
+    )
   }
 
   // Extract site profile if available

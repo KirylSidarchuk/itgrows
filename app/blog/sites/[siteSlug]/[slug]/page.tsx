@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 import { useParams } from "next/navigation"
 import Link from "next/link"
+import DOMPurify from "isomorphic-dompurify"
 import type { BlogPost } from "@/app/api/blog/posts/route"
 
 function formatDate(iso: string): string {
@@ -101,7 +102,7 @@ export default function SiteBlogPostPage() {
           <p className="text-[#1b1916]/60 text-sm mb-10">{formatDate(post.publishedAt)}</p>
           <div
             className="article-content"
-            dangerouslySetInnerHTML={{ __html: post.content }}
+            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.content) }}
           />
           <div className="mt-12 pt-8 border-t border-black/10">
             <Link

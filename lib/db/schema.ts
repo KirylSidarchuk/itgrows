@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, boolean, jsonb, uuid } from "drizzle-orm/pg-core"
+import { pgTable, text, timestamp, boolean, jsonb, uuid, index } from "drizzle-orm/pg-core"
 
 export const users = pgTable("users", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -17,7 +17,7 @@ export const sessions = pgTable("sessions", {
   userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   sessionToken: text("session_token").notNull().unique(),
   expires: timestamp("expires").notNull(),
-})
+}, (t) => [index("sessions_user_id_idx").on(t.userId)])
 
 export const verificationTokens = pgTable("verification_tokens", {
   identifier: text("identifier").notNull(),
@@ -44,7 +44,7 @@ export const connectedSites = pgTable("connected_sites", {
   webhookUrl: text("webhook_url"),
   siteProfile: jsonb("site_profile"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
-})
+}, (t) => [index("connected_sites_user_id_idx").on(t.userId)])
 
 export const tasks = pgTable("tasks", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -56,7 +56,7 @@ export const tasks = pgTable("tasks", {
   articleData: jsonb("article_data"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
-})
+}, (t) => [index("tasks_user_id_idx").on(t.userId)])
 
 export const blogPosts = pgTable("blog_posts", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -70,7 +70,7 @@ export const blogPosts = pgTable("blog_posts", {
   keywords: jsonb("keywords").notNull().default([]),
   coverImageUrl: text("cover_image_url"),
   publishedAt: timestamp("published_at").notNull().defaultNow(),
-})
+}, (t) => [index("blog_posts_user_id_idx").on(t.userId), index("blog_posts_site_slug_idx").on(t.siteSlug)])
 
 export const scheduledPosts = pgTable("scheduled_posts", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -81,9 +81,10 @@ export const scheduledPosts = pgTable("scheduled_posts", {
   scheduledDate: text("scheduled_date").notNull(),
   status: text("status").notNull().default("scheduled"),
   articleData: jsonb("article_data"),
+  blogPostSlug: text("blog_post_slug"),
   publishedAt: timestamp("published_at"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
-})
+}, (t) => [index("scheduled_posts_user_id_idx").on(t.userId), index("scheduled_posts_status_idx").on(t.status)])
 
 export const passwordResetTokens = pgTable("password_reset_tokens", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -91,4 +92,4 @@ export const passwordResetTokens = pgTable("password_reset_tokens", {
   token: text("token").notNull().unique(),
   expires: timestamp("expires").notNull(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
-})
+}, (t) => [index("password_reset_tokens_user_id_idx").on(t.userId)])

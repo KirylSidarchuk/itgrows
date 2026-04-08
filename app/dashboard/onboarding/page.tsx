@@ -62,7 +62,7 @@ export default function OnboardingPage() {
   const [existingBlogUrl, setExistingBlogUrl] = useState("")
   const [genTimer, setGenTimer] = useState(0)
 
-  const placeholderToken = `onb_${Math.random().toString(36).slice(2, 10)}`
+  const [placeholderToken] = useState(() => `onb_${crypto.randomUUID().replace(/-/g, '').slice(0, 12)}`)
 
   // Restore site URL from localStorage on mount
   useEffect(() => {

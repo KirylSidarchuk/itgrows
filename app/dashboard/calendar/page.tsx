@@ -25,6 +25,13 @@ interface ScheduledPost {
   status: PostStatus
   taskId?: string
   blogPostSlug?: string
+  articleData?: {
+    keyword?: string
+    title?: string
+    content?: string
+    metaDescription?: string
+    keywords?: string[]
+  } | null
 }
 
 interface TopicSuggestion {
@@ -383,8 +390,26 @@ export default function CalendarPage() {
   const handlePreview = async (post: ScheduledPost) => {
     setPreviewPost(post)
     setPreviewOpen(true)
-    setPreviewGenerating(true)
     setPreviewError("")
+
+    // If articleData already exists on the post, use it directly without regenerating
+    if (post.articleData?.content && post.articleData?.title) {
+      const cached = {
+        keyword: post.articleData.keyword ?? post.keyword,
+        title: post.articleData.title,
+        content: post.articleData.content,
+        metaDescription: post.articleData.metaDescription ?? "",
+        keywords: post.articleData.keywords ?? [],
+      }
+      setPreviewArticle(cached)
+      setPreviewTitle(cached.title)
+      setPreviewContent(cached.content)
+      setPreviewMeta(cached.metaDescription)
+      setPreviewGenerating(false)
+      return
+    }
+
+    setPreviewGenerating(true)
     setPreviewTitle("")
     setPreviewContent("")
     setPreviewMeta("")

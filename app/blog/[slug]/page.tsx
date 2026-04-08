@@ -3,6 +3,7 @@ import Link from "next/link"
 import { db } from "@/lib/db"
 import { blogPosts } from "@/lib/db/schema"
 import { eq } from "drizzle-orm"
+import sanitizeHtml from "sanitize-html"
 
 function formatDate(date: Date): string {
   return date.toLocaleDateString("en-US", {
@@ -69,7 +70,7 @@ export default async function BlogPostPage({
           {/* Content */}
           <div
             className="article-content"
-            dangerouslySetInnerHTML={{ __html: post.content }}
+            dangerouslySetInnerHTML={{ __html: sanitizeHtml(post.content, { allowedTags: sanitizeHtml.defaults.allowedTags.concat(["img", "h1", "h2", "h3"]), allowedAttributes: { ...sanitizeHtml.defaults.allowedAttributes, img: ["src", "alt", "class"], "*": ["class"] } }) }}
           />
 
           {/* Back link */}

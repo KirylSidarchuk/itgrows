@@ -319,12 +319,6 @@ export async function POST(req: NextRequest) {
       parsed.metaDescription,
     )
 
-    // Debug: log last 500 chars of raw to see if META/KEYWORDS present
-    console.log("[seo/generate] raw tail:", rawContent.slice(-500))
-    console.log("[seo/generate] metaDescription:", parsed.metaDescription)
-    console.log("[seo/generate] keywords:", parsed.keywords)
-    console.log("[seo/generate] seoScore:", seoScore, "breakdown:", seoBreakdown)
-
     // Generate cover image
     let coverImageUrl: string | null = null
     try {
@@ -336,7 +330,6 @@ export async function POST(req: NextRequest) {
       if (imgRes.ok) {
         const imgData = await imgRes.json()
         coverImageUrl = imgData.url ?? null
-        console.log("[seo/generate] coverImageUrl:", coverImageUrl)
       } else {
         console.warn("[seo/generate] Image generation failed:", await imgRes.text())
       }

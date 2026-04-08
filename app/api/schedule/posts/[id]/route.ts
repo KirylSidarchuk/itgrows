@@ -10,8 +10,17 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   const { id } = await params
   const body = await req.json()
 
+  const allowed: Record<string, unknown> = {}
+  if (body.keyword !== undefined) allowed.keyword = body.keyword
+  if (body.language !== undefined) allowed.language = body.language
+  if (body.tone !== undefined) allowed.tone = body.tone
+  if (body.scheduledDate !== undefined) allowed.scheduledDate = body.scheduledDate
+  if (body.articleData !== undefined) allowed.articleData = body.articleData
+  if (body.status !== undefined) allowed.status = body.status
+  if (body.blogPostSlug !== undefined) allowed.blogPostSlug = body.blogPostSlug
+
   const [post] = await db.update(scheduledPosts)
-    .set(body)
+    .set(allowed)
     .where(and(eq(scheduledPosts.id, id), eq(scheduledPosts.userId, session.user.id)))
     .returning()
 

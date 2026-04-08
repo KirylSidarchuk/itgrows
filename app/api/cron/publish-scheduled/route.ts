@@ -133,7 +133,7 @@ export async function GET(req: NextRequest) {
           // Call batch scheduling endpoint
           await fetch(`${baseUrl}/api/schedule/batch`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: { "Content-Type": "application/json", "x-cron-secret": cronSecret },
             body: JSON.stringify({ siteUrl: defaultSite.url }),
           })
         }

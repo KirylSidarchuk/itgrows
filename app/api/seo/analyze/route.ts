@@ -156,7 +156,7 @@ Current year: ${currentYear}${usedKeywords.length > 0 ? `\n\nIMPORTANT: Do NOT s
       console.error("[seo/analyze] Failed to parse LLM response:", parseError, rawContent.slice(0, 500))
     }
 
-    return NextResponse.json({ siteInfo, topics, _debug: rawContent.slice(0, 300), _parseError: parseError })
+    return NextResponse.json({ siteInfo, topics })
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error"
     return NextResponse.json({ error: message }, { status: 500 })

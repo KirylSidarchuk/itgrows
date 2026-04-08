@@ -14,8 +14,16 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     await db.update(connectedSites).set({ isDefault: false }).where(eq(connectedSites.userId, session.user.id))
   }
 
+  const allowed: Record<string, unknown> = {}
+  if (body.name !== undefined) allowed.name = body.name
+  if (body.url !== undefined) allowed.url = body.url
+  if (body.isDefault !== undefined) allowed.isDefault = body.isDefault
+  if (body.blogDomain !== undefined) allowed.blogDomain = body.blogDomain
+  if (body.webhookUrl !== undefined) allowed.webhookUrl = body.webhookUrl
+  if (body.siteProfile !== undefined) allowed.siteProfile = body.siteProfile
+
   const [site] = await db.update(connectedSites)
-    .set(body)
+    .set(allowed)
     .where(and(eq(connectedSites.id, id), eq(connectedSites.userId, session.user.id)))
     .returning()
 
