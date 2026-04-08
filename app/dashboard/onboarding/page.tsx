@@ -315,7 +315,10 @@ export default function OnboardingPage() {
                   {topicImages[i] ? (
                     <img src={topicImages[i]} className="w-full h-32 object-cover rounded-t-xl mb-3" alt={topic.title} />
                   ) : (
-                    <div className="w-full h-32 rounded-t-xl mb-3 bg-gradient-to-r from-slate-100 via-slate-200 to-slate-100 animate-pulse" />
+                    <div className="w-full h-32 rounded-t-xl mb-3 bg-gradient-to-r from-slate-100 via-slate-200 to-slate-100 animate-pulse flex items-center justify-center gap-2">
+                      <span className="animate-spin text-slate-400 text-sm">⟳</span>
+                      <span className="text-slate-400 text-xs font-medium">Generating image…</span>
+                    </div>
                   )}
                   <div className="px-4 pb-4">
                     <p className="font-semibold text-[#1b1916] mb-1">{topic.title}</p>
