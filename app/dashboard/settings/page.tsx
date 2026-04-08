@@ -1267,7 +1267,7 @@ export default function SettingsPage() {
         </div>
 
         {/* Connected Sites */}
-        <Card className="bg-white border-black/10">
+        <Card className="dashboard-glass-card border-0">
           <CardHeader className="flex flex-row items-start justify-between">
             <div>
               <CardTitle className="text-[#1b1916] text-lg flex items-center gap-2">

@@ -129,6 +129,14 @@
   }
 }
 
+/* Dashboard glass cards */
+.dashboard-glass-card {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: 0 4px 24px rgba(124, 58, 237, 0.06);
+}
+
 /* Article content typography */
 .article-content {
   color: #1b1916 !important;

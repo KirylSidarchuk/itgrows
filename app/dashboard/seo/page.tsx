@@ -55,7 +55,7 @@ export default function SeoAutopilotPage() {
 
         <div className="grid md:grid-cols-2 gap-6 mb-8">
           {/* Calendar card */}
-          <div className="bg-white border border-black/10 rounded-2xl p-6">
+          <div className="dashboard-glass-card border-0 rounded-2xl p-6">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
                 <span className="text-xl">📅</span>
@@ -103,7 +103,7 @@ export default function SeoAutopilotPage() {
           </div>
 
           {/* Published Articles card */}
-          <div className="bg-white border border-black/10 rounded-2xl p-6">
+          <div className="dashboard-glass-card border-0 rounded-2xl p-6">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
                 <span className="text-xl">📝</span>
@@ -156,7 +156,7 @@ export default function SeoAutopilotPage() {
           <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4">More Channels — Coming Soon</p>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {COMING_SOON.map(item => (
-              <div key={item.label} className="relative bg-white border border-black/10 rounded-2xl p-5 overflow-hidden">
+              <div key={item.label} className="relative dashboard-glass-card border-0 rounded-2xl p-5 overflow-hidden">
                 <div className="absolute inset-0 bg-white/60 backdrop-blur-[1px] flex items-center justify-center z-10 rounded-2xl">
                   <span className="text-xs font-bold bg-violet-600 text-white rounded-full px-3 py-1 shadow-sm tracking-wide uppercase">
                     Coming Soon

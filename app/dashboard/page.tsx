@@ -86,19 +86,19 @@ export default function DashboardPage() {
 
         {/* Stats */}
         <div className="grid grid-cols-3 gap-4 mb-8">
-          <Card className="bg-white border-black/10">
+          <Card className="dashboard-glass-card border-0">
             <CardContent className="pt-6">
               <p className="text-3xl font-bold text-[#1b1916]">{tasks.length}</p>
               <p className="text-slate-600 text-sm mt-1">Total Tasks</p>
             </CardContent>
           </Card>
-          <Card className="bg-white border-black/10">
+          <Card className="dashboard-glass-card border-0">
             <CardContent className="pt-6">
               <p className="text-3xl font-bold text-yellow-600">{inProgress}</p>
               <p className="text-slate-600 text-sm mt-1">In Progress</p>
             </CardContent>
           </Card>
-          <Card className="bg-white border-black/10">
+          <Card className="dashboard-glass-card border-0">
             <CardContent className="pt-6">
               <p className="text-3xl font-bold text-green-600">{done}</p>
               <p className="text-slate-600 text-sm mt-1">Completed</p>
@@ -108,7 +108,7 @@ export default function DashboardPage() {
 
         {/* Plan & Quick Actions */}
         <div className="grid md:grid-cols-2 gap-6 mb-8">
-          <Card className="bg-white border-black/10">
+          <Card className="dashboard-glass-card border-0">
             <CardHeader>
               <CardTitle className="text-[#1b1916] text-lg">Current Plan</CardTitle>
             </CardHeader>
@@ -127,7 +127,7 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-white border-black/10">
+          <Card className="dashboard-glass-card border-0">
             <CardHeader>
               <CardTitle className="text-[#1b1916] text-lg">Quick Actions</CardTitle>
             </CardHeader>
@@ -197,7 +197,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Recent Tasks */}
-        <Card className="bg-white border-black/10">
+        <Card className="dashboard-glass-card border-0">
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="text-[#1b1916] text-lg">Recent Tasks</CardTitle>
             <Link href="/dashboard/tasks">

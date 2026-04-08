@@ -129,7 +129,7 @@ export default function TasksPage() {
         {/* Task list */}
         <div className="space-y-3">
           {!loading && filtered.length === 0 && (
-            <Card className="bg-white border-black/10">
+            <Card className="dashboard-glass-card border-0">
               <CardContent className="py-16 text-center">
                 <FileText className="w-12 h-12 text-slate-600 mx-auto mb-4" />
                 <p className="text-[#1b1916] font-medium text-lg mb-1">No tasks yet</p>
@@ -156,7 +156,7 @@ export default function TasksPage() {
             return (
               <Card
                 key={task.id}
-                className={`bg-white border-black/10 hover:border-slate-300 transition-colors ${isDone ? "cursor-pointer" : ""}`}
+                className={`dashboard-glass-card border-0 hover:border-slate-300 transition-colors ${isDone ? "cursor-pointer" : ""}`}
                 onClick={isDone ? handleCardClick : undefined}
               >
                 <CardContent className="p-5">
@@ -303,7 +303,7 @@ function RankingProgressTracker({ seoTasks }: { seoTasks: Task[] }) {
   const publishDate = latestTask.createdAt
 
   return (
-    <div className="mb-8 bg-white border border-black/10 rounded-2xl p-6">
+    <div className="mb-8 dashboard-glass-card border-0 rounded-2xl p-6">
       <div className="flex items-center justify-between mb-1">
         <h2 className="text-[#1b1916] font-semibold text-base flex items-center gap-2">
           <span>📈</span> Expected Ranking Progress
