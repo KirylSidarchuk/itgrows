@@ -2,35 +2,19 @@
 
 import { useRouter } from "next/navigation"
 
+/* eslint-disable @next/next/no-img-element */
 const GoogleAdsLogo = () => (
-  <svg width="32" height="32" viewBox="0 0 48 48" fill="none">
-    <path d="M6 34l10-17.3 6 10.4L16 34z" fill="#FBBC04"/>
-    <path d="M28 10L18 27.3H38L28 10z" fill="#4285F4"/>
-    <path d="M38 34a6 6 0 100-12 6 6 0 000 12z" fill="#34A853"/>
-  </svg>
+  <img src="/logos/google-ads.jpg" width={32} height={32} className="rounded-lg object-contain" alt="Google Ads" />
 )
 
 const LinkedInLogo = () => (
-  <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-    <rect width="32" height="32" rx="6" fill="#0A66C2"/>
-    <path d="M8 12h4v12H8V12zm2-5a2 2 0 110 4 2 2 0 010-4zm6 5h3.8v1.6h.1c.5-1 1.8-2 3.7-2 4 0 4.7 2.6 4.7 6V24h-4v-5.6c0-1.3 0-3-1.8-3-1.9 0-2.2 1.5-2.2 3V24H16V12z" fill="white"/>
-  </svg>
+  <img src="/logos/linkedin.png" width={32} height={32} className="rounded-lg object-contain" alt="LinkedIn" />
 )
 
 const InstagramLogo = () => (
-  <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-    <rect width="32" height="32" rx="8" fill="url(#ig-grad)"/>
-    <circle cx="16" cy="16" r="5" stroke="white" strokeWidth="2" fill="none"/>
-    <circle cx="22.5" cy="9.5" r="1.5" fill="white"/>
-    <defs>
-      <linearGradient id="ig-grad" x1="0" y1="32" x2="32" y2="0">
-        <stop offset="0%" stopColor="#F58529"/>
-        <stop offset="50%" stopColor="#DD2A7B"/>
-        <stop offset="100%" stopColor="#8134AF"/>
-      </linearGradient>
-    </defs>
-  </svg>
+  <img src="/logos/instagram.jpg" width={32} height={32} className="rounded-xl" alt="Instagram" />
 )
+/* eslint-enable @next/next/no-img-element */
 
 const XLogo = () => (
   <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
@@ -64,14 +48,15 @@ export default function NewTaskPage() {
               return (
                 <div
                   key={card.value}
-                  className="relative p-6 rounded-2xl border border-black/10 bg-white/60 cursor-not-allowed"
+                  className="relative p-6 rounded-2xl border border-black/10 bg-white/60 cursor-not-allowed overflow-hidden"
                 >
-                  <span className="absolute top-3 right-3 text-xs font-bold bg-violet-100 text-violet-500 rounded-full px-2.5 py-0.5">
+                  <div className="absolute inset-0 bg-white/50 backdrop-blur-[2px] rounded-2xl z-10" />
+                  <span className="absolute top-3 right-3 text-xs font-bold bg-violet-100 text-violet-500 rounded-full px-2.5 py-0.5 z-20">
                     Soon
                   </span>
-                  <div className="mb-3">{card.svgLogo ?? <span className="text-3xl">{card.icon}</span>}</div>
-                  <div className="text-[#1b1916] text-base font-semibold mb-1">{card.label}</div>
-                  <div className="text-slate-400 text-sm leading-snug">{card.desc}</div>
+                  <div className="mb-3 opacity-60">{card.svgLogo ?? <span className="text-3xl">{card.icon}</span>}</div>
+                  <div className="text-[#1b1916] text-base font-semibold mb-1 opacity-60">{card.label}</div>
+                  <div className="text-slate-400 text-sm leading-snug opacity-60">{card.desc}</div>
                 </div>
               )
             }
