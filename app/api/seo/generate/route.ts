@@ -96,7 +96,7 @@ Current year: ${currentYear}
 === AFTER THE ARTICLE ===
 On new lines after the article, write exactly these two lines:
 META_DESCRIPTION: [a compelling meta description of 120-160 characters including the main keyword]
-KEYWORDS: [comma-separated list of 10-15 SEO keywords and phrases used in the article]
+KEYWORDS: [comma-separated list of 10-15 short SEO keyword phrases (2-5 words each, NO full sentences)]
 
 === IMPORTANT RULES ===
 - Use # for H1, ## for H2, ### for H3
@@ -183,7 +183,7 @@ function parseArticle(raw: string): {
   const metaDescription = metaMatch ? metaMatch[1].replace(/^\*+|\*+$/g, "").trim() : ""
   const keywordsRaw = keywordsMatch ? keywordsMatch[1].replace(/^\*+|\*+$/g, "").trim() : ""
   const keywords = keywordsRaw
-    ? keywordsRaw.split(/[,;]/).map((k) => k.trim()).filter(Boolean)
+    ? keywordsRaw.split(/[,;]/).map((k) => k.trim()).filter((k) => k.length > 0 && k.length <= 60 && k.split(" ").length <= 6)
     : []
 
   // Remove meta/keywords lines from body
