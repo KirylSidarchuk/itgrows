@@ -50,7 +50,15 @@ export default function OnboardingPage() {
   const [showFullArticle, setShowFullArticle] = useState(false)
   const [topicImages, setTopicImages] = useState<Record<number, string>>({})
   const [integrationMode, setIntegrationMode] = useState<'simple' | 'advanced' | null>(null)
-  const [connectSubStep, setConnectSubStep] = useState<'experience' | 'setup'>('experience')
+  const [connectSubStep, setConnectSubStep] = useState<'experience' | 'platform' | 'setup'>('experience')
+  const [selectedPlatform, setSelectedPlatform] = useState<'wordpress' | 'shopify' | 'webflow' | 'other' | null>(null)
+  const [wpToken, setWpToken] = useState("")
+  const [shopifyToken, setShopifyToken] = useState("")
+  const [shopifyBlogId, setShopifyBlogId] = useState("")
+  const [webflowToken, setWebflowToken] = useState("")
+  const [webflowCollectionId, setWebflowCollectionId] = useState("")
+  const [webhookUrl, setWebhookUrl] = useState("")
+  const [existingBlogUrl, setExistingBlogUrl] = useState("")
   const [genTimer, setGenTimer] = useState(0)
 
   const placeholderToken = `onb_${Math.random().toString(36).slice(2, 10)}`
@@ -141,18 +149,43 @@ export default function OnboardingPage() {
     try {
       await fetch("/api/user/onboarding-complete", { method: "POST" })
 
-      // Save the site first (step 4 flow with blogDomain)
+      // Save site with integration data
+      const sitePayload: Record<string, string | boolean> = {
+        name: siteUrl.trim(),
+        url: siteUrl.trim(),
+        isDefault: true,
+      }
       if (blogDomain.trim()) {
+        sitePayload.platform = "custom"
+        sitePayload.blogDomain = blogDomain.trim()
+      } else if (selectedPlatform === 'wordpress' && wpToken.trim()) {
+        sitePayload.platform = "wordpress"
+        sitePayload.siteToken = wpToken.trim()
+        sitePayload.existingBlogUrl = existingBlogUrl.trim()
+      } else if (selectedPlatform === 'shopify' && shopifyToken.trim()) {
+        sitePayload.platform = "shopify"
+        sitePayload.siteToken = shopifyToken.trim()
+        sitePayload.shopifyToken = shopifyToken.trim()
+        sitePayload.shopifyBlogId = shopifyBlogId.trim()
+        sitePayload.existingBlogUrl = existingBlogUrl.trim()
+      } else if (selectedPlatform === 'webflow' && webflowToken.trim()) {
+        sitePayload.platform = "webflow"
+        sitePayload.siteToken = webflowToken.trim()
+        sitePayload.webflowToken = webflowToken.trim()
+        sitePayload.webflowCollectionId = webflowCollectionId.trim()
+        sitePayload.existingBlogUrl = existingBlogUrl.trim()
+      } else if (selectedPlatform === 'other' && webhookUrl.trim()) {
+        sitePayload.platform = "php"
+        sitePayload.siteToken = placeholderToken
+        sitePayload.webhookUrl = webhookUrl.trim()
+        sitePayload.existingBlogUrl = existingBlogUrl.trim()
+      }
+
+      if (Object.keys(sitePayload).length > 3) {
         await fetch("/api/sites", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            name: siteUrl.trim(),
-            url: siteUrl.trim(),
-            platform: "custom",
-            isDefault: true,
-            blogDomain: blogDomain.trim(),
-          }),
+          body: JSON.stringify(sitePayload),
         })
       }
 
@@ -400,7 +433,7 @@ export default function OnboardingPage() {
 
                 <div className="space-y-3 mb-6">
                   <button
-                    onClick={() => { setBlogOption('existing'); setConnectSubStep('setup') }}
+                    onClick={() => { setBlogOption('existing'); setConnectSubStep('platform') }}
                     className="w-full text-left rounded-xl border-2 border-black/10 hover:border-violet-400 bg-[#f9f8f7] hover:bg-violet-50 p-5 transition-all"
                   >
                     <p className="font-semibold text-[#1b1916] mb-1">Yes, I have a blog</p>
@@ -516,24 +549,174 @@ export default function OnboardingPage() {
               </>
             )}
 
-            {connectSubStep === 'setup' && blogOption === 'existing' && (
+            {/* Platform selector */}
+            {connectSubStep === 'platform' && (
               <>
-                <div className="text-center mb-8">
-                  <div className="text-4xl mb-4">✅</div>
-                  <h2 className="text-2xl font-bold text-[#1b1916] mb-2">Great, you're all set!</h2>
-                  <p className="text-slate-600 text-sm">
-                    Articles will be queued in your calendar. Connect your existing blog in Settings to auto-publish directly to your site.
-                  </p>
+                <div className="text-center mb-6">
+                  <div className="text-4xl mb-4">🔌</div>
+                  <h2 className="text-2xl font-bold text-[#1b1916] mb-2">What platform is your blog on?</h2>
+                  <p className="text-slate-600 text-sm">We'll show you exactly how to connect it in 2 minutes</p>
                 </div>
 
-                <div className="bg-violet-50 rounded-xl p-5 border border-violet-200 mb-6">
-                  <p className="text-sm font-semibold text-violet-800 mb-2">How it works:</p>
-                  <ol className="text-sm text-violet-700 space-y-2 list-decimal list-inside">
-                    <li>Your 15-day content calendar will be generated now</li>
-                    <li>Each day, one article is published automatically</li>
-                    <li>Go to <strong>Settings → Sites</strong> to connect your existing blog (WordPress, Webflow, Shopify, or any platform with a webhook)</li>
-                  </ol>
+                <div className="grid grid-cols-2 gap-3 mb-6">
+                  {([
+                    { id: 'wordpress', label: 'WordPress', icon: '🟦' },
+                    { id: 'shopify', label: 'Shopify', icon: '🟢' },
+                    { id: 'webflow', label: 'Webflow', icon: '🔵' },
+                    { id: 'other', label: 'Other / Custom', icon: '⚙️' },
+                  ] as const).map(p => (
+                    <button
+                      key={p.id}
+                      onClick={() => { setSelectedPlatform(p.id); setConnectSubStep('setup') }}
+                      className="flex items-center gap-3 p-4 rounded-xl border-2 border-black/10 hover:border-violet-400 bg-[#f9f8f7] hover:bg-violet-50 transition-all text-left"
+                    >
+                      <span className="text-2xl">{p.icon}</span>
+                      <span className="font-semibold text-[#1b1916] text-sm">{p.label}</span>
+                    </button>
+                  ))}
                 </div>
+
+                <button
+                  onClick={handleComplete}
+                  className="w-full py-2 text-sm text-slate-500 hover:text-slate-700 transition-colors"
+                >
+                  Skip for now →
+                </button>
+              </>
+            )}
+
+            {/* Platform-specific setup */}
+            {connectSubStep === 'setup' && blogOption === 'existing' && (
+              <>
+                <div className="text-center mb-6">
+                  <h2 className="text-xl font-bold text-[#1b1916] mb-1">
+                    {selectedPlatform === 'wordpress' && '🟦 Connect WordPress'}
+                    {selectedPlatform === 'shopify' && '🟢 Connect Shopify'}
+                    {selectedPlatform === 'webflow' && '🔵 Connect Webflow'}
+                    {selectedPlatform === 'other' && '⚙️ Connect your blog'}
+                  </h2>
+                </div>
+
+                {selectedPlatform === 'wordpress' && (
+                  <div className="space-y-4 mb-6">
+                    <div className="bg-[#f9f8f7] rounded-xl p-4 border border-black/10 text-sm text-slate-600 space-y-2">
+                      <p className="font-semibold text-[#1b1916]">How to connect WordPress:</p>
+                      <ol className="list-decimal list-inside space-y-1">
+                        <li>In your WordPress admin, go to <strong>Users → Profile</strong></li>
+                        <li>Scroll to <strong>Application Passwords</strong></li>
+                        <li>Enter a name (e.g. "ItGrows") and click <strong>Add New</strong></li>
+                        <li>Copy the password shown and paste it below</li>
+                      </ol>
+                    </div>
+                    <input
+                      type="text"
+                      placeholder="Your blog URL (e.g. https://myblog.com)"
+                      value={existingBlogUrl}
+                      onChange={e => setExistingBlogUrl(e.target.value)}
+                      className="w-full px-4 py-3 rounded-xl border border-black/15 bg-[#f9f8f7] focus:outline-none focus:ring-2 focus:ring-violet-400 text-[#1b1916] placeholder:text-slate-400 text-sm"
+                    />
+                    <input
+                      type="text"
+                      placeholder="WordPress Application Password"
+                      value={wpToken}
+                      onChange={e => setWpToken(e.target.value)}
+                      className="w-full px-4 py-3 rounded-xl border border-black/15 bg-[#f9f8f7] focus:outline-none focus:ring-2 focus:ring-violet-400 text-[#1b1916] placeholder:text-slate-400 text-sm font-mono"
+                    />
+                  </div>
+                )}
+
+                {selectedPlatform === 'shopify' && (
+                  <div className="space-y-4 mb-6">
+                    <div className="bg-[#f9f8f7] rounded-xl p-4 border border-black/10 text-sm text-slate-600 space-y-2">
+                      <p className="font-semibold text-[#1b1916]">How to connect Shopify:</p>
+                      <ol className="list-decimal list-inside space-y-1">
+                        <li>Shopify Admin → <strong>Settings → Apps → Develop apps</strong></li>
+                        <li>Create an app, set API scope: <code className="bg-slate-100 px-1 rounded">write_content</code></li>
+                        <li>Install the app and copy the <strong>Admin API access token</strong></li>
+                        <li>Find your Blog ID: <strong>Online Store → Blog Posts</strong> → check URL</li>
+                      </ol>
+                    </div>
+                    <input
+                      type="text"
+                      placeholder="Your Shopify store URL (e.g. mystore.myshopify.com)"
+                      value={existingBlogUrl}
+                      onChange={e => setExistingBlogUrl(e.target.value)}
+                      className="w-full px-4 py-3 rounded-xl border border-black/15 bg-[#f9f8f7] focus:outline-none focus:ring-2 focus:ring-violet-400 text-[#1b1916] placeholder:text-slate-400 text-sm"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Shopify Admin API Access Token"
+                      value={shopifyToken}
+                      onChange={e => setShopifyToken(e.target.value)}
+                      className="w-full px-4 py-3 rounded-xl border border-black/15 bg-[#f9f8f7] focus:outline-none focus:ring-2 focus:ring-violet-400 text-[#1b1916] placeholder:text-slate-400 text-sm font-mono"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Blog ID (number from URL)"
+                      value={shopifyBlogId}
+                      onChange={e => setShopifyBlogId(e.target.value)}
+                      className="w-full px-4 py-3 rounded-xl border border-black/15 bg-[#f9f8f7] focus:outline-none focus:ring-2 focus:ring-violet-400 text-[#1b1916] placeholder:text-slate-400 text-sm font-mono"
+                    />
+                  </div>
+                )}
+
+                {selectedPlatform === 'webflow' && (
+                  <div className="space-y-4 mb-6">
+                    <div className="bg-[#f9f8f7] rounded-xl p-4 border border-black/10 text-sm text-slate-600 space-y-2">
+                      <p className="font-semibold text-[#1b1916]">How to connect Webflow:</p>
+                      <ol className="list-decimal list-inside space-y-1">
+                        <li>Webflow → <strong>Site Settings → Integrations → API Access</strong></li>
+                        <li>Generate a new API token and copy it</li>
+                        <li>Find Collection ID: <strong>CMS → your blog collection → settings</strong></li>
+                      </ol>
+                    </div>
+                    <input
+                      type="text"
+                      placeholder="Your blog URL (e.g. https://mysite.webflow.io/blog)"
+                      value={existingBlogUrl}
+                      onChange={e => setExistingBlogUrl(e.target.value)}
+                      className="w-full px-4 py-3 rounded-xl border border-black/15 bg-[#f9f8f7] focus:outline-none focus:ring-2 focus:ring-violet-400 text-[#1b1916] placeholder:text-slate-400 text-sm"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Webflow API Token"
+                      value={webflowToken}
+                      onChange={e => setWebflowToken(e.target.value)}
+                      className="w-full px-4 py-3 rounded-xl border border-black/15 bg-[#f9f8f7] focus:outline-none focus:ring-2 focus:ring-violet-400 text-[#1b1916] placeholder:text-slate-400 text-sm font-mono"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Blog Collection ID"
+                      value={webflowCollectionId}
+                      onChange={e => setWebflowCollectionId(e.target.value)}
+                      className="w-full px-4 py-3 rounded-xl border border-black/15 bg-[#f9f8f7] focus:outline-none focus:ring-2 focus:ring-violet-400 text-[#1b1916] placeholder:text-slate-400 text-sm font-mono"
+                    />
+                  </div>
+                )}
+
+                {selectedPlatform === 'other' && (
+                  <div className="space-y-4 mb-6">
+                    <div className="bg-[#f9f8f7] rounded-xl p-4 border border-black/10 text-sm text-slate-600 space-y-2">
+                      <p className="font-semibold text-[#1b1916]">Connect via Webhook</p>
+                      <p>Works with any CMS or custom site. When an article is ready, we'll send it to your URL as a POST request with the full article content (JSON).</p>
+                      <p>Your developer can set this up in minutes — share the URL below with them.</p>
+                    </div>
+                    <input
+                      type="text"
+                      placeholder="Your blog URL (e.g. https://myblog.com/articles)"
+                      value={existingBlogUrl}
+                      onChange={e => setExistingBlogUrl(e.target.value)}
+                      className="w-full px-4 py-3 rounded-xl border border-black/15 bg-[#f9f8f7] focus:outline-none focus:ring-2 focus:ring-violet-400 text-[#1b1916] placeholder:text-slate-400 text-sm"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Webhook URL (where we send articles)"
+                      value={webhookUrl}
+                      onChange={e => setWebhookUrl(e.target.value)}
+                      className="w-full px-4 py-3 rounded-xl border border-black/15 bg-[#f9f8f7] focus:outline-none focus:ring-2 focus:ring-violet-400 text-[#1b1916] placeholder:text-slate-400 text-sm font-mono"
+                    />
+                  </div>
+                )}
 
                 {loadingMsg && (
                   <p className="text-violet-600 text-sm font-medium text-center mb-3 flex items-center justify-center gap-2">
@@ -551,8 +734,15 @@ export default function OnboardingPage() {
                       <span className="animate-spin">⟳</span> Setting up…
                     </>
                   ) : (
-                    "Go to my dashboard →"
+                    "Done! Take me to my dashboard →"
                   )}
+                </button>
+
+                <button
+                  onClick={handleComplete}
+                  className="w-full mt-3 py-2 text-sm text-slate-500 hover:text-slate-700 transition-colors"
+                >
+                  Skip for now →
                 </button>
               </>
             )}
