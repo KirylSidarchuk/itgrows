@@ -87,6 +87,7 @@ export async function GET(req: NextRequest) {
         content: string
         metaDescription: string
         keywords: string[]
+        coverImageUrl?: string
       }
 
       // Publish to connected site (WordPress, etc.)
@@ -133,7 +134,7 @@ export async function GET(req: NextRequest) {
           metaDescription: article.metaDescription ?? "",
           keywords: article.keywords ?? [],
           publishedAt: new Date(),
-          coverImageUrl: (article as { coverImageUrl?: string }).coverImageUrl ?? null,
+          coverImageUrl: article.coverImageUrl ?? null,
         })
         savedSlug = slug
       } catch {
@@ -148,6 +149,7 @@ export async function GET(req: NextRequest) {
           articleData: article,
           publishedAt: new Date(),
           ...(savedSlug ? { blogPostSlug: savedSlug } : {}),
+          ...(article.coverImageUrl ? { coverImageUrl: article.coverImageUrl } : {}),
         })
         .where(eq(scheduledPosts.id, post.id))
 

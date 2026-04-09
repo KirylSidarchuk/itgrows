@@ -4,8 +4,12 @@ import { auth } from "@/auth"
 const PROXY_URL = "http://34.60.133.229:4000"
 
 export async function POST(req: NextRequest) {
-  const session = await auth()
-  if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  const internalSecret = process.env.CRON_SECRET
+  const isInternal = internalSecret && req.headers.get("x-internal-secret") === internalSecret
+  if (!isInternal) {
+    const session = await auth()
+    if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  }
 
   const { title, keywords } = await req.json()
 
