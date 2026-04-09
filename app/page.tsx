@@ -3,6 +3,7 @@ import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { auth } from "@/auth"
 
 const features = [
   {
@@ -109,7 +110,10 @@ const plans = [
   },
 ]
 
-export default function HomePage() {
+export default async function HomePage() {
+  const session = await auth()
+  const user = session?.user
+
   return (
     <div className="min-h-screen text-[#1b1916]" style={{ backgroundColor: "#f3f2f1", fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" }}>
       {/* Nav */}
@@ -126,12 +130,28 @@ export default function HomePage() {
             <Link href="/blog" className="hover:text-[#1b1916] transition-colors">Blog</Link>
           </div>
           <div className="flex items-center gap-3">
-            <Link href="/login">
-              <Button variant="ghost" className="text-slate-600 hover:text-[#1b1916]">Login</Button>
-            </Link>
-            <Link href="/signup">
-              <Button className="bg-[#1b1916] hover:bg-[#333028] text-[#f3f2f1]">Get Started</Button>
-            </Link>
+            {user ? (
+              <>
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-600 to-pink-500 flex items-center justify-center text-white text-xs font-bold shrink-0">
+                    {(user.name ?? user.email ?? "U")[0].toUpperCase()}
+                  </div>
+                  <span className="hidden md:block text-sm text-slate-600 max-w-[140px] truncate">{user.name ?? user.email}</span>
+                </div>
+                <Link href="/dashboard">
+                  <Button className="bg-violet-600 hover:bg-violet-500 text-white">Go to Dashboard</Button>
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link href="/login">
+                  <Button variant="ghost" className="text-slate-600 hover:text-[#1b1916]">Login</Button>
+                </Link>
+                <Link href="/signup">
+                  <Button className="bg-[#1b1916] hover:bg-[#333028] text-[#f3f2f1]">Get Started</Button>
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </nav>
