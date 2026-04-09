@@ -4,6 +4,7 @@ import { db } from "@/lib/db"
 import { blogPosts } from "@/lib/db/schema"
 import { eq } from "drizzle-orm"
 import sanitizeHtml from "sanitize-html"
+import type { Metadata } from "next"
 
 function formatDate(date: Date): string {
   return date.toLocaleDateString("en-US", {
@@ -11,6 +12,41 @@ function formatDate(date: Date): string {
     month: "long",
     day: "numeric",
   })
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>
+}): Promise<Metadata> {
+  const { slug } = await params
+  const [post] = await db.select().from(blogPosts).where(eq(blogPosts.slug, slug))
+  if (!post) return {}
+
+  const imageUrl = `https://www.itgrows.ai/api/blog/image/${post.id}`
+
+  return {
+    title: post.title,
+    description: post.metaDescription || post.title,
+    keywords: Array.isArray(post.keywords) ? (post.keywords as string[]).join(", ") : undefined,
+    alternates: {
+      canonical: `https://www.itgrows.ai/blog/${slug}`,
+    },
+    openGraph: {
+      title: post.title,
+      description: post.metaDescription || post.title,
+      url: `https://www.itgrows.ai/blog/${slug}`,
+      type: "article",
+      publishedTime: post.publishedAt.toISOString(),
+      images: post.coverImageUrl ? [{ url: imageUrl, width: 1200, height: 630, alt: post.title }] : [],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: post.title,
+      description: post.metaDescription || post.title,
+      images: post.coverImageUrl ? [imageUrl] : [],
+    },
+  }
 }
 
 export default async function BlogPostPage({
@@ -29,8 +65,34 @@ export default async function BlogPostPage({
     notFound()
   }
 
+  const articleSchema = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: post.title,
+    description: post.metaDescription || post.title,
+    datePublished: post.publishedAt.toISOString(),
+    dateModified: post.publishedAt.toISOString(),
+    publisher: {
+      "@type": "Organization",
+      name: "ItGrows.ai",
+      url: "https://www.itgrows.ai",
+    },
+    mainEntityOfPage: {
+      "@type": "WebPage",
+      "@id": `https://www.itgrows.ai/blog/${slug}`,
+    },
+    ...(post.coverImageUrl
+      ? { image: `https://www.itgrows.ai/api/blog/image/${post.id}` }
+      : {}),
+  }
+
   return (
     <div className="min-h-screen bg-[#f3f2f1] text-[#1b1916]">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }}
+      />
+
       {/* Header */}
       <header className="border-b border-black/10 px-6 py-4 bg-[#f3f2f1]">
         <div className="max-w-3xl mx-auto flex items-center justify-between">
@@ -55,6 +117,7 @@ export default async function BlogPostPage({
           {/* Cover Image */}
           {post.coverImageUrl && (
             <div className="w-full h-64 md:h-96 overflow-hidden rounded-2xl mb-8">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={`/api/blog/image/${post.id}`} alt={post.title} className="w-full h-full object-cover" />
             </div>
           )}
