@@ -105,18 +105,33 @@ export async function GET(req: NextRequest) {
         }
 
         const wpPayload = site.platform === "octobercms" || site.platform === "php"
-          ? { token: site.siteToken, title: article.title, content: article.content, metaDescription: article.metaDescription, slug: generateSlug(article.title) }
-          : { token: site.siteToken, title: article.title, content: article.content, metaDescription: article.metaDescription }
+          ? { token: site.siteToken, title: article.title, content: article.content, metaDescription: article.metaDescription, slug: generateSlug(article.title), keywords: article.keywords ?? [], coverImageUrl: article.coverImageUrl ?? null }
+          : { token: site.siteToken, title: article.title, content: article.content, metaDescription: article.metaDescription, keywords: article.keywords ?? [], coverImageUrl: article.coverImageUrl ?? null }
 
+        let publishedUrl: string | null = null
         try {
-          await fetch(endpoint, {
+          const wpRes = await fetch(endpoint, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(wpPayload),
             signal: AbortSignal.timeout(20000),
           })
+          if (wpRes.ok) {
+            const wpData = (await wpRes.json()) as { url?: string }
+            publishedUrl = wpData.url ?? null
+          }
         } catch {
           // Non-fatal: site may be unreachable but we still save to blog_posts
+        }
+
+        // TODO: ping Google Indexing API after publishing
+        // Requires a Google Service Account with the Indexing API enabled.
+        // Set GOOGLE_INDEXING_SA_KEY env var (JSON string of service account credentials).
+        // Endpoint: POST https://indexing.googleapis.com/v3/urlNotifications:publish
+        // Body: { "url": publishedUrl, "type": "URL_UPDATED" }
+        // For now, log the published URL so it's visible in Vercel logs.
+        if (publishedUrl) {
+          console.log(`[SEO Autopilot] Published: ${publishedUrl}`)
         }
       }
 

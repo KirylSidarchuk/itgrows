@@ -12,6 +12,7 @@ interface PublishRequest {
   siteSlug?: string
   keywords?: string[]
   keyword?: string
+  coverImageUrl?: string | null
   webhookUrl?: string
 }
 
@@ -37,7 +38,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: "Invalid request body" }, { status: 400 })
   }
 
-  const { siteUrl, siteToken, platform, title, content, metaDescription, siteId, siteSlug, keywords, keyword, webhookUrl } = body
+  const { siteUrl, siteToken, platform, title, content, metaDescription, siteId, siteSlug, keywords, keyword, coverImageUrl, webhookUrl } = body
 
   if (!siteUrl || !siteToken || !title || !content) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
@@ -55,7 +56,14 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   // Remove trailing slash
   normalUrl = normalUrl.replace(/\/$/, "")
 
-  const payload = { token: siteToken, title, content, metaDescription: metaDescription ?? "" }
+  const payload = {
+    token: siteToken,
+    title,
+    content,
+    metaDescription: metaDescription ?? "",
+    keywords: keywords ?? [],
+    coverImageUrl: coverImageUrl ?? null,
+  }
 
   // Choose endpoint based on platform
   let endpoint: string
