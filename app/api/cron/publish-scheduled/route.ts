@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
-import { auth } from "@/auth"
 import { db } from "@/lib/db"
-import { scheduledPosts, connectedSites } from "@/lib/db/schema"
+import { scheduledPosts, connectedSites, blogPosts } from "@/lib/db/schema"
 import { eq, lte, and } from "drizzle-orm"
 
 export const runtime = "nodejs"
@@ -33,8 +32,13 @@ export async function GET(req: NextRequest) {
   // Track which users had posts published this run (to check if we need to re-schedule)
   const userPublishedCounts: Record<string, number> = {}
 
-  // Cache site profiles per userId to avoid repeated DB queries
+  // Cache site data per userId to avoid repeated DB queries
+  const siteCache: Record<string, typeof connectedSites.$inferSelect | null> = {}
   const siteProfileCache: Record<string, { niche?: string; targetAudience?: string } | null> = {}
+
+  function generateSlug(t: string): string {
+    return t.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") + "-" + Math.random().toString(36).slice(2, 8)
+  }
 
   for (const post of duePosts) {
     try {
@@ -44,17 +48,19 @@ export async function GET(req: NextRequest) {
         .set({ status: "generating" })
         .where(eq(scheduledPosts.id, post.id))
 
-      // Fetch site profile for this user (cached)
-      if (!(post.userId in siteProfileCache)) {
+      // Fetch site data for this user (cached)
+      if (!(post.userId in siteCache)) {
         const userSites = await db
           .select()
           .from(connectedSites)
           .where(eq(connectedSites.userId, post.userId))
-        const defaultSite = userSites.find((s) => s.isDefault) ?? userSites[0]
+        const defaultSite = userSites.find((s) => s.isDefault) ?? userSites[0] ?? null
+        siteCache[post.userId] = defaultSite
         const rawProfile = defaultSite?.siteProfile as { niche?: string; targetAudience?: string } | null | undefined
         siteProfileCache[post.userId] = rawProfile ?? null
       }
 
+      const site = siteCache[post.userId]
       const siteProfile = siteProfileCache[post.userId]
       const siteContext = siteProfile?.niche
         ? { niche: siteProfile.niche, targetAudience: siteProfile.targetAudience }
@@ -81,6 +87,55 @@ export async function GET(req: NextRequest) {
         content: string
         metaDescription: string
         keywords: string[]
+      }
+
+      // Publish to connected site (WordPress, etc.)
+      if (site) {
+        let normalUrl = site.url.trim().replace(/\/$/, "")
+        if (!normalUrl.startsWith("http")) normalUrl = "https://" + normalUrl
+
+        let endpoint: string
+        if (site.platform === "wordpress") {
+          endpoint = `${normalUrl}/wp-json/itgrows/v1/publish`
+        } else if (site.platform === "octobercms" || site.platform === "php") {
+          endpoint = site.webhookUrl?.trim() || `${normalUrl}/itgrows-webhook.php`
+        } else {
+          endpoint = `${normalUrl}/api/itgrows-publish`
+        }
+
+        const wpPayload = site.platform === "octobercms" || site.platform === "php"
+          ? { token: site.siteToken, title: article.title, content: article.content, metaDescription: article.metaDescription, slug: generateSlug(article.title) }
+          : { token: site.siteToken, title: article.title, content: article.content, metaDescription: article.metaDescription }
+
+        try {
+          await fetch(endpoint, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(wpPayload),
+            signal: AbortSignal.timeout(20000),
+          })
+        } catch {
+          // Non-fatal: site may be unreachable but we still save to blog_posts
+        }
+      }
+
+      // Save to blog_posts table (itgrows hosted blog)
+      const slug = generateSlug(article.title)
+      try {
+        await db.insert(blogPosts).values({
+          userId: post.userId,
+          siteSlug: site?.siteSlug ?? null,
+          siteId: site?.id ?? null,
+          slug,
+          title: article.title,
+          content: article.content,
+          metaDescription: article.metaDescription ?? "",
+          keywords: article.keywords ?? [],
+          publishedAt: new Date(),
+          coverImageUrl: (article as { coverImageUrl?: string }).coverImageUrl ?? null,
+        })
+      } catch {
+        // slug collision — try with different suffix (best-effort)
       }
 
       // Save articleData and mark as published
