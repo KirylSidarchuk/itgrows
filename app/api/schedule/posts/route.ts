@@ -28,6 +28,7 @@ export async function POST(req: NextRequest) {
     scheduledDate: body.scheduledDate,
     status: body.status || "scheduled",
     articleData: body.articleData || null,
+    coverImageUrl: body.coverImageUrl || null,
   }).returning()
 
   return NextResponse.json({ post })

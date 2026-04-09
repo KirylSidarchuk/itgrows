@@ -18,6 +18,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   if (body.articleData !== undefined) allowed.articleData = body.articleData
   if (body.status !== undefined) allowed.status = body.status
   if (body.blogPostSlug !== undefined) allowed.blogPostSlug = body.blogPostSlug
+  if (body.coverImageUrl !== undefined) allowed.coverImageUrl = body.coverImageUrl
 
   const [post] = await db.update(scheduledPosts)
     .set(allowed)

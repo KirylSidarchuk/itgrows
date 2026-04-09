@@ -25,6 +25,7 @@ interface ScheduledPost {
   status: PostStatus
   taskId?: string
   blogPostSlug?: string
+  coverImageUrl?: string | null
   publishedAt?: string | null
   articleData?: {
     keyword?: string
@@ -551,7 +552,7 @@ export default function CalendarPage() {
   // Lazy-generate cover images for scheduled posts (first 5 without images)
   useEffect(() => {
     const toGenerate = posts
-      .filter(p => p.status === "scheduled" && !p.blogPostSlug && !scheduledImages[p.id])
+      .filter(p => p.status === "scheduled" && !p.blogPostSlug && !p.coverImageUrl && !scheduledImages[p.id])
       .slice(0, 5)
     toGenerate.forEach(post => {
       fetch("/api/images/generate", {
@@ -562,6 +563,14 @@ export default function CalendarPage() {
         .then(r => r.json())
         .then((d: { url?: string }) => {
           if (d.url) {
+            // Persist to DB so image survives page refresh
+            fetch(`/api/schedule/posts/${post.id}`, {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ coverImageUrl: d.url }),
+            }).catch(() => {})
+            // Also update local state for immediate display
+            setPosts(prev => prev.map(p => p.id === post.id ? { ...p, coverImageUrl: d.url } : p))
             setScheduledImages(prev => {
               const next = { ...prev, [post.id]: d.url! }
               try { sessionStorage.setItem("calendarScheduledImages", JSON.stringify(next)) } catch {}
@@ -1103,9 +1112,9 @@ export default function CalendarPage() {
                                   className="w-14 h-10 object-cover rounded-lg flex-shrink-0"
                                   alt=""
                                 />
-                              ) : scheduledImages[post.id] ? (
+                              ) : (post.coverImageUrl || scheduledImages[post.id]) ? (
                                 <img
-                                  src={scheduledImages[post.id]}
+                                  src={post.coverImageUrl || scheduledImages[post.id]}
                                   className="w-14 h-10 object-cover rounded-lg flex-shrink-0 opacity-70"
                                   alt=""
                                 />
@@ -1226,7 +1235,7 @@ export default function CalendarPage() {
                         {dayPosts.map((post) => {
                           const imgSrc = post.status === "published" && post.blogPostSlug
                             ? `/api/blog/image/by-slug/${post.blogPostSlug}`
-                            : scheduledImages[post.id] ?? null
+                            : (post.coverImageUrl || scheduledImages[post.id] || null)
                           return (
                             <div
                               key={post.id}

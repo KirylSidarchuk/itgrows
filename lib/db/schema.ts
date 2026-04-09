@@ -82,6 +82,7 @@ export const scheduledPosts = pgTable("scheduled_posts", {
   status: text("status").notNull().default("scheduled"),
   articleData: jsonb("article_data"),
   blogPostSlug: text("blog_post_slug"),
+  coverImageUrl: text("cover_image_url"),
   publishedAt: timestamp("published_at"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 }, (t) => [index("scheduled_posts_user_id_idx").on(t.userId), index("scheduled_posts_status_idx").on(t.status)])
