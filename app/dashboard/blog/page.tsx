@@ -6,7 +6,6 @@ import Link from "next/link"
 import { useSession } from "next-auth/react"
 import { Trash2, ExternalLink } from "lucide-react"
 import type { BlogPost } from "@/app/api/blog/posts/route"
-import SeoHubTabs from "@/components/dashboard/SeoHubTabs"
 
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString("en-US", {
@@ -80,7 +79,6 @@ export default function DashboardBlogPage() {
   return (
     <div className="p-8">
       <div className="max-w-5xl mx-auto">
-        <SeoHubTabs />
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-3xl font-bold mb-1 dashboard-heading">Blog Articles</h1>
