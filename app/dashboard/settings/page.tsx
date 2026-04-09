@@ -1273,7 +1273,7 @@ export default function SettingsPage() {
               <CardTitle className="text-[#1b1916] text-lg flex items-center gap-2">
                 {defaultSite ? (
                   <>
-                    <span className="text-green-400">&#10003;</span>
+                    <span className="text-green-600">&#10003;</span>
                     Your Connected Sites
                   </>
                 ) : (
@@ -1284,7 +1284,7 @@ export default function SettingsPage() {
                 Add your website to automatically publish articles from ItGrows.ai
               </p>
               {defaultSite && (
-                <p className="text-green-400 text-xs mt-1">Default: {defaultSite.name}</p>
+                <p className="text-green-600 text-xs mt-1">Default: {defaultSite.name}</p>
               )}
             </div>
             {!showWizard && (
@@ -1315,11 +1315,11 @@ export default function SettingsPage() {
                     <div className="flex items-center gap-2">
                       <span className="text-[#1b1916] font-medium text-sm">{site.name}</span>
                       {site.isDefault && (
-                        <span className="px-2 py-0.5 rounded-full bg-green-900/40 border border-green-500/30 text-green-400 text-xs">
+                        <span className="px-2 py-0.5 rounded-full bg-green-100 border border-green-300 text-green-700 text-xs font-medium">
                           Default
                         </span>
                       )}
-                      <span className="px-2 py-0.5 rounded-full bg-violet-900/40 border border-violet-500/30 text-violet-300 text-xs">
+                      <span className="px-2 py-0.5 rounded-full bg-violet-100 border border-violet-300 text-violet-700 text-xs font-medium">
                         {platformLabel(site.platform as Parameters<typeof platformLabel>[0])}
                       </span>
                     </div>
@@ -1329,7 +1329,7 @@ export default function SettingsPage() {
                     {!site.isDefault && (
                       <button
                         onClick={() => handleSetDefault(site.id)}
-                        className="text-xs text-slate-600 hover:text-violet-300 transition-colors"
+                        className="text-xs text-slate-500 hover:text-violet-600 transition-colors"
                       >
                         Set default
                       </button>
@@ -1343,9 +1343,9 @@ export default function SettingsPage() {
                   </div>
                 </div>
                 {site.siteSlug && (
-                  <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-green-900/10 border border-green-500/20 text-sm">
-                    <span className="text-green-400 shrink-0">&#10003; Connected!</span>
-                    <span className="text-slate-600 text-xs">Articles will be published to your site automatically.</span>
+                  <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-green-50 border border-green-200 text-sm">
+                    <span className="text-green-600 shrink-0 font-semibold">&#10003; Connected!</span>
+                    <span className="text-slate-700 text-xs">Articles will be published to your site automatically.</span>
                   </div>
                 )}
               </div>
