@@ -121,6 +121,7 @@ export async function GET(req: NextRequest) {
 
       // Save to blog_posts table (itgrows hosted blog)
       const slug = generateSlug(article.title)
+      let savedSlug: string | null = null
       try {
         await db.insert(blogPosts).values({
           userId: post.userId,
@@ -134,17 +135,19 @@ export async function GET(req: NextRequest) {
           publishedAt: new Date(),
           coverImageUrl: (article as { coverImageUrl?: string }).coverImageUrl ?? null,
         })
+        savedSlug = slug
       } catch {
-        // slug collision — try with different suffix (best-effort)
+        // slug collision — best-effort, continue without slug
       }
 
-      // Save articleData and mark as published
+      // Save articleData, blogPostSlug, and mark as published
       await db
         .update(scheduledPosts)
         .set({
           status: "published",
           articleData: article,
           publishedAt: new Date(),
+          ...(savedSlug ? { blogPostSlug: savedSlug } : {}),
         })
         .where(eq(scheduledPosts.id, post.id))
 
