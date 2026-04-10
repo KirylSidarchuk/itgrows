@@ -3,6 +3,8 @@ import { db } from "@/lib/db"
 import { blogPosts } from "@/lib/db/schema"
 import { desc } from "drizzle-orm"
 
+export const revalidate = 0 // always fetch fresh from DB
+
 function stripHtml(html: string): string {
   return html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim()
 }
