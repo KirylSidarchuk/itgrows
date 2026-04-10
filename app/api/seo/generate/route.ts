@@ -322,9 +322,13 @@ export async function POST(req: NextRequest) {
     // Generate cover image
     let coverImageUrl: string | null = null
     try {
+      const internalHeader = req.headers.get("x-internal-secret")
       const imgRes = await fetch(`${req.nextUrl.origin}/api/images/generate`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", "Cookie": req.headers.get("cookie") || "" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(internalHeader ? { "x-internal-secret": internalHeader } : { "Cookie": req.headers.get("cookie") || "" }),
+        },
         body: JSON.stringify({ title: parsed.title, keywords: parsed.keywords }),
       })
       if (imgRes.ok) {
