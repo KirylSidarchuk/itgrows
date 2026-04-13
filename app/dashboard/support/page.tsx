@@ -3,12 +3,8 @@
 import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Badge } from "@/components/ui/badge"
-
-type Message = { role: "user" | "support"; text: string; ts: string }
 
 const faqs = [
   { q: "How long does it take to generate an article?", a: "Most articles are generated within 2-5 minutes. Complex long-form content may take up to 10 minutes." },
@@ -18,34 +14,9 @@ const faqs = [
 ]
 
 export default function SupportPage() {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      role: "support",
-      text: "Hi there! 👋 I'm your itgrows.ai support assistant. How can I help you today?",
-      ts: new Date().toISOString(),
-    },
-  ])
-  const [input, setInput] = useState("")
   const [subject, setSubject] = useState("")
   const [feedbackText, setFeedbackText] = useState("")
   const [feedbackSent, setFeedbackSent] = useState(false)
-
-  const sendMessage = () => {
-    if (!input.trim()) return
-    const userMsg: Message = { role: "user", text: input, ts: new Date().toISOString() }
-    setMessages((prev) => [...prev, userMsg])
-    setInput("")
-
-    // Auto reply
-    setTimeout(() => {
-      const reply: Message = {
-        role: "support",
-        text: "Thanks for your message! A support agent will get back to you within 2-4 hours. In the meantime, check our FAQ below for quick answers.",
-        ts: new Date().toISOString(),
-      }
-      setMessages((prev) => [...prev, reply])
-    }, 1000)
-  }
 
   const sendFeedback = async () => {
     if (!feedbackText.trim()) return
@@ -63,62 +34,15 @@ export default function SupportPage() {
 
   return (
     <div className="p-8">
-      <div className="max-w-4xl mx-auto">
+      <div className="w-full">
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-1 text-[#1b1916] dashboard-heading">Support & Feedback</h1>
           <p className="text-slate-600">We&apos;re here to help you grow</p>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-6 mb-8">
-          {/* Live Chat */}
-          <Card className="bg-white border-black/10 flex flex-col h-[500px]">
-            <CardHeader className="border-b border-black/10 pb-4">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-600 to-pink-600 flex items-center justify-center text-sm text-white">
-                  GE
-                </div>
-                <div>
-                  <CardTitle className="text-[#1b1916] text-base">Live Support</CardTitle>
-                  <div className="flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-green-500"></span>
-                    <span className="text-slate-500 text-xs">Online</span>
-                  </div>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="flex-1 flex flex-col p-4 overflow-hidden">
-              <div className="flex-1 overflow-y-auto space-y-3 mb-4 pr-1">
-                {messages.map((msg, i) => (
-                  <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-                    <div
-                      className={`max-w-[80%] px-4 py-2 rounded-2xl text-sm ${
-                        msg.role === "user"
-                          ? "bg-violet-600 text-white rounded-br-sm"
-                          : "bg-[#ebe9e5] text-[#1b1916] rounded-bl-sm"
-                      }`}
-                    >
-                      {msg.text}
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <div className="flex gap-2">
-                <Input
-                  placeholder="Type a message..."
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && sendMessage()}
-                  className="bg-white border-slate-200 text-[#1b1916] placeholder:text-slate-400 focus:border-violet-500"
-                />
-                <Button onClick={sendMessage} className="bg-violet-600 hover:bg-violet-500 text-white shrink-0">
-                  Send
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Feedback form */}
-          <Card className="bg-white border-black/10">
+        {/* Feedback form */}
+        <div className="mb-8">
+          <Card className="bg-white border-black/10 w-full">
             <CardHeader>
               <CardTitle className="text-[#1b1916]">Send Feedback</CardTitle>
             </CardHeader>
