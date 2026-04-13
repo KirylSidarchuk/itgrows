@@ -966,7 +966,7 @@ export default function CalendarPage() {
           <Card className="mb-8 bg-white border-black/10">
             <CardContent className="p-6">
               <div className="flex flex-col gap-4">
-                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div>
                     <h2 className="text-lg font-semibold text-[#1b1916] mb-1">Auto-Publishing</h2>
                     <p className="text-sm text-slate-600">
@@ -975,7 +975,7 @@ export default function CalendarPage() {
                   </div>
                   <div className="shrink-0">
                     {batchStatus === "no-site" && (
-                      <p className="text-sm text-amber-600 font-medium">
+                      <p className="text-base text-amber-600 font-medium">
                         <Link href="/dashboard/settings?connect=1" className="text-amber-600 cursor-pointer hover:underline">
                           Connect a site in Settings first
                         </Link>
