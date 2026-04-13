@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react"
 import { useRouter } from "next/navigation"
+import Link from "next/link"
 import { useSession } from "next-auth/react"
 import { getConnectedSites, getDefaultSite } from "@/lib/connectedSites"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -981,7 +982,9 @@ export default function CalendarPage() {
                   <div className="shrink-0">
                     {batchStatus === "no-site" && (
                       <p className="text-sm text-amber-600 font-medium">
-                        Connect a site in Settings first
+                        <Link href="/dashboard/settings?connect=1" className="text-amber-600 cursor-pointer hover:underline">
+                          Connect a site in Settings first
+                        </Link>
                       </p>
                     )}
                     {batchStatus === "loading" && (
