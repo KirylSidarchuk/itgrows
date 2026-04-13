@@ -1466,11 +1466,14 @@ echo json_encode(['success' => true]);
 
 // ─── Settings page ────────────────────────────────────────────────────────────
 
+type TestStatus = { loading: boolean; success?: boolean; message?: string }
+
 function SettingsContent() {
   const searchParams = useSearchParams()
   const [sites, setSites] = useState<ConnectedSite[]>([])
   const [showWizard, setShowWizard] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [testStatuses, setTestStatuses] = useState<Record<string, TestStatus>>({})
 
   useEffect(() => {
     fetch("/api/sites")
@@ -1517,6 +1520,27 @@ function SettingsContent() {
       body: JSON.stringify({ isDefault: true }),
     }).catch(() => {})
     setSites((prev) => prev.map((s) => ({ ...s, isDefault: s.id === id })))
+  }
+
+  const handleTestConnection = async (id: string) => {
+    setTestStatuses((prev) => ({ ...prev, [id]: { loading: true } }))
+    try {
+      const res = await fetch("/api/test-connection", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ siteId: id }),
+      })
+      const data = await res.json() as { success: boolean; message: string }
+      setTestStatuses((prev) => ({
+        ...prev,
+        [id]: { loading: false, success: data.success, message: data.message },
+      }))
+    } catch {
+      setTestStatuses((prev) => ({
+        ...prev,
+        [id]: { loading: false, success: false, message: "Request failed" },
+      }))
+    }
   }
 
   const defaultSite = sites.find((s) => s.isDefault) ?? sites[0] ?? null
@@ -1571,48 +1595,71 @@ function SettingsContent() {
               </div>
             )}
 
-            {sites.map((site) => (
-              <div key={site.id} className="space-y-2">
-                <div className="flex items-center justify-between p-4 rounded-xl bg-[#ebe9e5] border border-black/10">
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2">
-                      <span className="text-[#1b1916] font-medium text-sm">{site.name}</span>
-                      {site.isDefault && (
-                        <span className="px-2 py-0.5 rounded-full bg-green-100 border border-green-300 text-green-700 text-xs font-medium">
-                          Default
+            {sites.map((site) => {
+              const testStatus = testStatuses[site.id]
+              return (
+                <div key={site.id} className="space-y-2">
+                  <div className="flex items-center justify-between p-4 rounded-xl bg-[#ebe9e5] border border-black/10">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[#1b1916] font-medium text-sm">{site.name}</span>
+                        {site.isDefault && (
+                          <span className="px-2 py-0.5 rounded-full bg-green-100 border border-green-300 text-green-700 text-xs font-medium">
+                            Default
+                          </span>
+                        )}
+                        <span className="px-2 py-0.5 rounded-full bg-violet-100 border border-violet-300 text-violet-700 text-xs font-medium">
+                          {platformLabel(site.platform as Parameters<typeof platformLabel>[0])}
                         </span>
-                      )}
-                      <span className="px-2 py-0.5 rounded-full bg-violet-100 border border-violet-300 text-violet-700 text-xs font-medium">
-                        {platformLabel(site.platform as Parameters<typeof platformLabel>[0])}
-                      </span>
+                      </div>
+                      <p className="text-slate-600 text-xs mt-0.5 truncate">{site.url}</p>
                     </div>
-                    <p className="text-slate-600 text-xs mt-0.5 truncate">{site.url}</p>
-                  </div>
-                  <div className="flex items-center gap-2 ml-3 shrink-0">
-                    {!site.isDefault && (
+                    <div className="flex items-center gap-2 ml-3 shrink-0">
                       <button
-                        onClick={() => handleSetDefault(site.id)}
-                        className="text-xs text-slate-500 hover:text-violet-600 transition-colors"
+                        onClick={() => handleTestConnection(site.id)}
+                        disabled={testStatus?.loading}
+                        className="text-xs text-violet-500 hover:text-violet-700 transition-colors disabled:opacity-50"
+                        title="Test connection"
                       >
-                        Set default
+                        {testStatus?.loading ? "Testing…" : "⚡ Test"}
                       </button>
-                    )}
-                    <button
-                      onClick={() => handleDelete(site.id)}
-                      className="text-xs text-red-400 hover:text-red-300 transition-colors"
+                      {!site.isDefault && (
+                        <button
+                          onClick={() => handleSetDefault(site.id)}
+                          className="text-xs text-slate-500 hover:text-violet-600 transition-colors"
+                        >
+                          Set default
+                        </button>
+                      )}
+                      <button
+                        onClick={() => handleDelete(site.id)}
+                        className="text-xs text-red-400 hover:text-red-300 transition-colors"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+                  {testStatus && !testStatus.loading && (
+                    <div
+                      className={`flex items-center gap-2 px-4 py-2 rounded-xl border text-xs ${
+                        testStatus.success
+                          ? "bg-green-50 border-green-200 text-green-700"
+                          : "bg-red-50 border-red-200 text-red-700"
+                      }`}
                     >
-                      Remove
-                    </button>
-                  </div>
+                      <span>{testStatus.success ? "✅" : "❌"}</span>
+                      <span>{testStatus.success ? "Connection working" : `Connection failed: ${testStatus.message}`}</span>
+                    </div>
+                  )}
+                  {site.siteSlug && !testStatus && (
+                    <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-green-50 border border-green-200 text-sm">
+                      <span className="text-green-600 shrink-0 font-semibold">&#10003; Connected!</span>
+                      <span className="text-slate-700 text-xs">Articles will be published to your site automatically.</span>
+                    </div>
+                  )}
                 </div>
-                {site.siteSlug && (
-                  <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-green-50 border border-green-200 text-sm">
-                    <span className="text-green-600 shrink-0 font-semibold">&#10003; Connected!</span>
-                    <span className="text-slate-700 text-xs">Articles will be published to your site automatically.</span>
-                  </div>
-                )}
-              </div>
-            ))}
+              )
+            })}
 
             {/* Wizard */}
             {showWizard && (
