@@ -859,18 +859,6 @@ function AddSiteWizard({ onSaved, onCancel, isFirstSite }: AddSiteWizardProps) {
             }}
           />
         </div>
-        <div className="pt-2 border-t border-black/10">
-          <button
-            onClick={() => {
-              setHasBlog(false)
-              setStep("blog-cname")
-            }}
-            className="w-full text-left rounded-xl border-2 border-black/10 hover:border-violet-400 bg-[#ebe9e5] hover:bg-violet-50 p-4 transition-all"
-          >
-            <p className="font-semibold text-[#1b1916] mb-1 text-sm">I don&apos;t have a blog yet</p>
-            <p className="text-slate-500 text-xs">ItGrows.ai will create and host your blog — just one DNS record</p>
-          </button>
-        </div>
         <BackButton onClick={() => setStep(article ? "article" : topics.length > 0 ? "topics" : "url")} />
       </div>
     )

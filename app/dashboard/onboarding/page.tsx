@@ -477,13 +477,6 @@ export default function OnboardingPage() {
                     <p className="font-semibold text-[#1b1916] mb-1">👋 Guide me step by step</p>
                     <p className="text-slate-500 text-sm">I'm not a developer. Walk me through a simple copy-paste setup.</p>
                   </button>
-                  <button
-                    onClick={() => { setBlogOption('new'); setConnectSubStep('setup') }}
-                    className="w-full text-left rounded-xl border-2 border-black/10 hover:border-violet-400 bg-[#f9f8f7] hover:bg-violet-50 p-5 transition-all"
-                  >
-                    <p className="font-semibold text-[#1b1916] mb-1">I don&apos;t have a blog yet</p>
-                    <p className="text-slate-500 text-sm">ItGrows.ai will create and host your blog — just one DNS record</p>
-                  </button>
                 </div>
 
                 <button
