@@ -110,6 +110,7 @@ export async function GET(req: NextRequest) {
           : { token: site.siteToken, title: article.title, content: article.content, metaDescription: article.metaDescription, keywords: article.keywords ?? [], coverImageUrl: article.coverImageUrl ?? null }
 
         let publishedUrl: string | null = null
+        let externalPublishError: string | null = null
         try {
           const wpRes = await fetch(endpoint, {
             method: "POST",
@@ -120,9 +121,31 @@ export async function GET(req: NextRequest) {
           if (wpRes.ok) {
             const wpData = (await wpRes.json()) as { url?: string }
             publishedUrl = wpData.url ?? null
+          } else {
+            const errText = await wpRes.text().catch(() => "")
+            externalPublishError = `Remote returned ${wpRes.status}: ${errText}`.slice(0, 500)
           }
-        } catch {
-          // Non-fatal: site may be unreachable
+        } catch (fetchErr) {
+          externalPublishError = fetchErr instanceof Error ? fetchErr.message : String(fetchErr)
+        }
+
+        if (externalPublishError) {
+          // External publish failed — mark as failed and record error
+          await db
+            .update(scheduledPosts)
+            .set({
+              status: "failed",
+              publishError: externalPublishError,
+              publishAttempts: (post.publishAttempts ?? 0) + 1,
+              articleData: article,
+              ...(article.coverImageUrl ? { coverImageUrl: article.coverImageUrl } : {}),
+            })
+            .where(eq(scheduledPosts.id, post.id))
+
+          console.error(`[SEO Autopilot] External publish failed for post ${post.id}: ${externalPublishError}`)
+          errors.push({ id: post.id, keyword: post.keyword, error: externalPublishError })
+          processed.push({ id: post.id, keyword: post.keyword, status: "failed", error: externalPublishError })
+          continue
         }
 
         // TODO: ping Google Indexing API after publishing
@@ -146,6 +169,7 @@ export async function GET(req: NextRequest) {
           status: "published",
           articleData: article,
           publishedAt: new Date(),
+          publishAttempts: (post.publishAttempts ?? 0) + 1,
           ...(article.coverImageUrl ? { coverImageUrl: article.coverImageUrl } : {}),
         })
         .where(eq(scheduledPosts.id, post.id))

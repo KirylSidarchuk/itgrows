@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, boolean, jsonb, uuid, index } from "drizzle-orm/pg-core"
+import { pgTable, text, timestamp, boolean, jsonb, uuid, index, integer } from "drizzle-orm/pg-core"
 
 export const users = pgTable("users", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -86,6 +86,8 @@ export const scheduledPosts = pgTable("scheduled_posts", {
   blogPostSlug: text("blog_post_slug"),
   coverImageUrl: text("cover_image_url"),
   publishedAt: timestamp("published_at"),
+  publishError: text("publish_error"),
+  publishAttempts: integer("publish_attempts").default(0),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 }, (t) => [index("scheduled_posts_user_id_idx").on(t.userId), index("scheduled_posts_status_idx").on(t.status)])
 

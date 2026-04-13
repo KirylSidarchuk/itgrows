@@ -483,6 +483,7 @@ export default function CalendarPage() {
   const [batchTone, setBatchTone] = useState<Tone>("Professional")
   const [defaultSiteUrl, setDefaultSiteUrl] = useState<string | null>(null)
   const [sitesChecked, setSitesChecked] = useState(false)
+  const [hasVerifiedSite, setHasVerifiedSite] = useState<boolean | null>(null)
 
   // Modal state
   const [modalStep, setModalStep] = useState<ModalStep>("analyzing")
@@ -591,17 +592,20 @@ export default function CalendarPage() {
         const res = await fetch("/api/sites")
         if (res.ok) {
           const data = (await res.json()) as {
-            sites: Array<{ url: string; isDefault: boolean }>
+            sites: Array<{ url: string; isDefault: boolean; lastCheckOk?: boolean | null }>
           }
           const sites = data.sites ?? []
           const def = sites.find((s) => s.isDefault) ?? sites[0] ?? null
           setDefaultSiteUrl(def ? def.url : null)
           setBatchStatus(def ? "idle" : "no-site")
+          setHasVerifiedSite(sites.some((s) => s.lastCheckOk === true))
         } else {
           setBatchStatus("no-site")
+          setHasVerifiedSite(false)
         }
       } catch {
         setBatchStatus("no-site")
+        setHasVerifiedSite(false)
       } finally {
         setSitesChecked(true)
       }
@@ -960,6 +964,17 @@ export default function CalendarPage() {
             </div>
           </div>
         </div>
+
+        {/* Integration warning banner */}
+        {sitesChecked && hasVerifiedSite === false && (
+          <div className="mb-6 flex items-center gap-3 px-5 py-4 rounded-xl bg-amber-50 border border-amber-200 text-sm text-amber-800">
+            <span className="text-lg shrink-0">⚠️</span>
+            <span className="flex-1">Your site integration is not complete. Articles won&apos;t be published until you finish setup in Settings.</span>
+            <Link href="/dashboard/settings" className="shrink-0 px-3 py-1.5 rounded-lg bg-amber-200 hover:bg-amber-300 text-amber-900 font-medium text-xs transition-colors">
+              Go to Settings
+            </Link>
+          </div>
+        )}
 
         {/* Auto-Publish Card */}
         {sitesChecked && (

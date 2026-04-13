@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/auth"
+import { db } from "@/lib/db"
+import { connectedSites } from "@/lib/db/schema"
+import { eq, and } from "drizzle-orm"
 
 interface PublishRequest {
   siteUrl: string
@@ -42,6 +45,22 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
   if (!siteUrl || !siteToken || !title || !content) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
+  }
+
+  // Check that the site integration is verified before allowing publish
+  if (siteId) {
+    const [site] = await db
+      .select({ lastCheckOk: connectedSites.lastCheckOk, platform: connectedSites.platform })
+      .from(connectedSites)
+      .where(and(eq(connectedSites.id, siteId), eq(connectedSites.userId, session.user.id)))
+      .limit(1)
+
+    if (site && site.lastCheckOk !== true) {
+      return NextResponse.json(
+        { success: false, error: "Complete site integration first. Go to Settings and click Test to verify the connection." },
+        { status: 422 }
+      )
+    }
   }
 
   // Helper: generate a URL-friendly slug from the article title

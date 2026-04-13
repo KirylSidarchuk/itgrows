@@ -38,6 +38,8 @@ interface ConnectedSite {
   siteToken: string
   siteSlug: string | null
   isDefault: boolean
+  webhookUrl?: string | null
+  lastCheckOk?: boolean | null
 }
 
 // ─── Shopify guide ────────────────────────────────────────────────────────────
@@ -1655,6 +1657,12 @@ function SettingsContent() {
                     <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-green-50 border border-green-200 text-sm">
                       <span className="text-green-600 shrink-0 font-semibold">&#10003; Connected!</span>
                       <span className="text-slate-700 text-xs">Articles will be published to your site automatically.</span>
+                    </div>
+                  )}
+                  {!testStatus && site.platform === "custom" && !site.lastCheckOk && (
+                    <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-800">
+                      <span>⚠️</span>
+                      <span>Integration not verified. Add the <code className="font-mono bg-amber-100 px-1 rounded">/api/itgrows-publish</code> endpoint to your site and click Test.</span>
                     </div>
                   )}
                 </div>
