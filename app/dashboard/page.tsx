@@ -17,7 +17,11 @@ interface Task {
 
 interface ConnectedSite {
   id: string
+  url: string
+  name: string
   isDefault: boolean
+  lastCheckedAt: string | null
+  lastCheckOk: boolean | null
 }
 
 export default function DashboardPage() {
@@ -25,6 +29,7 @@ export default function DashboardPage() {
   const router = useRouter()
   const [tasks, setTasks] = useState<Task[]>([])
   const [hasConnectedSites, setHasConnectedSites] = useState(true)
+  const [failedSites, setFailedSites] = useState<ConnectedSite[]>([])
 
   const user = session?.user
     ? {
@@ -56,11 +61,48 @@ export default function DashboardPage() {
       })
       .catch(() => {})
 
-    // Load sites from API
+    // Load sites from API, then run background connection checks
     fetch("/api/sites")
       .then((r) => r.json())
       .then((data: { sites?: ConnectedSite[] }) => {
-        setHasConnectedSites((data.sites ?? []).length > 0)
+        const sites = data.sites ?? []
+        setHasConnectedSites(sites.length > 0)
+
+        // Show already-known failed sites immediately (before re-checking)
+        const alreadyFailed = sites.filter(
+          (s) => s.lastCheckedAt !== null && s.lastCheckOk === false
+        )
+        setFailedSites(alreadyFailed)
+
+        // Background: check each site that hasn't been checked in the last hour
+        const ONE_HOUR_MS = 60 * 60 * 1000
+        const sitesToCheck = sites.filter((s) => {
+          if (!s.lastCheckedAt) return false // skip freshly added sites
+          const elapsed = Date.now() - new Date(s.lastCheckedAt).getTime()
+          return elapsed >= ONE_HOUR_MS
+        })
+
+        if (sitesToCheck.length === 0) return
+
+        // Fire checks in parallel, update failedSites state as results arrive
+        sitesToCheck.forEach((site) => {
+          fetch("/api/test-connection", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ siteId: site.id }),
+          })
+            .then((r) => r.json())
+            .then((result: { success: boolean }) => {
+              setFailedSites((prev) => {
+                const withoutThis = prev.filter((s) => s.id !== site.id)
+                if (!result.success) {
+                  return [...withoutThis, site]
+                }
+                return withoutThis
+              })
+            })
+            .catch(() => {})
+        })
       })
       .catch(() => {})
   }, [router])
@@ -83,6 +125,29 @@ export default function DashboardPage() {
           <h1 className="text-3xl font-bold mb-1 text-[#1b1916] dashboard-heading">Good morning, {user.name} 👋</h1>
           <p className="text-slate-600">Here&apos;s what&apos;s happening with your content automation.</p>
         </div>
+
+        {/* Connection warning banners */}
+        {failedSites.map((site) => (
+          <div
+            key={site.id}
+            className="flex items-center justify-between gap-3 mb-4 px-5 py-4 rounded-xl border border-amber-300 bg-amber-50 text-amber-800"
+          >
+            <div className="flex items-center gap-2">
+              <span className="text-lg">⚠️</span>
+              <span className="text-sm font-medium">
+                Проблема с подключением сайта <span className="font-semibold">{site.url || site.name}</span>. Проверьте настройки.
+              </span>
+            </div>
+            <Link href="/dashboard/settings?tab=sites" className="shrink-0">
+              <Button
+                size="sm"
+                className="bg-amber-600 hover:bg-amber-500 text-white text-xs"
+              >
+                Settings
+              </Button>
+            </Link>
+          </div>
+        ))}
 
         {/* Stats */}
         <div className="grid grid-cols-3 gap-4 mb-8">

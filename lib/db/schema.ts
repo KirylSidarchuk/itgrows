@@ -43,6 +43,8 @@ export const connectedSites = pgTable("connected_sites", {
   blogDomain: text("blog_domain"),
   webhookUrl: text("webhook_url"),
   siteProfile: jsonb("site_profile"),
+  lastCheckedAt: timestamp("last_checked_at"),
+  lastCheckOk: boolean("last_check_ok"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 }, (t) => [index("connected_sites_user_id_idx").on(t.userId)])
 

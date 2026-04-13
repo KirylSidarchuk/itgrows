@@ -4,6 +4,17 @@ import { db } from "@/lib/db"
 import { connectedSites } from "@/lib/db/schema"
 import { and, eq } from "drizzle-orm"
 
+async function saveCheckResult(siteId: string, userId: string, ok: boolean) {
+  try {
+    await db
+      .update(connectedSites)
+      .set({ lastCheckedAt: new Date(), lastCheckOk: ok })
+      .where(and(eq(connectedSites.id, siteId), eq(connectedSites.userId, userId)))
+  } catch {
+    // non-critical — ignore DB errors
+  }
+}
+
 export async function POST(req: NextRequest) {
   const session = await auth()
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
@@ -26,6 +37,9 @@ export async function POST(req: NextRequest) {
   }
 
   const { platform, url, webhookUrl, siteToken, blogDomain, wpUsername, wpAppPassword, shopifyToken, webflowToken } = site
+  const userId = session.user.id
+
+  let result: { success: boolean; message: string }
 
   try {
     switch (platform) {
@@ -71,14 +85,15 @@ export async function POST(req: NextRequest) {
           }
         }
 
-        return NextResponse.json({ success: ok, message })
+        result = { success: ok, message }
+        break
       }
 
       case "shopify": {
         if (!shopifyToken) {
-          return NextResponse.json({ success: false, message: "No Shopify token configured" })
+          result = { success: false, message: "No Shopify token configured" }
+          break
         }
-        // Extract shop domain from url
         const shopDomain = url.replace(/^https?:\/\//, "").replace(/\/$/, "")
         const res = await fetch(`https://${shopDomain}/admin/api/2024-01/blogs.json`, {
           method: "GET",
@@ -88,15 +103,16 @@ export async function POST(req: NextRequest) {
           },
           signal: AbortSignal.timeout(8000),
         })
-        if (res.ok) {
-          return NextResponse.json({ success: true, message: "Shopify API token is valid" })
-        }
-        return NextResponse.json({ success: false, message: `Shopify API returned HTTP ${res.status}` })
+        result = res.ok
+          ? { success: true, message: "Shopify API token is valid" }
+          : { success: false, message: `Shopify API returned HTTP ${res.status}` }
+        break
       }
 
       case "webflow": {
         if (!webflowToken) {
-          return NextResponse.json({ success: false, message: "No Webflow token configured" })
+          result = { success: false, message: "No Webflow token configured" }
+          break
         }
         const res = await fetch("https://api.webflow.com/v2/sites", {
           method: "GET",
@@ -106,10 +122,10 @@ export async function POST(req: NextRequest) {
           },
           signal: AbortSignal.timeout(8000),
         })
-        if (res.ok) {
-          return NextResponse.json({ success: true, message: "Webflow API token is valid" })
-        }
-        return NextResponse.json({ success: false, message: `Webflow API returned HTTP ${res.status}` })
+        result = res.ok
+          ? { success: true, message: "Webflow API token is valid" }
+          : { success: false, message: `Webflow API returned HTTP ${res.status}` }
+        break
       }
 
       case "php":
@@ -117,17 +133,18 @@ export async function POST(req: NextRequest) {
       case "octobercms": {
         const target = webhookUrl || url
         if (!target) {
-          return NextResponse.json({ success: false, message: "No webhook URL or site URL configured" })
+          result = { success: false, message: "No webhook URL or site URL configured" }
+          break
         }
         const separator = target.includes("?") ? "&" : "?"
         const res = await fetch(`${target}${separator}test=1`, {
           method: "GET",
           signal: AbortSignal.timeout(8000),
         })
-        if (res.ok) {
-          return NextResponse.json({ success: true, message: "Webhook endpoint is reachable" })
-        }
-        return NextResponse.json({ success: false, message: `Webhook returned HTTP ${res.status}` })
+        result = res.ok
+          ? { success: true, message: "Webhook endpoint is reachable" }
+          : { success: false, message: `Webhook returned HTTP ${res.status}` }
+        break
       }
 
       case "custom":
@@ -135,20 +152,20 @@ export async function POST(req: NextRequest) {
       case "next.js": {
         const target = url
         if (!target) {
-          return NextResponse.json({ success: false, message: "No site URL configured" })
+          result = { success: false, message: "No site URL configured" }
+          break
         }
         const res = await fetch(target, {
           method: "GET",
           signal: AbortSignal.timeout(8000),
         })
-        if (res.ok || res.status < 500) {
-          return NextResponse.json({ success: true, message: "Site is reachable" })
-        }
-        return NextResponse.json({ success: false, message: `Site returned HTTP ${res.status}` })
+        result = (res.ok || res.status < 500)
+          ? { success: true, message: "Site is reachable" }
+          : { success: false, message: `Site returned HTTP ${res.status}` }
+        break
       }
 
       case "itgrows_blog": {
-        // Check that the itgrows subdomain is reachable
         const subdomain = blogDomain || siteToken
         const target = blogDomain
           ? `https://${blogDomain}`
@@ -158,36 +175,41 @@ export async function POST(req: NextRequest) {
             method: "GET",
             signal: AbortSignal.timeout(8000),
           })
-          if (res.ok || res.status < 500) {
-            return NextResponse.json({ success: true, message: "ItGrows blog is reachable" })
-          }
-          return NextResponse.json({ success: false, message: `Blog returned HTTP ${res.status}` })
+          result = (res.ok || res.status < 500)
+            ? { success: true, message: "ItGrows blog is reachable" }
+            : { success: false, message: `Blog returned HTTP ${res.status}` }
         } catch (e) {
-          return NextResponse.json({
+          result = {
             success: false,
             message: `Cannot reach blog: ${e instanceof Error ? e.message : String(e)}`,
-          })
+          }
         }
+        break
       }
 
       default: {
-        // Generic: just try to fetch the site URL
         const target = url
         if (!target) {
-          return NextResponse.json({ success: false, message: "No site URL configured" })
+          result = { success: false, message: "No site URL configured" }
+          break
         }
         const res = await fetch(target, {
           method: "GET",
           signal: AbortSignal.timeout(8000),
         })
-        if (res.ok || res.status < 500) {
-          return NextResponse.json({ success: true, message: "Site is reachable" })
-        }
-        return NextResponse.json({ success: false, message: `Site returned HTTP ${res.status}` })
+        result = (res.ok || res.status < 500)
+          ? { success: true, message: "Site is reachable" }
+          : { success: false, message: `Site returned HTTP ${res.status}` }
+        break
       }
     }
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err)
-    return NextResponse.json({ success: false, message: `Connection failed: ${msg}` })
+    result = { success: false, message: `Connection failed: ${msg}` }
   }
+
+  // Save check result to DB in background (non-blocking)
+  saveCheckResult(siteId, userId, result.success).catch(() => {})
+
+  return NextResponse.json(result)
 }
