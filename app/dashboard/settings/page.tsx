@@ -53,7 +53,7 @@ function ShopifyGuide() {
         <li>Go to Shopify Admin → Settings → Apps and sales channels → Develop apps</li>
         <li>
           Create a new app → configure Admin API scopes:{" "}
-          <span className="text-violet-300">write_content</span>
+          <span className="text-violet-600">write_content</span>
         </li>
         <li>Install app → copy the Admin API access token</li>
         <li>Find Blog ID: Admin → Online Store → Blog posts → the URL contains the blog ID</li>
@@ -92,7 +92,7 @@ function CopyButton({ text, label }: { text: string; label: string }) {
       onClick={handleCopy}
       size="sm"
       variant="outline"
-      className="border-violet-500/40 text-violet-300 hover:bg-violet-500/10 text-xs"
+      className="border-violet-500/40 text-violet-600 hover:bg-violet-500/10 text-xs"
     >
       {copied ? "Copied!" : label}
     </Button>
@@ -991,15 +991,15 @@ export async function POST(req) {
         {/* Blog destination info */}
         {hasBlog === false && (
           <div className="rounded-xl bg-violet-900/10 border border-violet-500/20 p-3 flex items-center gap-3 text-sm">
-            <span className="text-violet-300 shrink-0">&#10003; Auto blog</span>
+            <span className="text-violet-600 shrink-0">&#10003; Auto blog</span>
             <span className="text-slate-600 text-xs">We'll create a /blog section on your site and publish articles there automatically</span>
           </div>
         )}
         {hasBlog === true && existingBlogUrl && (
           <div className="rounded-xl bg-violet-900/10 border border-violet-500/20 p-3 flex items-center gap-3 text-sm">
-            <span className="text-violet-300 shrink-0">&#10003; Your blog</span>
+            <span className="text-violet-600 shrink-0">&#10003; Your blog</span>
             <span className="text-slate-600 text-xs">Articles will be published to:</span>
-            <span className="text-violet-300 font-mono text-xs truncate">{existingBlogUrl}</span>
+            <span className="text-violet-600 font-mono text-xs truncate">{existingBlogUrl}</span>
           </div>
         )}
 
@@ -1016,14 +1016,14 @@ export async function POST(req) {
                 <li>
                   <a
                     href="/api/wp-plugin/download"
-                    className="text-violet-400 hover:text-violet-300 underline"
+                    className="text-violet-600 hover:text-violet-800 underline"
                   >
                     Download ItGrows.ai WordPress Plugin
                   </a>
                 </li>
                 <li>Go to WP Admin → Plugins → Add New → Upload Plugin → Install → Activate</li>
                 <li>
-                  Go to <span className="text-violet-300">Settings → ItGrows.ai</span> → Copy the
+                  Go to <span className="text-violet-600">Settings → ItGrows.ai</span> → Copy the
                   Site Token shown there
                 </li>
                 <li>Paste it below</li>
@@ -1083,7 +1083,7 @@ export async function POST(req) {
               <div className="mt-2">
                 <p className="text-slate-600 text-xs mb-2">Set environment variable:</p>
                 <div className="flex items-center gap-2">
-                  <code className="text-xs text-violet-300 bg-[#ebe9e5] rounded px-2 py-1 font-mono">
+                  <code className="text-xs text-violet-600 bg-[#ebe9e5] rounded px-2 py-1 font-mono">
                     ITGROWS_SITE_TOKEN={generatedToken}
                   </code>
                   <CopyButton text={`ITGROWS_SITE_TOKEN=${generatedToken}`} label="Copy" />
@@ -1368,7 +1368,7 @@ echo json_encode(['success' => true]);
               <p className="text-slate-700 font-medium text-sm">Here&apos;s your unique embed code:</p>
             </div>
             <div className="flex items-start gap-2 mt-2">
-              <code className="text-xs text-violet-300 bg-white/60 rounded-lg px-3 py-2 font-mono flex-1 break-all border border-black/10">
+              <code className="text-xs text-violet-600 bg-white/60 rounded-lg px-3 py-2 font-mono flex-1 break-all border border-black/10">
                 {widgetEmbedCode}
               </code>
               <CopyButton text={widgetEmbedCode} label="Copy" />
@@ -1409,7 +1409,7 @@ echo json_encode(['success' => true]);
         {/* Blog destination */}
         {hasBlog === false && (
           <div className="rounded-xl bg-violet-900/10 border border-violet-500/20 p-3 text-sm">
-            <p className="text-slate-600 text-xs">After adding the widget, a blog will be created on your site automatically. Your articles will appear at: <span className="text-violet-300 font-mono">yoursite.com/blog</span></p>
+            <p className="text-slate-600 text-xs">After adding the widget, a blog will be created on your site automatically. Your articles will appear at: <span className="text-violet-600 font-mono">yoursite.com/blog</span></p>
           </div>
         )}
         {hasBlog === true && (
@@ -1418,7 +1418,7 @@ echo json_encode(['success' => true]);
               Your articles will be published directly to:
             </p>
             {existingBlogUrl && (
-              <p className="text-violet-300 font-mono text-xs mt-1">{existingBlogUrl}</p>
+              <p className="text-violet-600 font-mono text-xs mt-1">{existingBlogUrl}</p>
             )}
           </div>
         )}
@@ -1426,7 +1426,7 @@ echo json_encode(['success' => true]);
         {/* Help link */}
         <p className="text-slate-600 text-xs">
           Need help?{" "}
-          <a href="#" className="text-violet-400 hover:text-violet-300 underline">
+          <a href="#" className="text-violet-600 hover:text-violet-800 underline">
             Watch our setup guide
           </a>
         </p>
