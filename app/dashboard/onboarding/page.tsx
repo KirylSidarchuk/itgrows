@@ -51,7 +51,7 @@ export default function OnboardingPage() {
   const [topicImages, setTopicImages] = useState<Record<number, string>>({})
   const [integrationMode, setIntegrationMode] = useState<'simple' | 'advanced' | null>(null)
   const [connectSubStep, setConnectSubStep] = useState<'experience' | 'blog-advanced' | 'blog-simple' | 'detecting' | 'platform' | 'setup'>('experience')
-  const [selectedPlatform, setSelectedPlatform] = useState<'wordpress' | 'shopify' | 'webflow' | 'other' | null>(null)
+  const [selectedPlatform, setSelectedPlatform] = useState<'wordpress' | 'shopify' | 'webflow' | 'other' | 'php' | null>(null)
   const [detectedPlatform, setDetectedPlatform] = useState<string | null>(null)
   const [wpToken, setWpToken] = useState("")
   const [shopifyToken, setShopifyToken] = useState("")
@@ -175,7 +175,7 @@ export default function OnboardingPage() {
         sitePayload.webflowToken = webflowToken.trim()
         sitePayload.webflowCollectionId = webflowCollectionId.trim()
         sitePayload.existingBlogUrl = existingBlogUrl.trim()
-      } else if (selectedPlatform === 'other' && webhookUrl.trim()) {
+      } else if ((selectedPlatform === 'other' || selectedPlatform === 'php') && webhookUrl.trim()) {
         sitePayload.platform = "php"
         sitePayload.siteToken = placeholderToken
         sitePayload.webhookUrl = webhookUrl.trim()
@@ -216,6 +216,7 @@ export default function OnboardingPage() {
         p === "wordpress" ? "wordpress" :
         p === "shopify" ? "shopify" :
         p === "webflow" ? "webflow" :
+        (p === "octobercms" || p === "php") ? "php" :
         "other"
       setSelectedPlatform(mapped)
       setConnectSubStep('setup')
@@ -725,6 +726,7 @@ export default function OnboardingPage() {
                     {selectedPlatform === 'wordpress' && '🟦 Connect WordPress'}
                     {selectedPlatform === 'shopify' && '🟢 Connect Shopify'}
                     {selectedPlatform === 'webflow' && '🔵 Connect Webflow'}
+                    {selectedPlatform === 'php' && '🐘 Connect October CMS / PHP'}
                     {selectedPlatform === 'other' && '⚙️ Connect your blog'}
                   </h2>
                   {detectedPlatform && detectedPlatform !== 'custom' ? (
@@ -832,6 +834,46 @@ export default function OnboardingPage() {
                       placeholder="Blog Collection ID"
                       value={webflowCollectionId}
                       onChange={e => setWebflowCollectionId(e.target.value)}
+                      className="w-full px-4 py-3 rounded-xl border border-black/15 bg-[#f9f8f7] focus:outline-none focus:ring-2 focus:ring-violet-400 text-[#1b1916] placeholder:text-slate-400 text-sm font-mono"
+                    />
+                  </div>
+                )}
+
+                {selectedPlatform === 'php' && (
+                  <div className="space-y-4 mb-6">
+                    <div className="bg-[#f9f8f7] rounded-xl p-4 border border-black/10 text-sm text-slate-600 space-y-3">
+                      <p className="font-semibold text-[#1b1916]">Step 1: Create a webhook file on your server</p>
+                      <p className="text-xs">Create a file at <code className="bg-white/60 px-1 rounded text-violet-700">/itgrows-webhook.php</code> in your site root with the following content:</p>
+                      <pre className="text-xs text-slate-700 bg-white/60 rounded-lg p-3 overflow-auto font-mono whitespace-pre-wrap border border-black/10">{`<?php
+$secret = '${placeholderToken}'; // Your site token
+$input = json_decode(file_get_contents('php://input'), true);
+if (!$input || $input['token'] !== $secret) { http_response_code(401); exit; }
+
+// Save article to your CMS database
+// Example for October CMS (RainLab Blog):
+// $post = new \\RainLab\\Blog\\Models\\Post;
+// $post->title = $input['title'];
+// $post->content = $input['content'];
+// $post->meta_description = $input['metaDescription'];
+// $post->published = true;
+// $post->save();
+
+http_response_code(200);
+echo json_encode(['success' => true]);
+?>`}</pre>
+                    </div>
+                    <input
+                      type="text"
+                      placeholder="Your blog URL (e.g. https://myblog.com)"
+                      value={existingBlogUrl}
+                      onChange={e => setExistingBlogUrl(e.target.value)}
+                      className="w-full px-4 py-3 rounded-xl border border-black/15 bg-[#f9f8f7] focus:outline-none focus:ring-2 focus:ring-violet-400 text-[#1b1916] placeholder:text-slate-400 text-sm"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Step 2: Webhook URL (e.g. https://yoursite.com/itgrows-webhook.php)"
+                      value={webhookUrl}
+                      onChange={e => setWebhookUrl(e.target.value)}
                       className="w-full px-4 py-3 rounded-xl border border-black/15 bg-[#f9f8f7] focus:outline-none focus:ring-2 focus:ring-violet-400 text-[#1b1916] placeholder:text-slate-400 text-sm font-mono"
                     />
                   </div>
