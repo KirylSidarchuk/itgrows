@@ -175,10 +175,15 @@ export default function OnboardingPage() {
         sitePayload.webflowToken = webflowToken.trim()
         sitePayload.webflowCollectionId = webflowCollectionId.trim()
         sitePayload.existingBlogUrl = existingBlogUrl.trim()
-      } else if ((selectedPlatform === 'other' || selectedPlatform === 'php') && webhookUrl.trim()) {
+      } else if (selectedPlatform === 'php' && webhookUrl.trim()) {
         sitePayload.platform = "php"
         sitePayload.siteToken = placeholderToken
         sitePayload.webhookUrl = webhookUrl.trim()
+        sitePayload.existingBlogUrl = existingBlogUrl.trim()
+      } else if (selectedPlatform === 'other') {
+        sitePayload.platform = "custom"
+        sitePayload.siteToken = placeholderToken
+        if (webhookUrl.trim()) sitePayload.webhookUrl = webhookUrl.trim()
         sitePayload.existingBlogUrl = existingBlogUrl.trim()
       }
 
@@ -881,10 +886,24 @@ echo json_encode(['success' => true]);
 
                 {selectedPlatform === 'other' && (
                   <div className="space-y-4 mb-6">
-                    <div className="bg-[#f9f8f7] rounded-xl p-4 border border-black/10 text-sm text-slate-600 space-y-2">
-                      <p className="font-semibold text-[#1b1916]">Connect via Webhook</p>
-                      <p>Works with any CMS or custom site. When an article is ready, we'll send it to your URL as a POST request with the full article content (JSON).</p>
-                      <p>Your developer can set this up in minutes — share the URL below with them.</p>
+                    <div className="bg-[#f9f8f7] rounded-xl p-4 border border-black/10 text-sm text-slate-600 space-y-3">
+                      <p className="font-semibold text-[#1b1916]">Add a publishing endpoint to your site</p>
+                      <p className="text-xs">Create a route at <code className="bg-white/60 px-1 rounded text-violet-700">/api/itgrows-publish</code> that accepts POST requests from us. Here&apos;s a ready-to-use snippet:</p>
+                      <pre className="text-xs text-slate-700 bg-white/60 rounded-lg p-3 overflow-auto font-mono whitespace-pre-wrap border border-black/10">{`// app/api/itgrows-publish/route.js
+export async function POST(req) {
+  const { token, title, content, metaDescription } = await req.json()
+  if (token !== process.env.ITGROWS_SITE_TOKEN) {
+    return Response.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+  // Save article to your database/CMS here
+  return Response.json({ success: true })
+}`}</pre>
+                      <div className="flex items-center gap-2 mt-1">
+                        <code className="text-xs text-violet-600 bg-white/60 rounded px-2 py-1 font-mono border border-black/10">
+                          ITGROWS_SITE_TOKEN={placeholderToken}
+                        </code>
+                      </div>
+                      <p className="text-xs text-slate-500">Set this env variable in your deployment (Vercel, etc.) and paste the snippet above into your codebase.</p>
                     </div>
                     <input
                       type="text"
@@ -892,13 +911,6 @@ echo json_encode(['success' => true]);
                       value={existingBlogUrl}
                       onChange={e => setExistingBlogUrl(e.target.value)}
                       className="w-full px-4 py-3 rounded-xl border border-black/15 bg-[#f9f8f7] focus:outline-none focus:ring-2 focus:ring-violet-400 text-[#1b1916] placeholder:text-slate-400 text-sm"
-                    />
-                    <input
-                      type="text"
-                      placeholder="Webhook URL (where we send articles)"
-                      value={webhookUrl}
-                      onChange={e => setWebhookUrl(e.target.value)}
-                      className="w-full px-4 py-3 rounded-xl border border-black/15 bg-[#f9f8f7] focus:outline-none focus:ring-2 focus:ring-violet-400 text-[#1b1916] placeholder:text-slate-400 text-sm font-mono"
                     />
                   </div>
                 )}
