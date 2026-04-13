@@ -181,13 +181,13 @@ export default function SupportPage() {
         {/* FAQ */}
         <Card className="bg-white border-black/10">
           <CardHeader>
-            <CardTitle className="text-[#1b1916]">Frequently Asked Questions</CardTitle>
+            <CardTitle className="text-violet-700">Frequently Asked Questions</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             {faqs.map((faq, i) => (
               <div key={i} className="border-b border-black/5 pb-4 last:border-0 last:pb-0">
-                <h4 className="text-[#1b1916] font-medium mb-2">{faq.q}</h4>
-                <p className="text-slate-600 text-sm leading-relaxed">{faq.a}</p>
+                <h4 className="text-violet-700 font-medium mb-2">{faq.q}</h4>
+                <p className="text-gray-900 text-sm leading-relaxed">{faq.a}</p>
               </div>
             ))}
           </CardContent>
