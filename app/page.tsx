@@ -284,7 +284,7 @@ export default async function HomePage() {
             ].map((item, i) => (
               <div key={i} className="bg-white rounded-2xl border border-black/10 p-6 hover:border-violet-300 transition-colors">
                 <h3 className="text-violet-700 font-semibold text-base mb-3 leading-snug">{item.q}</h3>
-                <p className="text-slate-600 text-sm leading-relaxed">{item.a}</p>
+                <p className="text-gray-900 text-sm leading-relaxed">{item.a}</p>
               </div>
             ))}
           </div>
