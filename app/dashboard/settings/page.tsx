@@ -535,7 +535,7 @@ function AddSiteWizard({ onSaved, onCancel, isFirstSite }: AddSiteWizardProps) {
           <Button
             onClick={handleAnalyze}
             disabled={!inputUrl.trim()}
-            className="bg-violet-600 hover:bg-violet-500 text-[#1b1916]"
+            className="bg-violet-600 hover:bg-violet-500 text-white"
           >
             Analyze &amp; Connect
           </Button>
@@ -904,7 +904,7 @@ function AddSiteWizard({ onSaved, onCancel, isFirstSite }: AddSiteWizardProps) {
             <Button
               onClick={() => setStep("setup-advanced")}
               disabled={!existingBlogUrl.trim()}
-              className="bg-violet-600 hover:bg-violet-500 text-[#1b1916]"
+              className="bg-violet-600 hover:bg-violet-500 text-white"
             >
               Continue →
             </Button>
@@ -956,7 +956,7 @@ function AddSiteWizard({ onSaved, onCancel, isFirstSite }: AddSiteWizardProps) {
             <Button
               onClick={() => setStep("setup-simple")}
               disabled={!existingBlogUrl.trim()}
-              className="bg-violet-600 hover:bg-violet-500 text-[#1b1916]"
+              className="bg-violet-600 hover:bg-violet-500 text-white"
             >
               Continue →
             </Button>
@@ -1056,7 +1056,7 @@ export async function POST(req) {
               <Button
                 onClick={() => handleConnect(wpToken.trim())}
                 disabled={!wpToken.trim() || saving}
-                className="bg-violet-600 hover:bg-violet-500 text-[#1b1916]"
+                className="bg-violet-600 hover:bg-violet-500 text-white"
               >
                 {saving ? "Connecting..." : "Connect"}
               </Button>
@@ -1107,7 +1107,7 @@ export async function POST(req) {
               <Button
                 onClick={() => handleConnect(generatedToken)}
                 disabled={saving}
-                className="bg-violet-600 hover:bg-violet-500 text-[#1b1916]"
+                className="bg-violet-600 hover:bg-violet-500 text-white"
               >
                 {saving ? "Connecting..." : "I've installed it — Connect"}
               </Button>
@@ -1158,7 +1158,7 @@ export async function POST(req) {
               <Button
                 onClick={handleConnectShopify}
                 disabled={!shopifyAccessToken.trim() || !shopifyBlogId.trim() || saving}
-                className="bg-violet-600 hover:bg-violet-500 text-[#1b1916]"
+                className="bg-violet-600 hover:bg-violet-500 text-white"
               >
                 {saving ? "Connecting..." : "Connect"}
               </Button>
@@ -1209,7 +1209,7 @@ export async function POST(req) {
               <Button
                 onClick={handleConnectWebflow}
                 disabled={!webflowApiToken.trim() || !webflowCollectionId.trim() || saving}
-                className="bg-violet-600 hover:bg-violet-500 text-[#1b1916]"
+                className="bg-violet-600 hover:bg-violet-500 text-white"
               >
                 {saving ? "Connecting..." : "Connect"}
               </Button>
@@ -1278,7 +1278,7 @@ echo json_encode(['success' => true]);
               <Button
                 onClick={handleConnectPhp}
                 disabled={!webhookUrl.trim() || saving}
-                className="bg-violet-600 hover:bg-violet-500 text-[#1b1916]"
+                className="bg-violet-600 hover:bg-violet-500 text-white"
               >
                 {saving ? "Connecting..." : "I've created the file — Connect"}
               </Button>
@@ -1451,7 +1451,7 @@ echo json_encode(['success' => true]);
           <Button
             onClick={handleConnectSimple}
             disabled={saving}
-            className="bg-violet-600 hover:bg-violet-500 text-[#1b1916]"
+            className="bg-violet-600 hover:bg-violet-500 text-white"
           >
             {saving ? "Connecting..." : "I've added it — Connect"}
           </Button>
