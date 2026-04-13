@@ -44,48 +44,36 @@ export async function POST(req: NextRequest) {
   try {
     switch (platform) {
       case "wordpress": {
-        // Try the itgrows plugin status endpoint first, then fall back to basic WP REST API
         const baseUrl = url.replace(/\/$/, "")
-        let ok = false
-        let message = ""
+        const statusUrl = siteToken
+          ? `${baseUrl}/wp-json/itgrows/v1/status?token=${encodeURIComponent(siteToken)}`
+          : `${baseUrl}/wp-json/itgrows/v1/status`
 
+        let res: Response
         try {
-          const res = await fetch(`${baseUrl}/wp-json/itgrows/v1/status`, {
+          res = await fetch(statusUrl, {
             method: "GET",
             signal: AbortSignal.timeout(8000),
           })
-          if (res.ok) {
-            ok = true
-            message = "WordPress plugin is reachable and responding"
-          } else {
-            message = `WordPress plugin returned HTTP ${res.status}`
-          }
-        } catch {
-          // Fall back: check basic WP REST API
-          try {
-            const creds = wpUsername && wpAppPassword
-              ? Buffer.from(`${wpUsername}:${wpAppPassword}`).toString("base64")
-              : null
-            const headers: Record<string, string> = {}
-            if (creds) headers["Authorization"] = `Basic ${creds}`
-
-            const res2 = await fetch(`${baseUrl}/wp-json/wp/v2/posts?per_page=1`, {
-              method: "GET",
-              headers,
-              signal: AbortSignal.timeout(8000),
-            })
-            if (res2.ok) {
-              ok = true
-              message = "WordPress REST API is reachable"
-            } else {
-              message = `WordPress REST API returned HTTP ${res2.status}`
-            }
-          } catch (e2) {
-            message = `Cannot reach WordPress site: ${e2 instanceof Error ? e2.message : String(e2)}`
-          }
+        } catch (e) {
+          result = { success: false, message: `Cannot reach WordPress site: ${e instanceof Error ? e.message : String(e)}` }
+          break
         }
 
-        result = { success: ok, message }
+        if (res.status === 404) {
+          result = { success: false, message: "Plugin not installed. Please install the ItGrows WordPress plugin." }
+        } else if (res.status === 401) {
+          result = { success: false, message: "Invalid token. Please copy the correct token from WP Admin → Settings → ItGrows.ai" }
+        } else if (res.ok) {
+          const data = await res.json().catch(() => ({})) as { ok?: boolean }
+          if (data.ok === true) {
+            result = { success: true, message: "WordPress plugin is connected and responding" }
+          } else {
+            result = { success: false, message: "WordPress plugin returned unexpected response" }
+          }
+        } else {
+          result = { success: false, message: `WordPress plugin returned HTTP ${res.status}` }
+        }
         break
       }
 

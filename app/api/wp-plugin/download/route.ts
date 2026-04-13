@@ -36,14 +36,31 @@ function itgrows_settings_page() {
     echo '</div>';
 }
 
-// REST API endpoint for publishing
+// REST API endpoint for publishing and status
 add_action('rest_api_init', function() {
     register_rest_route('itgrows/v1', '/publish', array(
         'methods' => 'POST',
         'callback' => 'itgrows_publish_post',
         'permission_callback' => '__return_true',
     ));
+    register_rest_route('itgrows/v1', '/status', array(
+        'methods'  => 'GET',
+        'callback' => 'itgrows_status',
+        'permission_callback' => '__return_true',
+    ));
 });
+
+function itgrows_status(WP_REST_Request $request) {
+    $token = $request->get_param('token');
+    $stored = get_option('itgrows_site_token', '');
+    if (empty($stored)) {
+        return new WP_Error('not_configured', 'Plugin not configured', array('status' => 400));
+    }
+    if (!empty($token) && $token !== $stored) {
+        return new WP_Error('invalid_token', 'Invalid token', array('status' => 401));
+    }
+    return rest_ensure_response(array('ok' => true, 'version' => '1.0'));
+}
 
 function itgrows_publish_post($request) {
     $params = $request->get_json_params();

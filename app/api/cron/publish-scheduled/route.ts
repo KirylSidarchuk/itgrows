@@ -66,6 +66,16 @@ export async function GET(req: NextRequest) {
         ? { niche: siteProfile.niche, targetAudience: siteProfile.targetAudience }
         : undefined
 
+      // Skip if site integration has not been verified
+      if (site && site.lastCheckOk !== true) {
+        await db.update(scheduledPosts)
+          .set({ status: "failed", publishError: "Site integration not verified. Please complete setup in Settings." })
+          .where(eq(scheduledPosts.id, post.id))
+        errors.push({ id: post.id, keyword: post.keyword, error: "Site integration not verified" })
+        processed.push({ id: post.id, keyword: post.keyword, status: "failed", error: "Site integration not verified" })
+        continue
+      }
+
       // Generate article (internal call — pass secret to bypass user session check)
       const genRes = await fetch(`${baseUrl}/api/seo/generate`, {
         method: "POST",

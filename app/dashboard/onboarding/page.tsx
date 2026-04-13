@@ -752,10 +752,11 @@ export default function OnboardingPage() {
                     <div className="bg-[#f9f8f7] rounded-xl p-4 border border-black/10 text-sm text-slate-600 space-y-2">
                       <p className="font-semibold text-[#1b1916]">How to connect WordPress:</p>
                       <ol className="list-decimal list-inside space-y-1">
-                        <li>In your WordPress admin, go to <strong>Users → Profile</strong></li>
-                        <li>Scroll to <strong>Application Passwords</strong></li>
-                        <li>Enter a name (e.g. "ItGrows") and click <strong>Add New</strong></li>
-                        <li>Copy the password shown and paste it below</li>
+                        <li><a href="/api/wp-plugin/download" className="text-violet-600 underline font-medium">Download ItGrows.ai WordPress Plugin</a></li>
+                        <li>Go to <strong>WP Admin → Plugins → Add New → Upload Plugin</strong></li>
+                        <li>Select the downloaded file → <strong>Install Now → Activate</strong></li>
+                        <li>Go to <strong>Settings → ItGrows.ai</strong> and copy your <strong>Site Token</strong></li>
+                        <li>Paste the Site Token in the field below</li>
                       </ol>
                     </div>
                     <input
@@ -767,7 +768,7 @@ export default function OnboardingPage() {
                     />
                     <input
                       type="text"
-                      placeholder="WordPress Application Password"
+                      placeholder="Site Token"
                       value={wpToken}
                       onChange={e => setWpToken(e.target.value)}
                       className="w-full px-4 py-3 rounded-xl border border-black/15 bg-[#f9f8f7] focus:outline-none focus:ring-2 focus:ring-violet-400 text-[#1b1916] placeholder:text-slate-400 text-sm font-mono"
