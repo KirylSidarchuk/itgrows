@@ -224,8 +224,6 @@ function AddSiteWizard({ onSaved, onCancel, isFirstSite }: AddSiteWizardProps) {
 
   const siteSlug = generateSiteSlug(derivedName, normalUrl)
 
-  const widgetEmbedCode = `<script src="https://itgrows.ai/widget.js?token=${generatedToken}" defer></script>`
-
   // ── Step 1: detect platform + fetch topics ───────────────────────────────
   const handleAnalyze = async () => {
     if (!inputUrl.trim()) return
@@ -438,30 +436,6 @@ function AddSiteWizard({ onSaved, onCancel, isFirstSite }: AddSiteWizardProps) {
       webflowToken: webflowApiToken.trim(),
       webflowCollectionId: webflowCollectionId.trim(),
       integrationMode,
-      hasBlog,
-      existingBlogUrl: hasBlog ? existingBlogUrl : "",
-    })
-  }
-
-  const handleConnectSimple = () => {
-    saveSite({
-      name: derivedName,
-      url: normalUrl,
-      platform:
-        detected === "wordpress"
-          ? "wordpress"
-          : detected === "shopify"
-          ? "shopify"
-          : detected === "webflow"
-          ? "webflow"
-          : detected === "octobercms"
-          ? "octobercms"
-          : detected === "php"
-          ? "php"
-          : "custom",
-      siteToken: generatedToken,
-      siteSlug,
-      integrationMode: "simple",
       hasBlog,
       existingBlogUrl: hasBlog ? existingBlogUrl : "",
     })
@@ -1293,156 +1267,53 @@ echo json_encode(['success' => true]);
   }
 
   // ─────────────────────────────────────────────────────────────────────────
-  // STEP 4B — Simple widget guide
+  // STEP 4B — CNAME setup (simple / non-technical path)
   // ─────────────────────────────────────────────────────────────────────────
   if (step === "setup-simple") {
-    // October CMS / PHP requires a server-side webhook — redirect to advanced flow
-    if (detected === "octobercms" || detected === "php") {
-      return (
-        <div className="space-y-5 pt-4 border-t border-black/10">
-          <DetectionBadge />
-          <div className="rounded-xl bg-amber-50 border border-amber-200 p-4 space-y-2">
-            <p className="text-amber-800 font-semibold text-sm">Your platform requires a server-side setup</p>
-            <p className="text-amber-700 text-xs leading-relaxed">
-              {detected === "octobercms" ? "October CMS" : "PHP-based sites"} cannot use the simple JS widget for publishing — articles need to be saved directly to your CMS database. Please use our step-by-step guide below.
-            </p>
-          </div>
-          <Button
-            onClick={() => {
-              setIntegrationMode("advanced")
-              setStep("setup-advanced")
-            }}
-            className="bg-violet-600 hover:bg-violet-500 text-white w-full"
-          >
-            Open Step-by-Step Guide →
-          </Button>
-          <BackButton onClick={() => setStep("blog-simple")} />
-        </div>
-      )
-    }
-
-    const platformInstructions: Record<string, { step2: string; step3: string }> = {
-      wordpress: {
-        step2: "Log in to your WordPress Admin (yoursite.com/wp-admin)",
-        step3: "Go to Appearance → Theme Editor → find footer.php and paste the code before </body>",
-      },
-      webflow: {
-        step2: "Log in to Webflow and open your project",
-        step3: "Go to Project Settings → Custom Code → Footer Code section",
-      },
-      shopify: {
-        step2: "Log in to your Shopify Admin",
-        step3: "Go to Online Store → Themes → Edit Code → open theme.liquid and paste before </body>",
-      },
-    }
-
-    const platformKey =
-      detected === "wordpress"
-        ? "wordpress"
-        : detected === "webflow"
-        ? "webflow"
-        : detected === "shopify"
-        ? "shopify"
-        : null
-
-    const instructions = platformKey ? platformInstructions[platformKey] : null
-
     return (
       <div className="space-y-5 pt-4 border-t border-black/10">
         <DetectionBadge />
-
         <div>
-          <h3 className="text-[#1b1916] font-semibold text-base mb-1">
-            Add the widget to your site
-          </h3>
+          <h3 className="text-[#1b1916] font-semibold text-base mb-1">Set up your blog</h3>
           <p className="text-slate-600 text-xs">
-            Follow these steps to connect your site. No coding knowledge required.
+            Add a DNS record to your domain to host your blog on our platform. No technical setup needed.
           </p>
         </div>
 
-        <div className="space-y-3">
-          {/* Step 1 */}
-          <div className="rounded-xl bg-[#ebe9e5] border border-black/10 p-4 space-y-2">
-            <div className="flex items-center gap-2">
-              <span className="w-6 h-6 rounded-full bg-violet-600 text-white text-xs font-bold flex items-center justify-center shrink-0">
-                1
-              </span>
-              <p className="text-slate-700 font-medium text-sm">Here&apos;s your unique embed code:</p>
-            </div>
-            <div className="flex items-start gap-2 mt-2">
-              <code className="text-xs text-violet-600 bg-white/60 rounded-lg px-3 py-2 font-mono flex-1 break-all border border-black/10">
-                {widgetEmbedCode}
-              </code>
-              <CopyButton text={widgetEmbedCode} label="Copy" />
-            </div>
+        {/* DNS instruction box */}
+        <div className="rounded-xl bg-[#ebe9e5] border border-black/10 p-5 space-y-3">
+          <p className="text-[#1b1916] font-semibold text-sm">Add this DNS record to your domain registrar:</p>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm border-collapse">
+              <thead>
+                <tr className="text-slate-500 text-xs uppercase tracking-wide">
+                  <th className="text-left pb-2 pr-6 font-semibold">Type</th>
+                  <th className="text-left pb-2 pr-6 font-semibold">Name</th>
+                  <th className="text-left pb-2 font-semibold">Value</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td className="pr-6 py-1 font-mono text-violet-700 font-bold">CNAME</td>
+                  <td className="pr-6 py-1 font-mono text-[#1b1916]">blog</td>
+                  <td className="py-1 font-mono text-[#1b1916] text-xs">blogs.itgrows.ai</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
-
-          {/* Step 2 */}
-          <div className="rounded-xl bg-[#ebe9e5] border border-black/10 p-4 flex items-start gap-3">
-            <span className="w-6 h-6 rounded-full bg-violet-600 text-white text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">
-              2
-            </span>
-            <p className="text-slate-700 text-sm">
-              {instructions ? instructions.step2 : "Log in to your website's admin panel"}
-            </p>
-          </div>
-
-          {/* Step 3 */}
-          <div className="rounded-xl bg-[#ebe9e5] border border-black/10 p-4 flex items-start gap-3">
-            <span className="w-6 h-6 rounded-full bg-violet-600 text-white text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">
-              3
-            </span>
-            <p className="text-slate-700 text-sm">
-              {instructions
-                ? instructions.step3
-                : "Find where to add custom code/scripts (usually in Settings → Custom Code)"}
-            </p>
-          </div>
-
-          {/* Step 4 */}
-          <div className="rounded-xl bg-[#ebe9e5] border border-black/10 p-4 flex items-start gap-3">
-            <span className="w-6 h-6 rounded-full bg-violet-600 text-white text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">
-              4
-            </span>
-            <p className="text-slate-700 text-sm">Paste the code and save your changes</p>
-          </div>
+          <p className="text-slate-500 text-xs">You can use any subdomain name (e.g. <code className="bg-white/60 px-1 rounded text-violet-700">blog</code>, <code className="bg-white/60 px-1 rounded text-violet-700">news</code>, <code className="bg-white/60 px-1 rounded text-violet-700">articles</code>)</p>
         </div>
 
-        {/* Blog destination */}
-        {hasBlog === false && (
-          <div className="rounded-xl bg-violet-900/10 border border-violet-500/20 p-3 text-sm">
-            <p className="text-slate-600 text-xs">After adding the widget, a blog will be created on your site automatically. Your articles will appear at: <span className="text-violet-600 font-mono">yoursite.com/blog</span></p>
-          </div>
-        )}
-        {hasBlog === true && (
-          <div className="rounded-xl bg-violet-900/10 border border-violet-500/20 p-3 text-sm">
-            <p className="text-slate-600 text-xs">
-              Your articles will be published directly to:
-            </p>
-            {existingBlogUrl && (
-              <p className="text-violet-600 font-mono text-xs mt-1">{existingBlogUrl}</p>
-            )}
-          </div>
-        )}
-
-        {/* Help link */}
-        <p className="text-slate-600 text-xs">
-          Need help?{" "}
-          <a href="#" className="text-violet-600 hover:text-violet-800 underline">
-            Watch our setup guide
-          </a>
-        </p>
-
+        {/* Blog URL input */}
         <div className="space-y-2">
-          <Label className="text-slate-700 text-sm">
-            Site Name <span className="text-[#1b1916]">(optional)</span>
-          </Label>
+          <Label className="text-slate-700 text-sm font-medium">Your blog URL (after adding DNS):</Label>
           <Input
-            placeholder="My Site"
-            value={siteName}
-            onChange={(e) => setSiteName(e.target.value)}
-            className="bg-[#ebe9e5] border-black/10 text-[#1b1916] placeholder:text-slate-500 focus:border-violet-500 text-sm"
+            placeholder="e.g. blog.yoursite.com"
+            value={blogDomain}
+            onChange={(e) => setBlogDomain(e.target.value)}
+            className="bg-[#ebe9e5] border-black/10 text-[#1b1916] placeholder:text-slate-500 focus:border-violet-500 text-sm font-mono"
           />
+          <p className="text-slate-500 text-xs">Enter the subdomain you used (e.g. blog.yoursite.com)</p>
         </div>
 
         {saveError && (
@@ -1451,13 +1322,23 @@ echo json_encode(['success' => true]);
 
         <div className="flex gap-3 pt-1">
           <Button
-            onClick={handleConnectSimple}
-            disabled={saving}
+            onClick={async () => { const ok = await handleConnectCname(); if (ok) setStep("blog-done") }}
+            disabled={!blogDomain.trim() || saving}
             className="bg-violet-600 hover:bg-violet-500 text-white"
           >
-            {saving ? "Connecting..." : "I've added it — Connect"}
+            {saving ? "Saving..." : "I've added the DNS record →"}
           </Button>
           <BackButton onClick={() => setStep("blog-simple")} />
+        </div>
+
+        {/* Advanced setup link */}
+        <div className="pt-2 border-t border-black/10">
+          <button
+            onClick={() => setStep("experience")}
+            className="text-xs text-slate-500 hover:text-violet-600 transition-colors underline"
+          >
+            Advanced Setup (WordPress, Shopify, Webflow, custom code)
+          </button>
         </div>
       </div>
     )
