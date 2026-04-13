@@ -100,33 +100,8 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
     const data = (await res.json()) as PublishResult
 
-    // If publish to external site succeeded and we have site context,
-    // also mirror the article to the itgrows hosted blog.
-    // Forward the session cookie so auth() resolves correctly in blog/posts.
-    if (data.success && (siteId || siteSlug)) {
-      try {
-        const baseUrl = req.nextUrl.origin
-        await fetch(`${baseUrl}/api/blog/posts`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            // Forward the session cookie so the blog/posts route can authenticate
-            ...(req.headers.get("cookie") ? { "Cookie": req.headers.get("cookie")! } : {}),
-          },
-          body: JSON.stringify({
-            title,
-            content,
-            metaDescription: metaDescription ?? "",
-            keywords: keywords ?? [],
-            keyword: keyword ?? "",
-            ...(siteId ? { siteId } : {}),
-            ...(siteSlug ? { siteSlug } : {}),
-          }),
-        })
-      } catch {
-        // mirroring is best-effort — don't fail the main response
-      }
-    }
+    // NOTE: Mirroring client articles to itgrows blog_posts has been intentionally removed.
+    // Client articles must NOT appear on itgrows.ai — they belong only on the client's own site.
 
     return NextResponse.json(data)
   } catch (err: unknown) {

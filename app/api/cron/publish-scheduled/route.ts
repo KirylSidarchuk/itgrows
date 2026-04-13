@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db"
-import { scheduledPosts, connectedSites, blogPosts } from "@/lib/db/schema"
+import { scheduledPosts, connectedSites } from "@/lib/db/schema"
 import { eq, lte, and } from "drizzle-orm"
 
 export const runtime = "nodejs"
@@ -91,7 +91,8 @@ export async function GET(req: NextRequest) {
       }
 
       // Publish to connected site (WordPress, etc.)
-      if (site) {
+      // NOTE: itgrows_blog platform is for the itgrows.ai internal blog only — skip external API publish for it.
+      if (site && site.platform !== "itgrows_blog") {
         let normalUrl = site.url.trim().replace(/\/$/, "")
         if (!normalUrl.startsWith("http")) normalUrl = "https://" + normalUrl
 
@@ -121,7 +122,7 @@ export async function GET(req: NextRequest) {
             publishedUrl = wpData.url ?? null
           }
         } catch {
-          // Non-fatal: site may be unreachable but we still save to blog_posts
+          // Non-fatal: site may be unreachable
         }
 
         // TODO: ping Google Indexing API after publishing
@@ -135,35 +136,16 @@ export async function GET(req: NextRequest) {
         }
       }
 
-      // Save to blog_posts table (itgrows hosted blog)
-      const slug = generateSlug(article.title)
-      let savedSlug: string | null = null
-      try {
-        await db.insert(blogPosts).values({
-          userId: post.userId,
-          siteSlug: site?.siteSlug ?? null,
-          siteId: site?.id ?? null,
-          slug,
-          title: article.title,
-          content: article.content,
-          metaDescription: article.metaDescription ?? "",
-          keywords: article.keywords ?? [],
-          publishedAt: new Date(),
-          coverImageUrl: article.coverImageUrl ?? null,
-        })
-        savedSlug = slug
-      } catch {
-        // slug collision — best-effort, continue without slug
-      }
+      // NOTE: Client articles must NOT be saved to blog_posts (itgrows.ai hosted blog).
+      // blog_posts is only for itgrows.ai own content (platform === "itgrows_blog").
 
-      // Save articleData, blogPostSlug, and mark as published
+      // Save articleData and mark as published
       await db
         .update(scheduledPosts)
         .set({
           status: "published",
           articleData: article,
           publishedAt: new Date(),
-          ...(savedSlug ? { blogPostSlug: savedSlug } : {}),
           ...(article.coverImageUrl ? { coverImageUrl: article.coverImageUrl } : {}),
         })
         .where(eq(scheduledPosts.id, post.id))
