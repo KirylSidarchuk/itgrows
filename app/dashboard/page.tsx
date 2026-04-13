@@ -167,9 +167,9 @@ export default function DashboardPage() {
                   </p>
                 </div>
               </div>
-              <Link href="/dashboard/settings" className="shrink-0 ml-4">
+              <Link href="/dashboard/settings?connect=1" className="shrink-0 ml-4">
                 <Button className="bg-violet-600 hover:bg-violet-500 text-white text-sm">
-                  Go to Settings
+                  Connect Site
                 </Button>
               </Link>
             </CardContent>

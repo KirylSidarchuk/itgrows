@@ -1,6 +1,7 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { Suspense, useEffect, useState } from "react"
+import { useSearchParams } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -1209,7 +1210,8 @@ echo json_encode(['success' => true]);
 
 // ─── Settings page ────────────────────────────────────────────────────────────
 
-export default function SettingsPage() {
+function SettingsContent() {
+  const searchParams = useSearchParams()
   const [sites, setSites] = useState<ConnectedSite[]>([])
   const [showWizard, setShowWizard] = useState(false)
   const [loading, setLoading] = useState(true)
@@ -1218,11 +1220,16 @@ export default function SettingsPage() {
     fetch("/api/sites")
       .then((r) => r.json())
       .then((data: { sites?: ConnectedSite[] }) => {
-        setSites(data.sites ?? [])
+        const loaded = data.sites ?? []
+        setSites(loaded)
+        // Auto-open wizard if no sites connected OR ?connect=1 param is present
+        if (loaded.length === 0 || searchParams.get("connect") === "1") {
+          setShowWizard(true)
+        }
       })
       .catch(() => {})
       .finally(() => setLoading(false))
-  }, [])
+  }, [searchParams])
 
   const handleSaved = (newSite: ConnectedSite) => {
     setSites((prev) => [...prev, newSite])
@@ -1363,5 +1370,13 @@ export default function SettingsPage() {
         </Card>
       </div>
     </div>
+  )
+}
+
+export default function SettingsPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-slate-400 text-sm">Loading settings...</div>}>
+      <SettingsContent />
+    </Suspense>
   )
 }
