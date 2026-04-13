@@ -958,12 +958,6 @@ export default function CalendarPage() {
                 Calendar
               </button>
             </div>
-            <Button
-              onClick={openModal}
-              className="bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-white"
-            >
-              + Schedule Article
-            </Button>
           </div>
         </div>
 
@@ -1053,12 +1047,6 @@ export default function CalendarPage() {
             <p className="text-slate-600 mb-6">
               Schedule your first article to get started with content automation.
             </p>
-            <Button
-              onClick={openModal}
-              className="bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-white"
-            >
-              + Schedule Article
-            </Button>
           </div>
         )}
 
