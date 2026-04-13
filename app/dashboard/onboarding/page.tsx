@@ -50,7 +50,7 @@ export default function OnboardingPage() {
   const [showFullArticle, setShowFullArticle] = useState(false)
   const [topicImages, setTopicImages] = useState<Record<number, string>>({})
   const [integrationMode, setIntegrationMode] = useState<'simple' | 'advanced' | null>(null)
-  const [connectSubStep, setConnectSubStep] = useState<'experience' | 'detecting' | 'platform' | 'setup'>('experience')
+  const [connectSubStep, setConnectSubStep] = useState<'experience' | 'blog-advanced' | 'blog-simple' | 'detecting' | 'platform' | 'setup'>('experience')
   const [selectedPlatform, setSelectedPlatform] = useState<'wordpress' | 'shopify' | 'webflow' | 'other' | null>(null)
   const [detectedPlatform, setDetectedPlatform] = useState<string | null>(null)
   const [wpToken, setWpToken] = useState("")
@@ -442,38 +442,47 @@ export default function OnboardingPage() {
         {/* Step 4: Connect blog */}
         {step === 4 && (
           <div className="bg-white rounded-2xl p-8 shadow-sm border border-black/10">
-            <button
-              onClick={() => setStep(3)}
-              className="text-sm text-slate-500 hover:text-slate-700 mb-6 flex items-center gap-1"
-            >
-              ← Back
-            </button>
+            {connectSubStep === 'experience' && (
+              <button
+                onClick={() => setStep(3)}
+                className="text-sm text-slate-500 hover:text-slate-700 mb-6 flex items-center gap-1"
+              >
+                ← Back
+              </button>
+            )}
 
-            {/* Sub-step: do you have a blog? */}
+            {/* Sub-step: how do you want to publish? */}
             {connectSubStep === 'experience' && (
               <>
                 <div className="text-center mb-8">
-                  <div className="text-4xl mb-4">📝</div>
-                  <h2 className="text-2xl font-bold text-[#1b1916] mb-2">Where should we publish?</h2>
+                  <div className="text-4xl mb-4">🚀</div>
+                  <h2 className="text-2xl font-bold text-[#1b1916] mb-2">How would you like to publish?</h2>
                   <p className="text-slate-600 text-sm">
-                    Do you already have a blog section on your website?
+                    Choose the setup that fits you best.
                   </p>
                 </div>
 
                 <div className="space-y-3 mb-6">
                   <button
-                    onClick={handleDetectPlatform}
+                    onClick={() => { setIntegrationMode('advanced'); setConnectSubStep('blog-advanced') }}
                     className="w-full text-left rounded-xl border-2 border-black/10 hover:border-violet-400 bg-[#f9f8f7] hover:bg-violet-50 p-5 transition-all"
                   >
-                    <p className="font-semibold text-[#1b1916] mb-1">Yes, I have a blog</p>
-                    <p className="text-slate-500 text-sm">I already have a blog or articles section on my site (WordPress, Webflow, custom, etc.)</p>
+                    <p className="font-semibold text-[#1b1916] mb-1">🛠️ I'm technical</p>
+                    <p className="text-slate-500 text-sm">I can edit code, use APIs, and install plugins. Show me the advanced setup.</p>
+                  </button>
+                  <button
+                    onClick={() => { setIntegrationMode('simple'); setConnectSubStep('blog-simple') }}
+                    className="w-full text-left rounded-xl border-2 border-black/10 hover:border-violet-400 bg-[#f9f8f7] hover:bg-violet-50 p-5 transition-all"
+                  >
+                    <p className="font-semibold text-[#1b1916] mb-1">👋 Guide me step by step</p>
+                    <p className="text-slate-500 text-sm">I'm not a developer. Walk me through a simple copy-paste setup.</p>
                   </button>
                   <button
                     onClick={() => { setBlogOption('new'); setConnectSubStep('setup') }}
                     className="w-full text-left rounded-xl border-2 border-black/10 hover:border-violet-400 bg-[#f9f8f7] hover:bg-violet-50 p-5 transition-all"
                   >
-                    <p className="font-semibold text-[#1b1916] mb-1">No, I don't have a blog yet</p>
-                    <p className="text-slate-500 text-sm">I want ItGrows.ai to create and host my blog — just one DNS record</p>
+                    <p className="font-semibold text-[#1b1916] mb-1">I don&apos;t have a blog yet</p>
+                    <p className="text-slate-500 text-sm">ItGrows.ai will create and host your blog — just one DNS record</p>
                   </button>
                 </div>
 
@@ -482,6 +491,80 @@ export default function OnboardingPage() {
                   className="w-full py-2 text-sm text-slate-500 hover:text-slate-700 transition-colors"
                 >
                   Skip for now →
+                </button>
+              </>
+            )}
+
+            {/* Sub-step: blog check for advanced/technical path */}
+            {connectSubStep === 'blog-advanced' && (
+              <>
+                <div className="text-center mb-8">
+                  <div className="text-4xl mb-4">📝</div>
+                  <h2 className="text-2xl font-bold text-[#1b1916] mb-2">Does your site have a blog?</h2>
+                  <p className="text-slate-600 text-sm">
+                    This determines where your AI-generated articles will be published.
+                  </p>
+                </div>
+
+                <div className="space-y-3 mb-6">
+                  <button
+                    onClick={handleDetectPlatform}
+                    className="w-full text-left rounded-xl border-2 border-black/10 hover:border-violet-400 bg-[#f9f8f7] hover:bg-violet-50 p-5 transition-all"
+                  >
+                    <p className="font-semibold text-[#1b1916] mb-1">📝 Yes, I have a blog</p>
+                    <p className="text-slate-500 text-sm">I already have a blog or articles section on my site (WordPress, Webflow, custom, etc.)</p>
+                  </button>
+                  <button
+                    onClick={() => { setBlogOption('new'); setConnectSubStep('setup') }}
+                    className="w-full text-left rounded-xl border-2 border-black/10 hover:border-violet-400 bg-[#f9f8f7] hover:bg-violet-50 p-5 transition-all"
+                  >
+                    <p className="font-semibold text-[#1b1916] mb-1">☁️ No, create one for me</p>
+                    <p className="text-slate-500 text-sm">No problem — we'll create a blog section on your site automatically</p>
+                  </button>
+                </div>
+
+                <button
+                  onClick={() => setConnectSubStep('experience')}
+                  className="text-sm text-slate-500 hover:text-slate-700 flex items-center gap-1"
+                >
+                  ← Back
+                </button>
+              </>
+            )}
+
+            {/* Sub-step: blog check for simple/non-technical path */}
+            {connectSubStep === 'blog-simple' && (
+              <>
+                <div className="text-center mb-8">
+                  <div className="text-4xl mb-4">📝</div>
+                  <h2 className="text-2xl font-bold text-[#1b1916] mb-2">Does your website have a blog?</h2>
+                  <p className="text-slate-600 text-sm">
+                    We need to know where to publish your articles.
+                  </p>
+                </div>
+
+                <div className="space-y-3 mb-6">
+                  <button
+                    onClick={handleDetectPlatform}
+                    className="w-full text-left rounded-xl border-2 border-black/10 hover:border-violet-400 bg-[#f9f8f7] hover:bg-violet-50 p-5 transition-all"
+                  >
+                    <p className="font-semibold text-[#1b1916] mb-1">📝 Yes, I have a blog</p>
+                    <p className="text-slate-500 text-sm">I already have a blog page on my website.</p>
+                  </button>
+                  <button
+                    onClick={() => { setBlogOption('new'); setConnectSubStep('setup') }}
+                    className="w-full text-left rounded-xl border-2 border-black/10 hover:border-violet-400 bg-[#f9f8f7] hover:bg-violet-50 p-5 transition-all"
+                  >
+                    <p className="font-semibold text-[#1b1916] mb-1">✨ No, create one for me</p>
+                    <p className="text-slate-500 text-sm">No problem — we'll create a blog section on your site automatically</p>
+                  </button>
+                </div>
+
+                <button
+                  onClick={() => setConnectSubStep('experience')}
+                  className="text-sm text-slate-500 hover:text-slate-700 flex items-center gap-1"
+                >
+                  ← Back
                 </button>
               </>
             )}
@@ -575,6 +658,17 @@ export default function OnboardingPage() {
                 >
                   Skip for now →
                 </button>
+
+                <button
+                  onClick={() => {
+                    if (integrationMode === 'advanced') setConnectSubStep('blog-advanced')
+                    else if (integrationMode === 'simple') setConnectSubStep('blog-simple')
+                    else setConnectSubStep('experience')
+                  }}
+                  className="w-full mt-2 py-2 text-sm text-slate-400 hover:text-slate-600 transition-colors flex items-center justify-center gap-1"
+                >
+                  ← Back
+                </button>
               </>
             )}
 
@@ -619,6 +713,13 @@ export default function OnboardingPage() {
                   className="w-full py-2 text-sm text-slate-500 hover:text-slate-700 transition-colors"
                 >
                   Skip for now →
+                </button>
+
+                <button
+                  onClick={() => setConnectSubStep(integrationMode === 'simple' ? 'blog-simple' : 'blog-advanced')}
+                  className="w-full mt-2 py-2 text-sm text-slate-400 hover:text-slate-600 transition-colors flex items-center justify-center gap-1"
+                >
+                  ← Back
                 </button>
               </>
             )}
