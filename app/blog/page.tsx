@@ -1,7 +1,10 @@
 import Link from "next/link"
 import { db } from "@/lib/db"
 import { blogPosts } from "@/lib/db/schema"
-import { desc } from "drizzle-orm"
+import { desc, eq } from "drizzle-orm"
+
+// itgrows.ai internal blog owner — only their posts appear on the public blog
+const ITGROWS_OWNER_USER_ID = "7cd0011c-fadd-4ff5-bd1e-6445fea70b22"
 
 export const revalidate = 0 // always fetch fresh from DB
 
@@ -21,6 +24,7 @@ export default async function BlogPage() {
   const posts = await db
     .select()
     .from(blogPosts)
+    .where(eq(blogPosts.userId, ITGROWS_OWNER_USER_ID))
     .orderBy(desc(blogPosts.publishedAt))
 
   return (
