@@ -18,13 +18,16 @@ import type { DetectedPlatform, DetectPlatformResult } from "@/app/api/detect-pl
 type WizardStep =
   | "url"
   | "detecting"
-  | "blog-cname"      // Step 2: CNAME DNS setup (main flow)
-  | "blog-done"       // Step 3: confirmation
-  | "experience"      // Advanced Step 2: technical or not?
-  | "blog-advanced"   // Advanced Step 3A: blog check for advanced
-  | "blog-simple"     // Advanced Step 3B: blog check for simple
-  | "setup-advanced"  // Advanced Step 4A: platform-specific code setup
-  | "setup-simple"    // Advanced Step 4B: simple embed guide
+  | "topics"          // Step 2: Choose article topic
+  | "article"         // Step 3: Article preview + Publish Now
+  | "has-blog"        // Step 4: Does user have a blog?
+  | "blog-cname"      // Step 5: CNAME DNS setup (main flow)
+  | "blog-done"       // Step 6: confirmation
+  | "experience"      // Advanced Step: technical or not?
+  | "blog-advanced"   // Advanced Step: blog check for advanced
+  | "blog-simple"     // Advanced Step: blog check for simple
+  | "setup-advanced"  // Advanced Step: platform-specific code setup
+  | "setup-simple"    // Advanced Step: simple embed guide
 
 type IntegrationMode = "simple" | "advanced" | null
 
@@ -140,6 +143,18 @@ function BackButton({ onClick }: { onClick: () => void }) {
 
 // ─── Add-site wizard ──────────────────────────────────────────────────────────
 
+interface Topic {
+  title: string
+  description: string
+}
+
+interface ArticleData {
+  title: string
+  content: string
+  keywords: string[]
+  seoScore: number
+}
+
 interface AddSiteWizardProps {
   onSaved: (site: ConnectedSite) => void
   onCancel: () => void
@@ -153,6 +168,18 @@ function AddSiteWizard({ onSaved, onCancel, isFirstSite }: AddSiteWizardProps) {
   const [siteName, setSiteName] = useState("")
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState("")
+
+  // Onboarding flow state
+  const [topics, setTopics] = useState<Topic[]>([])
+  const [selectedTopic, setSelectedTopic] = useState<Topic | null>(null)
+  const [topicImages, setTopicImages] = useState<Record<number, string>>({})
+  const [article, setArticle] = useState<ArticleData | null>(null)
+  const [articleLoading, setArticleLoading] = useState(false)
+  const [topicsLoading, setTopicsLoading] = useState(false)
+  const [topicsError, setTopicsError] = useState("")
+  const [articleError, setArticleError] = useState("")
+  const [genTimer, setGenTimer] = useState(0)
+  const [showFullArticle, setShowFullArticle] = useState(false)
 
   // New flow state
   const [integrationMode, setIntegrationMode] = useState<IntegrationMode>(null)
@@ -198,22 +225,107 @@ function AddSiteWizard({ onSaved, onCancel, isFirstSite }: AddSiteWizardProps) {
 
   const widgetEmbedCode = `<script src="https://itgrows.ai/widget.js?token=${generatedToken}" defer></script>`
 
-  // ── Step 1: detect ────────────────────────────────────────────────────────
+  // ── Step 1: detect platform + fetch topics ───────────────────────────────
   const handleAnalyze = async () => {
     if (!inputUrl.trim()) return
     setStep("detecting")
+    setTopicsError("")
     try {
-      const res = await fetch("/api/detect-platform", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url: inputUrl.trim() }),
-      })
-      const data: DetectPlatformResult = await res.json()
-      setDetected(data.platform)
+      // Run platform detection and topic fetching in parallel
+      const [platformRes, topicsRes] = await Promise.allSettled([
+        fetch("/api/detect-platform", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url: inputUrl.trim() }),
+        }),
+        fetch("/api/onboarding/topics", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ siteUrl: inputUrl.trim() }),
+        }),
+      ])
+
+      if (platformRes.status === "fulfilled") {
+        const data: DetectPlatformResult = await platformRes.value.json()
+        setDetected(data.platform)
+      } else {
+        setDetected("custom")
+      }
+
+      if (topicsRes.status === "fulfilled") {
+        const data = await topicsRes.value.json() as { topics?: Topic[]; error?: string }
+        if (data.topics && data.topics.length > 0) {
+          setTopics(data.topics)
+          // Generate images non-blocking
+          data.topics.forEach((topic: Topic, idx: number) => {
+            fetch("/api/images/generate", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ title: topic.title, keywords: [] }),
+            })
+              .then(r => r.json())
+              .then((d: { url?: string }) => {
+                if (d.url) setTopicImages(prev => ({ ...prev, [idx]: d.url! }))
+              })
+              .catch(() => {})
+          })
+          setStep("topics")
+        } else {
+          // If topics fail, skip to integration step
+          setStep("has-blog")
+        }
+      } else {
+        setStep("has-blog")
+      }
     } catch {
       setDetected("custom")
+      setStep("has-blog")
     }
-    setStep("blog-cname")
+  }
+
+  // ── Step 2: generate article from selected topic ───────────────────────
+  const handleGenerateArticle = async () => {
+    if (!selectedTopic) return
+    setArticleLoading(true)
+    setArticleError("")
+    setGenTimer(30)
+    const timerRef = { id: null as ReturnType<typeof setInterval> | null }
+    timerRef.id = setInterval(() => {
+      setGenTimer((t) => {
+        if (t <= 1) { clearInterval(timerRef.id ?? undefined); return 0 }
+        return t - 1
+      })
+    }, 1000)
+    try {
+      const res = await fetch("/api/seo/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ keyword: selectedTopic.title, siteUrl: inputUrl.trim(), tone: "Professional" }),
+      })
+      const data = await res.json() as { title?: string; content?: string; keywords?: string[]; seoScore?: number; error?: string }
+      if (!res.ok || !data.content) throw new Error(data.error ?? "Failed to generate article")
+      const wordCount = (data.content ?? "").replace(/<[^>]+>/g, " ").split(/\s+/).filter(Boolean).length
+      const fallbackScore = Math.min(100, Math.max(50, Math.round(40 + wordCount / 40)))
+      clearInterval(timerRef.id)
+      setArticle({
+        title: data.title ?? selectedTopic.title,
+        content: data.content,
+        keywords: data.keywords ?? [],
+        seoScore: data.seoScore ?? fallbackScore,
+      })
+      setStep("article")
+    } catch (e) {
+      clearInterval(timerRef.id)
+      setArticleError(e instanceof Error ? e.message : "Something went wrong")
+    } finally {
+      setArticleLoading(false)
+    }
+  }
+
+  // Extract first 3 paragraphs from HTML
+  function getArticlePreview(html: string): string {
+    const matches = html.match(/<p>.*?<\/p>/g) ?? []
+    return matches.slice(0, 3).join("\n")
   }
 
   // ── Save via API ──────────────────────────────────────────────────────────
@@ -463,7 +575,192 @@ function AddSiteWizard({ onSaved, onCancel, isFirstSite }: AddSiteWizardProps) {
   }
 
   // ─────────────────────────────────────────────────────────────────────────
-  // STEP 2 — CNAME blog setup (main flow)
+  // STEP 2 — Choose article topic
+  // ─────────────────────────────────────────────────────────────────────────
+  if (step === "topics") {
+    return (
+      <div className="space-y-5 pt-4 border-t border-black/10">
+        <div className="text-center">
+          <div className="text-3xl mb-2">💡</div>
+          <h3 className="text-[#1b1916] font-semibold text-base mb-1">Here are 3 article ideas for your site</h3>
+          <p className="text-slate-600 text-xs">Click one to select it</p>
+        </div>
+
+        <div className="space-y-3">
+          {topics.map((topic, i) => (
+            <button
+              key={i}
+              onClick={() => setSelectedTopic(topic)}
+              className={`w-full text-left rounded-xl border-2 overflow-hidden transition-all ${
+                selectedTopic?.title === topic.title
+                  ? "border-violet-500 bg-violet-50"
+                  : "border-black/10 hover:border-violet-300 bg-[#ebe9e5]"
+              }`}
+            >
+              {topicImages[i] ? (
+                <img src={topicImages[i]} className="w-full h-28 object-cover rounded-t-xl mb-3" alt={topic.title} />
+              ) : (
+                <div className="w-full h-28 rounded-t-xl mb-3 bg-gradient-to-br from-violet-50 to-slate-100 flex flex-col items-center justify-center gap-1 border-b border-black/5">
+                  <span className="text-violet-400 text-xl animate-spin">⟳</span>
+                  <span className="text-violet-500 text-xs font-semibold tracking-wide">Generating image…</span>
+                </div>
+              )}
+              <div className="px-4 pb-4">
+                <p className="font-semibold text-[#1b1916] mb-1">{topic.title}</p>
+                <p className="text-slate-600 text-xs">{topic.description}</p>
+              </div>
+            </button>
+          ))}
+        </div>
+
+        {topicsError && <p className="text-red-500 text-sm">{topicsError}</p>}
+        {articleError && <p className="text-red-500 text-sm">{articleError}</p>}
+
+        <div className="flex gap-3">
+          <Button
+            onClick={handleGenerateArticle}
+            disabled={articleLoading || !selectedTopic}
+            className="bg-violet-600 hover:bg-violet-500 disabled:opacity-50 text-white flex-1"
+          >
+            {articleLoading ? (
+              <span>{genTimer === 0 ? "Almost ready…" : `Generating… ~${genTimer}s`}</span>
+            ) : (
+              "Generate article →"
+            )}
+          </Button>
+          <Button
+            onClick={() => setStep("has-blog")}
+            variant="outline"
+            className="border-black/20 text-slate-700 hover:bg-[#ebe9e5] text-xs"
+          >
+            Skip
+          </Button>
+        </div>
+        <BackButton onClick={() => setStep("url")} />
+      </div>
+    )
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // STEP 3 — Article preview + Publish Now
+  // ─────────────────────────────────────────────────────────────────────────
+  if (step === "article" && article) {
+    return (
+      <div className="space-y-5 pt-4 border-t border-black/10">
+        <div className="text-center">
+          <div className="text-3xl mb-2">📄</div>
+          <h3 className="text-[#1b1916] font-semibold text-base mb-1">Your article is ready!</h3>
+          <p className="text-slate-600 text-xs">Here&apos;s a preview of what we generated</p>
+        </div>
+
+        {/* Keywords */}
+        {article.keywords.length > 0 && (
+          <div>
+            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Target Keywords</p>
+            <div className="flex flex-wrap gap-2">
+              {article.keywords.slice(0, 8).map((kw, i) => (
+                <span key={i} className="bg-violet-100 text-violet-700 text-xs px-2 py-1 rounded-full">
+                  {kw}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* SEO Score */}
+        <div className="bg-[#ebe9e5] rounded-xl p-4 border border-black/10">
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">SEO Score ✨</p>
+            <span className={`text-sm font-bold ${article.seoScore >= 80 ? "text-green-600" : article.seoScore >= 60 ? "text-yellow-600" : "text-red-500"}`}>
+              {article.seoScore} / 100
+            </span>
+          </div>
+          <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+            <div
+              className={`h-full rounded-full transition-all duration-700 ease-out ${article.seoScore >= 80 ? "bg-green-500" : article.seoScore >= 60 ? "bg-yellow-500" : "bg-red-500"}`}
+              style={{ width: `${article.seoScore}%` }}
+            />
+          </div>
+        </div>
+
+        {/* Article preview */}
+        <div className="bg-[#ebe9e5] rounded-xl p-4 border border-black/10">
+          <h4 className="text-sm font-bold text-[#1b1916] mb-2">{article.title}</h4>
+          <div
+            className="text-slate-700 text-xs leading-relaxed prose prose-sm max-w-none [&_p]:mb-2"
+            dangerouslySetInnerHTML={{ __html: getArticlePreview(article.content) }}
+          />
+          <p className="text-violet-500 text-xs mt-2 italic">… article continues</p>
+        </div>
+
+        {/* Toggle full article */}
+        <button
+          onClick={() => setShowFullArticle((v) => !v)}
+          className="w-full py-1.5 text-xs text-violet-600 hover:text-violet-800 font-medium transition-colors flex items-center justify-center gap-1"
+        >
+          {showFullArticle ? "Collapse ↑" : "Read full article ↓"}
+        </button>
+
+        {showFullArticle && (
+          <div className="bg-white rounded-xl p-5 border border-black/10 shadow-sm text-sm">
+            <div className="prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: article.content }} />
+          </div>
+        )}
+
+        <Button
+          onClick={() => setStep("has-blog")}
+          className="w-full bg-violet-600 hover:bg-violet-500 text-white"
+        >
+          Publish Now →
+        </Button>
+
+        <BackButton onClick={() => setStep("topics")} />
+      </div>
+    )
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // STEP 4 — Does user have a blog?
+  // ─────────────────────────────────────────────────────────────────────────
+  if (step === "has-blog") {
+    return (
+      <div className="space-y-5 pt-4 border-t border-black/10">
+        <div className="text-center">
+          <div className="text-3xl mb-2">📝</div>
+          <h3 className="text-[#1b1916] font-semibold text-base mb-1">Where should we publish?</h3>
+          <p className="text-slate-600 text-xs">Do you already have a blog section on your website?</p>
+        </div>
+
+        <div className="space-y-3">
+          <button
+            onClick={() => {
+              setHasBlog(false)
+              setStep("blog-cname")
+            }}
+            className="w-full text-left rounded-xl border-2 border-black/10 hover:border-violet-400 bg-[#ebe9e5] hover:bg-violet-50 p-5 transition-all"
+          >
+            <p className="font-semibold text-[#1b1916] mb-1">No, I don&apos;t have a blog yet</p>
+            <p className="text-slate-500 text-xs">ItGrows.ai will create and host your blog — just one DNS record</p>
+          </button>
+          <button
+            onClick={() => {
+              setHasBlog(true)
+              setStep("experience")
+            }}
+            className="w-full text-left rounded-xl border-2 border-black/10 hover:border-violet-400 bg-[#ebe9e5] hover:bg-violet-50 p-5 transition-all"
+          >
+            <p className="font-semibold text-[#1b1916] mb-1">Yes, I have a blog</p>
+            <p className="text-slate-500 text-xs">I already have a blog (WordPress, Webflow, Shopify, custom, etc.)</p>
+          </button>
+        </div>
+
+        <BackButton onClick={() => setStep(article ? "article" : topics.length > 0 ? "topics" : "url")} />
+      </div>
+    )
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // STEP 5 — CNAME blog setup (main flow)
   // ─────────────────────────────────────────────────────────────────────────
   if (step === "blog-cname") {
     return (
@@ -524,7 +821,7 @@ function AddSiteWizard({ onSaved, onCancel, isFirstSite }: AddSiteWizardProps) {
           >
             {saving ? "Saving..." : "I've added the DNS record →"}
           </Button>
-          <BackButton onClick={() => setStep("url")} />
+          <BackButton onClick={() => setStep("has-blog")} />
         </div>
 
         {/* Advanced setup link */}
@@ -603,7 +900,7 @@ function AddSiteWizard({ onSaved, onCancel, isFirstSite }: AddSiteWizardProps) {
             }}
           />
         </div>
-        <BackButton onClick={() => setStep("blog-cname")} />
+        <BackButton onClick={() => setStep("has-blog")} />
       </div>
     )
   }
