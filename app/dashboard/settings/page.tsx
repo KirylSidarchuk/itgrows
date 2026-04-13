@@ -20,10 +20,9 @@ type WizardStep =
   | "detecting"
   | "topics"          // Step 2: Choose article topic
   | "article"         // Step 3: Article preview + Publish Now
-  | "has-blog"        // Step 4: Does user have a blog?
-  | "blog-cname"      // Step 5: CNAME DNS setup (main flow)
-  | "blog-done"       // Step 6: confirmation
-  | "experience"      // Advanced Step: technical or not?
+  | "blog-cname"      // Step 4: CNAME DNS setup (no-blog path)
+  | "blog-done"       // Step 5: confirmation
+  | "experience"      // Step 4: technical or not-technical?
   | "blog-advanced"   // Advanced Step: blog check for advanced
   | "blog-simple"     // Advanced Step: blog check for simple
   | "setup-advanced"  // Advanced Step: platform-specific code setup
@@ -272,14 +271,14 @@ function AddSiteWizard({ onSaved, onCancel, isFirstSite }: AddSiteWizardProps) {
           setStep("topics")
         } else {
           // If topics fail, skip to integration step
-          setStep("has-blog")
+          setStep("experience")
         }
       } else {
-        setStep("has-blog")
+        setStep("experience")
       }
     } catch {
       setDetected("custom")
-      setStep("has-blog")
+      setStep("experience")
     }
   }
 
@@ -629,7 +628,7 @@ function AddSiteWizard({ onSaved, onCancel, isFirstSite }: AddSiteWizardProps) {
             )}
           </Button>
           <Button
-            onClick={() => setStep("has-blog")}
+            onClick={() => setStep("experience")}
             variant="outline"
             className="border-black/20 text-slate-700 hover:bg-[#ebe9e5] text-xs"
           >
@@ -708,7 +707,7 @@ function AddSiteWizard({ onSaved, onCancel, isFirstSite }: AddSiteWizardProps) {
         )}
 
         <Button
-          onClick={() => setStep("has-blog")}
+          onClick={() => setStep("experience")}
           className="w-full bg-violet-600 hover:bg-violet-500 text-white"
         >
           Publish Now →
@@ -720,47 +719,7 @@ function AddSiteWizard({ onSaved, onCancel, isFirstSite }: AddSiteWizardProps) {
   }
 
   // ─────────────────────────────────────────────────────────────────────────
-  // STEP 4 — Does user have a blog?
-  // ─────────────────────────────────────────────────────────────────────────
-  if (step === "has-blog") {
-    return (
-      <div className="space-y-5 pt-4 border-t border-black/10">
-        <div className="text-center">
-          <div className="text-3xl mb-2">📝</div>
-          <h3 className="text-[#1b1916] font-semibold text-base mb-1">Where should we publish?</h3>
-          <p className="text-slate-600 text-xs">Do you already have a blog section on your website?</p>
-        </div>
-
-        <div className="space-y-3">
-          <button
-            onClick={() => {
-              setHasBlog(false)
-              setStep("blog-cname")
-            }}
-            className="w-full text-left rounded-xl border-2 border-black/10 hover:border-violet-400 bg-[#ebe9e5] hover:bg-violet-50 p-5 transition-all"
-          >
-            <p className="font-semibold text-[#1b1916] mb-1">No, I don&apos;t have a blog yet</p>
-            <p className="text-slate-500 text-xs">ItGrows.ai will create and host your blog — just one DNS record</p>
-          </button>
-          <button
-            onClick={() => {
-              setHasBlog(true)
-              setStep("experience")
-            }}
-            className="w-full text-left rounded-xl border-2 border-black/10 hover:border-violet-400 bg-[#ebe9e5] hover:bg-violet-50 p-5 transition-all"
-          >
-            <p className="font-semibold text-[#1b1916] mb-1">Yes, I have a blog</p>
-            <p className="text-slate-500 text-xs">I already have a blog (WordPress, Webflow, Shopify, custom, etc.)</p>
-          </button>
-        </div>
-
-        <BackButton onClick={() => setStep(article ? "article" : topics.length > 0 ? "topics" : "url")} />
-      </div>
-    )
-  }
-
-  // ─────────────────────────────────────────────────────────────────────────
-  // STEP 5 — CNAME blog setup (main flow)
+  // STEP 4 — CNAME blog setup (no-blog path)
   // ─────────────────────────────────────────────────────────────────────────
   if (step === "blog-cname") {
     return (
@@ -821,7 +780,7 @@ function AddSiteWizard({ onSaved, onCancel, isFirstSite }: AddSiteWizardProps) {
           >
             {saving ? "Saving..." : "I've added the DNS record →"}
           </Button>
-          <BackButton onClick={() => setStep("has-blog")} />
+          <BackButton onClick={() => setStep("experience")} />
         </div>
 
         {/* Advanced setup link */}
@@ -866,7 +825,7 @@ function AddSiteWizard({ onSaved, onCancel, isFirstSite }: AddSiteWizardProps) {
   }
 
   // ─────────────────────────────────────────────────────────────────────────
-  // STEP 2 — Experience check (Advanced flow)
+  // STEP 4 — Experience check: technical or not-technical?
   // ─────────────────────────────────────────────────────────────────────────
   if (step === "experience") {
     return (
@@ -874,16 +833,16 @@ function AddSiteWizard({ onSaved, onCancel, isFirstSite }: AddSiteWizardProps) {
         <DetectionBadge />
         <div>
           <h3 className="text-[#1b1916] font-semibold text-base mb-1">
-            Do you have experience working with code?
+            How would you like to publish?
           </h3>
           <p className="text-slate-600 text-xs">
-            We&apos;ll tailor the setup process to your experience level.
+            Choose the setup that fits you best.
           </p>
         </div>
         <div className="grid grid-cols-2 gap-3">
           <ChoiceCard
             icon="🛠️"
-            title="Yes, I'm technical"
+            title="I'm technical"
             description="I can edit code, use APIs, and install plugins. Show me the advanced setup."
             onClick={() => {
               setIntegrationMode("advanced")
@@ -892,7 +851,7 @@ function AddSiteWizard({ onSaved, onCancel, isFirstSite }: AddSiteWizardProps) {
           />
           <ChoiceCard
             icon="👋"
-            title="No, guide me step by step"
+            title="Guide me step by step"
             description="I'm not a developer. Walk me through a simple copy-paste setup."
             onClick={() => {
               setIntegrationMode("simple")
@@ -900,7 +859,19 @@ function AddSiteWizard({ onSaved, onCancel, isFirstSite }: AddSiteWizardProps) {
             }}
           />
         </div>
-        <BackButton onClick={() => setStep("has-blog")} />
+        <div className="pt-2 border-t border-black/10">
+          <button
+            onClick={() => {
+              setHasBlog(false)
+              setStep("blog-cname")
+            }}
+            className="w-full text-left rounded-xl border-2 border-black/10 hover:border-violet-400 bg-[#ebe9e5] hover:bg-violet-50 p-4 transition-all"
+          >
+            <p className="font-semibold text-[#1b1916] mb-1 text-sm">I don&apos;t have a blog yet</p>
+            <p className="text-slate-500 text-xs">ItGrows.ai will create and host your blog — just one DNS record</p>
+          </button>
+        </div>
+        <BackButton onClick={() => setStep(article ? "article" : topics.length > 0 ? "topics" : "url")} />
       </div>
     )
   }
