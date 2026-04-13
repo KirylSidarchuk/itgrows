@@ -256,7 +256,7 @@ export default async function HomePage() {
         <div className="max-w-3xl mx-auto">
           <div className="text-center mb-16">
             <Badge className="mb-4 bg-cyan-100 text-cyan-700 border-cyan-200">FAQ</Badge>
-            <h2 className="text-4xl font-bold mb-4 text-[#1b1916]">Frequently Asked Questions</h2>
+            <h2 className="text-4xl font-bold mb-4 text-violet-700">Frequently Asked Questions</h2>
             <p className="text-slate-600 text-lg">Everything you need to know about how ItGrows.ai works.</p>
           </div>
           <div className="space-y-4">
@@ -283,7 +283,7 @@ export default async function HomePage() {
               },
             ].map((item, i) => (
               <div key={i} className="bg-white rounded-2xl border border-black/10 p-6 hover:border-violet-300 transition-colors">
-                <h3 className="text-[#1b1916] font-semibold text-base mb-3 leading-snug">{item.q}</h3>
+                <h3 className="text-violet-700 font-semibold text-base mb-3 leading-snug">{item.q}</h3>
                 <p className="text-slate-600 text-sm leading-relaxed">{item.a}</p>
               </div>
             ))}
