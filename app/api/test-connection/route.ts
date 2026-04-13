@@ -165,27 +165,8 @@ export async function POST(req: NextRequest) {
         break
       }
 
-      case "itgrows_blog": {
-        const subdomain = blogDomain || siteToken
-        const target = blogDomain
-          ? `https://${blogDomain}`
-          : `https://${subdomain}.blogs.itgrows.ai`
-        try {
-          const res = await fetch(target, {
-            method: "GET",
-            signal: AbortSignal.timeout(8000),
-          })
-          result = (res.ok || res.status < 500)
-            ? { success: true, message: "ItGrows blog is reachable" }
-            : { success: false, message: `Blog returned HTTP ${res.status}` }
-        } catch (e) {
-          result = {
-            success: false,
-            message: `Cannot reach blog: ${e instanceof Error ? e.message : String(e)}`,
-          }
-        }
-        break
-      }
+      case "itgrows_blog":
+        return NextResponse.json({ success: true, message: "ItGrows Blog is always connected" })
 
       default: {
         const target = url
