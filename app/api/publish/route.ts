@@ -7,7 +7,7 @@ import { eq, and } from "drizzle-orm"
 interface PublishRequest {
   siteUrl: string
   siteToken: string
-  platform: "wordpress" | "custom" | "octobercms" | "php"
+  platform: "wordpress" | "shopify" | "webflow" | "custom" | "octobercms" | "php" | "itgrows_blog" | "nextjs" | "next.js"
   title: string
   content: string
   metaDescription?: string
@@ -48,7 +48,8 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   }
 
   // Check that the site integration is verified before allowing publish
-  if (siteId) {
+  // Skip check for itgrows_blog (always connected) and custom/CNAME sites (DNS may not yet propagate)
+  if (siteId && platform !== "itgrows_blog" && platform !== "custom") {
     const [site] = await db
       .select({ lastCheckOk: connectedSites.lastCheckOk, platform: connectedSites.platform })
       .from(connectedSites)
@@ -82,6 +83,131 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     metaDescription: metaDescription ?? "",
     keywords: keywords ?? [],
     coverImageUrl: coverImageUrl ?? null,
+  }
+
+  // ── itgrows_blog: publish directly to internal blog_posts table ──────────────
+  if (platform === "itgrows_blog") {
+    try {
+      const slug =
+        title.toLowerCase().replace(/[^a-z0-9\s-]/g, "").replace(/\s+/g, "-").replace(/-+/g, "-").trim() +
+        "-" +
+        Date.now().toString(36)
+      await db.insert(blogPosts).values({
+        userId: session.user.id,
+        slug,
+        title,
+        content,
+        metaDescription: metaDescription ?? "",
+        keywords: keywords ?? [],
+        siteId: siteId ?? null,
+        siteSlug: siteSlug ?? null,
+        coverImageUrl: coverImageUrl ?? null,
+      })
+      return NextResponse.json({ success: true, url: `/blog/${slug}` })
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Failed to save article"
+      return NextResponse.json({ success: false, error: message }, { status: 500 })
+    }
+  }
+
+  // ── Shopify: publish via Shopify Admin API ────────────────────────────────────
+  if (platform === "shopify") {
+    try {
+      // Fetch shopify credentials from DB
+      let shopifyAccessToken = siteToken
+      let shopifyBlogId = ""
+      if (siteId) {
+        const [site] = await db
+          .select({ shopifyToken: connectedSites.shopifyToken, shopifyBlogId: connectedSites.shopifyBlogId })
+          .from(connectedSites)
+          .where(and(eq(connectedSites.id, siteId), eq(connectedSites.userId, session.user.id)))
+          .limit(1)
+        if (site?.shopifyToken) shopifyAccessToken = site.shopifyToken
+        if (site?.shopifyBlogId) shopifyBlogId = site.shopifyBlogId
+      }
+      if (!shopifyBlogId) {
+        return NextResponse.json({ success: false, error: "Shopify Blog ID not configured" }, { status: 422 })
+      }
+      const shopDomain = normalUrl.replace(/^https?:\/\//, "").replace(/\/$/, "")
+      const endpoint = `https://${shopDomain}/admin/api/2024-01/blogs/${shopifyBlogId}/articles.json`
+      const body = {
+        article: {
+          title,
+          body_html: content,
+          summary_html: metaDescription ?? "",
+          published: true,
+          tags: keywords?.join(", ") ?? "",
+        },
+      }
+      const res = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Shopify-Access-Token": shopifyAccessToken,
+        },
+        body: JSON.stringify(body),
+        signal: AbortSignal.timeout(15000),
+      })
+      if (!res.ok) {
+        const errText = await res.text().catch(() => "")
+        return NextResponse.json({ success: false, error: `Shopify API error ${res.status}: ${errText}` }, { status: 502 })
+      }
+      const data = await res.json() as { article: { id: number; url?: string; handle?: string } }
+      const articleUrl = data.article.url ?? `${normalUrl}/blogs/news/${data.article.handle ?? data.article.id}`
+      return NextResponse.json({ success: true, url: articleUrl })
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Shopify publish failed"
+      return NextResponse.json({ success: false, error: message }, { status: 502 })
+    }
+  }
+
+  // ── Webflow: publish via Webflow CMS API ──────────────────────────────────────
+  if (platform === "webflow") {
+    try {
+      let webflowApiToken = siteToken
+      let webflowCollectionId = ""
+      if (siteId) {
+        const [site] = await db
+          .select({ webflowToken: connectedSites.webflowToken, webflowCollectionId: connectedSites.webflowCollectionId })
+          .from(connectedSites)
+          .where(and(eq(connectedSites.id, siteId), eq(connectedSites.userId, session.user.id)))
+          .limit(1)
+        if (site?.webflowToken) webflowApiToken = site.webflowToken
+        if (site?.webflowCollectionId) webflowCollectionId = site.webflowCollectionId
+      }
+      if (!webflowCollectionId) {
+        return NextResponse.json({ success: false, error: "Webflow Collection ID not configured" }, { status: 422 })
+      }
+      const body = {
+        isArchived: false,
+        isDraft: false,
+        fieldData: {
+          name: title,
+          slug: generateSlug(title),
+          "post-body": content,
+          "post-summary": metaDescription ?? "",
+        },
+      }
+      const res = await fetch(`https://api.webflow.com/v2/collections/${webflowCollectionId}/items`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${webflowApiToken}`,
+          accept: "application/json",
+        },
+        body: JSON.stringify(body),
+        signal: AbortSignal.timeout(15000),
+      })
+      if (!res.ok) {
+        const errText = await res.text().catch(() => "")
+        return NextResponse.json({ success: false, error: `Webflow API error ${res.status}: ${errText}` }, { status: 502 })
+      }
+      const data = await res.json() as { id: string }
+      return NextResponse.json({ success: true, url: `${normalUrl}` })
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Webflow publish failed"
+      return NextResponse.json({ success: false, error: message }, { status: 502 })
+    }
   }
 
   // Choose endpoint based on platform

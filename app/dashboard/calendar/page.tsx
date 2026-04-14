@@ -503,6 +503,7 @@ export default function CalendarPage() {
   // Publishing state: postId -> boolean
   const [publishingIds, setPublishingIds] = useState<Set<string>>(new Set())
   const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set())
+  const [showPaywall, setShowPaywall] = useState(false)
   const [updatingToneIds, setUpdatingToneIds] = useState<Set<string>>(new Set())
 
   // Preview modal state
@@ -737,6 +738,11 @@ export default function CalendarPage() {
       })
       if (!genRes.ok) {
         const err = (await genRes.json()) as { error?: string }
+        if (genRes.status === 402) {
+          updatePost(post.id, { status: "scheduled" })
+          setShowPaywall(true)
+          return
+        }
         throw new Error(err.error ?? "Generation failed")
       }
       const article = (await genRes.json()) as {
@@ -846,6 +852,11 @@ export default function CalendarPage() {
       })
       if (!genRes.ok) {
         const err = (await genRes.json()) as { error?: string }
+        if (genRes.status === 402) {
+          setPreviewOpen(false)
+          setShowPaywall(true)
+          return
+        }
         throw new Error(err.error ?? "Generation failed")
       }
       const article = (await genRes.json()) as {
@@ -929,6 +940,34 @@ export default function CalendarPage() {
 
   return (
     <div className="p-8">
+      {/* Paywall modal */}
+      {showPaywall && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
+          <div className="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl text-center">
+            <div className="text-4xl mb-4">🚀</div>
+            <h2 className="text-xl font-bold text-[#1b1916] mb-2">Trial limit reached</h2>
+            <p className="text-slate-600 text-sm mb-6">
+              You&apos;ve used all 3 free articles. Upgrade to continue generating and publishing unlimited articles.
+            </p>
+            <div className="flex flex-col gap-3">
+              <Link
+                href="/dashboard/billing"
+                className="w-full py-3 rounded-xl bg-violet-600 hover:bg-violet-500 text-white font-semibold transition-colors text-center"
+                onClick={() => setShowPaywall(false)}
+              >
+                Upgrade to Pro →
+              </Link>
+              <button
+                onClick={() => setShowPaywall(false)}
+                className="w-full py-2 text-sm text-slate-500 hover:text-slate-700 transition-colors"
+              >
+                Maybe later
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="mb-8 flex items-start justify-between gap-4">
