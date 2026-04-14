@@ -67,7 +67,8 @@ export async function GET(req: NextRequest) {
         : undefined
 
       // Skip if site integration has not been verified
-      if (site && site.lastCheckOk !== true) {
+      // itgrows_blog is the internal blog — no external verification needed
+      if (site && site.platform !== "itgrows_blog" && site.lastCheckOk !== true) {
         await db.update(scheduledPosts)
           .set({ status: "failed", publishError: "Site integration not verified. Please complete setup in Settings." })
           .where(eq(scheduledPosts.id, post.id))
