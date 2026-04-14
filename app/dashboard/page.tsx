@@ -171,7 +171,7 @@ export default function DashboardPage() {
             <div className="flex items-center gap-2">
               <span className="text-lg">🔒</span>
               <span className="text-sm font-medium">
-                You&apos;ve used <strong>{articlesGenerated}/3</strong> free articles. Subscribe to continue generating content.
+                You&apos;ve used <strong>{articlesGenerated}/15</strong> free articles. Subscribe to continue generating content.
               </span>
             </div>
             <Link href="/dashboard/billing" className="shrink-0">

@@ -55,7 +55,7 @@ export default function TermsPage() {
               <li><strong>Annual Plan — $999/year:</strong> Full access billed annually (~$83/month). Saves ~16% vs monthly.</li>
             </ul>
             <p className="mt-3">
-              New users receive 3 free article generations (trial). A paid subscription is required to continue after the trial limit.
+              New users receive 15 free article generations (trial). A paid subscription is required to continue after the trial limit.
             </p>
             <p className="mt-3">
               All payments are processed via Stripe. Subscriptions renew automatically unless cancelled before the renewal date. By subscribing, you authorize us to charge your payment method on a recurring basis.

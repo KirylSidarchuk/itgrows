@@ -294,7 +294,7 @@ export async function POST(req: NextRequest) {
           .where(and(eq(scheduledPosts.userId, userId), isNotNull(scheduledPosts.articleData)))
 
         const totalArticles = (blogCount?.value ?? 0) + (schedCount?.value ?? 0)
-        const TRIAL_LIMIT = 3
+        const TRIAL_LIMIT = 15
 
         if (totalArticles >= TRIAL_LIMIT) {
           return NextResponse.json(

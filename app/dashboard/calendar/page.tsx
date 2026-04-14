@@ -947,7 +947,7 @@ export default function CalendarPage() {
             <div className="text-4xl mb-4">🚀</div>
             <h2 className="text-xl font-bold text-[#1b1916] mb-2">Trial limit reached</h2>
             <p className="text-slate-600 text-sm mb-6">
-              You&apos;ve used all 3 free articles. Upgrade to continue generating and publishing unlimited articles.
+              You&apos;ve used all 15 free articles. Upgrade to continue generating and publishing unlimited articles.
             </p>
             <div className="flex flex-col gap-3">
               <Link
