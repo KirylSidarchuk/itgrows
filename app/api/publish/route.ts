@@ -110,6 +110,41 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     }
   }
 
+  // ── custom (CNAME) with blogDomain: publish to blog_posts table ──────────────
+  // For CNAME sites, blogs.itgrows.ai serves posts from blog_posts by site_slug.
+  // We detect this case by looking up the site's blogDomain from the DB.
+  if (platform === "custom" && siteId) {
+    const [site] = await db
+      .select({ blogDomain: connectedSites.blogDomain, siteSlug: connectedSites.siteSlug })
+      .from(connectedSites)
+      .where(and(eq(connectedSites.id, siteId), eq(connectedSites.userId, session.user.id)))
+      .limit(1)
+
+    if (site?.blogDomain) {
+      try {
+        const slug =
+          title.toLowerCase().replace(/[^a-z0-9\s-]/g, "").replace(/\s+/g, "-").replace(/-+/g, "-").trim() +
+          "-" +
+          Date.now().toString(36)
+        await db.insert(blogPosts).values({
+          userId: session.user.id,
+          slug,
+          title,
+          content,
+          metaDescription: metaDescription ?? "",
+          keywords: keywords ?? [],
+          siteId: siteId,
+          siteSlug: site.siteSlug ?? null,
+          coverImageUrl: coverImageUrl ?? null,
+        })
+        return NextResponse.json({ success: true, url: `https://${site.blogDomain}/${slug}` })
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : "Failed to save article"
+        return NextResponse.json({ success: false, error: message }, { status: 500 })
+      }
+    }
+  }
+
   // ── Shopify: publish via Shopify Admin API ────────────────────────────────────
   if (platform === "shopify") {
     try {

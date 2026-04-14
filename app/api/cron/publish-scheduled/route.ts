@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db"
-import { scheduledPosts, connectedSites } from "@/lib/db/schema"
+import { scheduledPosts, connectedSites, blogPosts } from "@/lib/db/schema"
 import { eq, lte, and } from "drizzle-orm"
 
 export const runtime = "nodejs"
@@ -67,8 +67,10 @@ export async function GET(req: NextRequest) {
         : undefined
 
       // Skip if site integration has not been verified
-      // itgrows_blog is the internal blog — no external verification needed
-      if (site && site.platform !== "itgrows_blog" && site.lastCheckOk !== true) {
+      // itgrows_blog = internal blog (no verification needed)
+      // custom = CNAME blog served by blogs.itgrows.ai (no external endpoint to verify)
+      const isHostedBlog = !site || site.platform === "itgrows_blog" || (site.platform === "custom" && !!site.blogDomain)
+      if (site && !isHostedBlog && site.lastCheckOk !== true) {
         await db.update(scheduledPosts)
           .set({ status: "failed", publishError: "Site integration not verified. Please complete setup in Settings." })
           .where(eq(scheduledPosts.id, post.id))
@@ -101,9 +103,31 @@ export async function GET(req: NextRequest) {
         coverImageUrl?: string
       }
 
-      // Publish to connected site (WordPress, etc.)
-      // NOTE: itgrows_blog platform is for the itgrows.ai internal blog only — skip external API publish for it.
-      if (site && site.platform !== "itgrows_blog") {
+      // Publish to connected site
+      // itgrows_blog = ItGrows.ai own blog → write to blog_posts table
+      // custom with blogDomain = CNAME-hosted blog → write to blog_posts table (served by blog-service)
+      // wordpress/shopify/webflow/octobercms/php → call external API endpoint
+      const isBlogPostsPlatform = !site || site.platform === "itgrows_blog" || (site.platform === "custom" && !!site.blogDomain)
+
+      if (site && isBlogPostsPlatform) {
+        // Save directly to blog_posts so blog-service can serve it via CNAME
+        const slug = generateSlug(article.title)
+        await db.insert(blogPosts).values({
+          userId: post.userId,
+          siteSlug: site.siteSlug ?? null,
+          siteId: site.id,
+          slug,
+          title: article.title,
+          content: article.content,
+          metaDescription: article.metaDescription ?? "",
+          keywords: article.keywords ?? [],
+          coverImageUrl: article.coverImageUrl ?? null,
+        })
+        const blogDomainHost = site.blogDomain ?? site.siteSlug
+        if (blogDomainHost) {
+          console.log(`[SEO Autopilot] Published to hosted blog: https://${blogDomainHost}/${slug}`)
+        }
+      } else if (site && !isBlogPostsPlatform) {
         let normalUrl = site.url.trim().replace(/\/$/, "")
         if (!normalUrl.startsWith("http")) normalUrl = "https://" + normalUrl
 
@@ -141,7 +165,6 @@ export async function GET(req: NextRequest) {
         }
 
         if (externalPublishError) {
-          // External publish failed — mark as failed and record error
           await db
             .update(scheduledPosts)
             .set({
@@ -159,19 +182,10 @@ export async function GET(req: NextRequest) {
           continue
         }
 
-        // TODO: ping Google Indexing API after publishing
-        // Requires a Google Service Account with the Indexing API enabled.
-        // Set GOOGLE_INDEXING_SA_KEY env var (JSON string of service account credentials).
-        // Endpoint: POST https://indexing.googleapis.com/v3/urlNotifications:publish
-        // Body: { "url": publishedUrl, "type": "URL_UPDATED" }
-        // For now, log the published URL so it's visible in Vercel logs.
         if (publishedUrl) {
           console.log(`[SEO Autopilot] Published: ${publishedUrl}`)
         }
       }
-
-      // NOTE: Client articles must NOT be saved to blog_posts (itgrows.ai hosted blog).
-      // blog_posts is only for itgrows.ai own content (platform === "itgrows_blog").
 
       // Save articleData and mark as published
       await db

@@ -53,6 +53,12 @@ export async function POST(req: NextRequest) {
       .where(eq(connectedSites.userId, session.user.id))
   }
 
+  // Sanitize blogDomain: strip protocol and trailing slashes so it's always a bare hostname
+  // e.g. "https://blog.example.com/" → "blog.example.com"
+  const cleanBlogDomain = blogDomain
+    ? blogDomain.trim().replace(/^https?:\/\//i, "").replace(/\/.*$/, "").toLowerCase()
+    : null
+
   const [site] = await db.insert(connectedSites).values({
     userId: session.user.id,
     name,
@@ -67,7 +73,7 @@ export async function POST(req: NextRequest) {
     webflowToken: webflowToken || null,
     webflowCollectionId: webflowCollectionId || null,
     isDefault: !!isDefault,
-    blogDomain: blogDomain || null,
+    blogDomain: cleanBlogDomain || null,
     webhookUrl: webhookUrl || null,
   }).returning()
 
