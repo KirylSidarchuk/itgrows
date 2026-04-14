@@ -34,6 +34,8 @@ function ProgressDots({ step }: { step: number }) {
   )
 }
 
+type ConnectStep = "detecting" | "wordpress" | "shopify" | "webflow" | "cname"
+
 export default function OnboardingPage() {
   const router = useRouter()
   const [step, setStep] = useState(1)
@@ -41,26 +43,28 @@ export default function OnboardingPage() {
   const [topics, setTopics] = useState<Topic[]>([])
   const [selectedTopic, setSelectedTopic] = useState<Topic | null>(null)
   const [article, setArticle] = useState<ArticleData | null>(null)
-  const [blogOption, setBlogOption] = useState<"existing" | "new" | null>(null)
-  const [blogUrl, setBlogUrl] = useState("")
   const [blogDomain, setBlogDomain] = useState("")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const [loadingMsg, setLoadingMsg] = useState("")
   const [showFullArticle, setShowFullArticle] = useState(false)
   const [topicImages, setTopicImages] = useState<Record<number, string>>({})
-  const [integrationMode, setIntegrationMode] = useState<'simple' | 'advanced' | null>(null)
-  const [connectSubStep, setConnectSubStep] = useState<'experience' | 'blog-advanced' | 'blog-simple' | 'detecting' | 'platform' | 'setup'>('experience')
-  const [selectedPlatform, setSelectedPlatform] = useState<'wordpress' | 'shopify' | 'webflow' | 'other' | 'php' | null>(null)
-  const [detectedPlatform, setDetectedPlatform] = useState<string | null>(null)
+  const [genTimer, setGenTimer] = useState(0)
+
+  // Connect step state
+  const [connectStep, setConnectStep] = useState<ConnectStep>("detecting")
+  const [detectedPlatform, setDetectedPlatform] = useState<string>("custom")
+
+  // WordPress fields
   const [wpToken, setWpToken] = useState("")
+
+  // Shopify fields
   const [shopifyToken, setShopifyToken] = useState("")
   const [shopifyBlogId, setShopifyBlogId] = useState("")
+
+  // Webflow fields
   const [webflowToken, setWebflowToken] = useState("")
   const [webflowCollectionId, setWebflowCollectionId] = useState("")
-  const [webhookUrl, setWebhookUrl] = useState("")
-  const [existingBlogUrl, setExistingBlogUrl] = useState("")
-  const [genTimer, setGenTimer] = useState(0)
 
   const [placeholderToken] = useState(() => `onb_${crypto.randomUUID().replace(/-/g, '').slice(0, 12)}`)
 
@@ -69,6 +73,16 @@ export default function OnboardingPage() {
     const saved = localStorage.getItem("onboarding_siteUrl")
     if (saved) setSiteUrl(saved)
   }, [])
+
+  // Derive domain from URL
+  const derivedDomain = (() => {
+    try {
+      const u = siteUrl.trim().startsWith("http") ? siteUrl.trim() : "https://" + siteUrl.trim()
+      return new URL(u).hostname
+    } catch {
+      return siteUrl.trim()
+    }
+  })()
 
   async function handleAnalyzeSite() {
     if (!siteUrl.trim()) return
@@ -96,7 +110,7 @@ export default function OnboardingPage() {
           .then((d: { url?: string }) => {
             if (d.url) setTopicImages(prev => ({ ...prev, [idx]: d.url! }))
           })
-          .catch(() => {}) // silent fail
+          .catch(() => {})
       })
     } catch (e) {
       setError(e instanceof Error ? e.message : "Something went wrong")
@@ -143,59 +157,21 @@ export default function OnboardingPage() {
     }
   }
 
-  async function handleComplete() {
+  async function handleComplete(sitePayload?: Record<string, string | boolean>) {
     setLoading(true)
     setError("")
     setLoadingMsg("")
     try {
       await fetch("/api/user/onboarding-complete", { method: "POST" })
 
-      // Save site with integration data
-      const sitePayload: Record<string, string | boolean> = {
-        name: siteUrl.trim(),
-        url: siteUrl.trim(),
-        isDefault: true,
-      }
-      if (blogDomain.trim()) {
-        sitePayload.platform = "custom"
-        sitePayload.blogDomain = blogDomain.trim()
-      } else if (selectedPlatform === 'wordpress' && wpToken.trim()) {
-        sitePayload.platform = "wordpress"
-        sitePayload.siteToken = wpToken.trim()
-        sitePayload.existingBlogUrl = existingBlogUrl.trim()
-      } else if (selectedPlatform === 'shopify' && shopifyToken.trim()) {
-        sitePayload.platform = "shopify"
-        sitePayload.siteToken = shopifyToken.trim()
-        sitePayload.shopifyToken = shopifyToken.trim()
-        sitePayload.shopifyBlogId = shopifyBlogId.trim()
-        sitePayload.existingBlogUrl = existingBlogUrl.trim()
-      } else if (selectedPlatform === 'webflow' && webflowToken.trim()) {
-        sitePayload.platform = "webflow"
-        sitePayload.siteToken = webflowToken.trim()
-        sitePayload.webflowToken = webflowToken.trim()
-        sitePayload.webflowCollectionId = webflowCollectionId.trim()
-        sitePayload.existingBlogUrl = existingBlogUrl.trim()
-      } else if (selectedPlatform === 'php' && webhookUrl.trim()) {
-        sitePayload.platform = "php"
-        sitePayload.siteToken = placeholderToken
-        sitePayload.webhookUrl = webhookUrl.trim()
-        sitePayload.existingBlogUrl = existingBlogUrl.trim()
-      } else if (selectedPlatform === 'other') {
-        sitePayload.platform = "custom"
-        sitePayload.siteToken = placeholderToken
-        if (webhookUrl.trim()) sitePayload.webhookUrl = webhookUrl.trim()
-        sitePayload.existingBlogUrl = existingBlogUrl.trim()
-      }
-
-      if (Object.keys(sitePayload).length > 3) {
+      if (sitePayload && Object.keys(sitePayload).length > 0) {
         await fetch("/api/sites", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(sitePayload),
+          body: JSON.stringify({ ...sitePayload, isDefault: true }),
         })
       }
 
-      // Schedule 15-article content calendar
       setLoadingMsg("Setting up your 15-day content calendar...")
       await fetch("/api/schedule/batch", { method: "POST" })
 
@@ -205,9 +181,9 @@ export default function OnboardingPage() {
     }
   }
 
-  async function handleDetectPlatform() {
-    setBlogOption('existing')
-    setConnectSubStep('detecting')
+  async function handleStartConnect() {
+    setConnectStep("detecting")
+    setStep(4)
     try {
       const res = await fetch("/api/detect-platform", {
         method: "POST",
@@ -217,17 +193,20 @@ export default function OnboardingPage() {
       const data = await res.json() as { platform?: string }
       const p = data.platform ?? "custom"
       setDetectedPlatform(p)
-      const mapped =
-        p === "wordpress" ? "wordpress" :
-        p === "shopify" ? "shopify" :
-        p === "webflow" ? "webflow" :
-        (p === "octobercms" || p === "php") ? "php" :
-        "other"
-      setSelectedPlatform(mapped)
-      setConnectSubStep('setup')
+      if (p === "wordpress") {
+        setConnectStep("wordpress")
+      } else if (p === "shopify") {
+        setConnectStep("shopify")
+      } else if (p === "webflow") {
+        setConnectStep("webflow")
+      } else {
+        setBlogDomain(`blog.${derivedDomain}`)
+        setConnectStep("cname")
+      }
     } catch {
-      setDetectedPlatform(null)
-      setConnectSubStep('platform')
+      setDetectedPlatform("custom")
+      setBlogDomain(`blog.${derivedDomain}`)
+      setConnectStep("cname")
     }
   }
 
@@ -236,6 +215,16 @@ export default function OnboardingPage() {
     const matches = html.match(/<p>.*?<\/p>/g) ?? []
     return matches.slice(0, 3).join("\n")
   }
+
+  const detectionLabel = (() => {
+    if (detectedPlatform === "wordpress") return "WordPress detected"
+    if (detectedPlatform === "shopify") return "Shopify detected"
+    if (detectedPlatform === "webflow") return "Webflow detected"
+    if (detectedPlatform === "nextjs") return "Next.js / React detected"
+    if (detectedPlatform === "octobercms") return "October CMS detected"
+    if (detectedPlatform === "php") return "PHP / Custom CMS detected"
+    return "Custom website detected"
+  })()
 
   return (
     <div className="min-h-screen bg-[#f3f2f1] flex items-center justify-center px-4 py-12">
@@ -430,14 +419,14 @@ export default function OnboardingPage() {
             )}
 
             <button
-              onClick={() => { setConnectSubStep('experience'); setStep(4) }}
+              onClick={handleStartConnect}
               className="w-full py-3 rounded-xl bg-violet-600 hover:bg-violet-500 text-white font-semibold transition-colors mb-3"
             >
               Publish this article →
             </button>
 
             <button
-              onClick={handleComplete}
+              onClick={() => handleComplete()}
               className="w-full py-2 text-sm text-slate-500 hover:text-slate-700 transition-colors"
             >
               Skip for now →
@@ -448,149 +437,214 @@ export default function OnboardingPage() {
         {/* Step 4: Connect blog */}
         {step === 4 && (
           <div className="bg-white rounded-2xl p-8 shadow-sm border border-black/10">
-            {connectSubStep === 'experience' && (
-              <button
-                onClick={() => setStep(3)}
-                className="text-sm text-slate-500 hover:text-slate-700 mb-6 flex items-center gap-1"
-              >
-                ← Back
-              </button>
+
+            {/* Detecting spinner */}
+            {connectStep === "detecting" && (
+              <div className="text-center py-12">
+                <div className="text-4xl mb-4 animate-spin inline-block">⟳</div>
+                <p className="text-[#1b1916] font-semibold">Detecting your platform…</p>
+                <p className="text-slate-500 text-sm mt-1">Scanning {siteUrl}</p>
+              </div>
             )}
 
-            {/* Sub-step: how do you want to publish? */}
-            {connectSubStep === 'experience' && (
+            {/* Detection badge — shown on all non-detecting sub-steps */}
+            {connectStep !== "detecting" && (
+              <div className="rounded-xl bg-[#f9f8f7] border border-black/10 p-3 flex items-center gap-3 mb-6">
+                <span className="text-green-500 font-bold text-lg">✓</span>
+                <div>
+                  <p className="text-[#1b1916] font-semibold text-sm">{detectionLabel}</p>
+                  <p className="text-slate-500 text-xs">{siteUrl}</p>
+                </div>
+              </div>
+            )}
+
+            {/* WordPress */}
+            {connectStep === "wordpress" && (
               <>
-                <div className="text-center mb-8">
-                  <div className="text-4xl mb-4">🚀</div>
-                  <h2 className="text-2xl font-bold text-[#1b1916] mb-2">How would you like to publish?</h2>
-                  <p className="text-slate-600 text-sm">
-                    Choose the setup that fits you best.
-                  </p>
+                <div className="text-center mb-6">
+                  <h2 className="text-xl font-bold text-[#1b1916] mb-1">Connect WordPress</h2>
+                  <p className="text-slate-600 text-sm">Install the plugin and paste your Site Token.</p>
                 </div>
 
-                <div className="space-y-3 mb-6">
-                  <button
-                    onClick={() => { setIntegrationMode('advanced'); setConnectSubStep('blog-advanced') }}
-                    className="w-full text-left rounded-xl border-2 border-black/10 hover:border-violet-400 bg-[#f9f8f7] hover:bg-violet-50 p-5 transition-all"
-                  >
-                    <p className="font-semibold text-[#1b1916] mb-1">🛠️ I'm technical</p>
-                    <p className="text-slate-500 text-sm">I can edit code, use APIs, and install plugins. Show me the advanced setup.</p>
-                  </button>
-                  <button
-                    onClick={() => { setIntegrationMode('simple'); setConnectSubStep('blog-simple') }}
-                    className="w-full text-left rounded-xl border-2 border-black/10 hover:border-violet-400 bg-[#f9f8f7] hover:bg-violet-50 p-5 transition-all"
-                  >
-                    <p className="font-semibold text-[#1b1916] mb-1">👋 Guide me step by step</p>
-                    <p className="text-slate-500 text-sm">I'm not a developer. Walk me through a simple copy-paste setup.</p>
-                  </button>
+                <div className="bg-[#f9f8f7] rounded-xl p-4 border border-black/10 text-sm text-slate-600 space-y-2 mb-5">
+                  <ol className="list-decimal list-inside space-y-2">
+                    <li><a href="/api/wp-plugin/download" className="text-violet-600 underline font-medium">Download ItGrows WordPress Plugin</a></li>
+                    <li>Go to <strong>WP Admin → Plugins → Add New → Upload Plugin → Install → Activate</strong></li>
+                    <li>Go to <strong>Settings → ItGrows.ai</strong> and copy your <strong>Site Token</strong></li>
+                    <li>Paste the Site Token in the field below</li>
+                  </ol>
                 </div>
+
+                <input
+                  type="text"
+                  placeholder="Site Token (igt_...)"
+                  value={wpToken}
+                  onChange={e => setWpToken(e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl border border-black/15 bg-[#f9f8f7] focus:outline-none focus:ring-2 focus:ring-violet-400 text-[#1b1916] placeholder:text-slate-400 text-sm font-mono mb-4"
+                />
+
+                {loadingMsg && (
+                  <p className="text-violet-600 text-sm font-medium text-center mb-3 flex items-center justify-center gap-2">
+                    <span className="animate-spin">⟳</span> {loadingMsg}
+                  </p>
+                )}
 
                 <button
-                  onClick={handleComplete}
-                  className="w-full py-2 text-sm text-slate-500 hover:text-slate-700 transition-colors"
+                  onClick={() => handleComplete({
+                    name: siteUrl.trim(),
+                    url: siteUrl.trim(),
+                    platform: "wordpress",
+                    siteToken: wpToken.trim(),
+                  })}
+                  disabled={loading || !wpToken.trim()}
+                  className="w-full py-3 rounded-xl bg-violet-600 hover:bg-violet-500 disabled:opacity-50 text-white font-semibold transition-colors flex items-center justify-center gap-2"
                 >
-                  Skip for now →
+                  {loading ? <><span className="animate-spin">⟳</span> Connecting…</> : "Connect WordPress →"}
                 </button>
-              </>
-            )}
-
-            {/* Sub-step: blog check for advanced/technical path */}
-            {connectSubStep === 'blog-advanced' && (
-              <>
-                <div className="text-center mb-8">
-                  <div className="text-4xl mb-4">📝</div>
-                  <h2 className="text-2xl font-bold text-[#1b1916] mb-2">Does your site have a blog?</h2>
-                  <p className="text-slate-600 text-sm">
-                    This determines where your AI-generated articles will be published.
-                  </p>
-                </div>
-
-                <div className="space-y-3 mb-6">
-                  <button
-                    onClick={handleDetectPlatform}
-                    className="w-full text-left rounded-xl border-2 border-black/10 hover:border-violet-400 bg-[#f9f8f7] hover:bg-violet-50 p-5 transition-all"
-                  >
-                    <p className="font-semibold text-[#1b1916] mb-1">📝 Yes, I have a blog</p>
-                    <p className="text-slate-500 text-sm">I already have a blog or articles section on my site (WordPress, Webflow, custom, etc.)</p>
-                  </button>
-                  <button
-                    onClick={() => { setBlogOption('new'); setConnectSubStep('setup') }}
-                    className="w-full text-left rounded-xl border-2 border-black/10 hover:border-violet-400 bg-[#f9f8f7] hover:bg-violet-50 p-5 transition-all"
-                  >
-                    <p className="font-semibold text-[#1b1916] mb-1">☁️ No, create one for me</p>
-                    <p className="text-slate-500 text-sm">No problem — we'll create a blog section on your site automatically</p>
-                  </button>
-                </div>
 
                 <button
-                  onClick={() => setConnectSubStep('experience')}
-                  className="text-sm text-slate-500 hover:text-slate-700 flex items-center gap-1"
+                  onClick={() => setStep(3)}
+                  className="w-full mt-3 py-2 text-sm text-slate-400 hover:text-slate-600 transition-colors flex items-center justify-center gap-1"
                 >
                   ← Back
                 </button>
               </>
             )}
 
-            {/* Sub-step: blog check for simple/non-technical path */}
-            {connectSubStep === 'blog-simple' && (
+            {/* Shopify */}
+            {connectStep === "shopify" && (
               <>
-                <div className="text-center mb-8">
-                  <div className="text-4xl mb-4">📝</div>
-                  <h2 className="text-2xl font-bold text-[#1b1916] mb-2">Does your website have a blog?</h2>
-                  <p className="text-slate-600 text-sm">
-                    We need to know where to publish your articles.
-                  </p>
+                <div className="text-center mb-6">
+                  <h2 className="text-xl font-bold text-[#1b1916] mb-1">Connect Shopify</h2>
+                  <p className="text-slate-600 text-sm">Create a private app and enter your credentials.</p>
                 </div>
 
-                <div className="space-y-3 mb-6">
-                  <button
-                    onClick={handleDetectPlatform}
-                    className="w-full text-left rounded-xl border-2 border-black/10 hover:border-violet-400 bg-[#f9f8f7] hover:bg-violet-50 p-5 transition-all"
-                  >
-                    <p className="font-semibold text-[#1b1916] mb-1">📝 Yes, I have a blog</p>
-                    <p className="text-slate-500 text-sm">I already have a blog page on my website.</p>
-                  </button>
-                  <button
-                    onClick={() => { setBlogOption('new'); setConnectSubStep('setup') }}
-                    className="w-full text-left rounded-xl border-2 border-black/10 hover:border-violet-400 bg-[#f9f8f7] hover:bg-violet-50 p-5 transition-all"
-                  >
-                    <p className="font-semibold text-[#1b1916] mb-1">✨ No, create one for me</p>
-                    <p className="text-slate-500 text-sm">No problem — we'll create a blog section on your site automatically</p>
-                  </button>
+                <div className="bg-[#f9f8f7] rounded-xl p-4 border border-black/10 text-sm text-slate-600 space-y-2 mb-5">
+                  <ol className="list-decimal list-inside space-y-2">
+                    <li>Shopify Admin → <strong>Settings → Apps → Develop apps</strong></li>
+                    <li>Create an app, set API scope: <code className="bg-slate-100 px-1 rounded">write_content</code></li>
+                    <li>Install the app and copy the <strong>Admin API access token</strong></li>
+                    <li>Find your Blog ID: <strong>Online Store → Blog Posts</strong> → check the URL</li>
+                  </ol>
                 </div>
+
+                <input
+                  type="text"
+                  placeholder="Shopify Admin API Access Token"
+                  value={shopifyToken}
+                  onChange={e => setShopifyToken(e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl border border-black/15 bg-[#f9f8f7] focus:outline-none focus:ring-2 focus:ring-violet-400 text-[#1b1916] placeholder:text-slate-400 text-sm font-mono mb-3"
+                />
+                <input
+                  type="text"
+                  placeholder="Blog ID (number from URL)"
+                  value={shopifyBlogId}
+                  onChange={e => setShopifyBlogId(e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl border border-black/15 bg-[#f9f8f7] focus:outline-none focus:ring-2 focus:ring-violet-400 text-[#1b1916] placeholder:text-slate-400 text-sm font-mono mb-4"
+                />
+
+                {loadingMsg && (
+                  <p className="text-violet-600 text-sm font-medium text-center mb-3 flex items-center justify-center gap-2">
+                    <span className="animate-spin">⟳</span> {loadingMsg}
+                  </p>
+                )}
 
                 <button
-                  onClick={() => setConnectSubStep('experience')}
-                  className="text-sm text-slate-500 hover:text-slate-700 flex items-center gap-1"
+                  onClick={() => handleComplete({
+                    name: siteUrl.trim(),
+                    url: siteUrl.trim(),
+                    platform: "shopify",
+                    siteToken: shopifyToken.trim(),
+                    shopifyToken: shopifyToken.trim(),
+                    shopifyBlogId: shopifyBlogId.trim(),
+                  })}
+                  disabled={loading || !shopifyToken.trim() || !shopifyBlogId.trim()}
+                  className="w-full py-3 rounded-xl bg-violet-600 hover:bg-violet-500 disabled:opacity-50 text-white font-semibold transition-colors flex items-center justify-center gap-2"
+                >
+                  {loading ? <><span className="animate-spin">⟳</span> Connecting…</> : "Connect Shopify →"}
+                </button>
+
+                <button
+                  onClick={() => setStep(3)}
+                  className="w-full mt-3 py-2 text-sm text-slate-400 hover:text-slate-600 transition-colors flex items-center justify-center gap-1"
                 >
                   ← Back
                 </button>
               </>
             )}
 
-            {/* Sub-step: setup based on choice */}
-            {connectSubStep === 'setup' && blogOption === 'new' && (
+            {/* Webflow */}
+            {connectStep === "webflow" && (
               <>
-                <div className="text-center mb-8">
-                  <div className="text-4xl mb-4">🔗</div>
-                  <h2 className="text-2xl font-bold text-[#1b1916] mb-2">Create your blog in 2 minutes</h2>
+                <div className="text-center mb-6">
+                  <h2 className="text-xl font-bold text-[#1b1916] mb-1">Connect Webflow</h2>
+                  <p className="text-slate-600 text-sm">Generate an API token and enter your Collection ID.</p>
+                </div>
+
+                <div className="bg-[#f9f8f7] rounded-xl p-4 border border-black/10 text-sm text-slate-600 space-y-2 mb-5">
+                  <ol className="list-decimal list-inside space-y-2">
+                    <li>Webflow → <strong>Site Settings → Integrations → API Access</strong></li>
+                    <li>Generate a new API token and copy it</li>
+                    <li>Find Collection ID: <strong>CMS → your blog collection → settings</strong></li>
+                  </ol>
+                </div>
+
+                <input
+                  type="text"
+                  placeholder="Webflow API Token"
+                  value={webflowToken}
+                  onChange={e => setWebflowToken(e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl border border-black/15 bg-[#f9f8f7] focus:outline-none focus:ring-2 focus:ring-violet-400 text-[#1b1916] placeholder:text-slate-400 text-sm font-mono mb-3"
+                />
+                <input
+                  type="text"
+                  placeholder="Blog Collection ID"
+                  value={webflowCollectionId}
+                  onChange={e => setWebflowCollectionId(e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl border border-black/15 bg-[#f9f8f7] focus:outline-none focus:ring-2 focus:ring-violet-400 text-[#1b1916] placeholder:text-slate-400 text-sm font-mono mb-4"
+                />
+
+                {loadingMsg && (
+                  <p className="text-violet-600 text-sm font-medium text-center mb-3 flex items-center justify-center gap-2">
+                    <span className="animate-spin">⟳</span> {loadingMsg}
+                  </p>
+                )}
+
+                <button
+                  onClick={() => handleComplete({
+                    name: siteUrl.trim(),
+                    url: siteUrl.trim(),
+                    platform: "webflow",
+                    siteToken: webflowToken.trim(),
+                    webflowToken: webflowToken.trim(),
+                    webflowCollectionId: webflowCollectionId.trim(),
+                  })}
+                  disabled={loading || !webflowToken.trim() || !webflowCollectionId.trim()}
+                  className="w-full py-3 rounded-xl bg-violet-600 hover:bg-violet-500 disabled:opacity-50 text-white font-semibold transition-colors flex items-center justify-center gap-2"
+                >
+                  {loading ? <><span className="animate-spin">⟳</span> Connecting…</> : "Connect Webflow →"}
+                </button>
+
+                <button
+                  onClick={() => setStep(3)}
+                  className="w-full mt-3 py-2 text-sm text-slate-400 hover:text-slate-600 transition-colors flex items-center justify-center gap-1"
+                >
+                  ← Back
+                </button>
+              </>
+            )}
+
+            {/* CNAME — custom / Next.js / PHP / OctoberCMS / unknown */}
+            {connectStep === "cname" && (
+              <>
+                <div className="text-center mb-6">
+                  <h2 className="text-xl font-bold text-[#1b1916] mb-1">Set up your blog</h2>
                   <p className="text-slate-600 text-sm">
-                    We&apos;ll host your blog for you. You just need to tell your domain where to find it — one small setting at your hosting provider.
+                    We&apos;ll create a blog at <strong>blog.{derivedDomain}</strong>. Just add one DNS record.
                   </p>
                 </div>
 
-                <div className="bg-violet-50 rounded-xl p-4 border border-violet-200 mb-4">
-                  <p className="text-sm text-violet-800 font-medium mb-1">What is this?</p>
-                  <p className="text-sm text-violet-700">
-                    Think of it like forwarding mail. You&apos;re telling your domain (<strong>yoursite.com</strong>) that anyone going to <strong>blog.yoursite.com</strong> should be sent to our servers. We handle everything else.
-                  </p>
-                </div>
-
-                <div className="bg-[#f9f8f7] rounded-xl p-5 border border-black/10 mb-4">
-                  <p className="text-sm font-semibold text-[#1b1916] mb-1">Step 1 — Log in to your domain registrar</p>
-                  <p className="text-slate-500 text-xs mb-4">That&apos;s the service where you bought your domain (e.g. GoDaddy, Namecheap, Cloudflare). Find the DNS settings.</p>
-                  <p className="text-sm font-semibold text-[#1b1916] mb-1">Step 2 — Add a new CNAME record</p>
-                  <p className="text-slate-500 text-xs mb-3">Copy these exact values:</p>
+                <div className="bg-[#f9f8f7] rounded-xl p-5 border border-black/10 mb-5">
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                       <thead>
@@ -610,24 +664,23 @@ export default function OnboardingPage() {
                     </table>
                   </div>
                   <p className="text-slate-500 text-xs mt-3">
-                    The "Name" is the prefix before your domain — so <code className="bg-violet-50 text-violet-700 px-1 rounded">blog</code> means the blog will live at <strong>blog.yoursite.com</strong>. You can change it to anything you like (e.g. <code className="bg-violet-50 text-violet-700 px-1 rounded">news</code> → news.yoursite.com).
+                    DNS changes take effect in 5–30 minutes.
                   </p>
-                  <p className="text-slate-500 text-xs mt-2 text-violet-600 font-medium">Changes take effect in 5–30 minutes.</p>
                 </div>
 
-                <div className="mb-6">
+                <div className="mb-4">
                   <label className="block">
                     <span className="text-sm font-medium text-[#1b1916] mb-1 block">
-                      Step 3 — Enter your blog address below:
+                      Your blog URL after DNS:
                     </span>
                     <input
                       type="text"
-                      placeholder="e.g. blog.yoursite.com"
+                      placeholder={`blog.${derivedDomain}`}
                       value={blogDomain}
                       onChange={(e) => setBlogDomain(e.target.value)}
                       className="w-full px-4 py-3 rounded-xl border border-black/15 bg-[#f9f8f7] focus:outline-none focus:ring-2 focus:ring-violet-400 text-[#1b1916] placeholder:text-slate-400 font-mono text-sm"
                     />
-                    <span className="text-slate-500 text-xs mt-1 block">The full address you&apos;ll use (same prefix as "Name" above + your domain)</span>
+                    <span className="text-slate-500 text-xs mt-1 block">Pre-filled with suggested subdomain — change if needed</span>
                   </label>
                 </div>
 
@@ -638,309 +691,35 @@ export default function OnboardingPage() {
                 )}
 
                 <button
-                  onClick={handleComplete}
+                  onClick={() => handleComplete({
+                    name: siteUrl.trim(),
+                    url: siteUrl.trim(),
+                    platform: "custom",
+                    siteToken: placeholderToken,
+                    blogDomain: blogDomain.trim(),
+                  })}
                   disabled={loading}
                   className="w-full py-3 rounded-xl bg-violet-600 hover:bg-violet-500 disabled:opacity-50 text-white font-semibold transition-colors flex items-center justify-center gap-2"
                 >
                   {loading ? (
-                    <>
-                      <span className="animate-spin">⟳</span> Setting up…
-                    </>
+                    <><span className="animate-spin">⟳</span> Setting up…</>
                   ) : (
-                    "Done! Take me to my dashboard →"
+                    "I've added the DNS record →"
                   )}
                 </button>
 
                 <button
-                  onClick={handleComplete}
+                  onClick={() => handleComplete()}
                   className="w-full mt-3 py-2 text-sm text-slate-500 hover:text-slate-700 transition-colors"
                 >
                   Skip for now →
                 </button>
 
                 <button
-                  onClick={() => {
-                    if (integrationMode === 'advanced') setConnectSubStep('blog-advanced')
-                    else if (integrationMode === 'simple') setConnectSubStep('blog-simple')
-                    else setConnectSubStep('experience')
-                  }}
+                  onClick={() => setStep(3)}
                   className="w-full mt-2 py-2 text-sm text-slate-400 hover:text-slate-600 transition-colors flex items-center justify-center gap-1"
                 >
                   ← Back
-                </button>
-              </>
-            )}
-
-            {/* Detecting spinner */}
-            {connectSubStep === 'detecting' && (
-              <div className="text-center py-12">
-                <div className="text-4xl mb-4 animate-spin inline-block">⟳</div>
-                <p className="text-[#1b1916] font-semibold">Detecting your platform…</p>
-                <p className="text-slate-500 text-sm mt-1">Scanning {siteUrl}</p>
-              </div>
-            )}
-
-            {/* Platform selector (fallback if not detected) */}
-            {connectSubStep === 'platform' && (
-              <>
-                <div className="text-center mb-6">
-                  <div className="text-4xl mb-4">🔌</div>
-                  <h2 className="text-2xl font-bold text-[#1b1916] mb-2">What platform is your blog on?</h2>
-                  <p className="text-slate-600 text-sm">We'll show you exactly how to connect it in 2 minutes</p>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3 mb-6">
-                  {([
-                    { id: 'wordpress', label: 'WordPress', icon: '🟦' },
-                    { id: 'shopify', label: 'Shopify', icon: '🟢' },
-                    { id: 'webflow', label: 'Webflow', icon: '🔵' },
-                    { id: 'other', label: 'Other / Custom', icon: '⚙️' },
-                  ] as const).map(p => (
-                    <button
-                      key={p.id}
-                      onClick={() => { setSelectedPlatform(p.id); setConnectSubStep('setup') }}
-                      className="flex items-center gap-3 p-4 rounded-xl border-2 border-black/10 hover:border-violet-400 bg-[#f9f8f7] hover:bg-violet-50 transition-all text-left"
-                    >
-                      <span className="text-2xl">{p.icon}</span>
-                      <span className="font-semibold text-[#1b1916] text-sm">{p.label}</span>
-                    </button>
-                  ))}
-                </div>
-
-                <button
-                  onClick={handleComplete}
-                  className="w-full py-2 text-sm text-slate-500 hover:text-slate-700 transition-colors"
-                >
-                  Skip for now →
-                </button>
-
-                <button
-                  onClick={() => setConnectSubStep(integrationMode === 'simple' ? 'blog-simple' : 'blog-advanced')}
-                  className="w-full mt-2 py-2 text-sm text-slate-400 hover:text-slate-600 transition-colors flex items-center justify-center gap-1"
-                >
-                  ← Back
-                </button>
-              </>
-            )}
-
-            {/* Platform-specific setup */}
-            {connectSubStep === 'setup' && blogOption === 'existing' && (
-              <>
-                <div className="text-center mb-4">
-                  <h2 className="text-xl font-bold text-[#1b1916] mb-2">
-                    {selectedPlatform === 'wordpress' && '🟦 Connect WordPress'}
-                    {selectedPlatform === 'shopify' && '🟢 Connect Shopify'}
-                    {selectedPlatform === 'webflow' && '🔵 Connect Webflow'}
-                    {selectedPlatform === 'php' && '🐘 Connect October CMS / PHP'}
-                    {selectedPlatform === 'other' && '⚙️ Connect your blog'}
-                  </h2>
-                  {detectedPlatform && detectedPlatform !== 'custom' ? (
-                    <span className="inline-block text-xs bg-green-100 text-green-700 border border-green-300 rounded-full px-3 py-1">
-                      ✓ Auto-detected from {siteUrl}
-                    </span>
-                  ) : null}
-                  <button
-                    onClick={() => setConnectSubStep('platform')}
-                    className="block mx-auto mt-2 text-xs text-violet-500 hover:text-violet-700"
-                  >
-                    Wrong platform? Change →
-                  </button>
-                </div>
-
-                {selectedPlatform === 'wordpress' && (
-                  <div className="space-y-4 mb-6">
-                    <div className="bg-[#f9f8f7] rounded-xl p-4 border border-black/10 text-sm text-slate-600 space-y-2">
-                      <p className="font-semibold text-[#1b1916]">How to connect WordPress:</p>
-                      <ol className="list-decimal list-inside space-y-1">
-                        <li><a href="/api/wp-plugin/download" className="text-violet-600 underline font-medium">Download ItGrows.ai WordPress Plugin</a></li>
-                        <li>Go to <strong>WP Admin → Plugins → Add New → Upload Plugin</strong></li>
-                        <li>Select the downloaded file → <strong>Install Now → Activate</strong></li>
-                        <li>Go to <strong>Settings → ItGrows.ai</strong> and copy your <strong>Site Token</strong></li>
-                        <li>Paste the Site Token in the field below</li>
-                      </ol>
-                    </div>
-                    <input
-                      type="text"
-                      placeholder="Your blog URL (e.g. https://myblog.com)"
-                      value={existingBlogUrl}
-                      onChange={e => setExistingBlogUrl(e.target.value)}
-                      className="w-full px-4 py-3 rounded-xl border border-black/15 bg-[#f9f8f7] focus:outline-none focus:ring-2 focus:ring-violet-400 text-[#1b1916] placeholder:text-slate-400 text-sm"
-                    />
-                    <input
-                      type="text"
-                      placeholder="Site Token"
-                      value={wpToken}
-                      onChange={e => setWpToken(e.target.value)}
-                      className="w-full px-4 py-3 rounded-xl border border-black/15 bg-[#f9f8f7] focus:outline-none focus:ring-2 focus:ring-violet-400 text-[#1b1916] placeholder:text-slate-400 text-sm font-mono"
-                    />
-                  </div>
-                )}
-
-                {selectedPlatform === 'shopify' && (
-                  <div className="space-y-4 mb-6">
-                    <div className="bg-[#f9f8f7] rounded-xl p-4 border border-black/10 text-sm text-slate-600 space-y-2">
-                      <p className="font-semibold text-[#1b1916]">How to connect Shopify:</p>
-                      <ol className="list-decimal list-inside space-y-1">
-                        <li>Shopify Admin → <strong>Settings → Apps → Develop apps</strong></li>
-                        <li>Create an app, set API scope: <code className="bg-slate-100 px-1 rounded">write_content</code></li>
-                        <li>Install the app and copy the <strong>Admin API access token</strong></li>
-                        <li>Find your Blog ID: <strong>Online Store → Blog Posts</strong> → check URL</li>
-                      </ol>
-                    </div>
-                    <input
-                      type="text"
-                      placeholder="Your Shopify store URL (e.g. mystore.myshopify.com)"
-                      value={existingBlogUrl}
-                      onChange={e => setExistingBlogUrl(e.target.value)}
-                      className="w-full px-4 py-3 rounded-xl border border-black/15 bg-[#f9f8f7] focus:outline-none focus:ring-2 focus:ring-violet-400 text-[#1b1916] placeholder:text-slate-400 text-sm"
-                    />
-                    <input
-                      type="text"
-                      placeholder="Shopify Admin API Access Token"
-                      value={shopifyToken}
-                      onChange={e => setShopifyToken(e.target.value)}
-                      className="w-full px-4 py-3 rounded-xl border border-black/15 bg-[#f9f8f7] focus:outline-none focus:ring-2 focus:ring-violet-400 text-[#1b1916] placeholder:text-slate-400 text-sm font-mono"
-                    />
-                    <input
-                      type="text"
-                      placeholder="Blog ID (number from URL)"
-                      value={shopifyBlogId}
-                      onChange={e => setShopifyBlogId(e.target.value)}
-                      className="w-full px-4 py-3 rounded-xl border border-black/15 bg-[#f9f8f7] focus:outline-none focus:ring-2 focus:ring-violet-400 text-[#1b1916] placeholder:text-slate-400 text-sm font-mono"
-                    />
-                  </div>
-                )}
-
-                {selectedPlatform === 'webflow' && (
-                  <div className="space-y-4 mb-6">
-                    <div className="bg-[#f9f8f7] rounded-xl p-4 border border-black/10 text-sm text-slate-600 space-y-2">
-                      <p className="font-semibold text-[#1b1916]">How to connect Webflow:</p>
-                      <ol className="list-decimal list-inside space-y-1">
-                        <li>Webflow → <strong>Site Settings → Integrations → API Access</strong></li>
-                        <li>Generate a new API token and copy it</li>
-                        <li>Find Collection ID: <strong>CMS → your blog collection → settings</strong></li>
-                      </ol>
-                    </div>
-                    <input
-                      type="text"
-                      placeholder="Your blog URL (e.g. https://mysite.webflow.io/blog)"
-                      value={existingBlogUrl}
-                      onChange={e => setExistingBlogUrl(e.target.value)}
-                      className="w-full px-4 py-3 rounded-xl border border-black/15 bg-[#f9f8f7] focus:outline-none focus:ring-2 focus:ring-violet-400 text-[#1b1916] placeholder:text-slate-400 text-sm"
-                    />
-                    <input
-                      type="text"
-                      placeholder="Webflow API Token"
-                      value={webflowToken}
-                      onChange={e => setWebflowToken(e.target.value)}
-                      className="w-full px-4 py-3 rounded-xl border border-black/15 bg-[#f9f8f7] focus:outline-none focus:ring-2 focus:ring-violet-400 text-[#1b1916] placeholder:text-slate-400 text-sm font-mono"
-                    />
-                    <input
-                      type="text"
-                      placeholder="Blog Collection ID"
-                      value={webflowCollectionId}
-                      onChange={e => setWebflowCollectionId(e.target.value)}
-                      className="w-full px-4 py-3 rounded-xl border border-black/15 bg-[#f9f8f7] focus:outline-none focus:ring-2 focus:ring-violet-400 text-[#1b1916] placeholder:text-slate-400 text-sm font-mono"
-                    />
-                  </div>
-                )}
-
-                {selectedPlatform === 'php' && (
-                  <div className="space-y-4 mb-6">
-                    <div className="bg-[#f9f8f7] rounded-xl p-4 border border-black/10 text-sm text-slate-600 space-y-3">
-                      <p className="font-semibold text-[#1b1916]">Step 1: Create a webhook file on your server</p>
-                      <p className="text-xs">Create a file at <code className="bg-white/60 px-1 rounded text-violet-700">/itgrows-webhook.php</code> in your site root with the following content:</p>
-                      <pre className="text-xs text-slate-700 bg-white/60 rounded-lg p-3 overflow-auto font-mono whitespace-pre-wrap border border-black/10">{`<?php
-$secret = '${placeholderToken}'; // Your site token
-$input = json_decode(file_get_contents('php://input'), true);
-if (!$input || $input['token'] !== $secret) { http_response_code(401); exit; }
-
-// Save article to your CMS database
-// Example for October CMS (RainLab Blog):
-// $post = new \\RainLab\\Blog\\Models\\Post;
-// $post->title = $input['title'];
-// $post->content = $input['content'];
-// $post->meta_description = $input['metaDescription'];
-// $post->published = true;
-// $post->save();
-
-http_response_code(200);
-echo json_encode(['success' => true]);
-?>`}</pre>
-                    </div>
-                    <input
-                      type="text"
-                      placeholder="Your blog URL (e.g. https://myblog.com)"
-                      value={existingBlogUrl}
-                      onChange={e => setExistingBlogUrl(e.target.value)}
-                      className="w-full px-4 py-3 rounded-xl border border-black/15 bg-[#f9f8f7] focus:outline-none focus:ring-2 focus:ring-violet-400 text-[#1b1916] placeholder:text-slate-400 text-sm"
-                    />
-                    <input
-                      type="text"
-                      placeholder="Step 2: Webhook URL (e.g. https://yoursite.com/itgrows-webhook.php)"
-                      value={webhookUrl}
-                      onChange={e => setWebhookUrl(e.target.value)}
-                      className="w-full px-4 py-3 rounded-xl border border-black/15 bg-[#f9f8f7] focus:outline-none focus:ring-2 focus:ring-violet-400 text-[#1b1916] placeholder:text-slate-400 text-sm font-mono"
-                    />
-                  </div>
-                )}
-
-                {selectedPlatform === 'other' && (
-                  <div className="space-y-4 mb-6">
-                    <div className="bg-[#f9f8f7] rounded-xl p-4 border border-black/10 text-sm text-slate-600 space-y-3">
-                      <p className="font-semibold text-[#1b1916]">Add a publishing endpoint to your site</p>
-                      <p className="text-xs">Create a route at <code className="bg-white/60 px-1 rounded text-violet-700">/api/itgrows-publish</code> that accepts POST requests from us. Here&apos;s a ready-to-use snippet:</p>
-                      <pre className="text-xs text-slate-700 bg-white/60 rounded-lg p-3 overflow-auto font-mono whitespace-pre-wrap border border-black/10">{`// app/api/itgrows-publish/route.js
-export async function POST(req) {
-  const { token, title, content, metaDescription } = await req.json()
-  if (token !== process.env.ITGROWS_SITE_TOKEN) {
-    return Response.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-  // Save article to your database/CMS here
-  return Response.json({ success: true })
-}`}</pre>
-                      <div className="flex items-center gap-2 mt-1">
-                        <code className="text-xs text-violet-600 bg-white/60 rounded px-2 py-1 font-mono border border-black/10">
-                          ITGROWS_SITE_TOKEN={placeholderToken}
-                        </code>
-                      </div>
-                      <p className="text-xs text-slate-500">Set this env variable in your deployment (Vercel, etc.) and paste the snippet above into your codebase.</p>
-                    </div>
-                    <input
-                      type="text"
-                      placeholder="Your blog URL (e.g. https://myblog.com/articles)"
-                      value={existingBlogUrl}
-                      onChange={e => setExistingBlogUrl(e.target.value)}
-                      className="w-full px-4 py-3 rounded-xl border border-black/15 bg-[#f9f8f7] focus:outline-none focus:ring-2 focus:ring-violet-400 text-[#1b1916] placeholder:text-slate-400 text-sm"
-                    />
-                  </div>
-                )}
-
-                {loadingMsg && (
-                  <p className="text-violet-600 text-sm font-medium text-center mb-3 flex items-center justify-center gap-2">
-                    <span className="animate-spin">⟳</span> {loadingMsg}
-                  </p>
-                )}
-
-                <button
-                  onClick={handleComplete}
-                  disabled={loading}
-                  className="w-full py-3 rounded-xl bg-violet-600 hover:bg-violet-500 disabled:opacity-50 text-white font-semibold transition-colors flex items-center justify-center gap-2"
-                >
-                  {loading ? (
-                    <>
-                      <span className="animate-spin">⟳</span> Setting up…
-                    </>
-                  ) : (
-                    "Done! Take me to my dashboard →"
-                  )}
-                </button>
-
-                <button
-                  onClick={handleComplete}
-                  className="w-full mt-3 py-2 text-sm text-slate-500 hover:text-slate-700 transition-colors"
-                >
-                  Skip for now →
                 </button>
               </>
             )}
