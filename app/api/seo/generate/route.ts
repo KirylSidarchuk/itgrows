@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/auth"
+import { db } from "@/lib/db"
+import { users, blogPosts, scheduledPosts } from "@/lib/db/schema"
+import { eq, and, isNotNull, count } from "drizzle-orm"
 
 const LLM_BASE_URL = "http://34.60.133.229:4000"
 const LLM_MODEL = "gemini-2.0-flash"
@@ -263,10 +266,42 @@ export async function POST(req: NextRequest) {
     const internalHeader = req.headers.get("x-internal-secret")
     const isInternalCall = internalSecret && internalHeader === internalSecret
 
+    let userId: string | null = null
     if (!isInternalCall) {
       const session = await auth()
       if (!session?.user?.id) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+      }
+      userId = session.user.id
+
+      // Paywall: check subscription status and trial usage
+      const [user] = await db
+        .select({ subscriptionStatus: users.subscriptionStatus })
+        .from(users)
+        .where(eq(users.id, userId))
+        .limit(1)
+
+      if (!user || user.subscriptionStatus !== "active") {
+        // Count articles generated: published blog posts + scheduled posts with article data
+        const [blogCount] = await db
+          .select({ value: count() })
+          .from(blogPosts)
+          .where(eq(blogPosts.userId, userId))
+
+        const [schedCount] = await db
+          .select({ value: count() })
+          .from(scheduledPosts)
+          .where(and(eq(scheduledPosts.userId, userId), isNotNull(scheduledPosts.articleData)))
+
+        const totalArticles = (blogCount?.value ?? 0) + (schedCount?.value ?? 0)
+        const TRIAL_LIMIT = 3
+
+        if (totalArticles >= TRIAL_LIMIT) {
+          return NextResponse.json(
+            { error: "Subscribe to continue", trialUsed: totalArticles, trialLimit: TRIAL_LIMIT },
+            { status: 402 }
+          )
+        }
       }
     }
 

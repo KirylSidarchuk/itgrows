@@ -58,55 +58,37 @@ const steps = [
 
 const plans = [
   {
-    name: "Starter",
-    price: "$49",
+    name: "Monthly",
+    price: "$99",
     period: "/month",
-    desc: "Perfect for solo entrepreneurs",
+    desc: "Full access, billed monthly",
     features: [
-      "10 AI articles/month",
-      "30 social posts/month",
-      "1 Google Ads campaign",
-      "5 AI images/month",
-      "1 website integration",
-      "Email support",
+      "Full access to all features",
+      "AI content generation",
+      "SEO autopilot",
+      "Auto-publishing to your site",
+      "Google Ads management",
+      "Priority support",
     ],
-    cta: "Start Free Trial",
+    cta: "Get Started",
     highlight: false,
   },
   {
-    name: "Pro",
-    price: "$149",
-    period: "/month",
-    desc: "For growing businesses",
+    name: "Annual",
+    price: "$999",
+    period: "/year",
+    desc: "Save ~16% vs monthly",
     features: [
-      "50 AI articles/month",
-      "Unlimited social posts",
-      "5 Google Ads campaigns",
-      "50 AI images/month",
-      "5 website integrations",
+      "Full access to all features",
+      "AI content generation",
+      "SEO autopilot",
+      "Auto-publishing to your site",
+      "Google Ads management",
       "Priority support",
-      "Advanced analytics",
+      "2 months free vs monthly",
     ],
     cta: "Get Started",
     highlight: true,
-  },
-  {
-    name: "Agency",
-    price: "$399",
-    period: "/month",
-    desc: "For agencies & power users",
-    features: [
-      "Unlimited AI articles",
-      "Unlimited social posts",
-      "Unlimited Google Ads",
-      "Unlimited AI images",
-      "Unlimited integrations",
-      "Dedicated account manager",
-      "White-label reports",
-      "API access",
-    ],
-    cta: "Contact Sales",
-    highlight: false,
   },
 ]
 
@@ -299,7 +281,7 @@ export default async function HomePage() {
             <h2 className="text-4xl font-bold mb-4 text-[#1b1916]">Simple, Transparent Pricing</h2>
             <p className="text-slate-600 text-lg">Start free. Scale as you grow.</p>
           </div>
-          <div className="grid md:grid-cols-3 gap-8 items-start">
+          <div className="grid md:grid-cols-2 gap-8 items-start max-w-3xl mx-auto">
             {plans.map((p, i) => (
               <Card
                 key={i}
@@ -371,7 +353,12 @@ export default async function HomePage() {
 
       {/* Footer */}
       <footer className="border-t border-black/10 px-6 py-8 text-center text-slate-500 text-sm" style={{ backgroundColor: "#ebe9e5" }}>
-        <p>© 2026 ItGrows.ai. All rights reserved.</p>
+        <p>
+          © 2026 ItGrows.ai. All rights reserved. ·{" "}
+          <Link href="/privacy" className="hover:text-[#1b1916] transition-colors">Privacy Policy</Link>
+          {" "}·{" "}
+          <Link href="/terms" className="hover:text-[#1b1916] transition-colors">Terms of Service</Link>
+        </p>
       </footer>
     </div>
   )

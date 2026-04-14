@@ -54,6 +54,8 @@ export default function OnboardingPage() {
   // Connect step state
   const [connectStep, setConnectStep] = useState<ConnectStep>("detecting")
   const [detectedPlatform, setDetectedPlatform] = useState<string>("custom")
+  const [publishedUrl, setPublishedUrl] = useState<string | null>(null)
+  const [showSuccess, setShowSuccess] = useState(false)
 
   // WordPress fields
   const [wpToken, setWpToken] = useState("")
@@ -164,12 +166,57 @@ export default function OnboardingPage() {
     try {
       await fetch("/api/user/onboarding-complete", { method: "POST" })
 
+      interface SavedSite {
+        id: string
+        siteToken: string
+        platform: string
+        url: string
+        blogDomain?: string | null
+      }
+      let savedSite: SavedSite | null = null
+
       if (sitePayload && Object.keys(sitePayload).length > 0) {
-        await fetch("/api/sites", {
+        const siteRes = await fetch("/api/sites", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ ...sitePayload, isDefault: true }),
         })
+        if (siteRes.ok) {
+          const siteData = await siteRes.json() as { site?: SavedSite }
+          savedSite = siteData.site ?? null
+        }
+      }
+
+      // Auto-publish the selected article to the connected site
+      if (savedSite && article) {
+        setLoadingMsg("Publishing your first article...")
+        try {
+          const publishRes = await fetch("/api/publish", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              siteUrl: savedSite.url,
+              siteToken: savedSite.siteToken,
+              platform: savedSite.platform,
+              title: article.title,
+              content: article.content,
+              keywords: article.keywords,
+              siteId: savedSite.id,
+            }),
+          })
+          if (publishRes.ok) {
+            const publishData = await publishRes.json() as { url?: string }
+            const blogUrl = publishData.url ?? (savedSite.blogDomain ? `https://${savedSite.blogDomain}` : savedSite.url)
+            setPublishedUrl(blogUrl)
+            setLoading(false)
+            setShowSuccess(true)
+            // Set up calendar in background
+            fetch("/api/schedule/batch", { method: "POST" }).catch(() => {})
+            return
+          }
+        } catch {
+          // Non-fatal — fall through to redirect
+        }
       }
 
       setLoadingMsg("Setting up your 15-day content calendar...")
@@ -225,6 +272,42 @@ export default function OnboardingPage() {
     if (detectedPlatform === "php") return "PHP / Custom CMS detected"
     return "Custom website detected"
   })()
+
+  // Success screen after article published
+  if (showSuccess) {
+    return (
+      <div className="min-h-screen bg-[#f3f2f1] flex items-center justify-center px-4 py-12">
+        <div className="w-full max-w-lg">
+          <div className="bg-white rounded-2xl p-10 shadow-sm border border-black/10 text-center">
+            <div className="text-6xl mb-6">🎉</div>
+            <h1 className="text-2xl font-bold text-[#1b1916] mb-3">Your first article has been published!</h1>
+            <p className="text-slate-600 mb-6">
+              {article?.title && (
+                <span className="block font-medium text-[#1b1916] mb-2">&quot;{article.title}&quot;</span>
+              )}
+              Your article is now live on your site. New articles will be published automatically every day.
+            </p>
+            {publishedUrl && (
+              <a
+                href={publishedUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block mb-6 text-violet-600 underline text-sm break-all"
+              >
+                View article at {publishedUrl}
+              </a>
+            )}
+            <button
+              onClick={() => router.push("/dashboard/calendar")}
+              className="w-full py-3 rounded-xl bg-violet-600 hover:bg-violet-500 text-white font-semibold transition-colors"
+            >
+              Go to Dashboard →
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-[#f3f2f1] flex items-center justify-center px-4 py-12">

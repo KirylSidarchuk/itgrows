@@ -22,6 +22,19 @@ const playfair = Playfair_Display({
 export const metadata: Metadata = {
   title: "ItGrows.ai — AI Content Automation",
   description: "AI creates SEO articles, social posts, and images — then auto-publishes them and runs your Google Ads.",
+  openGraph: {
+    title: "ItGrows.ai — AI Content Automation",
+    description: "Automatically publish SEO articles to your blog",
+    url: "https://itgrows.ai",
+    siteName: "ItGrows.ai",
+    images: [{ url: "https://itgrows.ai/og-image.png", width: 1200, height: 630 }],
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "ItGrows.ai",
+    description: "Automatically publish SEO articles to your blog",
+  },
 };
 
 export default function RootLayout({

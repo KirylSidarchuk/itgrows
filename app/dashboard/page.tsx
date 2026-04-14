@@ -24,12 +24,22 @@ interface ConnectedSite {
   lastCheckOk: boolean | null
 }
 
+interface ProfileData {
+  user?: {
+    onboardingCompleted?: boolean
+    subscriptionStatus?: string
+    articlesGenerated?: number
+  }
+}
+
 export default function DashboardPage() {
   const { data: session } = useSession()
   const router = useRouter()
   const [tasks, setTasks] = useState<Task[]>([])
   const [hasConnectedSites, setHasConnectedSites] = useState(true)
   const [failedSites, setFailedSites] = useState<ConnectedSite[]>([])
+  const [subscriptionStatus, setSubscriptionStatus] = useState<string>("inactive")
+  const [articlesGenerated, setArticlesGenerated] = useState<number>(0)
 
   const user = session?.user
     ? {
@@ -46,9 +56,15 @@ export default function DashboardPage() {
         if (!r.ok) throw new Error("Failed to fetch profile")
         return r.json()
       })
-      .then((data: { user?: { onboardingCompleted?: boolean } }) => {
+      .then((data: ProfileData) => {
         if (data.user && !data.user.onboardingCompleted) {
           router.replace("/dashboard/onboarding")
+        }
+        if (data.user?.subscriptionStatus) {
+          setSubscriptionStatus(data.user.subscriptionStatus)
+        }
+        if (typeof data.user?.articlesGenerated === "number") {
+          setArticlesGenerated(data.user.articlesGenerated)
         }
       })
       .catch(() => {})
@@ -148,6 +164,23 @@ export default function DashboardPage() {
             </Link>
           </div>
         ))}
+
+        {/* Trial paywall banner */}
+        {subscriptionStatus !== "active" && articlesGenerated > 2 && (
+          <div className="flex items-center justify-between gap-3 mb-6 px-5 py-4 rounded-xl border border-violet-300 bg-violet-50 text-violet-900">
+            <div className="flex items-center gap-2">
+              <span className="text-lg">🔒</span>
+              <span className="text-sm font-medium">
+                You&apos;ve used <strong>{articlesGenerated}/3</strong> free articles. Subscribe to continue generating content.
+              </span>
+            </div>
+            <Link href="/dashboard/billing" className="shrink-0">
+              <Button size="sm" className="bg-violet-600 hover:bg-violet-500 text-white text-xs">
+                Subscribe
+              </Button>
+            </Link>
+          </div>
+        )}
 
         {/* Stats */}
         <div className="grid grid-cols-3 gap-4 mb-8">
