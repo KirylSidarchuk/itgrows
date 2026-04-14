@@ -482,6 +482,9 @@ export default function CalendarPage() {
   const [batchStatus, setBatchStatus] = useState<"idle" | "loading" | "success" | "no-site">("idle")
   const [batchTone, setBatchTone] = useState<Tone>("Professional")
   const [defaultSiteUrl, setDefaultSiteUrl] = useState<string | null>(null)
+  const [defaultSiteSlug, setDefaultSiteSlug] = useState<string | null>(null)
+  const [defaultSiteBlogDomain, setDefaultSiteBlogDomain] = useState<string | null>(null)
+  const [defaultSiteId, setDefaultSiteId] = useState<string | null>(null)
   const [sitesChecked, setSitesChecked] = useState(false)
   const [hasVerifiedSite, setHasVerifiedSite] = useState<boolean | null>(null)
 
@@ -593,11 +596,14 @@ export default function CalendarPage() {
         const res = await fetch("/api/sites")
         if (res.ok) {
           const data = (await res.json()) as {
-            sites: Array<{ url: string; isDefault: boolean; lastCheckOk?: boolean | null }>
+            sites: Array<{ id: string; url: string; isDefault: boolean; lastCheckOk?: boolean | null; siteSlug?: string | null; blogDomain?: string | null }>
           }
           const sites = data.sites ?? []
           const def = sites.find((s) => s.isDefault) ?? sites[0] ?? null
           setDefaultSiteUrl(def ? def.url : null)
+          setDefaultSiteSlug(def?.siteSlug ?? null)
+          setDefaultSiteBlogDomain(def?.blogDomain ?? null)
+          setDefaultSiteId(def?.id ?? null)
           setBatchStatus(def ? "idle" : "no-site")
           setHasVerifiedSite(sites.some((s) => s.lastCheckOk === true))
         } else {
@@ -756,7 +762,11 @@ export default function CalendarPage() {
       const pubRes = await fetch("/api/blog/posts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(article),
+        body: JSON.stringify({
+          ...article,
+          ...(defaultSiteId ? { siteId: defaultSiteId } : {}),
+          ...(defaultSiteSlug ? { siteSlug: defaultSiteSlug } : {}),
+        }),
       })
 
       let slug = ""
@@ -765,13 +775,18 @@ export default function CalendarPage() {
         slug = pubData.post?.slug ?? ""
       }
 
-      updatePost(post.id, { status: "published", blogPostSlug: slug || undefined })
+      // Build display path: for custom/non-itgrows sites use sites/{siteSlug}/{slug}
+      const displaySlug = slug && defaultSiteSlug && defaultSiteSlug !== "itgrows"
+        ? `sites/${defaultSiteSlug}/${slug}`
+        : slug
+
+      updatePost(post.id, { status: "published", blogPostSlug: displaySlug || undefined })
       // Persist blogPostSlug to DB
-      if (slug) {
+      if (displaySlug) {
         await fetch(`/api/schedule/posts/${post.id}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ articleData: { blogPostSlug: slug }, status: "published" }),
+          body: JSON.stringify({ blogPostSlug: displaySlug, status: "published" }),
         })
       }
     } catch {
@@ -897,7 +912,11 @@ export default function CalendarPage() {
       const pubRes = await fetch("/api/blog/posts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(article),
+        body: JSON.stringify({
+          ...article,
+          ...(defaultSiteId ? { siteId: defaultSiteId } : {}),
+          ...(defaultSiteSlug ? { siteSlug: defaultSiteSlug } : {}),
+        }),
       })
 
       let slug = ""
@@ -906,13 +925,18 @@ export default function CalendarPage() {
         slug = pubData.post?.slug ?? ""
       }
 
-      updatePost(post.id, { status: "published", blogPostSlug: slug || undefined })
+      // Build display path: for custom/non-itgrows sites use sites/{siteSlug}/{slug}
+      const displaySlug = slug && defaultSiteSlug && defaultSiteSlug !== "itgrows"
+        ? `sites/${defaultSiteSlug}/${slug}`
+        : slug
+
+      updatePost(post.id, { status: "published", blogPostSlug: displaySlug || undefined })
       // Persist blogPostSlug to DB
-      if (slug) {
+      if (displaySlug) {
         await fetch(`/api/schedule/posts/${post.id}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ articleData: { blogPostSlug: slug }, status: "published" }),
+          body: JSON.stringify({ blogPostSlug: displaySlug, status: "published" }),
         })
       }
       setPreviewOpen(false)
@@ -1217,7 +1241,12 @@ export default function CalendarPage() {
                                 </>
                               )}
                               {post.status === "published" && post.blogPostSlug && (
-                                <a href={`/blog/${post.blogPostSlug}`} target="_blank" rel="noopener noreferrer" className="text-xs text-violet-600 hover:text-violet-800 underline font-medium">View Post</a>
+                                <a
+                                  href={post.blogPostSlug.startsWith("http") ? post.blogPostSlug : `/blog/${post.blogPostSlug}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-xs text-violet-600 hover:text-violet-800 underline font-medium"
+                                >View Post</a>
                               )}
                               <button
                                 disabled={deletingIds.has(post.id)}
