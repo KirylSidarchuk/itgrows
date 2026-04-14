@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/auth"
 import { db } from "@/lib/db"
-import { connectedSites } from "@/lib/db/schema"
+import { connectedSites, blogPosts } from "@/lib/db/schema"
 import { eq, and } from "drizzle-orm"
 
 interface PublishRequest {
@@ -119,8 +119,45 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
     const data = (await res.json()) as PublishResult
 
-    // NOTE: Mirroring client articles to itgrows blog_posts has been intentionally removed.
-    // Client articles must NOT appear on itgrows.ai — they belong only on the client's own site.
+    // For custom platforms with a siteSlug or blogDomain, mirror the article into blog_posts
+    // so it can be served via CNAME (e.g. blog.magiscan.app → blogs.itgrows.ai).
+    if (platform === "custom" && (siteSlug || siteId)) {
+      try {
+        // Resolve siteSlug from DB if not provided directly
+        let resolvedSlug = siteSlug ?? null
+        let resolvedBlogDomain: string | null = null
+        if (siteId && !resolvedSlug) {
+          const [site] = await db
+            .select({ siteSlug: connectedSites.siteSlug, blogDomain: connectedSites.blogDomain })
+            .from(connectedSites)
+            .where(and(eq(connectedSites.id, siteId), eq(connectedSites.userId, session.user.id)))
+            .limit(1)
+          if (site) {
+            resolvedSlug = site.siteSlug
+            resolvedBlogDomain = site.blogDomain
+          }
+        }
+        if (resolvedSlug || resolvedBlogDomain) {
+          const slug =
+            title.toLowerCase().replace(/[^a-z0-9\s-]/g, "").replace(/\s+/g, "-").replace(/-+/g, "-").trim() +
+            "-" +
+            Date.now().toString(36)
+          await db.insert(blogPosts).values({
+            userId: session.user.id,
+            slug,
+            title,
+            content,
+            metaDescription: metaDescription ?? "",
+            keywords: keywords ?? [],
+            siteId: siteId ?? null,
+            siteSlug: resolvedSlug ?? null,
+            coverImageUrl: coverImageUrl ?? null,
+          })
+        }
+      } catch {
+        // Non-fatal — don't fail the publish if mirroring fails
+      }
+    }
 
     return NextResponse.json(data)
   } catch (err: unknown) {

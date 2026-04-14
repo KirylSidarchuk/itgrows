@@ -40,6 +40,7 @@ interface ConnectedSite {
   platform: string
   siteToken: string
   siteSlug: string | null
+  blogDomain: string | null
   isDefault: boolean
 }
 
@@ -197,6 +198,13 @@ export default function SeoResultsPage() {
 
     // Owner's ItGrows.ai blog
     if (defaultSite.platform === "itgrows_blog") {
+      await publishToItgrowsBlog(article, defaultSite.name, defaultSite.id, defaultSite.siteSlug ?? undefined)
+      setBlogPublishing(false)
+      return
+    }
+
+    // Custom platform with blogDomain/siteSlug — publish to external site AND mirror to blog_posts for CNAME display
+    if (defaultSite.platform === "custom" && (defaultSite.siteSlug || defaultSite.blogDomain)) {
       await publishToItgrowsBlog(article, defaultSite.name, defaultSite.id, defaultSite.siteSlug ?? undefined)
       setBlogPublishing(false)
       return
