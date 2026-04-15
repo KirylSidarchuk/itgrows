@@ -354,26 +354,36 @@ export async function POST(req: NextRequest) {
       parsed.metaDescription,
     )
 
-    // Generate cover image
+    // Generate cover image — retry up to 3 times to ensure every article has one
     let coverImageUrl: string | null = null
-    try {
-      const internalHeader = req.headers.get("x-internal-secret")
-      const imgRes = await fetch(`${req.nextUrl.origin}/api/images/generate`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(internalHeader ? { "x-internal-secret": internalHeader } : { "Cookie": req.headers.get("cookie") || "" }),
-        },
-        body: JSON.stringify({ title: parsed.title, keywords: parsed.keywords }),
-      })
-      if (imgRes.ok) {
-        const imgData = await imgRes.json()
-        coverImageUrl = imgData.url ?? null
-      } else {
-        console.warn("[seo/generate] Image generation failed:", await imgRes.text())
+    const imgHeaders: Record<string, string> = { "Content-Type": "application/json" }
+    const internalHeaderValue = req.headers.get("x-internal-secret")
+    if (internalHeaderValue) {
+      imgHeaders["x-internal-secret"] = internalHeaderValue
+    } else {
+      imgHeaders["Cookie"] = req.headers.get("cookie") || ""
+    }
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      try {
+        const imgRes = await fetch(`${req.nextUrl.origin}/api/images/generate`, {
+          method: "POST",
+          headers: imgHeaders,
+          body: JSON.stringify({ title: parsed.title, keywords: parsed.keywords }),
+        })
+        if (imgRes.ok) {
+          const imgData = await imgRes.json() as { url?: string }
+          coverImageUrl = imgData.url ?? null
+          if (coverImageUrl) break
+        } else {
+          const errText = await imgRes.text()
+          console.warn(`[seo/generate] Image generation attempt ${attempt} failed:`, errText)
+        }
+      } catch (imgErr) {
+        console.warn(`[seo/generate] Image generation attempt ${attempt} error:`, imgErr)
       }
-    } catch (imgErr) {
-      console.warn("[seo/generate] Image generation error:", imgErr)
+    }
+    if (!coverImageUrl) {
+      console.error("[seo/generate] All image generation attempts failed for article:", parsed.title)
     }
 
     return NextResponse.json({

@@ -30,9 +30,10 @@ export async function POST(req: NextRequest) {
       keyword?: string
       siteId?: string
       siteSlug?: string
+      coverImageUrl?: string | null
     }
 
-    const { token, title, content, metaDescription, keywords, keyword, siteId, siteSlug } = body
+    const { token, title, content, metaDescription, keywords, keyword, siteId, siteSlug, coverImageUrl } = body
 
     // Validate token against environment variable
     const expectedToken = process.env.ITGROWS_SITE_TOKEN
@@ -80,7 +81,7 @@ export async function POST(req: NextRequest) {
         keywords: keywords ?? [],
         siteId: siteId ?? null,
         siteSlug: siteSlug ?? null,
-        coverImageUrl: null,
+        coverImageUrl: coverImageUrl ?? null,
       })
       .returning()
 
