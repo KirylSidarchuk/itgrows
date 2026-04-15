@@ -82,18 +82,69 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-[#1b1916] mb-3">6. Third-Party Services</h2>
+            <h2 className="text-xl font-semibold text-[#1b1916] mb-3">6. Social Media Account Access</h2>
+            <p>
+              ItGrows.ai allows you to connect your social media accounts — currently <strong>LinkedIn</strong>, with <strong>Instagram</strong> and <strong>Google Ads</strong> support coming in the future — via OAuth. When you connect an account, we request only the permissions needed to post content and manage campaigns on your behalf.
+            </p>
+            <p className="mt-3">
+              We will never post, modify, or delete content without your explicit instruction. You remain in full control of what is published through the platform. We only access the scopes you explicitly authorize during the OAuth flow.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-xl font-semibold text-[#1b1916] mb-3">7. Data Collected via Social Integrations</h2>
+            <p className="mb-3">When you connect a social media account, we may collect and store the following data to provide the service:</p>
+            <ul className="list-disc list-inside space-y-2 ml-2">
+              <li><strong>Page and post analytics</strong> — impressions, reach, engagement metrics (likes, comments, shares) retrieved from the platform API to display performance data in your dashboard.</li>
+              <li><strong>AI-generated post content</strong> — text, images, and other content created by ItGrows.ai and scheduled or published on your behalf.</li>
+              <li><strong>Advertising campaign data</strong> — campaign names, budgets, targeting parameters, and performance metrics for campaigns managed through the platform.</li>
+              <li><strong>Account identifiers</strong> — platform-specific user or page IDs required to authenticate API requests.</li>
+            </ul>
+            <p className="mt-3">This data is used solely to operate and improve the features you have enabled. It is not used for advertising profiling or sold to third parties.</p>
+          </section>
+
+          <section>
+            <h2 className="text-xl font-semibold text-[#1b1916] mb-3">8. Third-Party Social Platforms</h2>
+            <p>
+              LinkedIn, Meta (Instagram/Facebook), and Google are independent platforms governed by their own privacy policies. When you connect your accounts to ItGrows.ai, your use of those platforms remains subject to their respective terms and policies:
+            </p>
+            <ul className="list-disc list-inside space-y-2 ml-2 mt-2">
+              <li><a href="https://www.linkedin.com/legal/privacy-policy" target="_blank" rel="noopener noreferrer" className="text-violet-600 underline">LinkedIn Privacy Policy</a></li>
+              <li><a href="https://privacycenter.instagram.com/policy" target="_blank" rel="noopener noreferrer" className="text-violet-600 underline">Meta / Instagram Privacy Policy</a></li>
+              <li><a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" className="text-violet-600 underline">Google Privacy Policy</a></li>
+            </ul>
+            <p className="mt-3">
+              ItGrows.ai acts as a <strong>data processor</strong> on your behalf when accessing these platforms. You, as the account holder, remain the data controller for any content published or analytics retrieved through our service.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-xl font-semibold text-[#1b1916] mb-3">9. Revoking Social Media Access</h2>
+            <p>You can disconnect any connected social media account at any time:</p>
+            <ul className="list-disc list-inside space-y-2 ml-2 mt-2">
+              <li><strong>From ItGrows.ai</strong> — go to your account settings and remove the connected integration. We will immediately delete the associated OAuth tokens from our systems.</li>
+              <li><strong>Directly from the platform</strong> — you can also revoke access from within LinkedIn, Instagram, or Google&apos;s own app/security settings at any time, independent of our platform.</li>
+            </ul>
+            <p className="mt-3">
+              Revoking access will disable any scheduled posts or active campaigns that rely on the disconnected account. Analytics data already retrieved and stored in your dashboard may be retained for up to 30 days before deletion.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-xl font-semibold text-[#1b1916] mb-3">10. Third-Party Services</h2>
             <p>We may share data with the following third-party services strictly to operate our platform:</p>
             <ul className="list-disc list-inside space-y-2 ml-2 mt-2">
               <li><strong>Stripe</strong> — payment processing</li>
               <li><strong>Resend</strong> — transactional email delivery</li>
               <li><strong>Google</strong> — AI content generation via API</li>
+              <li><strong>LinkedIn</strong> — social media publishing and analytics (when connected)</li>
+              <li><strong>Meta</strong> — social media publishing and analytics (when connected)</li>
             </ul>
             <p className="mt-3">Each third party operates under its own privacy policy and data processing agreements.</p>
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-[#1b1916] mb-3">7. Your Rights</h2>
+            <h2 className="text-xl font-semibold text-[#1b1916] mb-3">11. Your Rights</h2>
             <p>Under GDPR and applicable privacy laws, you have the right to:</p>
             <ul className="list-disc list-inside space-y-2 ml-2 mt-2">
               <li>Access the personal data we hold about you.</li>
@@ -106,21 +157,21 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-[#1b1916] mb-3">8. Cookies</h2>
+            <h2 className="text-xl font-semibold text-[#1b1916] mb-3">12. Cookies</h2>
             <p>
               We use essential cookies to maintain your login session. We do not use advertising or tracking cookies. By using ItGrows.ai, you consent to the use of these essential cookies.
             </p>
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-[#1b1916] mb-3">9. Changes to This Policy</h2>
+            <h2 className="text-xl font-semibold text-[#1b1916] mb-3">13. Changes to This Policy</h2>
             <p>
               We may update this Privacy Policy from time to time. We will notify you of significant changes by email or via a banner in the dashboard. Continued use of the service after changes constitutes acceptance.
             </p>
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-[#1b1916] mb-3">10. Contact</h2>
+            <h2 className="text-xl font-semibold text-[#1b1916] mb-3">14. Contact</h2>
             <p>
               For any privacy-related questions or requests, contact us at:{" "}
               <a href="mailto:kiryl@itgrows.ai" className="text-violet-600 underline">kiryl@itgrows.ai</a>
