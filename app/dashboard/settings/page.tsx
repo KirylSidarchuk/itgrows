@@ -89,6 +89,7 @@ function AddSiteWizard({ onSaved, onCancel, isFirstSite }: AddSiteWizardProps) {
 
   // Blog domain (CNAME flow)
   const [blogDomain, setBlogDomain] = useState("")
+  const [blogPublicUrl, setBlogPublicUrl] = useState("")
 
   // WordPress plugin flow
   const [wpToken, setWpToken] = useState("")
@@ -173,6 +174,7 @@ function AddSiteWizard({ onSaved, onCancel, isFirstSite }: AddSiteWizardProps) {
     webflowToken?: string
     webflowCollectionId?: string
     blogDomain?: string
+    blogPublicUrl?: string
   }) => {
     setSaving(true)
     setSaveError("")
@@ -244,6 +246,7 @@ function AddSiteWizard({ onSaved, onCancel, isFirstSite }: AddSiteWizardProps) {
       siteToken: generatedToken,
       siteSlug,
       blogDomain: blogDomain.trim(),
+      blogPublicUrl: blogPublicUrl.trim() || undefined,
     })
   }
 
@@ -583,6 +586,21 @@ function AddSiteWizard({ onSaved, onCancel, isFirstSite }: AddSiteWizardProps) {
             className="bg-[#ebe9e5] border-black/10 text-[#1b1916] placeholder:text-slate-500 focus:border-violet-500 text-sm font-mono"
           />
           <p className="text-slate-500 text-xs">Pre-filled with the suggested subdomain — change if needed</p>
+        </div>
+
+        <div className="space-y-2">
+          <Label className="text-slate-700 text-sm font-medium">
+            Custom blog URL <span className="text-slate-400 font-normal">(optional — if using subdirectory proxy)</span>
+          </Label>
+          <Input
+            placeholder={`https://${derivedDomain}/blog`}
+            value={blogPublicUrl}
+            onChange={(e) => setBlogPublicUrl(e.target.value)}
+            className="bg-[#ebe9e5] border-black/10 text-[#1b1916] placeholder:text-slate-500 focus:border-violet-500 text-sm font-mono"
+          />
+          <p className="text-slate-500 text-xs">
+            e.g. <code className="bg-white/60 px-1 rounded text-violet-700">https://yourdomain.com/blog</code> — leave empty if using <code className="bg-white/60 px-1 rounded text-violet-700">blog.yourdomain.com</code>. Used for correct canonical tags and sitemap URLs.
+          </p>
         </div>
 
         {saveError && <p className="text-red-500 text-sm">{saveError}</p>}

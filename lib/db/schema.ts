@@ -45,6 +45,7 @@ export const connectedSites = pgTable("connected_sites", {
   webflowCollectionId: text("webflow_collection_id"),
   isDefault: boolean("is_default").notNull().default(false),
   blogDomain: text("blog_domain"),
+  blogPublicUrl: text("blog_public_url"),
   webhookUrl: text("webhook_url"),
   siteProfile: jsonb("site_profile"),
   lastCheckedAt: timestamp("last_checked_at"),
