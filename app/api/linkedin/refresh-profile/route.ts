@@ -118,12 +118,14 @@ export async function POST() {
 Profile:
 ${profileSummary}
 
+IMPORTANT: Only use information explicitly present in the profile above. Do NOT invent or assume any data not provided. If a field cannot be determined from the profile, return null for that field.
+
 Return ONLY valid JSON with these keys:
-- niche: industry or market (e.g. "SaaS", "B2B marketing", "fintech")
-- tone: one of "professional", "casual", or "inspirational"
-- company_name: company name if identifiable, or empty string
-- target_audience: who they likely sell to or talk to (e.g. "startup founders", "HR managers")
-- goals: likely LinkedIn goals (e.g. "build authority, generate leads, share industry insights")
+- niche: industry or market only if clearly identifiable from the profile (e.g. "SaaS", "B2B marketing", "fintech"), or null
+- tone: one of "professional", "casual", or "inspirational" — default to "professional" if unclear
+- company_name: company name only if explicitly present in the profile, or null
+- target_audience: who they likely address only if inferable from the profile, or null
+- goals: likely LinkedIn goals only if inferable from the profile, or null
 
 Return only the JSON object, no markdown, no extra text.`,
         }],
@@ -144,40 +146,35 @@ Return only the JSON object, no markdown, no extra text.`,
     }
 
     const inferred = JSON.parse(jsonMatch[0]) as {
-      niche?: string
-      tone?: string
-      company_name?: string
-      target_audience?: string
-      goals?: string
+      niche?: string | null
+      tone?: string | null
+      company_name?: string | null
+      target_audience?: string | null
+      goals?: string | null
     }
     const tone = ["professional", "casual", "inspirational"].includes(inferred.tone ?? "")
       ? inferred.tone!
       : "professional"
 
+    // Only persist fields with real values — never store hallucinated data
+    const briefValues = {
+      userId,
+      niche: inferred.niche || null,
+      tone,
+      companyName: inferred.company_name || currentCompany || null,
+      targetAudience: inferred.target_audience || null,
+      goals: inferred.goals || null,
+      isAutoFilled: true,
+      updatedAt: new Date(),
+    }
+
     // Upsert brief
     const [brief] = await db
       .insert(linkedinBriefs)
-      .values({
-        userId,
-        niche: inferred.niche ?? null,
-        tone,
-        companyName: inferred.company_name || currentCompany || null,
-        targetAudience: inferred.target_audience ?? null,
-        goals: inferred.goals ?? null,
-        isAutoFilled: true,
-        updatedAt: new Date(),
-      })
+      .values(briefValues)
       .onConflictDoUpdate({
         target: linkedinBriefs.userId,
-        set: {
-          niche: inferred.niche ?? null,
-          tone,
-          companyName: inferred.company_name || currentCompany || null,
-          targetAudience: inferred.target_audience ?? null,
-          goals: inferred.goals ?? null,
-          isAutoFilled: true,
-          updatedAt: new Date(),
-        },
+        set: briefValues,
       })
       .returning()
 
