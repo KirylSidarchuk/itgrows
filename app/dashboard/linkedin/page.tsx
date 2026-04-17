@@ -223,6 +223,7 @@ function LinkedInPageContent() {
   const [briefIsAutoFilled, setBriefIsAutoFilled] = useState(false)
   const [savingBrief, setSavingBrief] = useState(false)
   const [briefSaved, setBriefSaved] = useState(false)
+  const [refreshingBrief, setRefreshingBrief] = useState(false)
   const [posts, setPosts] = useState<LinkedInPost[]>([])
   const [postsLoading, setPostsLoading] = useState(false)
   const [generating, setGenerating] = useState(false)
@@ -322,6 +323,30 @@ function LinkedInPageContent() {
     setBriefSaved(true)
     setBriefIsAutoFilled(false)
     setTimeout(() => setBriefSaved(false), 2500)
+  }
+
+  async function handleRefreshFromLinkedIn() {
+    setRefreshingBrief(true)
+    try {
+      const res = await fetch("/api/linkedin/refresh-profile", { method: "POST" })
+      const data = await res.json() as { brief?: LinkedInBrief; error?: string }
+      if (res.ok && data.brief) {
+        const b = data.brief
+        setBrief({
+          niche: b.niche ?? "",
+          tone: b.tone ?? "professional",
+          goals: b.goals ?? "",
+          companyName: b.companyName ?? "",
+          targetAudience: b.targetAudience ?? "",
+        })
+        setBriefIsAutoFilled(true)
+        setBriefOpen(true)
+      }
+    } catch {
+      // silently fail
+    } finally {
+      setRefreshingBrief(false)
+    }
   }
 
   async function handleGenerate() {
@@ -533,10 +558,23 @@ function LinkedInPageContent() {
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <CardTitle className="text-sm font-semibold text-[#1b1916]">Content Brief</CardTitle>
+                  <CardTitle className="text-sm font-semibold text-[#1b1916]">Your professional DNA</CardTitle>
+                  <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); handleRefreshFromLinkedIn() }}
+                    disabled={refreshingBrief}
+                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-slate-50 text-slate-500 border border-slate-200 hover:bg-slate-100 transition-colors disabled:opacity-50"
+                  >
+                    {refreshingBrief ? (
+                      <Loader2 className="w-3 h-3 animate-spin" />
+                    ) : (
+                      <RefreshCw className="w-3 h-3" />
+                    )}
+                    Refresh from LinkedIn
+                  </button>
                   {briefIsAutoFilled && (
                     <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-violet-50 text-violet-600 border border-violet-200">
-                      ✨ Pre-filled from your LinkedIn profile — feel free to edit
+                      ✨ Sourced from your LinkedIn profile — your DNA is unique, edit if needed
                     </span>
                   )}
                 </div>
@@ -547,7 +585,7 @@ function LinkedInPageContent() {
                 )}
               </div>
               <p className="text-xs text-slate-400 mt-0.5">
-                Tell us about your business so we can write better posts
+                Your unique background that powers every post we create
               </p>
             </CardHeader>
             {briefOpen && (
@@ -618,7 +656,7 @@ function LinkedInPageContent() {
                   {savingBrief ? (
                     <Loader2 className="w-3 h-3 animate-spin mr-1" />
                   ) : null}
-                  {briefSaved ? "Saved!" : "Save Brief"}
+                  {briefSaved ? "Saved!" : "Save DNA"}
                 </Button>
               </CardContent>
             )}
