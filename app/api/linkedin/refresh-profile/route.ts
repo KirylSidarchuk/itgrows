@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server"
+import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/auth"
 import { db } from "@/lib/db"
 import { linkedinAccounts, linkedinBriefs } from "@/lib/db/schema"
@@ -8,13 +8,21 @@ const LLM_BASE_URL = "http://34.60.133.229:4000"
 const LLM_MODEL = "gemini-2.0-flash"
 const LLM_API_KEY = "any-key"
 
-export async function POST() {
+export async function POST(req: NextRequest) {
   try {
     const session = await auth()
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
     const userId = session.user.id
+
+    // Accept optional profileUrl from request body
+    const { profileUrl } = await req.json().catch(() => ({} as { profileUrl?: string })) as { profileUrl?: string }
+
+    // Extract vanityName from profileUrl if provided
+    const profileUrlVanity = profileUrl
+      ? (profileUrl.match(/linkedin\.com\/in\/([^/?\s]+)/)?.[1] ?? null)
+      : null
 
     // Get the user's personal LinkedIn account
     const [account] = await db
@@ -72,6 +80,15 @@ export async function POST() {
           account.pageHandle = vanityName
           console.log("[refresh-profile] persisted vanityName to DB:", vanityName)
         }
+        // If profileUrl provided a vanityName that overrides existing, update DB
+        if (profileUrlVanity && profileUrlVanity !== account.pageHandle) {
+          await db
+            .update(linkedinAccounts)
+            .set({ pageHandle: profileUrlVanity })
+            .where(eq(linkedinAccounts.id, account.id))
+          account.pageHandle = profileUrlVanity
+          console.log("[refresh-profile] updated pageHandle from profileUrl:", profileUrlVanity)
+        }
       } else {
         console.log("[refresh-profile] /v2/me failed — status:", meRes.status)
       }
@@ -110,7 +127,7 @@ export async function POST() {
     let scrapedPosition: string | null = null
     let scrapedCompany: string | null = null
     let scrapedAbout: string | null = null
-    const scraperVanity = vanityName ?? account.pageHandle ?? null
+    const scraperVanity = profileUrlVanity ?? vanityName ?? account.pageHandle ?? null
     console.log("[refresh-profile] scraperVanity:", scraperVanity, "| vanityName:", vanityName, "| account.pageHandle:", account.pageHandle)
     if (scraperVanity) {
       try {
@@ -233,6 +250,7 @@ Return only the JSON object, no markdown, no extra text.`,
       companyName: inferred.company_name || effectiveCompany || null,
       targetAudience: inferred.target_audience || null,
       goals: inferred.goals || null,
+      profileUrl: profileUrl || (scraperVanity ? `https://www.linkedin.com/in/${scraperVanity}` : null),
       isAutoFilled: true,
       updatedAt: new Date(),
     }

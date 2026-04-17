@@ -39,6 +39,7 @@ interface BriefRequest {
   goals?: string
   companyName?: string
   targetAudience?: string
+  profileUrl?: string
 }
 
 export async function POST(req: NextRequest) {
@@ -50,7 +51,7 @@ export async function POST(req: NextRequest) {
     const userId = session.user.id
 
     const body = await req.json() as BriefRequest
-    const { niche, tone, goals, companyName, targetAudience } = body
+    const { niche, tone, goals, companyName, targetAudience, profileUrl } = body
 
     const [brief] = await db
       .insert(linkedinBriefs)
@@ -61,6 +62,7 @@ export async function POST(req: NextRequest) {
         goals: goals ?? null,
         companyName: companyName ?? null,
         targetAudience: targetAudience ?? null,
+        profileUrl: profileUrl ?? null,
         isAutoFilled: false,
         updatedAt: new Date(),
       })
@@ -72,6 +74,7 @@ export async function POST(req: NextRequest) {
           goals: goals ?? null,
           companyName: companyName ?? null,
           targetAudience: targetAudience ?? null,
+          profileUrl: profileUrl ?? null,
           isAutoFilled: false,
           updatedAt: new Date(),
         },

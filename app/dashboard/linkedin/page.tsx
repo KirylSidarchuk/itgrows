@@ -37,6 +37,7 @@ interface LinkedInBrief {
   goals: string
   companyName: string
   targetAudience: string
+  profileUrl?: string
   isAutoFilled?: boolean
 }
 
@@ -221,6 +222,7 @@ function LinkedInPageContent() {
     targetAudience: "",
   })
   const [briefIsAutoFilled, setBriefIsAutoFilled] = useState(false)
+  const [profileUrl, setProfileUrl] = useState("")
   const [savingBrief, setSavingBrief] = useState(false)
   const [briefSaved, setBriefSaved] = useState(false)
   const [refreshingBrief, setRefreshingBrief] = useState(false)
@@ -290,6 +292,9 @@ function LinkedInPageContent() {
             targetAudience: data.brief.targetAudience ?? "",
           })
           setBriefIsAutoFilled(data.brief.isAutoFilled === true)
+          if (data.brief.profileUrl) {
+            setProfileUrl(data.brief.profileUrl)
+          }
         }
       })
       .catch(() => {})
@@ -319,7 +324,7 @@ function LinkedInPageContent() {
     await fetch("/api/linkedin/brief", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(brief),
+      body: JSON.stringify({ ...brief, profileUrl: profileUrl || undefined }),
     })
     setSavingBrief(false)
     setBriefSaved(true)
@@ -327,12 +332,18 @@ function LinkedInPageContent() {
     setTimeout(() => setBriefSaved(false), 2500)
   }
 
-  async function handleRefreshFromLinkedIn() {
+  async function handleRefreshFromLinkedIn(urlOverride?: string) {
     setRefreshingBrief(true)
     setRefreshMessage(null)
     setRefreshSuccess(false)
     try {
-      const res = await fetch("/api/linkedin/refresh-profile", { method: "POST" })
+      const body: Record<string, string> = {}
+      if (urlOverride) body.profileUrl = urlOverride
+      const res = await fetch("/api/linkedin/refresh-profile", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      })
       const data = await res.json() as {
         success?: boolean
         brief?: LinkedInBrief
@@ -349,6 +360,7 @@ function LinkedInPageContent() {
           companyName: b.companyName ?? "",
           targetAudience: b.targetAudience ?? "",
         })
+        if (b.profileUrl) setProfileUrl(b.profileUrl)
         setBriefIsAutoFilled(true)
         setBriefOpen(true)
         setRefreshSuccess(true)
@@ -575,32 +587,6 @@ function LinkedInPageContent() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2 flex-wrap">
                   <CardTitle className="text-sm font-semibold text-[#1b1916]">Your professional DNA</CardTitle>
-                  <div className="inline-flex flex-col gap-1">
-                    <button
-                      type="button"
-                      onClick={(e) => { e.stopPropagation(); handleRefreshFromLinkedIn() }}
-                      disabled={refreshingBrief}
-                      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-slate-50 text-slate-500 border border-slate-200 hover:bg-slate-100 transition-colors disabled:opacity-50"
-                    >
-                      {refreshingBrief ? (
-                        <Loader2 className="w-3 h-3 animate-spin" />
-                      ) : (
-                        <RefreshCw className="w-3 h-3" />
-                      )}
-                      {refreshingBrief ? "Refreshing..." : "Refresh from LinkedIn"}
-                    </button>
-                    {refreshMessage && (
-                      <span
-                        className={`text-xs px-2 py-1 rounded-lg border ${
-                          refreshSuccess
-                            ? "bg-green-50 text-green-700 border-green-200"
-                            : "bg-blue-50 text-blue-600 border-blue-200"
-                        }`}
-                      >
-                        {refreshSuccess ? "✅" : "ℹ️"} {refreshMessage}
-                      </span>
-                    )}
-                  </div>
                   {briefIsAutoFilled && (
                     <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-violet-50 text-violet-600 border border-violet-200">
                       ✨ Sourced from your LinkedIn profile — your DNA is unique, edit if needed
@@ -619,6 +605,43 @@ function LinkedInPageContent() {
             </CardHeader>
             {briefOpen && (
               <CardContent className="space-y-3 pt-0">
+                <div>
+                  <label className="block text-xs font-medium text-slate-600 mb-1">LinkedIn Profile URL</label>
+                  <div className="flex gap-2">
+                    <input
+                      type="url"
+                      placeholder="https://linkedin.com/in/yourname"
+                      value={profileUrl}
+                      onChange={(e) => setProfileUrl(e.target.value)}
+                      className="flex-1 px-3 py-2 text-sm rounded-lg border border-slate-200 bg-white/80 focus:outline-none focus:ring-2 focus:ring-violet-400"
+                    />
+                    <Button
+                      size="sm"
+                      type="button"
+                      disabled={refreshingBrief || !profileUrl.trim()}
+                      onClick={() => handleRefreshFromLinkedIn(profileUrl.trim())}
+                      className="shrink-0 bg-[#0077B5] hover:bg-[#005f8e] text-white text-xs px-3"
+                    >
+                      {refreshingBrief ? (
+                        <Loader2 className="w-3 h-3 animate-spin mr-1" />
+                      ) : (
+                        <RefreshCw className="w-3 h-3 mr-1" />
+                      )}
+                      {refreshingBrief ? "Fetching..." : "Fetch from profile →"}
+                    </Button>
+                  </div>
+                  {refreshMessage && (
+                    <p
+                      className={`mt-1.5 text-xs px-2 py-1 rounded-lg border ${
+                        refreshSuccess
+                          ? "bg-green-50 text-green-700 border-green-200"
+                          : "bg-blue-50 text-blue-600 border-blue-200"
+                      }`}
+                    >
+                      {refreshSuccess ? "✅" : "ℹ️"} {refreshMessage}
+                    </p>
+                  )}
+                </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="block text-xs font-medium text-slate-600 mb-1">Company Name</label>
