@@ -221,7 +221,7 @@ function LinkedInPageContent() {
   useEffect(() => {
     if (connected === "1") {
       setStatusMessage("LinkedIn connected successfully!")
-    } else if (error) {
+    } else if (error && !loading && accounts.length === 0) {
       const messages: Record<string, string> = {
         oauth_denied: "LinkedIn authorization was denied.",
         token_failed: "Failed to obtain access token from LinkedIn.",
@@ -229,7 +229,7 @@ function LinkedInPageContent() {
       }
       setStatusMessage(messages[error] ?? "Connection failed. Please try again.")
     }
-  }, [connected, error])
+  }, [connected, error, loading, accounts.length])
 
   useEffect(() => {
     fetch("/api/linkedin/pages")
