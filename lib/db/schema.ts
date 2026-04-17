@@ -117,3 +117,27 @@ export const linkedinAccounts = pgTable("linkedin_accounts", {
   pageHandle: text("page_handle"),
   createdAt: timestamp("created_at").defaultNow(),
 }, (t) => [index("linkedin_accounts_user_id_idx").on(t.userId)])
+
+export const linkedinPosts = pgTable("linkedin_posts", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: text("user_id").notNull(),
+  linkedinAccountId: uuid("linkedin_account_id").references(() => linkedinAccounts.id, { onDelete: "cascade" }),
+  content: text("content").notNull(),
+  status: text("status").notNull().default("draft"), // draft | scheduled | published | failed
+  scheduledFor: timestamp("scheduled_for", { withTimezone: true }),
+  publishedAt: timestamp("published_at", { withTimezone: true }),
+  linkedinPostId: text("linkedin_post_id"),
+  publishError: text("publish_error"),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+}, (t) => [index("linkedin_posts_user_id_idx").on(t.userId), index("linkedin_posts_status_idx").on(t.status)])
+
+export const linkedinBriefs = pgTable("linkedin_briefs", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: text("user_id").notNull().unique(),
+  niche: text("niche"),
+  tone: text("tone").default("professional"),
+  goals: text("goals"),
+  companyName: text("company_name"),
+  targetAudience: text("target_audience"),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+})
