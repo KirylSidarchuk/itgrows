@@ -18,7 +18,15 @@ export async function GET() {
       .where(eq(linkedinBriefs.userId, userId))
       .limit(1)
 
-    return NextResponse.json({ brief: brief ?? null })
+    if (brief) {
+      return NextResponse.json({
+        brief: {
+          ...brief,
+          isAutoFilled: brief.isAutoFilled ?? false,
+        },
+      })
+    }
+    return NextResponse.json({ brief: null })
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error"
     return NextResponse.json({ error: message }, { status: 500 })
@@ -53,6 +61,7 @@ export async function POST(req: NextRequest) {
         goals: goals ?? null,
         companyName: companyName ?? null,
         targetAudience: targetAudience ?? null,
+        isAutoFilled: false,
         updatedAt: new Date(),
       })
       .onConflictDoUpdate({
@@ -63,6 +72,7 @@ export async function POST(req: NextRequest) {
           goals: goals ?? null,
           companyName: companyName ?? null,
           targetAudience: targetAudience ?? null,
+          isAutoFilled: false,
           updatedAt: new Date(),
         },
       })

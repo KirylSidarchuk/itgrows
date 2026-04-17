@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db"
-import { linkedinAccounts } from "@/lib/db/schema"
+import { linkedinAccounts, linkedinBriefs } from "@/lib/db/schema"
 import { eq, and } from "drizzle-orm"
+
+const LLM_BASE_URL = "http://34.60.133.229:4000"
+const LLM_MODEL = "gemini-2.0-flash"
+const LLM_API_KEY = "any-key"
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
@@ -49,6 +53,7 @@ export async function GET(req: NextRequest) {
     let personUrn: string | null = null
     let pageName: string | null = null
     let pageHandle: string | null = null
+    let profileHeadline: string | null = null
 
     if (profileRes.ok) {
       const profile = await profileRes.json() as {
@@ -63,6 +68,54 @@ export async function GET(req: NextRequest) {
         personUrn = `urn:li:person:${profile.sub}`
       }
       pageName = profile.name ?? profile.given_name ?? null
+    }
+
+    // Fetch additional LinkedIn profile data (headline, vanityName)
+    try {
+      const meRes = await fetch(
+        "https://api.linkedin.com/v2/me?projection=(id,localizedFirstName,localizedLastName,headline,localizedHeadline,vanityName)",
+        { headers: { Authorization: `Bearer ${accessToken}` } }
+      )
+      if (meRes.ok) {
+        const meData = await meRes.json() as {
+          localizedHeadline?: string
+          headline?: { localized?: Record<string, string> }
+          vanityName?: string
+        }
+        profileHeadline = meData.localizedHeadline ?? null
+        if (!pageHandle && meData.vanityName) {
+          pageHandle = meData.vanityName
+        }
+      }
+    } catch {
+      // Non-fatal: continue without headline
+    }
+
+    // Fetch positions (job history) — may fail on some accounts
+    let currentTitle: string | null = null
+    let currentCompany: string | null = null
+    try {
+      const posRes = await fetch(
+        "https://api.linkedin.com/v2/positions?projection=(elements*(title,companyName,description))",
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "X-Restli-Protocol-Version": "2.0.0",
+          },
+        }
+      )
+      if (posRes.ok) {
+        const posData = await posRes.json() as {
+          elements?: Array<{ title?: string; companyName?: string }>
+        }
+        if (posData.elements && posData.elements.length > 0) {
+          const first = posData.elements[0]
+          currentTitle = first.title ?? null
+          currentCompany = first.companyName ?? null
+        }
+      }
+    } catch {
+      // Non-fatal: continue without positions
     }
 
     // Save personal account
@@ -96,6 +149,84 @@ export async function GET(req: NextRequest) {
         pageName,
         pageHandle,
       })
+    }
+
+    // Auto-fill content brief if no brief exists yet
+    try {
+      const existingBrief = await db
+        .select({ id: linkedinBriefs.id })
+        .from(linkedinBriefs)
+        .where(eq(linkedinBriefs.userId, userId))
+        .limit(1)
+
+      if (existingBrief.length === 0 && (profileHeadline || currentTitle || currentCompany)) {
+        // Build profile summary for LLM
+        const profileSummary = [
+          profileHeadline ? `Headline: ${profileHeadline}` : null,
+          currentTitle ? `Current job title: ${currentTitle}` : null,
+          currentCompany ? `Current company: ${currentCompany}` : null,
+        ].filter(Boolean).join("\n")
+
+        const llmRes = await fetch(`${LLM_BASE_URL}/v1/chat/completions`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${LLM_API_KEY}`,
+          },
+          body: JSON.stringify({
+            model: LLM_MODEL,
+            messages: [{
+              role: "user",
+              content: `Based on this LinkedIn profile, infer content brief fields for a LinkedIn content strategy.
+
+Profile:
+${profileSummary}
+
+Return ONLY valid JSON with these keys:
+- niche: industry or market (e.g. "SaaS", "B2B marketing", "fintech")
+- tone: one of "professional", "casual", or "inspirational"
+- company_name: company name if identifiable, or empty string
+- target_audience: who they likely sell to or talk to (e.g. "startup founders", "HR managers")
+- goals: likely LinkedIn goals (e.g. "build authority, generate leads, share industry insights")
+
+Return only the JSON object, no markdown, no extra text.`,
+            }],
+            temperature: 0.3,
+            max_tokens: 300,
+          }),
+        })
+
+        if (llmRes.ok) {
+          const llmData = await llmRes.json() as { choices?: Array<{ message: { content: string } }> }
+          const rawContent = llmData.choices?.[0]?.message?.content?.trim() ?? ""
+          const jsonMatch = rawContent.match(/\{[\s\S]*\}/)
+          if (jsonMatch) {
+            const inferred = JSON.parse(jsonMatch[0]) as {
+              niche?: string
+              tone?: string
+              company_name?: string
+              target_audience?: string
+              goals?: string
+            }
+            const tone = ["professional", "casual", "inspirational"].includes(inferred.tone ?? "")
+              ? inferred.tone!
+              : "professional"
+
+            await db.insert(linkedinBriefs).values({
+              userId,
+              niche: inferred.niche ?? null,
+              tone,
+              companyName: inferred.company_name || currentCompany || null,
+              targetAudience: inferred.target_audience ?? null,
+              goals: inferred.goals ?? null,
+              isAutoFilled: true,
+              updatedAt: new Date(),
+            }).onConflictDoNothing()
+          }
+        }
+      }
+    } catch (briefErr) {
+      console.error("Auto-fill brief error (non-fatal):", briefErr)
     }
 
     // Fetch org pages where user is admin

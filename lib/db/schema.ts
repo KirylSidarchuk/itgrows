@@ -140,5 +140,6 @@ export const linkedinBriefs = pgTable("linkedin_briefs", {
   goals: text("goals"),
   companyName: text("company_name"),
   targetAudience: text("target_audience"),
+  isAutoFilled: boolean("is_auto_filled").default(false),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
 })

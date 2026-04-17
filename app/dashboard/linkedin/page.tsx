@@ -37,6 +37,7 @@ interface LinkedInBrief {
   goals: string
   companyName: string
   targetAudience: string
+  isAutoFilled?: boolean
 }
 
 const STATUS_COLORS: Record<string, string> = {
@@ -219,6 +220,7 @@ function LinkedInPageContent() {
     companyName: "",
     targetAudience: "",
   })
+  const [briefIsAutoFilled, setBriefIsAutoFilled] = useState(false)
   const [savingBrief, setSavingBrief] = useState(false)
   const [briefSaved, setBriefSaved] = useState(false)
   const [posts, setPosts] = useState<LinkedInPost[]>([])
@@ -272,6 +274,7 @@ function LinkedInPageContent() {
             companyName: data.brief.companyName ?? "",
             targetAudience: data.brief.targetAudience ?? "",
           })
+          setBriefIsAutoFilled(data.brief.isAutoFilled === true)
         }
       })
       .catch(() => {})
@@ -305,6 +308,7 @@ function LinkedInPageContent() {
     })
     setSavingBrief(false)
     setBriefSaved(true)
+    setBriefIsAutoFilled(false)
     setTimeout(() => setBriefSaved(false), 2500)
   }
 
@@ -511,11 +515,18 @@ function LinkedInPageContent() {
               onClick={() => setBriefOpen((o) => !o)}
             >
               <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-semibold text-[#1b1916]">Content Brief</CardTitle>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <CardTitle className="text-sm font-semibold text-[#1b1916]">Content Brief</CardTitle>
+                  {briefIsAutoFilled && (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-violet-50 text-violet-600 border border-violet-200">
+                      ✨ Pre-filled from your LinkedIn profile — feel free to edit
+                    </span>
+                  )}
+                </div>
                 {briefOpen ? (
-                  <ChevronUp className="w-4 h-4 text-slate-400" />
+                  <ChevronUp className="w-4 h-4 text-slate-400 shrink-0" />
                 ) : (
-                  <ChevronDown className="w-4 h-4 text-slate-400" />
+                  <ChevronDown className="w-4 h-4 text-slate-400 shrink-0" />
                 )}
               </div>
               <p className="text-xs text-slate-400 mt-0.5">
