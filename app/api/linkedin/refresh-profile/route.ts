@@ -62,9 +62,21 @@ export async function POST() {
         }
         profileHeadline = meData.localizedHeadline ?? null
         vanityName = meData.vanityName ?? null
+        console.log("[refresh-profile] /v2/me ok — vanityName:", vanityName, "headline:", profileHeadline)
+        // Persist vanityName to DB if it was missing (fixes accounts connected before pageHandle was stored)
+        if (vanityName && !account.pageHandle) {
+          await db
+            .update(linkedinAccounts)
+            .set({ pageHandle: vanityName })
+            .where(eq(linkedinAccounts.id, account.id))
+          account.pageHandle = vanityName
+          console.log("[refresh-profile] persisted vanityName to DB:", vanityName)
+        }
+      } else {
+        console.log("[refresh-profile] /v2/me failed — status:", meRes.status)
       }
-    } catch {
-      // non-fatal
+    } catch (e) {
+      console.log("[refresh-profile] /v2/me threw:", e)
     }
 
     // Fetch current position
@@ -98,18 +110,19 @@ export async function POST() {
     let scrapedPosition: string | null = null
     let scrapedCompany: string | null = null
     let scrapedAbout: string | null = null
-    const scraperVanity = vanityName ?? account.pageHandle
+    const scraperVanity = vanityName ?? account.pageHandle ?? null
+    console.log("[refresh-profile] scraperVanity:", scraperVanity, "| vanityName:", vanityName, "| account.pageHandle:", account.pageHandle)
     if (scraperVanity) {
       try {
         const scraperUrl = process.env.LINKEDIN_SCRAPER_URL ?? "http://136.114.136.34:3002"
         const scraperKey = process.env.LINKEDIN_SCRAPER_KEY ?? "itgrows-scraper-2026"
-        const scraperRes = await fetch(
-          `${scraperUrl}/scrape?url=https://www.linkedin.com/in/${scraperVanity}`,
-          {
-            headers: { "X-Scraper-Key": scraperKey },
-            signal: AbortSignal.timeout(20000),
-          }
-        )
+        const scraperEndpoint = `${scraperUrl}/scrape?url=https://www.linkedin.com/in/${scraperVanity}`
+        console.log("[refresh-profile] scraper fetch →", scraperEndpoint)
+        const scraperRes = await fetch(scraperEndpoint, {
+          headers: { "X-Scraper-Key": scraperKey },
+          signal: AbortSignal.timeout(20000),
+        })
+        console.log("[refresh-profile] scraper status:", scraperRes.status)
         if (scraperRes.ok) {
           const scraped = await scraperRes.json() as {
             headline?: string | null
@@ -117,14 +130,20 @@ export async function POST() {
             currentCompany?: string | null
             about?: string | null
           }
+          console.log("[refresh-profile] scraped data:", JSON.stringify(scraped))
           scrapedHeadline = scraped.headline ?? null
           scrapedPosition = scraped.currentPosition ?? null
           scrapedCompany = scraped.currentCompany ?? null
           scrapedAbout = scraped.about ?? null
+        } else {
+          const body = await scraperRes.text()
+          console.log("[refresh-profile] scraper non-ok body:", body.slice(0, 200))
         }
-      } catch {
-        // Non-fatal: fall back to API data
+      } catch (e) {
+        console.log("[refresh-profile] scraper threw:", e)
       }
+    } else {
+      console.log("[refresh-profile] skipping scraper — no vanity name available")
     }
 
     // Merge: prefer scraped data over API data
@@ -132,7 +151,9 @@ export async function POST() {
     const effectiveTitle = scrapedPosition ?? currentTitle
     const effectiveCompany = scrapedCompany ?? currentCompany
 
+    console.log("[refresh-profile] effective data — headline:", effectiveHeadline, "| title:", effectiveTitle, "| company:", effectiveCompany)
     if (!effectiveHeadline && !effectiveTitle && !effectiveCompany) {
+      console.log("[refresh-profile] → returning insufficient_data")
       return NextResponse.json({
         success: false,
         reason: "insufficient_data",
