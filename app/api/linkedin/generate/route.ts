@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/auth"
 import { db } from "@/lib/db"
 import { linkedinAccounts, linkedinPosts, linkedinBriefs } from "@/lib/db/schema"
-import { eq } from "drizzle-orm"
+import { eq, and, inArray } from "drizzle-orm"
 
 export const maxDuration = 300
 
@@ -189,6 +189,14 @@ export async function POST(req: NextRequest) {
     if (!Array.isArray(postsData) || postsData.length === 0) {
       throw new Error("Invalid posts data from LLM")
     }
+
+    // Delete existing draft/scheduled posts before generating new ones
+    await db.delete(linkedinPosts).where(
+      and(
+        eq(linkedinPosts.userId, userId),
+        inArray(linkedinPosts.status, ["draft", "scheduled"])
+      )
+    )
 
     // Schedule posts: one per day at 10:00 UTC starting tomorrow
     const now = new Date()
