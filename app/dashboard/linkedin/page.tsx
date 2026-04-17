@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Suspense } from "react"
-import { ChevronDown, ChevronUp, Loader2, RefreshCw, Send, Calendar } from "lucide-react"
+import { ChevronDown, ChevronUp, Loader2, RefreshCw, Send, Calendar, Check } from "lucide-react"
 
 interface LinkedInAccount {
   id: string
@@ -46,6 +46,48 @@ const STATUS_COLORS: Record<string, string> = {
   scheduled: "bg-blue-50 text-blue-600 border-blue-200",
   published: "bg-green-50 text-green-700 border-green-200",
   failed: "bg-red-50 text-red-600 border-red-200",
+}
+
+function calcDnaScore(brief: LinkedInBrief, profileUrl: string): number {
+  let score = 0
+  if (profileUrl.trim()) score += 15
+  if (brief.companyName.trim()) score += 20
+  if (brief.niche.trim()) score += 25
+  if (brief.targetAudience.trim()) score += 20
+  if (brief.goals.trim()) score += 20
+  return score
+}
+
+function DnaScoreBar({ score }: { score: number }) {
+  const color =
+    score >= 90
+      ? { bar: "bg-green-500", text: "text-green-600", border: "border-green-200", bg: "bg-green-50" }
+      : score >= 61
+      ? { bar: "bg-violet-500", text: "text-violet-600", border: "border-violet-200", bg: "bg-violet-50" }
+      : score >= 31
+      ? { bar: "bg-yellow-400", text: "text-yellow-600", border: "border-yellow-200", bg: "bg-yellow-50" }
+      : { bar: "bg-red-400", text: "text-red-600", border: "border-red-200", bg: "bg-red-50" }
+
+  return (
+    <div className={`flex items-center gap-2 px-2.5 py-1 rounded-full border text-xs font-medium ${color.bg} ${color.border} ${color.text}`}>
+      <div className="w-20 h-1.5 bg-white/60 rounded-full overflow-hidden">
+        <div
+          className={`h-full rounded-full transition-all duration-500 ${color.bar}`}
+          style={{ width: `${score}%` }}
+        />
+      </div>
+      <span>ItGrows understands {score}% of your DNA</span>
+    </div>
+  )
+}
+
+function FieldCheckmark({ value }: { value: string }) {
+  if (!value.trim()) return null
+  return (
+    <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-green-100 text-green-600 ml-1 shrink-0">
+      <Check className="w-2.5 h-2.5" />
+    </span>
+  )
 }
 
 function LinkedInIcon({ className }: { className?: string }) {
@@ -595,12 +637,12 @@ function LinkedInPageContent() {
               className="py-3 px-4 cursor-pointer"
               onClick={() => setBriefOpen((o) => !o)}
             >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <CardTitle className="text-sm font-semibold text-[#1b1916]">Your professional DNA</CardTitle>
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 flex-wrap min-w-0">
+                  <CardTitle className="text-sm font-semibold text-[#1b1916] shrink-0">Your professional DNA</CardTitle>
                   {briefIsAutoFilled && (
                     <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-violet-50 text-violet-600 border border-violet-200">
-                      ✨ Sourced from your LinkedIn profile — your DNA is unique, edit if needed
+                      ✨ Sourced from LinkedIn — edit if needed
                     </span>
                   )}
                 </div>
@@ -610,21 +652,47 @@ function LinkedInPageContent() {
                   <ChevronDown className="w-4 h-4 text-slate-400 shrink-0" />
                 )}
               </div>
-              <p className="text-xs text-slate-400 mt-0.5">
-                Your unique background that powers every post we create
-              </p>
+              <div className="mt-2" onClick={(e) => e.stopPropagation()}>
+                <DnaScoreBar score={calcDnaScore(brief, profileUrl)} />
+              </div>
+              {(() => {
+                const score = calcDnaScore(brief, profileUrl)
+                return score >= 90 ? (
+                  <p className="text-xs text-green-600 font-medium mt-1.5">
+                    Your DNA is complete — ready to generate! 🎯
+                  </p>
+                ) : score < 60 ? (
+                  <p className="text-xs text-slate-400 mt-1.5">
+                    <button
+                      type="button"
+                      className="hover:text-violet-600 transition-colors"
+                      onClick={(e) => { e.stopPropagation(); setBriefOpen(true) }}
+                    >
+                      Add more details to get better posts →
+                    </button>
+                  </p>
+                ) : (
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    Your unique background that powers every post we create
+                  </p>
+                )
+              })()}
             </CardHeader>
             {briefOpen && (
               <CardContent className="space-y-3 pt-0">
                 <div>
-                  <label className="block text-xs font-medium text-slate-600 mb-1">LinkedIn Profile URL</label>
+                  <label className="flex items-center text-xs font-medium text-slate-600 mb-1">
+                    LinkedIn Profile URL <FieldCheckmark value={profileUrl} />
+                  </label>
                   <div className="flex gap-2">
                     <input
                       type="url"
-                      placeholder="https://linkedin.com/in/yourname"
+                      placeholder="https://linkedin.com/in/your-name"
                       value={profileUrl}
                       onChange={(e) => setProfileUrl(e.target.value)}
-                      className="flex-1 px-3 py-2 text-sm rounded-lg border border-slate-200 bg-white/80 focus:outline-none focus:ring-2 focus:ring-violet-400"
+                      className={`flex-1 px-3 py-2 text-sm rounded-lg border bg-white/80 focus:outline-none focus:ring-2 focus:ring-violet-400 transition-colors ${
+                        profileUrl.trim() ? "border-green-300" : "border-slate-200"
+                      }`}
                     />
                     <Button
                       size="sm"
@@ -655,23 +723,31 @@ function LinkedInPageContent() {
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs font-medium text-slate-600 mb-1">Company Name</label>
+                    <label className="flex items-center text-xs font-medium text-slate-600 mb-1">
+                      Company Name <FieldCheckmark value={brief.companyName} />
+                    </label>
                     <input
                       type="text"
-                      placeholder="e.g. Acme Corp"
+                      placeholder="e.g. ItGrows, Stripe, Notion"
                       value={brief.companyName}
                       onChange={(e) => setBrief((b) => ({ ...b, companyName: e.target.value }))}
-                      className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 bg-white/80 focus:outline-none focus:ring-2 focus:ring-violet-400"
+                      className={`w-full px-3 py-2 text-sm rounded-lg border bg-white/80 focus:outline-none focus:ring-2 focus:ring-violet-400 transition-colors ${
+                        brief.companyName.trim() ? "border-green-300" : "border-slate-200"
+                      }`}
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-slate-600 mb-1">Niche / Industry</label>
+                    <label className="flex items-center text-xs font-medium text-slate-600 mb-1">
+                      Niche / Industry <FieldCheckmark value={brief.niche} />
+                    </label>
                     <input
                       type="text"
-                      placeholder="e.g. SaaS, B2B marketing, fintech"
+                      placeholder="e.g. AI SaaS, B2B sales, fintech"
                       value={brief.niche}
                       onChange={(e) => setBrief((b) => ({ ...b, niche: e.target.value }))}
-                      className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 bg-white/80 focus:outline-none focus:ring-2 focus:ring-violet-400"
+                      className={`w-full px-3 py-2 text-sm rounded-lg border bg-white/80 focus:outline-none focus:ring-2 focus:ring-violet-400 transition-colors ${
+                        brief.niche.trim() ? "border-green-300" : "border-slate-200"
+                      }`}
                     />
                   </div>
                 </div>
@@ -689,24 +765,32 @@ function LinkedInPageContent() {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-slate-600 mb-1">Target Audience</label>
+                    <label className="flex items-center text-xs font-medium text-slate-600 mb-1">
+                      Target Audience <FieldCheckmark value={brief.targetAudience} />
+                    </label>
                     <input
                       type="text"
-                      placeholder="e.g. startup founders, CTOs"
+                      placeholder="e.g. Series A founders, growth marketers"
                       value={brief.targetAudience}
                       onChange={(e) => setBrief((b) => ({ ...b, targetAudience: e.target.value }))}
-                      className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 bg-white/80 focus:outline-none focus:ring-2 focus:ring-violet-400"
+                      className={`w-full px-3 py-2 text-sm rounded-lg border bg-white/80 focus:outline-none focus:ring-2 focus:ring-violet-400 transition-colors ${
+                        brief.targetAudience.trim() ? "border-green-300" : "border-slate-200"
+                      }`}
                     />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-slate-600 mb-1">Goals</label>
+                  <label className="flex items-center text-xs font-medium text-slate-600 mb-1">
+                    Goals <FieldCheckmark value={brief.goals} />
+                  </label>
                   <input
                     type="text"
-                    placeholder="e.g. drive traffic, build authority, get leads"
+                    placeholder="e.g. attract inbound leads, build thought leadership, grow to 5k followers"
                     value={brief.goals}
                     onChange={(e) => setBrief((b) => ({ ...b, goals: e.target.value }))}
-                    className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 bg-white/80 focus:outline-none focus:ring-2 focus:ring-violet-400"
+                    className={`w-full px-3 py-2 text-sm rounded-lg border bg-white/80 focus:outline-none focus:ring-2 focus:ring-violet-400 transition-colors ${
+                      brief.goals.trim() ? "border-green-300" : "border-slate-200"
+                    }`}
                   />
                 </div>
                 <Button
