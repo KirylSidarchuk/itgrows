@@ -4,6 +4,8 @@ import { db } from "@/lib/db"
 import { linkedinAccounts, linkedinPosts, linkedinBriefs } from "@/lib/db/schema"
 import { eq } from "drizzle-orm"
 
+export const maxDuration = 300
+
 const LLM_BASE_URL = "http://34.60.133.229:4000"
 const LLM_MODEL = "gemini-2.0-flash"
 const LLM_API_KEY = "any-key"
@@ -190,16 +192,20 @@ export async function POST(req: NextRequest) {
 
     // Schedule posts: one per day at 10:00 UTC starting tomorrow
     const now = new Date()
-    const insertedPosts = []
+    const slice = postsData.slice(0, 7)
 
-    for (let i = 0; i < Math.min(postsData.length, 7); i++) {
-      const postData = postsData[i]
+    // Generate all images in parallel
+    const imageUrls = await Promise.all(
+      slice.map((postData) => generatePostImage(postData.content, brief.niche ?? "business"))
+    )
+
+    // Insert all posts (sequential DB writes are fine — fast)
+    const insertedPosts = []
+    for (let i = 0; i < slice.length; i++) {
+      const postData = slice[i]
       const scheduledFor = new Date(now)
       scheduledFor.setUTCDate(scheduledFor.getUTCDate() + i + 1)
       scheduledFor.setUTCHours(10, 0, 0, 0)
-
-      // Generate cover image for the post
-      const imageUrl = await generatePostImage(postData.content, brief.niche ?? "business")
 
       const [inserted] = await db
         .insert(linkedinPosts)
@@ -209,7 +215,7 @@ export async function POST(req: NextRequest) {
           content: postData.content,
           status: "scheduled",
           scheduledFor,
-          imageUrl,
+          imageUrl: imageUrls[i],
         })
         .returning()
 

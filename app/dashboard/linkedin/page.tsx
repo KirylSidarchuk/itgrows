@@ -227,6 +227,7 @@ function LinkedInPageContent() {
   const [postsLoading, setPostsLoading] = useState(false)
   const [generating, setGenerating] = useState(false)
   const [generateError, setGenerateError] = useState<string | null>(null)
+  const [generateTimer, setGenerateTimer] = useState(0)
 
   const connected = searchParams.get("connected")
   const error = searchParams.get("error")
@@ -261,6 +262,17 @@ function LinkedInPageContent() {
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [accounts.length])
+
+  useEffect(() => {
+    if (!generating) {
+      setGenerateTimer(0)
+      return
+    }
+    const interval = setInterval(() => {
+      setGenerateTimer((t) => t + 1)
+    }, 1000)
+    return () => clearInterval(interval)
+  }, [generating])
 
   function fetchBrief() {
     fetch("/api/linkedin/brief")
@@ -315,17 +327,22 @@ function LinkedInPageContent() {
   async function handleGenerate() {
     setGenerating(true)
     setGenerateError(null)
-    const res = await fetch("/api/linkedin/generate", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ brief }),
-    })
-    const data = await res.json() as { posts?: LinkedInPost[]; error?: string }
-    setGenerating(false)
-    if (!res.ok || data.error) {
-      setGenerateError(data.error ?? "Failed to generate posts")
-    } else {
-      fetchPosts()
+    try {
+      const res = await fetch("/api/linkedin/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ brief }),
+      })
+      const data = await res.json() as { posts?: LinkedInPost[]; error?: string }
+      if (!res.ok || data.error) {
+        setGenerateError(data.error ?? "Failed to generate posts")
+      } else {
+        fetchPosts()
+      }
+    } catch (err) {
+      setGenerateError(err instanceof Error ? err.message : "Network error — request may have timed out")
+    } finally {
+      setGenerating(false)
     }
   }
 
@@ -617,7 +634,7 @@ function LinkedInPageContent() {
               {generating ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                  Generating 7 posts...
+                  Generating 7 posts... ({generateTimer}s)
                 </>
               ) : (
                 <>
