@@ -104,3 +104,16 @@ export const passwordResetTokens = pgTable("password_reset_tokens", {
   expires: timestamp("expires").notNull(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 }, (t) => [index("password_reset_tokens_user_id_idx").on(t.userId)])
+
+export const linkedinAccounts = pgTable("linkedin_accounts", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  linkedinPersonUrn: text("linkedin_person_urn"),
+  linkedinOrgUrn: text("linkedin_org_urn"),
+  accessToken: text("access_token").notNull(),
+  expiresAt: timestamp("expires_at"),
+  pageType: text("page_type").notNull().default("personal"),
+  pageName: text("page_name"),
+  pageHandle: text("page_handle"),
+  createdAt: timestamp("created_at").defaultNow(),
+}, (t) => [index("linkedin_accounts_user_id_idx").on(t.userId)])
