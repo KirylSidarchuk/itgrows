@@ -61,22 +61,25 @@ function calcDnaScore(brief: LinkedInBrief, profileUrl: string): number {
 function DnaScoreBar({ score }: { score: number }) {
   const color =
     score >= 90
-      ? { bar: "bg-green-500", text: "text-green-600", border: "border-green-200", bg: "bg-green-50" }
+      ? { bar: "bg-green-500", text: "text-green-600" }
       : score >= 61
-      ? { bar: "bg-violet-500", text: "text-violet-600", border: "border-violet-200", bg: "bg-violet-50" }
+      ? { bar: "bg-violet-500", text: "text-violet-600" }
       : score >= 31
-      ? { bar: "bg-yellow-400", text: "text-yellow-600", border: "border-yellow-200", bg: "bg-yellow-50" }
-      : { bar: "bg-red-400", text: "text-red-600", border: "border-red-200", bg: "bg-red-50" }
+      ? { bar: "bg-yellow-400", text: "text-yellow-600" }
+      : { bar: "bg-red-400", text: "text-red-500" }
 
   return (
-    <div className={`flex items-center gap-2 px-2.5 py-1 rounded-full border text-xs font-medium ${color.bg} ${color.border} ${color.text}`}>
-      <div className="w-20 h-1.5 bg-white/60 rounded-full overflow-hidden">
+    <div className="w-full">
+      <div className="flex justify-between items-center mb-1">
+        <span className={`text-xs font-medium ${color.text}`}>ItGrows understands {score}% of your DNA</span>
+        <span className={`text-xs font-bold ${color.text}`}>{score}%</span>
+      </div>
+      <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
         <div
           className={`h-full rounded-full transition-all duration-500 ${color.bar}`}
           style={{ width: `${score}%` }}
         />
       </div>
-      <span>ItGrows understands {score}% of your DNA</span>
     </div>
   )
 }
