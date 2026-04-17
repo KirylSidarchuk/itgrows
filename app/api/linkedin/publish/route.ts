@@ -15,10 +15,95 @@ interface LinkedInUgcPostBody {
     "com.linkedin.ugc.ShareContent": {
       shareCommentary: { text: string }
       shareMediaCategory: string
+      media?: Array<{
+        status: string
+        media: string
+        originalUrl?: string
+      }>
     }
   }
   visibility: {
     "com.linkedin.ugc.MemberNetworkVisibility": string
+  }
+}
+
+async function uploadImageToLinkedIn(
+  accessToken: string,
+  authorUrn: string,
+  imageDataUrl: string,
+): Promise<string | null> {
+  try {
+    // Step 1: Register upload
+    const registerRes = await fetch("https://api.linkedin.com/v2/assets?action=registerUpload", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+        "X-Restli-Protocol-Version": "2.0.0",
+      },
+      body: JSON.stringify({
+        registerUploadRequest: {
+          recipes: ["urn:li:digitalmediaRecipe:feedshare-image"],
+          owner: authorUrn,
+          serviceRelationships: [
+            {
+              relationshipType: "OWNER",
+              identifier: "urn:li:userGeneratedContent",
+            },
+          ],
+        },
+      }),
+    })
+
+    if (!registerRes.ok) {
+      console.warn("[linkedin/publish] registerUpload failed:", await registerRes.text())
+      return null
+    }
+
+    const registerData = await registerRes.json() as {
+      value?: {
+        asset?: string
+        uploadMechanism?: {
+          "com.linkedin.digitalmedia.uploading.MediaUploadHttpRequest"?: {
+            uploadUrl?: string
+          }
+        }
+      }
+    }
+
+    const assetUrn = registerData.value?.asset
+    const uploadUrl =
+      registerData.value?.uploadMechanism?.[
+        "com.linkedin.digitalmedia.uploading.MediaUploadHttpRequest"
+      ]?.uploadUrl
+
+    if (!assetUrn || !uploadUrl) {
+      console.warn("[linkedin/publish] No asset URN or upload URL in register response")
+      return null
+    }
+
+    // Step 2: Upload binary image
+    const base64Data = imageDataUrl.replace(/^data:[^;]+;base64,/, "")
+    const imageBuffer = Buffer.from(base64Data, "base64")
+
+    const uploadRes = await fetch(uploadUrl, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "image/jpeg",
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: imageBuffer,
+    })
+
+    if (!uploadRes.ok) {
+      console.warn("[linkedin/publish] Image upload failed:", await uploadRes.text())
+      return null
+    }
+
+    return assetUrn
+  } catch (err) {
+    console.warn("[linkedin/publish] uploadImageToLinkedIn error:", err)
+    return null
   }
 }
 
@@ -78,13 +163,29 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "No LinkedIn URN found for this account" }, { status: 400 })
     }
 
+    // Try to upload image if available
+    let assetUrn: string | null = null
+    if (post.imageUrl) {
+      assetUrn = await uploadImageToLinkedIn(account.accessToken, authorUrn, post.imageUrl)
+    }
+
     const ugcBody: LinkedInUgcPostBody = {
       author: authorUrn,
       lifecycleState: "PUBLISHED",
       specificContent: {
         "com.linkedin.ugc.ShareContent": {
           shareCommentary: { text: post.content },
-          shareMediaCategory: "NONE",
+          shareMediaCategory: assetUrn ? "IMAGE" : "NONE",
+          ...(assetUrn
+            ? {
+                media: [
+                  {
+                    status: "READY",
+                    media: assetUrn,
+                  },
+                ],
+              }
+            : {}),
         },
       },
       visibility: {

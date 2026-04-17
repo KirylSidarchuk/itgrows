@@ -128,6 +128,7 @@ export const linkedinPosts = pgTable("linkedin_posts", {
   publishedAt: timestamp("published_at", { withTimezone: true }),
   linkedinPostId: text("linkedin_post_id"),
   publishError: text("publish_error"),
+  imageUrl: text("image_url"),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
 }, (t) => [index("linkedin_posts_user_id_idx").on(t.userId), index("linkedin_posts_status_idx").on(t.status)])
 

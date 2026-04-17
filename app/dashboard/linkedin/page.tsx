@@ -27,6 +27,7 @@ interface LinkedInPost {
   publishedAt: string | null
   linkedinPostId: string | null
   publishError: string | null
+  imageUrl: string | null
   createdAt: string
 }
 
@@ -146,6 +147,16 @@ function PostCard({
         rows={6}
         className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 bg-white/80 focus:outline-none focus:ring-2 focus:ring-violet-400 resize-none disabled:opacity-60 disabled:cursor-not-allowed"
       />
+
+      {post.imageUrl && (
+        <div className="rounded-lg overflow-hidden border border-slate-200">
+          <img
+            src={post.imageUrl}
+            alt="Post cover"
+            className="w-full object-cover max-h-48"
+          />
+        </div>
+      )}
 
       <div className="flex items-center gap-2">
         {post.status !== "published" && (
@@ -449,6 +460,49 @@ function LinkedInPageContent() {
               </div>
             </CardContent>
           </Card>
+
+          {/* How it works guide */}
+          <div className="mb-4 rounded-2xl bg-gradient-to-br from-violet-50 to-slate-50 border border-violet-100 p-5">
+            <h3 className="text-sm font-semibold text-violet-700 mb-4 flex items-center gap-2">
+              <span className="w-5 h-5 rounded-full bg-violet-600 text-white flex items-center justify-center text-[10px] font-bold shrink-0">?</span>
+              How it works
+            </h3>
+            <ol className="space-y-4">
+              <li className="flex gap-3">
+                <span className="w-7 h-7 rounded-full bg-violet-600 text-white flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">1</span>
+                <div>
+                  <p className="text-sm font-semibold text-[#1b1916] flex items-center gap-1.5">
+                    <span>📝</span> Fill in your Content Brief
+                  </p>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Tell us about your business, target audience, and goals
+                  </p>
+                </div>
+              </li>
+              <li className="flex gap-3">
+                <span className="w-7 h-7 rounded-full bg-violet-600 text-white flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">2</span>
+                <div>
+                  <p className="text-sm font-semibold text-[#1b1916] flex items-center gap-1.5">
+                    <span>✨</span> We generate posts crafted just for you
+                  </p>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Our AI creates 7 personalized LinkedIn posts with professional visuals, tailored to your niche and tone of voice
+                  </p>
+                </div>
+              </li>
+              <li className="flex gap-3">
+                <span className="w-7 h-7 rounded-full bg-violet-600 text-white flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">3</span>
+                <div>
+                  <p className="text-sm font-semibold text-[#1b1916] flex items-center gap-1.5">
+                    <span>🚀</span> Review, edit, and publish
+                  </p>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Approve posts, schedule them or publish instantly — we handle the rest
+                  </p>
+                </div>
+              </li>
+            </ol>
+          </div>
 
           {/* Brief section */}
           <Card className="bg-white/70 backdrop-blur border-white/50 shadow-sm mb-4">
