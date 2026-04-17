@@ -224,6 +224,8 @@ function LinkedInPageContent() {
   const [savingBrief, setSavingBrief] = useState(false)
   const [briefSaved, setBriefSaved] = useState(false)
   const [refreshingBrief, setRefreshingBrief] = useState(false)
+  const [refreshMessage, setRefreshMessage] = useState<string | null>(null)
+  const [refreshSuccess, setRefreshSuccess] = useState(false)
   const [posts, setPosts] = useState<LinkedInPost[]>([])
   const [postsLoading, setPostsLoading] = useState(false)
   const [generating, setGenerating] = useState(false)
@@ -327,10 +329,18 @@ function LinkedInPageContent() {
 
   async function handleRefreshFromLinkedIn() {
     setRefreshingBrief(true)
+    setRefreshMessage(null)
+    setRefreshSuccess(false)
     try {
       const res = await fetch("/api/linkedin/refresh-profile", { method: "POST" })
-      const data = await res.json() as { brief?: LinkedInBrief; error?: string }
-      if (res.ok && data.brief) {
+      const data = await res.json() as {
+        success?: boolean
+        brief?: LinkedInBrief
+        reason?: string
+        message?: string
+        error?: string
+      }
+      if (data.success && data.brief) {
         const b = data.brief
         setBrief({
           niche: b.niche ?? "",
@@ -341,9 +351,15 @@ function LinkedInPageContent() {
         })
         setBriefIsAutoFilled(true)
         setBriefOpen(true)
+        setRefreshSuccess(true)
+        setRefreshMessage("Updated from LinkedIn")
+      } else {
+        setRefreshSuccess(false)
+        setRefreshMessage(data.message ?? data.error ?? "Could not refresh from LinkedIn. Please fill in manually.")
       }
     } catch {
-      // silently fail
+      setRefreshSuccess(false)
+      setRefreshMessage("Could not connect to LinkedIn. Please try again or fill in manually.")
     } finally {
       setRefreshingBrief(false)
     }
@@ -559,19 +575,32 @@ function LinkedInPageContent() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2 flex-wrap">
                   <CardTitle className="text-sm font-semibold text-[#1b1916]">Your professional DNA</CardTitle>
-                  <button
-                    type="button"
-                    onClick={(e) => { e.stopPropagation(); handleRefreshFromLinkedIn() }}
-                    disabled={refreshingBrief}
-                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-slate-50 text-slate-500 border border-slate-200 hover:bg-slate-100 transition-colors disabled:opacity-50"
-                  >
-                    {refreshingBrief ? (
-                      <Loader2 className="w-3 h-3 animate-spin" />
-                    ) : (
-                      <RefreshCw className="w-3 h-3" />
+                  <div className="inline-flex flex-col gap-1">
+                    <button
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); handleRefreshFromLinkedIn() }}
+                      disabled={refreshingBrief}
+                      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-slate-50 text-slate-500 border border-slate-200 hover:bg-slate-100 transition-colors disabled:opacity-50"
+                    >
+                      {refreshingBrief ? (
+                        <Loader2 className="w-3 h-3 animate-spin" />
+                      ) : (
+                        <RefreshCw className="w-3 h-3" />
+                      )}
+                      {refreshingBrief ? "Refreshing..." : "Refresh from LinkedIn"}
+                    </button>
+                    {refreshMessage && (
+                      <span
+                        className={`text-xs px-2 py-1 rounded-lg border ${
+                          refreshSuccess
+                            ? "bg-green-50 text-green-700 border-green-200"
+                            : "bg-blue-50 text-blue-600 border-blue-200"
+                        }`}
+                      >
+                        {refreshSuccess ? "✅" : "ℹ️"} {refreshMessage}
+                      </span>
                     )}
-                    Refresh from LinkedIn
-                  </button>
+                  </div>
                   {briefIsAutoFilled && (
                     <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-violet-50 text-violet-600 border border-violet-200">
                       ✨ Sourced from your LinkedIn profile — your DNA is unique, edit if needed

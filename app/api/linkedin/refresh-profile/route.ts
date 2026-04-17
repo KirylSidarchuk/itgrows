@@ -24,7 +24,11 @@ export async function POST() {
       .limit(1)
 
     if (!account) {
-      return NextResponse.json({ error: "No LinkedIn account connected" }, { status: 400 })
+      return NextResponse.json({
+        success: false,
+        reason: "no_account",
+        message: "No LinkedIn account connected.",
+      }, { status: 400 })
     }
 
     const accessToken = account.accessToken
@@ -90,7 +94,11 @@ export async function POST() {
     }
 
     if (!profileHeadline && !currentTitle && !currentCompany) {
-      return NextResponse.json({ error: "Not enough profile data to infer brief" }, { status: 422 })
+      return NextResponse.json({
+        success: false,
+        reason: "insufficient_data",
+        message: "Your LinkedIn profile doesn't have enough public data (headline, current position) to auto-fill. Please fill in manually.",
+      }, { status: 422 })
     }
 
     // Build profile summary for LLM
@@ -178,7 +186,7 @@ Return only the JSON object, no markdown, no extra text.`,
       })
       .returning()
 
-    return NextResponse.json({ brief })
+    return NextResponse.json({ success: true, brief })
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error"
     return NextResponse.json({ error: message }, { status: 500 })
