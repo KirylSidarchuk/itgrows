@@ -93,7 +93,46 @@ export async function POST() {
       // non-fatal
     }
 
-    if (!profileHeadline && !currentTitle && !currentCompany) {
+    // Try to scrape public profile for richer data (headline, position, about)
+    let scrapedHeadline: string | null = null
+    let scrapedPosition: string | null = null
+    let scrapedCompany: string | null = null
+    let scrapedAbout: string | null = null
+    const scraperVanity = vanityName ?? account.pageHandle
+    if (scraperVanity) {
+      try {
+        const scraperUrl = process.env.LINKEDIN_SCRAPER_URL ?? "http://136.114.136.34:3002"
+        const scraperKey = process.env.LINKEDIN_SCRAPER_KEY ?? "itgrows-scraper-2026"
+        const scraperRes = await fetch(
+          `${scraperUrl}/scrape?url=https://www.linkedin.com/in/${scraperVanity}`,
+          {
+            headers: { "X-Scraper-Key": scraperKey },
+            signal: AbortSignal.timeout(20000),
+          }
+        )
+        if (scraperRes.ok) {
+          const scraped = await scraperRes.json() as {
+            headline?: string | null
+            currentPosition?: string | null
+            currentCompany?: string | null
+            about?: string | null
+          }
+          scrapedHeadline = scraped.headline ?? null
+          scrapedPosition = scraped.currentPosition ?? null
+          scrapedCompany = scraped.currentCompany ?? null
+          scrapedAbout = scraped.about ?? null
+        }
+      } catch {
+        // Non-fatal: fall back to API data
+      }
+    }
+
+    // Merge: prefer scraped data over API data
+    const effectiveHeadline = scrapedHeadline ?? profileHeadline
+    const effectiveTitle = scrapedPosition ?? currentTitle
+    const effectiveCompany = scrapedCompany ?? currentCompany
+
+    if (!effectiveHeadline && !effectiveTitle && !effectiveCompany) {
       return NextResponse.json({
         success: false,
         reason: "insufficient_data",
@@ -104,10 +143,11 @@ export async function POST() {
     // Build profile summary for LLM
     const profileSummary = [
       profileName ? `Name: ${profileName}` : null,
-      vanityName ? `LinkedIn URL: linkedin.com/in/${vanityName}` : null,
-      profileHeadline ? `Headline: ${profileHeadline}` : null,
-      currentTitle ? `Current job title: ${currentTitle}` : null,
-      currentCompany ? `Current company: ${currentCompany}` : null,
+      scraperVanity ? `LinkedIn URL: linkedin.com/in/${scraperVanity}` : null,
+      effectiveHeadline ? `Headline: ${effectiveHeadline}` : null,
+      effectiveTitle ? `Current job title: ${effectiveTitle}` : null,
+      effectiveCompany ? `Current company: ${effectiveCompany}` : null,
+      scrapedAbout ? `About: ${scrapedAbout.slice(0, 500)}` : null,
     ].filter(Boolean).join("\n")
 
     // Call LLM to infer brief
@@ -169,7 +209,7 @@ Return only the JSON object, no markdown, no extra text.`,
       userId,
       niche: inferred.niche || null,
       tone,
-      companyName: inferred.company_name || currentCompany || null,
+      companyName: inferred.company_name || effectiveCompany || null,
       targetAudience: inferred.target_audience || null,
       goals: inferred.goals || null,
       isAutoFilled: true,

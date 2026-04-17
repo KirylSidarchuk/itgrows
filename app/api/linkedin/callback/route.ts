@@ -151,6 +151,44 @@ export async function GET(req: NextRequest) {
       })
     }
 
+    // Try to scrape public profile for richer data
+    let scrapedHeadline: string | null = null
+    let scrapedPosition: string | null = null
+    let scrapedCompany: string | null = null
+    let scrapedAbout: string | null = null
+    if (pageHandle) {
+      try {
+        const scraperUrl = process.env.LINKEDIN_SCRAPER_URL ?? "http://136.114.136.34:3002"
+        const scraperKey = process.env.LINKEDIN_SCRAPER_KEY ?? "itgrows-scraper-2026"
+        const scraperRes = await fetch(
+          `${scraperUrl}/scrape?url=https://www.linkedin.com/in/${pageHandle}`,
+          {
+            headers: { "X-Scraper-Key": scraperKey },
+            signal: AbortSignal.timeout(20000),
+          }
+        )
+        if (scraperRes.ok) {
+          const scraped = await scraperRes.json() as {
+            headline?: string | null
+            currentPosition?: string | null
+            currentCompany?: string | null
+            about?: string | null
+          }
+          scrapedHeadline = scraped.headline ?? null
+          scrapedPosition = scraped.currentPosition ?? null
+          scrapedCompany = scraped.currentCompany ?? null
+          scrapedAbout = scraped.about ?? null
+        }
+      } catch {
+        // Non-fatal: fall back to API data
+      }
+    }
+
+    // Merge: prefer scraped data over API data
+    const effectiveHeadline = scrapedHeadline ?? profileHeadline
+    const effectiveTitle = scrapedPosition ?? currentTitle
+    const effectiveCompany = scrapedCompany ?? currentCompany
+
     // Auto-fill content brief if no brief exists yet
     try {
       const existingBrief = await db
@@ -159,13 +197,14 @@ export async function GET(req: NextRequest) {
         .where(eq(linkedinBriefs.userId, userId))
         .limit(1)
 
-      const hasRealProfileData = !!(profileHeadline || currentTitle || currentCompany)
+      const hasRealProfileData = !!(effectiveHeadline || effectiveTitle || effectiveCompany)
       if (existingBrief.length === 0 && hasRealProfileData) {
         // Build profile summary for LLM
         const profileSummary = [
-          profileHeadline ? `Headline: ${profileHeadline}` : null,
-          currentTitle ? `Current job title: ${currentTitle}` : null,
-          currentCompany ? `Current company: ${currentCompany}` : null,
+          effectiveHeadline ? `Headline: ${effectiveHeadline}` : null,
+          effectiveTitle ? `Current job title: ${effectiveTitle}` : null,
+          effectiveCompany ? `Current company: ${effectiveCompany}` : null,
+          scrapedAbout ? `About: ${scrapedAbout.slice(0, 500)}` : null,
         ].filter(Boolean).join("\n")
 
         const llmRes = await fetch(`${LLM_BASE_URL}/v1/chat/completions`, {
@@ -220,7 +259,7 @@ Return only the JSON object, no markdown, no extra text.`,
               userId,
               niche: inferred.niche || null,
               tone,
-              companyName: inferred.company_name || currentCompany || null,
+              companyName: inferred.company_name || effectiveCompany || null,
               targetAudience: inferred.target_audience || null,
               goals: inferred.goals || null,
               isAutoFilled: true,
@@ -229,7 +268,7 @@ Return only the JSON object, no markdown, no extra text.`,
           }
         }
       } else if (existingBrief.length === 0 && !hasRealProfileData) {
-        console.log("Skipping brief auto-fill: insufficient profile data (no headline or position data available)")
+        console.log("Skipping brief auto-fill: insufficient profile data (no headline, position, or scraped data available)")
       }
     } catch (briefErr) {
       console.error("Auto-fill brief error (non-fatal):", briefErr)
