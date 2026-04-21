@@ -86,7 +86,8 @@ async function uploadImageToLinkedIn(
     // Step 2: Upload binary image
     const base64Data = imageDataUrl.replace(/^data:[^;]+;base64,/, "")
     const imageBuffer = Buffer.from(base64Data, "base64")
-    const strippedBuffer = await sharp(imageBuffer).withMetadata(false).toBuffer()
+    // Strip all metadata (EXIF, XMP, C2PA) to remove Content Credentials badge
+    const strippedBuffer = await sharp(imageBuffer).withMetadata({}).toBuffer()
 
     const uploadRes = await fetch(uploadUrl, {
       method: "PUT",

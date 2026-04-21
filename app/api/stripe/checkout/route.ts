@@ -18,9 +18,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
-  const priceId = process.env.STRIPE_PRICE_PERSONAL
+  const body = await req.json().catch(() => ({})) as { planType?: string }
+  const isAnnual = body.planType === "annual"
+  const priceId = isAnnual
+    ? process.env.STRIPE_PRICE_PERSONAL_ANNUAL
+    : process.env.STRIPE_PRICE_PERSONAL
   if (!priceId) {
-    return NextResponse.json({ error: "STRIPE_PRICE_PERSONAL env var not set" }, { status: 500 })
+    return NextResponse.json({
+      error: isAnnual ? "STRIPE_PRICE_PERSONAL_ANNUAL env var not set" : "STRIPE_PRICE_PERSONAL env var not set"
+    }, { status: 500 })
   }
 
   const [user] = await db
@@ -61,7 +67,7 @@ export async function POST(req: NextRequest) {
     mode: "subscription",
     success_url: `${baseUrl}/personal/welcome?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${baseUrl}/personal`,
-    metadata: { userId: user.id, plan: "personal" },
+    metadata: { userId: user.id, plan: isAnnual ? "personal_annual" : "personal" },
   })
 
   return NextResponse.json({ url: checkoutSession.url })

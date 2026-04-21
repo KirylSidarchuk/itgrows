@@ -1,3 +1,6 @@
+"use client"
+
+import { useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -69,6 +72,22 @@ const faqs = [
 ]
 
 export default function PersonalPage() {
+  const [annual, setAnnual] = useState(false)
+
+  async function handleCheckout(planType: "monthly" | "annual") {
+    const res = await fetch("/api/stripe/checkout", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ planType }),
+    })
+    if (res.status === 401) {
+      window.location.href = `/login?callbackUrl=${encodeURIComponent("/personal")}`
+      return
+    }
+    const data = await res.json() as { url?: string; error?: string }
+    if (data.url) window.location.href = data.url
+  }
+
   return (
     <div
       className="min-h-screen text-[#1b1916]"
@@ -109,11 +128,9 @@ export default function PersonalPage() {
             We write and publish 7 AI-crafted LinkedIn posts every week — tailored to your voice, your niche, and your audience. Set it up once. Grow forever.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/signup">
-              <Button size="lg" className="bg-violet-600 hover:bg-violet-500 text-white px-8 py-6 text-lg rounded-xl">
-                Start Free Trial
-              </Button>
-            </Link>
+            <Button size="lg" onClick={() => handleCheckout("monthly")} className="bg-violet-600 hover:bg-violet-500 text-white px-8 py-6 text-lg rounded-xl">
+              Start Free Trial
+            </Button>
             <a href="#how-it-works">
               <Button size="lg" variant="outline" className="border-[#1b1916] text-[#1b1916] hover:bg-[#1b1916] hover:text-[#f3f2f1] px-8 py-6 text-lg rounded-xl">
                 See How It Works
@@ -207,6 +224,22 @@ export default function PersonalPage() {
             <p className="text-slate-600 text-lg">No upsells. No tiers. Just LinkedIn growth.</p>
           </div>
 
+          {/* Billing toggle */}
+          <div className="flex items-center justify-center gap-4 mb-10">
+            <span className={`text-sm font-medium ${!annual ? "text-[#1b1916]" : "text-slate-400"}`}>Monthly</span>
+            <button
+              onClick={() => setAnnual(!annual)}
+              className={`relative w-14 h-7 rounded-full transition-colors duration-200 ${annual ? "bg-violet-600" : "bg-slate-300"}`}
+              aria-label="Toggle annual billing"
+            >
+              <span className={`absolute top-1 left-1 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200 ${annual ? "translate-x-7" : ""}`} />
+            </button>
+            <span className={`text-sm font-medium ${annual ? "text-[#1b1916]" : "text-slate-400"}`}>
+              Annual
+              <span className="ml-2 px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full font-semibold">Save 20%</span>
+            </span>
+          </div>
+
           <Card className="relative border-violet-500 bg-gradient-to-b from-violet-50 to-white shadow-2xl shadow-violet-200">
             <div className="absolute -top-4 left-1/2 -translate-x-1/2">
               <Badge className="bg-violet-600 text-white border-0 px-4 py-1">Most Popular</Badge>
@@ -215,16 +248,23 @@ export default function PersonalPage() {
               <CardTitle className="text-[#1b1916] text-2xl">Personal Autopilot</CardTitle>
               <p className="text-slate-500 text-sm mt-1">Everything you need to grow your LinkedIn</p>
               <div className="flex items-end gap-1 mt-4 justify-center">
-                <span className="text-6xl font-extrabold text-[#1b1916]">$15</span>
+                <span className="text-6xl font-extrabold text-[#1b1916]">{annual ? "$12" : "$15"}</span>
                 <span className="text-slate-500 mb-2 text-lg">/month</span>
               </div>
+              {annual && (
+                <p className="text-sm text-green-600 font-medium mt-1">Billed $144/year · Save $36</p>
+              )}
+              {!annual && (
+                <p className="text-sm text-slate-400 mt-1">or <button onClick={() => setAnnual(true)} className="underline text-violet-600">save 20% with annual</button></p>
+              )}
             </CardHeader>
             <CardContent className="space-y-5 px-8 pb-8">
-              <Link href="/signup">
-                <Button className="w-full bg-violet-600 hover:bg-violet-500 text-white py-6 text-base rounded-xl mt-2">
-                  Start Free Trial
-                </Button>
-              </Link>
+              <Button
+                onClick={() => handleCheckout(annual ? "annual" : "monthly")}
+                className="w-full bg-violet-600 hover:bg-violet-500 text-white py-6 text-base rounded-xl mt-2"
+              >
+                {annual ? "Start Annual Plan" : "Start Free Trial"}
+              </Button>
               <p className="text-center text-xs text-slate-500">No credit card required · Cancel anytime</p>
               <ul className="space-y-3 pt-2">
                 {[
@@ -277,14 +317,13 @@ export default function PersonalPage() {
           <p className="text-slate-600 text-lg mb-10">
             Join 200+ professionals who stopped worrying about what to post.
           </p>
-          <Link href="/signup">
-            <Button
-              size="lg"
-              className="bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-white px-10 py-6 text-lg rounded-xl"
-            >
-              Start Free Trial — $15/month
-            </Button>
-          </Link>
+          <Button
+            size="lg"
+            onClick={() => handleCheckout("monthly")}
+            className="bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-white px-10 py-6 text-lg rounded-xl"
+          >
+            Start Free Trial — $15/month
+          </Button>
           <p className="mt-4 text-sm text-slate-500">No credit card required · Cancel anytime</p>
         </div>
       </section>
