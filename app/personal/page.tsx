@@ -192,6 +192,71 @@ export default function PersonalPage() {
         </p>
       </div>
 
+      {/* FOMO — What you're missing */}
+      <section className="px-6 py-24" style={{ backgroundColor: "#07071a" }}>
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-16">
+            <span className="inline-block mb-4 px-4 py-1 rounded-full text-sm font-medium border border-red-500/40 text-red-400 bg-red-500/10 tracking-widest uppercase">
+              The Hard Truth
+            </span>
+            <h2 className="text-4xl md:text-5xl font-bold mb-5 text-white leading-tight">
+              While You Stay Silent,{" "}
+              <span className="bg-gradient-to-r from-red-400 via-orange-400 to-yellow-400 bg-clip-text text-transparent">
+                Someone Else Takes Your Deals
+              </span>
+            </h2>
+            <p className="text-slate-400 text-lg max-w-2xl mx-auto">
+              LinkedIn isn't a social network — it's where business decisions get made. Every day you don't post, you're invisible to the people who would hire, buy from, or partner with you.
+            </p>
+          </div>
+
+          {/* Big stats */}
+          <div className="grid md:grid-cols-3 gap-6 mb-14">
+            {[
+              { number: "99%", label: "of LinkedIn users never post", sub: "yet the 1% who do get 9 billion impressions per week" },
+              { number: "80%", label: "of all B2B leads on social come from LinkedIn", sub: "it's not Instagram or Facebook — it's here" },
+              { number: "23%", label: "of decision-makers hired after reading a post", sub: "thought leadership directly turns readers into clients" },
+            ].map((s, i) => (
+              <div key={i} className="rounded-2xl p-8 border border-white/10 text-center" style={{ background: "rgba(255,255,255,0.04)" }}>
+                <div className="text-5xl font-black bg-gradient-to-r from-red-400 to-orange-400 bg-clip-text text-transparent mb-3">{s.number}</div>
+                <div className="text-white font-semibold text-base mb-2">{s.label}</div>
+                <div className="text-slate-500 text-sm leading-relaxed">{s.sub}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* What you're losing list */}
+          <div className="rounded-2xl border border-red-500/20 p-8" style={{ background: "linear-gradient(135deg, rgba(239,68,68,0.06) 0%, rgba(255,255,255,0.02) 100%)" }}>
+            <h3 className="text-white font-bold text-xl mb-6">Every week without posting, you miss:</h3>
+            <div className="grid md:grid-cols-2 gap-4">
+              {[
+                "65 million decision-makers who could see your name — but don't",
+                "Inbound leads that go to the person who showed up in their feed last week",
+                "Job offers and partnership requests that flow to visible experts",
+                "Algorithm visibility: inactive profiles get 50%+ less reach over time",
+                "Deals worth paying a premium for — 60% of buyers pay more for thought leaders",
+                "Your position as the go-to expert in your niche, taken by someone else",
+              ].map((item, i) => (
+                <div key={i} className="flex items-start gap-3">
+                  <span className="text-red-400 mt-0.5 text-lg flex-shrink-0">✕</span>
+                  <span className="text-slate-300 text-sm leading-relaxed">{item}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="text-center mt-10">
+            <p className="text-slate-400 text-base mb-6">The good news? The bar is on the floor — 99% of people don't post. You just need to show up.</p>
+            <button
+              onClick={() => handleCheckout("monthly")}
+              className="bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-white px-10 py-4 rounded-xl text-base font-semibold transition-all"
+            >
+              Start Showing Up — $15/month
+            </button>
+          </div>
+        </div>
+      </section>
+
       {/* How it works */}
       <section id="how-it-works" className="px-6 py-24" style={{ backgroundColor: "#f3f2f1" }}>
         <div className="max-w-5xl mx-auto">
