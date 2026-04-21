@@ -167,7 +167,7 @@ export async function POST(req: NextRequest) {
 
     const prompt = buildLinkedInPrompt(brief)
 
-    const llmResponse = await fetch(`${LLM_BASE_URL}/chat/completions`, {
+    const llmResponse = await fetch(`${LLM_BASE_URL}/v1/chat/completions`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

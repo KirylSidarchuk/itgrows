@@ -38,9 +38,11 @@ async function publishPost(post: {
 
   let authorUrn: string
   if (account.pageType === "organization" && account.linkedinOrgUrn) {
-    authorUrn = `urn:li:organization:${account.linkedinOrgUrn}`
+    const orgUrn = account.linkedinOrgUrn
+    authorUrn = orgUrn.startsWith("urn:li:") ? orgUrn : `urn:li:organization:${orgUrn}`
   } else if (account.linkedinPersonUrn) {
-    authorUrn = `urn:li:person:${account.linkedinPersonUrn}`
+    const personUrn = account.linkedinPersonUrn
+    authorUrn = personUrn.startsWith("urn:li:") ? personUrn : `urn:li:member:${personUrn}`
   } else {
     return { success: false, error: "No LinkedIn URN found" }
   }
