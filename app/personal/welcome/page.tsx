@@ -28,7 +28,7 @@ export default function PersonalWelcomePage() {
           Connect your LinkedIn account and fill a 2-minute brief — then we&apos;ll start generating your posts automatically.
         </p>
 
-        <Link href="/dashboard/linkedin">
+        <Link href="/personal/cabinet">
           <Button
             size="lg"
             className="bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-white px-10 py-6 text-lg rounded-xl"
