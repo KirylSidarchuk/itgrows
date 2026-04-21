@@ -570,7 +570,7 @@ function LinkedInPageContent() {
       <aside className="w-60 shrink-0 flex flex-col bg-white border-r border-slate-100 shadow-sm z-10">
         {/* Logo */}
         <div className="px-6 py-5 border-b border-slate-100">
-          <a href="/dashboard">
+          <a href="/personal">
             <span className="text-lg font-bold bg-gradient-to-r from-violet-600 to-pink-500 bg-clip-text text-transparent">
               ItGrows.ai
             </span>
@@ -612,13 +612,13 @@ function LinkedInPageContent() {
         {/* Account section */}
         <div className="px-4 pt-5 pb-2">
           <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest px-2 mb-2">Account</p>
-          <a
-            href="/dashboard/settings"
-            className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 hover:text-violet-700 transition-colors mb-1"
+          <button
+            onClick={() => setActiveTab("account")}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 hover:text-violet-700 transition-colors mb-1"
           >
             <Settings className="w-4 h-4 shrink-0" />
             <span className="text-sm">Settings</span>
-          </a>
+          </button>
           <button
             onClick={() => signOut({ callbackUrl: "/login" })}
             className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 hover:text-violet-700 transition-colors"
