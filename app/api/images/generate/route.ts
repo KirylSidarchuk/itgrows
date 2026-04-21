@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/auth"
 
+export const maxDuration = 300
+
 const PROXY_URL = "http://34.60.133.229:4000"
 
 export async function POST(req: NextRequest) {

@@ -4,6 +4,8 @@ import { db } from "@/lib/db"
 import { users, blogPosts, scheduledPosts } from "@/lib/db/schema"
 import { eq, and, isNotNull, count } from "drizzle-orm"
 
+export const maxDuration = 300
+
 const LLM_BASE_URL = "http://34.60.133.229:4000"
 const LLM_MODEL = "gemini-2.0-flash"
 const LLM_API_KEY = "any-key"

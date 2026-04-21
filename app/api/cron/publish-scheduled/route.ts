@@ -4,6 +4,7 @@ import { scheduledPosts, connectedSites, blogPosts } from "@/lib/db/schema"
 import { eq, lte, and } from "drizzle-orm"
 
 export const runtime = "nodejs"
+export const maxDuration = 300
 
 export async function GET(req: NextRequest) {
   // Verify authorization — CRON_SECRET must be set and header must match
@@ -204,13 +205,13 @@ export async function GET(req: NextRequest) {
       // Track published count per user
       userPublishedCounts[post.userId] = (userPublishedCounts[post.userId] ?? 0) + 1
     } catch (err) {
-      // Mark as failed
+      // Mark as failed and save error message
+      const errMsg = err instanceof Error ? err.message : String(err)
       await db
         .update(scheduledPosts)
-        .set({ status: "failed" })
+        .set({ status: "failed", publishError: errMsg })
         .where(eq(scheduledPosts.id, post.id))
 
-      const errMsg = err instanceof Error ? err.message : String(err)
       errors.push({ id: post.id, keyword: post.keyword, error: errMsg })
       processed.push({ id: post.id, keyword: post.keyword, status: "failed", error: errMsg })
     }
