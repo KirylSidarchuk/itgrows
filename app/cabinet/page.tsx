@@ -355,6 +355,28 @@ function LinkedInPageContent() {
   const [generateTimer, setGenerateTimer] = useState(0)
   const [publishedCollapsed, setPublishedCollapsed] = useState(true)
   const [deletingAccount, setDeletingAccount] = useState(false)
+  const [checkingOut, setCheckingOut] = useState(false)
+
+  async function handleUpgrade(planType: "monthly" | "annual" = "monthly") {
+    setCheckingOut(true)
+    try {
+      const res = await fetch("/api/stripe/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ planType }),
+      })
+      const data = await res.json() as { url?: string; error?: string }
+      if (data.url) {
+        window.location.href = data.url
+      } else {
+        setStatusMessage(data.error ?? "Something went wrong. Please try again.")
+        setCheckingOut(false)
+      }
+    } catch {
+      setStatusMessage("Something went wrong. Please try again.")
+      setCheckingOut(false)
+    }
+  }
 
   const connected = searchParams.get("connected")
   const error = searchParams.get("error")
@@ -736,12 +758,13 @@ function LinkedInPageContent() {
                   <p className="text-xs text-white/75 mt-0.5">7 AI posts/week, custom images, auto-scheduling</p>
                 </div>
               </div>
-              <a
-                href="/"
-                className="shrink-0 bg-white text-violet-700 font-semibold text-xs rounded-xl px-4 py-2 hover:bg-violet-50 transition-colors"
+              <button
+                onClick={() => handleUpgrade("monthly")}
+                disabled={checkingOut}
+                className="shrink-0 bg-white text-violet-700 font-semibold text-xs rounded-xl px-4 py-2 hover:bg-violet-50 transition-colors disabled:opacity-70"
               >
-                Upgrade →
-              </a>
+                {checkingOut ? "Loading..." : "Upgrade →"}
+              </button>
             </div>
           )}
 
@@ -800,7 +823,8 @@ function LinkedInPageContent() {
                       </Button>
                     ) : (
                       <Button
-                        onClick={() => window.location.href = "/#pricing"}
+                        onClick={() => handleUpgrade("monthly")}
+                        disabled={checkingOut}
                         className="bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-white font-semibold px-6 py-2.5 rounded-xl shadow-sm"
                       >
                         <Lock className="w-4 h-4 mr-2" />
