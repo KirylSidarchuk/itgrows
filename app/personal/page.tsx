@@ -107,17 +107,29 @@ export default function PersonalPage() {
   const [annual, setAnnual] = useState(false)
 
   async function handleCheckout(planType: "monthly" | "annual") {
+    // First check if logged in
+    const sessionRes = await fetch("/api/auth/session")
+    const sessionData = await sessionRes.json() as { user?: { id: string } }
+    if (!sessionData?.user?.id) {
+      window.location.href = `/signup?callbackUrl=${encodeURIComponent("/personal/cabinet")}`
+      return
+    }
     const res = await fetch("/api/stripe/checkout", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ planType }),
     })
     if (res.status === 401) {
-      window.location.href = `/login?callbackUrl=${encodeURIComponent("/personal")}`
+      window.location.href = `/signup?callbackUrl=${encodeURIComponent("/personal/cabinet")}`
       return
     }
     const data = await res.json() as { url?: string; error?: string }
-    if (data.url) window.location.href = data.url
+    if (data.url) {
+      window.location.href = data.url
+    } else {
+      // Stripe not configured yet — go to cabinet directly
+      window.location.href = "/personal/cabinet"
+    }
   }
 
   return (
