@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db"
-import { linkedinAccounts, linkedinPosts } from "@/lib/db/schema"
+import { linkedinAccounts, linkedinPosts, users } from "@/lib/db/schema"
 import { eq, and, lte } from "drizzle-orm"
 
 interface LinkedInUgcPostBody {
@@ -106,6 +106,20 @@ export async function GET(req: NextRequest) {
     let failed = 0
 
     for (const post of duePosts) {
+      // Skip posts for users without an active Personal subscription
+      const [postUser] = await db.select({ subscriptionPlan: users.subscriptionPlan, subscriptionStatus: users.subscriptionStatus })
+        .from(users).where(eq(users.id, post.userId)).limit(1)
+      const hasAccess = postUser && postUser.subscriptionStatus === "active" &&
+        (postUser.subscriptionPlan === "personal" || postUser.subscriptionPlan === "personal_annual")
+      if (!hasAccess) {
+        await db
+          .update(linkedinPosts)
+          .set({ status: "failed", publishError: "subscription_required" })
+          .where(eq(linkedinPosts.id, post.id))
+        failed++
+        continue
+      }
+
       const result = await publishPost(post)
 
       if (result.success) {

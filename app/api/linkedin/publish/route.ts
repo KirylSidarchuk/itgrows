@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/auth"
 import sharp from "sharp"
 import { db } from "@/lib/db"
-import { linkedinAccounts, linkedinPosts } from "@/lib/db/schema"
+import { linkedinAccounts, linkedinPosts, users } from "@/lib/db/schema"
 import { eq, and } from "drizzle-orm"
 
 interface PublishRequest {
@@ -117,6 +117,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
     const userId = session.user.id
+
+    // Check subscription
+    const [user] = await db.select({ subscriptionPlan: users.subscriptionPlan, subscriptionStatus: users.subscriptionStatus })
+      .from(users).where(eq(users.id, userId)).limit(1)
+    const hasAccess = user && user.subscriptionStatus === "active" &&
+      (user.subscriptionPlan === "personal" || user.subscriptionPlan === "personal_annual")
+    if (!hasAccess) {
+      return NextResponse.json({ error: "subscription_required", message: "Active Personal subscription required" }, { status: 403 })
+    }
 
     const body = await req.json() as PublishRequest
     const { postId } = body

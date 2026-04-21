@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Suspense } from "react"
-import { Loader2, RefreshCw, Send, Calendar, Check, Settings, LogOut, Zap } from "lucide-react"
+import { Loader2, RefreshCw, Send, Calendar, Check, Settings, LogOut, Zap, Lock } from "lucide-react"
 import { signOut, useSession } from "next-auth/react"
 
 interface LinkedInAccount {
@@ -139,11 +139,13 @@ function PostCard({
   onUpdate,
   onPublish,
   onDelete,
+  hasSubscription,
 }: {
   post: LinkedInPost
   onUpdate: (postId: string, content: string, scheduledFor: string) => Promise<void>
   onPublish: (postId: string) => Promise<void>
   onDelete: (postId: string) => Promise<void>
+  hasSubscription: boolean
 }) {
   const [content, setContent] = useState(post.content)
   const [scheduledFor, setScheduledFor] = useState(
@@ -280,21 +282,33 @@ function PostCard({
                 {saving ? <Loader2 className="w-3 h-3 animate-spin" /> : saved ? "Saved!" : "Save"}
               </Button>
             )}
-            <Button
-              size="sm"
-              disabled={publishing}
-              onClick={handlePublish}
-              className="text-xs bg-[#0077B5] hover:bg-[#005f8e] text-white shrink-0"
-            >
-              {publishing ? (
-                <Loader2 className="w-3 h-3 animate-spin" />
-              ) : (
-                <>
-                  <Send className="w-3 h-3 mr-1" />
-                  Publish
-                </>
-              )}
-            </Button>
+            {hasSubscription ? (
+              <Button
+                size="sm"
+                disabled={publishing}
+                onClick={handlePublish}
+                className="text-xs bg-[#0077B5] hover:bg-[#005f8e] text-white shrink-0"
+              >
+                {publishing ? (
+                  <Loader2 className="w-3 h-3 animate-spin" />
+                ) : (
+                  <>
+                    <Send className="w-3 h-3 mr-1" />
+                    Publish
+                  </>
+                )}
+              </Button>
+            ) : (
+              <Button
+                size="sm"
+                disabled
+                title="Upgrade to publish"
+                className="text-xs bg-slate-100 text-slate-400 shrink-0 cursor-not-allowed"
+              >
+                <Lock className="w-3 h-3 mr-1" />
+                Publish
+              </Button>
+            )}
           </div>
         )}
         {post.status === "published" && post.linkedinPostId && (
@@ -318,6 +332,7 @@ function LinkedInPageContent() {
   const [disconnecting, setDisconnecting] = useState<string | null>(null)
   const [statusMessage, setStatusMessage] = useState<string | null>(null)
   const [subscriptionPlan, setSubscriptionPlan] = useState<string | null>(null)
+  const [subscriptionStatus, setSubscriptionStatus] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<ActiveTab>("posts")
   const [brief, setBrief] = useState<LinkedInBrief>({
     niche: "",
@@ -372,6 +387,7 @@ function LinkedInPageContent() {
     fetch("/api/stripe/subscription")
       .then((r) => r.json())
       .then((data) => {
+        setSubscriptionStatus(data.status ?? null)
         if (data.status === "active" || data.status === "trialing") {
           setSubscriptionPlan(data.plan ?? null)
         }
@@ -560,6 +576,8 @@ function LinkedInPageContent() {
   }
 
   const isConnected = accounts.length > 0
+  const hasPersonalPlan = subscriptionStatus === "active" &&
+    (subscriptionPlan === "personal" || subscriptionPlan === "personal_annual")
   const dnaScore = calcDnaScore(brief, profileUrl)
   const activePosts = posts.filter((p) => p.status !== "published")
   const publishedPosts = posts.filter((p) => p.status === "published")
@@ -640,11 +658,11 @@ function LinkedInPageContent() {
             <div className="min-w-0 flex-1">
               <p className="text-sm font-medium text-slate-700 truncate">{userName}</p>
               <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${
-                subscriptionPlan === "personal"
+                hasPersonalPlan
                   ? "bg-violet-100 text-violet-600"
                   : "bg-slate-100 text-slate-500"
               }`}>
-                {subscriptionPlan === "personal" ? "Personal" : "Free"}
+                {subscriptionPlan === "personal_annual" ? "Personal Annual" : hasPersonalPlan ? "Personal" : "Free"}
               </span>
             </div>
           </div>
@@ -666,7 +684,7 @@ function LinkedInPageContent() {
           </div>
 
           {/* Upgrade banner */}
-          {subscriptionPlan !== "personal" && !loading && (
+          {!hasPersonalPlan && !loading && (
             <div className="mb-6 flex items-center justify-between gap-4 rounded-2xl px-5 py-4 text-white shadow-lg"
               style={{ background: "linear-gradient(135deg, #7c3aed 0%, #a855f7 60%, #ec4899 100%)" }}>
               <div className="flex items-center gap-3">
@@ -722,23 +740,33 @@ function LinkedInPageContent() {
                 <>
                   {/* Action bar */}
                   <div className="flex items-center gap-3">
-                    <Button
-                      disabled={generating}
-                      onClick={handleGenerate}
-                      className="bg-violet-600 hover:bg-violet-500 text-white font-semibold px-6 py-2.5 rounded-xl shadow-sm"
-                    >
-                      {generating ? (
-                        <>
-                          <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                          Generating... ({generateTimer}s)
-                        </>
-                      ) : (
-                        <>
-                          <Zap className="w-4 h-4 mr-2" />
-                          Generate 7 Posts
-                        </>
-                      )}
-                    </Button>
+                    {hasPersonalPlan ? (
+                      <Button
+                        disabled={generating}
+                        onClick={handleGenerate}
+                        className="bg-violet-600 hover:bg-violet-500 text-white font-semibold px-6 py-2.5 rounded-xl shadow-sm"
+                      >
+                        {generating ? (
+                          <>
+                            <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                            Generating... ({generateTimer}s)
+                          </>
+                        ) : (
+                          <>
+                            <Zap className="w-4 h-4 mr-2" />
+                            Generate 7 Posts
+                          </>
+                        )}
+                      </Button>
+                    ) : (
+                      <Button
+                        onClick={() => window.location.href = "/#pricing"}
+                        className="bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-white font-semibold px-6 py-2.5 rounded-xl shadow-sm"
+                      >
+                        <Lock className="w-4 h-4 mr-2" />
+                        Unlock — $15/month
+                      </Button>
+                    )}
                     <span className="text-sm text-slate-400 flex items-center gap-1.5">
                       <Calendar className="w-4 h-4" />
                       Schedule: next 7 days
@@ -794,6 +822,7 @@ function LinkedInPageContent() {
                                 onUpdate={handleUpdatePost}
                                 onPublish={handlePublishPost}
                                 onDelete={handleDeletePost}
+                                hasSubscription={hasPersonalPlan}
                               />
                             ))}
                           </div>
@@ -819,6 +848,7 @@ function LinkedInPageContent() {
                                   onUpdate={handleUpdatePost}
                                   onPublish={handlePublishPost}
                                   onDelete={handleDeletePost}
+                                  hasSubscription={hasPersonalPlan}
                                 />
                               ))}
                             </div>
@@ -1076,6 +1106,70 @@ function LinkedInPageContent() {
                         </Button>
                       </div>
                     ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Subscription / Billing */}
+              <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+                <h2 className="text-base font-semibold text-slate-800 mb-4">Subscription</h2>
+                {hasPersonalPlan ? (
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between p-3 rounded-xl bg-violet-50 border border-violet-100">
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 bg-violet-600 rounded-xl flex items-center justify-center shrink-0">
+                          <Zap className="w-4 h-4 text-white" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-slate-800">
+                            {subscriptionPlan === "personal_annual" ? "Personal Annual" : "Personal"}
+                          </p>
+                          <p className="text-xs text-slate-500">
+                            {subscriptionPlan === "personal_annual" ? "$144/year · billed annually" : "$15/month"}
+                          </p>
+                        </div>
+                      </div>
+                      <Badge variant="outline" className="text-xs border-green-200 text-green-700 bg-green-50 px-2 py-0.5">
+                        Active
+                      </Badge>
+                    </div>
+                    <p className="text-xs text-slate-400 px-1">
+                      You have full access to generate posts, publish, and auto-scheduling.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="p-4 rounded-xl bg-slate-50 border border-slate-100">
+                      <p className="text-sm font-semibold text-slate-700 mb-1">Free Plan</p>
+                      <p className="text-xs text-slate-500">You can connect LinkedIn and fill your Content DNA, but post generation and publishing require a subscription.</p>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <button
+                        onClick={async () => {
+                          const res = await fetch("/api/stripe/checkout", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ planType: "monthly" }) })
+                          const data = await res.json() as { url?: string }
+                          if (data.url) window.location.href = data.url
+                        }}
+                        className="flex flex-col items-center gap-1 p-4 rounded-xl border-2 border-violet-200 bg-violet-50 hover:border-violet-400 hover:bg-violet-100 transition-colors cursor-pointer"
+                      >
+                        <span className="text-base font-bold text-violet-700">$15</span>
+                        <span className="text-xs text-violet-600 font-medium">/ month</span>
+                        <span className="text-[10px] text-slate-500 mt-1">Billed monthly</span>
+                      </button>
+                      <button
+                        onClick={async () => {
+                          const res = await fetch("/api/stripe/checkout", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ planType: "annual" }) })
+                          const data = await res.json() as { url?: string }
+                          if (data.url) window.location.href = data.url
+                        }}
+                        className="flex flex-col items-center gap-1 p-4 rounded-xl border-2 border-pink-200 bg-pink-50 hover:border-pink-400 hover:bg-pink-100 transition-colors cursor-pointer"
+                      >
+                        <span className="text-base font-bold text-pink-700">$12</span>
+                        <span className="text-xs text-pink-600 font-medium">/ month</span>
+                        <span className="text-[10px] text-slate-500 mt-1">$144/yr · save 20%</span>
+                      </button>
+                    </div>
+                    <p className="text-xs text-slate-400 text-center">Cancel anytime. Secure payment via Stripe.</p>
                   </div>
                 )}
               </div>
