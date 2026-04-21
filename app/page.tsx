@@ -213,14 +213,17 @@ export default function PersonalPage() {
           {/* Big stats */}
           <div className="grid md:grid-cols-3 gap-6 mb-14">
             {[
-              { number: "99%", label: "of LinkedIn users never post", sub: "yet the 1% who do get 9 billion impressions per week" },
-              { number: "80%", label: "of all B2B leads on social come from LinkedIn", sub: "it's not Instagram or Facebook — it's here" },
-              { number: "23%", label: "of decision-makers hired after reading a post", sub: "thought leadership directly turns readers into clients" },
+              { number: "99%", label: "of LinkedIn users never post", sub: "yet the 1% who do get 9 billion impressions per week", source: "Buffer, 2025", sourceUrl: "https://buffer.com/resources/linkedin-statistics/" },
+              { number: "80%", label: "of all B2B leads on social come from LinkedIn", sub: "it's not Instagram or Facebook — it's here", source: "Foundation Inc, 2025", sourceUrl: "https://foundationinc.co/lab/b2b-marketing-linkedin-stats/" },
+              { number: "23%", label: "of decision-makers bought after reading a post", sub: "thought leadership directly turns readers into clients", source: "Edelman × LinkedIn, 2024", sourceUrl: "https://www.edelman.com/expertise/Business-Marketing/2024-b2b-thought-leadership-report" },
             ].map((s, i) => (
               <div key={i} className="rounded-2xl p-8 border border-white/10 text-center" style={{ background: "rgba(255,255,255,0.04)" }}>
                 <div className="text-5xl font-black bg-gradient-to-r from-red-400 to-orange-400 bg-clip-text text-transparent mb-3">{s.number}</div>
                 <div className="text-white font-semibold text-base mb-2">{s.label}</div>
-                <div className="text-slate-500 text-sm leading-relaxed">{s.sub}</div>
+                <div className="text-slate-500 text-sm leading-relaxed mb-3">{s.sub}</div>
+                <a href={s.sourceUrl} target="_blank" rel="noopener noreferrer" className="text-[10px] text-slate-600 hover:text-slate-400 underline underline-offset-2 transition-colors">
+                  Source: {s.source}
+                </a>
               </div>
             ))}
           </div>

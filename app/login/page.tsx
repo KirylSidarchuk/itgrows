@@ -11,6 +11,7 @@ function LoginForm() {
   const verified = searchParams.get("verified")
   const resetDone = searchParams.get("reset")
   const errorParam = searchParams.get("error")
+  const callbackUrl = searchParams.get("callbackUrl") ?? "/cabinet"
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
@@ -29,7 +30,7 @@ function LoginForm() {
       if (res?.error) {
         setError("Invalid email or password")
       } else {
-        router.push("/business/dashboard")
+        router.push(callbackUrl)
       }
     } catch {
       setError("Something went wrong")
