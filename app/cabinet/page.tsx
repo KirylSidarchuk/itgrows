@@ -1096,7 +1096,10 @@ function LinkedInPageContent() {
                       </div>
                       <div>
                         <p className="text-sm font-semibold text-slate-800 flex items-center gap-1.5">
-                          <span>{step.icon}</span> {step.title}
+                          <span>{step.icon}</span>{" "}
+                          {i === 3 ? (
+                            <>Watch how <span className="text-violet-600">It Grows</span>...</>
+                          ) : step.title}
                         </p>
                         <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">{step.desc}</p>
                       </div>
