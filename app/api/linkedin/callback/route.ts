@@ -14,7 +14,7 @@ export async function GET(req: NextRequest) {
   const error = searchParams.get("error")
 
   if (error || !code || !state) {
-    return NextResponse.redirect(`${process.env.NEXTAUTH_URL}/dashboard/linkedin?error=oauth_denied`)
+    return NextResponse.redirect(`${process.env.NEXTAUTH_URL}/cabinet?error=oauth_denied`)
   }
 
   try {
@@ -34,7 +34,7 @@ export async function GET(req: NextRequest) {
     if (!tokenRes.ok) {
       const errText = await tokenRes.text()
       console.error("LinkedIn token exchange failed:", errText)
-      return NextResponse.redirect(`${process.env.NEXTAUTH_URL}/dashboard/linkedin?error=token_failed`)
+      return NextResponse.redirect(`${process.env.NEXTAUTH_URL}/cabinet?error=token_failed`)
     }
 
     const tokenData = await tokenRes.json() as {
@@ -345,9 +345,9 @@ Return only the JSON object, no markdown, no extra text.`,
       // Non-fatal: personal account is already saved
     }
 
-    return NextResponse.redirect(`${process.env.NEXTAUTH_URL}/dashboard/linkedin?connected=1`)
+    return NextResponse.redirect(`${process.env.NEXTAUTH_URL}/cabinet?connected=1`)
   } catch (err) {
     console.error("LinkedIn callback error:", err)
-    return NextResponse.redirect(`${process.env.NEXTAUTH_URL}/dashboard/linkedin?error=server_error`)
+    return NextResponse.redirect(`${process.env.NEXTAUTH_URL}/cabinet?error=server_error`)
   }
 }

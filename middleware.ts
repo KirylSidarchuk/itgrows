@@ -6,9 +6,10 @@ export default auth((req) => {
   const isLoggedIn = !!session?.user
 
   const isDashboard = nextUrl.pathname.startsWith("/dashboard")
+  const isBusinessDashboard = nextUrl.pathname.startsWith("/business/dashboard")
   const isCabinet = nextUrl.pathname.startsWith("/cabinet")
 
-  if ((isDashboard || isCabinet) && !isLoggedIn) {
+  if ((isDashboard || isBusinessDashboard || isCabinet) && !isLoggedIn) {
     return NextResponse.redirect(new URL(`/login?callbackUrl=${encodeURIComponent(nextUrl.pathname)}`, nextUrl))
   }
 
@@ -16,5 +17,5 @@ export default auth((req) => {
 })
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/cabinet", "/cabinet/:path*"],
+  matcher: ["/dashboard/:path*", "/business/dashboard", "/business/dashboard/:path*", "/cabinet", "/cabinet/:path*"],
 }

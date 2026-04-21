@@ -120,7 +120,7 @@ export default async function HomePage() {
                   </div>
                   <span className="hidden md:block text-sm text-slate-600 max-w-[140px] truncate">{user.name ?? user.email}</span>
                 </div>
-                <Link href="/dashboard">
+                <Link href="/business/dashboard">
                   <Button className="bg-violet-600 hover:bg-violet-500 text-white">Go to Dashboard</Button>
                 </Link>
               </>
