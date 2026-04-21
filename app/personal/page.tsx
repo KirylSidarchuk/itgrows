@@ -144,10 +144,10 @@ export default function PersonalPage() {
             ItGrows.ai
           </Link>
           <div className="flex items-center gap-3">
-            <Link href="/login">
+            <Link href="/login?callbackUrl=/personal/cabinet">
               <Button variant="ghost" className="text-slate-600 hover:text-[#1b1916]">Login</Button>
             </Link>
-            <Link href="/signup">
+            <Link href="/signup?callbackUrl=/personal/cabinet">
               <Button className="bg-violet-600 hover:bg-violet-500 text-white">Start Free Trial</Button>
             </Link>
           </div>
