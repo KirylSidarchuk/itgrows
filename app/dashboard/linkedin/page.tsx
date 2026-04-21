@@ -258,6 +258,7 @@ function LinkedInPageContent() {
   const [loading, setLoading] = useState(true)
   const [disconnecting, setDisconnecting] = useState<string | null>(null)
   const [statusMessage, setStatusMessage] = useState<string | null>(null)
+  const [subscriptionPlan, setSubscriptionPlan] = useState<string | null>(null)
   const [briefOpen, setBriefOpen] = useState(false)
   const [brief, setBrief] = useState<LinkedInBrief>({
     niche: "",
@@ -303,6 +304,17 @@ function LinkedInPageContent() {
         setLoading(false)
       })
       .catch(() => setLoading(false))
+  }, [])
+
+  useEffect(() => {
+    fetch("/api/stripe/subscription")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.status === "active" || data.status === "trialing") {
+          setSubscriptionPlan(data.plan ?? null)
+        }
+      })
+      .catch(() => {/* non-critical */})
   }, [])
 
   useEffect(() => {
@@ -494,6 +506,21 @@ function LinkedInPageContent() {
         <h1 className="text-2xl font-bold text-[#1b1916] mb-1">LinkedIn</h1>
         <p className="text-sm text-slate-500">Connect your LinkedIn account to generate and publish posts.</p>
       </div>
+
+      {subscriptionPlan !== "personal" && !loading && (
+        <div className="mb-6 flex items-center justify-between gap-4 rounded-2xl border border-violet-200 bg-gradient-to-r from-violet-50 to-pink-50 px-5 py-4">
+          <div>
+            <p className="text-sm font-semibold text-violet-800">Upgrade to ItGrows Personal</p>
+            <p className="text-xs text-slate-500 mt-0.5">Get 7 AI-written LinkedIn posts per week, custom images, and auto-scheduling — for $15/month.</p>
+          </div>
+          <a
+            href="/personal"
+            className="shrink-0 rounded-xl bg-violet-600 px-4 py-2 text-xs font-semibold text-white hover:bg-violet-500 transition-colors"
+          >
+            Upgrade →
+          </a>
+        </div>
+      )}
 
       {statusMessage && (
         <div
