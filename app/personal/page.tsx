@@ -6,6 +6,38 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
+const AI_IMAGE_ICON = (
+  <svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-10 h-10">
+    <rect width="56" height="56" rx="12" fill="url(#bg)" />
+    {/* landscape image */}
+    <rect x="8" y="10" width="32" height="28" rx="4" fill="url(#frame)" />
+    <ellipse cx="16" cy="30" rx="6" ry="4" fill="#3b2f8a" opacity="0.7" />
+    <ellipse cx="28" cy="28" rx="8" ry="5" fill="#4c3aa3" opacity="0.7" />
+    <circle cx="22" cy="18" r="4" fill="#fbbf24" />
+    <path d="M8 30 Q16 22 24 26 Q32 30 40 24" stroke="white" strokeWidth="1.5" strokeOpacity="0.3" fill="none" />
+    {/* AI badge */}
+    <circle cx="38" cy="38" r="10" fill="url(#badge)" />
+    <text x="38" y="42" textAnchor="middle" fontSize="9" fontWeight="bold" fill="white" fontFamily="sans-serif">AI</text>
+    {/* sparkles */}
+    <path d="M44 10 L45 13 L48 14 L45 15 L44 18 L43 15 L40 14 L43 13Z" fill="white" opacity="0.7" />
+    <path d="M6 8 L6.7 10 L9 10.7 L6.7 11.4 L6 13.4 L5.3 11.4 L3 10.7 L5.3 10Z" fill="white" opacity="0.5" />
+    <defs>
+      <linearGradient id="bg" x1="0" y1="0" x2="56" y2="56" gradientUnits="userSpaceOnUse">
+        <stop stopColor="#1e1b4b" />
+        <stop offset="1" stopColor="#312e81" />
+      </linearGradient>
+      <linearGradient id="frame" x1="8" y1="10" x2="40" y2="38" gradientUnits="userSpaceOnUse">
+        <stop stopColor="#7c3aed" />
+        <stop offset="1" stopColor="#c026d3" />
+      </linearGradient>
+      <linearGradient id="badge" x1="28" y1="28" x2="48" y2="48" gradientUnits="userSpaceOnUse">
+        <stop stopColor="#6366f1" />
+        <stop offset="1" stopColor="#3b82f6" />
+      </linearGradient>
+    </defs>
+  </svg>
+)
+
 const features = [
   {
     icon: "🎯",
@@ -18,7 +50,7 @@ const features = [
     desc: "One post every day, Monday through Sunday. Consistent presence without the effort.",
   },
   {
-    icon: "🖼️",
+    icon: AI_IMAGE_ICON,
     title: "Images Generated Automatically",
     desc: "Every post comes with a custom AI-generated image that matches your content.",
   },
