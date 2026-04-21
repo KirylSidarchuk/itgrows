@@ -3,7 +3,7 @@ import { db } from "@/lib/db"
 import { linkedinAccounts, linkedinPosts, users } from "@/lib/db/schema"
 import { eq, and, lte } from "drizzle-orm"
 import { sendEmail } from "@/lib/email"
-import { postPublishedEmail, postFailedEmail } from "@/lib/email-templates"
+import { postPublishedEmail, postFailedEmail, linkedinTokenExpiredEmail } from "@/lib/email-templates"
 
 interface LinkedInUgcPostBody {
   author: string
@@ -36,6 +36,15 @@ async function publishPost(post: {
 
   if (!account) {
     return { success: false, error: "LinkedIn account not found" }
+  }
+
+  // Check if LinkedIn token has expired
+  if (account.expiresAt) {
+    const expiresAt = new Date(account.expiresAt)
+    const now = new Date()
+    if (expiresAt <= now) {
+      return { success: false, error: "linkedin_token_expired" }
+    }
   }
 
   let authorUrn: string
@@ -149,7 +158,13 @@ export async function GET(req: NextRequest) {
           .where(eq(linkedinPosts.id, post.id))
         failed++
         console.error(`[publish-linkedin] Failed to publish post ${post.id}:`, result.error)
-        if (postUser?.email) {
+        if (result.error === "linkedin_token_expired" && postUser?.email) {
+          await sendEmail({
+            to: postUser.email,
+            subject: "Action required: Reconnect your LinkedIn to ItGrows",
+            html: linkedinTokenExpiredEmail(postUser.name ?? "there"),
+          })
+        } else if (postUser?.email) {
           await sendEmail({
             to: postUser.email,
             subject: "⚠️ Your LinkedIn post failed to publish",

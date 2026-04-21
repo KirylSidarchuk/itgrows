@@ -569,6 +569,14 @@ function LinkedInPageContent() {
             : p
         )
       )
+    } else if (res.status === 401 && data.error === "linkedin_token_expired") {
+      setPosts((prev) =>
+        prev.map((p) =>
+          p.id === postId
+            ? { ...p, status: "failed", publishError: "Your LinkedIn connection has expired. Please reconnect in the Account tab." }
+            : p
+        )
+      )
     } else {
       setPosts((prev) =>
         prev.map((p) =>
@@ -1099,6 +1107,11 @@ function LinkedInPageContent() {
                               </Badge>
                               {account.pageHandle && (
                                 <span className="text-xs text-slate-400">@{account.pageHandle}</span>
+                              )}
+                              {account.expiresAt && new Date(account.expiresAt) <= new Date() && (
+                                <a href="/api/linkedin/connect" className="inline-flex items-center gap-1 text-[10px] font-semibold text-white bg-red-500 hover:bg-red-600 px-2 py-0.5 rounded-full transition-colors">
+                                  Expired — Reconnect
+                                </a>
                               )}
                             </div>
                           </div>

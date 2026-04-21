@@ -74,6 +74,22 @@ export function postFailedEmail(name: string, postPreview: string, error: string
   `
 }
 
+export function linkedinTokenExpiredEmail(name: string): string {
+  return `
+    <div style="${baseStyle}">
+      <div style="background: linear-gradient(135deg, #7c3aed, #a855f7); padding: 24px 32px; border-radius: 12px 12px 0 0;">
+        <h1 style="color: white; margin: 0; font-size: 20px;">🔗 Reconnect Your LinkedIn</h1>
+      </div>
+      <div style="padding: 32px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 12px 12px;">
+        <p style="color: #374151;">Hi ${name},</p>
+        <p style="color: #374151;">Your LinkedIn connection has expired. To keep your autopilot running, please reconnect your account — it takes 10 seconds.</p>
+        <a href="https://itgrows.ai/api/linkedin/connect" style="display: inline-block; background: #0a66c2; color: white; padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; margin-top: 8px;">Reconnect LinkedIn →</a>
+        <p style="color: #9ca3af; font-size: 12px; margin-top: 32px;">ItGrows.ai · This is a one-time reconnect to refresh your access token.</p>
+      </div>
+    </div>
+  `
+}
+
 export function paymentFailedEmail(name: string): string {
   return `
     <div style="${baseStyle}">

@@ -165,6 +165,17 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "LinkedIn account not found" }, { status: 404 })
     }
 
+    // Check token expiry
+    if (account.expiresAt) {
+      const expiresAt = new Date(account.expiresAt)
+      if (expiresAt <= new Date()) {
+        return NextResponse.json({
+          error: "linkedin_token_expired",
+          message: "Your LinkedIn connection has expired. Please reconnect from the Account tab.",
+        }, { status: 401 })
+      }
+    }
+
     // Determine author URN
     let authorUrn: string
     if (account.pageType === "organization" && account.linkedinOrgUrn) {
