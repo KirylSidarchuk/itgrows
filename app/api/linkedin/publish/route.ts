@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/auth"
+import sharp from "sharp"
 import { db } from "@/lib/db"
 import { linkedinAccounts, linkedinPosts } from "@/lib/db/schema"
 import { eq, and } from "drizzle-orm"
@@ -85,6 +86,7 @@ async function uploadImageToLinkedIn(
     // Step 2: Upload binary image
     const base64Data = imageDataUrl.replace(/^data:[^;]+;base64,/, "")
     const imageBuffer = Buffer.from(base64Data, "base64")
+    const strippedBuffer = await sharp(imageBuffer).withMetadata(false).toBuffer()
 
     const uploadRes = await fetch(uploadUrl, {
       method: "PUT",
@@ -92,7 +94,7 @@ async function uploadImageToLinkedIn(
         "Content-Type": "image/jpeg",
         Authorization: `Bearer ${accessToken}`,
       },
-      body: imageBuffer,
+      body: strippedBuffer,
     })
 
     if (!uploadRes.ok) {
