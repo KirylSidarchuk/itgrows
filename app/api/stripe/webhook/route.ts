@@ -75,9 +75,8 @@ export async function POST(req: NextRequest) {
         if (!user) break
 
         const isActive = ["active", "trialing"].includes(subscription.status)
-        const plan = subscription.items.data[0]?.price.id === process.env.STRIPE_PRICE_MONTHLY
-          ? "monthly"
-          : "annual"
+        const priceId = subscription.items.data[0]?.price.id
+        const plan = priceId === process.env.STRIPE_PRICE_PERSONAL_ANNUAL ? "personal_annual" : "personal"
 
         const endTs2 = (subscription as unknown as { current_period_end?: number }).current_period_end
           ?? subscription.items?.data?.[0]?.current_period_end

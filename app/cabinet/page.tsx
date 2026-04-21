@@ -561,6 +561,14 @@ function LinkedInPageContent() {
             : p
         )
       )
+    } else if (res.status === 403 && data.error === "subscription_required") {
+      setPosts((prev) =>
+        prev.map((p) =>
+          p.id === postId
+            ? { ...p, status: "failed", publishError: "Upgrade to Personal to publish posts. See /#pricing" }
+            : p
+        )
+      )
     } else {
       setPosts((prev) =>
         prev.map((p) =>
