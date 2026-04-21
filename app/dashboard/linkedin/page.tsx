@@ -3,10 +3,10 @@
 import { useEffect, useState, useCallback } from "react"
 import { useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Suspense } from "react"
-import { ChevronDown, ChevronUp, Loader2, RefreshCw, Send, Calendar, Check } from "lucide-react"
+import { Loader2, RefreshCw, Send, Calendar, Check, Settings, LogOut, Zap } from "lucide-react"
+import { signOut, useSession } from "next-auth/react"
 
 interface LinkedInAccount {
   id: string
@@ -48,6 +48,13 @@ const STATUS_COLORS: Record<string, string> = {
   failed: "bg-red-50 text-red-600 border-red-200",
 }
 
+const STATUS_DOT: Record<string, string> = {
+  draft: "bg-slate-400",
+  scheduled: "bg-blue-500",
+  published: "bg-green-500",
+  failed: "bg-red-500",
+}
+
 function calcDnaScore(brief: LinkedInBrief, profileUrl: string): number {
   let score = 0
   if (profileUrl.trim()) score += 15
@@ -61,25 +68,35 @@ function calcDnaScore(brief: LinkedInBrief, profileUrl: string): number {
 function DnaScoreBar({ score }: { score: number }) {
   const color =
     score >= 90
-      ? { bar: "bg-green-500", text: "text-green-600" }
+      ? { bar: "from-green-400 to-emerald-500", text: "text-green-600", bg: "text-green-700 bg-green-50" }
       : score >= 61
-      ? { bar: "bg-violet-500", text: "text-violet-600" }
+      ? { bar: "from-violet-500 to-purple-600", text: "text-violet-600", bg: "text-violet-700 bg-violet-50" }
       : score >= 31
-      ? { bar: "bg-yellow-400", text: "text-yellow-600" }
-      : { bar: "bg-red-400", text: "text-red-500" }
+      ? { bar: "from-amber-400 to-orange-400", text: "text-amber-600", bg: "text-amber-700 bg-amber-50" }
+      : { bar: "from-red-400 to-rose-500", text: "text-red-500", bg: "text-red-700 bg-red-50" }
+
+  const label =
+    score >= 90 ? "Excellent — ready to generate!" :
+    score >= 61 ? "Good — almost there" :
+    score >= 31 ? "Needs more details" :
+    "Just getting started"
 
   return (
     <div className="w-full">
-      <div className="flex justify-between items-center mb-1">
-        <span className={`text-xs font-medium ${color.text}`}>ItGrows understands {score}% of your DNA</span>
-        <span className={`text-xs font-bold ${color.text}`}>{score}%</span>
+      <div className="flex justify-between items-center mb-2">
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-semibold text-slate-700">Content DNA Score</span>
+          <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${color.bg}`}>{label}</span>
+        </div>
+        <span className={`text-xl font-bold ${color.text}`}>{score}%</span>
       </div>
-      <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+      <div className="w-full h-3 bg-slate-100 rounded-full overflow-hidden shadow-inner">
         <div
-          className={`h-full rounded-full transition-all duration-500 ${color.bar}`}
+          className={`h-full rounded-full bg-gradient-to-r transition-all duration-700 ${color.bar}`}
           style={{ width: `${score}%` }}
         />
       </div>
+      <p className="text-xs text-slate-400 mt-1.5">ItGrows understands {score}% of your professional DNA</p>
     </div>
   )
 }
@@ -97,6 +114,22 @@ function LinkedInIcon({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" fill="currentColor" className={className}>
       <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+    </svg>
+  )
+}
+
+function InstagramIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" className={className}>
+      <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z" />
+    </svg>
+  )
+}
+
+function XIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" className={className}>
+      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.748l7.73-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
     </svg>
   )
 }
@@ -120,6 +153,7 @@ function PostCard({
   const [publishing, setPublishing] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [expanded, setExpanded] = useState(false)
 
   const isDirty = content !== post.content || scheduledFor !== (post.scheduledFor ? new Date(post.scheduledFor).toISOString().slice(0, 16) : "")
 
@@ -152,68 +186,87 @@ function PostCard({
       })
     : null
 
+  const previewText = content.length > 140 ? content.slice(0, 140) + "…" : content
+
   return (
-    <div className="rounded-xl border border-white/60 bg-white/60 p-4 space-y-3">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Badge
-            variant="outline"
-            className={`text-xs px-2 py-0.5 ${STATUS_COLORS[post.status] ?? STATUS_COLORS.draft}`}
-          >
-            {post.status}
-          </Badge>
-          {scheduledDate && post.status === "scheduled" && (
-            <span className="text-xs text-slate-400 flex items-center gap-1">
-              <Calendar className="w-3 h-3" />
-              {scheduledDate}
-            </span>
-          )}
-          {post.publishedAt && (
-            <span className="text-xs text-slate-400">
-              Published {new Date(post.publishedAt).toLocaleDateString()}
-            </span>
-          )}
-        </div>
-        <button
-          onClick={handleDelete}
-          disabled={deleting}
-          className="text-xs text-slate-400 hover:text-red-500 transition-colors"
-        >
-          {deleting ? "..." : "Delete"}
-        </button>
-      </div>
-
-      {post.publishError && (
-        <p className="text-xs text-red-500 bg-red-50 rounded-lg px-3 py-2">{post.publishError}</p>
-      )}
-
-      <textarea
-        value={content}
-        onChange={(e) => setContent(e.target.value)}
-        disabled={post.status === "published"}
-        rows={6}
-        className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 bg-white/80 focus:outline-none focus:ring-2 focus:ring-violet-400 resize-none disabled:opacity-60 disabled:cursor-not-allowed"
-      />
-
+    <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden hover:shadow-md transition-shadow">
       {post.imageUrl && (
-        <div className="rounded-lg overflow-hidden border border-slate-200">
-          <img
-            src={post.imageUrl}
-            alt="Post cover"
-            className="w-full object-cover max-h-48"
-          />
+        <div className="h-36 overflow-hidden bg-slate-100">
+          <img src={post.imageUrl} alt="Post cover" className="w-full h-full object-cover" />
         </div>
       )}
+      <div className="p-4 space-y-3">
+        {/* Status row */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className={`w-2 h-2 rounded-full ${STATUS_DOT[post.status] ?? STATUS_DOT.draft}`} />
+            <Badge variant="outline" className={`text-xs px-2 py-0.5 capitalize ${STATUS_COLORS[post.status] ?? STATUS_COLORS.draft}`}>
+              {post.status}
+            </Badge>
+            {scheduledDate && post.status === "scheduled" && (
+              <span className="text-xs text-slate-400 flex items-center gap-1">
+                <Calendar className="w-3 h-3" />
+                {scheduledDate}
+              </span>
+            )}
+            {post.publishedAt && (
+              <span className="text-xs text-slate-400">
+                {new Date(post.publishedAt).toLocaleDateString()}
+              </span>
+            )}
+          </div>
+          <button
+            onClick={handleDelete}
+            disabled={deleting}
+            className="text-xs text-slate-300 hover:text-red-400 transition-colors"
+          >
+            {deleting ? "..." : "✕"}
+          </button>
+        </div>
 
-      <div className="flex items-center gap-2">
-        {post.status !== "published" && (
+        {post.publishError && (
+          <p className="text-xs text-red-500 bg-red-50 rounded-lg px-3 py-2 border border-red-100">{post.publishError}</p>
+        )}
+
+        {/* Content preview / edit */}
+        {post.status === "published" ? (
+          <p className="text-sm text-slate-600 leading-relaxed">{previewText}</p>
+        ) : (
           <>
+            {!expanded ? (
+              <div>
+                <p className="text-sm text-slate-700 leading-relaxed">{previewText}</p>
+                {content.length > 140 && (
+                  <button onClick={() => setExpanded(true)} className="text-xs text-violet-500 mt-1 hover:underline">
+                    Show more
+                  </button>
+                )}
+              </div>
+            ) : (
+              <textarea
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                rows={6}
+                className="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-violet-300 resize-none"
+              />
+            )}
+            {expanded && content.length > 140 && (
+              <button onClick={() => setExpanded(false)} className="text-xs text-violet-500 hover:underline">
+                Collapse
+              </button>
+            )}
+          </>
+        )}
+
+        {/* Actions */}
+        {post.status !== "published" && (
+          <div className="flex items-center gap-2 pt-1 border-t border-slate-50">
             <div className="flex-1">
               <input
                 type="datetime-local"
                 value={scheduledFor}
                 onChange={(e) => setScheduledFor(e.target.value)}
-                className="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-200 bg-white/80 focus:outline-none focus:ring-2 focus:ring-violet-400"
+                className="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-violet-300"
               />
             </div>
             {isDirty && (
@@ -222,7 +275,7 @@ function PostCard({
                 variant="outline"
                 disabled={saving}
                 onClick={handleSave}
-                className="text-xs border-violet-300 text-violet-600 hover:bg-violet-50"
+                className="text-xs border-violet-200 text-violet-600 hover:bg-violet-50 shrink-0"
               >
                 {saving ? <Loader2 className="w-3 h-3 animate-spin" /> : saved ? "Saved!" : "Save"}
               </Button>
@@ -231,35 +284,41 @@ function PostCard({
               size="sm"
               disabled={publishing}
               onClick={handlePublish}
-              className="text-xs bg-[#0077B5] hover:bg-[#005f8e] text-white"
+              className="text-xs bg-[#0077B5] hover:bg-[#005f8e] text-white shrink-0"
             >
               {publishing ? (
                 <Loader2 className="w-3 h-3 animate-spin" />
               ) : (
                 <>
                   <Send className="w-3 h-3 mr-1" />
-                  Publish now
+                  Publish
                 </>
               )}
             </Button>
-          </>
+          </div>
         )}
         {post.status === "published" && post.linkedinPostId && (
-          <span className="text-xs text-green-600">LinkedIn ID: {post.linkedinPostId}</span>
+          <p className="text-xs text-green-600 flex items-center gap-1">
+            <Check className="w-3 h-3" />
+            Published · ID: {post.linkedinPostId}
+          </p>
         )}
       </div>
     </div>
   )
 }
 
+type ActiveTab = "posts" | "dna" | "account"
+
 function LinkedInPageContent() {
   const searchParams = useSearchParams()
+  const { data: session } = useSession()
   const [accounts, setAccounts] = useState<LinkedInAccount[]>([])
   const [loading, setLoading] = useState(true)
   const [disconnecting, setDisconnecting] = useState<string | null>(null)
   const [statusMessage, setStatusMessage] = useState<string | null>(null)
   const [subscriptionPlan, setSubscriptionPlan] = useState<string | null>(null)
-  const [briefOpen, setBriefOpen] = useState(false)
+  const [activeTab, setActiveTab] = useState<ActiveTab>("posts")
   const [brief, setBrief] = useState<LinkedInBrief>({
     niche: "",
     tone: "professional",
@@ -279,9 +338,12 @@ function LinkedInPageContent() {
   const [generating, setGenerating] = useState(false)
   const [generateError, setGenerateError] = useState<string | null>(null)
   const [generateTimer, setGenerateTimer] = useState(0)
+  const [publishedCollapsed, setPublishedCollapsed] = useState(true)
 
   const connected = searchParams.get("connected")
   const error = searchParams.get("error")
+
+  const userName = session?.user?.name ?? session?.user?.email?.split("@")[0] ?? "there"
 
   useEffect(() => {
     if (connected === "1") {
@@ -419,7 +481,6 @@ function LinkedInPageContent() {
         })
         if (b.profileUrl) setProfileUrl(b.profileUrl)
         setBriefIsAutoFilled(true)
-        setBriefOpen(true)
         setRefreshSuccess(true)
         setRefreshMessage("Updated from LinkedIn")
       } else {
@@ -499,219 +560,317 @@ function LinkedInPageContent() {
   }
 
   const isConnected = accounts.length > 0
+  const dnaScore = calcDnaScore(brief, profileUrl)
+  const activePosts = posts.filter((p) => p.status !== "published")
+  const publishedPosts = posts.filter((p) => p.status === "published")
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-[#1b1916] mb-1">LinkedIn</h1>
-        <p className="text-sm text-slate-500">Connect your LinkedIn account to generate and publish posts.</p>
-      </div>
-
-      {subscriptionPlan !== "personal" && !loading && (
-        <div className="mb-6 flex items-center justify-between gap-4 rounded-2xl border border-violet-200 bg-gradient-to-r from-violet-50 to-pink-50 px-5 py-4">
-          <div>
-            <p className="text-sm font-semibold text-violet-800">Upgrade to ItGrows Personal</p>
-            <p className="text-xs text-slate-500 mt-0.5">Get 7 AI-written LinkedIn posts per week, custom images, and auto-scheduling — for $15/month.</p>
-          </div>
-          <a
-            href="/personal"
-            className="shrink-0 rounded-xl bg-violet-600 px-4 py-2 text-xs font-semibold text-white hover:bg-violet-500 transition-colors"
-          >
-            Upgrade →
+    <div className="flex h-screen overflow-hidden" style={{ background: "linear-gradient(135deg, #f5f3ff 0%, #ede9fe 50%, #f3f2f1 100%)" }}>
+      {/* Left sidebar */}
+      <aside className="w-60 shrink-0 flex flex-col bg-white border-r border-slate-100 shadow-sm z-10">
+        {/* Logo */}
+        <div className="px-6 py-5 border-b border-slate-100">
+          <a href="/dashboard">
+            <span className="text-lg font-bold bg-gradient-to-r from-violet-600 to-pink-500 bg-clip-text text-transparent">
+              ItGrows.ai
+            </span>
           </a>
         </div>
-      )}
 
-      {statusMessage && (
-        <div
-          className={`mb-4 px-4 py-3 rounded-xl text-sm font-medium ${
-            connected === "1"
-              ? "bg-green-50 text-green-700 border border-green-200"
-              : "bg-red-50 text-red-700 border border-red-200"
-          }`}
-        >
-          {statusMessage}
+        {/* Social Media section */}
+        <div className="px-4 pt-5 pb-2">
+          <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest px-2 mb-2">Social Media</p>
+          {/* LinkedIn — active */}
+          <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-violet-600 text-white mb-1 cursor-default">
+            <LinkedInIcon className="w-4 h-4 shrink-0" />
+            <span className="text-sm font-semibold">LinkedIn</span>
+          </div>
+          {/* Instagram — coming soon */}
+          <button
+            disabled
+            className="w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl text-slate-400 cursor-not-allowed mb-1"
+          >
+            <div className="flex items-center gap-3">
+              <InstagramIcon className="w-4 h-4 shrink-0 opacity-50" />
+              <span className="text-sm">Instagram</span>
+            </div>
+            <span className="text-[10px] font-semibold bg-slate-100 text-slate-500 rounded-full px-2 py-0.5">Soon</span>
+          </button>
+          {/* Twitter/X — coming soon */}
+          <button
+            disabled
+            className="w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl text-slate-400 cursor-not-allowed"
+          >
+            <div className="flex items-center gap-3">
+              <XIcon className="w-4 h-4 shrink-0 opacity-50" />
+              <span className="text-sm">X (Twitter)</span>
+            </div>
+            <span className="text-[10px] font-semibold bg-slate-100 text-slate-500 rounded-full px-2 py-0.5">Soon</span>
+          </button>
         </div>
-      )}
 
-      {!isConnected && !loading && (
-        <Card className="bg-white/70 backdrop-blur border-white/50 shadow-sm mb-6">
-          <CardContent className="flex flex-col items-center justify-center py-12 gap-4">
-            <div className="w-14 h-14 bg-[#0077B5] rounded-2xl flex items-center justify-center">
-              <LinkedInIcon className="w-8 h-8 text-white" />
+        {/* Account section */}
+        <div className="px-4 pt-5 pb-2">
+          <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest px-2 mb-2">Account</p>
+          <a
+            href="/dashboard/settings"
+            className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 hover:text-violet-700 transition-colors mb-1"
+          >
+            <Settings className="w-4 h-4 shrink-0" />
+            <span className="text-sm">Settings</span>
+          </a>
+          <button
+            onClick={() => signOut({ callbackUrl: "/login" })}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 hover:text-violet-700 transition-colors"
+          >
+            <LogOut className="w-4 h-4 shrink-0" />
+            <span className="text-sm">Logout</span>
+          </button>
+        </div>
+
+        {/* Spacer */}
+        <div className="flex-1" />
+
+        {/* User info at bottom */}
+        <div className="px-4 py-4 border-t border-slate-100">
+          <div className="flex items-center gap-3 px-2">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-400 to-pink-400 flex items-center justify-center text-white text-sm font-bold shrink-0">
+              {userName.charAt(0).toUpperCase()}
             </div>
-            <div className="text-center">
-              <h2 className="text-lg font-semibold text-[#1b1916] mb-1">Connect LinkedIn</h2>
-              <p className="text-sm text-slate-500 max-w-sm">
-                Link your LinkedIn personal profile or company page to generate and schedule posts.
-              </p>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-medium text-slate-700 truncate">{userName}</p>
+              <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${
+                subscriptionPlan === "personal"
+                  ? "bg-violet-100 text-violet-600"
+                  : "bg-slate-100 text-slate-500"
+              }`}>
+                {subscriptionPlan === "personal" ? "Personal" : "Free"}
+              </span>
             </div>
-            <a href="/api/linkedin/connect">
-              <Button className="bg-[#0077B5] hover:bg-[#005f8e] text-white px-6">
-                Connect LinkedIn
-              </Button>
-            </a>
-          </CardContent>
-        </Card>
-      )}
+          </div>
+        </div>
+      </aside>
 
-      {isConnected && (
-        <>
-          {/* Connected accounts */}
-          <Card className="bg-white/70 backdrop-blur border-white/50 shadow-sm mb-4">
-            <CardContent className="py-3 px-4 space-y-2">
-              {accounts.map((account) => (
-                <div
-                  key={account.id}
-                  className="flex items-center justify-between"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-[#0077B5] rounded-lg flex items-center justify-center shrink-0">
-                      <LinkedInIcon className="w-4 h-4 text-white" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-[#1b1916]">
-                        {account.pageName ?? (account.pageType === "personal" ? "Personal Profile" : "Company Page")}
-                      </p>
-                      <div className="flex items-center gap-2">
-                        <Badge
-                          variant="outline"
-                          className="text-xs border-violet-200 text-violet-600 px-1.5 py-0"
-                        >
-                          {account.pageType === "personal" ? "Personal" : "Organization"}
-                        </Badge>
-                        {account.pageHandle && (
-                          <span className="text-xs text-slate-400">@{account.pageHandle}</span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="border-red-200 text-red-600 hover:bg-red-50 text-xs"
-                    disabled={disconnecting === account.id}
-                    onClick={() => handleDisconnect(account.id)}
-                  >
-                    {disconnecting === account.id ? "..." : "Disconnect"}
-                  </Button>
-                </div>
-              ))}
-              <div className="pt-1">
-                <a href="/api/linkedin/connect">
-                  <Button size="sm" variant="outline" className="border-violet-300 text-violet-600 hover:bg-violet-50 text-xs">
-                    + Connect another account
-                  </Button>
-                </a>
-              </div>
-            </CardContent>
-          </Card>
+      {/* Main content */}
+      <main className="flex-1 overflow-auto">
+        <div className="max-w-4xl mx-auto px-6 py-8">
 
-          {/* How it works guide */}
-          <div className="mb-4 rounded-2xl bg-gradient-to-br from-violet-50 to-slate-50 border border-violet-100 p-5">
-            <h3 className="text-sm font-semibold text-violet-700 mb-4 flex items-center gap-2">
-              <span className="w-5 h-5 rounded-full bg-violet-600 text-white flex items-center justify-center text-[10px] font-bold shrink-0">?</span>
-              How it works
-            </h3>
-            <ol className="space-y-4">
-              <li className="flex gap-3">
-                <span className="w-7 h-7 rounded-full bg-violet-600 text-white flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">1</span>
-                <div>
-                  <p className="text-sm font-semibold text-[#1b1916] flex items-center gap-1.5">
-                    <span>📝</span> Fill in your Content Brief
-                  </p>
-                  <p className="text-xs text-slate-500 mt-0.5">
-                    Tell us about your business, target audience, and goals
-                  </p>
-                </div>
-              </li>
-              <li className="flex gap-3">
-                <span className="w-7 h-7 rounded-full bg-violet-600 text-white flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">2</span>
-                <div>
-                  <p className="text-sm font-semibold text-[#1b1916] flex items-center gap-1.5">
-                    <span>✨</span> We generate posts crafted just for you
-                  </p>
-                  <p className="text-xs text-slate-500 mt-0.5">
-                    Our AI creates 7 personalized LinkedIn posts with professional visuals, tailored to your niche and tone of voice
-                  </p>
-                </div>
-              </li>
-              <li className="flex gap-3">
-                <span className="w-7 h-7 rounded-full bg-violet-600 text-white flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">3</span>
-                <div>
-                  <p className="text-sm font-semibold text-[#1b1916] flex items-center gap-1.5">
-                    <span>🚀</span> Review, edit, and publish
-                  </p>
-                  <p className="text-xs text-slate-500 mt-0.5">
-                    Approve posts, schedule them or publish instantly — we handle the rest
-                  </p>
-                </div>
-              </li>
-              <li className="flex gap-3">
-                <span className="w-7 h-7 rounded-full bg-violet-600 text-white flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">4</span>
-                <div>
-                  <p className="text-sm font-semibold text-[#1b1916] flex items-center gap-1.5">
-                    <span>🌱</span> and Watch how <span className="text-violet-600">It Grows</span>...
-                  </p>
-                  <p className="text-xs text-slate-500 mt-0.5">
-                    Consistent, professional content compounds over time — your audience grows, your authority builds, and so does your business
-                  </p>
-                </div>
-              </li>
-            </ol>
+          {/* Greeting */}
+          <div className="mb-6">
+            <h1 className="text-2xl font-bold text-[#1b1916] mb-1">
+              Good morning, {userName} 👋
+            </h1>
+            <p className="text-slate-500 text-sm">
+              {isConnected ? "Your LinkedIn is on autopilot" : "Connect LinkedIn to get started"}
+            </p>
           </div>
 
-          {/* Brief section */}
-          <Card className="bg-white/70 backdrop-blur border-white/50 shadow-sm mb-4">
-            <CardHeader
-              className="py-3 px-4 cursor-pointer"
-              onClick={() => setBriefOpen((o) => !o)}
-            >
-              <div className="flex items-center justify-between gap-2">
-                <div className="flex items-center gap-2 flex-wrap min-w-0">
-                  <CardTitle className="text-sm font-semibold text-[#1b1916] shrink-0">Your professional DNA</CardTitle>
-                  {briefIsAutoFilled && (
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-violet-50 text-violet-600 border border-violet-200">
-                      ✨ Sourced from LinkedIn — edit if needed
-                    </span>
-                  )}
+          {/* Upgrade banner */}
+          {subscriptionPlan !== "personal" && !loading && (
+            <div className="mb-6 flex items-center justify-between gap-4 rounded-2xl px-5 py-4 text-white shadow-lg"
+              style={{ background: "linear-gradient(135deg, #7c3aed 0%, #a855f7 60%, #ec4899 100%)" }}>
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
+                  <Zap className="w-4 h-4" />
                 </div>
-                {briefOpen ? (
-                  <ChevronUp className="w-4 h-4 text-slate-400 shrink-0" />
-                ) : (
-                  <ChevronDown className="w-4 h-4 text-slate-400 shrink-0" />
+                <div>
+                  <p className="text-sm font-bold">Upgrade to Personal — $15/mo</p>
+                  <p className="text-xs text-white/75 mt-0.5">7 AI posts/week, custom images, auto-scheduling</p>
+                </div>
+              </div>
+              <a
+                href="/personal"
+                className="shrink-0 bg-white text-violet-700 font-semibold text-xs rounded-xl px-4 py-2 hover:bg-violet-50 transition-colors"
+              >
+                Upgrade →
+              </a>
+            </div>
+          )}
+
+          {/* Status messages */}
+          {statusMessage && (
+            <div className={`mb-4 px-4 py-3 rounded-xl text-sm font-medium ${
+              connected === "1"
+                ? "bg-green-50 text-green-700 border border-green-200"
+                : "bg-red-50 text-red-700 border border-red-200"
+            }`}>
+              {statusMessage}
+            </div>
+          )}
+
+          {/* Tabs */}
+          <div className="flex items-center gap-1 mb-6 bg-white rounded-2xl p-1 shadow-sm border border-slate-100 w-fit">
+            {(["posts", "dna", "account"] as ActiveTab[]).map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`px-5 py-2 rounded-xl text-sm font-semibold transition-all ${
+                  activeTab === tab
+                    ? "bg-violet-600 text-white shadow-sm"
+                    : "text-slate-500 hover:text-slate-700 hover:bg-slate-50"
+                }`}
+              >
+                {tab === "posts" ? "Posts" : tab === "dna" ? "Content DNA" : "Account"}
+              </button>
+            ))}
+          </div>
+
+          {/* ===================== POSTS TAB ===================== */}
+          {activeTab === "posts" && (
+            <div className="space-y-5">
+              {isConnected ? (
+                <>
+                  {/* Action bar */}
+                  <div className="flex items-center gap-3">
+                    <Button
+                      disabled={generating}
+                      onClick={handleGenerate}
+                      className="bg-violet-600 hover:bg-violet-500 text-white font-semibold px-6 py-2.5 rounded-xl shadow-sm"
+                    >
+                      {generating ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                          Generating... ({generateTimer}s)
+                        </>
+                      ) : (
+                        <>
+                          <Zap className="w-4 h-4 mr-2" />
+                          Generate 7 Posts
+                        </>
+                      )}
+                    </Button>
+                    <span className="text-sm text-slate-400 flex items-center gap-1.5">
+                      <Calendar className="w-4 h-4" />
+                      Schedule: next 7 days
+                    </span>
+                    {posts.length > 0 && (
+                      <button
+                        onClick={fetchPosts}
+                        className="ml-auto flex items-center gap-1.5 text-xs text-slate-400 hover:text-violet-600 transition-colors"
+                      >
+                        <RefreshCw className="w-3 h-3" />
+                        Refresh
+                      </button>
+                    )}
+                  </div>
+
+                  {generateError && (
+                    <div className="px-4 py-3 rounded-xl bg-red-50 text-red-600 text-sm border border-red-100">
+                      {generateError}
+                    </div>
+                  )}
+
+                  {/* Posts grid */}
+                  {postsLoading ? (
+                    <div className="flex justify-center py-16">
+                      <Loader2 className="w-7 h-7 animate-spin text-violet-400" />
+                    </div>
+                  ) : activePosts.length === 0 && publishedPosts.length === 0 ? (
+                    <div className="bg-white rounded-2xl border border-slate-100 shadow-sm py-16 flex flex-col items-center gap-4 text-center">
+                      <div className="w-16 h-16 rounded-2xl bg-violet-50 flex items-center justify-center">
+                        <LinkedInIcon className="w-8 h-8 text-violet-400" />
+                      </div>
+                      <div>
+                        <p className="text-base font-semibold text-slate-700 mb-1">No posts yet</p>
+                        <p className="text-sm text-slate-400 max-w-xs">
+                          Click &quot;Generate 7 Posts&quot; to create your first week of LinkedIn content.
+                        </p>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      {activePosts.length > 0 && (
+                        <>
+                          <div className="flex items-center justify-between">
+                            <h2 className="text-sm font-semibold text-slate-700">
+                              Upcoming · {activePosts.length} post{activePosts.length !== 1 ? "s" : ""}
+                            </h2>
+                          </div>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {activePosts.map((post) => (
+                              <PostCard
+                                key={post.id}
+                                post={post}
+                                onUpdate={handleUpdatePost}
+                                onPublish={handlePublishPost}
+                                onDelete={handleDeletePost}
+                              />
+                            ))}
+                          </div>
+                        </>
+                      )}
+
+                      {/* Published posts — collapsible */}
+                      {publishedPosts.length > 0 && (
+                        <div className="mt-4">
+                          <button
+                            onClick={() => setPublishedCollapsed((c) => !c)}
+                            className="flex items-center gap-2 text-sm font-semibold text-slate-500 hover:text-slate-700 transition-colors mb-3"
+                          >
+                            <span>{publishedCollapsed ? "▶" : "▼"}</span>
+                            Published · {publishedPosts.length} post{publishedPosts.length !== 1 ? "s" : ""}
+                          </button>
+                          {!publishedCollapsed && (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              {publishedPosts.map((post) => (
+                                <PostCard
+                                  key={post.id}
+                                  post={post}
+                                  onUpdate={handleUpdatePost}
+                                  onPublish={handlePublishPost}
+                                  onDelete={handleDeletePost}
+                                />
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </>
+                  )}
+                </>
+              ) : (
+                <div className="bg-white rounded-2xl border border-slate-100 shadow-sm py-16 flex flex-col items-center gap-5 text-center">
+                  <div className="w-16 h-16 rounded-2xl bg-[#0077B5] flex items-center justify-center shadow-lg">
+                    <LinkedInIcon className="w-9 h-9 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-base font-semibold text-slate-700 mb-1">Connect LinkedIn first</p>
+                    <p className="text-sm text-slate-400 max-w-xs">
+                      Go to the Account tab to connect your LinkedIn profile and start generating posts.
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setActiveTab("account")}
+                    className="text-sm font-semibold text-violet-600 hover:text-violet-500 transition-colors"
+                  >
+                    Go to Account →
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ===================== DNA TAB ===================== */}
+          {activeTab === "dna" && (
+            <div className="space-y-5">
+              {/* DNA score card */}
+              <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+                <DnaScoreBar score={dnaScore} />
+                {briefIsAutoFilled && (
+                  <div className="mt-4 flex items-center gap-2 px-3 py-2 rounded-xl bg-violet-50 border border-violet-100">
+                    <span className="text-violet-500 text-sm">✨</span>
+                    <p className="text-xs text-violet-700 font-medium">Sourced from your LinkedIn — review and edit if needed</p>
+                  </div>
                 )}
               </div>
-              <div className="mt-2" onClick={(e) => e.stopPropagation()}>
-                <DnaScoreBar score={calcDnaScore(brief, profileUrl)} />
-              </div>
-              {(() => {
-                const score = calcDnaScore(brief, profileUrl)
-                return score >= 90 ? (
-                  <p className="text-xs text-green-600 font-medium mt-1.5">
-                    Your DNA is complete — ready to generate! 🎯
-                  </p>
-                ) : score < 60 ? (
-                  <p className="text-xs text-slate-400 mt-1.5">
-                    <button
-                      type="button"
-                      className="hover:text-violet-600 transition-colors"
-                      onClick={(e) => { e.stopPropagation(); setBriefOpen(true) }}
-                    >
-                      Add more details to get better posts →
-                    </button>
-                  </p>
-                ) : (
-                  <p className="text-xs text-slate-400 mt-0.5">
-                    Your unique background that powers every post we create
-                  </p>
-                )
-              })()}
-            </CardHeader>
-            {briefOpen && (
-              <CardContent className="space-y-3 pt-0">
+
+              {/* Brief form */}
+              <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 space-y-4">
+                <h2 className="text-base font-semibold text-slate-800 mb-1">Your Professional DNA</h2>
+
+                {/* LinkedIn Profile URL */}
                 <div>
-                  <label className="flex items-center text-xs font-medium text-slate-600 mb-1">
+                  <label className="flex items-center text-xs font-semibold text-slate-600 mb-1.5 uppercase tracking-wide">
                     LinkedIn Profile URL <FieldCheckmark value={profileUrl} />
                   </label>
                   <div className="flex gap-2">
@@ -720,8 +879,8 @@ function LinkedInPageContent() {
                       placeholder="https://linkedin.com/in/your-name"
                       value={profileUrl}
                       onChange={(e) => setProfileUrl(e.target.value)}
-                      className={`flex-1 px-3 py-2 text-sm rounded-lg border bg-white/80 focus:outline-none focus:ring-2 focus:ring-violet-400 transition-colors ${
-                        profileUrl.trim() ? "border-green-300" : "border-slate-200"
+                      className={`flex-1 px-3 py-2.5 text-sm rounded-xl border bg-slate-50 focus:outline-none focus:ring-2 focus:ring-violet-300 transition-colors ${
+                        profileUrl.trim() ? "border-green-300 bg-green-50/30" : "border-slate-200"
                       }`}
                     />
                     <Button
@@ -729,188 +888,227 @@ function LinkedInPageContent() {
                       type="button"
                       disabled={refreshingBrief || !profileUrl.trim()}
                       onClick={() => handleRefreshFromLinkedIn(profileUrl.trim())}
-                      className="shrink-0 bg-[#0077B5] hover:bg-[#005f8e] text-white text-xs px-3"
+                      className="shrink-0 bg-[#0077B5] hover:bg-[#005f8e] text-white text-xs px-3 rounded-xl"
                     >
                       {refreshingBrief ? (
                         <Loader2 className="w-3 h-3 animate-spin mr-1" />
                       ) : (
                         <RefreshCw className="w-3 h-3 mr-1" />
                       )}
-                      {refreshingBrief ? "Fetching..." : "Fetch from profile →"}
+                      {refreshingBrief ? "Fetching..." : "Fetch from profile"}
                     </Button>
                   </div>
                   {refreshMessage && (
-                    <p
-                      className={`mt-1.5 text-xs px-2 py-1 rounded-lg border ${
-                        refreshSuccess
-                          ? "bg-green-50 text-green-700 border-green-200"
-                          : "bg-blue-50 text-blue-600 border-blue-200"
-                      }`}
-                    >
+                    <p className={`mt-2 text-xs px-3 py-2 rounded-xl border ${
+                      refreshSuccess
+                        ? "bg-green-50 text-green-700 border-green-200"
+                        : "bg-blue-50 text-blue-600 border-blue-200"
+                    }`}>
                       {refreshSuccess ? "✅" : "ℹ️"} {refreshMessage}
                     </p>
                   )}
                 </div>
-                <div className="grid grid-cols-2 gap-3">
+
+                {/* Company + Niche */}
+                <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="flex items-center text-xs font-medium text-slate-600 mb-1">
+                    <label className="flex items-center text-xs font-semibold text-slate-600 mb-1.5 uppercase tracking-wide">
                       Company Name <FieldCheckmark value={brief.companyName} />
                     </label>
                     <input
                       type="text"
-                      placeholder="e.g. ItGrows, Stripe, Notion"
+                      placeholder="e.g. ItGrows, Stripe"
                       value={brief.companyName}
                       onChange={(e) => setBrief((b) => ({ ...b, companyName: e.target.value }))}
-                      className={`w-full px-3 py-2 text-sm rounded-lg border bg-white/80 focus:outline-none focus:ring-2 focus:ring-violet-400 transition-colors ${
-                        brief.companyName.trim() ? "border-green-300" : "border-slate-200"
+                      className={`w-full px-3 py-2.5 text-sm rounded-xl border bg-slate-50 focus:outline-none focus:ring-2 focus:ring-violet-300 transition-colors ${
+                        brief.companyName.trim() ? "border-green-300 bg-green-50/30" : "border-slate-200"
                       }`}
                     />
                   </div>
                   <div>
-                    <label className="flex items-center text-xs font-medium text-slate-600 mb-1">
+                    <label className="flex items-center text-xs font-semibold text-slate-600 mb-1.5 uppercase tracking-wide">
                       Niche / Industry <FieldCheckmark value={brief.niche} />
                     </label>
                     <input
                       type="text"
-                      placeholder="e.g. AI SaaS, B2B sales, fintech"
+                      placeholder="e.g. AI SaaS, fintech"
                       value={brief.niche}
                       onChange={(e) => setBrief((b) => ({ ...b, niche: e.target.value }))}
-                      className={`w-full px-3 py-2 text-sm rounded-lg border bg-white/80 focus:outline-none focus:ring-2 focus:ring-violet-400 transition-colors ${
-                        brief.niche.trim() ? "border-green-300" : "border-slate-200"
+                      className={`w-full px-3 py-2.5 text-sm rounded-xl border bg-slate-50 focus:outline-none focus:ring-2 focus:ring-violet-300 transition-colors ${
+                        brief.niche.trim() ? "border-green-300 bg-green-50/30" : "border-slate-200"
                       }`}
                     />
                   </div>
                 </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs font-medium text-slate-600 mb-1">Tone</label>
-                    <select
-                      value={brief.tone}
-                      onChange={(e) => setBrief((b) => ({ ...b, tone: e.target.value }))}
-                      className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 bg-white/80 focus:outline-none focus:ring-2 focus:ring-violet-400"
-                    >
-                      <option value="professional">Professional</option>
-                      <option value="casual">Casual</option>
-                      <option value="inspirational">Inspirational</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="flex items-center text-xs font-medium text-slate-600 mb-1">
-                      Target Audience <FieldCheckmark value={brief.targetAudience} />
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="e.g. Series A founders, growth marketers"
-                      value={brief.targetAudience}
-                      onChange={(e) => setBrief((b) => ({ ...b, targetAudience: e.target.value }))}
-                      className={`w-full px-3 py-2 text-sm rounded-lg border bg-white/80 focus:outline-none focus:ring-2 focus:ring-violet-400 transition-colors ${
-                        brief.targetAudience.trim() ? "border-green-300" : "border-slate-200"
-                      }`}
-                    />
-                  </div>
-                </div>
+
+                {/* Target Audience */}
                 <div>
-                  <label className="flex items-center text-xs font-medium text-slate-600 mb-1">
+                  <label className="flex items-center text-xs font-semibold text-slate-600 mb-1.5 uppercase tracking-wide">
+                    Target Audience <FieldCheckmark value={brief.targetAudience} />
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Series A founders, growth marketers"
+                    value={brief.targetAudience}
+                    onChange={(e) => setBrief((b) => ({ ...b, targetAudience: e.target.value }))}
+                    className={`w-full px-3 py-2.5 text-sm rounded-xl border bg-slate-50 focus:outline-none focus:ring-2 focus:ring-violet-300 transition-colors ${
+                      brief.targetAudience.trim() ? "border-green-300 bg-green-50/30" : "border-slate-200"
+                    }`}
+                  />
+                </div>
+
+                {/* Goals */}
+                <div>
+                  <label className="flex items-center text-xs font-semibold text-slate-600 mb-1.5 uppercase tracking-wide">
                     Goals <FieldCheckmark value={brief.goals} />
                   </label>
                   <input
                     type="text"
-                    placeholder="e.g. attract inbound leads, build thought leadership, grow to 5k followers"
+                    placeholder="e.g. attract inbound leads, build thought leadership"
                     value={brief.goals}
                     onChange={(e) => setBrief((b) => ({ ...b, goals: e.target.value }))}
-                    className={`w-full px-3 py-2 text-sm rounded-lg border bg-white/80 focus:outline-none focus:ring-2 focus:ring-violet-400 transition-colors ${
-                      brief.goals.trim() ? "border-green-300" : "border-slate-200"
+                    className={`w-full px-3 py-2.5 text-sm rounded-xl border bg-slate-50 focus:outline-none focus:ring-2 focus:ring-violet-300 transition-colors ${
+                      brief.goals.trim() ? "border-green-300 bg-green-50/30" : "border-slate-200"
                     }`}
                   />
                 </div>
+
+                {/* Tone selector */}
+                <div>
+                  <label className="block text-xs font-semibold text-slate-600 mb-2 uppercase tracking-wide">Tone of Voice</label>
+                  <div className="flex gap-2">
+                    {(["professional", "casual", "inspirational"] as const).map((tone) => (
+                      <button
+                        key={tone}
+                        type="button"
+                        onClick={() => setBrief((b) => ({ ...b, tone }))}
+                        className={`px-4 py-2 rounded-xl text-sm font-medium capitalize transition-all border ${
+                          brief.tone === tone
+                            ? "bg-violet-600 text-white border-violet-600 shadow-sm"
+                            : "bg-slate-50 text-slate-600 border-slate-200 hover:border-violet-300 hover:text-violet-600"
+                        }`}
+                      >
+                        {tone}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
                 <Button
-                  size="sm"
-                  variant="outline"
                   disabled={savingBrief}
                   onClick={handleSaveBrief}
-                  className="border-violet-300 text-violet-600 hover:bg-violet-50"
+                  className="bg-violet-600 hover:bg-violet-500 text-white rounded-xl px-6"
                 >
                   {savingBrief ? (
-                    <Loader2 className="w-3 h-3 animate-spin mr-1" />
+                    <Loader2 className="w-4 h-4 animate-spin mr-2" />
                   ) : null}
                   {briefSaved ? "Saved!" : "Save DNA"}
                 </Button>
-              </CardContent>
-            )}
-          </Card>
-
-          {/* Generate button */}
-          <div className="mb-4">
-            <Button
-              disabled={generating}
-              onClick={handleGenerate}
-              className="bg-gradient-to-r from-violet-600 to-pink-500 text-white hover:opacity-90 w-full py-5 text-base font-semibold"
-            >
-              {generating ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                  Generating 7 posts... ({generateTimer}s)
-                </>
-              ) : (
-                <>
-                  <RefreshCw className="w-4 h-4 mr-2" />
-                  Generate 7 LinkedIn Posts
-                </>
-              )}
-            </Button>
-            {generateError && (
-              <p className="text-xs text-red-500 mt-2 text-center">{generateError}</p>
-            )}
-          </div>
-
-          {/* Posts list */}
-          {postsLoading ? (
-            <div className="flex justify-center py-8">
-              <Loader2 className="w-6 h-6 animate-spin text-violet-500" />
+              </div>
             </div>
-          ) : posts.length === 0 ? (
-            <Card className="bg-white/70 backdrop-blur border-white/50 shadow-sm">
-              <CardContent className="py-10 flex flex-col items-center gap-3 text-center">
-                <div className="text-3xl">📝</div>
-                <p className="text-sm font-medium text-[#1b1916]">No posts yet</p>
-                <p className="text-xs text-slate-400 max-w-xs">
-                  Fill in your content brief and click &quot;Generate 7 LinkedIn Posts&quot; to get started.
-                </p>
-              </CardContent>
-            </Card>
-          ) : (
-            <Card className="bg-white/70 backdrop-blur border-white/50 shadow-sm">
-              <CardHeader className="pb-2">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-sm font-semibold text-[#1b1916]">
-                    Posts ({posts.length})
-                  </CardTitle>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={fetchPosts}
-                    className="border-slate-200 text-slate-500 hover:bg-slate-50 text-xs"
-                  >
-                    <RefreshCw className="w-3 h-3 mr-1" />
-                    Refresh
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {posts.map((post) => (
-                  <PostCard
-                    key={post.id}
-                    post={post}
-                    onUpdate={handleUpdatePost}
-                    onPublish={handlePublishPost}
-                    onDelete={handleDeletePost}
-                  />
-                ))}
-              </CardContent>
-            </Card>
           )}
-        </>
-      )}
+
+          {/* ===================== ACCOUNT TAB ===================== */}
+          {activeTab === "account" && (
+            <div className="space-y-5">
+              {/* Connected accounts */}
+              <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-base font-semibold text-slate-800">Connected Accounts</h2>
+                  <a href="/api/linkedin/connect">
+                    <Button size="sm" className="bg-[#0077B5] hover:bg-[#005f8e] text-white text-xs rounded-xl">
+                      + Connect LinkedIn
+                    </Button>
+                  </a>
+                </div>
+
+                {loading ? (
+                  <div className="flex justify-center py-8">
+                    <Loader2 className="w-6 h-6 animate-spin text-violet-400" />
+                  </div>
+                ) : accounts.length === 0 ? (
+                  <div className="py-10 flex flex-col items-center gap-4 text-center">
+                    <div className="w-14 h-14 rounded-2xl bg-[#0077B5] flex items-center justify-center shadow-md">
+                      <LinkedInIcon className="w-8 h-8 text-white" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-slate-700 mb-1">No accounts connected</p>
+                      <p className="text-xs text-slate-400 max-w-xs">
+                        Link your LinkedIn personal profile or company page to generate and schedule posts.
+                      </p>
+                    </div>
+                    <a href="/api/linkedin/connect">
+                      <Button className="bg-[#0077B5] hover:bg-[#005f8e] text-white rounded-xl px-6">
+                        Connect LinkedIn
+                      </Button>
+                    </a>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {accounts.map((account) => (
+                      <div key={account.id} className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-100">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-[#0077B5] rounded-xl flex items-center justify-center shrink-0 shadow-sm">
+                            <LinkedInIcon className="w-5 h-5 text-white" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-semibold text-slate-800">
+                              {account.pageName ?? (account.pageType === "personal" ? "Personal Profile" : "Company Page")}
+                            </p>
+                            <div className="flex items-center gap-2 mt-0.5">
+                              <Badge variant="outline" className="text-[10px] border-violet-200 text-violet-600 px-1.5 py-0">
+                                {account.pageType === "personal" ? "Personal" : "Organization"}
+                              </Badge>
+                              {account.pageHandle && (
+                                <span className="text-xs text-slate-400">@{account.pageHandle}</span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="border-red-200 text-red-500 hover:bg-red-50 text-xs rounded-lg"
+                          disabled={disconnecting === account.id}
+                          onClick={() => handleDisconnect(account.id)}
+                        >
+                          {disconnecting === account.id ? <Loader2 className="w-3 h-3 animate-spin" /> : "Disconnect"}
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* How it works */}
+              <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+                <h2 className="text-base font-semibold text-slate-800 mb-5">How it works</h2>
+                <ol className="space-y-5">
+                  {[
+                    { icon: "📝", title: "Fill in your Content Brief", desc: "Tell us about your business, target audience, and goals" },
+                    { icon: "✨", title: "We generate posts crafted just for you", desc: "Our AI creates 7 personalized LinkedIn posts with professional visuals, tailored to your niche and tone" },
+                    { icon: "🚀", title: "Review, edit, and publish", desc: "Approve posts, schedule them or publish instantly — we handle the rest" },
+                    { icon: "🌱", title: "Watch how It Grows...", desc: "Consistent, professional content compounds over time — your audience grows, your authority builds" },
+                  ].map((step, i) => (
+                    <li key={i} className="flex gap-4">
+                      <div className="w-8 h-8 rounded-xl bg-violet-600 text-white flex items-center justify-center text-sm font-bold shrink-0 shadow-sm">
+                        {i + 1}
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-slate-800 flex items-center gap-1.5">
+                          <span>{step.icon}</span> {step.title}
+                        </p>
+                        <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">{step.desc}</p>
+                      </div>
+                    </li>
+                  ))}
+                </ol>
+              </div>
+            </div>
+          )}
+
+        </div>
+      </main>
     </div>
   )
 }
