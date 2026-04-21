@@ -566,15 +566,16 @@ function LinkedInPageContent() {
       if (res.status === 429) {
         const data = await res.json() as { message?: string }
         setGenerateError(data.message ?? "Too many requests. Please wait before generating again.")
-        setGenerating(false)
         return
       }
-      const data = await res.json() as { posts?: LinkedInPost[]; error?: string }
-      if (!res.ok || data.error) {
-        setGenerateError(data.error ?? "Failed to generate posts")
-      } else {
-        fetchPosts()
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({})) as { error?: string; message?: string }
+        setGenerateError(data.message ?? data.error ?? "Generation failed. Please try again.")
+        return
       }
+      const data = await res.json() as { posts?: LinkedInPost[] }
+      fetchPosts()
+      void data
     } catch (err) {
       setGenerateError(err instanceof Error ? err.message : "Network error — request may have timed out")
     } finally {
@@ -583,14 +584,24 @@ function LinkedInPageContent() {
   }
 
   async function handleUpdatePost(postId: string, content: string, scheduledFor: string) {
-    await fetch("/api/linkedin/posts", {
+    const res = await fetch("/api/linkedin/posts", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ postId, content, scheduledFor: scheduledFor || undefined }),
     })
+    if (!res.ok) {
+      console.error("Failed to update post")
+      const data = await res.json().catch(() => ({})) as { error?: string; message?: string }
+      setPosts((prev) =>
+        prev.map((p) =>
+          p.id === postId ? { ...p, publishError: data.message ?? data.error ?? "Failed to save changes. Please try again." } : p
+        )
+      )
+      return
+    }
     setPosts((prev) =>
       prev.map((p) =>
-        p.id === postId ? { ...p, content, scheduledFor: scheduledFor || p.scheduledFor } : p
+        p.id === postId ? { ...p, content, scheduledFor: scheduledFor || p.scheduledFor, publishError: null } : p
       )
     )
   }
@@ -636,7 +647,12 @@ function LinkedInPageContent() {
   }
 
   async function handleDeletePost(postId: string) {
-    await fetch(`/api/linkedin/posts?id=${postId}`, { method: "DELETE" })
+    const res = await fetch(`/api/linkedin/posts?id=${postId}`, { method: "DELETE" })
+    if (!res.ok) {
+      console.error("Failed to delete post")
+      setStatusMessage("Failed to delete post. Please try again.")
+      return
+    }
     setPosts((prev) => prev.filter((p) => p.id !== postId))
   }
 
@@ -1217,28 +1233,22 @@ function LinkedInPageContent() {
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                       <button
-                        onClick={async () => {
-                          const res = await fetch("/api/stripe/checkout", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ planType: "monthly" }) })
-                          const data = await res.json() as { url?: string }
-                          if (data.url) window.location.href = data.url
-                        }}
-                        className="flex flex-col items-center gap-1 p-4 rounded-xl border-2 border-violet-200 bg-violet-50 hover:border-violet-400 hover:bg-violet-100 transition-colors cursor-pointer"
+                        onClick={() => handleUpgrade("monthly")}
+                        disabled={checkingOut}
+                        className="flex flex-col items-center gap-1 p-4 rounded-xl border-2 border-violet-200 bg-violet-50 hover:border-violet-400 hover:bg-violet-100 transition-colors cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
                       >
                         <span className="text-base font-bold text-violet-700">$15</span>
                         <span className="text-xs text-violet-600 font-medium">/ month</span>
-                        <span className="text-[10px] text-slate-500 mt-1">Billed monthly</span>
+                        <span className="text-[10px] text-slate-500 mt-1">{checkingOut ? "Loading..." : "Billed monthly"}</span>
                       </button>
                       <button
-                        onClick={async () => {
-                          const res = await fetch("/api/stripe/checkout", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ planType: "annual" }) })
-                          const data = await res.json() as { url?: string }
-                          if (data.url) window.location.href = data.url
-                        }}
-                        className="flex flex-col items-center gap-1 p-4 rounded-xl border-2 border-pink-200 bg-pink-50 hover:border-pink-400 hover:bg-pink-100 transition-colors cursor-pointer"
+                        onClick={() => handleUpgrade("annual")}
+                        disabled={checkingOut}
+                        className="flex flex-col items-center gap-1 p-4 rounded-xl border-2 border-pink-200 bg-pink-50 hover:border-pink-400 hover:bg-pink-100 transition-colors cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
                       >
                         <span className="text-base font-bold text-pink-700">$12</span>
                         <span className="text-xs text-pink-600 font-medium">/ month</span>
-                        <span className="text-[10px] text-slate-500 mt-1">$144/yr · save 20%</span>
+                        <span className="text-[10px] text-slate-500 mt-1">{checkingOut ? "Loading..." : "$144/yr · save 20%"}</span>
                       </button>
                     </div>
                     <p className="text-xs text-slate-400 text-center">Cancel anytime. Secure payment via Stripe.</p>
