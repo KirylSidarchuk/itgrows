@@ -354,6 +354,7 @@ function LinkedInPageContent() {
   const [generateError, setGenerateError] = useState<string | null>(null)
   const [generateTimer, setGenerateTimer] = useState(0)
   const [publishedCollapsed, setPublishedCollapsed] = useState(true)
+  const [deletingAccount, setDeletingAccount] = useState(false)
 
   const connected = searchParams.get("connected")
   const error = searchParams.get("error")
@@ -452,6 +453,23 @@ function LinkedInPageContent() {
     await fetch(url, { method: "DELETE" })
     setAccounts((prev) => (id ? prev.filter((a) => a.id !== id) : []))
     setDisconnecting(null)
+  }
+
+  async function handleDeleteAccount() {
+    if (!confirm("Are you sure? This will permanently delete your account, all posts, and cancel your subscription. This cannot be undone.")) return
+    setDeletingAccount(true)
+    try {
+      const res = await fetch("/api/user/delete", { method: "DELETE" })
+      if (res.ok) {
+        await signOut({ callbackUrl: "/" })
+      } else {
+        alert("Failed to delete account. Please contact support.")
+        setDeletingAccount(false)
+      }
+    } catch {
+      alert("Something went wrong. Please try again.")
+      setDeletingAccount(false)
+    }
   }
 
   async function handleSaveBrief() {
@@ -1221,6 +1239,19 @@ function LinkedInPageContent() {
                     </li>
                   ))}
                 </ol>
+              </div>
+
+              {/* Danger Zone */}
+              <div className="mt-8 rounded-xl border border-red-200 p-5 bg-red-50">
+                <h3 className="text-sm font-semibold text-red-700 mb-1">Danger Zone</h3>
+                <p className="text-xs text-red-500 mb-4">Permanently delete your account and all data. This cannot be undone.</p>
+                <button
+                  onClick={handleDeleteAccount}
+                  disabled={deletingAccount}
+                  className="text-sm font-medium text-red-600 border border-red-300 hover:bg-red-100 px-4 py-2 rounded-lg transition-colors disabled:opacity-50"
+                >
+                  {deletingAccount ? "Deleting..." : "Delete My Account"}
+                </button>
               </div>
             </div>
           )}
