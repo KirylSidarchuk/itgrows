@@ -357,6 +357,9 @@ function LinkedInPageContent() {
   const [deletingAccount, setDeletingAccount] = useState(false)
   const [checkingOut, setCheckingOut] = useState(false)
 
+  const hour = new Date().getHours()
+  const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening"
+
   async function handleUpgrade(planType: "monthly" | "annual" = "monthly") {
     setCheckingOut(true)
     try {
@@ -738,7 +741,7 @@ function LinkedInPageContent() {
           {/* Greeting */}
           <div className="mb-6">
             <h1 className="text-2xl font-bold text-[#1b1916] mb-1">
-              Good morning, {userName} 👋
+              {greeting}, {userName} 👋
             </h1>
             <p className="text-slate-500 text-sm">
               {isConnected ? "Your LinkedIn is on autopilot" : "Connect LinkedIn to get started"}
