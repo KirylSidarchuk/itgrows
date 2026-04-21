@@ -624,7 +624,7 @@ function LinkedInPageContent() {
                 <span className="w-7 h-7 rounded-full bg-violet-600 text-white flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">4</span>
                 <div>
                   <p className="text-sm font-semibold text-[#1b1916] flex items-center gap-1.5">
-                    <span>🌱</span> and Watch how It <span className="text-violet-600">Grows</span>...
+                    <span>🌱</span> and Watch how <span className="text-violet-600">It Grows</span>...
                   </p>
                   <p className="text-xs text-slate-500 mt-0.5">
                     Consistent, professional content compounds over time — your audience grows, your authority builds, and so does your business
