@@ -3,6 +3,8 @@ import Stripe from "stripe"
 import { db } from "@/lib/db"
 import { users } from "@/lib/db/schema"
 import { eq } from "drizzle-orm"
+import { sendEmail } from "@/lib/email"
+import { subscriptionActivatedEmail, paymentFailedEmail } from "@/lib/email-templates"
 
 function getStripe() {
   const key = process.env.STRIPE_SECRET_KEY
@@ -53,6 +55,16 @@ export async function POST(req: NextRequest) {
               subscriptionEndDate: endTs ? new Date(endTs * 1000) : null,
             })
             .where(eq(users.id, userId))
+
+          const [updatedUser] = await db.select({ email: users.email, name: users.name })
+            .from(users).where(eq(users.id, userId)).limit(1)
+          if (updatedUser?.email) {
+            await sendEmail({
+              to: updatedUser.email,
+              subject: "Welcome to ItGrows Personal 🎉 Your LinkedIn is on autopilot",
+              html: subscriptionActivatedEmail(updatedUser.name ?? "there", plan ?? "personal"),
+            })
+          }
         }
         break
       }
@@ -129,6 +141,16 @@ export async function POST(req: NextRequest) {
           .update(users)
           .set({ subscriptionStatus: "past_due" })
           .where(eq(users.id, user.id))
+
+        const [failedUser] = await db.select({ email: users.email, name: users.name })
+          .from(users).where(eq(users.stripeCustomerId, customerId)).limit(1)
+        if (failedUser?.email) {
+          await sendEmail({
+            to: failedUser.email,
+            subject: "Action required: Payment failed for ItGrows Personal",
+            html: paymentFailedEmail(failedUser.name ?? "there"),
+          })
+        }
         break
       }
     }

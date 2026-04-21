@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db"
 import { linkedinAccounts, linkedinPosts, users } from "@/lib/db/schema"
 import { eq, and, lte } from "drizzle-orm"
+import { sendEmail } from "@/lib/email"
+import { postPublishedEmail, postFailedEmail } from "@/lib/email-templates"
 
 interface LinkedInUgcPostBody {
   author: string
@@ -107,7 +109,7 @@ export async function GET(req: NextRequest) {
 
     for (const post of duePosts) {
       // Skip posts for users without an active Personal subscription
-      const [postUser] = await db.select({ subscriptionPlan: users.subscriptionPlan, subscriptionStatus: users.subscriptionStatus })
+      const [postUser] = await db.select({ subscriptionPlan: users.subscriptionPlan, subscriptionStatus: users.subscriptionStatus, email: users.email, name: users.name })
         .from(users).where(eq(users.id, post.userId)).limit(1)
       const hasAccess = postUser && postUser.subscriptionStatus === "active" &&
         (postUser.subscriptionPlan === "personal" || postUser.subscriptionPlan === "personal_annual")
@@ -133,6 +135,13 @@ export async function GET(req: NextRequest) {
           })
           .where(eq(linkedinPosts.id, post.id))
         published++
+        if (postUser?.email) {
+          await sendEmail({
+            to: postUser.email,
+            subject: "✅ Your LinkedIn post is live!",
+            html: postPublishedEmail(postUser.name ?? "there", post.content, result.linkedinPostId ?? null),
+          })
+        }
       } else {
         await db
           .update(linkedinPosts)
@@ -140,6 +149,13 @@ export async function GET(req: NextRequest) {
           .where(eq(linkedinPosts.id, post.id))
         failed++
         console.error(`[publish-linkedin] Failed to publish post ${post.id}:`, result.error)
+        if (postUser?.email) {
+          await sendEmail({
+            to: postUser.email,
+            subject: "⚠️ Your LinkedIn post failed to publish",
+            html: postFailedEmail(postUser.name ?? "there", post.content, result.error ?? "Unknown error"),
+          })
+        }
       }
     }
 
