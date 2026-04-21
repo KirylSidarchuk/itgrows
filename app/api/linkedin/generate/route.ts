@@ -3,6 +3,7 @@ import { auth } from "@/auth"
 import { db } from "@/lib/db"
 import { linkedinAccounts, linkedinPosts, linkedinBriefs, users } from "@/lib/db/schema"
 import { eq, and, inArray } from "drizzle-orm"
+import { checkGenerateRateLimit } from "@/lib/rate-limit"
 
 export const maxDuration = 300
 
@@ -139,6 +140,18 @@ export async function POST(req: NextRequest) {
       (user.subscriptionPlan === "personal" || user.subscriptionPlan === "personal_annual")
     if (!hasAccess) {
       return NextResponse.json({ error: "subscription_required", message: "Active Personal subscription required" }, { status: 403 })
+    }
+
+    // Check rate limit
+    const rateLimit = await checkGenerateRateLimit(userId)
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        { error: "rate_limit_exceeded", message: "You can generate posts up to 3 times per hour. Please wait before generating again." },
+        {
+          status: 429,
+          headers: { "Retry-After": String(rateLimit.retryAfter ?? 3600) }
+        }
+      )
     }
 
     const body = await req.json() as GenerateLinkedInRequest

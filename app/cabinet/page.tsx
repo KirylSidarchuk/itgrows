@@ -538,6 +538,12 @@ function LinkedInPageContent() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ brief }),
       })
+      if (res.status === 429) {
+        const data = await res.json() as { message?: string }
+        setGenerateError(data.message ?? "Too many requests. Please wait before generating again.")
+        setGenerating(false)
+        return
+      }
       const data = await res.json() as { posts?: LinkedInPost[]; error?: string }
       if (!res.ok || data.error) {
         setGenerateError(data.error ?? "Failed to generate posts")
