@@ -861,7 +861,8 @@ function LinkedInPageContent() {
       <aside className="w-60 shrink-0 flex flex-col bg-white border-r border-slate-100 shadow-sm z-10">
         {/* Logo */}
         <div className="px-6 py-5 border-b border-slate-100">
-          <a href="/">
+          <a href="/" className="flex items-center gap-2">
+            <img src="/logo.jpg" className="h-8 w-8 rounded-lg" alt="ItGrows" />
             <span className="text-lg font-bold bg-gradient-to-r from-violet-600 to-pink-500 bg-clip-text text-transparent">
               ItGrows.ai
             </span>

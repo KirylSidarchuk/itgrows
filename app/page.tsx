@@ -176,7 +176,8 @@ export default function PersonalPage() {
       {/* Nav */}
       <nav className="border-b border-black/10 px-6 py-4" style={{ backgroundColor: "#f3f2f1" }}>
         <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <Link href="/" className="text-xl font-bold bg-gradient-to-r from-violet-600 to-cyan-600 bg-clip-text text-transparent">
+          <Link href="/" className="flex items-center gap-2 text-xl font-bold bg-gradient-to-r from-violet-600 to-cyan-600 bg-clip-text text-transparent">
+            <img src="/logo.jpg" className="h-8 w-8 rounded-lg" alt="ItGrows" />
             ItGrows.ai
           </Link>
           <div className="flex items-center gap-3">

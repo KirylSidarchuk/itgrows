@@ -20,6 +20,10 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
+  icons: {
+    icon: "/icon.jpg",
+    apple: "/icon.jpg",
+  },
   title: "ItGrows.ai — AI Content Automation",
   description: "AI creates SEO articles, social posts, and images — then auto-publishes them and runs your Google Ads.",
   openGraph: {
