@@ -958,7 +958,7 @@ function LinkedInPageContent() {
       </aside>
 
       {/* Mobile top header — visible only on mobile (< lg) */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 z-20 bg-white border-b border-slate-100 shadow-sm px-4 py-3 flex items-center justify-between">
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-20 bg-white border-b border-slate-100 shadow-sm px-4 py-3 flex items-center justify-between" style={{ paddingTop: "max(12px, env(safe-area-inset-top))" }}>
         <a href="/" className="flex items-center gap-2">
           <img src="/logo.jpg" className="h-7 w-7 rounded-lg" alt="ItGrows" />
           <span className="text-base font-bold bg-gradient-to-r from-violet-600 to-pink-500 bg-clip-text text-transparent">
@@ -978,7 +978,7 @@ function LinkedInPageContent() {
       </div>
 
       {/* Mobile bottom nav — visible only on mobile (< lg) */}
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-20 bg-white border-t border-slate-100 shadow-lg flex items-stretch">
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-20 bg-white border-t border-slate-100 shadow-lg flex items-stretch" style={{ paddingBottom: "env(safe-area-inset-bottom)" }}>
         {(["posts", "dna", "account", "support"] as ActiveTab[]).map((tab) => {
           const icons: Record<ActiveTab, React.ReactNode> = {
             posts: <Send className="w-5 h-5" />,
@@ -1016,7 +1016,7 @@ function LinkedInPageContent() {
 
       {/* Main content */}
       <main className="flex-1 overflow-auto">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-16 lg:pt-8 pb-24 lg:pb-8">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-20 lg:pt-8 pb-28 lg:pb-8" style={{ paddingBottom: "calc(7rem + env(safe-area-inset-bottom))" } as React.CSSProperties}>
 
           {/* Greeting */}
           <div className="mb-4 sm:mb-6">
