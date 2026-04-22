@@ -30,7 +30,7 @@ export default function PrivacyPage() {
           <section>
             <h2 className="text-xl font-semibold text-[#1b1916] mb-3">1. Introduction</h2>
             <p>
-              ItGrows.ai (&quot;we&quot;, &quot;our&quot;, or &quot;us&quot;) is committed to protecting your personal information. This Privacy Policy explains what data we collect, how we use it, and your rights regarding that data.
+              ItGrows.ai is operated by <strong>Magiscan Inc.</strong> (919 North Market Street, Wilmington, DE 19801, USA). We are committed to protecting your personal information. This Privacy Policy explains what data we collect, how we use it, and your rights regarding that data.
             </p>
             <p className="mt-3">
               By using ItGrows.ai, you agree to the collection and use of information in accordance with this policy.
@@ -186,6 +186,7 @@ export default function PrivacyPage() {
           <Link href="/privacy" className="hover:text-[#1b1916]">Privacy Policy</Link> ·{" "}
           <Link href="/terms" className="hover:text-[#1b1916]">Terms of Service</Link>
         </p>
+        <p className="mt-2 text-xs text-slate-400">Magiscan Inc. · 919 North Market Street, Wilmington, DE 19801, USA</p>
       </footer>
     </div>
   )

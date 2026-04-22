@@ -30,10 +30,13 @@ export default function TermsPage() {
           <section>
             <h2 className="text-xl font-semibold text-[#1b1916] mb-3">1. About ItGrows.ai</h2>
             <p>
-              ItGrows.ai is an AI-powered content automation platform that generates SEO articles, social media posts, and images, and automatically publishes them to your connected website. By accessing or using ItGrows.ai, you agree to be bound by these Terms of Service.
+              ItGrows.ai is an AI-powered LinkedIn automation platform that writes and auto-publishes LinkedIn posts on your behalf. By accessing or using ItGrows.ai, you agree to be bound by these Terms of Service.
             </p>
             <p className="mt-3">
               These terms apply to all users, including free trial users and paid subscribers.
+            </p>
+            <p className="mt-3">
+              ItGrows.ai is operated by <strong>Magiscan Inc.</strong>, 919 North Market Street, Wilmington, DE 19801, USA.
             </p>
           </section>
 
@@ -135,7 +138,7 @@ export default function TermsPage() {
           <section>
             <h2 className="text-xl font-semibold text-[#1b1916] mb-3">11. Governing Law</h2>
             <p>
-              These terms are governed by the laws of the European Union and the jurisdiction where ItGrows.ai is registered. Disputes shall be resolved through binding arbitration or the courts of competent jurisdiction.
+              These terms are governed by the laws of the State of Delaware, USA. Disputes shall be resolved through binding arbitration or the courts of competent jurisdiction in Delaware.
             </p>
           </section>
 
@@ -155,6 +158,7 @@ export default function TermsPage() {
           <Link href="/privacy" className="hover:text-[#1b1916]">Privacy Policy</Link> ·{" "}
           <Link href="/terms" className="hover:text-[#1b1916]">Terms of Service</Link>
         </p>
+        <p className="mt-2 text-xs text-slate-400">Magiscan Inc. · 919 North Market Street, Wilmington, DE 19801, USA</p>
       </footer>
     </div>
   )
