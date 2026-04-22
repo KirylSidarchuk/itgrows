@@ -1237,18 +1237,26 @@ function LinkedInPageContent() {
                         disabled={checkingOut}
                         className="flex flex-col items-center gap-1 p-4 rounded-xl border-2 border-violet-200 bg-violet-50 hover:border-violet-400 hover:bg-violet-100 transition-colors cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
                       >
+                        <span className="text-[10px] font-semibold uppercase tracking-wide text-violet-500 mb-0.5">Monthly</span>
                         <span className="text-base font-bold text-violet-700">$15</span>
                         <span className="text-xs text-violet-600 font-medium">/ month</span>
-                        <span className="text-[10px] text-slate-500 mt-1">{checkingOut ? "Loading..." : "Billed monthly"}</span>
+                        <span className="text-[10px] text-slate-500 mt-1">Billed monthly</span>
+                        <span className="mt-2 w-full text-center text-xs font-semibold text-white bg-violet-600 rounded-lg py-1.5 px-2">
+                          {checkingOut ? "Loading…" : "Start Free Trial"}
+                        </span>
                       </button>
                       <button
                         onClick={() => handleUpgrade("annual")}
                         disabled={checkingOut}
                         className="flex flex-col items-center gap-1 p-4 rounded-xl border-2 border-pink-200 bg-pink-50 hover:border-pink-400 hover:bg-pink-100 transition-colors cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
                       >
+                        <span className="text-[10px] font-semibold uppercase tracking-wide text-pink-500 mb-0.5">Annual</span>
                         <span className="text-base font-bold text-pink-700">$12</span>
                         <span className="text-xs text-pink-600 font-medium">/ month</span>
-                        <span className="text-[10px] text-slate-500 mt-1">{checkingOut ? "Loading..." : "$144/yr · save 20%"}</span>
+                        <span className="text-[10px] text-slate-500 mt-1">Billed $144/year · Save 20%</span>
+                        <span className="mt-2 w-full text-center text-xs font-semibold text-white bg-pink-600 rounded-lg py-1.5 px-2">
+                          {checkingOut ? "Loading…" : "Start Free Trial"}
+                        </span>
                       </button>
                     </div>
                     <p className="text-xs text-slate-400 text-center">Cancel anytime. Secure payment via Stripe.</p>
