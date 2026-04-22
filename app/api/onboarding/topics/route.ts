@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/auth"
-
-const LLM_BASE_URL = "http://34.60.133.229:4000"
-const LLM_MODELS = ["gemini-2.0-flash-lite", "gemini-2.0-flash", "gemini-1.5-flash"]
+import { callLLM } from "@/lib/llm-client"
 
 interface TopicItem {
   title: string
@@ -63,28 +61,13 @@ ${siteContext}
 Use only current, up-to-date information. Topics must match the website's actual niche/industry. Do NOT suggest generic business or marketing topics unless that is clearly the site's focus. Return ONLY a JSON array: [{"title": "...", "description": "..."}]`
 
   let text = ""
-  let lastError = ""
-  for (let attempt = 0; attempt < LLM_MODELS.length; attempt++) {
-    if (attempt > 0) await new Promise(r => setTimeout(r, 3000))
-    try {
-      const res = await fetch(`${LLM_BASE_URL}/v1/chat/completions`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: LLM_MODELS[attempt],
-          messages: [{ role: "user", content: prompt }],
-          temperature: 0.7,
-        }),
-      })
-      if (!res.ok) { lastError = await res.text(); continue }
-      const data = await res.json() as { choices: Array<{ message: { content: string } }> }
-      text = data.choices[0]?.message?.content ?? ""
-      if (text) break
-    } catch (e) {
-      lastError = e instanceof Error ? e.message : String(e)
-    }
+  try {
+    text = await callLLM([{ role: "user", content: prompt }], { caller: "onboarding/topics", temperature: 0.7 })
+  } catch (e) {
+    const errMsg = e instanceof Error ? e.message : String(e)
+    return NextResponse.json({ error: `LLM error: ${errMsg}` }, { status: 500 })
   }
-  if (!text) return NextResponse.json({ error: `LLM error: ${lastError}` }, { status: 500 })
+  if (!text) return NextResponse.json({ error: "LLM returned empty response" }, { status: 500 })
 
   let topics: TopicItem[] = []
   try {

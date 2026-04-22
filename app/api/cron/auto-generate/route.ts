@@ -4,10 +4,9 @@ import { linkedinPosts, linkedinBriefs, linkedinAccounts, users } from "@/lib/db
 import { eq, and, inArray, count, or, gt } from "drizzle-orm"
 import { hasAccess } from "@/lib/access"
 import { sendEmail } from "@/lib/email"
+import { callLLM } from "@/lib/llm-client"
 
-const LLM_BASE_URL = "http://34.60.133.229:4000"
 const LLM_MODEL = "gemini-2.0-flash-lite"
-const LLM_API_KEY = "any-key"
 const PROXY_URL = "http://34.60.133.229:4000"
 
 interface PostData {
@@ -17,12 +16,10 @@ interface PostData {
 
 async function generatePostImage(postContent: string, niche: string): Promise<string | null> {
   try {
-    const promptRes = await fetch(`${PROXY_URL}/v1/chat/completions`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: LLM_MODEL,
-        messages: [{
+    let imagePrompt = `Professional LinkedIn post cover for ${niche}`
+    try {
+      imagePrompt = await callLLM(
+        [{
           role: "user",
           content: `Create a concise image generation prompt (max 50 words) for a LinkedIn post cover image.
 Post niche: "${niche}"
@@ -30,13 +27,15 @@ Post content preview: "${postContent.slice(0, 200)}"
 The image should be: professional, photorealistic, suitable for a LinkedIn post (1200x627px), no text in image.
 Return ONLY the image prompt, nothing else.`,
         }],
-        temperature: 0.7,
-      }),
-    })
-    if (!promptRes.ok) return null
-    const promptData = await promptRes.json() as { choices?: Array<{ message: { content: string } }> }
-    const imagePrompt = promptData.choices?.[0]?.message?.content?.trim() || `Professional LinkedIn post cover for ${niche}`
+        { caller: "auto-generate/image-prompt", temperature: 0.7 }
+      )
+      imagePrompt = imagePrompt.trim() || `Professional LinkedIn post cover for ${niche}`
+    } catch {
+      // Fall back to default prompt
+    }
 
+    const imgStart = Date.now()
+    console.log(`[LLM] ${new Date().toISOString()} | caller=auto-generate/image | model=gemini-3-pro-image-preview | images/generate`)
     const imgRes = await fetch(`${PROXY_URL}/images/generate`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -45,7 +44,12 @@ Return ONLY the image prompt, nothing else.`,
         prompt: imagePrompt,
       }),
     })
-    if (!imgRes.ok) return null
+    const imgDuration = Date.now() - imgStart
+    if (!imgRes.ok) {
+      console.log(`[LLM] ${new Date().toISOString()} | caller=auto-generate/image | model=gemini-3-pro-image-preview | status=${imgRes.status} | duration=${imgDuration}ms | FAILED`)
+      return null
+    }
+    console.log(`[LLM] ${new Date().toISOString()} | caller=auto-generate/image | model=gemini-3-pro-image-preview | status=200 | duration=${imgDuration}ms | OK`)
 
     const imgData = await imgRes.json() as {
       candidates?: Array<{ content: { parts: Array<{ inlineData?: { data?: string; mimeType?: string } }> } }>
@@ -132,26 +136,15 @@ async function generateForUser(userId: string): Promise<{ success: boolean; erro
 
     const prompt = buildLinkedInPrompt(brief)
 
-    const llmResponse = await fetch(`${LLM_BASE_URL}/v1/chat/completions`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${LLM_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: LLM_MODEL,
-        messages: [{ role: "user", content: prompt }],
-        max_tokens: 4096,
-        temperature: 0.8,
-      }),
-    })
-
-    if (!llmResponse.ok) {
-      return { success: false, error: `LLM error ${llmResponse.status}` }
+    let rawContent = ""
+    try {
+      rawContent = await callLLM(
+        [{ role: "user", content: prompt }],
+        { caller: "auto-generate/linkedin", max_tokens: 4096, temperature: 0.8 }
+      )
+    } catch (e) {
+      return { success: false, error: e instanceof Error ? e.message : String(e) }
     }
-
-    const llmData = await llmResponse.json() as { choices: Array<{ message: { content: string } }> }
-    const rawContent = llmData.choices?.[0]?.message?.content ?? ""
 
     const jsonMatch = rawContent.match(/\[[\s\S]*\]/)
     if (!jsonMatch) {

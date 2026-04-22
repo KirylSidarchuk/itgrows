@@ -3,25 +3,14 @@ import { auth } from "@/auth"
 import { db } from "@/lib/db"
 import { scheduledPosts, connectedSites } from "@/lib/db/schema"
 import { eq, and, count } from "drizzle-orm"
+import { callLLM } from "@/lib/llm-client"
 
 export const runtime = "nodejs"
-
-const LLM_BASE_URL = "http://34.60.133.229:4000"
-const LLM_API_KEY = "any-key"
-const LLM_MODELS = ["gemini-2.0-flash-lite", "gemini-2.0-flash", "gemini-1.5-flash"]
 
 interface TopicSuggestion {
   title: string
   keyword: string
   description: string
-}
-
-interface ChatCompletionResponse {
-  choices: Array<{
-    message: {
-      content: string
-    }
-  }>
 }
 
 function extractMeta(html: string, tag: string): string {
@@ -171,40 +160,10 @@ Return ONLY valid JSON, no markdown.`
 
   let topics: TopicSuggestion[] = []
   try {
-    let rawContent = ""
-    let lastLlmError = ""
-    for (let attempt = 0; attempt < LLM_MODELS.length; attempt++) {
-      if (attempt > 0) await new Promise(r => setTimeout(r, 3000))
-      try {
-        const llmResponse = await fetch(`${LLM_BASE_URL}/v1/chat/completions`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${LLM_API_KEY}`,
-          },
-          body: JSON.stringify({
-            model: LLM_MODELS[attempt],
-            messages: [{ role: "user", content: prompt }],
-            max_tokens: 4096,
-            temperature: 0.8,
-          }),
-        })
-        if (!llmResponse.ok) {
-          lastLlmError = await llmResponse.text()
-          console.warn(`[schedule/batch] LLM attempt ${attempt + 1} (${LLM_MODELS[attempt]}) failed: ${lastLlmError}`)
-          continue
-        }
-        const llmData = (await llmResponse.json()) as ChatCompletionResponse
-        rawContent = llmData.choices?.[0]?.message?.content ?? ""
-        if (rawContent) break
-      } catch (e) {
-        lastLlmError = e instanceof Error ? e.message : String(e)
-        console.warn(`[schedule/batch] LLM attempt ${attempt + 1} (${LLM_MODELS[attempt]}) error: ${lastLlmError}`)
-      }
-    }
-    if (!rawContent) {
-      throw new Error(`LLM returned empty response after all attempts. Last error: ${lastLlmError}`)
-    }
+    const rawContent = await callLLM(
+      [{ role: "user", content: prompt }],
+      { caller: "schedule/batch", max_tokens: 4096, temperature: 0.8 }
+    )
 
     // Parse JSON from LLM response
     const stripped = rawContent

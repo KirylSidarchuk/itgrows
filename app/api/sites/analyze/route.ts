@@ -3,26 +3,15 @@ import { auth } from "@/auth"
 import { db } from "@/lib/db"
 import { connectedSites } from "@/lib/db/schema"
 import { eq, and } from "drizzle-orm"
+import { callLLM } from "@/lib/llm-client"
 
 export const runtime = "nodejs"
-
-const LLM_BASE_URL = "http://34.60.133.229:4000"
-const LLM_MODELS = ["gemini-2.0-flash-lite", "gemini-2.0-flash", "gemini-1.5-flash"]
-const LLM_API_KEY = "any-key"
 
 interface SiteProfile {
   niche: string
   products: string[]
   targetAudience: string
   topics: string[]
-}
-
-interface ChatCompletionResponse {
-  choices: Array<{
-    message: {
-      content: string
-    }
-  }>
 }
 
 function extractMeta(html: string, tag: string): string {
@@ -112,36 +101,10 @@ Body excerpt: ${bodyText}
     // Call LLM to generate site profile (with retry + fallback models)
     const prompt = `Analyze this website and extract: 1) main niche/industry, 2) key products or services, 3) target audience, 4) main topics to write about. Website data: ${siteContext}. Return JSON: { "niche": "string", "products": ["string"], "targetAudience": "string", "topics": ["string"] }. Return ONLY valid JSON, no markdown.`
 
-    let rawContent = ""
-    let lastError = ""
-    for (let attempt = 0; attempt < LLM_MODELS.length; attempt++) {
-      if (attempt > 0) await new Promise(r => setTimeout(r, 3000))
-      try {
-        const llmResponse = await fetch(`${LLM_BASE_URL}/chat/completions`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${LLM_API_KEY}`,
-          },
-          body: JSON.stringify({
-            model: LLM_MODELS[attempt],
-            messages: [{ role: "user", content: prompt }],
-            max_tokens: 1024,
-            temperature: 0.3,
-          }),
-        })
-        if (!llmResponse.ok) {
-          lastError = `LLM error ${llmResponse.status}: ${await llmResponse.text()}`
-          continue
-        }
-        const llmData = (await llmResponse.json()) as ChatCompletionResponse
-        rawContent = llmData.choices?.[0]?.message?.content ?? ""
-        if (rawContent) break
-      } catch (e) {
-        lastError = e instanceof Error ? e.message : String(e)
-      }
-    }
-    if (!rawContent) throw new Error(lastError || "LLM unavailable")
+    const rawContent = await callLLM(
+      [{ role: "user", content: prompt }],
+      { caller: "sites/analyze", max_tokens: 1024, temperature: 0.3 }
+    )
 
     // Parse JSON from LLM response
     const stripped = rawContent

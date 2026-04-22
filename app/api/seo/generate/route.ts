@@ -3,12 +3,9 @@ import { auth } from "@/auth"
 import { db } from "@/lib/db"
 import { users, blogPosts, scheduledPosts } from "@/lib/db/schema"
 import { eq, and, isNotNull, count } from "drizzle-orm"
+import { callLLM } from "@/lib/llm-client"
 
 export const maxDuration = 300
-
-const LLM_BASE_URL = "http://34.60.133.229:4000"
-const LLM_API_KEY = "any-key"
-const LLM_MODELS = ["gemini-2.0-flash-lite", "gemini-2.0-flash", "gemini-1.5-flash"]
 
 interface SiteContext {
   niche: string
@@ -20,19 +17,6 @@ interface GenerateRequest {
   language?: string
   tone?: string
   siteContext?: SiteContext
-}
-
-interface ChatMessage {
-  role: "system" | "user" | "assistant"
-  content: string
-}
-
-interface ChatCompletionResponse {
-  choices: Array<{
-    message: {
-      content: string
-    }
-  }>
 }
 
 interface SeoBreakdown {
@@ -316,48 +300,10 @@ export async function POST(req: NextRequest) {
 
     const prompt = buildPrompt(keyword, language, tone, siteContext)
 
-    const messages: ChatMessage[] = [
-      {
-        role: "user",
-        content: prompt,
-      },
-    ]
-
-    let rawContent = ""
-    let lastLlmError = ""
-    for (let attempt = 0; attempt < LLM_MODELS.length; attempt++) {
-      if (attempt > 0) await new Promise(r => setTimeout(r, 3000))
-      try {
-        const llmResponse = await fetch(`${LLM_BASE_URL}/v1/chat/completions`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${LLM_API_KEY}`,
-          },
-          body: JSON.stringify({
-            model: LLM_MODELS[attempt],
-            messages,
-            max_tokens: 8192,
-            temperature: 0.7,
-          }),
-        })
-        if (!llmResponse.ok) {
-          lastLlmError = await llmResponse.text()
-          console.warn(`[seo/generate] LLM attempt ${attempt + 1} (${LLM_MODELS[attempt]}) failed: ${lastLlmError}`)
-          continue
-        }
-        const llmData = await llmResponse.json() as ChatCompletionResponse
-        rawContent = llmData.choices?.[0]?.message?.content ?? ""
-        if (rawContent) break
-      } catch (e) {
-        lastLlmError = e instanceof Error ? e.message : String(e)
-        console.warn(`[seo/generate] LLM attempt ${attempt + 1} (${LLM_MODELS[attempt]}) error: ${lastLlmError}`)
-      }
-    }
-
-    if (!rawContent) {
-      throw new Error(`LLM returned empty response after all attempts. Last error: ${lastLlmError}`)
-    }
+    const rawContent = await callLLM(
+      [{ role: "user", content: prompt }],
+      { caller: "seo/generate", max_tokens: 8192, temperature: 0.7 }
+    )
 
     const parsed = parseArticle(rawContent)
     const { score: seoScore, breakdown: seoBreakdown } = computeSeoScore(
