@@ -482,6 +482,18 @@ function LinkedInPageContent() {
           setBriefIsAutoFilled(data.brief.isAutoFilled === true)
           if (data.brief.profileUrl) {
             setProfileUrl(data.brief.profileUrl)
+          } else {
+            // Auto-fill from connected LinkedIn account if brief has no URL
+            const personalAccount = accounts.find((a) => a.pageType === "personal" && a.pageHandle)
+            if (personalAccount?.pageHandle) {
+              setProfileUrl(`https://linkedin.com/in/${personalAccount.pageHandle}`)
+            }
+          }
+        } else {
+          // No brief yet — still auto-fill profile URL from connected account
+          const personalAccount = accounts.find((a) => a.pageType === "personal" && a.pageHandle)
+          if (personalAccount?.pageHandle) {
+            setProfileUrl(`https://linkedin.com/in/${personalAccount.pageHandle}`)
           }
         }
       })
