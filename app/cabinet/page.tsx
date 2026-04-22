@@ -85,7 +85,7 @@ function DnaScoreBar({ score }: { score: number }) {
     <div className="w-full">
       <div className="flex justify-between items-center mb-2">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-semibold text-slate-700">Content DNA Score</span>
+          <span className="text-sm font-semibold text-slate-700">Professional DNA Score</span>
           <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${color.bg}`}>{label}</span>
         </div>
         <span className={`text-xl font-bold ${color.text}`}>{score}%</span>
@@ -946,7 +946,7 @@ function LinkedInPageContent() {
                     : "text-slate-500 hover:text-slate-700 hover:bg-slate-50"
                 }`}
               >
-                {tab === "posts" ? "Posts" : tab === "dna" ? "Content DNA" : "Account"}
+                {tab === "posts" ? "Posts" : tab === "dna" ? "Professional DNA" : "Account"}
               </button>
             ))}
           </div>
@@ -991,7 +991,7 @@ function LinkedInPageContent() {
                               </a>
                             )}
                           </div>
-                          {/* Step 2 — Fill Content DNA */}
+                          {/* Step 2 — Fill Professional DNA */}
                           <div className="flex items-center justify-between gap-3">
                             <div className="flex items-center gap-2.5">
                               {s2 ? (
@@ -1002,7 +1002,7 @@ function LinkedInPageContent() {
                                 <span className="w-5 h-5 rounded-full border-2 border-slate-300 shrink-0" />
                               )}
                               <span className={`text-sm ${s2 ? "line-through text-slate-400" : "font-semibold text-slate-700"}`}>
-                                Fill Content DNA
+                                Fill Professional DNA
                               </span>
                             </div>
                             {!s2 && (
@@ -1051,7 +1051,7 @@ function LinkedInPageContent() {
                           disabled={generating || !briefFilled}
                           onClick={handleGenerate}
                           className="bg-violet-600 hover:bg-violet-500 text-white font-semibold px-6 py-2.5 rounded-xl shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                          title={!briefFilled ? "Fill your Content DNA first" : undefined}
+                          title={!briefFilled ? "Fill your Professional DNA first" : undefined}
                         >
                           {generating ? (
                             <>
@@ -1067,7 +1067,7 @@ function LinkedInPageContent() {
                         </Button>
                         {!briefFilled && !generating && (
                           <div className="absolute left-0 top-full mt-2 z-10 hidden group-hover:block bg-slate-800 text-white text-xs rounded-lg px-3 py-2 whitespace-nowrap shadow-lg">
-                            Fill your Content DNA first
+                            Fill your Professional DNA first
                             <div className="absolute -top-1.5 left-6 w-3 h-3 bg-slate-800 rotate-45" />
                           </div>
                         )}
@@ -1121,14 +1121,14 @@ function LinkedInPageContent() {
                                 1
                               </div>
                               <div className="flex-1 min-w-0">
-                                <p className="text-sm font-semibold text-slate-800">Fill your Content DNA</p>
+                                <p className="text-sm font-semibold text-slate-800">Fill your Professional DNA</p>
                                 <p className="text-xs text-slate-500 mt-0.5">Tell the AI about your niche, audience &amp; goals</p>
                               </div>
                               <button
                                 onClick={() => setActiveTab("dna")}
                                 className="shrink-0 text-xs font-semibold text-violet-600 hover:text-violet-500 transition-colors whitespace-nowrap flex items-center gap-1"
                               >
-                                Go to Content DNA
+                                Go to Professional DNA
                                 <span className="text-violet-400">→</span>
                               </button>
                             </div>

@@ -18,7 +18,7 @@ export function subscriptionActivatedEmail(name: string, plan: string): string {
         <p style="color: #6b7280; font-size: 14px;">Here's what happens next:</p>
         <ul style="color: #6b7280; font-size: 14px; line-height: 1.8;">
           <li>Connect your LinkedIn account in the cabinet</li>
-          <li>Fill your Content DNA brief (2 minutes)</li>
+          <li>Fill your Professional DNA brief (2 minutes)</li>
           <li>We generate 7 posts for your first week</li>
           <li>Posts publish automatically at 9am UTC daily</li>
         </ul>
