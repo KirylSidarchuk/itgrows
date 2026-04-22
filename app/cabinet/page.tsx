@@ -377,6 +377,9 @@ function LinkedInPageContent() {
   const [supportSending, setSupportSending] = useState(false)
   const [supportSent, setSupportSent] = useState(false)
   const [supportError, setSupportError] = useState<string | null>(null)
+  const [cancelingSubscription, setCancelingSubscription] = useState(false)
+  const [cancelMessage, setCancelMessage] = useState<string | null>(null)
+  const [cancelConfirming, setCancelConfirming] = useState(false)
 
   const hour = new Date().getHours()
   const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening"
@@ -422,6 +425,31 @@ function LinkedInPageContent() {
     } finally {
       setStartingTrial(false)
       setCheckingOut(false)
+    }
+  }
+
+  async function handleCancelSubscription() {
+    if (!cancelConfirming) {
+      setCancelConfirming(true)
+      return
+    }
+    setCancelingSubscription(true)
+    setCancelConfirming(false)
+    try {
+      const res = await fetch("/api/stripe/cancel-subscription", { method: "POST" })
+      const data = await res.json() as { success?: boolean; cancelAt?: number | null; error?: string }
+      if (res.ok && data.success) {
+        const dateStr = data.cancelAt
+          ? new Date(data.cancelAt * 1000).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })
+          : "the end of your billing period"
+        setCancelMessage(`Your subscription will be cancelled on ${dateStr}. You keep full access until then.`)
+      } else {
+        setCancelMessage(data.error ?? "Something went wrong. Please try again.")
+      }
+    } catch {
+      setCancelMessage("Something went wrong. Please try again.")
+    } finally {
+      setCancelingSubscription(false)
     }
   }
 
@@ -1592,6 +1620,33 @@ function LinkedInPageContent() {
                     <p className="text-xs text-slate-400 px-1">
                       You have full access to generate posts, publish, and auto-scheduling.
                     </p>
+                    {cancelMessage ? (
+                      <p className="text-xs text-slate-500 px-1 pt-1">{cancelMessage}</p>
+                    ) : cancelConfirming ? (
+                      <div className="flex items-center gap-3 px-1 pt-1">
+                        <p className="text-xs text-slate-500">Are you sure? You&apos;ll keep access until the end of your billing period.</p>
+                        <button
+                          onClick={handleCancelSubscription}
+                          disabled={cancelingSubscription}
+                          className="text-xs text-red-500 hover:text-red-700 underline underline-offset-2 whitespace-nowrap disabled:opacity-50"
+                        >
+                          {cancelingSubscription ? "Cancelling…" : "Yes, cancel"}
+                        </button>
+                        <button
+                          onClick={() => setCancelConfirming(false)}
+                          className="text-xs text-slate-400 hover:text-slate-600 underline underline-offset-2 whitespace-nowrap"
+                        >
+                          Keep it
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={handleCancelSubscription}
+                        className="text-xs text-slate-400 hover:text-slate-500 underline underline-offset-2 px-1 pt-1 text-left"
+                      >
+                        Cancel subscription
+                      </button>
+                    )}
                   </div>
                 ) : trialActive ? (
                   <div className="space-y-3">
