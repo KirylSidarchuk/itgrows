@@ -256,7 +256,7 @@ export async function POST(req: NextRequest) {
 
     // Attempt 2: fix unescaped control chars (newlines, tabs)
     if (!postsData) {
-      const fixed = jsonMatch[0].replace(/("(?:[^"\\]|\\.)*")/gs, (m) =>
+      const fixed = jsonMatch[0].replace(/("(?:[^"\\]|\\.)*")/g, (m) =>
         m.replace(/\n/g, "\\n").replace(/\r/g, "\\r").replace(/\t/g, "\\t")
       )
       postsData = tryParse(fixed)
