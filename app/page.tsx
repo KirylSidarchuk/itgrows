@@ -114,6 +114,7 @@ const faqs = [
 export default function PersonalPage() {
   const [annual, setAnnual] = useState(false)
   const [sessionUser, setSessionUser] = useState<{ name?: string | null; email?: string | null } | null>(null)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   useEffect(() => {
     fetch("/api/auth/session")
@@ -170,30 +171,40 @@ export default function PersonalPage() {
 
   return (
     <div
-      className="min-h-screen text-[#1b1916]"
+      className="min-h-screen text-[#1b1916] scroll-smooth"
       style={{ backgroundColor: "#f3f2f1", fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" }}
     >
       {/* Nav */}
-      <nav className="border-b border-black/10 px-4 sm:px-6 py-4" style={{ backgroundColor: "#f3f2f1" }}>
+      <nav className="border-b border-black/10 px-4 sm:px-6 py-4 sticky top-0 z-50" style={{ backgroundColor: "#f3f2f1" }}>
         <div className="max-w-6xl mx-auto flex items-center justify-between">
+          {/* Logo */}
           <Link href="/" className="flex items-center gap-2 text-xl font-bold bg-gradient-to-r from-violet-600 to-cyan-600 bg-clip-text text-transparent shrink-0">
             <img src="/logo.jpg" className="h-8 w-8 rounded-lg" alt="ItGrows" />
-            <span className="hidden xs:inline sm:inline">ItGrows.ai</span>
+            <span>ItGrows.ai</span>
           </Link>
-          <div className="flex items-center gap-2 sm:gap-3">
-            <Link href="/blog" className="hidden sm:block text-sm text-slate-600 hover:text-[#1b1916] transition-colors">Blog</Link>
+
+          {/* Desktop center nav links */}
+          <div className="hidden md:flex items-center gap-7">
+            <a href="#how-it-works" className="text-sm text-slate-600 hover:text-[#1b1916] transition-colors font-medium">How It Works</a>
+            <a href="#features" className="text-sm text-slate-600 hover:text-[#1b1916] transition-colors font-medium">Features</a>
+            <a href="#pricing" className="text-sm text-slate-600 hover:text-[#1b1916] transition-colors font-medium">Pricing</a>
+            <Link href="/blog" className="text-sm text-slate-600 hover:text-[#1b1916] transition-colors font-medium">Blog</Link>
+          </div>
+
+          {/* Desktop right side: auth */}
+          <div className="hidden md:flex items-center gap-2">
             {sessionUser ? (
               <>
                 <div className="flex items-center gap-2">
                   <div className="w-8 h-8 rounded-full bg-violet-600 flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
                     {(sessionUser.name || sessionUser.email || "U").charAt(0).toUpperCase()}
                   </div>
-                  <span className="text-sm text-slate-600 max-w-[140px] truncate hidden sm:block">
+                  <span className="text-sm text-slate-600 max-w-[140px] truncate">
                     {sessionUser.name || sessionUser.email}
                   </span>
                 </div>
                 <Link href="/cabinet">
-                  <Button className="bg-violet-600 hover:bg-violet-500 text-white text-sm px-3 sm:px-4">Cabinet →</Button>
+                  <Button className="bg-violet-600 hover:bg-violet-500 text-white text-sm px-4">Cabinet →</Button>
                 </Link>
               </>
             ) : (
@@ -201,14 +212,87 @@ export default function PersonalPage() {
                 <Link href="/login?callbackUrl=/cabinet">
                   <Button variant="ghost" className="text-slate-600 hover:text-[#1b1916] text-sm px-3">Login</Button>
                 </Link>
-                <Button onClick={handleStartTrial} className="bg-violet-600 hover:bg-violet-500 text-white text-sm px-3 sm:px-4">
-                  <span className="hidden sm:inline">Try Free — No Card</span>
-                  <span className="sm:hidden">Try Free</span>
+                <Button onClick={handleStartTrial} className="bg-violet-600 hover:bg-violet-500 text-white text-sm px-4">
+                  Try Free — No Card
                 </Button>
               </>
             )}
           </div>
+
+          {/* Mobile: hamburger */}
+          <button
+            className="md:hidden flex flex-col justify-center items-center w-9 h-9 gap-1.5 rounded-lg hover:bg-black/5 transition-colors"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label="Toggle menu"
+          >
+            <span className={`block w-5 h-0.5 bg-[#1b1916] transition-all duration-200 ${mobileMenuOpen ? "rotate-45 translate-y-2" : ""}`} />
+            <span className={`block w-5 h-0.5 bg-[#1b1916] transition-all duration-200 ${mobileMenuOpen ? "opacity-0" : ""}`} />
+            <span className={`block w-5 h-0.5 bg-[#1b1916] transition-all duration-200 ${mobileMenuOpen ? "-rotate-45 -translate-y-2" : ""}`} />
+          </button>
         </div>
+
+        {/* Mobile dropdown menu */}
+        {mobileMenuOpen && (
+          <div className="md:hidden border-t border-black/10 mt-4 pt-4 pb-2 flex flex-col gap-1">
+            <a
+              href="#how-it-works"
+              className="px-3 py-2.5 text-sm font-medium text-slate-600 hover:text-[#1b1916] hover:bg-black/5 rounded-lg transition-colors"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              How It Works
+            </a>
+            <a
+              href="#features"
+              className="px-3 py-2.5 text-sm font-medium text-slate-600 hover:text-[#1b1916] hover:bg-black/5 rounded-lg transition-colors"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Features
+            </a>
+            <a
+              href="#pricing"
+              className="px-3 py-2.5 text-sm font-medium text-slate-600 hover:text-[#1b1916] hover:bg-black/5 rounded-lg transition-colors"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Pricing
+            </a>
+            <Link
+              href="/blog"
+              className="px-3 py-2.5 text-sm font-medium text-slate-600 hover:text-[#1b1916] hover:bg-black/5 rounded-lg transition-colors"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Blog
+            </Link>
+            <div className="border-t border-black/10 mt-2 pt-3 flex flex-col gap-2">
+              {sessionUser ? (
+                <>
+                  <div className="flex items-center gap-2 px-3 py-1">
+                    <div className="w-8 h-8 rounded-full bg-violet-600 flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
+                      {(sessionUser.name || sessionUser.email || "U").charAt(0).toUpperCase()}
+                    </div>
+                    <span className="text-sm text-slate-600 truncate">
+                      {sessionUser.name || sessionUser.email}
+                    </span>
+                  </div>
+                  <Link href="/cabinet" onClick={() => setMobileMenuOpen(false)}>
+                    <Button className="w-full bg-violet-600 hover:bg-violet-500 text-white text-sm">Cabinet →</Button>
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <Link href="/login?callbackUrl=/cabinet" onClick={() => setMobileMenuOpen(false)}>
+                    <Button variant="outline" className="w-full text-sm border-black/20">Login</Button>
+                  </Link>
+                  <Button
+                    onClick={() => { setMobileMenuOpen(false); handleStartTrial() }}
+                    className="w-full bg-violet-600 hover:bg-violet-500 text-white text-sm"
+                  >
+                    Try Free — No Card
+                  </Button>
+                </>
+              )}
+            </div>
+          </div>
+        )}
       </nav>
 
       {/* Hero */}
