@@ -794,8 +794,8 @@ function LinkedInPageContent() {
   })()
   const dnaScore = calcDnaScore(brief, profileUrl)
   const briefFilled = !!(brief.niche?.trim() || brief.goals?.trim() || brief.targetAudience?.trim())
-  const activePosts = posts.filter((p) => p.status !== "published")
-  const publishedPosts = posts.filter((p) => p.status === "published")
+  const activePosts = posts.filter((p) => p.status !== "published").sort((a, b) => new Date(a.scheduledFor ?? 0).getTime() - new Date(b.scheduledFor ?? 0).getTime())
+  const publishedPosts = posts.filter((p) => p.status === "published").sort((a, b) => new Date(a.scheduledFor ?? 0).getTime() - new Date(b.scheduledFor ?? 0).getTime())
 
   return (
     <div className="flex h-screen overflow-hidden" style={{ background: "linear-gradient(135deg, #f5f3ff 0%, #ede9fe 50%, #f3f2f1 100%)" }}>
