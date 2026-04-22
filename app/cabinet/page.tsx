@@ -864,8 +864,8 @@ function LinkedInPageContent() {
 
   return (
     <div className="flex h-screen overflow-hidden" style={{ background: "linear-gradient(135deg, #f5f3ff 0%, #ede9fe 50%, #f3f2f1 100%)" }}>
-      {/* Left sidebar */}
-      <aside className="w-60 shrink-0 flex flex-col bg-white border-r border-slate-100 shadow-sm z-10">
+      {/* Left sidebar — hidden on mobile, visible on lg+ */}
+      <aside className="hidden lg:flex w-60 shrink-0 flex-col bg-white border-r border-slate-100 shadow-sm z-10">
         {/* Logo */}
         <div className="px-6 py-5 border-b border-slate-100">
           <a href="/" className="flex items-center gap-2">
@@ -957,13 +957,70 @@ function LinkedInPageContent() {
         </div>
       </aside>
 
+      {/* Mobile top header — visible only on mobile (< lg) */}
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-20 bg-white border-b border-slate-100 shadow-sm px-4 py-3 flex items-center justify-between">
+        <a href="/" className="flex items-center gap-2">
+          <img src="/logo.jpg" className="h-7 w-7 rounded-lg" alt="ItGrows" />
+          <span className="text-base font-bold bg-gradient-to-r from-violet-600 to-pink-500 bg-clip-text text-transparent">
+            ItGrows.ai
+          </span>
+        </a>
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 rounded-full bg-gradient-to-br from-violet-400 to-pink-400 flex items-center justify-center text-white text-xs font-bold">
+            {userName.charAt(0).toUpperCase()}
+          </div>
+          <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${
+            hasPersonalPlan ? "bg-violet-100 text-violet-600" : "bg-slate-100 text-slate-500"
+          }`}>
+            {subscriptionPlan === "personal_annual" ? "Annual" : hasPersonalPlan ? "Personal" : "Free"}
+          </span>
+        </div>
+      </div>
+
+      {/* Mobile bottom nav — visible only on mobile (< lg) */}
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-20 bg-white border-t border-slate-100 shadow-lg flex items-stretch">
+        {(["posts", "dna", "account", "support"] as ActiveTab[]).map((tab) => {
+          const icons: Record<ActiveTab, React.ReactNode> = {
+            posts: <Send className="w-5 h-5" />,
+            dna: <Zap className="w-5 h-5" />,
+            account: <Settings className="w-5 h-5" />,
+            support: <MessageCircle className="w-5 h-5" />,
+          }
+          const labels: Record<ActiveTab, string> = {
+            posts: "Posts",
+            dna: "DNA",
+            account: "Account",
+            support: "Support",
+          }
+          return (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`flex-1 flex flex-col items-center justify-center gap-1 py-2 text-[10px] font-semibold transition-colors ${
+                activeTab === tab ? "text-violet-600" : "text-slate-400"
+              }`}
+            >
+              {icons[tab]}
+              {labels[tab]}
+            </button>
+          )
+        })}
+        <button
+          onClick={() => signOut({ callbackUrl: "/login" })}
+          className="flex-1 flex flex-col items-center justify-center gap-1 py-2 text-[10px] font-semibold text-slate-400"
+        >
+          <LogOut className="w-5 h-5" />
+          Logout
+        </button>
+      </nav>
+
       {/* Main content */}
       <main className="flex-1 overflow-auto">
-        <div className="max-w-4xl mx-auto px-6 py-8">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-16 lg:pt-8 pb-24 lg:pb-8">
 
           {/* Greeting */}
-          <div className="mb-6">
-            <h1 className="text-2xl font-bold text-[#1b1916] mb-1">
+          <div className="mb-4 sm:mb-6">
+            <h1 className="text-xl sm:text-2xl font-bold text-[#1b1916] mb-1">
               {greeting}, {userName} 👋
             </h1>
             {isConnected ? (
@@ -977,7 +1034,7 @@ function LinkedInPageContent() {
 
           {/* Upgrade banner — no plan, no trial used yet */}
           {!hasPersonalPlan && !trialExpired && !loading && (
-            <div className="mb-6 flex items-center justify-between gap-4 rounded-2xl px-5 py-4 text-white shadow-lg"
+            <div className="mb-4 sm:mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 rounded-2xl px-4 sm:px-5 py-4 text-white shadow-lg"
               style={{ background: "linear-gradient(135deg, #7c3aed 0%, #a855f7 60%, #ec4899 100%)" }}>
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
@@ -991,7 +1048,7 @@ function LinkedInPageContent() {
               <button
                 onClick={handleStartTrial}
                 disabled={startingTrial}
-                className="shrink-0 bg-white text-violet-700 font-semibold text-xs rounded-xl px-4 py-2 hover:bg-violet-50 transition-colors disabled:opacity-70"
+                className="shrink-0 bg-white text-violet-700 font-semibold text-xs rounded-xl px-4 py-2 hover:bg-violet-50 transition-colors disabled:opacity-70 self-start sm:self-auto"
               >
                 {startingTrial ? "Starting..." : "Start Free Trial →"}
               </button>
@@ -1000,7 +1057,7 @@ function LinkedInPageContent() {
 
           {/* Trial expired banner — show subscribe CTA */}
           {trialExpired && !hasActiveSubscription && !loading && (
-            <div className="mb-6 flex items-center justify-between gap-4 rounded-2xl px-5 py-4 border border-red-200 bg-red-50">
+            <div className="mb-4 sm:mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 rounded-2xl px-4 sm:px-5 py-4 border border-red-200 bg-red-50">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-xl bg-red-100 flex items-center justify-center shrink-0">
                   <Lock className="w-4 h-4 text-red-600" />
@@ -1013,7 +1070,7 @@ function LinkedInPageContent() {
               <button
                 onClick={() => handleUpgrade("monthly")}
                 disabled={checkingOut}
-                className="shrink-0 bg-red-600 hover:bg-red-700 text-white font-semibold text-xs rounded-xl px-4 py-2 transition-colors disabled:opacity-70"
+                className="shrink-0 bg-red-600 hover:bg-red-700 text-white font-semibold text-xs rounded-xl px-4 py-2 transition-colors disabled:opacity-70 self-start sm:self-auto"
               >
                 {checkingOut ? "Loading..." : "Subscribe Now →"}
               </button>
@@ -1022,7 +1079,7 @@ function LinkedInPageContent() {
 
           {/* Trial countdown banner */}
           {(trialActive || subscriptionStatus === "trialing") && trialDaysLeft !== null && (
-            <div className="mb-6 flex items-center justify-between gap-4 rounded-2xl px-5 py-3.5 border border-amber-200 bg-amber-50">
+            <div className="mb-4 sm:mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 rounded-2xl px-4 sm:px-5 py-3.5 border border-amber-200 bg-amber-50">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-xl bg-amber-100 flex items-center justify-center shrink-0">
                   <Zap className="w-4 h-4 text-amber-600" />
@@ -1041,7 +1098,7 @@ function LinkedInPageContent() {
               <button
                 onClick={() => handleUpgrade("monthly")}
                 disabled={checkingOut}
-                className="shrink-0 bg-amber-500 hover:bg-amber-600 text-white font-semibold text-xs rounded-xl px-4 py-2 transition-colors disabled:opacity-70"
+                className="shrink-0 bg-amber-500 hover:bg-amber-600 text-white font-semibold text-xs rounded-xl px-4 py-2 transition-colors disabled:opacity-70 self-start sm:self-auto"
               >
                 {checkingOut ? "Loading..." : "Subscribe →"}
               </button>
@@ -1059,8 +1116,8 @@ function LinkedInPageContent() {
             </div>
           )}
 
-          {/* Tabs */}
-          <div className="flex items-center gap-1 mb-6 bg-white rounded-2xl p-1 shadow-sm border border-slate-100 w-fit">
+          {/* Tabs — hidden on mobile (bottom nav used instead), visible on lg+ */}
+          <div className="hidden lg:flex items-center gap-1 mb-6 bg-white rounded-2xl p-1 shadow-sm border border-slate-100 w-fit">
             {(["posts", "dna", "account", "support"] as ActiveTab[]).map((tab) => (
               <button
                 key={tab}
@@ -1074,6 +1131,12 @@ function LinkedInPageContent() {
                 {tab === "posts" ? "Posts" : tab === "dna" ? "Professional DNA" : tab === "account" ? "Account" : "Support"}
               </button>
             ))}
+          </div>
+          {/* Mobile tab title */}
+          <div className="lg:hidden mb-4">
+            <h2 className="text-base font-bold text-slate-700 capitalize">
+              {activeTab === "dna" ? "Professional DNA" : activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
+            </h2>
           </div>
 
           {/* ===================== POSTS TAB ===================== */}
@@ -1429,7 +1492,7 @@ function LinkedInPageContent() {
                   <label className="flex items-center text-xs font-semibold text-slate-600 mb-1.5 uppercase tracking-wide">
                     LinkedIn Profile URL <FieldCheckmark value={profileUrl} />
                   </label>
-                  <div className="flex gap-2">
+                  <div className="flex flex-col sm:flex-row gap-2">
                     <input
                       type="url"
                       placeholder="https://linkedin.com/in/your-name"
@@ -1466,7 +1529,7 @@ function LinkedInPageContent() {
                 </div>
 
                 {/* Company + Niche */}
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="flex items-center text-xs font-semibold text-slate-600 mb-1.5 uppercase tracking-wide">
                       Company Name <FieldCheckmark value={brief.companyName} />

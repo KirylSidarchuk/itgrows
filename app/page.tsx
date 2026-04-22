@@ -174,13 +174,13 @@ export default function PersonalPage() {
       style={{ backgroundColor: "#f3f2f1", fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" }}
     >
       {/* Nav */}
-      <nav className="border-b border-black/10 px-6 py-4" style={{ backgroundColor: "#f3f2f1" }}>
+      <nav className="border-b border-black/10 px-4 sm:px-6 py-4" style={{ backgroundColor: "#f3f2f1" }}>
         <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2 text-xl font-bold bg-gradient-to-r from-violet-600 to-cyan-600 bg-clip-text text-transparent">
+          <Link href="/" className="flex items-center gap-2 text-xl font-bold bg-gradient-to-r from-violet-600 to-cyan-600 bg-clip-text text-transparent shrink-0">
             <img src="/logo.jpg" className="h-8 w-8 rounded-lg" alt="ItGrows" />
-            ItGrows.ai
+            <span className="hidden xs:inline sm:inline">ItGrows.ai</span>
           </Link>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             {sessionUser ? (
               <>
                 <div className="flex items-center gap-2">
@@ -192,15 +192,18 @@ export default function PersonalPage() {
                   </span>
                 </div>
                 <Link href="/cabinet">
-                  <Button className="bg-violet-600 hover:bg-violet-500 text-white">Go to Cabinet →</Button>
+                  <Button className="bg-violet-600 hover:bg-violet-500 text-white text-sm px-3 sm:px-4">Cabinet →</Button>
                 </Link>
               </>
             ) : (
               <>
                 <Link href="/login?callbackUrl=/cabinet">
-                  <Button variant="ghost" className="text-slate-600 hover:text-[#1b1916]">Login</Button>
+                  <Button variant="ghost" className="text-slate-600 hover:text-[#1b1916] text-sm px-3">Login</Button>
                 </Link>
-                <Button onClick={handleStartTrial} className="bg-violet-600 hover:bg-violet-500 text-white">Try Free — No Card</Button>
+                <Button onClick={handleStartTrial} className="bg-violet-600 hover:bg-violet-500 text-white text-sm px-3 sm:px-4">
+                  <span className="hidden sm:inline">Try Free — No Card</span>
+                  <span className="sm:hidden">Try Free</span>
+                </Button>
               </>
             )}
           </div>
@@ -208,33 +211,33 @@ export default function PersonalPage() {
       </nav>
 
       {/* Hero */}
-      <section className="relative px-6 pt-24 pb-32 text-center overflow-hidden">
+      <section className="relative px-4 sm:px-6 pt-16 sm:pt-24 pb-20 sm:pb-32 text-center overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-violet-100/60 to-transparent pointer-events-none" />
         <div className="absolute top-10 left-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-violet-400/10 rounded-full blur-3xl pointer-events-none" />
         <div className="relative max-w-4xl mx-auto">
-          <Badge className="mb-6 bg-violet-100 text-violet-700 border-violet-200 text-sm px-4 py-1">
+          <Badge className="mb-4 sm:mb-6 bg-violet-100 text-violet-700 border-violet-200 text-xs sm:text-sm px-3 sm:px-4 py-1">
             LinkedIn Automation · $15/month
           </Badge>
-          <h1 className="text-5xl md:text-7xl font-extrabold leading-tight mb-6 tracking-tight text-[#1b1916]">
+          <h1 className="text-4xl sm:text-5xl md:text-7xl font-extrabold leading-tight mb-4 sm:mb-6 tracking-tight text-[#1b1916]">
             Your LinkedIn on
             <span className="block bg-gradient-to-r from-violet-600 via-pink-500 to-cyan-500 bg-clip-text text-transparent">
               Autopilot
             </span>
           </h1>
-          <p className="text-xl text-slate-600 max-w-2xl mx-auto mb-10 leading-relaxed">
+          <p className="text-base sm:text-xl text-slate-600 max-w-2xl mx-auto mb-8 sm:mb-10 leading-relaxed">
             We write and publish 7 AI-crafted LinkedIn posts every week — tailored to your voice, your niche, and your audience. Set it up once. Grow forever.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" onClick={handleStartTrial} className="bg-violet-600 hover:bg-violet-500 text-white px-8 py-6 text-lg rounded-xl">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
+            <Button size="lg" onClick={handleStartTrial} className="bg-violet-600 hover:bg-violet-500 text-white px-6 sm:px-8 py-5 sm:py-6 text-base sm:text-lg rounded-xl w-full sm:w-auto">
               Try Free for 7 Days — No Card Required
             </Button>
-            <a href="#how-it-works">
-              <Button size="lg" variant="outline" className="border-[#1b1916] text-[#1b1916] hover:bg-[#1b1916] hover:text-[#f3f2f1] px-8 py-6 text-lg rounded-xl">
+            <a href="#how-it-works" className="w-full sm:w-auto">
+              <Button size="lg" variant="outline" className="border-[#1b1916] text-[#1b1916] hover:bg-[#1b1916] hover:text-[#f3f2f1] px-6 sm:px-8 py-5 sm:py-6 text-base sm:text-lg rounded-xl w-full">
                 See How It Works
               </Button>
             </a>
           </div>
-          <p className="mt-5 text-sm text-slate-500">7-day free trial · No credit card required · Cancel anytime · $15/month after</p>
+          <p className="mt-4 sm:mt-5 text-xs sm:text-sm text-slate-500">7-day free trial · No credit card required · Cancel anytime · $15/month after</p>
         </div>
       </section>
 
@@ -246,25 +249,25 @@ export default function PersonalPage() {
       </div>
 
       {/* FOMO — What you're missing */}
-      <section className="px-6 py-24" style={{ backgroundColor: "#07071a" }}>
+      <section className="px-4 sm:px-6 py-16 sm:py-24" style={{ backgroundColor: "#07071a" }}>
         <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-16">
+          <div className="text-center mb-10 sm:mb-16">
             <span className="inline-block mb-4 px-4 py-1 rounded-full text-sm font-medium border border-red-500/40 text-red-400 bg-red-500/10 tracking-widest uppercase">
               The Hard Truth
             </span>
-            <h2 className="text-4xl md:text-5xl font-bold mb-5 text-white leading-tight">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-5 text-white leading-tight">
               While You Stay Silent,{" "}
               <span className="bg-gradient-to-r from-red-400 via-orange-400 to-yellow-400 bg-clip-text text-transparent">
                 Someone Else Takes Your Deals
               </span>
             </h2>
-            <p className="text-slate-400 text-lg max-w-2xl mx-auto">
+            <p className="text-slate-400 text-base sm:text-lg max-w-2xl mx-auto">
               LinkedIn isn't a social network — it's where business decisions get made. Every day you don't post, you're invisible to the people who would hire, buy from, or partner with you.
             </p>
           </div>
 
           {/* Big stats */}
-          <div className="grid md:grid-cols-3 gap-6 mb-14">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 mb-10 sm:mb-14">
             {[
               { number: "99%", label: "of LinkedIn users never post", sub: "yet the 1% who do get 9 billion impressions per week", source: "Buffer, 2025", sourceUrl: "https://buffer.com/resources/linkedin-statistics/" },
               { number: "80%", label: "of all B2B leads on social come from LinkedIn", sub: "it's not Instagram or Facebook — it's here", source: "Foundation Inc, 2025", sourceUrl: "https://foundationinc.co/lab/b2b-marketing-linkedin-stats/" },
@@ -282,9 +285,9 @@ export default function PersonalPage() {
           </div>
 
           {/* What you're losing list */}
-          <div className="rounded-2xl border border-red-500/20 p-8" style={{ background: "linear-gradient(135deg, rgba(239,68,68,0.06) 0%, rgba(255,255,255,0.02) 100%)" }}>
-            <h3 className="text-white font-bold text-xl mb-6">Every week without posting, you miss:</h3>
-            <div className="grid md:grid-cols-2 gap-4">
+          <div className="rounded-2xl border border-red-500/20 p-5 sm:p-8" style={{ background: "linear-gradient(135deg, rgba(239,68,68,0.06) 0%, rgba(255,255,255,0.02) 100%)" }}>
+            <h3 className="text-white font-bold text-lg sm:text-xl mb-4 sm:mb-6">Every week without posting, you miss:</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
               {[
                 "65 million decision-makers who could see your name — but don't",
                 "Inbound leads that go to the person who showed up in their feed last week",
@@ -314,14 +317,14 @@ export default function PersonalPage() {
       </section>
 
       {/* How it works */}
-      <section id="how-it-works" className="px-6 py-24" style={{ backgroundColor: "#f3f2f1" }}>
+      <section id="how-it-works" className="px-4 sm:px-6 py-16 sm:py-24" style={{ backgroundColor: "#f3f2f1" }}>
         <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-16">
+          <div className="text-center mb-10 sm:mb-16">
             <Badge className="mb-4 bg-pink-100 text-pink-700 border-pink-200">Simple Setup</Badge>
-            <h2 className="text-4xl font-bold mb-4 text-[#1b1916]">Up and Running in 3 Minutes</h2>
-            <p className="text-slate-600 text-lg">No copywriting. No scheduling. No thinking about what to post.</p>
+            <h2 className="text-3xl sm:text-4xl font-bold mb-4 text-[#1b1916]">Up and Running in 3 Minutes</h2>
+            <p className="text-slate-600 text-base sm:text-lg">No copywriting. No scheduling. No thinking about what to post.</p>
           </div>
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {steps.map((s, i) => (
               <div key={i} className="relative text-center">
                 {i < steps.length - 1 && (
@@ -339,7 +342,7 @@ export default function PersonalPage() {
       </section>
 
       {/* Features */}
-      <section id="features" className="relative px-6 py-28 overflow-hidden" style={{ backgroundColor: "#07071a" }}>
+      <section id="features" className="relative px-4 sm:px-6 py-16 sm:py-28 overflow-hidden" style={{ backgroundColor: "#07071a" }}>
         <div className="absolute top-0 left-1/4 w-96 h-96 bg-violet-700/20 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-pink-700/15 rounded-full blur-3xl pointer-events-none" />
         <div
@@ -350,17 +353,17 @@ export default function PersonalPage() {
           }}
         />
         <div className="relative max-w-6xl mx-auto">
-          <div className="text-center mb-16">
+          <div className="text-center mb-10 sm:mb-16">
             <span className="inline-block mb-4 px-4 py-1 rounded-full text-sm font-medium border border-violet-500/40 text-violet-400 bg-violet-500/10 tracking-widest uppercase">
               What You Get
             </span>
-            <h2 className="text-4xl md:text-5xl font-bold mb-5 text-white leading-tight">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-5 text-white leading-tight">
               Everything You Need to{" "}
               <span className="bg-gradient-to-r from-violet-400 via-pink-400 to-cyan-400 bg-clip-text text-transparent">
                 Own Your LinkedIn
               </span>
             </h2>
-            <p className="text-slate-400 text-lg max-w-2xl mx-auto">
+            <p className="text-slate-400 text-base sm:text-lg max-w-2xl mx-auto">
               One subscription. Daily posts. Real professional growth.
             </p>
           </div>
@@ -381,7 +384,7 @@ export default function PersonalPage() {
       </section>
 
       {/* Pricing */}
-      <section id="pricing" className="px-6 py-24" style={{ backgroundColor: "#ebe9e5" }}>
+      <section id="pricing" className="px-4 sm:px-6 py-16 sm:py-24" style={{ backgroundColor: "#ebe9e5" }}>
         <div className="max-w-2xl mx-auto">
           <div className="text-center mb-12">
             <Badge className="mb-4 bg-violet-100 text-violet-700 border-violet-200">Pricing</Badge>
@@ -452,12 +455,12 @@ export default function PersonalPage() {
       </section>
 
       {/* FAQ */}
-      <section id="faq" className="px-6 py-24" style={{ backgroundColor: "#f3f2f1" }}>
+      <section id="faq" className="px-4 sm:px-6 py-16 sm:py-24" style={{ backgroundColor: "#f3f2f1" }}>
         <div className="max-w-3xl mx-auto">
-          <div className="text-center mb-16">
+          <div className="text-center mb-10 sm:mb-16">
             <Badge className="mb-4 bg-cyan-100 text-cyan-700 border-cyan-200">FAQ</Badge>
-            <h2 className="text-4xl font-bold mb-4 text-violet-700">Frequently Asked Questions</h2>
-            <p className="text-slate-600 text-lg">Everything you need to know before getting started.</p>
+            <h2 className="text-3xl sm:text-4xl font-bold mb-4 text-violet-700">Frequently Asked Questions</h2>
+            <p className="text-slate-600 text-base sm:text-lg">Everything you need to know before getting started.</p>
           </div>
           <div className="space-y-4">
             {faqs.map((item, i) => (
@@ -471,25 +474,25 @@ export default function PersonalPage() {
       </section>
 
       {/* Bottom CTA */}
-      <section className="px-6 py-24 text-center" style={{ backgroundColor: "#ebe9e5" }}>
+      <section className="px-4 sm:px-6 py-16 sm:py-24 text-center" style={{ backgroundColor: "#ebe9e5" }}>
         <div className="max-w-3xl mx-auto">
-          <h2 className="text-4xl md:text-5xl font-extrabold mb-6 text-[#1b1916]">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-4 sm:mb-6 text-[#1b1916]">
             Ready to Grow Your LinkedIn{" "}
             <span className="bg-gradient-to-r from-violet-600 to-cyan-600 bg-clip-text text-transparent">
               While You Sleep?
             </span>
           </h2>
-          <p className="text-slate-600 text-lg mb-10">
+          <p className="text-slate-600 text-base sm:text-lg mb-8 sm:mb-10">
             Join 200+ professionals who stopped worrying about what to post.
           </p>
           <Button
             size="lg"
             onClick={handleStartTrial}
-            className="bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-white px-10 py-6 text-lg rounded-xl"
+            className="bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-white px-8 sm:px-10 py-5 sm:py-6 text-base sm:text-lg rounded-xl w-full sm:w-auto"
           >
             Try Free for 7 Days — No Card Required
           </Button>
-          <p className="mt-4 text-sm text-slate-500">No credit card required · $15/month after · Cancel anytime</p>
+          <p className="mt-4 text-xs sm:text-sm text-slate-500">No credit card required · $15/month after · Cancel anytime</p>
         </div>
       </section>
 
