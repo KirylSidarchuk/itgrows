@@ -1014,24 +1014,40 @@ function LinkedInPageContent() {
                             : "Start your free 7-day trial — no credit card required."}
                         </p>
                       </div>
-                      {!hasPersonalPlan && (
-                        trialExpired ? (
-                          <button
-                            onClick={() => handleUpgrade("monthly")}
-                            disabled={checkingOut}
-                            className="mt-2 bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-500 hover:to-orange-400 text-white font-semibold text-sm px-6 py-2.5 rounded-xl shadow-sm transition-opacity disabled:opacity-70"
-                          >
-                            {checkingOut ? "Loading…" : "Subscribe Now →"}
-                          </button>
-                        ) : (
-                          <button
-                            onClick={handleStartTrial}
-                            disabled={startingTrial}
-                            className="mt-2 bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-white font-semibold text-sm px-6 py-2.5 rounded-xl shadow-sm transition-opacity disabled:opacity-70"
-                          >
-                            {startingTrial ? "Starting..." : "Start Free Trial — No Card →"}
-                          </button>
-                        )
+                      {hasPersonalPlan ? (
+                        <button
+                          onClick={handleGenerate}
+                          disabled={generating}
+                          className="mt-2 bg-gradient-to-r from-violet-600 to-violet-500 hover:from-violet-500 hover:to-violet-400 text-white font-semibold text-sm px-6 py-2.5 rounded-xl shadow-sm transition-opacity disabled:opacity-70 flex items-center gap-2"
+                        >
+                          {generating ? (
+                            <>
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                              Generating... ({generateTimer}s)
+                            </>
+                          ) : (
+                            <>
+                              <Zap className="w-4 h-4" />
+                              Generate 7 Posts
+                            </>
+                          )}
+                        </button>
+                      ) : trialExpired ? (
+                        <button
+                          onClick={() => handleUpgrade("monthly")}
+                          disabled={checkingOut}
+                          className="mt-2 bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-500 hover:to-orange-400 text-white font-semibold text-sm px-6 py-2.5 rounded-xl shadow-sm transition-opacity disabled:opacity-70"
+                        >
+                          {checkingOut ? "Loading…" : "Subscribe Now →"}
+                        </button>
+                      ) : (
+                        <button
+                          onClick={handleStartTrial}
+                          disabled={startingTrial}
+                          className="mt-2 bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-white font-semibold text-sm px-6 py-2.5 rounded-xl shadow-sm transition-opacity disabled:opacity-70"
+                        >
+                          {startingTrial ? "Starting..." : "Start Free Trial — No Card →"}
+                        </button>
                       )}
                     </div>
                   ) : (
