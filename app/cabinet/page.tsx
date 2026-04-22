@@ -1828,11 +1828,11 @@ function LinkedInPageContent() {
                             onClick={() => setSupportTopic(supportTopic === value ? "" : value)}
                             className={`px-4 py-2 rounded-xl text-sm font-medium transition-all border ${
                               supportTopic === value
-                                ? "bg-violet-600 text-white border-violet-600 shadow-sm"
-                                : "bg-slate-50 text-slate-600 border-slate-200 hover:border-violet-300 hover:text-violet-600"
+                                ? "bg-gradient-to-r from-violet-600 to-pink-600 text-white border-transparent shadow-md scale-105"
+                                : "bg-white text-slate-600 border-slate-200 hover:border-violet-300 hover:text-violet-600"
                             }`}
                           >
-                            {label}
+                            {supportTopic === value ? "✓ " : ""}{label}
                           </button>
                         ))}
                       </div>
