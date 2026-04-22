@@ -28,20 +28,20 @@ export const metadata: Metadata = {
       { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
     ],
   },
-  title: "ItGrows.ai — AI Content Automation",
-  description: "AI creates SEO articles, social posts, and images — then auto-publishes them and runs your Google Ads.",
+  title: "ItGrows.ai — LinkedIn Autopilot",
+  description: "AI writes and auto-publishes LinkedIn posts for you. Start your 7-day free trial — no credit card needed.",
   openGraph: {
-    title: "ItGrows.ai — AI Content Automation",
-    description: "Automatically publish SEO articles to your blog",
-    url: "https://itgrows.ai",
+    title: "ItGrows.ai — LinkedIn Autopilot",
+    description: "AI writes and auto-publishes LinkedIn posts for you. Start your 7-day free trial — no credit card needed.",
+    url: "https://www.itgrows.ai",
     siteName: "ItGrows.ai",
-    images: [{ url: "https://itgrows.ai/og-image.png", width: 1200, height: 630 }],
+    images: [{ url: "https://www.itgrows.ai/og-image.png", width: 1200, height: 630 }],
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "ItGrows.ai",
-    description: "Automatically publish SEO articles to your blog",
+    title: "ItGrows.ai — LinkedIn Autopilot",
+    description: "AI writes and auto-publishes LinkedIn posts for you. Start your 7-day free trial — no credit card needed.",
   },
 };
 
