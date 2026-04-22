@@ -609,7 +609,11 @@ function LinkedInPageContent() {
       }
       if (!res.ok) {
         const data = await res.json().catch(() => ({})) as { error?: string; message?: string }
-        setGenerateError(data.message ?? data.error ?? "Generation failed. Please try again.")
+        if (data.error === "ai_busy") {
+          setGenerateError("Our AI is busy right now. Please try again in a few minutes.")
+        } else {
+          setGenerateError(data.message ?? data.error ?? "Generation failed. Please try again.")
+        }
         return
       }
       const data = await res.json() as { posts?: LinkedInPost[] }

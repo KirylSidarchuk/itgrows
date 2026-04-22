@@ -188,23 +188,49 @@ export async function POST(req: NextRequest) {
 
     const prompt = buildLinkedInPrompt(brief)
 
-    const llmResponse = await fetch(`${LLM_BASE_URL}/v1/chat/completions`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${LLM_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: LLM_MODEL,
-        messages: [{ role: "user", content: prompt }],
-        max_tokens: 4096,
-        temperature: 0.8,
-      }),
-    })
+    const FALLBACK_MODELS = [LLM_MODEL, "gemini-2.0-flash", "gemini-1.5-flash"]
+    let llmResponse: Response | null = null
+    let lastStatus = 0
 
-    if (!llmResponse.ok) {
+    for (let attempt = 0; attempt < 3; attempt++) {
+      const modelToUse = FALLBACK_MODELS[Math.min(attempt, FALLBACK_MODELS.length - 1)]
+      llmResponse = await fetch(`${LLM_BASE_URL}/v1/chat/completions`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${LLM_API_KEY}`,
+        },
+        body: JSON.stringify({
+          model: modelToUse,
+          messages: [{ role: "user", content: prompt }],
+          max_tokens: 4096,
+          temperature: 0.8,
+        }),
+      })
+
+      if (llmResponse.ok) break
+
+      lastStatus = llmResponse.status
+      if (lastStatus === 429) {
+        if (attempt < 2) {
+          await new Promise((resolve) => setTimeout(resolve, 3000))
+          continue
+        }
+        // All retries exhausted — return friendly error
+        return NextResponse.json(
+          { error: "ai_busy", message: "Our AI is busy right now. Please try again in a few minutes." },
+          { status: 503 }
+        )
+      }
+
+      // Non-429 error — fail immediately
       const errText = await llmResponse.text()
-      throw new Error(`LLM API error ${llmResponse.status}: ${errText}`)
+      throw new Error(`LLM API error ${lastStatus}: ${errText}`)
+    }
+
+    if (!llmResponse || !llmResponse.ok) {
+      const errText = await llmResponse?.text() ?? ""
+      throw new Error(`LLM API error ${lastStatus}: ${errText}`)
     }
 
     const llmData = await llmResponse.json() as { choices: Array<{ message: { content: string } }> }
