@@ -338,6 +338,7 @@ function LinkedInPageContent() {
   const searchParams = useSearchParams()
   const { data: session } = useSession()
   const [accounts, setAccounts] = useState<LinkedInAccount[]>([])
+  const [accountsLoading, setAccountsLoading] = useState(true)
   const [loading, setLoading] = useState(true)
   const [disconnecting, setDisconnecting] = useState<string | null>(null)
   const [statusMessage, setStatusMessage] = useState<string | null>(null)
@@ -477,8 +478,9 @@ function LinkedInPageContent() {
       .then((data) => {
         setAccounts(data.accounts ?? [])
         setLoading(false)
+        setAccountsLoading(false)
       })
-      .catch(() => setLoading(false))
+      .catch(() => { setLoading(false); setAccountsLoading(false) })
   }, [])
 
   useEffect(() => {
@@ -1038,7 +1040,11 @@ function LinkedInPageContent() {
           {/* ===================== POSTS TAB ===================== */}
           {activeTab === "posts" && (
             <div className="space-y-5">
-              {isConnected ? (
+              {accountsLoading ? (
+                <div className="flex justify-center py-16">
+                  <Loader2 className="w-6 h-6 animate-spin text-violet-400" />
+                </div>
+              ) : isConnected ? (
                 <>
                   {/* Onboarding checklist */}
                   {showOnboarding && (() => {
@@ -1361,6 +1367,7 @@ function LinkedInPageContent() {
           )}
 
           {/* ===================== DNA TAB ===================== */}
+
           {activeTab === "dna" && (
             <div className="space-y-5">
               {/* DNA score card */}
