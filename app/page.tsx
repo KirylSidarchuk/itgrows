@@ -501,6 +501,7 @@ export default function PersonalPage() {
           {" "}·{" "}
           <Link href="/terms" className="hover:text-[#1b1916] transition-colors">Terms of Service</Link>
         </p>
+        <p className="mt-2 text-xs text-slate-400">Magiscan Inc. · 919 North Market Street, Wilmington, DE 19801, USA</p>
       </footer>
     </div>
   )
