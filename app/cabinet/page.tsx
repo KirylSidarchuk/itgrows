@@ -355,7 +355,7 @@ function LinkedInPageContent() {
   const [postsLoading, setPostsLoading] = useState(false)
   const [generating, setGenerating] = useState(false)
   const [generateError, setGenerateError] = useState<string | null>(null)
-  const [generateTimer, setGenerateTimer] = useState(0)
+  const [generateTimer, setGenerateTimer] = useState(90)
   const [publishedCollapsed, setPublishedCollapsed] = useState(true)
   const [deletingAccount, setDeletingAccount] = useState(false)
   const [checkingOut, setCheckingOut] = useState(false)
@@ -458,11 +458,11 @@ function LinkedInPageContent() {
 
   useEffect(() => {
     if (!generating) {
-      setGenerateTimer(0)
+      setGenerateTimer(90)
       return
     }
     const interval = setInterval(() => {
-      setGenerateTimer((t) => t + 1)
+      setGenerateTimer((t) => Math.max(0, t - 1))
     }, 1000)
     return () => clearInterval(interval)
   }, [generating])
@@ -947,7 +947,7 @@ function LinkedInPageContent() {
                         {generating ? (
                           <>
                             <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                            Generating... ({generateTimer}s)
+                            {generateTimer > 0 ? `Generating... (${generateTimer}s left)` : "Almost done..."}
                           </>
                         ) : (
                           <>
@@ -1023,7 +1023,7 @@ function LinkedInPageContent() {
                           {generating ? (
                             <>
                               <Loader2 className="w-4 h-4 animate-spin" />
-                              Generating... ({generateTimer}s)
+                              {generateTimer > 0 ? `Generating... (${generateTimer}s left)` : "Almost done..."}
                             </>
                           ) : (
                             <>
