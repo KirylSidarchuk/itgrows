@@ -33,7 +33,7 @@ async function generatePostImage(postContent: string, niche: string): Promise<st
     // Generate image via proxy
     const imgRes = await fetch(`${PROXY_URL}/images/generate`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${LLM_API_KEY}` },
       body: JSON.stringify({
         model: "gemini-3-pro-image-preview",
         prompt: imagePrompt,
