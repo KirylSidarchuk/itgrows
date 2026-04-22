@@ -63,7 +63,7 @@ export default async function BlogPage() {
             ItGrows.ai{" "}
             <span className="bg-gradient-to-r from-violet-600 to-pink-500 bg-clip-text text-transparent">Blog</span>
           </h1>
-          <p className="text-slate-600 text-lg">AI-generated insights for growing businesses</p>
+          <p className="text-slate-600 text-lg">Полезные инсайты о продвижении личного бренда в LinkedIn, Instagram, X</p>
         </div>
       </section>
 
