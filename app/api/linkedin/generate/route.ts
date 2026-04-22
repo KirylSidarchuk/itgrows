@@ -139,7 +139,7 @@ export async function POST(req: NextRequest) {
     const rateLimit = await checkGenerateRateLimit(userId)
     if (!rateLimit.allowed) {
       return NextResponse.json(
-        { error: "rate_limit_exceeded", message: "You can generate posts up to 3 times per hour. Please wait before generating again." },
+        { error: "rate_limit_exceeded", message: "You can generate once every 3 hours. Please try again later." },
         {
           status: 429,
           headers: { "Retry-After": String(rateLimit.retryAfter ?? 3600) }

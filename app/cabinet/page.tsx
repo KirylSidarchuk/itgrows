@@ -973,19 +973,6 @@ function LinkedInPageContent() {
                         {startingTrial ? "Starting..." : "Start Free Trial — No Card"}
                       </Button>
                     )}
-                    <span className="text-sm text-slate-400 flex items-center gap-1.5">
-                      <Calendar className="w-4 h-4" />
-                      Schedule: next 7 days
-                    </span>
-                    {posts.length > 0 && (
-                      <button
-                        onClick={fetchPosts}
-                        className="ml-auto flex items-center gap-1.5 text-xs text-slate-400 hover:text-violet-600 transition-colors"
-                      >
-                        <RefreshCw className="w-3 h-3" />
-                        Refresh
-                      </button>
-                    )}
                   </div>
 
                   {generateError && (
