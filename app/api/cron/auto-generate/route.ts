@@ -8,6 +8,7 @@ import { callLLM } from "@/lib/llm-client"
 
 const LLM_MODEL = "gemini-2.0-flash-lite"
 const PROXY_URL = "http://34.60.133.229:4000"
+const LLM_API_KEY = "jtotFgxS1WQorT52LZym2ncyYzboliS6p04RqUwneFI"
 
 interface PostData {
   content: string
@@ -38,7 +39,7 @@ Return ONLY the image prompt, nothing else.`,
     console.log(`[LLM] ${new Date().toISOString()} | caller=auto-generate/image | model=gemini-3-pro-image-preview | images/generate`)
     const imgRes = await fetch(`${PROXY_URL}/images/generate`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${LLM_API_KEY}` },
       body: JSON.stringify({
         model: "gemini-3-pro-image-preview",
         prompt: imagePrompt,
