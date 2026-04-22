@@ -54,11 +54,13 @@ function LoginForm() {
       {errorParam === "token-expired" && (
         <div className="mb-4 p-3 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm text-center">
           Verification link expired. Please sign up again.
+          <p className="text-red-400 text-xs mt-1">Didn&apos;t receive the email? Check your spam folder.</p>
         </div>
       )}
       {errorParam === "invalid-token" && (
         <div className="mb-4 p-3 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm text-center">
           Invalid verification link. Please check your email or sign up again.
+          <p className="text-red-400 text-xs mt-1">Didn&apos;t receive the email? Check your spam folder.</p>
         </div>
       )}
       <form onSubmit={handleSubmit} className="space-y-4">
