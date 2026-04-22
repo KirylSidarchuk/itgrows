@@ -406,6 +406,7 @@ function LinkedInPageContent() {
       setStatusMessage("Something went wrong. Please try again.")
     } finally {
       setStartingTrial(false)
+      setCheckingOut(false)
     }
   }
 
@@ -1513,7 +1514,7 @@ function LinkedInPageContent() {
               {/* Subscription / Billing */}
               <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
                 <h2 className="text-base font-semibold text-slate-800 mb-4">Subscription</h2>
-                {hasPersonalPlan ? (
+                {hasActiveSubscription ? (
                   <div className="space-y-3">
                     <div className="flex items-center justify-between p-3 rounded-xl bg-violet-50 border border-violet-100">
                       <div className="flex items-center gap-3">
@@ -1536,42 +1537,6 @@ function LinkedInPageContent() {
                     <p className="text-xs text-slate-400 px-1">
                       You have full access to generate posts, publish, and auto-scheduling.
                     </p>
-                  </div>
-                ) : trialExpired ? (
-                  <div className="space-y-4">
-                    <div className="p-4 rounded-xl bg-red-50 border border-red-100">
-                      <p className="text-sm font-semibold text-red-700 mb-1">Trial Ended</p>
-                      <p className="text-xs text-red-600">Your 7-day free trial has ended. Subscribe to continue generating and publishing posts.</p>
-                    </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      <button
-                        onClick={() => handleUpgrade("monthly")}
-                        disabled={checkingOut}
-                        className="flex flex-col items-center gap-1 p-4 rounded-xl border-2 border-violet-200 bg-violet-50 hover:border-violet-400 hover:bg-violet-100 transition-colors cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
-                      >
-                        <span className="text-[10px] font-semibold uppercase tracking-wide text-violet-500 mb-0.5">Monthly</span>
-                        <span className="text-base font-bold text-violet-700">$15</span>
-                        <span className="text-xs text-violet-600 font-medium">/ month</span>
-                        <span className="text-[10px] text-slate-500 mt-1">Billed monthly</span>
-                        <span className="mt-2 w-full text-center text-xs font-semibold text-white bg-violet-600 rounded-lg py-1.5 px-2">
-                          {checkingOut ? "Loading…" : "Subscribe Now"}
-                        </span>
-                      </button>
-                      <button
-                        onClick={() => handleUpgrade("annual")}
-                        disabled={checkingOut}
-                        className="flex flex-col items-center gap-1 p-4 rounded-xl border-2 border-pink-200 bg-pink-50 hover:border-pink-400 hover:bg-pink-100 transition-colors cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
-                      >
-                        <span className="text-[10px] font-semibold uppercase tracking-wide text-pink-500 mb-0.5">Annual</span>
-                        <span className="text-base font-bold text-pink-700">$12</span>
-                        <span className="text-xs text-pink-600 font-medium">/ month</span>
-                        <span className="text-[10px] text-slate-500 mt-1">Billed $144/year · Save 20%</span>
-                        <span className="mt-2 w-full text-center text-xs font-semibold text-white bg-pink-600 rounded-lg py-1.5 px-2">
-                          {checkingOut ? "Loading…" : "Subscribe Now"}
-                        </span>
-                      </button>
-                    </div>
-                    <p className="text-xs text-slate-400 text-center">Cancel anytime. Secure payment via Stripe.</p>
                   </div>
                 ) : trialActive ? (
                   <div className="space-y-3">
@@ -1622,6 +1587,42 @@ function LinkedInPageContent() {
                       </button>
                     </div>
                     <p className="text-xs text-slate-400 text-center">Subscribe now to keep access after your trial. Cancel anytime.</p>
+                  </div>
+                ) : trialExpired ? (
+                  <div className="space-y-4">
+                    <div className="p-4 rounded-xl bg-red-50 border border-red-100">
+                      <p className="text-sm font-semibold text-red-700 mb-1">Trial Ended</p>
+                      <p className="text-xs text-red-600">Your 7-day free trial has ended. Subscribe to continue generating and publishing posts.</p>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <button
+                        onClick={() => handleUpgrade("monthly")}
+                        disabled={checkingOut}
+                        className="flex flex-col items-center gap-1 p-4 rounded-xl border-2 border-violet-200 bg-violet-50 hover:border-violet-400 hover:bg-violet-100 transition-colors cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
+                      >
+                        <span className="text-[10px] font-semibold uppercase tracking-wide text-violet-500 mb-0.5">Monthly</span>
+                        <span className="text-base font-bold text-violet-700">$15</span>
+                        <span className="text-xs text-violet-600 font-medium">/ month</span>
+                        <span className="text-[10px] text-slate-500 mt-1">Billed monthly</span>
+                        <span className="mt-2 w-full text-center text-xs font-semibold text-white bg-violet-600 rounded-lg py-1.5 px-2">
+                          {checkingOut ? "Loading…" : "Subscribe Now"}
+                        </span>
+                      </button>
+                      <button
+                        onClick={() => handleUpgrade("annual")}
+                        disabled={checkingOut}
+                        className="flex flex-col items-center gap-1 p-4 rounded-xl border-2 border-pink-200 bg-pink-50 hover:border-pink-400 hover:bg-pink-100 transition-colors cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
+                      >
+                        <span className="text-[10px] font-semibold uppercase tracking-wide text-pink-500 mb-0.5">Annual</span>
+                        <span className="text-base font-bold text-pink-700">$12</span>
+                        <span className="text-xs text-pink-600 font-medium">/ month</span>
+                        <span className="text-[10px] text-slate-500 mt-1">Billed $144/year · Save 20%</span>
+                        <span className="mt-2 w-full text-center text-xs font-semibold text-white bg-pink-600 rounded-lg py-1.5 px-2">
+                          {checkingOut ? "Loading…" : "Subscribe Now"}
+                        </span>
+                      </button>
+                    </div>
+                    <p className="text-xs text-slate-400 text-center">Cancel anytime. Secure payment via Stripe.</p>
                   </div>
                 ) : (
                   <div className="space-y-4">
