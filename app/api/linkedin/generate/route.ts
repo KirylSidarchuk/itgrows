@@ -187,7 +187,7 @@ export async function POST(req: NextRequest) {
 
     const prompt = buildLinkedInPrompt(brief)
 
-    const FALLBACK_MODELS = [LLM_MODEL, "gemini-2.0-flash", "gemini-1.5-flash"]
+    const FALLBACK_MODELS = [LLM_MODEL, "gemini-2.0-flash", "gemini-2.5-flash"]
     let llmResponse: Response | null = null
     let lastStatus = 0
 

@@ -5,7 +5,7 @@ export const maxDuration = 300
 
 const PROXY_URL = "http://34.60.133.229:4000"
 const LLM_API_KEY = "jtotFgxS1WQorT52LZym2ncyYzboliS6p04RqUwneFI"
-const LLM_MODELS = ["gemini-2.0-flash-lite", "gemini-2.0-flash", "gemini-1.5-flash"]
+const LLM_MODELS = ["gemini-2.0-flash-lite", "gemini-2.0-flash", "gemini-2.5-flash"]
 
 export async function POST(req: NextRequest) {
   const internalSecret = process.env.CRON_SECRET
