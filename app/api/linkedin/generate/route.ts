@@ -106,8 +106,8 @@ Cover 7 different angles across the set:
 personal lesson | industry observation | contrarian take | "what I wish I knew" | a mistake and what it taught me | a trend I'm watching | a question I keep asking myself
 
 Return ONLY a valid JSON array with exactly 7 objects. Each object must have:
-- "content": string (the full post text including hashtags)
-- "hook": string (first sentence only, for preview)
+- "content": string (the full post text including hashtags). Use \\n for line breaks. NEVER use unescaped double quotes inside strings — use single quotes or rephrase instead.
+- "hook": string (first sentence only, for preview). No double quotes inside.
 
 Example of the CORRECT style:
 [
@@ -240,20 +240,38 @@ export async function POST(req: NextRequest) {
     }
 
     // Parse JSON from response — robust against LLM quirks
-    const jsonMatch = rawContent.replace(/```json\s*/gi, "").replace(/```\s*/g, "").match(/\[[\s\S]*\]/)
+    const cleaned = rawContent.replace(/```json\s*/gi, "").replace(/```\s*/g, "").trim()
+    const jsonMatch = cleaned.match(/\[[\s\S]*\]/)
     if (!jsonMatch) {
       throw new Error("Could not parse JSON array from LLM response")
     }
 
     let postsData: Array<{ content: string; hook: string }>
-    try {
-      postsData = JSON.parse(jsonMatch[0])
-    } catch {
-      // Fix unescaped newlines/tabs inside JSON string values, then retry
-      const fixed = jsonMatch[0].replace(/"((?:[^"\\]|\\.)*)"/gs, (_match, inner: string) => {
-        return '"' + inner.replace(/\n/g, "\\n").replace(/\r/g, "\\r").replace(/\t/g, "\\t") + '"'
-      })
-      postsData = JSON.parse(fixed)
+    const tryParse = (str: string) => {
+      try { return JSON.parse(str) } catch { return null }
+    }
+
+    // Attempt 1: direct parse
+    postsData = tryParse(jsonMatch[0])
+
+    // Attempt 2: fix unescaped control chars (newlines, tabs)
+    if (!postsData) {
+      const fixed = jsonMatch[0].replace(/("(?:[^"\\]|\\.)*")/gs, (m) =>
+        m.replace(/\n/g, "\\n").replace(/\r/g, "\\r").replace(/\t/g, "\\t")
+      )
+      postsData = tryParse(fixed)
+    }
+
+    // Attempt 3: extract each object individually using a looser regex
+    if (!postsData) {
+      const objects = [...cleaned.matchAll(/\{\s*"content"\s*:\s*"([\s\S]*?)"\s*,\s*"hook"\s*:\s*"([\s\S]*?)"\s*\}/g)]
+      if (objects.length > 0) {
+        postsData = objects.map(m => ({ content: m[1].replace(/\\n/g, "\n"), hook: m[2] }))
+      }
+    }
+
+    if (!postsData || !Array.isArray(postsData) || postsData.length === 0) {
+      throw new Error("Invalid posts data from LLM")
     }
 
     if (!Array.isArray(postsData) || postsData.length === 0) {
