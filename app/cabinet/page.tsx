@@ -882,8 +882,7 @@ function LinkedInPageContent() {
                         disabled={checkingOut}
                         className="bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-white font-semibold px-6 py-2.5 rounded-xl shadow-sm"
                       >
-                        <Lock className="w-4 h-4 mr-2" />
-                        Try Free for 7 Days
+                        Start Free Trial
                       </Button>
                     )}
                     <span className="text-sm text-slate-400 flex items-center gap-1.5">
@@ -920,9 +919,20 @@ function LinkedInPageContent() {
                       <div>
                         <p className="text-base font-semibold text-slate-700 mb-1">No posts yet</p>
                         <p className="text-sm text-slate-400 max-w-xs">
-                          Generate 7 AI-written LinkedIn posts, scheduled for the next 7 days.
+                          {hasPersonalPlan
+                            ? "Generate 7 AI-written LinkedIn posts, scheduled for the next 7 days."
+                            : "Start your free 7-day trial to generate your first week of LinkedIn posts."}
                         </p>
                       </div>
+                      {!hasPersonalPlan && (
+                        <button
+                          onClick={() => handleUpgrade("monthly")}
+                          disabled={checkingOut}
+                          className="mt-2 bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-white font-semibold text-sm px-6 py-2.5 rounded-xl shadow-sm transition-opacity disabled:opacity-70"
+                        >
+                          {checkingOut ? "Loading…" : "Start Free Trial →"}
+                        </button>
+                      )}
                     </div>
                   ) : (
                     <>
