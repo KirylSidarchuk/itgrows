@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Suspense } from "react"
-import { Loader2, RefreshCw, Send, Calendar, Check, Settings, LogOut, Zap, Lock } from "lucide-react"
+import { Loader2, RefreshCw, Send, Calendar, Check, Settings, LogOut, Zap, Lock, MessageCircle } from "lucide-react"
 import { signOut, useSession } from "next-auth/react"
 
 interface LinkedInAccount {
@@ -322,7 +322,7 @@ function PostCard({
   )
 }
 
-type ActiveTab = "posts" | "dna" | "account"
+type ActiveTab = "posts" | "dna" | "account" | "support"
 
 function LinkedInPageContent() {
   const searchParams = useSearchParams()
@@ -362,6 +362,10 @@ function LinkedInPageContent() {
   const [showOnboarding, setShowOnboarding] = useState(() =>
     typeof window !== "undefined" ? localStorage.getItem("itgrows_onboarding_done") !== "true" : false
   )
+  const [supportMessage, setSupportMessage] = useState("")
+  const [supportSending, setSupportSending] = useState(false)
+  const [supportSent, setSupportSent] = useState(false)
+  const [supportError, setSupportError] = useState<string | null>(null)
 
   const hour = new Date().getHours()
   const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening"
@@ -559,6 +563,30 @@ function LinkedInPageContent() {
     } catch {
       alert("Something went wrong. Please try again.")
       setDeletingAccount(false)
+    }
+  }
+
+  async function handleSendSupport() {
+    if (!supportMessage.trim() || supportMessage.trim().length < 20) return
+    setSupportSending(true)
+    setSupportError(null)
+    try {
+      const res = await fetch("/api/support", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: supportMessage }),
+      })
+      if (res.ok) {
+        setSupportSent(true)
+        setSupportMessage("")
+      } else {
+        const data = await res.json().catch(() => ({})) as { error?: string }
+        setSupportError(data.error ?? "Something went wrong. Please try again.")
+      }
+    } catch {
+      setSupportError("Network error. Please try again.")
+    } finally {
+      setSupportSending(false)
     }
   }
 
@@ -813,6 +841,13 @@ function LinkedInPageContent() {
             <span className="text-sm">Settings</span>
           </button>
           <button
+            onClick={() => setActiveTab("support")}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 hover:text-violet-700 transition-colors mb-1"
+          >
+            <MessageCircle className="w-4 h-4 shrink-0" />
+            <span className="text-sm">Support</span>
+          </button>
+          <button
             onClick={() => signOut({ callbackUrl: "/login" })}
             className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 hover:text-violet-700 transition-colors"
           >
@@ -944,7 +979,7 @@ function LinkedInPageContent() {
 
           {/* Tabs */}
           <div className="flex items-center gap-1 mb-6 bg-white rounded-2xl p-1 shadow-sm border border-slate-100 w-fit">
-            {(["posts", "dna", "account"] as ActiveTab[]).map((tab) => (
+            {(["posts", "dna", "account", "support"] as ActiveTab[]).map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
@@ -954,7 +989,7 @@ function LinkedInPageContent() {
                     : "text-slate-500 hover:text-slate-700 hover:bg-slate-50"
                 }`}
               >
-                {tab === "posts" ? "Posts" : tab === "dna" ? "Professional DNA" : "Account"}
+                {tab === "posts" ? "Posts" : tab === "dna" ? "Professional DNA" : tab === "account" ? "Account" : "Support"}
               </button>
             ))}
           </div>
@@ -1691,6 +1726,61 @@ function LinkedInPageContent() {
                 >
                   {deletingAccount ? "Deleting..." : "Delete My Account"}
                 </button>
+              </div>
+            </div>
+          )}
+
+          {/* ===================== SUPPORT TAB ===================== */}
+          {activeTab === "support" && (
+            <div className="space-y-5">
+              <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+                <h2 className="text-base font-semibold text-slate-800 mb-1">Contact Support</h2>
+                <p className="text-sm text-slate-500 mb-5">Have a question or found an issue? We'll get back to you as soon as possible.</p>
+
+                {supportSent ? (
+                  <div className="flex items-center gap-3 px-4 py-4 rounded-xl bg-green-50 border border-green-200">
+                    <span className="text-green-600 text-lg">✓</span>
+                    <p className="text-sm font-medium text-green-700">Message sent! We'll get back to you soon.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-600 mb-1.5 uppercase tracking-wide">
+                        Describe your issue or idea <span className="text-red-400">*</span>
+                      </label>
+                      <textarea
+                        value={supportMessage}
+                        onChange={(e) => { setSupportMessage(e.target.value); setSupportError(null) }}
+                        placeholder="Describe your issue or idea..."
+                        rows={5}
+                        className="w-full px-3 py-2.5 text-sm rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-violet-300 resize-none"
+                      />
+                      <p className="text-xs text-slate-400 mt-1">{supportMessage.trim().length}/20 characters minimum</p>
+                    </div>
+
+                    {supportError && (
+                      <p className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-xl px-3 py-2">{supportError}</p>
+                    )}
+
+                    <Button
+                      disabled={supportSending || supportMessage.trim().length < 20}
+                      onClick={handleSendSupport}
+                      className="bg-violet-600 hover:bg-violet-500 text-white rounded-xl px-6 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {supportSending ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                          Sending...
+                        </>
+                      ) : (
+                        <>
+                          <Send className="w-4 h-4 mr-2" />
+                          Send Message
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                )}
               </div>
             </div>
           )}
