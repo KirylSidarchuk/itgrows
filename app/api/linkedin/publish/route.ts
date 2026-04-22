@@ -229,11 +229,11 @@ export async function POST(req: NextRequest) {
 
     if (!liResponse.ok) {
       const errText = await liResponse.text()
-      // Mark as failed
+      // Mark as failed — include userId in WHERE to prevent cross-user modification
       await db
         .update(linkedinPosts)
         .set({ status: "failed", publishError: errText })
-        .where(eq(linkedinPosts.id, postId))
+        .where(and(eq(linkedinPosts.id, postId), eq(linkedinPosts.userId, userId)))
 
       return NextResponse.json(
         { error: `LinkedIn API error ${liResponse.status}: ${errText}` },
@@ -244,7 +244,7 @@ export async function POST(req: NextRequest) {
     const liData = await liResponse.json() as { id?: string }
     const linkedinPostId = liData.id ?? null
 
-    // Update DB
+    // Update DB — include userId in WHERE to prevent cross-user modification
     await db
       .update(linkedinPosts)
       .set({
@@ -253,7 +253,7 @@ export async function POST(req: NextRequest) {
         linkedinPostId,
         publishError: null,
       })
-      .where(eq(linkedinPosts.id, postId))
+      .where(and(eq(linkedinPosts.id, postId), eq(linkedinPosts.userId, userId)))
 
     return NextResponse.json({ success: true, linkedinPostId })
   } catch (err) {
