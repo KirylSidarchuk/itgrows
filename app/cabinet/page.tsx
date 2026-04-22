@@ -359,6 +359,9 @@ function LinkedInPageContent() {
   const [publishedCollapsed, setPublishedCollapsed] = useState(true)
   const [deletingAccount, setDeletingAccount] = useState(false)
   const [checkingOut, setCheckingOut] = useState(false)
+  const [showOnboarding, setShowOnboarding] = useState(() =>
+    typeof window !== "undefined" ? localStorage.getItem("itgrows_onboarding_done") !== "true" : false
+  )
 
   const hour = new Date().getHours()
   const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening"
@@ -466,6 +469,21 @@ function LinkedInPageContent() {
     }, 1000)
     return () => clearInterval(interval)
   }, [generating])
+
+  // Auto-dismiss onboarding when all 3 steps complete
+  useEffect(() => {
+    if (!showOnboarding) return
+    const step1 = accounts.length > 0
+    const step2 = !!(brief.niche?.trim() || brief.goals?.trim() || brief.targetAudience?.trim())
+    const step3 = posts.length > 0
+    if (step1 && step2 && step3) {
+      const timer = setTimeout(() => {
+        localStorage.setItem("itgrows_onboarding_done", "true")
+        setShowOnboarding(false)
+      }, 1500)
+      return () => clearTimeout(timer)
+    }
+  }, [accounts.length, brief.niche, brief.goals, brief.targetAudience, posts.length, showOnboarding])
 
   function fetchBrief() {
     fetch("/api/linkedin/brief")
@@ -937,6 +955,93 @@ function LinkedInPageContent() {
             <div className="space-y-5">
               {isConnected ? (
                 <>
+                  {/* Onboarding checklist */}
+                  {showOnboarding && (() => {
+                    const s1 = accounts.length > 0
+                    const s2 = briefFilled
+                    const s3 = posts.length > 0 || publishedPosts.length > 0
+                    const allDone = s1 && s2 && s3
+                    return (
+                      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+                        <p className="text-sm font-semibold text-slate-700 mb-3">
+                          {allDone ? "✓ You're all set!" : "Getting started"}
+                        </p>
+                        <div className="space-y-2.5">
+                          {/* Step 1 — Connect LinkedIn */}
+                          <div className="flex items-center justify-between gap-3">
+                            <div className="flex items-center gap-2.5">
+                              {s1 ? (
+                                <span className="w-5 h-5 rounded-full bg-green-100 flex items-center justify-center shrink-0">
+                                  <Check className="w-3 h-3 text-green-600" />
+                                </span>
+                              ) : (
+                                <span className="w-5 h-5 rounded-full border-2 border-slate-300 shrink-0" />
+                              )}
+                              <span className={`text-sm ${s1 ? "line-through text-slate-400" : "font-semibold text-slate-700"}`}>
+                                Connect LinkedIn
+                              </span>
+                            </div>
+                            {!s1 && (
+                              <a
+                                href="/api/linkedin/connect"
+                                className="text-xs font-semibold text-violet-600 hover:text-violet-500 transition-colors whitespace-nowrap"
+                              >
+                                Connect →
+                              </a>
+                            )}
+                          </div>
+                          {/* Step 2 — Fill Content DNA */}
+                          <div className="flex items-center justify-between gap-3">
+                            <div className="flex items-center gap-2.5">
+                              {s2 ? (
+                                <span className="w-5 h-5 rounded-full bg-green-100 flex items-center justify-center shrink-0">
+                                  <Check className="w-3 h-3 text-green-600" />
+                                </span>
+                              ) : (
+                                <span className="w-5 h-5 rounded-full border-2 border-slate-300 shrink-0" />
+                              )}
+                              <span className={`text-sm ${s2 ? "line-through text-slate-400" : "font-semibold text-slate-700"}`}>
+                                Fill Content DNA
+                              </span>
+                            </div>
+                            {!s2 && (
+                              <button
+                                onClick={() => setActiveTab("dna")}
+                                className="text-xs font-semibold text-violet-600 hover:text-violet-500 transition-colors whitespace-nowrap"
+                              >
+                                Fill DNA →
+                              </button>
+                            )}
+                          </div>
+                          {/* Step 3 — Generate first posts */}
+                          <div className="flex items-center justify-between gap-3">
+                            <div className="flex items-center gap-2.5">
+                              {s3 ? (
+                                <span className="w-5 h-5 rounded-full bg-green-100 flex items-center justify-center shrink-0">
+                                  <Check className="w-3 h-3 text-green-600" />
+                                </span>
+                              ) : (
+                                <span className="w-5 h-5 rounded-full border-2 border-slate-300 shrink-0" />
+                              )}
+                              <span className={`text-sm ${s3 ? "line-through text-slate-400" : "font-semibold text-slate-700"}`}>
+                                Generate your first posts
+                              </span>
+                            </div>
+                            {!s3 && (
+                              <button
+                                onClick={briefFilled ? handleGenerate : () => setActiveTab("dna")}
+                                disabled={generating}
+                                className="text-xs font-semibold text-violet-600 hover:text-violet-500 transition-colors whitespace-nowrap disabled:opacity-50"
+                              >
+                                Generate →
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  })()}
+
                   {/* Action bar */}
                   <div className="flex items-center gap-3">
                     {hasPersonalPlan ? (
