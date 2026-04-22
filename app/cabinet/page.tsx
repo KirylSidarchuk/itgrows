@@ -461,6 +461,13 @@ function LinkedInPageContent() {
   }, [accounts.length])
 
   useEffect(() => {
+    const personalAccount = accounts.find((a) => a.pageType === "personal" && a.pageHandle)
+    if (personalAccount?.pageHandle && !profileUrl) {
+      setProfileUrl(`https://linkedin.com/in/${personalAccount.pageHandle}`)
+    }
+  }, [accounts, profileUrl])
+
+  useEffect(() => {
     if (!generating) {
       setGenerateTimer(90)
       return
