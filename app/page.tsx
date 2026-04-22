@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -105,6 +105,16 @@ const faqs = [
 
 export default function PersonalPage() {
   const [annual, setAnnual] = useState(false)
+  const [sessionUser, setSessionUser] = useState<{ name?: string | null; email?: string | null } | null>(null)
+
+  useEffect(() => {
+    fetch("/api/auth/session")
+      .then((r) => r.json())
+      .then((data: { user?: { id?: string; name?: string; email?: string } }) => {
+        if (data?.user?.id) setSessionUser(data.user)
+      })
+      .catch(() => {})
+  }, [])
 
   async function handleStartTrial() {
     // Check if logged in first
@@ -162,10 +172,28 @@ export default function PersonalPage() {
             ItGrows.ai
           </Link>
           <div className="flex items-center gap-3">
-            <Link href="/login?callbackUrl=/cabinet">
-              <Button variant="ghost" className="text-slate-600 hover:text-[#1b1916]">Login</Button>
-            </Link>
-            <Button onClick={handleStartTrial} className="bg-violet-600 hover:bg-violet-500 text-white">Try Free — No Card</Button>
+            {sessionUser ? (
+              <>
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-full bg-violet-600 flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
+                    {(sessionUser.name || sessionUser.email || "U").charAt(0).toUpperCase()}
+                  </div>
+                  <span className="text-sm text-slate-600 max-w-[140px] truncate hidden sm:block">
+                    {sessionUser.name || sessionUser.email}
+                  </span>
+                </div>
+                <Link href="/cabinet">
+                  <Button className="bg-violet-600 hover:bg-violet-500 text-white">Go to Cabinet →</Button>
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link href="/login?callbackUrl=/cabinet">
+                  <Button variant="ghost" className="text-slate-600 hover:text-[#1b1916]">Login</Button>
+                </Link>
+                <Button onClick={handleStartTrial} className="bg-violet-600 hover:bg-violet-500 text-white">Try Free — No Card</Button>
+              </>
+            )}
           </div>
         </div>
       </nav>
