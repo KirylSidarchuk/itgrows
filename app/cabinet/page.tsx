@@ -1839,7 +1839,7 @@ function LinkedInPageContent() {
                 <h2 className="text-base font-semibold text-slate-800 mb-5">How it works</h2>
                 <ol className="space-y-5">
                   {[
-                    { icon: "📝", title: "Fill in your Content Brief", desc: "Tell us about your business, target audience, and goals" },
+                    { icon: "📝", title: "Fill in your Professional DNA", desc: "Tell us about your business, target audience, and goals" },
                     { icon: "✨", title: "We generate posts crafted just for you", desc: "Our AI creates 7 personalized LinkedIn posts with professional visuals, tailored to your niche and tone" },
                     { icon: "🚀", title: "Review, edit, and publish", desc: "Approve posts, schedule them or publish instantly — we handle the rest" },
                     { icon: "🌱", title: "Watch how It Grows...", desc: "Consistent, professional content compounds over time — your audience grows, your authority builds" },

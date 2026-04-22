@@ -57,7 +57,7 @@ const features = [
   {
     icon: "⏰",
     title: "Publishes at Peak Time",
-    desc: "Posts go live at 9am UTC — when LinkedIn engagement is highest.",
+    desc: "Posts go live at 10am UTC — when LinkedIn engagement is highest.",
   },
   {
     icon: "🧬",
@@ -435,7 +435,7 @@ export default function PersonalPage() {
                 {[
                   "7 AI-written posts per week",
                   "Custom images for every post",
-                  "Auto-scheduling at peak time (9am UTC)",
+                  "Auto-scheduling at peak time (10am UTC)",
                   "Profile DNA analysis",
                   "Review & edit before publishing",
                   "Cancel anytime, no commitment",

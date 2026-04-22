@@ -20,7 +20,7 @@ export function subscriptionActivatedEmail(name: string, plan: string): string {
           <li>Connect your LinkedIn account in the cabinet</li>
           <li>Fill your Professional DNA brief (2 minutes)</li>
           <li>We generate 7 posts for your first week</li>
-          <li>Posts publish automatically at 9am UTC daily</li>
+          <li>Posts publish automatically at 10am UTC daily</li>
         </ul>
         <a href="https://itgrows.ai/cabinet" style="display: inline-block; background: #7c3aed; color: white; padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; margin-top: 16px;">Go to Cabinet →</a>
         <p style="color: #9ca3af; font-size: 12px; margin-top: 32px;">ItGrows.ai · <a href="https://itgrows.ai/personal" style="color: #9ca3af;">Manage subscription</a></p>
