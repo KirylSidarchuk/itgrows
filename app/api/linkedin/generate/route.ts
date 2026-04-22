@@ -25,28 +25,12 @@ interface GenerateLinkedInRequest {
 
 async function generatePostImage(postContent: string, niche: string): Promise<string | null> {
   try {
-    // Build image prompt using LLM
-    const promptRes = await fetch(`${PROXY_URL}/v1/chat/completions`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: LLM_MODEL,
-        messages: [{
-          role: "user",
-          content: `Create a concise image generation prompt (max 50 words) for a LinkedIn post cover image.
-Post niche: "${niche}"
-Post content preview: "${postContent.slice(0, 200)}"
-The image should be: professional, photorealistic, suitable for a LinkedIn post (1200x627px), no text in image.
-Return ONLY the image prompt, nothing else.`,
-        }],
-        temperature: 0.7,
-      }),
-    })
-    if (!promptRes.ok) return null
-    const promptData = await promptRes.json() as { choices?: Array<{ message: { content: string } }> }
-    const imagePrompt = promptData.choices?.[0]?.message?.content?.trim() || `Professional LinkedIn post cover for ${niche}`
+    // Build image prompt directly — no LLM call needed (avoids rate-limit on the proxy)
+    const hook = postContent.split("\n")[0]?.slice(0, 120) || ""
+    const imagePrompt = `Professional LinkedIn post cover image, photorealistic, no text, wide aspect ratio 1200x627. ` +
+      `Topic: ${niche}. Mood inspired by: "${hook}". Clean composition, modern business aesthetic.`
 
-    // Generate image
+    // Generate image via proxy
     const imgRes = await fetch(`${PROXY_URL}/images/generate`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -55,18 +39,28 @@ Return ONLY the image prompt, nothing else.`,
         prompt: imagePrompt,
       }),
     })
-    if (!imgRes.ok) return null
+
+    if (!imgRes.ok) {
+      const errText = await imgRes.text()
+      console.warn("[generatePostImage] Image generation failed:", imgRes.status, errText.slice(0, 200))
+      return null
+    }
 
     const imgData = await imgRes.json() as {
       candidates?: Array<{ content: { parts: Array<{ inlineData?: { data?: string; mimeType?: string } }> } }>
     }
     const parts = imgData?.candidates?.[0]?.content?.parts || []
     const inlineData = parts.find((p) => p?.inlineData)?.inlineData
-    if (!inlineData?.data) return null
+
+    if (!inlineData?.data) {
+      console.warn("[generatePostImage] No inlineData in response:", JSON.stringify(imgData).slice(0, 300))
+      return null
+    }
 
     const mimeType = inlineData.mimeType || "image/jpeg"
     return `data:${mimeType};base64,${inlineData.data}`
-  } catch {
+  } catch (err) {
+    console.warn("[generatePostImage] Error:", err instanceof Error ? err.message : String(err))
     return null
   }
 }
