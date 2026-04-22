@@ -324,7 +324,14 @@ function PostCard({
         {post.status === "published" && post.linkedinPostId && (
           <p className="text-xs text-green-600 flex items-center gap-1">
             <Check className="w-3 h-3" />
-            Published · ID: {post.linkedinPostId}
+            <a
+              href={`https://www.linkedin.com/feed/update/${post.linkedinPostId}/`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline hover:text-green-700"
+            >
+              View on LinkedIn
+            </a>
           </p>
         )}
       </div>
