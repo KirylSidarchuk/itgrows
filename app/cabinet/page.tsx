@@ -930,9 +930,13 @@ function LinkedInPageContent() {
             <h1 className="text-2xl font-bold text-[#1b1916] mb-1">
               {greeting}, {userName} 👋
             </h1>
-            <p className="text-slate-500 text-sm">
-              {isConnected ? "Your LinkedIn is on autopilot" : "Connect LinkedIn to get started"}
-            </p>
+            {isConnected ? (
+              <p className="text-sm font-semibold bg-gradient-to-r from-violet-600 to-pink-500 bg-clip-text text-transparent">
+                ✦ Your LinkedIn is on autopilot
+              </p>
+            ) : (
+              <p className="text-slate-500 text-sm">Connect LinkedIn to get started</p>
+            )}
           </div>
 
           {/* Upgrade banner — no plan, no trial used yet */}
