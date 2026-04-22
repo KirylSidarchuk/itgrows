@@ -884,7 +884,7 @@ function LinkedInPageContent() {
                       <div>
                         <p className="text-base font-semibold text-slate-700 mb-1">No posts yet</p>
                         <p className="text-sm text-slate-400 max-w-xs">
-                          Click &quot;Generate 7 Posts&quot; to create your first week of LinkedIn content.
+                          Generate 7 AI-written LinkedIn posts, scheduled for the next 7 days.
                         </p>
                       </div>
                     </div>
