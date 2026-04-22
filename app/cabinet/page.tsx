@@ -842,7 +842,7 @@ function LinkedInPageContent() {
 
         {/* Social Media section */}
         <div className="px-4 pt-5 pb-2">
-          <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest px-2 mb-2">Social Media</p>
+          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider px-2 mb-2">Social Media</p>
           {/* LinkedIn — active */}
           <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-violet-600 text-white mb-1 cursor-default">
             <LinkedInIcon className="w-4 h-4 shrink-0" />
@@ -874,7 +874,7 @@ function LinkedInPageContent() {
 
         {/* Account section */}
         <div className="px-4 pt-5 pb-2">
-          <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest px-2 mb-2">Account</p>
+          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider px-2 mb-2">Account</p>
           <button
             onClick={() => setActiveTab("account")}
             className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 hover:text-violet-700 transition-colors mb-1"
