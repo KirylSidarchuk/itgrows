@@ -28,6 +28,19 @@ export async function GET(
     })
   }
 
-  // If it's already a URL, redirect
-  return NextResponse.redirect(dataUrl)
+  // If it's already a URL, proxy it so internal-only URLs work for browsers
+  try {
+    const res = await fetch(dataUrl)
+    if (!res.ok) return new NextResponse(null, { status: 404 })
+    const contentType = res.headers.get("Content-Type") || "image/jpeg"
+    const buffer = Buffer.from(await res.arrayBuffer())
+    return new NextResponse(buffer, {
+      headers: {
+        "Content-Type": contentType,
+        "Cache-Control": "public, max-age=86400",
+      },
+    })
+  } catch {
+    return new NextResponse(null, { status: 404 })
+  }
 }
