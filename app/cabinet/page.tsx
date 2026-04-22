@@ -720,13 +720,14 @@ function LinkedInPageContent() {
 
   const isConnected = accounts.length > 0
 
-  // Active Stripe subscription
-  const hasActiveSubscription = subscriptionStatus === "active" &&
-    (subscriptionPlan === "personal" || subscriptionPlan === "personal_annual")
-
-  // No-card free trial (DB-based)
+  // No-card free trial (DB-based) — must be computed before hasActiveSubscription
   const trialActive = !!(trialEndsAt && new Date(trialEndsAt) > new Date())
   const trialExpired = !!(trialEndsAt && new Date(trialEndsAt) <= new Date())
+
+  // Active Stripe subscription — trial users are NOT paid subscribers even if DB has status="active"
+  const hasActiveSubscription = subscriptionStatus === "active" &&
+    (subscriptionPlan === "personal" || subscriptionPlan === "personal_annual") &&
+    !trialActive
 
   const hasPersonalPlan = hasActiveSubscription || trialActive
 
