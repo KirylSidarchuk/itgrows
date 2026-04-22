@@ -333,6 +333,7 @@ function LinkedInPageContent() {
   const [statusMessage, setStatusMessage] = useState<string | null>(null)
   const [subscriptionPlan, setSubscriptionPlan] = useState<string | null>(null)
   const [subscriptionStatus, setSubscriptionStatus] = useState<string | null>(null)
+  const [subscriptionEndDate, setSubscriptionEndDate] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<ActiveTab>("posts")
   const [brief, setBrief] = useState<LinkedInBrief>({
     niche: "",
@@ -414,6 +415,7 @@ function LinkedInPageContent() {
       .then((r) => r.json())
       .then((data) => {
         setSubscriptionStatus(data.status ?? null)
+        setSubscriptionEndDate(data.endDate ?? null)
         if (data.status === "active" || data.status === "trialing") {
           setSubscriptionPlan(data.plan ?? null)
         }
@@ -659,6 +661,12 @@ function LinkedInPageContent() {
   const isConnected = accounts.length > 0
   const hasPersonalPlan = (subscriptionStatus === "active" || subscriptionStatus === "trialing") &&
     (subscriptionPlan === "personal" || subscriptionPlan === "personal_annual")
+
+  const trialDaysLeft = (() => {
+    if (subscriptionStatus !== "trialing" || !subscriptionEndDate) return null
+    const diff = new Date(subscriptionEndDate).getTime() - Date.now()
+    return Math.ceil(diff / 86400000)
+  })()
   const dnaScore = calcDnaScore(brief, profileUrl)
   const activePosts = posts.filter((p) => p.status !== "published")
   const publishedPosts = posts.filter((p) => p.status === "published")
@@ -783,6 +791,34 @@ function LinkedInPageContent() {
                 className="shrink-0 bg-white text-violet-700 font-semibold text-xs rounded-xl px-4 py-2 hover:bg-violet-50 transition-colors disabled:opacity-70"
               >
                 {checkingOut ? "Loading..." : "Try Free →"}
+              </button>
+            </div>
+          )}
+
+          {/* Trial countdown banner */}
+          {subscriptionStatus === "trialing" && trialDaysLeft !== null && (
+            <div className="mb-6 flex items-center justify-between gap-4 rounded-2xl px-5 py-3.5 border border-amber-200 bg-amber-50">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-xl bg-amber-100 flex items-center justify-center shrink-0">
+                  <Zap className="w-4 h-4 text-amber-600" />
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-amber-800">
+                    {trialDaysLeft <= 0
+                      ? "Your trial ends today!"
+                      : trialDaysLeft === 1
+                      ? "1 day left in your free trial"
+                      : `${trialDaysLeft} days left in your free trial`}
+                  </p>
+                  <p className="text-xs text-amber-600 mt-0.5">Subscribe to keep generating and publishing posts</p>
+                </div>
+              </div>
+              <button
+                onClick={() => handleUpgrade("monthly")}
+                disabled={checkingOut}
+                className="shrink-0 bg-amber-500 hover:bg-amber-600 text-white font-semibold text-xs rounded-xl px-4 py-2 transition-colors disabled:opacity-70"
+              >
+                {checkingOut ? "Loading..." : "Subscribe →"}
               </button>
             </div>
           )}
