@@ -120,7 +120,7 @@ export async function GET(req: NextRequest) {
       // Skip posts for users without an active Personal subscription
       const [postUser] = await db.select({ subscriptionPlan: users.subscriptionPlan, subscriptionStatus: users.subscriptionStatus, email: users.email, name: users.name })
         .from(users).where(eq(users.id, post.userId)).limit(1)
-      const hasAccess = postUser && postUser.subscriptionStatus === "active" &&
+      const hasAccess = postUser && (postUser.subscriptionStatus === "active" || postUser.subscriptionStatus === "trialing") &&
         (postUser.subscriptionPlan === "personal" || postUser.subscriptionPlan === "personal_annual")
       if (!hasAccess) {
         await db

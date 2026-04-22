@@ -38,19 +38,22 @@ export async function POST(req: NextRequest) {
     switch (event.type) {
       case "checkout.session.completed": {
         const session = event.data.object as Stripe.Checkout.Session
-        const userId = session.metadata?.userId
-        const plan = session.metadata?.plan
 
-        if (userId && session.subscription) {
+        if (session.subscription) {
           const subscription = await stripe.subscriptions.retrieve(
             session.subscription as string
           )
+          const userId = subscription.metadata?.userId ?? session.metadata?.userId
+          const plan = subscription.metadata?.plan ?? session.metadata?.plan
+
+          if (userId) {
+          const isTrialing = subscription.status === "trialing"
           const endTs = (subscription as unknown as { current_period_end?: number }).current_period_end
             ?? subscription.items?.data?.[0]?.current_period_end
           await db
             .update(users)
             .set({
-              subscriptionStatus: "active",
+              subscriptionStatus: isTrialing ? "trialing" : "active",
               subscriptionPlan: plan ?? null,
               subscriptionEndDate: endTs ? new Date(endTs * 1000) : null,
             })
@@ -65,7 +68,8 @@ export async function POST(req: NextRequest) {
               html: subscriptionActivatedEmail(updatedUser.name ?? "there", plan ?? "personal"),
             })
           }
-        }
+          } // end if (userId)
+        } // end if (session.subscription)
         break
       }
 
@@ -86,7 +90,7 @@ export async function POST(req: NextRequest) {
 
         if (!user) break
 
-        const isActive = ["active", "trialing"].includes(subscription.status)
+        const isAccessible = ["active", "trialing"].includes(subscription.status)
         const priceId = subscription.items.data[0]?.price.id
         const plan = priceId === process.env.STRIPE_PRICE_PERSONAL_ANNUAL ? "personal_annual" : "personal"
 
@@ -95,8 +99,8 @@ export async function POST(req: NextRequest) {
         await db
           .update(users)
           .set({
-            subscriptionStatus: isActive ? "active" : subscription.status,
-            subscriptionPlan: isActive ? plan : null,
+            subscriptionStatus: subscription.status,
+            subscriptionPlan: isAccessible ? plan : null,
             subscriptionEndDate: endTs2 ? new Date(endTs2 * 1000) : null,
           })
           .where(eq(users.id, user.id))

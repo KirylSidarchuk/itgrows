@@ -148,7 +148,7 @@ export default function PersonalPage() {
               <Button variant="ghost" className="text-slate-600 hover:text-[#1b1916]">Login</Button>
             </Link>
             <Link href="/signup?callbackUrl=/cabinet">
-              <Button className="bg-violet-600 hover:bg-violet-500 text-white">Start Free Trial</Button>
+              <Button className="bg-violet-600 hover:bg-violet-500 text-white">Start 7-Day Free Trial</Button>
             </Link>
           </div>
         </div>
@@ -173,7 +173,7 @@ export default function PersonalPage() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button size="lg" onClick={() => handleCheckout("monthly")} className="bg-violet-600 hover:bg-violet-500 text-white px-8 py-6 text-lg rounded-xl">
-              Start Free Trial
+              Start 7-Day Free Trial
             </Button>
             <a href="#how-it-works">
               <Button size="lg" variant="outline" className="border-[#1b1916] text-[#1b1916] hover:bg-[#1b1916] hover:text-[#f3f2f1] px-8 py-6 text-lg rounded-xl">
@@ -181,7 +181,7 @@ export default function PersonalPage() {
               </Button>
             </a>
           </div>
-          <p className="mt-5 text-sm text-slate-500">No credit card required · Cancel anytime · $15/month</p>
+          <p className="mt-5 text-sm text-slate-500">7-day free trial · No credit card required · Cancel anytime · $15/month</p>
         </div>
       </section>
 
@@ -375,9 +375,9 @@ export default function PersonalPage() {
                 onClick={() => handleCheckout(annual ? "annual" : "monthly")}
                 className="w-full bg-violet-600 hover:bg-violet-500 text-white py-6 text-base rounded-xl mt-2"
               >
-                {annual ? "Start Annual Plan" : "Start Free Trial"}
+                {annual ? "Start Annual Plan" : "Start 7-Day Free Trial"}
               </Button>
-              <p className="text-center text-xs text-slate-500">No credit card required · Cancel anytime</p>
+              <p className="text-center text-xs text-slate-500">7-day free trial · No credit card required · Cancel anytime</p>
               <ul className="space-y-3 pt-2">
                 {[
                   "7 AI-written posts per week",
@@ -434,9 +434,9 @@ export default function PersonalPage() {
             onClick={() => handleCheckout("monthly")}
             className="bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-white px-10 py-6 text-lg rounded-xl"
           >
-            Start Free Trial — $15/month
+            Start 7-Day Free Trial — $15/month after
           </Button>
-          <p className="mt-4 text-sm text-slate-500">No credit card required · Cancel anytime</p>
+          <p className="mt-4 text-sm text-slate-500">7-day free trial · No credit card required · Cancel anytime</p>
         </div>
       </section>
 

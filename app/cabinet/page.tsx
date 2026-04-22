@@ -657,7 +657,7 @@ function LinkedInPageContent() {
   }
 
   const isConnected = accounts.length > 0
-  const hasPersonalPlan = subscriptionStatus === "active" &&
+  const hasPersonalPlan = (subscriptionStatus === "active" || subscriptionStatus === "trialing") &&
     (subscriptionPlan === "personal" || subscriptionPlan === "personal_annual")
   const dnaScore = calcDnaScore(brief, profileUrl)
   const activePosts = posts.filter((p) => p.status !== "published")
@@ -773,7 +773,7 @@ function LinkedInPageContent() {
                   <Zap className="w-4 h-4" />
                 </div>
                 <div>
-                  <p className="text-sm font-bold">Upgrade to Personal — $15/mo</p>
+                  <p className="text-sm font-bold">Start 7-Day Free Trial — $15/mo after</p>
                   <p className="text-xs text-white/75 mt-0.5">7 AI posts/week, custom images, auto-scheduling</p>
                 </div>
               </div>
@@ -782,7 +782,7 @@ function LinkedInPageContent() {
                 disabled={checkingOut}
                 className="shrink-0 bg-white text-violet-700 font-semibold text-xs rounded-xl px-4 py-2 hover:bg-violet-50 transition-colors disabled:opacity-70"
               >
-                {checkingOut ? "Loading..." : "Upgrade →"}
+                {checkingOut ? "Loading..." : "Try Free →"}
               </button>
             </div>
           )}
@@ -847,7 +847,7 @@ function LinkedInPageContent() {
                         className="bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-white font-semibold px-6 py-2.5 rounded-xl shadow-sm"
                       >
                         <Lock className="w-4 h-4 mr-2" />
-                        Unlock — $15/month
+                        Try Free for 7 Days
                       </Button>
                     )}
                     <span className="text-sm text-slate-400 flex items-center gap-1.5">

@@ -136,7 +136,7 @@ export async function POST(req: NextRequest) {
     // Check subscription
     const [user] = await db.select({ subscriptionPlan: users.subscriptionPlan, subscriptionStatus: users.subscriptionStatus })
       .from(users).where(eq(users.id, userId)).limit(1)
-    const hasAccess = user && user.subscriptionStatus === "active" &&
+    const hasAccess = user && (user.subscriptionStatus === "active" || user.subscriptionStatus === "trialing") &&
       (user.subscriptionPlan === "personal" || user.subscriptionPlan === "personal_annual")
     if (!hasAccess) {
       return NextResponse.json({ error: "subscription_required", message: "Active Personal subscription required" }, { status: 403 })

@@ -283,7 +283,7 @@ export async function POST(req: NextRequest) {
         .where(eq(users.id, userId))
         .limit(1)
 
-      if (!user || user.subscriptionStatus !== "active") {
+      if (!user || (user.subscriptionStatus !== "active" && user.subscriptionStatus !== "trialing")) {
         // Count articles generated: published blog posts + scheduled posts with article data
         const [blogCount] = await db
           .select({ value: count() })
