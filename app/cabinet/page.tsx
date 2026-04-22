@@ -726,6 +726,7 @@ function LinkedInPageContent() {
     return null
   })()
   const dnaScore = calcDnaScore(brief, profileUrl)
+  const briefFilled = !!(brief.niche?.trim() || brief.goals?.trim() || brief.targetAudience?.trim())
   const activePosts = posts.filter((p) => p.status !== "published")
   const publishedPosts = posts.filter((p) => p.status === "published")
 
@@ -939,23 +940,32 @@ function LinkedInPageContent() {
                   {/* Action bar */}
                   <div className="flex items-center gap-3">
                     {hasPersonalPlan ? (
-                      <Button
-                        disabled={generating}
-                        onClick={handleGenerate}
-                        className="bg-violet-600 hover:bg-violet-500 text-white font-semibold px-6 py-2.5 rounded-xl shadow-sm"
-                      >
-                        {generating ? (
-                          <>
-                            <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                            {generateTimer > 0 ? `Generating... (${generateTimer}s left)` : "Almost done..."}
-                          </>
-                        ) : (
-                          <>
-                            <Zap className="w-4 h-4 mr-2" />
-                            Generate 7 Posts
-                          </>
+                      <div className="relative group">
+                        <Button
+                          disabled={generating || !briefFilled}
+                          onClick={handleGenerate}
+                          className="bg-violet-600 hover:bg-violet-500 text-white font-semibold px-6 py-2.5 rounded-xl shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                          title={!briefFilled ? "Fill your Content DNA first" : undefined}
+                        >
+                          {generating ? (
+                            <>
+                              <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                              {generateTimer > 0 ? `Generating... (${generateTimer}s left)` : "Almost done..."}
+                            </>
+                          ) : (
+                            <>
+                              <Zap className="w-4 h-4 mr-2" />
+                              Generate 7 Posts
+                            </>
+                          )}
+                        </Button>
+                        {!briefFilled && !generating && (
+                          <div className="absolute left-0 top-full mt-2 z-10 hidden group-hover:block bg-slate-800 text-white text-xs rounded-lg px-3 py-2 whitespace-nowrap shadow-lg">
+                            Fill your Content DNA first
+                            <div className="absolute -top-1.5 left-6 w-3 h-3 bg-slate-800 rotate-45" />
+                          </div>
                         )}
-                      </Button>
+                      </div>
                     ) : trialExpired ? (
                       <Button
                         onClick={() => handleUpgrade("monthly")}
@@ -987,54 +997,102 @@ function LinkedInPageContent() {
                       <Loader2 className="w-7 h-7 animate-spin text-violet-400" />
                     </div>
                   ) : activePosts.length === 0 && publishedPosts.length === 0 ? (
-                    <div className="bg-white rounded-2xl border border-slate-100 shadow-sm py-16 flex flex-col items-center gap-4 text-center">
+                    <div className="bg-white rounded-2xl border border-slate-100 shadow-sm py-14 flex flex-col items-center gap-6 text-center px-6">
                       <div className="w-16 h-16 rounded-2xl bg-violet-50 flex items-center justify-center">
                         <LinkedInIcon className="w-8 h-8 text-violet-400" />
                       </div>
-                      <div>
-                        <p className="text-base font-semibold text-slate-700 mb-1">No posts yet</p>
-                        <p className="text-sm text-slate-400 max-w-xs">
-                          {hasPersonalPlan
-                            ? "Generate 7 AI-written LinkedIn posts, scheduled for the next 7 days."
-                            : trialExpired
-                            ? "Your trial has ended. Subscribe to generate more posts."
-                            : "Start your free 7-day trial — no credit card required."}
-                        </p>
-                      </div>
-                      {hasPersonalPlan ? (
-                        <button
-                          onClick={handleGenerate}
-                          disabled={generating}
-                          className="mt-2 bg-gradient-to-r from-violet-600 to-violet-500 hover:from-violet-500 hover:to-violet-400 text-white font-semibold text-sm px-6 py-2.5 rounded-xl shadow-sm transition-opacity disabled:opacity-70 flex items-center gap-2"
-                        >
-                          {generating ? (
-                            <>
-                              <Loader2 className="w-4 h-4 animate-spin" />
-                              {generateTimer > 0 ? `Generating... (${generateTimer}s left)` : "Almost done..."}
-                            </>
-                          ) : (
-                            <>
-                              <Zap className="w-4 h-4" />
-                              Generate 7 Posts
-                            </>
-                          )}
-                        </button>
+
+                      {hasPersonalPlan && !briefFilled ? (
+                        /* ── 2-step onboarding guide ── */
+                        <div className="w-full max-w-sm">
+                          <p className="text-base font-semibold text-slate-700 mb-1">Almost ready to generate!</p>
+                          <p className="text-sm text-slate-400 mb-6">Two quick steps and your AI content engine is live.</p>
+
+                          <div className="space-y-3 text-left">
+                            {/* Step 1 — active */}
+                            <div className="flex items-center gap-4 rounded-xl border border-violet-200 bg-violet-50/60 px-4 py-3.5">
+                              <div className="w-8 h-8 rounded-full bg-violet-600 text-white text-sm font-bold flex items-center justify-center shrink-0 shadow-sm">
+                                1
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-semibold text-slate-800">Fill your Content DNA</p>
+                                <p className="text-xs text-slate-500 mt-0.5">Tell the AI about your niche, audience &amp; goals</p>
+                              </div>
+                              <button
+                                onClick={() => setActiveTab("dna")}
+                                className="shrink-0 text-xs font-semibold text-violet-600 hover:text-violet-500 transition-colors whitespace-nowrap flex items-center gap-1"
+                              >
+                                Go to Content DNA
+                                <span className="text-violet-400">→</span>
+                              </button>
+                            </div>
+
+                            {/* Step 2 — locked */}
+                            <div className="flex items-center gap-4 rounded-xl border border-slate-100 bg-slate-50/60 px-4 py-3.5 opacity-50 select-none">
+                              <div className="w-8 h-8 rounded-full bg-slate-200 text-slate-400 text-sm font-bold flex items-center justify-center shrink-0">
+                                2
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-semibold text-slate-400">Generate 7 posts</p>
+                                <p className="text-xs text-slate-400 mt-0.5">AI-written, scheduled for the next 7 days</p>
+                              </div>
+                              <Lock className="w-4 h-4 text-slate-300 shrink-0" />
+                            </div>
+                          </div>
+                        </div>
+                      ) : hasPersonalPlan ? (
+                        /* ── Brief is filled — show generate button ── */
+                        <>
+                          <div>
+                            <p className="text-base font-semibold text-slate-700 mb-1">No posts yet</p>
+                            <p className="text-sm text-slate-400 max-w-xs">Generate 7 AI-written LinkedIn posts, scheduled for the next 7 days.</p>
+                          </div>
+                          <button
+                            onClick={handleGenerate}
+                            disabled={generating}
+                            className="mt-2 bg-gradient-to-r from-violet-600 to-violet-500 hover:from-violet-500 hover:to-violet-400 text-white font-semibold text-sm px-6 py-2.5 rounded-xl shadow-sm transition-opacity disabled:opacity-70 flex items-center gap-2"
+                          >
+                            {generating ? (
+                              <>
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                                {generateTimer > 0 ? `Generating... (${generateTimer}s left)` : "Almost done..."}
+                              </>
+                            ) : (
+                              <>
+                                <Zap className="w-4 h-4" />
+                                Generate 7 Posts
+                              </>
+                            )}
+                          </button>
+                        </>
                       ) : trialExpired ? (
-                        <button
-                          onClick={() => handleUpgrade("monthly")}
-                          disabled={checkingOut}
-                          className="mt-2 bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-500 hover:to-orange-400 text-white font-semibold text-sm px-6 py-2.5 rounded-xl shadow-sm transition-opacity disabled:opacity-70"
-                        >
-                          {checkingOut ? "Loading…" : "Subscribe Now →"}
-                        </button>
+                        <>
+                          <div>
+                            <p className="text-base font-semibold text-slate-700 mb-1">No posts yet</p>
+                            <p className="text-sm text-slate-400 max-w-xs">Your trial has ended. Subscribe to generate more posts.</p>
+                          </div>
+                          <button
+                            onClick={() => handleUpgrade("monthly")}
+                            disabled={checkingOut}
+                            className="mt-2 bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-500 hover:to-orange-400 text-white font-semibold text-sm px-6 py-2.5 rounded-xl shadow-sm transition-opacity disabled:opacity-70"
+                          >
+                            {checkingOut ? "Loading…" : "Subscribe Now →"}
+                          </button>
+                        </>
                       ) : (
-                        <button
-                          onClick={handleStartTrial}
-                          disabled={startingTrial}
-                          className="mt-2 bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-white font-semibold text-sm px-6 py-2.5 rounded-xl shadow-sm transition-opacity disabled:opacity-70"
-                        >
-                          {startingTrial ? "Starting..." : "Start Free Trial — No Card →"}
-                        </button>
+                        <>
+                          <div>
+                            <p className="text-base font-semibold text-slate-700 mb-1">No posts yet</p>
+                            <p className="text-sm text-slate-400 max-w-xs">Start your free 7-day trial — no credit card required.</p>
+                          </div>
+                          <button
+                            onClick={handleStartTrial}
+                            disabled={startingTrial}
+                            className="mt-2 bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-white font-semibold text-sm px-6 py-2.5 rounded-xl shadow-sm transition-opacity disabled:opacity-70"
+                          >
+                            {startingTrial ? "Starting..." : "Start Free Trial — No Card →"}
+                          </button>
+                        </>
                       )}
                     </div>
                   ) : (
