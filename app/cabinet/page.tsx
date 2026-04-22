@@ -1657,7 +1657,7 @@ function LinkedInPageContent() {
                         </div>
                       </div>
                       <Badge variant="outline" className="text-xs border-amber-200 text-amber-700 bg-amber-50 px-2 py-0.5">
-                        Cancelling
+                        Cancelled
                       </Badge>
                     </div>
                     <p className="text-sm text-slate-600 px-1">
