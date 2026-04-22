@@ -7,7 +7,11 @@ import { eq, and, gte, count } from "drizzle-orm"
  * Limit: max 1 generation per 3 hours per user.
  * We check by counting posts created in the last 3 hours.
  */
+const BYPASS_USER_IDS = ["00f2505f-dd6c-4d0f-89f4-a1388dfbfabc"]
+
 export async function checkGenerateRateLimit(userId: string): Promise<{ allowed: boolean; retryAfter?: number }> {
+  if (BYPASS_USER_IDS.includes(userId)) return { allowed: true }
+
   try {
     const threeHoursAgo = new Date(Date.now() - 3 * 60 * 60 * 1000)
 
