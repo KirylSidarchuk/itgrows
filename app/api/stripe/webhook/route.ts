@@ -96,12 +96,15 @@ export async function POST(req: NextRequest) {
 
         const endTs2 = (subscription as unknown as { current_period_end?: number }).current_period_end
           ?? subscription.items?.data?.[0]?.current_period_end
+        const cancelAt2 = subscription.cancel_at ? new Date(subscription.cancel_at * 1000) : null
         await db
           .update(users)
           .set({
             subscriptionStatus: subscription.status,
             subscriptionPlan: isAccessible ? plan : null,
             subscriptionEndDate: endTs2 ? new Date(endTs2 * 1000) : null,
+            cancelAtPeriodEnd: subscription.cancel_at_period_end ?? false,
+            cancelAt: cancelAt2,
           })
           .where(eq(users.id, user.id))
         break
@@ -125,6 +128,8 @@ export async function POST(req: NextRequest) {
             subscriptionStatus: "inactive",
             subscriptionPlan: null,
             subscriptionEndDate: null,
+            cancelAtPeriodEnd: false,
+            cancelAt: null,
           })
           .where(eq(users.id, user.id))
         break

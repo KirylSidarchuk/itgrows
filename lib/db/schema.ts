@@ -13,6 +13,8 @@ export const users = pgTable("users", {
   subscriptionStatus: text("subscription_status").default("inactive"),
   subscriptionPlan: text("subscription_plan"),
   subscriptionEndDate: timestamp("subscription_end_date"),
+  cancelAtPeriodEnd: boolean("cancel_at_period_end").default(false),
+  cancelAt: timestamp("cancel_at"),
   trialEndsAt: timestamp("trial_ends_at"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 })

@@ -381,6 +381,9 @@ function LinkedInPageContent() {
   const [cancelingSubscription, setCancelingSubscription] = useState(false)
   const [cancelMessage, setCancelMessage] = useState<string | null>(null)
   const [cancelConfirming, setCancelConfirming] = useState(false)
+  const [cancelAtPeriodEnd, setCancelAtPeriodEnd] = useState(false)
+  const [cancelAt, setCancelAt] = useState<string | null>(null)
+  const [renewingSubscription, setRenewingSubscription] = useState(false)
 
   const hour = new Date().getHours()
   const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening"
@@ -440,6 +443,10 @@ function LinkedInPageContent() {
       const res = await fetch("/api/stripe/cancel-subscription", { method: "POST" })
       const data = await res.json() as { success?: boolean; cancelAt?: number | null; error?: string }
       if (res.ok && data.success) {
+        setCancelAtPeriodEnd(true)
+        if (data.cancelAt) {
+          setCancelAt(new Date(data.cancelAt * 1000).toISOString())
+        }
         const dateStr = data.cancelAt
           ? new Date(data.cancelAt * 1000).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })
           : "the end of your billing period"
@@ -451,6 +458,25 @@ function LinkedInPageContent() {
       setCancelMessage("Something went wrong. Please try again.")
     } finally {
       setCancelingSubscription(false)
+    }
+  }
+
+  async function handleRenewSubscription() {
+    setRenewingSubscription(true)
+    try {
+      const res = await fetch("/api/stripe/renew", { method: "POST" })
+      const data = await res.json() as { success?: boolean; error?: string }
+      if (res.ok && data.success) {
+        setCancelAtPeriodEnd(false)
+        setCancelAt(null)
+        setCancelMessage(null)
+      } else {
+        setCancelMessage(data.error ?? "Something went wrong. Please try again.")
+      }
+    } catch {
+      setCancelMessage("Something went wrong. Please try again.")
+    } finally {
+      setRenewingSubscription(false)
     }
   }
 
@@ -490,6 +516,8 @@ function LinkedInPageContent() {
         setSubscriptionStatus(data.status ?? null)
         setSubscriptionEndDate(data.endDate ?? null)
         setTrialEndsAt(data.trialEndsAt ?? null)
+        setCancelAtPeriodEnd(data.cancelAtPeriodEnd ?? false)
+        setCancelAt(data.cancelAt ?? null)
         if (data.status === "active" || data.status === "trialing") {
           setSubscriptionPlan(data.plan ?? null)
         }
@@ -1610,7 +1638,45 @@ function LinkedInPageContent() {
               {/* Subscription / Billing */}
               <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
                 <h2 className="text-base font-semibold text-slate-800 mb-4">Subscription</h2>
-                {hasActiveSubscription ? (
+                {hasActiveSubscription && cancelAtPeriodEnd ? (
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between p-3 rounded-xl bg-amber-50 border border-amber-100">
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 bg-amber-500 rounded-xl flex items-center justify-center shrink-0">
+                          <Zap className="w-4 h-4 text-white" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-slate-800">
+                            {subscriptionPlan === "personal_annual" ? "Personal Annual" : "Personal"}
+                          </p>
+                          <p className="text-xs text-slate-500">
+                            {cancelAt
+                              ? `Ends ${new Date(cancelAt).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}`
+                              : "Cancels at period end"}
+                          </p>
+                        </div>
+                      </div>
+                      <Badge variant="outline" className="text-xs border-amber-200 text-amber-700 bg-amber-50 px-2 py-0.5">
+                        Cancelling
+                      </Badge>
+                    </div>
+                    <p className="text-sm text-slate-600 px-1">
+                      {cancelAt
+                        ? `Your subscription will end on ${new Date(cancelAt).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}. You'll keep full access until then.`
+                        : "Your subscription will cancel at the end of the billing period. You'll keep full access until then."}
+                    </p>
+                    {cancelMessage && (
+                      <p className="text-xs text-slate-500 px-1 pt-1">{cancelMessage}</p>
+                    )}
+                    <button
+                      onClick={handleRenewSubscription}
+                      disabled={renewingSubscription}
+                      className="text-xs text-violet-600 hover:text-violet-800 underline underline-offset-2 px-1 pt-1 text-left disabled:opacity-50"
+                    >
+                      {renewingSubscription ? "Renewing…" : "Renew subscription"}
+                    </button>
+                  </div>
+                ) : hasActiveSubscription ? (
                   <div className="space-y-3">
                     <div className="flex items-center justify-between p-3 rounded-xl bg-violet-50 border border-violet-100">
                       <div className="flex items-center gap-3">

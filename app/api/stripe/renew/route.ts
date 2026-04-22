@@ -40,23 +40,17 @@ export async function POST() {
     return NextResponse.json({ error: "No active subscription found" }, { status: 400 })
   }
 
-  const updated = await stripe.subscriptions.update(subscriptions.data[0].id, {
-    cancel_at_period_end: true,
+  await stripe.subscriptions.update(subscriptions.data[0].id, {
+    cancel_at_period_end: false,
   })
-
-  const cancelAtDate = updated.cancel_at ? new Date(updated.cancel_at * 1000) : null
 
   await db
     .update(users)
     .set({
-      cancelAtPeriodEnd: true,
-      cancelAt: cancelAtDate,
+      cancelAtPeriodEnd: false,
+      cancelAt: null,
     })
     .where(eq(users.id, session.user.id))
 
-  return NextResponse.json({
-    success: true,
-    message: "Subscription will be cancelled at period end",
-    cancelAt: updated.cancel_at,
-  })
+  return NextResponse.json({ success: true })
 }
