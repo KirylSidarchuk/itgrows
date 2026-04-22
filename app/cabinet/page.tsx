@@ -1630,7 +1630,7 @@ function LinkedInPageContent() {
                         Active
                       </Badge>
                     </div>
-                    <p className="text-xs text-slate-400 px-1">
+                    <p className="text-sm text-slate-600 px-1">
                       You have full access to generate posts, publish, and auto-scheduling.
                     </p>
                     {cancelMessage ? (
@@ -1655,7 +1655,7 @@ function LinkedInPageContent() {
                     ) : (
                       <button
                         onClick={handleCancelSubscription}
-                        className="text-xs text-slate-400 hover:text-slate-500 underline underline-offset-2 px-1 pt-1 text-left"
+                        className="text-xs text-red-400 hover:text-red-600 underline underline-offset-2 px-1 pt-1 text-left"
                       >
                         Cancel subscription
                       </button>
