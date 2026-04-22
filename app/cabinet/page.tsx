@@ -238,11 +238,21 @@ function PostCard({
             {!expanded ? (
               <div>
                 <p className="text-sm text-slate-700 leading-relaxed">{previewText}</p>
-                {content.length > 140 && (
-                  <button onClick={() => setExpanded(true)} className="text-xs text-violet-500 mt-1 hover:underline">
-                    Show more
+                <div className="flex items-center justify-between mt-1">
+                  {content.length > 140 ? (
+                    <button onClick={() => setExpanded(true)} className="text-xs text-violet-500 hover:underline">
+                      Show more
+                    </button>
+                  ) : (
+                    <span />
+                  )}
+                  <button
+                    onClick={() => setExpanded(true)}
+                    className="flex items-center gap-1 text-xs text-slate-400 hover:text-violet-500 transition-colors"
+                  >
+                    ✏️ Edit
                   </button>
-                )}
+                </div>
               </div>
             ) : (
               <textarea
@@ -252,8 +262,8 @@ function PostCard({
                 className="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-violet-300 resize-none"
               />
             )}
-            {expanded && content.length > 140 && (
-              <button onClick={() => setExpanded(false)} className="text-xs text-violet-500 hover:underline">
+            {expanded && (
+              <button onClick={() => setExpanded(false)} className="text-xs text-slate-400 hover:text-violet-500 hover:underline">
                 Collapse
               </button>
             )}
