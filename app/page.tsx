@@ -101,6 +101,14 @@ const faqs = [
     q: "Can I cancel anytime?",
     a: "Absolutely. No contracts, no lock-ins. Cancel from your account settings in seconds. Your subscription ends at the current billing period.",
   },
+  {
+    q: "Do I need a credit card to start?",
+    a: "No. You get 7 days completely free — no credit card required. Explore the full product, see your LinkedIn posts go live, and only subscribe once you've experienced the results. After 7 days, choose monthly ($15/mo) or annual ($144/yr, save 20%).",
+  },
+  {
+    q: "What happens after my trial ends?",
+    a: "Your scheduled posts will pause. You'll see a clear prompt to subscribe in your dashboard. No charges, no surprises — just a simple decision to continue or walk away.",
+  },
 ]
 
 export default function PersonalPage() {

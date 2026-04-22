@@ -9,7 +9,9 @@ export async function POST(req: NextRequest) {
   if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
   const { subject, message, topic } = await req.json() as { subject?: string; message?: string; topic?: string }
-  if (!message?.trim()) return NextResponse.json({ error: "Message required" }, { status: 400 })
+  if (!message?.trim() || message.trim().length < 20) {
+    return NextResponse.json({ error: "Message must be at least 20 characters." }, { status: 400 })
+  }
 
   const userName = session.user.name ?? session.user.email?.split("@")[0] ?? "User"
   const userEmail = session.user.email ?? ""

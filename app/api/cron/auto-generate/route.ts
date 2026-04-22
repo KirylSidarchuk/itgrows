@@ -3,6 +3,7 @@ import { db } from "@/lib/db"
 import { linkedinPosts, linkedinBriefs, linkedinAccounts, users } from "@/lib/db/schema"
 import { eq, and, inArray, count, or, gt } from "drizzle-orm"
 import { hasAccess } from "@/lib/access"
+import { sendEmail } from "@/lib/email"
 
 const LLM_BASE_URL = "http://34.60.133.229:4000"
 const LLM_MODEL = "gemini-2.0-flash-lite"
@@ -214,7 +215,7 @@ export async function GET(req: NextRequest) {
     // Find all users with active subscription or active trial
     const now = new Date()
     const allCandidates = await db
-      .select({ id: users.id, subscriptionPlan: users.subscriptionPlan, subscriptionStatus: users.subscriptionStatus, trialEndsAt: users.trialEndsAt })
+      .select({ id: users.id, email: users.email, name: users.name, subscriptionPlan: users.subscriptionPlan, subscriptionStatus: users.subscriptionStatus, trialEndsAt: users.trialEndsAt })
       .from(users)
       .where(
         or(
@@ -258,6 +259,17 @@ export async function GET(req: NextRequest) {
       } else {
         console.error(`[auto-generate] Failed for user ${user.id}: ${result2.error}`)
         failed++
+        if (user.email) {
+          try {
+            await sendEmail({
+              to: user.email,
+              subject: "⚠️ We couldn't generate your LinkedIn posts",
+              html: `<p>Hi ${user.name ?? "there"},</p><p>We had trouble generating your LinkedIn posts this week. Please log in to <a href="https://www.itgrows.ai/cabinet">your cabinet</a> and generate them manually.</p>`
+            })
+          } catch (emailErr) {
+            console.error(`[auto-generate] Failed to send failure email to user ${user.id}:`, emailErr)
+          }
+        }
       }
     }
 

@@ -180,6 +180,11 @@ export async function POST(req: NextRequest) {
       if (dbBrief) brief = dbBrief
     }
 
+    const briefFilled = !!(brief.niche?.trim() || brief.goals?.trim() || brief.targetAudience?.trim())
+    if (!briefFilled) {
+      return NextResponse.json({ error: "brief_required", message: "Please fill your Professional DNA before generating posts." }, { status: 400 })
+    }
+
     const prompt = buildLinkedInPrompt(brief)
 
     const FALLBACK_MODELS = [LLM_MODEL, "gemini-2.0-flash", "gemini-1.5-flash"]

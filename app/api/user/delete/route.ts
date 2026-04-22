@@ -32,14 +32,10 @@ export async function DELETE() {
         const stripeKey = process.env.STRIPE_SECRET_KEY
         if (stripeKey) {
           const stripe = new Stripe(stripeKey)
-          const subscriptions = await stripe.subscriptions.list({
-            customer: user.stripeCustomerId,
-            status: "active",
-            limit: 5,
-          })
-          for (const sub of subscriptions.data) {
-            await stripe.subscriptions.cancel(sub.id)
-          }
+          const subscriptions = await stripe.subscriptions.list({ customer: user.stripeCustomerId, status: "active" })
+          const pastDueSubs = await stripe.subscriptions.list({ customer: user.stripeCustomerId, status: "past_due" })
+          const allSubs = [...subscriptions.data, ...pastDueSubs.data]
+          for (const sub of allSubs) { await stripe.subscriptions.cancel(sub.id) }
         }
       } catch (stripeErr) {
         console.error("[delete-account] Stripe cancellation error:", stripeErr)
