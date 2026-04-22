@@ -1,7 +1,23 @@
+"use client"
+
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
+import { useEffect, useState } from "react"
 
 export default function PersonalWelcomePage() {
+  const [linkedinConnected, setLinkedinConnected] = useState<boolean | null>(null)
+
+  useEffect(() => {
+    fetch("/api/linkedin/pages")
+      .then((r) => r.json())
+      .then((data) => {
+        setLinkedinConnected(Array.isArray(data) && data.length > 0)
+      })
+      .catch(() => setLinkedinConnected(false))
+  }, [])
+
+  const isConnected = linkedinConnected === true
+
   return (
     <div
       className="min-h-screen flex flex-col items-center justify-center text-center px-6"
@@ -21,25 +37,48 @@ export default function PersonalWelcomePage() {
         <h1 className="text-4xl font-extrabold text-[#1b1916] mb-4 leading-tight">
           Welcome to ItGrows Personal!
         </h1>
-        <p className="text-lg text-slate-600 mb-3 leading-relaxed">
-          Your LinkedIn autopilot is now active.
-        </p>
-        <p className="text-sm text-slate-500 mb-10">
-          Connect your LinkedIn account and fill a 2-minute brief — then we&apos;ll start generating your posts automatically.
-        </p>
 
-        <Link href="/cabinet">
-          <Button
-            size="lg"
-            className="bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-white px-10 py-6 text-lg rounded-xl"
-          >
-            Set Up LinkedIn →
-          </Button>
-        </Link>
-
-        <p className="mt-6 text-xs text-slate-400">
-          Takes less than 3 minutes · Posts start within 24 hours
-        </p>
+        {isConnected ? (
+          <>
+            <p className="text-lg text-slate-600 mb-3 leading-relaxed">
+              Your LinkedIn autopilot is now active.
+            </p>
+            <p className="text-sm text-slate-500 mb-10">
+              LinkedIn is already connected — we&apos;ll start generating and publishing posts automatically.
+            </p>
+            <Link href="/cabinet">
+              <Button
+                size="lg"
+                className="bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-white px-10 py-6 text-lg rounded-xl"
+              >
+                Go to Cabinet →
+              </Button>
+            </Link>
+            <p className="mt-6 text-xs text-slate-400">
+              Posts start within 24 hours
+            </p>
+          </>
+        ) : (
+          <>
+            <p className="text-lg text-slate-600 mb-3 leading-relaxed">
+              Your LinkedIn autopilot is now active.
+            </p>
+            <p className="text-sm text-slate-500 mb-10">
+              Connect your LinkedIn account and fill a 2-minute brief — then we&apos;ll start generating your posts automatically.
+            </p>
+            <Link href="/cabinet">
+              <Button
+                size="lg"
+                className="bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-white px-10 py-6 text-lg rounded-xl"
+              >
+                Set Up LinkedIn →
+              </Button>
+            </Link>
+            <p className="mt-6 text-xs text-slate-400">
+              Takes less than 3 minutes · Posts start within 24 hours
+            </p>
+          </>
+        )}
       </div>
     </div>
   )
