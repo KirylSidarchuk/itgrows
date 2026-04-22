@@ -366,7 +366,7 @@ function LinkedInPageContent() {
   const [generating, setGenerating] = useState(false)
   const [generateError, setGenerateError] = useState<string | null>(null)
   const [generateTimer, setGenerateTimer] = useState(90)
-  const [publishedCollapsed, setPublishedCollapsed] = useState(true)
+  const [publishedCollapsed, setPublishedCollapsed] = useState(false)
   const [deletingAccount, setDeletingAccount] = useState(false)
   const [checkingOut, setCheckingOut] = useState(false)
   const [showOnboarding, setShowOnboarding] = useState(() =>
@@ -758,6 +758,7 @@ function LinkedInPageContent() {
             : p
         )
       )
+      setPublishedCollapsed(false)
     } else if (res.status === 403 && data.error === "subscription_required") {
       setPosts((prev) =>
         prev.map((p) =>
