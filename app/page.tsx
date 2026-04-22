@@ -181,6 +181,7 @@ export default function PersonalPage() {
             <span className="hidden xs:inline sm:inline">ItGrows.ai</span>
           </Link>
           <div className="flex items-center gap-2 sm:gap-3">
+            <a href="https://blog.itgrows.ai" target="_blank" rel="noopener noreferrer" className="hidden sm:block text-sm text-slate-600 hover:text-[#1b1916] transition-colors">Blog</a>
             {sessionUser ? (
               <>
                 <div className="flex items-center gap-2">
