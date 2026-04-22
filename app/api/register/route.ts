@@ -60,6 +60,13 @@ export async function POST(req: NextRequest) {
       `,
     })
 
+    // Notify owner in Telegram
+    fetch(`https://api.telegram.org/bot8213146538:AAH9ceXiIQ62-ICZJlUFx0psyd2nYq1gN7g/sendMessage`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ chat_id: 372194458, text: `🆕 Новый пользователь: ${email.toLowerCase()}` }),
+    }).catch(() => {})
+
     return NextResponse.json({ success: true, userId: user.id, emailSent: true })
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err)
