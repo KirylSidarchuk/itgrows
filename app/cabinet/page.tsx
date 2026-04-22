@@ -363,6 +363,7 @@ function LinkedInPageContent() {
     typeof window !== "undefined" ? localStorage.getItem("itgrows_onboarding_done") !== "true" : false
   )
   const [supportMessage, setSupportMessage] = useState("")
+  const [supportTopic, setSupportTopic] = useState("")
   const [supportSending, setSupportSending] = useState(false)
   const [supportSent, setSupportSent] = useState(false)
   const [supportError, setSupportError] = useState<string | null>(null)
@@ -574,11 +575,12 @@ function LinkedInPageContent() {
       const res = await fetch("/api/support", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: supportMessage }),
+        body: JSON.stringify({ message: supportMessage, topic: supportTopic }),
       })
       if (res.ok) {
         setSupportSent(true)
         setSupportMessage("")
+        setSupportTopic("")
       } else {
         const data = await res.json().catch(() => ({})) as { error?: string }
         setSupportError(data.error ?? "Something went wrong. Please try again.")
@@ -1744,6 +1746,32 @@ function LinkedInPageContent() {
                   </div>
                 ) : (
                   <div className="space-y-4">
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-600 mb-2 uppercase tracking-wide">Topic</label>
+                      <div className="flex flex-wrap gap-2">
+                        {([
+                          { label: "🐛 Bug report", value: "Bug report" },
+                          { label: "💡 Feature idea", value: "Feature idea" },
+                          { label: "❓ Question", value: "Question" },
+                          { label: "💳 Billing", value: "Billing" },
+                          { label: "Other", value: "Other" },
+                        ]).map(({ label, value }) => (
+                          <button
+                            key={value}
+                            type="button"
+                            onClick={() => setSupportTopic(supportTopic === value ? "" : value)}
+                            className={`px-4 py-2 rounded-xl text-sm font-medium transition-all border ${
+                              supportTopic === value
+                                ? "bg-violet-600 text-white border-violet-600 shadow-sm"
+                                : "bg-slate-50 text-slate-600 border-slate-200 hover:border-violet-300 hover:text-violet-600"
+                            }`}
+                          >
+                            {label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
                     <div>
                       <label className="block text-xs font-semibold text-slate-600 mb-1.5 uppercase tracking-wide">
                         Describe your issue or idea <span className="text-red-400">*</span>
