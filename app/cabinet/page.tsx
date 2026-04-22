@@ -1531,11 +1531,13 @@ function LinkedInPageContent() {
               <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-base font-semibold text-slate-800">Connected Accounts</h2>
-                  <a href="/api/linkedin/connect">
-                    <Button size="sm" className="bg-[#0077B5] hover:bg-[#005f8e] text-white text-xs rounded-xl">
-                      + Connect LinkedIn
-                    </Button>
-                  </a>
+                  {accounts.length === 0 && (
+                    <a href="/api/linkedin/connect">
+                      <Button size="sm" className="bg-[#0077B5] hover:bg-[#005f8e] text-white text-xs rounded-xl">
+                        + Connect LinkedIn
+                      </Button>
+                    </a>
+                  )}
                 </div>
 
                 {loading ? (
