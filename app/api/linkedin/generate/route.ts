@@ -239,13 +239,22 @@ export async function POST(req: NextRequest) {
       throw new Error("LLM returned empty response")
     }
 
-    // Parse JSON from response
-    const jsonMatch = rawContent.match(/\[[\s\S]*\]/)
+    // Parse JSON from response — robust against LLM quirks
+    const jsonMatch = rawContent.replace(/```json\s*/gi, "").replace(/```\s*/g, "").match(/\[[\s\S]*\]/)
     if (!jsonMatch) {
       throw new Error("Could not parse JSON array from LLM response")
     }
 
-    const postsData = JSON.parse(jsonMatch[0]) as Array<{ content: string; hook: string }>
+    let postsData: Array<{ content: string; hook: string }>
+    try {
+      postsData = JSON.parse(jsonMatch[0])
+    } catch {
+      // Fix unescaped newlines/tabs inside JSON string values, then retry
+      const fixed = jsonMatch[0].replace(/"((?:[^"\\]|\\.)*)"/gs, (_match, inner: string) => {
+        return '"' + inner.replace(/\n/g, "\\n").replace(/\r/g, "\\r").replace(/\t/g, "\\t") + '"'
+      })
+      postsData = JSON.parse(fixed)
+    }
 
     if (!Array.isArray(postsData) || postsData.length === 0) {
       throw new Error("Invalid posts data from LLM")
