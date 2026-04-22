@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db"
 import { linkedinPosts, linkedinBriefs, linkedinAccounts, users } from "@/lib/db/schema"
-import { eq, and, inArray, count } from "drizzle-orm"
+import { eq, and, inArray, count, or, gt } from "drizzle-orm"
+import { hasAccess } from "@/lib/access"
 
 const LLM_BASE_URL = "http://34.60.133.229:4000"
 const LLM_MODEL = "gemini-2.0-flash-lite"
@@ -210,14 +211,20 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    // Find all paid active (non-trialing) subscribers with a personal plan
-    const allActiveUsers = await db
-      .select({ id: users.id, subscriptionPlan: users.subscriptionPlan })
+    // Find all users with active subscription or active trial
+    const now = new Date()
+    const allCandidates = await db
+      .select({ id: users.id, subscriptionPlan: users.subscriptionPlan, subscriptionStatus: users.subscriptionStatus, trialEndsAt: users.trialEndsAt })
       .from(users)
-      .where(eq(users.subscriptionStatus, "active"))
+      .where(
+        or(
+          eq(users.subscriptionStatus, "active"),
+          gt(users.trialEndsAt, now)
+        )
+      )
 
-    const eligibleUsers = allActiveUsers.filter(
-      (u) => u.subscriptionPlan === "personal" || u.subscriptionPlan === "personal_annual"
+    const eligibleUsers = allCandidates.filter((u) =>
+      hasAccess({ subscriptionStatus: u.subscriptionStatus ?? null, subscriptionPlan: u.subscriptionPlan ?? null, trialEndsAt: u.trialEndsAt ?? null })
     )
 
     let generated = 0

@@ -106,6 +106,24 @@ const faqs = [
 export default function PersonalPage() {
   const [annual, setAnnual] = useState(false)
 
+  async function handleStartTrial() {
+    // Check if logged in first
+    const sessionRes = await fetch("/api/auth/session")
+    const sessionData = await sessionRes.json() as { user?: { id: string } }
+    if (!sessionData?.user?.id) {
+      window.location.href = `/signup?callbackUrl=${encodeURIComponent("/cabinet")}`
+      return
+    }
+    // Start no-card trial
+    const res = await fetch("/api/trial/start", { method: "POST" })
+    if (res.status === 401) {
+      window.location.href = `/signup?callbackUrl=${encodeURIComponent("/cabinet")}`
+      return
+    }
+    // Whether trial started or already used/subscribed, go to cabinet
+    window.location.href = "/cabinet"
+  }
+
   async function handleCheckout(planType: "monthly" | "annual") {
     // First check if logged in
     const sessionRes = await fetch("/api/auth/session")
@@ -147,9 +165,7 @@ export default function PersonalPage() {
             <Link href="/login?callbackUrl=/cabinet">
               <Button variant="ghost" className="text-slate-600 hover:text-[#1b1916]">Login</Button>
             </Link>
-            <Link href="/signup?callbackUrl=/cabinet">
-              <Button className="bg-violet-600 hover:bg-violet-500 text-white">Start 7-Day Free Trial</Button>
-            </Link>
+            <Button onClick={handleStartTrial} className="bg-violet-600 hover:bg-violet-500 text-white">Try Free — No Card</Button>
           </div>
         </div>
       </nav>
@@ -172,8 +188,8 @@ export default function PersonalPage() {
             We write and publish 7 AI-crafted LinkedIn posts every week — tailored to your voice, your niche, and your audience. Set it up once. Grow forever.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" onClick={() => handleCheckout("monthly")} className="bg-violet-600 hover:bg-violet-500 text-white px-8 py-6 text-lg rounded-xl">
-              Start 7-Day Free Trial
+            <Button size="lg" onClick={handleStartTrial} className="bg-violet-600 hover:bg-violet-500 text-white px-8 py-6 text-lg rounded-xl">
+              Try Free for 7 Days — No Card Required
             </Button>
             <a href="#how-it-works">
               <Button size="lg" variant="outline" className="border-[#1b1916] text-[#1b1916] hover:bg-[#1b1916] hover:text-[#f3f2f1] px-8 py-6 text-lg rounded-xl">
@@ -181,7 +197,7 @@ export default function PersonalPage() {
               </Button>
             </a>
           </div>
-          <p className="mt-5 text-sm text-slate-500">7-day free trial · No credit card required · Cancel anytime · $15/month</p>
+          <p className="mt-5 text-sm text-slate-500">7-day free trial · No credit card required · Cancel anytime · $15/month after</p>
         </div>
       </section>
 
@@ -251,10 +267,10 @@ export default function PersonalPage() {
           <div className="text-center mt-10">
             <p className="text-slate-400 text-base mb-6">The good news? The bar is on the floor — 99% of people don't post. You just need to show up.</p>
             <button
-              onClick={() => handleCheckout("monthly")}
+              onClick={handleStartTrial}
               className="bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-white px-10 py-4 rounded-xl text-base font-semibold transition-all"
             >
-              Start Showing Up — $15/month
+              Start Free — No Credit Card
             </button>
           </div>
         </div>
@@ -372,12 +388,12 @@ export default function PersonalPage() {
             </CardHeader>
             <CardContent className="space-y-5 px-8 pb-8">
               <Button
-                onClick={() => handleCheckout(annual ? "annual" : "monthly")}
+                onClick={annual ? () => handleCheckout("annual") : handleStartTrial}
                 className="w-full bg-violet-600 hover:bg-violet-500 text-white py-6 text-base rounded-xl mt-2"
               >
-                {annual ? "Start Annual Plan" : "Start 7-Day Free Trial"}
+                {annual ? "Start Annual Plan" : "Start Free Trial — No Credit Card"}
               </Button>
-              <p className="text-center text-xs text-slate-500">7-day free trial · No credit card required · Cancel anytime</p>
+              <p className="text-center text-xs text-slate-500">{annual ? "Billed $144/year · Cancel anytime" : "7-day free trial · No credit card required · $15/month after"}</p>
               <ul className="space-y-3 pt-2">
                 {[
                   "7 AI-written posts per week",
@@ -431,12 +447,12 @@ export default function PersonalPage() {
           </p>
           <Button
             size="lg"
-            onClick={() => handleCheckout("monthly")}
+            onClick={handleStartTrial}
             className="bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-white px-10 py-6 text-lg rounded-xl"
           >
-            Start 7-Day Free Trial — $15/month after
+            Try Free for 7 Days — No Card Required
           </Button>
-          <p className="mt-4 text-sm text-slate-500">7-day free trial · No credit card required · Cancel anytime</p>
+          <p className="mt-4 text-sm text-slate-500">No credit card required · $15/month after · Cancel anytime</p>
         </div>
       </section>
 

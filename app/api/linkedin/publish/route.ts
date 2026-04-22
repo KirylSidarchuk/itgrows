@@ -4,6 +4,7 @@ import sharp from "sharp"
 import { db } from "@/lib/db"
 import { linkedinAccounts, linkedinPosts, users } from "@/lib/db/schema"
 import { eq, and } from "drizzle-orm"
+import { hasAccess } from "@/lib/access"
 
 interface PublishRequest {
   postId: string
@@ -118,13 +119,11 @@ export async function POST(req: NextRequest) {
     }
     const userId = session.user.id
 
-    // Check subscription
-    const [user] = await db.select({ subscriptionPlan: users.subscriptionPlan, subscriptionStatus: users.subscriptionStatus })
+    // Check subscription or trial
+    const [user] = await db.select({ subscriptionPlan: users.subscriptionPlan, subscriptionStatus: users.subscriptionStatus, trialEndsAt: users.trialEndsAt })
       .from(users).where(eq(users.id, userId)).limit(1)
-    const hasAccess = user && (user.subscriptionStatus === "active" || user.subscriptionStatus === "trialing") &&
-      (user.subscriptionPlan === "personal" || user.subscriptionPlan === "personal_annual")
-    if (!hasAccess) {
-      return NextResponse.json({ error: "subscription_required", message: "Active Personal subscription required" }, { status: 403 })
+    if (!user || !hasAccess({ subscriptionStatus: user.subscriptionStatus ?? null, subscriptionPlan: user.subscriptionPlan ?? null, trialEndsAt: user.trialEndsAt ?? null })) {
+      return NextResponse.json({ error: "subscription_required", message: "Active Personal subscription or active trial required" }, { status: 403 })
     }
 
     const body = await req.json() as PublishRequest

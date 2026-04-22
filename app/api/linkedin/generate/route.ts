@@ -4,6 +4,7 @@ import { db } from "@/lib/db"
 import { linkedinAccounts, linkedinPosts, linkedinBriefs, users } from "@/lib/db/schema"
 import { eq, and, inArray } from "drizzle-orm"
 import { checkGenerateRateLimit } from "@/lib/rate-limit"
+import { hasAccess } from "@/lib/access"
 
 export const maxDuration = 300
 
@@ -133,13 +134,11 @@ export async function POST(req: NextRequest) {
     }
     const userId = session.user.id
 
-    // Check subscription
-    const [user] = await db.select({ subscriptionPlan: users.subscriptionPlan, subscriptionStatus: users.subscriptionStatus })
+    // Check subscription or trial
+    const [user] = await db.select({ subscriptionPlan: users.subscriptionPlan, subscriptionStatus: users.subscriptionStatus, trialEndsAt: users.trialEndsAt })
       .from(users).where(eq(users.id, userId)).limit(1)
-    const hasAccess = user && (user.subscriptionStatus === "active" || user.subscriptionStatus === "trialing") &&
-      (user.subscriptionPlan === "personal" || user.subscriptionPlan === "personal_annual")
-    if (!hasAccess) {
-      return NextResponse.json({ error: "subscription_required", message: "Active Personal subscription required" }, { status: 403 })
+    if (!user || !hasAccess({ subscriptionStatus: user.subscriptionStatus ?? null, subscriptionPlan: user.subscriptionPlan ?? null, trialEndsAt: user.trialEndsAt ?? null })) {
+      return NextResponse.json({ error: "subscription_required", message: "Active Personal subscription or active trial required" }, { status: 403 })
     }
 
     // Check rate limit

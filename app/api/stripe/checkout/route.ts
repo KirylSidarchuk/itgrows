@@ -68,7 +68,6 @@ export async function POST(req: NextRequest) {
     success_url: `${baseUrl}/welcome?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${baseUrl}/`,
     subscription_data: {
-      trial_period_days: 7,
       metadata: { userId: user.id, plan: isAnnual ? "personal_annual" : "personal" },
     },
   })

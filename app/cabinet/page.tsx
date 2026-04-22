@@ -334,6 +334,8 @@ function LinkedInPageContent() {
   const [subscriptionPlan, setSubscriptionPlan] = useState<string | null>(null)
   const [subscriptionStatus, setSubscriptionStatus] = useState<string | null>(null)
   const [subscriptionEndDate, setSubscriptionEndDate] = useState<string | null>(null)
+  const [trialEndsAt, setTrialEndsAt] = useState<string | null>(null)
+  const [startingTrial, setStartingTrial] = useState(false)
   const [activeTab, setActiveTab] = useState<ActiveTab>("posts")
   const [brief, setBrief] = useState<LinkedInBrief>({
     niche: "",
@@ -382,6 +384,28 @@ function LinkedInPageContent() {
     }
   }
 
+  async function handleStartTrial() {
+    setStartingTrial(true)
+    try {
+      const res = await fetch("/api/trial/start", { method: "POST" })
+      const data = await res.json() as { trialEndsAt?: string; error?: string }
+      if (res.ok && data.trialEndsAt) {
+        setTrialEndsAt(data.trialEndsAt)
+        setStatusMessage("Your 7-day free trial has started! Generate your first posts now.")
+      } else if (data.error === "trial_already_used") {
+        setStatusMessage("You have already used your free trial. Please subscribe to continue.")
+      } else if (data.error === "already_subscribed") {
+        setStatusMessage("You already have an active subscription.")
+      } else {
+        setStatusMessage(data.error ?? "Something went wrong. Please try again.")
+      }
+    } catch {
+      setStatusMessage("Something went wrong. Please try again.")
+    } finally {
+      setStartingTrial(false)
+    }
+  }
+
   const connected = searchParams.get("connected")
   const error = searchParams.get("error")
 
@@ -416,6 +440,7 @@ function LinkedInPageContent() {
       .then((data) => {
         setSubscriptionStatus(data.status ?? null)
         setSubscriptionEndDate(data.endDate ?? null)
+        setTrialEndsAt(data.trialEndsAt ?? null)
         if (data.status === "active" || data.status === "trialing") {
           setSubscriptionPlan(data.plan ?? null)
         }
@@ -659,13 +684,30 @@ function LinkedInPageContent() {
   }
 
   const isConnected = accounts.length > 0
-  const hasPersonalPlan = (subscriptionStatus === "active" || subscriptionStatus === "trialing") &&
+
+  // Active Stripe subscription
+  const hasActiveSubscription = subscriptionStatus === "active" &&
     (subscriptionPlan === "personal" || subscriptionPlan === "personal_annual")
 
+  // No-card free trial (DB-based)
+  const trialActive = !!(trialEndsAt && new Date(trialEndsAt) > new Date())
+  const trialExpired = !!(trialEndsAt && new Date(trialEndsAt) <= new Date())
+
+  const hasPersonalPlan = hasActiveSubscription || trialActive
+
   const trialDaysLeft = (() => {
-    if (subscriptionStatus !== "trialing" || !subscriptionEndDate) return null
-    const diff = new Date(subscriptionEndDate).getTime() - Date.now()
-    return Math.ceil(diff / 86400000)
+    if (!trialEndsAt) return null
+    // Stripe trialing (legacy)
+    if (subscriptionStatus === "trialing" && subscriptionEndDate) {
+      const diff = new Date(subscriptionEndDate).getTime() - Date.now()
+      return Math.ceil(diff / 86400000)
+    }
+    // No-card trial
+    if (trialActive) {
+      const diff = new Date(trialEndsAt).getTime() - Date.now()
+      return Math.ceil(diff / 86400000)
+    }
+    return null
   })()
   const dnaScore = calcDnaScore(brief, profileUrl)
   const activePosts = posts.filter((p) => p.status !== "published")
@@ -772,8 +814,8 @@ function LinkedInPageContent() {
             </p>
           </div>
 
-          {/* Upgrade banner */}
-          {!hasPersonalPlan && !loading && (
+          {/* Upgrade banner — no plan, no trial used yet */}
+          {!hasPersonalPlan && !trialExpired && !loading && (
             <div className="mb-6 flex items-center justify-between gap-4 rounded-2xl px-5 py-4 text-white shadow-lg"
               style={{ background: "linear-gradient(135deg, #7c3aed 0%, #a855f7 60%, #ec4899 100%)" }}>
               <div className="flex items-center gap-3">
@@ -781,22 +823,44 @@ function LinkedInPageContent() {
                   <Zap className="w-4 h-4" />
                 </div>
                 <div>
-                  <p className="text-sm font-bold">Start 7-Day Free Trial — $15/mo after</p>
+                  <p className="text-sm font-bold">Try Free for 7 Days — No Credit Card</p>
                   <p className="text-xs text-white/75 mt-0.5">7 AI posts/week, custom images, auto-scheduling</p>
+                </div>
+              </div>
+              <button
+                onClick={handleStartTrial}
+                disabled={startingTrial}
+                className="shrink-0 bg-white text-violet-700 font-semibold text-xs rounded-xl px-4 py-2 hover:bg-violet-50 transition-colors disabled:opacity-70"
+              >
+                {startingTrial ? "Starting..." : "Start Free Trial →"}
+              </button>
+            </div>
+          )}
+
+          {/* Trial expired banner — show subscribe CTA */}
+          {trialExpired && !hasActiveSubscription && !loading && (
+            <div className="mb-6 flex items-center justify-between gap-4 rounded-2xl px-5 py-4 border border-red-200 bg-red-50">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-xl bg-red-100 flex items-center justify-center shrink-0">
+                  <Lock className="w-4 h-4 text-red-600" />
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-red-800">Your trial has ended</p>
+                  <p className="text-xs text-red-600 mt-0.5">Subscribe to keep generating and publishing posts</p>
                 </div>
               </div>
               <button
                 onClick={() => handleUpgrade("monthly")}
                 disabled={checkingOut}
-                className="shrink-0 bg-white text-violet-700 font-semibold text-xs rounded-xl px-4 py-2 hover:bg-violet-50 transition-colors disabled:opacity-70"
+                className="shrink-0 bg-red-600 hover:bg-red-700 text-white font-semibold text-xs rounded-xl px-4 py-2 transition-colors disabled:opacity-70"
               >
-                {checkingOut ? "Loading..." : "Try Free →"}
+                {checkingOut ? "Loading..." : "Subscribe Now →"}
               </button>
             </div>
           )}
 
           {/* Trial countdown banner */}
-          {subscriptionStatus === "trialing" && trialDaysLeft !== null && (
+          {(trialActive || subscriptionStatus === "trialing") && trialDaysLeft !== null && (
             <div className="mb-6 flex items-center justify-between gap-4 rounded-2xl px-5 py-3.5 border border-amber-200 bg-amber-50">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-xl bg-amber-100 flex items-center justify-center shrink-0">
@@ -810,7 +874,7 @@ function LinkedInPageContent() {
                       ? "1 day left in your free trial"
                       : `${trialDaysLeft} days left in your free trial`}
                   </p>
-                  <p className="text-xs text-amber-600 mt-0.5">Subscribe to keep generating and publishing posts</p>
+                  <p className="text-xs text-amber-600 mt-0.5">Subscribe to keep access after your trial ends</p>
                 </div>
               </div>
               <button
@@ -876,13 +940,21 @@ function LinkedInPageContent() {
                           </>
                         )}
                       </Button>
-                    ) : (
+                    ) : trialExpired ? (
                       <Button
                         onClick={() => handleUpgrade("monthly")}
                         disabled={checkingOut}
+                        className="bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-500 hover:to-orange-400 text-white font-semibold px-6 py-2.5 rounded-xl shadow-sm"
+                      >
+                        {checkingOut ? "Loading..." : "Subscribe to Continue"}
+                      </Button>
+                    ) : (
+                      <Button
+                        onClick={handleStartTrial}
+                        disabled={startingTrial}
                         className="bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-white font-semibold px-6 py-2.5 rounded-xl shadow-sm"
                       >
-                        Start Free Trial
+                        {startingTrial ? "Starting..." : "Start Free Trial — No Card"}
                       </Button>
                     )}
                     <span className="text-sm text-slate-400 flex items-center gap-1.5">
@@ -921,17 +993,29 @@ function LinkedInPageContent() {
                         <p className="text-sm text-slate-400 max-w-xs">
                           {hasPersonalPlan
                             ? "Generate 7 AI-written LinkedIn posts, scheduled for the next 7 days."
-                            : "Start your free 7-day trial to generate your first week of LinkedIn posts."}
+                            : trialExpired
+                            ? "Your trial has ended. Subscribe to generate more posts."
+                            : "Start your free 7-day trial — no credit card required."}
                         </p>
                       </div>
                       {!hasPersonalPlan && (
-                        <button
-                          onClick={() => handleUpgrade("monthly")}
-                          disabled={checkingOut}
-                          className="mt-2 bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-white font-semibold text-sm px-6 py-2.5 rounded-xl shadow-sm transition-opacity disabled:opacity-70"
-                        >
-                          {checkingOut ? "Loading…" : "Start Free Trial →"}
-                        </button>
+                        trialExpired ? (
+                          <button
+                            onClick={() => handleUpgrade("monthly")}
+                            disabled={checkingOut}
+                            className="mt-2 bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-500 hover:to-orange-400 text-white font-semibold text-sm px-6 py-2.5 rounded-xl shadow-sm transition-opacity disabled:opacity-70"
+                          >
+                            {checkingOut ? "Loading…" : "Subscribe Now →"}
+                          </button>
+                        ) : (
+                          <button
+                            onClick={handleStartTrial}
+                            disabled={startingTrial}
+                            className="mt-2 bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-white font-semibold text-sm px-6 py-2.5 rounded-xl shadow-sm transition-opacity disabled:opacity-70"
+                          >
+                            {startingTrial ? "Starting..." : "Start Free Trial — No Card →"}
+                          </button>
+                        )
                       )}
                     </div>
                   ) : (
@@ -1271,11 +1355,11 @@ function LinkedInPageContent() {
                       You have full access to generate posts, publish, and auto-scheduling.
                     </p>
                   </div>
-                ) : (
+                ) : trialExpired ? (
                   <div className="space-y-4">
-                    <div className="p-4 rounded-xl bg-slate-50 border border-slate-100">
-                      <p className="text-sm font-semibold text-slate-700 mb-1">Free Plan</p>
-                      <p className="text-xs text-slate-500">You can connect LinkedIn and fill your Content DNA, but post generation and publishing require a subscription.</p>
+                    <div className="p-4 rounded-xl bg-red-50 border border-red-100">
+                      <p className="text-sm font-semibold text-red-700 mb-1">Trial Ended</p>
+                      <p className="text-xs text-red-600">Your 7-day free trial has ended. Subscribe to continue generating and publishing posts.</p>
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                       <button
@@ -1288,7 +1372,7 @@ function LinkedInPageContent() {
                         <span className="text-xs text-violet-600 font-medium">/ month</span>
                         <span className="text-[10px] text-slate-500 mt-1">Billed monthly</span>
                         <span className="mt-2 w-full text-center text-xs font-semibold text-white bg-violet-600 rounded-lg py-1.5 px-2">
-                          {checkingOut ? "Loading…" : "Start Free Trial"}
+                          {checkingOut ? "Loading…" : "Subscribe Now"}
                         </span>
                       </button>
                       <button
@@ -1301,11 +1385,78 @@ function LinkedInPageContent() {
                         <span className="text-xs text-pink-600 font-medium">/ month</span>
                         <span className="text-[10px] text-slate-500 mt-1">Billed $144/year · Save 20%</span>
                         <span className="mt-2 w-full text-center text-xs font-semibold text-white bg-pink-600 rounded-lg py-1.5 px-2">
-                          {checkingOut ? "Loading…" : "Start Free Trial"}
+                          {checkingOut ? "Loading…" : "Subscribe Now"}
                         </span>
                       </button>
                     </div>
                     <p className="text-xs text-slate-400 text-center">Cancel anytime. Secure payment via Stripe.</p>
+                  </div>
+                ) : trialActive ? (
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between p-3 rounded-xl bg-amber-50 border border-amber-100">
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 bg-amber-500 rounded-xl flex items-center justify-center shrink-0">
+                          <Zap className="w-4 h-4 text-white" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-slate-800">Free Trial</p>
+                          <p className="text-xs text-slate-500">
+                            {trialDaysLeft !== null && trialDaysLeft > 0
+                              ? `${trialDaysLeft} day${trialDaysLeft !== 1 ? "s" : ""} remaining`
+                              : "Ends today"}
+                          </p>
+                        </div>
+                      </div>
+                      <Badge variant="outline" className="text-xs border-amber-200 text-amber-700 bg-amber-50 px-2 py-0.5">
+                        Trial
+                      </Badge>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <button
+                        onClick={() => handleUpgrade("monthly")}
+                        disabled={checkingOut}
+                        className="flex flex-col items-center gap-1 p-4 rounded-xl border-2 border-violet-200 bg-violet-50 hover:border-violet-400 hover:bg-violet-100 transition-colors cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
+                      >
+                        <span className="text-[10px] font-semibold uppercase tracking-wide text-violet-500 mb-0.5">Monthly</span>
+                        <span className="text-base font-bold text-violet-700">$15</span>
+                        <span className="text-xs text-violet-600 font-medium">/ month</span>
+                        <span className="text-[10px] text-slate-500 mt-1">Billed monthly</span>
+                        <span className="mt-2 w-full text-center text-xs font-semibold text-white bg-violet-600 rounded-lg py-1.5 px-2">
+                          {checkingOut ? "Loading…" : "Subscribe"}
+                        </span>
+                      </button>
+                      <button
+                        onClick={() => handleUpgrade("annual")}
+                        disabled={checkingOut}
+                        className="flex flex-col items-center gap-1 p-4 rounded-xl border-2 border-pink-200 bg-pink-50 hover:border-pink-400 hover:bg-pink-100 transition-colors cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
+                      >
+                        <span className="text-[10px] font-semibold uppercase tracking-wide text-pink-500 mb-0.5">Annual</span>
+                        <span className="text-base font-bold text-pink-700">$12</span>
+                        <span className="text-xs text-pink-600 font-medium">/ month</span>
+                        <span className="text-[10px] text-slate-500 mt-1">Billed $144/year · Save 20%</span>
+                        <span className="mt-2 w-full text-center text-xs font-semibold text-white bg-pink-600 rounded-lg py-1.5 px-2">
+                          {checkingOut ? "Loading…" : "Subscribe"}
+                        </span>
+                      </button>
+                    </div>
+                    <p className="text-xs text-slate-400 text-center">Subscribe now to keep access after your trial. Cancel anytime.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="p-4 rounded-xl bg-slate-50 border border-slate-100">
+                      <p className="text-sm font-semibold text-slate-700 mb-1">Free Plan</p>
+                      <p className="text-xs text-slate-500">Start a free 7-day trial — no credit card required. Full access to generate and publish posts.</p>
+                    </div>
+                    <button
+                      onClick={handleStartTrial}
+                      disabled={startingTrial}
+                      className="w-full flex items-center justify-center gap-2 p-4 rounded-xl border-2 border-violet-200 bg-violet-50 hover:border-violet-400 hover:bg-violet-100 transition-colors cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
+                    >
+                      <span className="text-sm font-semibold text-violet-700">
+                        {startingTrial ? "Starting trial..." : "Start 7-Day Free Trial — No Credit Card"}
+                      </span>
+                    </button>
+                    <p className="text-xs text-slate-400 text-center">After 7 days, subscribe to continue. $15/month or $144/year.</p>
                   </div>
                 )}
               </div>

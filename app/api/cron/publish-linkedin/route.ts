@@ -4,6 +4,7 @@ import { linkedinAccounts, linkedinPosts, users } from "@/lib/db/schema"
 import { eq, and, lte } from "drizzle-orm"
 import { sendEmail } from "@/lib/email"
 import { postPublishedEmail, postFailedEmail, linkedinTokenExpiredEmail } from "@/lib/email-templates"
+import { hasAccess } from "@/lib/access"
 
 interface LinkedInUgcPostBody {
   author: string
@@ -117,12 +118,10 @@ export async function GET(req: NextRequest) {
     let failed = 0
 
     for (const post of duePosts) {
-      // Skip posts for users without an active Personal subscription
-      const [postUser] = await db.select({ subscriptionPlan: users.subscriptionPlan, subscriptionStatus: users.subscriptionStatus, email: users.email, name: users.name })
+      // Skip posts for users without an active Personal subscription or active trial
+      const [postUser] = await db.select({ subscriptionPlan: users.subscriptionPlan, subscriptionStatus: users.subscriptionStatus, trialEndsAt: users.trialEndsAt, email: users.email, name: users.name })
         .from(users).where(eq(users.id, post.userId)).limit(1)
-      const hasAccess = postUser && (postUser.subscriptionStatus === "active" || postUser.subscriptionStatus === "trialing") &&
-        (postUser.subscriptionPlan === "personal" || postUser.subscriptionPlan === "personal_annual")
-      if (!hasAccess) {
+      if (!postUser || !hasAccess({ subscriptionStatus: postUser.subscriptionStatus ?? null, subscriptionPlan: postUser.subscriptionPlan ?? null, trialEndsAt: postUser.trialEndsAt ?? null })) {
         await db
           .update(linkedinPosts)
           .set({ status: "failed", publishError: "subscription_required" })

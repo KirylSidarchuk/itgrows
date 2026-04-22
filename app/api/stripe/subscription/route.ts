@@ -16,6 +16,7 @@ export async function GET() {
       subscriptionPlan: users.subscriptionPlan,
       subscriptionEndDate: users.subscriptionEndDate,
       stripeCustomerId: users.stripeCustomerId,
+      trialEndsAt: users.trialEndsAt,
     })
     .from(users)
     .where(eq(users.id, session.user.id))
@@ -29,5 +30,6 @@ export async function GET() {
     plan: user.subscriptionPlan ?? null,
     endDate: user.subscriptionEndDate ?? null,
     hasCustomer: !!user.stripeCustomerId,
+    trialEndsAt: user.trialEndsAt ?? null,
   })
 }
