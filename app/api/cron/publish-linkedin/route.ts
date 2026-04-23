@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from "next/server"
 import sharp from "sharp"
 import { db } from "@/lib/db"
-import { linkedinAccounts, linkedinPosts, users } from "@/lib/db/schema"
+import { linkedinAccounts, linkedinPosts, linkedinBriefs, users } from "@/lib/db/schema"
 import { eq, and, lte } from "drizzle-orm"
 import { sendEmail } from "@/lib/email"
 import { postPublishedEmail, postFailedEmail, linkedinTokenExpiredEmail } from "@/lib/email-templates"
 import { hasAccess } from "@/lib/access"
+import { generatePostImage } from "@/lib/linkedin-image"
 
 interface LinkedInUgcPostBody {
   author: string
@@ -236,7 +237,47 @@ export async function GET(req: NextRequest) {
         continue
       }
 
-      const result = await publishPost({ id: post.id, content: post.content, linkedinAccountId: post.linkedinAccountId, imageUrl: post.imageUrl })
+      // If imageUrl is missing, attempt on-the-fly image regeneration (up to 2 attempts)
+      let postImageUrl = post.imageUrl
+      if (!postImageUrl) {
+        console.warn(`[publish-linkedin] Post ${post.id} has no image — attempting on-the-fly generation`)
+        const [brief] = await db.select({ niche: linkedinBriefs.niche })
+          .from(linkedinBriefs)
+          .where(eq(linkedinBriefs.userId, post.userId))
+          .limit(1)
+        const niche = brief?.niche ?? "business"
+
+        let regenerated: string | null = null
+        for (let attempt = 1; attempt <= 2; attempt++) {
+          console.log(`[publish-linkedin] Image regen attempt ${attempt}/2 for post ${post.id}`)
+          regenerated = await generatePostImage(post.content, niche)
+          if (regenerated) break
+          if (attempt < 2) await new Promise((r) => setTimeout(r, 3000))
+        }
+
+        if (regenerated) {
+          console.log(`[publish-linkedin] Image regenerated successfully for post ${post.id}`)
+          await db.update(linkedinPosts).set({ imageUrl: regenerated }).where(eq(linkedinPosts.id, post.id))
+          postImageUrl = regenerated
+        } else {
+          console.error(`[publish-linkedin] Image regen failed after 2 attempts for post ${post.id} — marking failed`)
+          await db
+            .update(linkedinPosts)
+            .set({ status: "failed", publishError: "image_generation_failed" })
+            .where(eq(linkedinPosts.id, post.id))
+          failed++
+          if (postUser?.email) {
+            await sendEmail({
+              to: postUser.email,
+              subject: "⚠️ Your LinkedIn post failed to publish",
+              html: postFailedEmail(postUser.name ?? "there", post.content, "Image generation failed after 2 attempts. Please regenerate your posts from the cabinet."),
+            })
+          }
+          continue
+        }
+      }
+
+      const result = await publishPost({ id: post.id, content: post.content, linkedinAccountId: post.linkedinAccountId, imageUrl: postImageUrl })
 
       if (result.success) {
         await db
@@ -257,11 +298,9 @@ export async function GET(req: NextRequest) {
           })
         }
       } else {
-        // For transient/retriable errors (missing image, upload failure) — leave as scheduled so cron retries
-        const isRetriable = result.error === "image_required" || result.error === "image_upload_failed"
-        if (isRetriable) {
-          console.warn(`[publish-linkedin] Skipping post ${post.id} (will retry): ${result.error}`)
-          // Do not increment failed; post stays scheduled
+        // image_upload_failed is still retriable (transient LinkedIn asset upload issue) — leave as scheduled
+        if (result.error === "image_upload_failed") {
+          console.warn(`[publish-linkedin] Skipping post ${post.id} (image upload failed, will retry next run)`)
           continue
         }
 
