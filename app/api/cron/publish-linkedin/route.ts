@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
+import sharp from "sharp"
 import { db } from "@/lib/db"
 import { linkedinAccounts, linkedinPosts, users } from "@/lib/db/schema"
 import { eq, and, lte } from "drizzle-orm"
@@ -13,6 +14,11 @@ interface LinkedInUgcPostBody {
     "com.linkedin.ugc.ShareContent": {
       shareCommentary: { text: string }
       shareMediaCategory: string
+      media?: Array<{
+        status: string
+        media: string
+        originalUrl?: string
+      }>
     }
   }
   visibility: {
@@ -20,10 +26,93 @@ interface LinkedInUgcPostBody {
   }
 }
 
+async function uploadImageToLinkedIn(
+  accessToken: string,
+  authorUrn: string,
+  imageDataUrl: string,
+): Promise<string | null> {
+  try {
+    // Step 1: Register upload
+    const registerRes = await fetch("https://api.linkedin.com/v2/assets?action=registerUpload", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+        "X-Restli-Protocol-Version": "2.0.0",
+      },
+      body: JSON.stringify({
+        registerUploadRequest: {
+          recipes: ["urn:li:digitalmediaRecipe:feedshare-image"],
+          owner: authorUrn,
+          serviceRelationships: [
+            {
+              relationshipType: "OWNER",
+              identifier: "urn:li:userGeneratedContent",
+            },
+          ],
+        },
+      }),
+    })
+
+    if (!registerRes.ok) {
+      console.warn("[publish-linkedin] registerUpload failed:", await registerRes.text())
+      return null
+    }
+
+    const registerData = await registerRes.json() as {
+      value?: {
+        asset?: string
+        uploadMechanism?: {
+          "com.linkedin.digitalmedia.uploading.MediaUploadHttpRequest"?: {
+            uploadUrl?: string
+          }
+        }
+      }
+    }
+
+    const assetUrn = registerData.value?.asset
+    const uploadUrl =
+      registerData.value?.uploadMechanism?.[
+        "com.linkedin.digitalmedia.uploading.MediaUploadHttpRequest"
+      ]?.uploadUrl
+
+    if (!assetUrn || !uploadUrl) {
+      console.warn("[publish-linkedin] No asset URN or upload URL in register response")
+      return null
+    }
+
+    // Step 2: Upload binary image
+    const base64Data = imageDataUrl.replace(/^data:[^;]+;base64,/, "")
+    const imageBuffer = Buffer.from(base64Data, "base64")
+    // Strip all metadata (EXIF, XMP, C2PA) to remove Content Credentials badge
+    const strippedBuffer = await sharp(imageBuffer).withMetadata({}).toBuffer()
+
+    const uploadRes = await fetch(uploadUrl, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "image/jpeg",
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: new Uint8Array(strippedBuffer),
+    })
+
+    if (!uploadRes.ok) {
+      console.warn("[publish-linkedin] Image upload failed:", await uploadRes.text())
+      return null
+    }
+
+    return assetUrn
+  } catch (err) {
+    console.warn("[publish-linkedin] uploadImageToLinkedIn error:", err)
+    return null
+  }
+}
+
 async function publishPost(post: {
   id: string
   content: string
   linkedinAccountId: string | null
+  imageUrl?: string | null
 }): Promise<{ success: boolean; error?: string; linkedinPostId?: string }> {
   if (!post.linkedinAccountId) {
     return { success: false, error: "No LinkedIn account linked" }
@@ -59,13 +148,29 @@ async function publishPost(post: {
     return { success: false, error: "No LinkedIn URN found" }
   }
 
+  // Try to upload image if available; failure is non-fatal (falls back to text-only)
+  let assetUrn: string | null = null
+  if (post.imageUrl) {
+    assetUrn = await uploadImageToLinkedIn(account.accessToken, authorUrn, post.imageUrl)
+  }
+
   const ugcBody: LinkedInUgcPostBody = {
     author: authorUrn,
     lifecycleState: "PUBLISHED",
     specificContent: {
       "com.linkedin.ugc.ShareContent": {
         shareCommentary: { text: post.content },
-        shareMediaCategory: "NONE",
+        shareMediaCategory: assetUrn ? "IMAGE" : "NONE",
+        ...(assetUrn
+          ? {
+              media: [
+                {
+                  status: "READY",
+                  media: assetUrn,
+                },
+              ],
+            }
+          : {}),
       },
     },
     visibility: {
@@ -130,7 +235,7 @@ export async function GET(req: NextRequest) {
         continue
       }
 
-      const result = await publishPost(post)
+      const result = await publishPost({ id: post.id, content: post.content, linkedinAccountId: post.linkedinAccountId, imageUrl: post.imageUrl })
 
       if (result.success) {
         await db
