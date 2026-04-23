@@ -237,42 +237,30 @@ export async function GET(req: NextRequest) {
         continue
       }
 
-      // If imageUrl is missing, attempt on-the-fly image regeneration (up to 2 attempts)
+      // If imageUrl is missing, attempt one last on-the-fly image generation
       let postImageUrl = post.imageUrl
       if (!postImageUrl) {
-        console.warn(`[publish-linkedin] Post ${post.id} has no image — attempting on-the-fly generation`)
+        console.warn(`[publish-linkedin] Post ${post.id} has no image — attempting last-chance generation`)
         const [brief] = await db.select({ niche: linkedinBriefs.niche })
           .from(linkedinBriefs)
           .where(eq(linkedinBriefs.userId, post.userId))
           .limit(1)
         const niche = brief?.niche ?? "business"
 
-        let regenerated: string | null = null
-        for (let attempt = 1; attempt <= 2; attempt++) {
-          console.log(`[publish-linkedin] Image regen attempt ${attempt}/2 for post ${post.id}`)
-          regenerated = await generatePostImage(post.content, niche)
-          if (regenerated) break
-          if (attempt < 2) await new Promise((r) => setTimeout(r, 3000))
-        }
+        const regenerated = await generatePostImage(post.content, niche)
 
         if (regenerated) {
-          console.log(`[publish-linkedin] Image regenerated successfully for post ${post.id}`)
+          console.log(`[publish-linkedin] Image generated successfully for post ${post.id}`)
           await db.update(linkedinPosts).set({ imageUrl: regenerated }).where(eq(linkedinPosts.id, post.id))
           postImageUrl = regenerated
         } else {
-          console.error(`[publish-linkedin] Image regen failed after 2 attempts for post ${post.id} — marking failed`)
+          // Reschedule to tomorrow instead of marking as failed — no failure email sent
+          const tomorrow = new Date((post.scheduledFor ?? now).getTime() + 24 * 60 * 60 * 1000)
+          console.warn(`[publish-linkedin] Image generation failed for post ${post.id} — rescheduling to ${tomorrow.toISOString()}`)
           await db
             .update(linkedinPosts)
-            .set({ status: "failed", publishError: "image_generation_failed" })
+            .set({ scheduledFor: tomorrow })
             .where(eq(linkedinPosts.id, post.id))
-          failed++
-          if (postUser?.email) {
-            await sendEmail({
-              to: postUser.email,
-              subject: "⚠️ Your LinkedIn post failed to publish",
-              html: postFailedEmail(postUser.name ?? "there", post.content, "Image generation failed after 2 attempts. Please regenerate your posts from the cabinet."),
-            })
-          }
           continue
         }
       }

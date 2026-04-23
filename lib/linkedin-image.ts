@@ -6,32 +6,11 @@ const LLM_API_KEY = "jtotFgxS1WQorT52LZym2ncyYzboliS6p04RqUwneFI"
 const IMAGE_MODELS = [
   "gemini-3-pro-image-preview",
   "gemini-2.0-flash-preview-image-generation",
+  "gemini-2.0-flash",
 ]
 
 const RETRIES_PER_MODEL = 2
 const RETRY_DELAY_MS = 3000
-
-// Branded SVG fallback: dark background, gradient accent, "itgrows.ai" text
-const FALLBACK_SVG = Buffer.from(
-  `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="627" viewBox="0 0 1200 627">
-  <defs>
-    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#0f172a;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#1e293b;stop-opacity:1" />
-    </linearGradient>
-    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" style="stop-color:#6366f1;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#22d3ee;stop-opacity:1" />
-    </linearGradient>
-  </defs>
-  <rect width="1200" height="627" fill="url(#bg)" />
-  <rect x="0" y="560" width="1200" height="6" fill="url(#accent)" />
-  <text x="600" y="290" font-family="Arial, Helvetica, sans-serif" font-size="96" font-weight="700" fill="white" text-anchor="middle" dominant-baseline="middle" letter-spacing="-2">itgrows.ai</text>
-  <text x="600" y="380" font-family="Arial, Helvetica, sans-serif" font-size="32" fill="#94a3b8" text-anchor="middle" dominant-baseline="middle" letter-spacing="4">GROW SMARTER WITH AI</text>
-</svg>`
-).toString("base64")
-
-const FALLBACK_IMAGE_URL = `data:image/svg+xml;base64,${FALLBACK_SVG}`
 
 async function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms))
@@ -79,10 +58,10 @@ async function tryGenerateImage(model: string, imagePrompt: string): Promise<str
 
 /**
  * Generates a LinkedIn post cover image as a base64 data URL.
- * Tries multiple models with retries. Falls back to a branded SVG if all fail.
- * Never returns null.
+ * Tries 3 models × 2 attempts each = 6 total attempts.
+ * Returns null if all attempts fail.
  */
-export async function generatePostImage(postContent: string, niche: string): Promise<string> {
+export async function generatePostImage(postContent: string, niche: string): Promise<string | null> {
   let imagePrompt = `Professional LinkedIn post cover for ${niche}`
   try {
     imagePrompt = await callLLM(
@@ -107,6 +86,6 @@ Return ONLY the image prompt, nothing else.`,
     console.log(`[linkedin-image] Model ${model} exhausted all retries, trying next model`)
   }
 
-  console.log(`[linkedin-image] All models failed, using branded SVG fallback`)
-  return FALLBACK_IMAGE_URL
+  console.log(`[linkedin-image] All models failed, returning null`)
+  return null
 }
