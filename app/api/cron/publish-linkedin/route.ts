@@ -148,10 +148,15 @@ async function publishPost(post: {
     return { success: false, error: "No LinkedIn URN found" }
   }
 
-  // Try to upload image if available; failure is non-fatal (falls back to text-only)
-  let assetUrn: string | null = null
-  if (post.imageUrl) {
-    assetUrn = await uploadImageToLinkedIn(account.accessToken, authorUrn, post.imageUrl)
+  // Image is required — skip if missing
+  if (!post.imageUrl) {
+    return { success: false, error: "image_required" }
+  }
+
+  // Upload image; if it fails, do not fall back to text-only — return error so post stays scheduled
+  const assetUrn = await uploadImageToLinkedIn(account.accessToken, authorUrn, post.imageUrl)
+  if (!assetUrn) {
+    return { success: false, error: "image_upload_failed" }
   }
 
   const ugcBody: LinkedInUgcPostBody = {
@@ -160,17 +165,13 @@ async function publishPost(post: {
     specificContent: {
       "com.linkedin.ugc.ShareContent": {
         shareCommentary: { text: post.content },
-        shareMediaCategory: assetUrn ? "IMAGE" : "NONE",
-        ...(assetUrn
-          ? {
-              media: [
-                {
-                  status: "READY",
-                  media: assetUrn,
-                },
-              ],
-            }
-          : {}),
+        shareMediaCategory: "IMAGE",
+        media: [
+          {
+            status: "READY",
+            media: assetUrn,
+          },
+        ],
       },
     },
     visibility: {
@@ -256,6 +257,14 @@ export async function GET(req: NextRequest) {
           })
         }
       } else {
+        // For transient/retriable errors (missing image, upload failure) — leave as scheduled so cron retries
+        const isRetriable = result.error === "image_required" || result.error === "image_upload_failed"
+        if (isRetriable) {
+          console.warn(`[publish-linkedin] Skipping post ${post.id} (will retry): ${result.error}`)
+          // Do not increment failed; post stays scheduled
+          continue
+        }
+
         await db
           .update(linkedinPosts)
           .set({ status: "failed", publishError: result.error ?? "Unknown error" })
