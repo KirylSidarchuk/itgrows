@@ -147,3 +147,42 @@ export const linkedinBriefs = pgTable("linkedin_briefs", {
   profileUrl: text("profile_url"),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
 })
+
+export const instagramAccounts = pgTable("instagram_accounts", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  instagramUserId: text("instagram_user_id"),
+  username: text("username"),
+  name: text("name"),
+  profilePicture: text("profile_picture"),
+  accessToken: text("access_token").notNull(),
+  tokenExpiresAt: timestamp("token_expires_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+}, (t) => [index("instagram_accounts_user_id_idx").on(t.userId)])
+
+export const instagramBriefs = pgTable("instagram_briefs", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: text("user_id").notNull().unique(),
+  niche: text("niche"),
+  tone: text("tone").default("professional"),
+  goals: text("goals"),
+  targetAudience: text("target_audience"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+})
+
+export const instagramPosts = pgTable("instagram_posts", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  instagramAccountId: uuid("instagram_account_id").references(() => instagramAccounts.id, { onDelete: "cascade" }),
+  content: text("content").notNull(),
+  imageUrl: text("image_url"),
+  status: text("status").notNull().default("draft"), // draft | scheduled | published | failed
+  scheduledFor: timestamp("scheduled_for", { withTimezone: true }),
+  publishedAt: timestamp("published_at", { withTimezone: true }),
+  instagramPostId: text("instagram_post_id"),
+  publishError: text("publish_error"),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+}, (t) => [index("instagram_posts_user_id_idx").on(t.userId), index("instagram_posts_status_idx").on(t.status)])
