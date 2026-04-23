@@ -46,5 +46,21 @@ export async function POST() {
     .set({ trialEndsAt })
     .where(eq(users.id, userId))
 
+  // Fire-and-forget: generate initial LinkedIn posts immediately for new trial user
+  const baseUrl = process.env.NEXTAUTH_URL || "https://itgrows.ai"
+  const cronSecret = process.env.CRON_SECRET
+  if (cronSecret) {
+    fetch(`${baseUrl}/api/internal/generate-initial-posts`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-internal-secret": cronSecret,
+      },
+      body: JSON.stringify({ userId }),
+    }).catch((err) => {
+      console.error("[trial/start] Failed to trigger initial post generation:", err)
+    })
+  }
+
   return NextResponse.json({ trialEndsAt })
 }
