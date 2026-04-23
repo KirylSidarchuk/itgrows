@@ -180,11 +180,12 @@ function PostCard({
   }
 
   const scheduledDate = post.scheduledFor
-    ? new Date(post.scheduledFor).toLocaleDateString("en-US", {
+    ? new Date(post.scheduledFor).toLocaleString(undefined, {
         month: "short",
         day: "numeric",
         hour: "2-digit",
         minute: "2-digit",
+        timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
       })
     : null
 
