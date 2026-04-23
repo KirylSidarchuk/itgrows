@@ -140,12 +140,14 @@ function PostCard({
   onPublish,
   onDelete,
   hasSubscription,
+  trialExpired,
 }: {
   post: LinkedInPost
   onUpdate: (postId: string, content: string, scheduledFor: string) => Promise<void>
   onPublish: (postId: string) => Promise<void>
   onDelete: (postId: string) => Promise<void>
   hasSubscription: boolean
+  trialExpired?: boolean
 }) {
   const [content, setContent] = useState(post.content)
   const [scheduledFor, setScheduledFor] = useState(
@@ -192,7 +194,21 @@ function PostCard({
   const previewText = content.length > 140 ? content.slice(0, 140) + "…" : content
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden hover:shadow-md transition-shadow">
+    <div className="relative bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden hover:shadow-md transition-shadow">
+      {trialExpired && (
+        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 rounded-2xl"
+          style={{ background: "rgba(255,255,255,0.82)", backdropFilter: "blur(2px)" }}>
+          <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center">
+            <Lock className="w-5 h-5 text-slate-500" />
+          </div>
+          <a
+            href="/#pricing"
+            className="bg-violet-600 hover:bg-violet-500 text-white text-xs font-semibold px-4 py-2 rounded-xl transition-colors"
+          >
+            Subscribe to publish →
+          </a>
+        </div>
+      )}
       {post.imageUrl && (
         <div className="h-36 overflow-hidden bg-slate-100">
           <img src={post.imageUrl} alt="Post cover" className="w-full h-full object-cover" />
@@ -1064,17 +1080,16 @@ function LinkedInPageContent() {
                   <Lock className="w-4 h-4 text-red-600" />
                 </div>
                 <div>
-                  <p className="text-sm font-bold text-red-800">Your trial has ended</p>
-                  <p className="text-xs text-red-600 mt-0.5">Subscribe to keep generating and publishing posts</p>
+                  <p className="text-sm font-bold text-red-800">Your trial has ended. Subscribe to keep publishing your LinkedIn posts.</p>
+                  <p className="text-xs text-red-600 mt-0.5">Your posts are preserved — subscribe to generate and publish again</p>
                 </div>
               </div>
-              <button
-                onClick={() => handleUpgrade("monthly")}
-                disabled={checkingOut}
-                className="shrink-0 bg-red-600 hover:bg-red-700 text-white font-semibold text-xs rounded-xl px-4 py-2 transition-colors disabled:opacity-70 self-start sm:self-auto"
+              <a
+                href="/#pricing"
+                className="shrink-0 bg-red-600 hover:bg-red-700 text-white font-semibold text-xs rounded-xl px-4 py-2 transition-colors self-start sm:self-auto"
               >
-                {checkingOut ? "Loading..." : "Subscribe Now →"}
-              </button>
+                Subscribe Now →
+              </a>
             </div>
           )}
 
@@ -1266,13 +1281,13 @@ function LinkedInPageContent() {
                         )}
                       </div>
                     ) : trialExpired ? (
-                      <Button
-                        onClick={() => handleUpgrade("monthly")}
-                        disabled={checkingOut}
-                        className="bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-500 hover:to-orange-400 text-white font-semibold px-6 py-2.5 rounded-xl shadow-sm"
+                      <a
+                        href="/#pricing"
+                        className="inline-flex items-center gap-2 bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-500 hover:to-orange-400 text-white font-semibold px-6 py-2.5 rounded-xl shadow-sm text-sm transition-opacity"
                       >
-                        {checkingOut ? "Loading..." : "Subscribe to Continue"}
-                      </Button>
+                        <Lock className="w-4 h-4" />
+                        Subscribe to Generate →
+                      </a>
                     ) : (
                       <Button
                         onClick={handleStartTrial}
@@ -1412,6 +1427,7 @@ function LinkedInPageContent() {
                                 onPublish={handlePublishPost}
                                 onDelete={handleDeletePost}
                                 hasSubscription={hasPersonalPlan}
+                                trialExpired={trialExpired}
                               />
                             ))}
                           </div>
@@ -1438,6 +1454,7 @@ function LinkedInPageContent() {
                                   onPublish={handlePublishPost}
                                   onDelete={handleDeletePost}
                                   hasSubscription={hasPersonalPlan}
+                                  trialExpired={trialExpired}
                                 />
                               ))}
                             </div>
