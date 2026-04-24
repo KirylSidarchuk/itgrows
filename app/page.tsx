@@ -186,6 +186,7 @@ export default function PersonalPage() {
           {/* Desktop center nav links */}
           <div className="hidden md:flex items-center gap-7">
             <a href="#how-it-works" className="text-sm text-slate-600 hover:text-[#1b1916] transition-colors font-medium">How It Works</a>
+            <a href="#results" onClick={() => setMobileMenuOpen(false)} className="text-sm text-slate-600 hover:text-[#1b1916] transition-colors font-medium">Results</a>
             <a href="#features" className="text-sm text-slate-600 hover:text-[#1b1916] transition-colors font-medium">Features</a>
             <a href="#pricing" className="text-sm text-slate-600 hover:text-[#1b1916] transition-colors font-medium">Pricing</a>
             <Link href="/blog" className="text-sm text-slate-600 hover:text-[#1b1916] transition-colors font-medium">Blog</Link>
@@ -240,6 +241,13 @@ export default function PersonalPage() {
               onClick={() => setMobileMenuOpen(false)}
             >
               How It Works
+            </a>
+            <a
+              href="#results"
+              className="px-3 py-2.5 text-sm font-medium text-slate-600 hover:text-[#1b1916] hover:bg-black/5 rounded-lg transition-colors"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Results
             </a>
             <a
               href="#features"
@@ -338,7 +346,7 @@ export default function PersonalPage() {
       </div>
 
       {/* Results / Outcomes */}
-      <section className="px-4 sm:px-6 py-16 sm:py-28" style={{ background: "linear-gradient(135deg, #1e0a3c 0%, #0f0f23 50%, #0d1117 100%)" }}>
+      <section id="results" className="px-4 sm:px-6 py-16 sm:py-28" style={{ background: "linear-gradient(135deg, #1e0a3c 0%, #0f0f23 50%, #0d1117 100%)" }}>
         <div className="max-w-6xl mx-auto">
           {/* Section header */}
           <div className="text-center mb-12 sm:mb-16">
