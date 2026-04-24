@@ -86,6 +86,22 @@ const steps = [
 
 const faqs = [
   {
+    q: "Is it safe to connect my LinkedIn account?",
+    a: "Absolutely. We use LinkedIn's official OAuth — the same secure standard used by tools like Salesforce, HubSpot, and Notion. You log in directly on LinkedIn's website, not on ours. We never see or store your LinkedIn password. You can revoke access from your LinkedIn settings at any time in seconds.",
+  },
+  {
+    q: "How do you post to LinkedIn without my password?",
+    a: "When you connect your account, LinkedIn gives ItGrows.ai a secure access token — like a temporary key that only allows posting on your behalf. Think of it like letting a trusted assistant publish posts for you, without giving them your email and password. Your credentials stay on LinkedIn's servers, never ours.",
+  },
+  {
+    q: "Can ItGrows.ai read my private messages or connections?",
+    a: "No. We only request the minimum permissions needed to publish posts. We cannot read your messages, see your connections list, or access any private data. Our access is strictly limited to creating and scheduling posts on your public feed.",
+  },
+  {
+    q: "What happens if I cancel my subscription?",
+    a: "You can cancel anytime from your account settings. After cancellation, we immediately revoke our access token — we can no longer post on your behalf. Any scheduled posts that haven't been published yet will not go out.",
+  },
+  {
     q: "Is this generic AI content?",
     a: "No. Before writing anything, we analyze your LinkedIn profile, your niche, and your professional goals. Every post is written specifically for you — in your voice, for your audience.",
   },
@@ -786,7 +802,7 @@ export default function PersonalPage() {
                   This isn&apos;t a tool made by a tech team that&apos;s never sold anything. It&apos;s a product from someone who knows what it takes to build in public.
                 </p>
               </div>
-              <p className="text-slate-500 text-sm font-medium tracking-wide mb-3">
+              <p className="text-violet-600 font-semibold text-sm tracking-wide mb-3">
                 3× Founder&nbsp;&nbsp;·&nbsp;&nbsp;Exit 2022&nbsp;&nbsp;·&nbsp;&nbsp;Angel Investor&nbsp;&nbsp;·&nbsp;&nbsp;ItGrows.ai CEO
               </p>
               <p className="text-lg font-bold text-[#1b1916]">Kiryl Sidarchuk</p>
