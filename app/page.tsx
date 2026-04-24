@@ -680,10 +680,8 @@ export default function PersonalPage() {
                 <div className="mt-3 text-violet-600 text-xs font-medium">#AI #StartupLeadership #FutureOfWork</div>
               </div>
               {/* Image placeholder */}
-              <div className="mx-5 mb-4 rounded-xl h-32 overflow-hidden" style={{ background: "linear-gradient(135deg, #ddd6fe 0%, #a5b4fc 50%, #c7d2fe 100%)" }}>
-                <div className="w-full h-full flex items-center justify-center opacity-60">
-                  <svg className="w-8 h-8 text-violet-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><rect x="3" y="3" width="18" height="18" rx="3" strokeWidth="1.5" /><circle cx="8.5" cy="8.5" r="1.5" strokeWidth="1.5" /><path d="M21 15l-5-5L5 21" strokeWidth="1.5" /></svg>
-                </div>
+              <div className="mx-5 mb-4 rounded-xl h-32 overflow-hidden">
+                <img src="/landing-post-1.jpg" alt="Example post" className="w-full h-full object-cover" />
               </div>
               <div className="px-5 pb-4 flex items-center gap-4 border-t border-black/5 pt-3">
                 <span className="text-slate-400 text-xs">👍 47 likes</span>
@@ -710,10 +708,8 @@ export default function PersonalPage() {
                 </div>
                 <div className="mt-3 text-pink-600 text-xs font-medium">#PersonalBrand #Marketing #CareerGrowth</div>
               </div>
-              <div className="mx-5 mb-4 rounded-xl h-32 overflow-hidden" style={{ background: "linear-gradient(135deg, #fce7f3 0%, #fbcfe8 50%, #f9a8d4 100%)" }}>
-                <div className="w-full h-full flex items-center justify-center opacity-60">
-                  <svg className="w-8 h-8 text-pink-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><rect x="3" y="3" width="18" height="18" rx="3" strokeWidth="1.5" /><circle cx="8.5" cy="8.5" r="1.5" strokeWidth="1.5" /><path d="M21 15l-5-5L5 21" strokeWidth="1.5" /></svg>
-                </div>
+              <div className="mx-5 mb-4 rounded-xl h-32 overflow-hidden">
+                <img src="/landing-post-2.jpg" alt="Example post" className="w-full h-full object-cover" />
               </div>
               <div className="px-5 pb-4 flex items-center gap-4 border-t border-black/5 pt-3">
                 <span className="text-slate-400 text-xs">👍 183 likes</span>
@@ -740,10 +736,8 @@ export default function PersonalPage() {
                 </div>
                 <div className="mt-3 text-cyan-600 text-xs font-medium">#Sales #B2B #RelationshipSelling</div>
               </div>
-              <div className="mx-5 mb-4 rounded-xl h-32 overflow-hidden" style={{ background: "linear-gradient(135deg, #cffafe 0%, #a5f3fc 50%, #67e8f9 100%)" }}>
-                <div className="w-full h-full flex items-center justify-center opacity-60">
-                  <svg className="w-8 h-8 text-cyan-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><rect x="3" y="3" width="18" height="18" rx="3" strokeWidth="1.5" /><circle cx="8.5" cy="8.5" r="1.5" strokeWidth="1.5" /><path d="M21 15l-5-5L5 21" strokeWidth="1.5" /></svg>
-                </div>
+              <div className="mx-5 mb-4 rounded-xl h-32 overflow-hidden">
+                <img src="/landing-post-3.jpg" alt="Example post" className="w-full h-full object-cover" />
               </div>
               <div className="px-5 pb-4 flex items-center gap-4 border-t border-black/5 pt-3">
                 <span className="text-slate-400 text-xs">👍 91 likes</span>
