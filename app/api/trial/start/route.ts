@@ -3,6 +3,7 @@ import { auth } from "@/auth"
 import { db } from "@/lib/db"
 import { users } from "@/lib/db/schema"
 import { eq } from "drizzle-orm"
+import { sendEmail } from "@/lib/email"
 
 export async function POST() {
   const session = await auth()
@@ -17,6 +18,8 @@ export async function POST() {
       subscriptionStatus: users.subscriptionStatus,
       subscriptionPlan: users.subscriptionPlan,
       trialEndsAt: users.trialEndsAt,
+      email: users.email,
+      name: users.name,
     })
     .from(users)
     .where(eq(users.id, userId))
@@ -45,6 +48,16 @@ export async function POST() {
     .update(users)
     .set({ trialEndsAt })
     .where(eq(users.id, userId))
+
+  // Send welcome email immediately
+  const userName = user.name || user.email.split("@")[0]
+  sendEmail({
+    to: user.email,
+    subject: "Welcome to ItGrows.ai — your 7-day trial has started 🚀",
+    html: `<p>Hi ${userName},</p>
+<p>Your 7-day free trial has started. Connect your LinkedIn and we'll start generating posts for you today.</p>
+<p><a href="https://www.itgrows.ai/cabinet">Go to cabinet</a></p>`,
+  }).catch(() => {})
 
   // Fire-and-forget: generate initial LinkedIn posts immediately for new trial user
   const baseUrl = process.env.NEXTAUTH_URL || "https://itgrows.ai"

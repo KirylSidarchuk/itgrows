@@ -65,6 +65,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             })
             .returning()
           user.id = newUser.id
+          // Fire-and-forget: generate initial LinkedIn posts for new Google user
+          fetch(`${process.env.NEXTAUTH_URL}/api/internal/generate-initial-posts`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "x-internal-secret": process.env.CRON_SECRET ?? "" },
+            body: JSON.stringify({ userId: newUser.id }),
+          }).catch(() => {})
         } else {
           user.id = existing.id
         }

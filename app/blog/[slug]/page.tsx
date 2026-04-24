@@ -2,7 +2,7 @@ import { notFound } from "next/navigation"
 import Link from "next/link"
 import { db } from "@/lib/db"
 import { blogPosts } from "@/lib/db/schema"
-import { and, eq } from "drizzle-orm"
+import { and, eq, or } from "drizzle-orm"
 
 // itgrows.ai internal blog owner — only their posts are publicly accessible at /blog
 const ITGROWS_OWNER_USER_ID = "7cd0011c-fadd-4ff5-bd1e-6445fea70b22"
@@ -23,7 +23,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>
 }): Promise<Metadata> {
   const { slug } = await params
-  const [post] = await db.select().from(blogPosts).where(and(eq(blogPosts.slug, slug), eq(blogPosts.userId, ITGROWS_OWNER_USER_ID)))
+  const [post] = await db.select().from(blogPosts).where(and(eq(blogPosts.slug, slug), or(eq(blogPosts.userId, ITGROWS_OWNER_USER_ID), eq(blogPosts.siteSlug, "itgrows"))))
   if (!post) return {}
 
   const imageUrl = `https://www.itgrows.ai/api/blog/image/${post.id}`
@@ -62,7 +62,7 @@ export default async function BlogPostPage({
   const [post] = await db
     .select()
     .from(blogPosts)
-    .where(and(eq(blogPosts.slug, slug), eq(blogPosts.userId, ITGROWS_OWNER_USER_ID)))
+    .where(and(eq(blogPosts.slug, slug), or(eq(blogPosts.userId, ITGROWS_OWNER_USER_ID), eq(blogPosts.siteSlug, "itgrows"))))
 
   if (!post) {
     notFound()
