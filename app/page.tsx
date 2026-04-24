@@ -337,6 +337,181 @@ export default function PersonalPage() {
         </p>
       </div>
 
+      {/* Results / Outcomes */}
+      <section className="px-4 sm:px-6 py-16 sm:py-28" style={{ background: "linear-gradient(135deg, #1e0a3c 0%, #0f0f23 50%, #0d1117 100%)" }}>
+        <div className="max-w-6xl mx-auto">
+          {/* Section header */}
+          <div className="text-center mb-12 sm:mb-16">
+            <span className="inline-block mb-4 px-4 py-1 rounded-full text-xs font-bold border border-violet-500/50 text-violet-400 bg-violet-500/10 tracking-[0.2em] uppercase">
+              Results
+            </span>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-4 text-white leading-tight tracking-tight">
+              What 7 posts a week gets you
+            </h2>
+            <p className="text-slate-400 text-base sm:text-lg max-w-xl mx-auto">
+              The numbers behind consistent LinkedIn presence
+            </p>
+          </div>
+
+          {/* 2×2 cards grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6">
+
+            {/* Card 1 — Profile Growth */}
+            <div className="rounded-2xl border border-white/10 p-6 sm:p-8 flex flex-col gap-5" style={{ background: "rgba(255,255,255,0.04)" }}>
+              <div className="flex items-start gap-4">
+                <div className="flex-shrink-0 w-11 h-11 rounded-xl bg-violet-600/20 border border-violet-500/30 flex items-center justify-center">
+                  <svg viewBox="0 0 24 24" fill="none" className="w-5 h-5 text-violet-400" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
+                    <polyline points="17 6 23 6 23 12" />
+                  </svg>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-4xl sm:text-5xl font-black mb-1" style={{ background: "linear-gradient(90deg, #a78bfa, #818cf8)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+                    3.8×
+                  </div>
+                  <div className="text-white font-semibold text-base leading-snug">more profile views</div>
+                  <p className="text-slate-400 text-sm mt-2 leading-relaxed">
+                    Professionals who post consistently get 3.8× more profile views and 5× more connection requests.
+                  </p>
+                </div>
+              </div>
+              {/* Bar chart visual */}
+              <div className="flex items-end gap-2 h-14 pt-2">
+                <div className="flex-1 rounded-t-md bg-slate-700/60" style={{ height: "30%" }} />
+                <div className="flex-1 rounded-t-md bg-slate-600/70" style={{ height: "50%" }} />
+                <div className="flex-1 rounded-t-md bg-violet-500/60" style={{ height: "70%" }} />
+                <div className="flex-1 rounded-t-md" style={{ height: "100%", background: "linear-gradient(180deg, #a78bfa, #7c3aed)" }} />
+                <div className="text-xs text-slate-500 self-end pb-0.5 ml-1 whitespace-nowrap">You →</div>
+              </div>
+            </div>
+
+            {/* Card 2 — Business Opportunities */}
+            <div className="rounded-2xl border border-white/10 p-6 sm:p-8 flex flex-col gap-5" style={{ background: "rgba(255,255,255,0.04)" }}>
+              <div className="flex items-start gap-4">
+                <div className="flex-shrink-0 w-11 h-11 rounded-xl bg-pink-600/20 border border-pink-500/30 flex items-center justify-center">
+                  <svg viewBox="0 0 24 24" fill="none" className="w-5 h-5 text-pink-400" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="2" y="7" width="20" height="14" rx="2" />
+                    <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" />
+                    <line x1="12" y1="12" x2="12" y2="16" />
+                    <line x1="10" y1="14" x2="14" y2="14" />
+                  </svg>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-3xl sm:text-4xl font-black mb-1" style={{ background: "linear-gradient(90deg, #f472b6, #ec4899)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+                    73%
+                  </div>
+                  <div className="text-white font-semibold text-base leading-snug">of B2B buyers check LinkedIn before meeting</div>
+                  <p className="text-slate-400 text-sm mt-2 leading-relaxed">
+                    A strong content presence turns cold outreach into warm conversations — before you even say hello.
+                  </p>
+                </div>
+              </div>
+              {/* Funnel visual */}
+              <div className="flex flex-col items-center gap-1 pt-1">
+                <div className="rounded-sm h-5 bg-pink-500/50" style={{ width: "90%" }} />
+                <div className="rounded-sm h-5 bg-pink-500/35" style={{ width: "62%" }} />
+                <div className="rounded-sm h-5 bg-pink-500/55" style={{ width: "36%" }} />
+                <div className="text-xs text-slate-500 mt-1">Leads → Prospects → Clients</div>
+              </div>
+            </div>
+
+            {/* Card 3 — Partnership & Network */}
+            <div className="rounded-2xl border border-white/10 p-6 sm:p-8 flex flex-col gap-5" style={{ background: "rgba(255,255,255,0.04)" }}>
+              <div className="flex items-start gap-4">
+                <div className="flex-shrink-0 w-11 h-11 rounded-xl bg-cyan-600/20 border border-cyan-500/30 flex items-center justify-center">
+                  <svg viewBox="0 0 24 24" fill="none" className="w-5 h-5 text-cyan-400" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="5" r="2" />
+                    <circle cx="4" cy="19" r="2" />
+                    <circle cx="20" cy="19" r="2" />
+                    <line x1="12" y1="7" x2="4" y2="17" />
+                    <line x1="12" y1="7" x2="20" y2="17" />
+                    <line x1="6" y1="19" x2="18" y2="19" />
+                  </svg>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-4xl sm:text-5xl font-black mb-1" style={{ background: "linear-gradient(90deg, #67e8f9, #22d3ee)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+                    +280%
+                  </div>
+                  <div className="text-white font-semibold text-base leading-snug">inbound messages</div>
+                  <p className="text-slate-400 text-sm mt-2 leading-relaxed">
+                    Thought leaders on LinkedIn receive 2.8× more inbound partnership and collaboration requests.
+                  </p>
+                </div>
+              </div>
+              {/* Network dots visual */}
+              <div className="relative h-14 mt-1">
+                {/* Center node */}
+                <div className="absolute w-4 h-4 rounded-full bg-cyan-400" style={{ top: "50%", left: "50%", transform: "translate(-50%,-50%)" }} />
+                {/* Connecting lines + outer nodes */}
+                {[
+                  { top: "10%", left: "20%"  },
+                  { top: "10%", left: "75%"  },
+                  { top: "75%", left: "12%"  },
+                  { top: "75%", left: "82%"  },
+                  { top: "40%", left: "88%"  },
+                ].map((pos, idx) => (
+                  <div key={idx}>
+                    <div
+                      className="absolute w-2.5 h-2.5 rounded-full bg-slate-500"
+                      style={{ top: pos.top, left: pos.left, transform: "translate(-50%,-50%)" }}
+                    />
+                  </div>
+                ))}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="text-xs text-slate-500 mt-8">Your network expands</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Card 4 — Investment & Credibility */}
+            <div className="rounded-2xl border border-white/10 p-6 sm:p-8 flex flex-col gap-5" style={{ background: "rgba(255,255,255,0.04)" }}>
+              <div className="flex items-start gap-4">
+                <div className="flex-shrink-0 w-11 h-11 rounded-xl bg-amber-600/20 border border-amber-500/30 flex items-center justify-center">
+                  <svg viewBox="0 0 24 24" fill="none" className="w-5 h-5 text-amber-400" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                  </svg>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-4xl sm:text-5xl font-black mb-1" style={{ background: "linear-gradient(90deg, #fcd34d, #f59e0b)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+                    89%
+                  </div>
+                  <div className="text-white font-semibold text-base leading-snug">of investors Google you first</div>
+                  <p className="text-slate-400 text-sm mt-2 leading-relaxed">
+                    Your LinkedIn is your digital first impression. Make it count before the pitch meeting.
+                  </p>
+                </div>
+              </div>
+              {/* 5-star rating visual */}
+              <div className="flex items-center gap-2 pt-1">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <div
+                    key={star}
+                    className="flex-1 h-3 rounded-full"
+                    style={{ background: star <= 4 ? "linear-gradient(90deg, #fcd34d, #f59e0b)" : "rgba(255,255,255,0.1)" }}
+                  />
+                ))}
+                <span className="text-xs text-slate-500 ml-1 whitespace-nowrap">4.8 / 5</span>
+              </div>
+            </div>
+
+          </div>
+
+          {/* Bottom CTA */}
+          <div className="text-center mt-12 sm:mt-16">
+            <a
+              href="/signup"
+              className="inline-flex items-center gap-2 bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-white px-10 py-4 rounded-xl text-base font-semibold transition-all shadow-lg shadow-violet-700/30"
+            >
+              Start building your presence today
+              <svg viewBox="0 0 24 24" fill="none" className="w-4 h-4" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="5" y1="12" x2="19" y2="12" />
+                <polyline points="12 5 19 12 12 19" />
+              </svg>
+            </a>
+          </div>
+        </div>
+      </section>
+
       {/* FOMO — What you're missing */}
       <section className="px-4 sm:px-6 py-16 sm:py-24" style={{ backgroundColor: "#07071a" }}>
         <div className="max-w-5xl mx-auto">
