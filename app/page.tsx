@@ -786,8 +786,14 @@ export default function PersonalPage() {
                   This isn&apos;t a tool made by a tech team that&apos;s never sold anything. It&apos;s a product from someone who knows what it takes to build in public.
                 </p>
               </div>
+              <div className="flex flex-wrap gap-2 mb-3">
+                <span className="rounded-full bg-violet-100 text-violet-700 text-xs font-medium px-3 py-1">3× Founder</span>
+                <span className="rounded-full bg-green-100 text-green-700 text-xs font-medium px-3 py-1">Exit 2022</span>
+                <span className="rounded-full bg-amber-100 text-amber-700 text-xs font-medium px-3 py-1">Angel Investor</span>
+                <span className="rounded-full bg-slate-100 text-slate-700 text-xs font-medium px-3 py-1">ItGrows.ai CEO</span>
+              </div>
               <p className="text-lg font-bold text-[#1b1916]">Kiryl Sidarchuk</p>
-              <p className="text-sm text-slate-500 mb-4">Founder &amp; CEO, ItGrows.ai</p>
+              <p className="text-sm text-slate-500 mb-4">Serial IT Entrepreneur · 3× Founder · Exit in 2022 · Angel Investor</p>
               <a
                 href="https://www.linkedin.com/in/kiryl-sidarchuk/"
                 target="_blank"
