@@ -756,6 +756,52 @@ export default function PersonalPage() {
         </div>
       </section>
 
+      {/* Founder */}
+      <section className="px-4 sm:px-6 py-16 sm:py-24" style={{ backgroundColor: "#faf9f7" }}>
+        <div className="max-w-4xl mx-auto">
+          <div className="flex flex-col md:flex-row gap-10 md:gap-16 items-center">
+            {/* Photo */}
+            <div className="w-full md:w-2/5 flex-shrink-0">
+              <img
+                src="/founder-kiryl.jpg"
+                alt="Kiryl Sidarchuk"
+                className="rounded-2xl object-cover w-full shadow-lg"
+                style={{ height: "400px" }}
+              />
+            </div>
+            {/* Text */}
+            <div className="flex-1">
+              <p className="text-xs font-bold tracking-[0.2em] uppercase text-violet-600 mb-3">From the Founder</p>
+              <h2 className="text-2xl sm:text-3xl font-bold text-[#1b1916] mb-6 leading-snug">
+                Built by an entrepreneur,<br className="hidden sm:block" /> for entrepreneurs
+              </h2>
+              <div className="space-y-4 text-slate-600 text-base leading-relaxed mb-6">
+                <p>
+                  I&apos;ve been in your shoes — growing a business while trying to stay visible on LinkedIn felt like a second job.
+                </p>
+                <p>
+                  So I built ItGrows.ai to take that off your plate. The AI writes, schedules, and publishes posts that sound like you — while you focus on what actually moves your business.
+                </p>
+                <p>
+                  This isn&apos;t a tool made by a tech team that&apos;s never sold anything. It&apos;s a product from someone who knows what it takes to build in public.
+                </p>
+              </div>
+              <p className="text-lg font-bold text-[#1b1916]">Kiryl Sidarchuk</p>
+              <p className="text-sm text-slate-500 mb-4">Founder &amp; CEO, ItGrows.ai</p>
+              <a
+                href="https://www.linkedin.com/in/kiryl-sidarchuk/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm font-medium hover:underline"
+                style={{ color: "#0a66c2" }}
+              >
+                Connect on LinkedIn →
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Pricing */}
       <section id="pricing" className="px-4 sm:px-6 py-16 sm:py-24" style={{ backgroundColor: "#ebe9e5" }}>
         <div className="max-w-2xl mx-auto">
