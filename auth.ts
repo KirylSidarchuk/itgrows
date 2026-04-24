@@ -1,5 +1,6 @@
 import NextAuth from "next-auth"
 import Credentials from "next-auth/providers/credentials"
+import Google from "next-auth/providers/google"
 import { db } from "@/lib/db"
 import { users } from "@/lib/db/schema"
 import { eq } from "drizzle-orm"
@@ -12,6 +13,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     error: "/login",
   },
   providers: [
+    Google({
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+    }),
     Credentials({
       credentials: {
         email: { label: "Email", type: "email" },
@@ -40,10 +45,44 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     }),
   ],
   callbacks: {
-    async jwt({ token, user }) {
+    async signIn({ user, account }) {
+      if (account?.provider === "google") {
+        const email = user.email?.toLowerCase()
+        if (!email) return false
+
+        const [existing] = await db.select().from(users).where(eq(users.email, email))
+        if (!existing) {
+          // First-time Google sign-in: create user with 7-day trial
+          const trialEndsAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+          const [newUser] = await db
+            .insert(users)
+            .values({
+              email,
+              name: user.name ?? null,
+              emailVerified: new Date(),
+              plan: "starter",
+              trialEndsAt,
+            })
+            .returning()
+          user.id = newUser.id
+        } else {
+          user.id = existing.id
+        }
+        return true
+      }
+      return true
+    },
+    async jwt({ token, user, account }) {
       if (user) {
         token.id = user.id
         token.plan = (user as { plan?: string }).plan ?? "starter"
+      }
+      // For Google sign-in, fetch plan from DB (user object may lack it)
+      if (account?.provider === "google" && token.id) {
+        const [dbUser] = await db.select().from(users).where(eq(users.id, token.id as string))
+        if (dbUser) {
+          token.plan = dbUser.plan
+        }
       }
       return token
     },
