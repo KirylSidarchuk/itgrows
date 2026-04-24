@@ -1,8 +1,8 @@
 import Link from "next/link"
 
 export const metadata = {
-  title: "Privacy Policy — ItGrows.ai",
-  description: "Privacy Policy for ItGrows.ai",
+  title: "Privacy Policy & Cookie Policy — ItGrows.ai",
+  description: "Privacy Policy and Cookie Policy for ItGrows.ai",
 }
 
 export default function PrivacyPage() {
@@ -23,7 +23,7 @@ export default function PrivacyPage() {
       </nav>
 
       <main className="max-w-3xl mx-auto px-6 py-16">
-        <h1 className="text-4xl font-bold mb-2 text-[#1b1916]">Privacy Policy</h1>
+        <h1 className="text-4xl font-bold mb-2 text-[#1b1916]">Privacy Policy &amp; Cookie Policy</h1>
         <p className="text-slate-500 text-sm mb-10">Last updated: April 2026</p>
 
         <div className="space-y-10 text-slate-700 leading-relaxed">
@@ -157,9 +157,19 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-[#1b1916] mb-3">12. Cookies</h2>
-            <p>
-              We use essential cookies to maintain your login session. We do not use advertising or tracking cookies. By using ItGrows.ai, you consent to the use of these essential cookies.
+            <h2 className="text-xl font-semibold text-[#1b1916] mb-3">12. Cookie Policy</h2>
+            <p className="mb-3">
+              We use cookies and similar technologies to operate and improve our service. Below is a summary of the cookies we use:
+            </p>
+            <ul className="list-disc list-inside space-y-2 ml-2">
+              <li><strong>Session cookies</strong> — essential cookies that keep you logged in during your session. These cannot be disabled without breaking the service.</li>
+              <li><strong>Analytics cookies</strong> — we use <strong>Vercel Analytics</strong> to collect anonymized usage data (pages visited, device type, referrer). No personally identifiable information is stored. These cookies help us understand how users interact with the product so we can improve it.</li>
+            </ul>
+            <p className="mt-3">
+              We do not use advertising, retargeting, or third-party tracking cookies. You can decline analytics cookies via the cookie consent banner shown on your first visit. Essential session cookies will still be used to provide the service.
+            </p>
+            <p className="mt-3">
+              You can also manage or delete cookies at any time through your browser settings.
             </p>
           </section>
 
