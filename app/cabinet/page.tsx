@@ -216,6 +216,7 @@ function PostCard({
         day: "numeric",
         hour: "2-digit",
         minute: "2-digit",
+        timeZoneName: "short",
         timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
       })
     : null
@@ -414,6 +415,7 @@ function InstagramPostCard({
         day: "numeric",
         hour: "2-digit",
         minute: "2-digit",
+        timeZoneName: "short",
         timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
       })
     : null
