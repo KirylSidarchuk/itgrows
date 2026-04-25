@@ -356,27 +356,25 @@ export default function PersonalPage() {
             LinkedIn Automation · $15/month
           </Badge>
           <h1 className="text-4xl sm:text-5xl md:text-7xl font-extrabold leading-tight mb-4 sm:mb-6 tracking-tight text-[#1b1916]">
-            Your LinkedIn on
+            We make you look like
             <span className="block bg-gradient-to-r from-violet-600 via-pink-500 to-cyan-500 bg-clip-text text-transparent">
-              Autopilot
+              someone worth following
             </span>
           </h1>
           <p className="text-base sm:text-xl text-slate-600 max-w-2xl mx-auto mb-8 sm:mb-10 leading-relaxed">
-            We write and publish 7 AI-crafted LinkedIn posts every week — tailored to your voice, your niche, and your audience. Set it up once. Grow forever.
+            AI writes and publishes 7 LinkedIn posts a week in your voice — crafted to build your reputation, attract clients, and make people want to connect with you.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center">
             <div className="relative w-full sm:w-auto">
               {/* Pulse ring behind the button */}
               <span className="absolute inset-0 rounded-xl animate-pulse bg-violet-400/30 pointer-events-none" style={{ margin: "-4px" }} />
-              <Button size="lg" onClick={handleStartTrial} className="relative bg-violet-600 hover:bg-violet-500 text-white px-10 py-4 text-base sm:text-lg rounded-xl w-full sm:w-auto font-semibold shadow-lg shadow-violet-600/30">
-                Try Free for 7 Days — No Card Required
+              <Button size="lg" onClick={() => { document.getElementById("ghost-mode")?.scrollIntoView({ behavior: "smooth" }) }} className="relative bg-violet-600 hover:bg-violet-500 text-white px-10 py-4 text-base sm:text-lg rounded-xl w-full sm:w-auto font-semibold shadow-lg shadow-violet-600/30">
+                See Your Posts in 30 Seconds →
               </Button>
             </div>
-            <a href="#how-it-works" className="w-full sm:w-auto">
-              <Button size="lg" variant="outline" className="border-[#1b1916] text-[#1b1916] hover:bg-[#1b1916] hover:text-[#f3f2f1] px-6 sm:px-8 py-5 sm:py-6 text-base sm:text-lg rounded-xl w-full">
-                See How It Works
-              </Button>
-            </a>
+            <Button size="lg" onClick={handleStartTrial} variant="outline" className="border-[#1b1916] text-[#1b1916] hover:bg-[#1b1916] hover:text-[#f3f2f1] px-6 sm:px-8 py-5 sm:py-6 text-base sm:text-lg rounded-xl w-full sm:w-auto">
+              Try Free — No Card
+            </Button>
           </div>
           <p className="mt-3 text-xs sm:text-sm text-slate-500 font-medium">No credit card required · Cancel anytime</p>
         </div>
