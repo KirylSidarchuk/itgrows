@@ -131,6 +131,34 @@ export default function PersonalPage() {
   const [annual, setAnnual] = useState(false)
   const [sessionUser, setSessionUser] = useState<{ name?: string | null; email?: string | null } | null>(null)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [ghostThoughts, setGhostThoughts] = useState("")
+  const [ghostLoading, setGhostLoading] = useState(false)
+  const [ghostPosts, setGhostPosts] = useState<string[]>([])
+  const [ghostError, setGhostError] = useState("")
+
+  async function handleGhostGenerate() {
+    if (ghostThoughts.trim().length < 10) return
+    setGhostLoading(true)
+    setGhostError("")
+    setGhostPosts([])
+    try {
+      const res = await fetch("/api/public/generate-preview", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ thoughts: ghostThoughts }),
+      })
+      const data = await res.json() as { posts?: string[]; error?: string }
+      if (data.posts && data.posts.length > 0) {
+        setGhostPosts(data.posts)
+      } else {
+        setGhostError("Something went wrong. Try again.")
+      }
+    } catch {
+      setGhostError("Something went wrong. Try again.")
+    } finally {
+      setGhostLoading(false)
+    }
+  }
 
   useEffect(() => {
     fetch("/api/auth/session")
@@ -360,6 +388,98 @@ export default function PersonalPage() {
           Join <span className="font-extrabold">200+ professionals</span> growing their LinkedIn presence with ItGrows Personal
         </p>
       </div>
+
+      {/* Ghost Mode — try without signup */}
+      <section id="ghost-mode" className="px-4 sm:px-6 py-16 sm:py-24 bg-white">
+        <div className="max-w-3xl mx-auto text-center">
+          <span className="inline-block mb-4 px-4 py-1 rounded-full text-xs font-bold border border-violet-300 text-violet-600 bg-violet-50 tracking-[0.15em] uppercase">
+            No signup required
+          </span>
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-4 text-[#1b1916] leading-tight tracking-tight">
+            See your posts in{" "}
+            <span className="bg-gradient-to-r from-violet-600 to-pink-500 bg-clip-text text-transparent">30 seconds</span>
+          </h2>
+          <p className="text-slate-500 text-base sm:text-lg mb-8 max-w-xl mx-auto">
+            Write 2–3 thoughts about yourself or your work. We'll generate 3 real LinkedIn posts — no account needed.
+          </p>
+
+          <div className="bg-[#f8f7f6] border border-black/10 rounded-2xl p-5 sm:p-6 text-left">
+            <label className="block text-sm font-semibold text-[#1b1916] mb-2">
+              Tell us a bit about yourself
+            </label>
+            <textarea
+              value={ghostThoughts}
+              onChange={(e) => setGhostThoughts(e.target.value)}
+              placeholder="E.g. I'm a product designer at a SaaS startup. I love turning complex user problems into simple interfaces. I recently shipped a feature that reduced support tickets by 40%."
+              className="w-full h-28 resize-none rounded-xl border border-black/15 bg-white px-4 py-3 text-sm text-[#1b1916] placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-400"
+            />
+            <div className="flex items-center justify-between mt-3 gap-3">
+              <span className="text-xs text-slate-400">{ghostThoughts.length}/500 chars</span>
+              <button
+                onClick={handleGhostGenerate}
+                disabled={ghostLoading || ghostThoughts.trim().length < 10}
+                className="px-6 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold transition-colors flex items-center gap-2"
+              >
+                {ghostLoading ? (
+                  <>
+                    <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    Generating...
+                  </>
+                ) : (
+                  "Generate My Posts →"
+                )}
+              </button>
+            </div>
+          </div>
+
+          {ghostError && (
+            <p className="mt-4 text-sm text-red-500">{ghostError}</p>
+          )}
+
+          {ghostPosts.length > 0 && (
+            <div className="mt-8 space-y-4 text-left">
+              {ghostPosts.map((post, i) => (
+                <div key={i} className="bg-white border border-black/10 rounded-2xl p-5 sm:p-6 shadow-sm">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-500 to-pink-500 flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
+                      Y
+                    </div>
+                    <div>
+                      <div className="font-semibold text-sm text-[#1b1916]">You</div>
+                      <div className="text-xs text-slate-400">LinkedIn · Just now</div>
+                    </div>
+                  </div>
+                  <p className="text-sm text-[#1b1916] whitespace-pre-wrap leading-relaxed">{post}</p>
+                  <div className="mt-4 pt-4 border-t border-black/5 flex items-center justify-between">
+                    <div className="flex gap-4 text-xs text-slate-400">
+                      <span>👍 Like</span>
+                      <span>💬 Comment</span>
+                      <span>🔁 Repost</span>
+                    </div>
+                    <a
+                      href="/signup"
+                      className="text-xs font-semibold text-violet-600 hover:text-violet-500 transition-colors"
+                    >
+                      Post this automatically →
+                    </a>
+                  </div>
+                </div>
+              ))}
+
+              <div className="bg-gradient-to-r from-violet-600 to-pink-600 rounded-2xl p-6 sm:p-8 text-center text-white">
+                <div className="text-2xl font-extrabold mb-2">Want these posted for you every day?</div>
+                <p className="text-white/80 text-sm mb-5">Start your 7-day free trial. No card required.</p>
+                <a
+                  href="/signup"
+                  className="inline-block px-8 py-3 rounded-xl bg-white text-violet-600 font-bold text-sm hover:bg-violet-50 transition-colors"
+                >
+                  Start Free Trial →
+                </a>
+              </div>
+            </div>
+          )}
+        </div>
+      </section>
 
       {/* Results / Outcomes */}
       <section id="results" className="px-4 sm:px-6 py-16 sm:py-28" style={{ background: "linear-gradient(135deg, #1e0a3c 0%, #0f0f23 50%, #0d1117 100%)" }}>
