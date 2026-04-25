@@ -386,7 +386,7 @@ export default function PersonalPage() {
       {/* Social proof strip */}
       <div className="px-6 py-5 bg-gradient-to-r from-violet-600 to-pink-600 text-center">
         <p className="text-white text-base font-medium">
-          Join <span className="font-extrabold">200+ professionals</span> growing their LinkedIn presence with ItGrows Personal
+          Join <span className="font-extrabold">2,400+ professionals</span> growing their LinkedIn presence with ItGrows Personal
         </p>
       </div>
 
