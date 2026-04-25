@@ -566,7 +566,7 @@ export default function PersonalPage() {
                   <img src="/founder-kiryl.jpg" alt="Kiryl Sidarchuk" className="w-12 h-12 rounded-full object-cover flex-shrink-0"/>
                   <div>
                     <div className="font-semibold text-sm text-[#1b1916]">Kiryl Sidarchuk</div>
-                    <div className="text-xs text-slate-400">CEO of MagiScan · Angel Investor</div>
+                    <div className="text-xs text-slate-400">Serial IT Entrepreneur · 3× Founder · Exit in 2022 · Angel Investor</div>
                   </div>
                 </div>
                 <p className="text-sm text-slate-600 leading-relaxed italic">
