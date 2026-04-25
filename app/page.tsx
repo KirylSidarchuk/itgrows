@@ -134,6 +134,7 @@ export default function PersonalPage() {
   const [ghostThoughts, setGhostThoughts] = useState("")
   const [ghostLoading, setGhostLoading] = useState(false)
   const [ghostPosts, setGhostPosts] = useState<string[]>([])
+  const [ghostImages, setGhostImages] = useState<(string | null)[]>([])
   const [ghostError, setGhostError] = useState("")
 
   async function handleGhostGenerate() {
@@ -141,15 +142,17 @@ export default function PersonalPage() {
     setGhostLoading(true)
     setGhostError("")
     setGhostPosts([])
+    setGhostImages([])
     try {
       const res = await fetch("/api/public/generate-preview", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ thoughts: ghostThoughts }),
       })
-      const data = await res.json() as { posts?: string[]; error?: string }
+      const data = await res.json() as { posts?: string[]; images?: (string | null)[]; error?: string }
       if (data.posts && data.posts.length > 0) {
         setGhostPosts(data.posts)
+        setGhostImages(data.images ?? [])
       } else {
         setGhostError("Something went wrong. Try again.")
       }
@@ -421,7 +424,7 @@ export default function PersonalPage() {
                 {ghostLoading ? (
                   <>
                     <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    Generating...
+                    Generating posts & images...
                   </>
                 ) : (
                   "Generate My Posts →"
@@ -437,7 +440,11 @@ export default function PersonalPage() {
           {ghostPosts.length > 0 && (
             <div className="mt-8 space-y-4 text-left">
               {ghostPosts.map((post, i) => (
-                <div key={i} className="bg-white border border-black/10 rounded-2xl p-5 sm:p-6 shadow-sm">
+                <div key={i} className="bg-white border border-black/10 rounded-2xl overflow-hidden shadow-sm">
+                  {ghostImages[i] && (
+                    <img src={ghostImages[i]!} alt="Post cover" className="w-full h-48 object-cover" />
+                  )}
+                  <div className="p-5 sm:p-6">
                   <div className="flex items-center gap-3 mb-4">
                     <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-500 to-pink-500 flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
                       Y
@@ -460,6 +467,7 @@ export default function PersonalPage() {
                     >
                       Post this automatically →
                     </a>
+                  </div>
                   </div>
                 </div>
               ))}
