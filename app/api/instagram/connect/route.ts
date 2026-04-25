@@ -7,7 +7,7 @@ export async function GET() {
 
   const params = new URLSearchParams({
     client_id: process.env.INSTAGRAM_CLIENT_ID!,
-    redirect_uri: `${process.env.NEXTAUTH_URL}/api/instagram/callback`,
+    redirect_uri: `https://www.itgrows.ai/api/instagram/callback`,
     scope: "instagram_basic,instagram_content_publish,pages_show_list,pages_read_engagement",
     response_type: "code",
     state: session.user.id,

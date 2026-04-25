@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
         client_id: process.env.INSTAGRAM_CLIENT_ID!,
         client_secret: process.env.INSTAGRAM_CLIENT_SECRET!,
         grant_type: "authorization_code",
-        redirect_uri: `${process.env.NEXTAUTH_URL}/api/instagram/callback`,
+        redirect_uri: `https://www.itgrows.ai/api/instagram/callback`,
         code,
       }),
     })
