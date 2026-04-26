@@ -1426,11 +1426,24 @@ function LinkedInPageContent() {
           {/* ===================== INSTAGRAM PANEL ===================== */}
           {activePlatform === "instagram" && (
             <div className="space-y-5">
-              {igAccountsLoading ? (
+              {/* Coming soon overlay */}
+              <div className="bg-white rounded-2xl border border-slate-100 shadow-sm py-16 flex flex-col items-center gap-5 text-center">
+                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-pink-500 to-orange-400 flex items-center justify-center shadow-lg opacity-60">
+                  <InstagramIcon className="w-9 h-9 text-white" />
+                </div>
+                <div>
+                  <span className="inline-block mb-3 px-3 py-1 rounded-full text-xs font-bold bg-orange-100 text-orange-600 border border-orange-200">Coming Soon</span>
+                  <p className="text-base font-semibold text-slate-700 mb-1">Instagram is on its way</p>
+                  <p className="text-sm text-slate-400 max-w-xs">
+                    We're putting the finishing touches on Instagram integration. You'll be notified when it's ready.
+                  </p>
+                </div>
+              </div>
+              {false && !igAccountsLoading ? (
                 <div className="flex justify-center py-16">
                   <Loader2 className="w-6 h-6 animate-spin text-pink-400" />
                 </div>
-              ) : !igIsConnected ? (
+              ) : !igIsConnected && false ? (
                 /* Not connected */
                 <div className="bg-white rounded-2xl border border-slate-100 shadow-sm py-16 flex flex-col items-center gap-5 text-center">
                   <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-pink-500 to-orange-400 flex items-center justify-center shadow-lg">
