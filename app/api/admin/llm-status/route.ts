@@ -2,7 +2,7 @@ import { NextResponse } from "next/server"
 
 const LLM_BASE_URL = "http://34.60.133.229:4000"
 const LLM_API_KEY = "jtotFgxS1WQorT52LZym2ncyYzboliS6p04RqUwneFI"
-const MODELS = ["gemini-2.0-flash-lite", "gemini-2.0-flash", "gemini-2.5-flash", "gemini-3-pro-image-preview"]
+const MODELS = ["gemini-2.5-flash-lite", "gemini-2.5-flash", "gemini-2.5-pro", "gemini-3-pro-image-preview"]
 
 export async function GET(req: Request) {
   const token = new URL(req.url).searchParams.get("token")

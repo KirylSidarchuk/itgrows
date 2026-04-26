@@ -5,7 +5,7 @@ export const maxDuration = 300
 
 const PROXY_URL = "http://34.60.133.229:4000"
 const LLM_API_KEY = "jtotFgxS1WQorT52LZym2ncyYzboliS6p04RqUwneFI"
-const LLM_MODELS = ["gemini-2.0-flash-lite", "gemini-2.0-flash", "gemini-2.5-flash"]
+const LLM_MODELS = ["gemini-2.5-flash-lite", "gemini-2.5-flash", "gemini-2.5-pro"]
 
 export async function POST(req: NextRequest) {
   const internalSecret = process.env.CRON_SECRET
@@ -56,7 +56,7 @@ Return ONLY the image prompt, nothing else.`
   // Generate image with retry
   let imgData: unknown = null
   let lastImgError = ""
-  const IMAGE_MODELS = ["gemini-3-pro-image-preview", "gemini-2.0-flash-preview-image-generation"]
+  const IMAGE_MODELS = ["gemini-3-pro-image-preview", "gemini-2.5-pro"]
   for (let attempt = 0; attempt < IMAGE_MODELS.length; attempt++) {
     if (attempt > 0) await new Promise(r => setTimeout(r, 3000))
     try {

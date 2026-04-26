@@ -10,7 +10,7 @@ import { generatePostImage } from "@/lib/linkedin-image"
 export const maxDuration = 300
 
 const LLM_BASE_URL = "http://34.60.133.229:4000"
-const LLM_MODEL = "gemini-2.0-flash-lite"
+const LLM_MODEL = "gemini-2.5-flash-lite"
 const LLM_API_KEY = "jtotFgxS1WQorT52LZym2ncyYzboliS6p04RqUwneFI"
 
 interface GenerateInstagramRequest {
@@ -143,7 +143,7 @@ export async function POST(req: NextRequest) {
 
     const prompt = buildInstagramPrompt(brief)
 
-    const FALLBACK_MODELS = [LLM_MODEL, "gemini-2.0-flash", "gemini-2.5-flash"]
+    const FALLBACK_MODELS = [LLM_MODEL, "gemini-2.5-flash", "gemini-2.5-pro"]
     let llmResponse: Response | null = null
     let lastStatus = 0
 

@@ -5,8 +5,7 @@ const LLM_API_KEY = "jtotFgxS1WQorT52LZym2ncyYzboliS6p04RqUwneFI"
 
 const IMAGE_MODELS = [
   "gemini-3-pro-image-preview",
-  "gemini-2.0-flash-preview-image-generation",
-  "gemini-2.0-flash",
+  "gemini-2.5-pro",
 ]
 
 const RETRIES_PER_MODEL = 2

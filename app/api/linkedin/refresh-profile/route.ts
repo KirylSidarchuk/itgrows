@@ -5,7 +5,7 @@ import { linkedinAccounts, linkedinBriefs } from "@/lib/db/schema"
 import { eq, and } from "drizzle-orm"
 
 const LLM_BASE_URL = "http://34.60.133.229:4000"
-const LLM_MODEL = "gemini-2.0-flash-lite"
+const LLM_MODEL = "gemini-2.5-flash-lite"
 const LLM_API_KEY = "jtotFgxS1WQorT52LZym2ncyYzboliS6p04RqUwneFI"
 
 export async function POST(req: NextRequest) {

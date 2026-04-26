@@ -5,8 +5,8 @@ const LLM_BASE = "http://34.60.133.229:4000"
 
 const IMAGE_MODELS = [
   "gemini-3-pro-image-preview",
-  "gemini-2.0-flash-preview-image-generation",
-  "gemini-2.0-flash",
+  "gemini-2.5-pro",
+  
 ]
 
 async function generateImageForPost(postContent: string): Promise<string | null> {
@@ -17,7 +17,7 @@ async function generateImageForPost(postContent: string): Promise<string | null>
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${LLM_KEY}` },
       body: JSON.stringify({
-        model: "gemini-2.0-flash-lite",
+        model: "gemini-2.5-flash-lite",
         messages: [{
           role: "user",
           content: `Write a 30-word image prompt for a LinkedIn post cover image. Post: "${postContent.slice(0, 200)}". Photorealistic, professional, no text in image. Return ONLY the prompt.`,
@@ -93,7 +93,7 @@ Example format: ["post 1 text here", "post 2 text here", "post 3 text here"]`
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${LLM_KEY}` },
       body: JSON.stringify({
-        model: "gemini-2.0-flash",
+        model: "gemini-2.5-flash",
         messages: [{ role: "user", content: prompt }],
         temperature: 0.85,
         max_tokens: 2000,
