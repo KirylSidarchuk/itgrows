@@ -77,26 +77,18 @@ export async function POST(req: NextRequest) {
 
   const currentYear = new Date().getFullYear()
 
-  const prompt = `You are a top LinkedIn ghostwriter. A user shared a few thoughts about themselves:
+  const prompt = `You are a top LinkedIn ghostwriter. A user shared thoughts about themselves:
 
 "${thoughts}"
 
-Write 3 distinct LinkedIn posts for this person. Each post should:
-- Sound like a real human professional, NOT generic AI
-- Be 150-250 words
-- Have a strong hook (first line stops the scroll)
-- Tell a story, share insight, or challenge a common belief
-- End with a subtle call to action or thought-provoking question
-- Be relevant to ${currentYear}
-- NOT use clichés like "In today's fast-paced world", "game-changer", "leverage", "synergy"
+Write 3 distinct LinkedIn posts. Each post: 100-150 words max, strong hook, real human tone, ends with a question. Year: ${currentYear}. No clichés.
 
-Make each post feel different in tone and angle:
-Post 1: Personal story or lesson learned
-Post 2: Bold opinion or contrarian take
-Post 3: Practical insight or framework
+Post 1: Personal story or lesson
+Post 2: Bold/contrarian opinion
+Post 3: Practical insight
 
-Return ONLY a JSON array of 3 strings, each string is one complete post. No markdown, no extra text.
-Example format: ["post 1 text here", "post 2 text here", "post 3 text here"]`
+Return ONLY a valid JSON array of exactly 3 strings. No markdown, no code blocks, no extra text.
+["post1 here","post2 here","post3 here"]`
 
   try {
     // Generate posts text
@@ -107,7 +99,7 @@ Example format: ["post 1 text here", "post 2 text here", "post 3 text here"]`
         model: "gemini-2.5-flash",
         messages: [{ role: "user", content: prompt }],
         temperature: 0.85,
-        max_tokens: 2000,
+        max_tokens: 4096,
       }),
     })
 
