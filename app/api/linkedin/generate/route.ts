@@ -6,13 +6,13 @@ import { eq, and, inArray } from "drizzle-orm"
 import { checkGenerateRateLimit } from "@/lib/rate-limit"
 import { hasAccess } from "@/lib/access"
 import { buildLinkedInPrompt } from "@/lib/linkedin-generate"
+import { generatePostImage } from "@/lib/linkedin-image"
 
 export const maxDuration = 300
 
 const LLM_BASE_URL = "http://34.60.133.229:4000"
 const LLM_MODEL = "gemini-2.5-flash-lite"
 const LLM_API_KEY = "jtotFgxS1WQorT52LZym2ncyYzboliS6p04RqUwneFI"
-const PROXY_URL = "http://34.60.133.229:4000"
 
 function stripMarkdown(text: string): string {
   return text
@@ -33,48 +33,6 @@ interface GenerateLinkedInRequest {
     goals?: string
     companyName?: string
     targetAudience?: string
-  }
-}
-
-async function generatePostImage(postContent: string, niche: string): Promise<string | null> {
-  try {
-    // Build image prompt directly — no LLM call needed (avoids rate-limit on the proxy)
-    const hook = postContent.split("\n")[0]?.slice(0, 120) || ""
-    const imagePrompt = `Professional LinkedIn post cover image, photorealistic, no text, wide aspect ratio 1200x627. ` +
-      `Topic: ${niche}. Mood inspired by: "${hook}". Clean composition, modern business aesthetic.`
-
-    // Generate image via proxy
-    const imgRes = await fetch(`${PROXY_URL}/images/generate`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${LLM_API_KEY}` },
-      body: JSON.stringify({
-        model: "gemini-3-pro-image-preview",
-        prompt: imagePrompt,
-      }),
-    })
-
-    if (!imgRes.ok) {
-      const errText = await imgRes.text()
-      console.warn("[generatePostImage] Image generation failed:", imgRes.status, errText.slice(0, 200))
-      return null
-    }
-
-    const imgData = await imgRes.json() as {
-      candidates?: Array<{ content: { parts: Array<{ inlineData?: { data?: string; mimeType?: string } }> } }>
-    }
-    const parts = imgData?.candidates?.[0]?.content?.parts || []
-    const inlineData = parts.find((p) => p?.inlineData)?.inlineData
-
-    if (!inlineData?.data) {
-      console.warn("[generatePostImage] No inlineData in response:", JSON.stringify(imgData).slice(0, 300))
-      return null
-    }
-
-    const mimeType = inlineData.mimeType || "image/jpeg"
-    return `data:${mimeType};base64,${inlineData.data}`
-  } catch (err) {
-    console.warn("[generatePostImage] Error:", err instanceof Error ? err.message : String(err))
-    return null
   }
 }
 

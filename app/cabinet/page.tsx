@@ -538,7 +538,7 @@ function LinkedInPageContent() {
   const [postsLoading, setPostsLoading] = useState(false)
   const [generating, setGenerating] = useState(false)
   const [generateError, setGenerateError] = useState<string | null>(null)
-  const [generateTimer, setGenerateTimer] = useState(90)
+  const [generateTimer, setGenerateTimer] = useState(180)
   const [publishedCollapsed, setPublishedCollapsed] = useState(false)
   const [deletingAccount, setDeletingAccount] = useState(false)
   const [checkingOut, setCheckingOut] = useState(false)
@@ -569,7 +569,7 @@ function LinkedInPageContent() {
   const [igPostsLoading, setIgPostsLoading] = useState(false)
   const [igGenerating, setIgGenerating] = useState(false)
   const [igGenerateError, setIgGenerateError] = useState<string | null>(null)
-  const [igGenerateTimer, setIgGenerateTimer] = useState(90)
+  const [igGenerateTimer, setIgGenerateTimer] = useState(180)
   const [igPublishedCollapsed, setIgPublishedCollapsed] = useState(false)
 
   const hour = new Date().getHours()
@@ -729,7 +729,7 @@ function LinkedInPageContent() {
 
   useEffect(() => {
     if (!generating) {
-      setGenerateTimer(90)
+      setGenerateTimer(180)
       return
     }
     const interval = setInterval(() => {
@@ -740,7 +740,7 @@ function LinkedInPageContent() {
 
   useEffect(() => {
     if (!igGenerating) {
-      setIgGenerateTimer(90)
+      setIgGenerateTimer(180)
       return
     }
     const interval = setInterval(() => {
@@ -1902,6 +1902,12 @@ function LinkedInPageContent() {
                       </Button>
                     )}
                   </div>
+
+                  {generating && (
+                    <div className="px-4 py-3 rounded-xl bg-violet-50 text-violet-700 text-sm border border-violet-100">
+                      Generating your 7 posts and cover images with AI. This typically takes 1–2 minutes — please keep this tab open.
+                    </div>
+                  )}
 
                   {generateError && (
                     <div className="px-4 py-3 rounded-xl bg-red-50 text-red-600 text-sm border border-red-100">
