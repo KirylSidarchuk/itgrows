@@ -11,11 +11,20 @@ const IMAGE_MODELS = [
   
 ]
 
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) =>
+      setTimeout(() => reject(new Error(`Timeout after ${ms}ms`)), ms)
+    ),
+  ])
+}
+
 async function generateImageForPost(postContent: string): Promise<string | null> {
   // Get a short image prompt
   let imagePrompt = "Professional LinkedIn post cover, business professional, modern office"
   try {
-    const promptRes = await fetch(`${LLM_BASE}/v1/chat/completions`, {
+    const promptRes = await withTimeout(fetch(`${LLM_BASE}/v1/chat/completions`, {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${LLM_KEY}` },
       body: JSON.stringify({
@@ -27,7 +36,7 @@ async function generateImageForPost(postContent: string): Promise<string | null>
         max_tokens: 80,
         temperature: 0.7,
       }),
-    })
+    }), 10000)
     if (promptRes.ok) {
       const d = await promptRes.json() as { choices?: Array<{ message?: { content?: string } }> }
       const p = d.choices?.[0]?.message?.content?.trim()
@@ -38,11 +47,11 @@ async function generateImageForPost(postContent: string): Promise<string | null>
   // Try each image model once
   for (const model of IMAGE_MODELS) {
     try {
-      const imgRes = await fetch(`${LLM_BASE}/images/generate`, {
+      const imgRes = await withTimeout(fetch(`${LLM_BASE}/images/generate`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${LLM_KEY}` },
         body: JSON.stringify({ model, prompt: imagePrompt }),
-      })
+      }), 45000)
       if (!imgRes.ok) continue
       const imgData = await imgRes.json() as {
         candidates?: Array<{ content: { parts: Array<{ inlineData?: { data?: string; mimeType?: string } }> } }>
@@ -121,8 +130,12 @@ Example format: ["post 1 text here", "post 2 text here", "post 3 text here"]`
 
     const finalPosts = posts.slice(0, 3)
 
-    // Generate images in parallel for all posts
-    const images = await Promise.all(finalPosts.map((p) => generateImageForPost(p)))
+    // Generate images in parallel for all posts — non-blocking: if any image fails, return null for that slot
+    const images = await Promise.all(
+      finalPosts.map((p) =>
+        generateImageForPost(p).catch(() => null)
+      )
+    )
 
     return NextResponse.json({ posts: finalPosts, images })
   } catch {
