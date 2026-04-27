@@ -103,6 +103,9 @@ Return ONLY a valid JSON array of exactly 3 strings. No markdown, no code blocks
       }),
     })
 
+    if (res.status === 429) {
+      return NextResponse.json({ error: "AI is busy right now. Try again in a moment." }, { status: 429 })
+    }
     if (!res.ok) {
       return NextResponse.json({ error: "Generation failed" }, { status: 500 })
     }
