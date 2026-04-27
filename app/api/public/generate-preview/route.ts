@@ -113,7 +113,7 @@ Return ONLY a valid JSON array of exactly 3 strings. No markdown, no code blocks
     const cleaned = text.replace(/```json\s*/gi, "").replace(/```\s*/g, "").trim()
     const match = cleaned.match(/\[[\s\S]*\]/)
     if (!match) {
-      return NextResponse.json({ error: "Parse failed" }, { status: 500 })
+      return NextResponse.json({ error: "Parse failed", debug: { cleanedLen: cleaned.length, cleanedEnd: cleaned.slice(-50) } }, { status: 500 })
     }
 
     const tryParse = (s: string) => { try { return JSON.parse(s) } catch { return null } }
@@ -126,7 +126,7 @@ Return ONLY a valid JSON array of exactly 3 strings. No markdown, no code blocks
       posts = tryParse(fixed)
     }
     if (!Array.isArray(posts) || posts.length === 0) {
-      return NextResponse.json({ error: "Invalid response" }, { status: 500 })
+      return NextResponse.json({ error: "Invalid response", debug: { matchLen: match[0].length, postsType: typeof posts, isArray: Array.isArray(posts) } }, { status: 500 })
     }
 
     const finalPosts = posts.slice(0, 3)
