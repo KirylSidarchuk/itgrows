@@ -14,6 +14,18 @@ const LLM_MODEL = "gemini-2.5-flash-lite"
 const LLM_API_KEY = "jtotFgxS1WQorT52LZym2ncyYzboliS6p04RqUwneFI"
 const PROXY_URL = "http://34.60.133.229:4000"
 
+function stripMarkdown(text: string): string {
+  return text
+    .replace(/\*\*(.*?)\*\*/g, "$1")
+    .replace(/\*(.*?)\*/g, "$1")
+    .replace(/__(.*?)__/g, "$1")
+    .replace(/_(.*?)_/g, "$1")
+    .replace(/`{1,3}[^`]*`{1,3}/g, "")
+    .replace(/^#{1,6}\s+/gm, "")
+    .replace(/^\s*[-*+]\s+/gm, "")
+    .trim()
+}
+
 interface GenerateLinkedInRequest {
   brief?: {
     niche?: string
@@ -254,7 +266,7 @@ export async function POST(req: NextRequest) {
         .values({
           userId,
           linkedinAccountId: account.id,
-          content: postData.content,
+          content: stripMarkdown(postData.content),
           status: "scheduled",
           scheduledFor,
           imageUrl: imageUrls[i],

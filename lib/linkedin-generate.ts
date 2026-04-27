@@ -9,6 +9,18 @@ interface PostData {
   hook: string
 }
 
+function stripMarkdown(text: string): string {
+  return text
+    .replace(/\*\*(.*?)\*\*/g, "$1")  // bold
+    .replace(/\*(.*?)\*/g, "$1")       // italic
+    .replace(/__(.*?)__/g, "$1")       // bold underscore
+    .replace(/_(.*?)_/g, "$1")         // italic underscore
+    .replace(/`{1,3}[^`]*`{1,3}/g, "") // code
+    .replace(/^#{1,6}\s+/gm, "")       // headings
+    .replace(/^\s*[-*+]\s+/gm, "")     // bullet points
+    .trim()
+}
+
 export function buildLinkedInPrompt(brief: {
   niche?: string | null
   tone?: string | null
@@ -125,7 +137,7 @@ export async function generateForUser(userId: string): Promise<{ success: boolea
       await db.insert(linkedinPosts).values({
         userId,
         linkedinAccountId: account.id,
-        content: postData.content,
+        content: stripMarkdown(postData.content),
         status: "scheduled",
         scheduledFor,
         imageUrl: imageUrls[i],
