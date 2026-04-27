@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 
+export const maxDuration = 120
+
 const LLM_KEY = "jtotFgxS1WQorT52LZym2ncyYzboliS6p04RqUwneFI"
 const LLM_BASE = "http://34.60.133.229:4000"
 
