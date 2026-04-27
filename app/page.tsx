@@ -137,6 +137,47 @@ export default function PersonalPage() {
   const [ghostImages, setGhostImages] = useState<(string | null)[]>([])
   const [ghostError, setGhostError] = useState("")
 
+  // Feedback form state
+  const [feedbackOpen, setFeedbackOpen] = useState(false)
+  const [feedbackType, setFeedbackType] = useState("Question")
+  const [feedbackEmail, setFeedbackEmail] = useState("")
+  const [feedbackMessage, setFeedbackMessage] = useState("")
+  const [feedbackLoading, setFeedbackLoading] = useState(false)
+  const [feedbackDone, setFeedbackDone] = useState(false)
+  const [feedbackError, setFeedbackError] = useState("")
+
+  async function handleFeedbackSubmit() {
+    if (feedbackMessage.trim().length < 10) {
+      setFeedbackError("Please enter at least 10 characters.")
+      return
+    }
+    setFeedbackLoading(true)
+    setFeedbackError("")
+    try {
+      const res = await fetch("/api/public/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type: feedbackType, email: feedbackEmail, message: feedbackMessage }),
+      })
+      if (res.ok) {
+        setFeedbackDone(true)
+        setTimeout(() => {
+          setFeedbackOpen(false)
+          setFeedbackDone(false)
+          setFeedbackType("Question")
+          setFeedbackEmail("")
+          setFeedbackMessage("")
+        }, 3000)
+      } else {
+        setFeedbackError("Something went wrong. Please try again.")
+      }
+    } catch {
+      setFeedbackError("Something went wrong. Please try again.")
+    } finally {
+      setFeedbackLoading(false)
+    }
+  }
+
   async function handleGhostGenerate() {
     if (ghostThoughts.trim().length < 10) return
     setGhostLoading(true)
@@ -1171,6 +1212,116 @@ export default function PersonalPage() {
         </p>
         <p className="mt-2 text-xs text-slate-400">Magiscan Inc. · 919 North Market Street, Wilmington, DE 19801, USA</p>
       </footer>
+
+      {/* Floating Feedback Button */}
+      <button
+        onClick={() => { setFeedbackOpen(true); setFeedbackDone(false); setFeedbackError("") }}
+        className="fixed bottom-6 right-6 z-50 flex items-center gap-2 px-4 py-3 rounded-full text-white text-sm font-semibold shadow-lg transition-all hover:scale-105 active:scale-95"
+        style={{ background: "linear-gradient(135deg, #7C3AED, #6d28d9)" }}
+        aria-label="Open feedback form"
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+        </svg>
+        Feedback
+      </button>
+
+      {/* Feedback Modal */}
+      {feedbackOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4"
+          style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+          onClick={(e) => { if (e.target === e.currentTarget) setFeedbackOpen(false) }}
+        >
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 relative">
+            {/* Close button */}
+            <button
+              onClick={() => setFeedbackOpen(false)}
+              className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors text-gray-400 hover:text-gray-700"
+              aria-label="Close"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="w-4 h-4">
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </button>
+
+            {feedbackDone ? (
+              <div className="py-8 text-center">
+                <div className="w-14 h-14 rounded-full bg-violet-100 flex items-center justify-center mx-auto mb-4">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="#7C3AED" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-7 h-7">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-bold text-[#1b1916] mb-2">Thank you!</h3>
+                <p className="text-slate-500 text-sm">We&apos;ll get back to you soon.</p>
+              </div>
+            ) : (
+              <>
+                <h2 className="text-xl font-bold text-[#1b1916] mb-1">Share your thoughts</h2>
+                <p className="text-slate-500 text-sm mb-5">We read every message and use it to improve.</p>
+
+                {/* Type selector */}
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-[#1b1916] mb-2">Type</label>
+                  <div className="flex flex-wrap gap-2">
+                    {["Question", "Bug Report", "Idea", "Other"].map((t) => (
+                      <button
+                        key={t}
+                        onClick={() => setFeedbackType(t)}
+                        className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-colors ${
+                          feedbackType === t
+                            ? "bg-violet-600 text-white border-violet-600"
+                            : "bg-white text-slate-600 border-slate-200 hover:border-violet-400"
+                        }`}
+                      >
+                        {t}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Email field */}
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-[#1b1916] mb-1.5">
+                    Email <span className="text-slate-400 font-normal">(optional)</span>
+                  </label>
+                  <input
+                    type="email"
+                    value={feedbackEmail}
+                    onChange={(e) => setFeedbackEmail(e.target.value)}
+                    placeholder="you@example.com"
+                    className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-[#1b1916] placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-400 focus:border-transparent transition"
+                  />
+                </div>
+
+                {/* Message textarea */}
+                <div className="mb-5">
+                  <label className="block text-sm font-medium text-[#1b1916] mb-1.5">Message</label>
+                  <textarea
+                    value={feedbackMessage}
+                    onChange={(e) => setFeedbackMessage(e.target.value)}
+                    placeholder="Tell us what's on your mind..."
+                    rows={4}
+                    className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-[#1b1916] placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-400 focus:border-transparent transition resize-none"
+                  />
+                  {feedbackError && <p className="text-red-500 text-xs mt-1">{feedbackError}</p>}
+                </div>
+
+                {/* Submit */}
+                <button
+                  onClick={handleFeedbackSubmit}
+                  disabled={feedbackLoading}
+                  className="w-full py-3 rounded-xl text-white font-semibold text-sm transition-all hover:opacity-90 disabled:opacity-60"
+                  style={{ background: "linear-gradient(135deg, #7C3AED, #6d28d9)" }}
+                >
+                  {feedbackLoading ? "Sending..." : "Send"}
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
