@@ -118,7 +118,8 @@ Example format: ["post 1 text here", "post 2 text here", "post 3 text here"]`
     const data = await res.json() as { choices?: Array<{ message?: { content?: string } }> }
     const text = data.choices?.[0]?.message?.content ?? ""
 
-    const match = text.match(/\[[\s\S]*\]/)
+    const cleaned = text.replace(/```json\s*/gi, "").replace(/```\s*/g, "").trim()
+    const match = cleaned.match(/\[[\s\S]*\]/)
     if (!match) {
       return NextResponse.json({ error: "Parse failed" }, { status: 500 })
     }
