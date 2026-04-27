@@ -193,4 +193,5 @@ export const ghostModeLogs = pgTable("ghost_mode_logs", {
   success: boolean("success").notNull(),
   error: text("error"),
   durationMs: integer("duration_ms"),
+  ip: text("ip"),
 })

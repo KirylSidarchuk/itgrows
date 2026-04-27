@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db"
 import { ghostModeLogs } from "@/lib/db/schema"
-import { checkIPRateLimit, getClientIP } from "@/lib/rate-limit"
+import { getClientIP } from "@/lib/rate-limit"
+import { eq, sql } from "drizzle-orm"
 
 export const maxDuration = 120
 
-// Allow max 3 requests per IP per hour for this unauthenticated LLM endpoint
-const IP_RATE_LIMIT_MAX = 3
-const IP_RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000 // 1 hour
+// Lifetime limit: max 2 requests per IP address (persisted in DB)
 
 const LLM_KEY = "jtotFgxS1WQorT52LZym2ncyYzboliS6p04RqUwneFI"
 const LLM_BASE = "http://34.60.133.229:4000"
@@ -77,17 +76,18 @@ async function generateImageForPost(postContent: string): Promise<string | null>
 export async function POST(req: NextRequest) {
   const startTime = Date.now()
 
-  // IP-based rate limiting: max 3 requests per hour per IP
+  // DB-based lifetime rate limiting: max 2 requests per IP address, all time
   const clientIP = getClientIP(req)
-  const ipLimit = checkIPRateLimit(clientIP, IP_RATE_LIMIT_MAX, IP_RATE_LIMIT_WINDOW_MS)
-  if (!ipLimit.allowed) {
-    db.insert(ghostModeLogs).values({ success: false, error: "ip_rate_limited", durationMs: Date.now() - startTime }).catch(() => {})
+  const countResult = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(ghostModeLogs)
+    .where(eq(ghostModeLogs.ip, clientIP))
+  const ipCount = Number(countResult[0]?.count ?? 0)
+  if (ipCount >= 2) {
+    db.insert(ghostModeLogs).values({ success: false, error: "ip_lifetime_limited", durationMs: Date.now() - startTime, ip: clientIP }).catch(() => {})
     return NextResponse.json(
-      { error: "Too many requests. Please try again later." },
-      {
-        status: 429,
-        headers: { "Retry-After": String(ipLimit.retryAfter ?? 3600) },
-      }
+      { error: "You've used your 2 free previews. Sign up to generate unlimited LinkedIn posts." },
+      { status: 429 }
     )
   }
 
@@ -95,7 +95,7 @@ export async function POST(req: NextRequest) {
   const thoughts = (body.thoughts ?? "").trim().slice(0, 1000)
 
   if (!thoughts || thoughts.length < 10) {
-    db.insert(ghostModeLogs).values({ success: false, error: "Too short", durationMs: Date.now() - startTime }).catch(() => {})
+    db.insert(ghostModeLogs).values({ success: false, error: "Too short", durationMs: Date.now() - startTime, ip: clientIP }).catch(() => {})
     return NextResponse.json({ error: "Too short" }, { status: 400 })
   }
 
@@ -128,11 +128,11 @@ Return ONLY a valid JSON array of exactly 3 strings. No markdown, no code blocks
     })
 
     if (res.status === 429) {
-      db.insert(ghostModeLogs).values({ success: false, error: "rate_limited", durationMs: Date.now() - startTime }).catch(() => {})
+      db.insert(ghostModeLogs).values({ success: false, error: "rate_limited", durationMs: Date.now() - startTime, ip: clientIP }).catch(() => {})
       return NextResponse.json({ error: "AI is busy right now. Try again in a moment." }, { status: 429 })
     }
     if (!res.ok) {
-      db.insert(ghostModeLogs).values({ success: false, error: "llm_error", durationMs: Date.now() - startTime }).catch(() => {})
+      db.insert(ghostModeLogs).values({ success: false, error: "llm_error", durationMs: Date.now() - startTime, ip: clientIP }).catch(() => {})
       return NextResponse.json({ error: "Generation failed" }, { status: 500 })
     }
 
@@ -142,7 +142,7 @@ Return ONLY a valid JSON array of exactly 3 strings. No markdown, no code blocks
     const cleaned = text.replace(/```json\s*/gi, "").replace(/```\s*/g, "").trim()
     const match = cleaned.match(/\[[\s\S]*\]/)
     if (!match) {
-      db.insert(ghostModeLogs).values({ success: false, error: "parse_failed", durationMs: Date.now() - startTime }).catch(() => {})
+      db.insert(ghostModeLogs).values({ success: false, error: "parse_failed", durationMs: Date.now() - startTime, ip: clientIP }).catch(() => {})
       return NextResponse.json({ error: "Parse failed" }, { status: 500 })
     }
 
@@ -156,7 +156,7 @@ Return ONLY a valid JSON array of exactly 3 strings. No markdown, no code blocks
       posts = tryParse(fixed)
     }
     if (!Array.isArray(posts) || posts.length === 0) {
-      db.insert(ghostModeLogs).values({ success: false, error: "invalid_response", durationMs: Date.now() - startTime }).catch(() => {})
+      db.insert(ghostModeLogs).values({ success: false, error: "invalid_response", durationMs: Date.now() - startTime, ip: clientIP }).catch(() => {})
       return NextResponse.json({ error: "Invalid response" }, { status: 500 })
     }
 
@@ -169,10 +169,10 @@ Return ONLY a valid JSON array of exactly 3 strings. No markdown, no code blocks
       )
     )
 
-    db.insert(ghostModeLogs).values({ success: true, durationMs: Date.now() - startTime }).catch(() => {})
+    db.insert(ghostModeLogs).values({ success: true, durationMs: Date.now() - startTime, ip: clientIP }).catch(() => {})
     return NextResponse.json({ posts: finalPosts, images })
   } catch {
-    db.insert(ghostModeLogs).values({ success: false, error: "server_error", durationMs: Date.now() - startTime }).catch(() => {})
+    db.insert(ghostModeLogs).values({ success: false, error: "server_error", durationMs: Date.now() - startTime, ip: clientIP }).catch(() => {})
     return NextResponse.json({ error: "Server error" }, { status: 500 })
   }
 }
