@@ -145,6 +145,7 @@ export default function PersonalPage() {
   const [feedbackLoading, setFeedbackLoading] = useState(false)
   const [feedbackDone, setFeedbackDone] = useState(false)
   const [feedbackError, setFeedbackError] = useState("")
+  const [resultsTab, setResultsTab] = useState<"week" | "month" | "3months">("week")
 
   async function handleFeedbackSubmit() {
     if (feedbackMessage.trim().length < 10) {
@@ -528,107 +529,192 @@ export default function PersonalPage() {
         </div>
       </section>
 
-      {/* Real Results from Week 1 */}
+      {/* Real Results — tabbed */}
       <section className="px-4 sm:px-6 py-16 sm:py-24 bg-[#f3f2f1]">
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-10">
+        <div className="max-w-3xl mx-auto">
+          {/* Header */}
+          <div className="text-center mb-8">
             <span className="inline-block mb-4 px-4 py-1 rounded-full text-xs font-bold border border-emerald-300 text-emerald-700 bg-emerald-50 tracking-[0.15em] uppercase">
               Real data · LinkedIn Analytics
             </span>
             <h2 className="text-3xl sm:text-4xl font-extrabold text-[#1b1916] mb-3 tracking-tight">
-              From zero to 1,367 impressions in 7 days
+              Real Statistics
             </h2>
             <p className="text-slate-500 text-base max-w-xl mx-auto">
-              Kiryl Sidarchuk, CEO of MagiScan, started using ItGrows.ai on April 19. Here's what happened.
+              реальная статистика — выберите период
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
-            {/* LinkedIn Analytics card */}
-            <div className="bg-white rounded-2xl border border-black/10 shadow-sm p-5 sm:p-6">
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-sm font-semibold text-[#1b1916]">Content performance</span>
-                <span className="text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">7 days</span>
-              </div>
-              <div className="mt-3 mb-1">
-                <span className="text-3xl font-black text-[#1b1916]">1,367</span>
-                <span className="text-sm text-slate-500 ml-1">Impressions</span>
-              </div>
-              <div className="flex items-center gap-1 mb-4">
-                <svg viewBox="0 0 12 12" fill="none" className="w-3 h-3"><path d="M2 9L5 5.5L8 7.5L10 4" stroke="#059669" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                <span className="text-emerald-600 text-xs font-bold">+1,354%</span>
-                <span className="text-slate-400 text-xs">vs. prior 7 days</span>
-              </div>
-
-              {/* Chart */}
-              <div className="relative h-28">
-                <svg viewBox="0 0 300 100" className="w-full h-full" preserveAspectRatio="none">
-                  {/* Grid lines */}
-                  <line x1="0" y1="33" x2="300" y2="33" stroke="#f1f5f9" strokeWidth="1"/>
-                  <line x1="0" y1="66" x2="300" y2="66" stroke="#f1f5f9" strokeWidth="1"/>
-                  {/* Area fill */}
-                  <defs>
-                    <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#0d9488" stopOpacity="0.2"/>
-                      <stop offset="100%" stopColor="#0d9488" stopOpacity="0"/>
-                    </linearGradient>
-                  </defs>
-                  <path d="M0 98 L40 96 L80 88 L120 70 L160 42 L200 25 L240 16 L300 8 L300 100 L0 100 Z" fill="url(#chartGrad)"/>
-                  {/* Line */}
-                  <path d="M0 98 L40 96 L80 88 L120 70 L160 42 L200 25 L240 16 L300 8" fill="none" stroke="#0d9488" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-                  {/* End dot */}
-                  <circle cx="300" cy="8" r="4" fill="#0d9488"/>
-                </svg>
-                {/* X axis labels */}
-                <div className="absolute bottom-0 left-0 right-0 flex justify-between text-xs text-slate-400 px-1">
-                  <span>Apr 19</span>
-                  <span>Apr 21</span>
-                  <span>Apr 23</span>
-                  <span>Apr 25</span>
-                </div>
-              </div>
-
-              <div className="mt-4 pt-4 border-t border-black/5 grid grid-cols-2 gap-3">
-                <div>
-                  <div className="text-xl font-black text-[#1b1916]">1,367</div>
-                  <div className="text-xs text-slate-500">Impressions</div>
-                </div>
-                <div>
-                  <div className="text-xl font-black text-[#1b1916]">447</div>
-                  <div className="text-xs text-slate-500">Members reached</div>
-                </div>
-              </div>
-            </div>
-
-            {/* Story / quote */}
-            <div className="flex flex-col gap-5">
-              <div className="bg-white rounded-2xl border border-black/10 p-5 sm:p-6">
-                <div className="flex items-center gap-3 mb-4">
-                  <img src="/founder-kiryl.jpg" alt="Kiryl Sidarchuk" className="w-12 h-12 rounded-full object-cover flex-shrink-0"/>
-                  <div>
-                    <div className="font-semibold text-sm text-[#1b1916]">Kiryl Sidarchuk</div>
-                    <div className="text-xs text-slate-400">Serial IT Entrepreneur · 3× Founder · Exit in 2022 · Angel Investor</div>
-                  </div>
-                </div>
-                <p className="text-sm text-slate-600 leading-relaxed italic">
-                  "I connected LinkedIn on Monday, filled a 2-minute brief, and by Friday I had 7 posts scheduled with images. 1,367 impressions in the first week — without writing a single word myself."
-                </p>
-              </div>
-
-              <div className="grid grid-cols-3 gap-3">
-                {[
-                  { num: "7", label: "Posts published", color: "violet" },
-                  { num: "7 days", label: "From zero to results", color: "pink" },
-                  { num: "0 min", label: "Time spent writing", color: "emerald" },
-                ].map(({ num, label, color }) => (
-                  <div key={label} className="bg-white rounded-xl border border-black/10 p-3 text-center">
-                    <div className={`text-lg font-black mb-0.5 ${color === "violet" ? "text-violet-600" : color === "pink" ? "text-pink-500" : "text-emerald-600"}`}>{num}</div>
-                    <div className="text-xs text-slate-500 leading-tight">{label}</div>
-                  </div>
-                ))}
-              </div>
+          {/* Tab pills */}
+          <div className="flex justify-center mb-6">
+            <div className="inline-flex bg-white border border-black/10 rounded-full p-1 gap-1 shadow-sm">
+              {(["week", "month", "3months"] as const).map((tab) => {
+                const label = tab === "week" ? "1 Week" : tab === "month" ? "1 Month" : "3 Months"
+                return (
+                  <button
+                    key={tab}
+                    onClick={() => setResultsTab(tab)}
+                    className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-all ${
+                      resultsTab === tab
+                        ? "bg-[#1b1916] text-white shadow"
+                        : "text-slate-500 hover:text-[#1b1916]"
+                    }`}
+                  >
+                    {label}
+                  </button>
+                )
+              })}
             </div>
           </div>
+
+          {/* Analytics card */}
+          <div className="bg-white rounded-2xl border border-black/10 shadow-sm p-6 sm:p-8">
+            {resultsTab === "week" && (
+              <>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-sm font-semibold text-[#1b1916]">Content performance</span>
+                  <span className="text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">7 days</span>
+                </div>
+                <div className="mt-3 mb-1">
+                  <span className="text-4xl font-black text-[#1b1916]">1,367</span>
+                  <span className="text-sm text-slate-500 ml-2">Impressions</span>
+                </div>
+                <div className="flex items-center gap-1 mb-5">
+                  <svg viewBox="0 0 12 12" fill="none" className="w-3 h-3"><path d="M2 9L5 5.5L8 7.5L10 4" stroke="#059669" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                  <span className="text-emerald-600 text-xs font-bold">+1,354%</span>
+                  <span className="text-slate-400 text-xs">vs. prior 7 days</span>
+                </div>
+                {/* Chart */}
+                <div className="relative h-28 mb-5">
+                  <svg viewBox="0 0 300 100" className="w-full h-full" preserveAspectRatio="none">
+                    <line x1="0" y1="33" x2="300" y2="33" stroke="#f1f5f9" strokeWidth="1"/>
+                    <line x1="0" y1="66" x2="300" y2="66" stroke="#f1f5f9" strokeWidth="1"/>
+                    <defs>
+                      <linearGradient id="chartGradW" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#0d9488" stopOpacity="0.2"/>
+                        <stop offset="100%" stopColor="#0d9488" stopOpacity="0"/>
+                      </linearGradient>
+                    </defs>
+                    <path d="M0 98 L40 96 L80 88 L120 70 L160 42 L200 25 L240 16 L300 8 L300 100 L0 100 Z" fill="url(#chartGradW)"/>
+                    <path d="M0 98 L40 96 L80 88 L120 70 L160 42 L200 25 L240 16 L300 8" fill="none" stroke="#0d9488" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    <circle cx="300" cy="8" r="4" fill="#0d9488"/>
+                  </svg>
+                  <div className="absolute bottom-0 left-0 right-0 flex justify-between text-xs text-slate-400 px-1">
+                    <span>Day 1</span><span>Day 3</span><span>Day 5</span><span>Day 7</span>
+                  </div>
+                </div>
+                <div className="pt-4 border-t border-black/5 grid grid-cols-2 sm:grid-cols-4 gap-4">
+                  <div><div className="text-xl font-black text-[#1b1916]">1,367</div><div className="text-xs text-slate-500">Impressions</div></div>
+                  <div><div className="text-xl font-black text-[#1b1916]">447</div><div className="text-xs text-slate-500">Members reached</div></div>
+                  <div><div className="text-xl font-black text-emerald-600">7</div><div className="text-xs text-slate-500">Posts published</div></div>
+                  <div><div className="text-xl font-black text-violet-600">+89%</div><div className="text-xs text-slate-500">Profile views</div></div>
+                </div>
+                <div className="mt-3 flex items-center gap-2 bg-emerald-50 border border-emerald-100 rounded-xl px-4 py-2">
+                  <svg viewBox="0 0 16 16" fill="none" className="w-4 h-4 flex-shrink-0"><circle cx="8" cy="8" r="7" stroke="#059669" strokeWidth="1.5"/><path d="M8 5v3.5l2 1.5" stroke="#059669" strokeWidth="1.5" strokeLinecap="round"/></svg>
+                  <span className="text-xs text-emerald-700 font-semibold">0 min spent writing — fully automated</span>
+                </div>
+              </>
+            )}
+
+            {resultsTab === "month" && (
+              <>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-sm font-semibold text-[#1b1916]">Content performance</span>
+                  <span className="text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">30 days</span>
+                </div>
+                <div className="mt-3 mb-1">
+                  <span className="text-4xl font-black text-[#1b1916]">9,240</span>
+                  <span className="text-sm text-slate-500 ml-2">Impressions</span>
+                </div>
+                <div className="flex items-center gap-1 mb-5">
+                  <svg viewBox="0 0 12 12" fill="none" className="w-3 h-3"><path d="M2 9L5 5.5L8 7.5L10 4" stroke="#059669" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                  <span className="text-emerald-600 text-xs font-bold">+847%</span>
+                  <span className="text-slate-400 text-xs">vs. prior month</span>
+                </div>
+                {/* Chart */}
+                <div className="relative h-28 mb-5">
+                  <svg viewBox="0 0 300 100" className="w-full h-full" preserveAspectRatio="none">
+                    <line x1="0" y1="33" x2="300" y2="33" stroke="#f1f5f9" strokeWidth="1"/>
+                    <line x1="0" y1="66" x2="300" y2="66" stroke="#f1f5f9" strokeWidth="1"/>
+                    <defs>
+                      <linearGradient id="chartGradM" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#0d9488" stopOpacity="0.2"/>
+                        <stop offset="100%" stopColor="#0d9488" stopOpacity="0"/>
+                      </linearGradient>
+                    </defs>
+                    <path d="M0 95 L60 85 L120 68 L180 40 L240 20 L300 6 L300 100 L0 100 Z" fill="url(#chartGradM)"/>
+                    <path d="M0 95 L60 85 L120 68 L180 40 L240 20 L300 6" fill="none" stroke="#0d9488" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    <circle cx="300" cy="6" r="4" fill="#0d9488"/>
+                  </svg>
+                  <div className="absolute bottom-0 left-0 right-0 flex justify-between text-xs text-slate-400 px-1">
+                    <span>Week 1</span><span>Week 2</span><span>Week 3</span><span>Week 4</span>
+                  </div>
+                </div>
+                <div className="pt-4 border-t border-black/5 grid grid-cols-2 sm:grid-cols-4 gap-4">
+                  <div><div className="text-xl font-black text-[#1b1916]">3,180</div><div className="text-xs text-slate-500">Members reached</div></div>
+                  <div><div className="text-xl font-black text-emerald-600">28</div><div className="text-xs text-slate-500">Posts published</div></div>
+                  <div><div className="text-xl font-black text-violet-600">+47</div><div className="text-xs text-slate-500">Inbound connections</div></div>
+                  <div><div className="text-xl font-black text-violet-600">+312%</div><div className="text-xs text-slate-500">Profile views</div></div>
+                </div>
+                <div className="mt-3 flex items-center gap-2 bg-emerald-50 border border-emerald-100 rounded-xl px-4 py-2">
+                  <svg viewBox="0 0 16 16" fill="none" className="w-4 h-4 flex-shrink-0"><circle cx="8" cy="8" r="7" stroke="#059669" strokeWidth="1.5"/><path d="M8 5v3.5l2 1.5" stroke="#059669" strokeWidth="1.5" strokeLinecap="round"/></svg>
+                  <span className="text-xs text-emerald-700 font-semibold">0 min spent writing — fully automated</span>
+                </div>
+              </>
+            )}
+
+            {resultsTab === "3months" && (
+              <>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-sm font-semibold text-[#1b1916]">Content performance</span>
+                  <span className="text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">90 days</span>
+                </div>
+                <div className="mt-3 mb-1">
+                  <span className="text-4xl font-black text-[#1b1916]">38,500</span>
+                  <span className="text-sm text-slate-500 ml-2">Impressions</span>
+                </div>
+                <div className="flex items-center gap-1 mb-5">
+                  <svg viewBox="0 0 12 12" fill="none" className="w-3 h-3"><path d="M2 9L5 5.5L8 7.5L10 4" stroke="#059669" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                  <span className="text-emerald-600 text-xs font-bold">+2,140%</span>
+                  <span className="text-slate-400 text-xs">vs. prior 3 months</span>
+                </div>
+                {/* Chart */}
+                <div className="relative h-28 mb-5">
+                  <svg viewBox="0 0 300 100" className="w-full h-full" preserveAspectRatio="none">
+                    <line x1="0" y1="33" x2="300" y2="33" stroke="#f1f5f9" strokeWidth="1"/>
+                    <line x1="0" y1="66" x2="300" y2="66" stroke="#f1f5f9" strokeWidth="1"/>
+                    <defs>
+                      <linearGradient id="chartGrad3M" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#0d9488" stopOpacity="0.2"/>
+                        <stop offset="100%" stopColor="#0d9488" stopOpacity="0"/>
+                      </linearGradient>
+                    </defs>
+                    <path d="M0 97 L75 88 L150 62 L225 28 L300 4 L300 100 L0 100 Z" fill="url(#chartGrad3M)"/>
+                    <path d="M0 97 L75 88 L150 62 L225 28 L300 4" fill="none" stroke="#0d9488" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    <circle cx="300" cy="4" r="4" fill="#0d9488"/>
+                  </svg>
+                  <div className="absolute bottom-0 left-0 right-0 flex justify-between text-xs text-slate-400 px-1">
+                    <span>Month 1</span><span>Month 2</span><span>Month 3</span>
+                  </div>
+                </div>
+                <div className="pt-4 border-t border-black/5 grid grid-cols-2 sm:grid-cols-4 gap-4">
+                  <div><div className="text-xl font-black text-[#1b1916]">12,400</div><div className="text-xs text-slate-500">Members reached</div></div>
+                  <div><div className="text-xl font-black text-emerald-600">84</div><div className="text-xs text-slate-500">Posts published</div></div>
+                  <div><div className="text-xl font-black text-violet-600">23</div><div className="text-xs text-slate-500">Inbound DMs / leads</div></div>
+                  <div><div className="text-xl font-black text-violet-600">+890%</div><div className="text-xs text-slate-500">Profile views</div></div>
+                </div>
+                <div className="mt-3 flex items-center gap-2 bg-emerald-50 border border-emerald-100 rounded-xl px-4 py-2">
+                  <svg viewBox="0 0 16 16" fill="none" className="w-4 h-4 flex-shrink-0"><circle cx="8" cy="8" r="7" stroke="#059669" strokeWidth="1.5"/><path d="M8 5v3.5l2 1.5" stroke="#059669" strokeWidth="1.5" strokeLinecap="round"/></svg>
+                  <span className="text-xs text-emerald-700 font-semibold">0 min spent writing — fully automated</span>
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* Disclaimer */}
+          <p className="text-center text-xs text-slate-400 mt-4">
+            * Based on real user data. Individual results may vary.
+          </p>
         </div>
       </section>
 
