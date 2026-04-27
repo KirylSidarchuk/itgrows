@@ -1,8 +1,13 @@
 import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db"
 import { ghostModeLogs } from "@/lib/db/schema"
+import { checkIPRateLimit, getClientIP } from "@/lib/rate-limit"
 
 export const maxDuration = 120
+
+// Allow max 3 requests per IP per hour for this unauthenticated LLM endpoint
+const IP_RATE_LIMIT_MAX = 3
+const IP_RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000 // 1 hour
 
 const LLM_KEY = "jtotFgxS1WQorT52LZym2ncyYzboliS6p04RqUwneFI"
 const LLM_BASE = "http://34.60.133.229:4000"
@@ -71,6 +76,21 @@ async function generateImageForPost(postContent: string): Promise<string | null>
 
 export async function POST(req: NextRequest) {
   const startTime = Date.now()
+
+  // IP-based rate limiting: max 3 requests per hour per IP
+  const clientIP = getClientIP(req)
+  const ipLimit = checkIPRateLimit(clientIP, IP_RATE_LIMIT_MAX, IP_RATE_LIMIT_WINDOW_MS)
+  if (!ipLimit.allowed) {
+    db.insert(ghostModeLogs).values({ success: false, error: "ip_rate_limited", durationMs: Date.now() - startTime }).catch(() => {})
+    return NextResponse.json(
+      { error: "Too many requests. Please try again later." },
+      {
+        status: 429,
+        headers: { "Retry-After": String(ipLimit.retryAfter ?? 3600) },
+      }
+    )
+  }
+
   const body = await req.json() as { thoughts?: string }
   const thoughts = (body.thoughts ?? "").trim().slice(0, 1000)
 
