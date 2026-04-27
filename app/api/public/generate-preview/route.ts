@@ -124,7 +124,15 @@ Example format: ["post 1 text here", "post 2 text here", "post 3 text here"]`
       return NextResponse.json({ error: "Parse failed" }, { status: 500 })
     }
 
-    const posts = JSON.parse(match[0]) as string[]
+    const tryParse = (s: string) => { try { return JSON.parse(s) } catch { return null } }
+    let posts: string[] | null = tryParse(match[0])
+    if (!posts) {
+      // Fix unescaped newlines/tabs inside JSON strings
+      const fixed = match[0].replace(/("(?:[^"\\]|\\.)*")/g, (m) =>
+        m.replace(/\n/g, "\\n").replace(/\r/g, "\\r").replace(/\t/g, "\\t")
+      )
+      posts = tryParse(fixed)
+    }
     if (!Array.isArray(posts) || posts.length === 0) {
       return NextResponse.json({ error: "Invalid response" }, { status: 500 })
     }
