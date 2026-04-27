@@ -541,7 +541,7 @@ export default function PersonalPage() {
               Real Statistics
             </h2>
             <p className="text-slate-500 text-base max-w-xl mx-auto">
-              реальная статистика — выберите период
+              select a time period
             </p>
           </div>
 

@@ -151,7 +151,7 @@ export default function DashboardPage() {
             <div className="flex items-center gap-2">
               <span className="text-lg">⚠️</span>
               <span className="text-sm font-medium">
-                Проблема с подключением сайта <span className="font-semibold">{site.url || site.name}</span>. Проверьте настройки.
+                Problem connecting site <span className="font-semibold">{site.url || site.name}</span>. Please check your settings.
               </span>
             </div>
             <Link href="/business/dashboard/settings?tab=sites" className="shrink-0">
