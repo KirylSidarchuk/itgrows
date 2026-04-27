@@ -1,8 +1,18 @@
 import { NextRequest, NextResponse } from "next/server"
 import { sendEmail } from "@/lib/email"
+import { checkIPRateLimit, getClientIP } from "@/lib/rate-limit"
 
 export async function POST(req: NextRequest) {
   try {
+    const ip = getClientIP(req)
+    const rl = checkIPRateLimit(ip, 5, 60 * 60 * 1000)
+    if (!rl.allowed) {
+      return NextResponse.json(
+        { error: "Too many requests. Please try again later." },
+        { status: 429, headers: { "Retry-After": String(rl.retryAfter ?? 3600) } }
+      )
+    }
+
     const body = await req.json() as { type?: string; email?: string; message?: string }
     const { type, email, message } = body
 

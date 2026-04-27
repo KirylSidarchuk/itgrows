@@ -70,6 +70,10 @@ export async function GET(req: NextRequest) {
 
   const js = `
 (function() {
+  function escHtml(s) {
+    return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  }
+
   var articles = ${JSON.stringify(articles)};
 
   var container = document.getElementById('itgrows-blog') || document.querySelector('[data-itgrows]');
@@ -96,16 +100,16 @@ export async function GET(req: NextRequest) {
 
   var html = '<style>' + styles + '</style><div class="itgrows-grid">' +
     articles.map(function(a) {
-      var img = a.image ? '<img class="itgrows-article-img" src="' + a.image + '" alt="' + a.title.replace(/"/g, '&quot;') + '" loading="lazy">' : '';
-      var excerpt = a.excerpt ? '<p>' + a.excerpt + '</p>' : '';
+      var img = a.image ? '<img class="itgrows-article-img" src="' + escHtml(a.image) + '" alt="' + escHtml(a.title) + '" loading="lazy">' : '';
+      var excerpt = a.excerpt ? '<p>' + escHtml(a.excerpt) + '</p>' : '';
       return '<div class="itgrows-article">' +
         img +
         '<div class="itgrows-article-body">' +
-        '<h3><a href="' + a.url + '" target="_blank" rel="noopener">' + a.title + '</a></h3>' +
+        '<h3><a href="' + escHtml(a.url) + '" target="_blank" rel="noopener">' + escHtml(a.title) + '</a></h3>' +
         excerpt +
         '<div class="itgrows-article-footer">' +
-        '<small>' + a.date + '</small>' +
-        '<a class="itgrows-read-more" href="' + a.url + '" target="_blank" rel="noopener">Read more &rarr;</a>' +
+        '<small>' + escHtml(a.date) + '</small>' +
+        '<a class="itgrows-read-more" href="' + escHtml(a.url) + '" target="_blank" rel="noopener">Read more &rarr;</a>' +
         '</div>' +
         '</div>' +
         '</div>';
