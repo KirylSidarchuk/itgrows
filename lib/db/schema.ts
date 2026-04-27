@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, boolean, jsonb, uuid, index, integer } from "drizzle-orm/pg-core"
+import { pgTable, text, timestamp, boolean, jsonb, uuid, index, integer, serial } from "drizzle-orm/pg-core"
 
 export const users = pgTable("users", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -186,3 +186,11 @@ export const instagramPosts = pgTable("instagram_posts", {
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
 }, (t) => [index("instagram_posts_user_id_idx").on(t.userId), index("instagram_posts_status_idx").on(t.status)])
+
+export const ghostModeLogs = pgTable("ghost_mode_logs", {
+  id: serial("id").primaryKey(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  success: boolean("success").notNull(),
+  error: text("error"),
+  durationMs: integer("duration_ms"),
+})
