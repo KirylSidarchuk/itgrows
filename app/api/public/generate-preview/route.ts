@@ -149,9 +149,14 @@ Return ONLY a valid JSON array of exactly 3 strings. No markdown, no code blocks
     const tryParse = (s: string) => { try { return JSON.parse(s) } catch { return null } }
     let posts: string[] | null = tryParse(match[0])
     if (!posts) {
-      // Fix unescaped newlines/tabs inside JSON strings
+      // Fix invalid escape sequences and unescaped control chars inside JSON strings
+      // LLM sometimes emits \' (not valid in JSON) and literal newlines/tabs
       const fixed = match[0].replace(/("(?:[^"\\]|\\.)*")/g, (m) =>
-        m.replace(/\n/g, "\\n").replace(/\r/g, "\\r").replace(/\t/g, "\\t")
+        m
+          .replace(/\\'/g, "'")       // \' is not valid JSON; unescape to plain '
+          .replace(/\n/g, "\\n")
+          .replace(/\r/g, "\\r")
+          .replace(/\t/g, "\\t")
       )
       posts = tryParse(fixed)
     }
