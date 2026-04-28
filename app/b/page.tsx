@@ -248,10 +248,10 @@ export default function LandingPageB() {
           {/* Desktop center nav links */}
           <div className="hidden md:flex items-center gap-7">
             <a href="#how-it-works" className="text-sm text-slate-600 hover:text-[#1b1916] transition-colors font-medium">How It Works</a>
-            <a href="#results" onClick={() => setMobileMenuOpen(false)} className="text-sm text-slate-600 hover:text-[#1b1916] transition-colors font-medium">Results</a>
+            <a href="#results" className="text-sm text-slate-600 hover:text-[#1b1916] transition-colors font-medium">Results</a>
             <a href="#features" className="text-sm text-slate-600 hover:text-[#1b1916] transition-colors font-medium">Features</a>
             <a href="#pricing" className="text-sm text-slate-600 hover:text-[#1b1916] transition-colors font-medium">Pricing</a>
-            <Link href="/blog" className="text-sm text-slate-600 hover:text-[#1b1916] transition-colors font-medium">Blog</Link>
+            <a href="#faq" className="text-sm text-slate-600 hover:text-[#1b1916] transition-colors font-medium">FAQ</a>
           </div>
 
           {/* Desktop right side: auth */}
@@ -325,13 +325,13 @@ export default function LandingPageB() {
             >
               Pricing
             </a>
-            <Link
-              href="/blog"
+            <a
+              href="#faq"
               className="px-3 py-2.5 text-sm font-medium text-slate-600 hover:text-[#1b1916] hover:bg-black/5 rounded-lg transition-colors"
               onClick={() => setMobileMenuOpen(false)}
             >
-              Blog
-            </Link>
+              FAQ
+            </a>
             <div className="border-t border-black/10 mt-2 pt-3 flex flex-col gap-2">
               {sessionUser ? (
                 <>
