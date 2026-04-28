@@ -2387,7 +2387,7 @@ function LinkedInPageContent() {
                             {subscriptionPlan === "personal_annual" ? "Personal Annual" : "Personal"}
                           </p>
                           <p className="text-xs text-slate-500">
-                            {subscriptionPlan === "personal_annual" ? "$144/year · billed annually" : "$15/month"}
+                            {subscriptionPlan === "personal_annual" ? "$203/year · billed annually" : "$29/month"}
                           </p>
                         </div>
                       </div>
@@ -2453,7 +2453,7 @@ function LinkedInPageContent() {
                         className="flex flex-col items-center gap-1 p-4 rounded-xl border-2 border-violet-200 bg-violet-50 hover:border-violet-400 hover:bg-violet-100 transition-colors cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
                       >
                         <span className="text-[10px] font-semibold uppercase tracking-wide text-violet-500 mb-0.5">Monthly</span>
-                        <span className="text-base font-bold text-violet-700">$15</span>
+                        <span className="text-base font-bold text-violet-700">$29</span>
                         <span className="text-xs text-violet-600 font-medium">/ month</span>
                         <span className="text-[10px] text-slate-500 mt-1">Billed monthly</span>
                         <span className="mt-2 w-full text-center text-xs font-semibold text-white bg-violet-600 rounded-lg py-1.5 px-2">
@@ -2466,9 +2466,9 @@ function LinkedInPageContent() {
                         className="flex flex-col items-center gap-1 p-4 rounded-xl border-2 border-pink-200 bg-pink-50 hover:border-pink-400 hover:bg-pink-100 transition-colors cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
                       >
                         <span className="text-[10px] font-semibold uppercase tracking-wide text-pink-500 mb-0.5">Annual</span>
-                        <span className="text-base font-bold text-pink-700">$12</span>
+                        <span className="text-base font-bold text-pink-700">$16.90</span>
                         <span className="text-xs text-pink-600 font-medium">/ month</span>
-                        <span className="text-[10px] text-slate-500 mt-1">Billed $144/year · Save 20%</span>
+                        <span className="text-[10px] text-slate-500 mt-1">Billed $203/year · Save 30%</span>
                         <span className="mt-2 w-full text-center text-xs font-semibold text-white bg-pink-600 rounded-lg py-1.5 px-2">
                           {checkingOut ? "Loading…" : "Subscribe"}
                         </span>
@@ -2489,7 +2489,7 @@ function LinkedInPageContent() {
                         className="flex flex-col items-center gap-1 p-4 rounded-xl border-2 border-violet-200 bg-violet-50 hover:border-violet-400 hover:bg-violet-100 transition-colors cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
                       >
                         <span className="text-[10px] font-semibold uppercase tracking-wide text-violet-500 mb-0.5">Monthly</span>
-                        <span className="text-base font-bold text-violet-700">$15</span>
+                        <span className="text-base font-bold text-violet-700">$29</span>
                         <span className="text-xs text-violet-600 font-medium">/ month</span>
                         <span className="text-[10px] text-slate-500 mt-1">Billed monthly</span>
                         <span className="mt-2 w-full text-center text-xs font-semibold text-white bg-violet-600 rounded-lg py-1.5 px-2">
@@ -2502,9 +2502,9 @@ function LinkedInPageContent() {
                         className="flex flex-col items-center gap-1 p-4 rounded-xl border-2 border-pink-200 bg-pink-50 hover:border-pink-400 hover:bg-pink-100 transition-colors cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
                       >
                         <span className="text-[10px] font-semibold uppercase tracking-wide text-pink-500 mb-0.5">Annual</span>
-                        <span className="text-base font-bold text-pink-700">$12</span>
+                        <span className="text-base font-bold text-pink-700">$16.90</span>
                         <span className="text-xs text-pink-600 font-medium">/ month</span>
-                        <span className="text-[10px] text-slate-500 mt-1">Billed $144/year · Save 20%</span>
+                        <span className="text-[10px] text-slate-500 mt-1">Billed $203/year · Save 30%</span>
                         <span className="mt-2 w-full text-center text-xs font-semibold text-white bg-pink-600 rounded-lg py-1.5 px-2">
                           {checkingOut ? "Loading…" : "Subscribe Now"}
                         </span>
@@ -2527,7 +2527,7 @@ function LinkedInPageContent() {
                         {startingTrial ? "Starting trial..." : "Start 7-Day Free Trial — No Credit Card"}
                       </span>
                     </button>
-                    <p className="text-xs text-slate-400 text-center">After 7 days, subscribe to continue. $15/month or $144/year.</p>
+                    <p className="text-xs text-slate-400 text-center">After 7 days, subscribe to continue. $29/month or $203/year.</p>
                   </div>
                 )}
               </div>

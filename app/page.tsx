@@ -119,7 +119,7 @@ const faqs = [
   },
   {
     q: "Do I need a credit card to start?",
-    a: "No. You get 7 days completely free — no credit card required. Explore the full product, see your LinkedIn posts go live, and only subscribe once you've experienced the results. After 7 days, choose monthly ($15/mo) or annual ($144/yr, save 20%).",
+    a: "No. You get 7 days completely free — no credit card required. Explore the full product, see your LinkedIn posts go live, and only subscribe once you've experienced the results. After 7 days, choose monthly ($29/mo) or annual ($203/yr, save 30%).",
   },
   {
     q: "What happens after my trial ends?",
@@ -403,7 +403,7 @@ export default function PersonalPage() {
         <div className="absolute top-10 left-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-violet-400/10 rounded-full blur-3xl pointer-events-none" />
         <div className="relative max-w-4xl mx-auto">
           <Badge className="mb-4 sm:mb-6 bg-violet-100 text-violet-700 border-violet-200 text-xs sm:text-sm px-3 sm:px-4 py-1">
-            LinkedIn Automation · $15/month
+            LinkedIn Automation · $29/month
           </Badge>
           <h1 className="text-4xl sm:text-5xl md:text-7xl font-extrabold leading-tight mb-4 sm:mb-6 tracking-tight text-[#1b1916]">
             We make you look like
@@ -1224,17 +1224,17 @@ export default function PersonalPage() {
               <CardTitle className="text-[#1b1916] text-2xl">Personal Autopilot</CardTitle>
               <p className="text-slate-500 text-sm mt-1">Everything you need to grow your LinkedIn</p>
               <div className="flex items-end gap-1 mt-4 justify-center">
-                <span className="text-6xl font-extrabold text-[#1b1916]">{annual ? "$12" : "$15"}</span>
+                <span className="text-6xl font-extrabold text-[#1b1916]">{annual ? "$16.90" : "$29"}</span>
                 <span className="text-slate-500 mb-2 text-lg">/month</span>
               </div>
               {annual && (
                 <>
-                  <p className="text-sm text-green-600 font-medium mt-1">Billed $144/year · Save $36</p>
+                  <p className="text-sm text-green-600 font-medium mt-1">Billed $203/year · Save 30%</p>
                   <p className="text-xs text-slate-500 mt-1">7-day money-back guarantee — cancel anytime</p>
                 </>
               )}
               {!annual && (
-                <p className="text-sm text-slate-400 mt-1">or <button onClick={() => setAnnual(true)} className="underline text-violet-600">save 20% with annual</button></p>
+                <p className="text-sm text-slate-400 mt-1">or <button onClick={() => setAnnual(true)} className="underline text-violet-600">save 30% with annual</button></p>
               )}
             </CardHeader>
             <CardContent className="space-y-5 px-8 pb-8">
@@ -1244,7 +1244,7 @@ export default function PersonalPage() {
               >
                 {annual ? "Start Annual Plan" : "Start Free Trial — No Credit Card"}
               </Button>
-              <p className="text-center text-xs text-slate-500">{annual ? "Billed $144/year · Cancel anytime" : "7-day free trial · No credit card required · $15/month after"}</p>
+              <p className="text-center text-xs text-slate-500">{annual ? "Billed $203/year · Cancel anytime" : "7-day free trial · No credit card required · $29/month after"}</p>
               <ul className="space-y-3 pt-2">
                 {[
                   "7 AI-written posts per week",
@@ -1319,7 +1319,7 @@ export default function PersonalPage() {
           >
             Try Free for 7 Days — No Card Required
           </Button>
-          <p className="mt-4 text-xs sm:text-sm text-slate-500">No credit card required · $15/month after · Cancel anytime</p>
+          <p className="mt-4 text-xs sm:text-sm text-slate-500">No credit card required · $29/month after · Cancel anytime</p>
         </div>
       </section>
 

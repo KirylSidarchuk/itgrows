@@ -554,7 +554,7 @@ export default function LandingPageB() {
               <span style={{ fontSize: "80px", fontWeight: 900, color: "#7C3AED", letterSpacing: "-0.05em", lineHeight: 1 }}>$29</span>
               <span style={{ fontSize: "20px", color: "#9ca3af", fontWeight: 500, marginLeft: "4px" }}> / month</span>
             </div>
-            <p style={{ color: "#9ca3af", fontSize: "14px", marginBottom: "32px" }}>or $144/year (save 20%)</p>
+            <p style={{ color: "#9ca3af", fontSize: "14px", marginBottom: "32px" }}>or $203/year (save 30%)</p>
 
             <div style={{ display: "flex", flexDirection: "column", gap: "14px", marginBottom: "36px", textAlign: "left" }}>
               {[

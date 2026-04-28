@@ -50,7 +50,7 @@ function trialTwoDaysLeftEmail(name: string): string {
           <li>Auto-scheduling and auto-publishing to LinkedIn</li>
           <li>Professional DNA that improves over time</li>
         </ul>
-        <p style="color: #374151; font-size: 14px;">Just <strong>$15/month</strong> — less than a single freelance post.</p>
+        <p style="color: #374151; font-size: 14px;">Just <strong>$29/month</strong> — less than a single freelance post.</p>
         <a href="https://www.itgrows.ai/cabinet" style="display: inline-block; background: #d97706; color: white; padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; margin-top: 16px; font-size: 15px;">Subscribe Now →</a>
         <p style="color: #9ca3af; font-size: 12px; margin-top: 32px;">ItGrows.ai · <a href="https://www.itgrows.ai/cabinet" style="color: #9ca3af;">Manage your account</a></p>
       </div>
