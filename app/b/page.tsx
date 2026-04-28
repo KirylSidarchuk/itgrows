@@ -520,41 +520,74 @@ export default function LandingPageB() {
       </section>
 
       {/* Real Results tabbed */}
-      <section className="px-4 sm:px-6 py-16 sm:py-24 bg-[#f3f2f1]">
+      <section className="px-4 sm:px-6 py-16 sm:py-24" style={{background: "linear-gradient(135deg, #f0eeff 0%, #e8f4ff 50%, #f0eeff 100%)"}}>
         <div className="max-w-3xl mx-auto">
-          <div className="text-center mb-8">
-            <span className="inline-block mb-4 px-4 py-1 rounded-full text-xs font-bold border border-emerald-300 text-emerald-700 bg-emerald-50 tracking-[0.15em] uppercase">
-              Real data &#183; LinkedIn Analytics
+          <div className="text-center mb-10">
+            <span className="inline-flex items-center gap-2 mb-4 px-4 py-1.5 rounded-full text-xs font-bold border border-violet-200 text-violet-700 bg-white/70 tracking-[0.12em] uppercase shadow-sm">
+              <span className="text-violet-500">&#9646;</span> Real LinkedIn Data
             </span>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-[#1b1916] mb-3 tracking-tight">
-              From invisible &#8594; to inbound
+            <h2 className="text-3xl sm:text-5xl font-black text-[#1b1916] mb-2 tracking-tight">
+              From invisible &#8594; to <span className="text-violet-600">inbound</span>
             </h2>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-6 mb-4 mt-6">
-              <div className="bg-red-50 border border-red-200 rounded-2xl px-6 py-4 text-center min-w-[140px]">
-                <div className="text-xs font-bold uppercase tracking-widest text-red-500 mb-2">Before</div>
-                <div className="text-sm text-slate-700 space-y-1">
-                  <div>0&#8211;1 posts/month</div>
-                  <div>~200&#8211;500 views</div>
-                  <div>no inbound</div>
-                </div>
-              </div>
-              <div className="text-2xl text-slate-400">&#8594;</div>
-              <div className="bg-emerald-50 border border-emerald-200 rounded-2xl px-6 py-4 text-center min-w-[140px]">
-                <div className="text-xs font-bold uppercase tracking-widest text-emerald-600 mb-2">After 2 Weeks</div>
-                <div className="text-sm text-slate-700 space-y-1">
-                  <div>7 posts/week</div>
-                  <div>10,000+ views</div>
-                  <div>5&#8211;15 inbound messages</div>
-                </div>
-              </div>
-            </div>
-            <div className="inline-block bg-[#1b1916] text-white text-sm font-semibold px-5 py-2 rounded-full mb-4">
-              One post can close a deal
-            </div>
-            <p className="text-slate-500 text-base max-w-xl mx-auto">
-              Select a time period to see real analytics
-            </p>
+            <p className="text-slate-500 text-base mt-2">Consistent content. Real visibility. New opportunities.</p>
           </div>
+
+          {/* Before / After cards */}
+          <div className="flex flex-col sm:flex-row items-stretch gap-4 mb-6 relative">
+            {/* BEFORE */}
+            <div className="flex-1 bg-white/80 border border-red-100 rounded-2xl p-6 shadow-sm">
+              <div className="inline-block px-3 py-1 rounded-full bg-red-50 border border-red-200 text-red-500 text-xs font-bold uppercase tracking-widest mb-5">Before</div>
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <span className="text-red-400 text-lg">&#9998;</span>
+                  <span className="text-slate-700">0&#8211;1 posts/month</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="text-red-400 text-lg">&#128065;</span>
+                  <span className="text-slate-700">~200&#8211;500 views</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="text-red-400 text-lg">&#128100;</span>
+                  <span className="text-slate-700">no inbound</span>
+                </div>
+              </div>
+            </div>
+            {/* Arrow */}
+            <div className="hidden sm:flex items-center justify-center z-10">
+              <div className="w-10 h-10 rounded-full bg-white border border-slate-200 shadow flex items-center justify-center text-violet-500 text-xl font-bold">&#8594;</div>
+            </div>
+            {/* AFTER */}
+            <div className="flex-1 bg-white/80 border border-emerald-100 rounded-2xl p-6 shadow-sm">
+              <div className="inline-block px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-600 text-xs font-bold uppercase tracking-widest mb-5">After 2 Weeks</div>
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <span className="text-emerald-500 text-lg">&#128197;</span>
+                  <span className="text-slate-700 font-medium">7 posts/week</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="text-emerald-500 text-lg">&#128065;</span>
+                  <span className="text-slate-700 font-medium">10,000+ views</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="text-emerald-500 text-lg">&#128172;</span>
+                  <span className="text-slate-700 font-medium">5&#8211;15 inbound messages</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Callout */}
+          <div className="bg-white/80 border border-violet-100 rounded-2xl px-6 py-5 flex items-center gap-4 shadow-sm mb-8">
+            <div className="w-12 h-12 rounded-full bg-violet-100 flex items-center justify-center flex-shrink-0">
+              <span className="text-violet-600 text-xl">&#127919;</span>
+            </div>
+            <div>
+              <div className="font-bold text-[#1b1916] text-base">One post can close a deal.</div>
+              <div className="text-slate-500 text-sm">Visibility brings trust. Trust brings business.</div>
+            </div>
+          </div>
+
+          <p className="text-center text-slate-500 text-sm mb-4">Select a time period to see real analytics</p>
 
           <div className="flex justify-center mb-6">
             <div className="inline-flex bg-white border border-black/10 rounded-full p-1 gap-1 shadow-sm">
