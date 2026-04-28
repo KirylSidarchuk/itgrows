@@ -520,41 +520,44 @@ export default function LandingPageB() {
       </section>
 
       {/* Real Results tabbed */}
-      <section className="px-4 sm:px-6 py-16 sm:py-24 bg-[#1b1916]">
+      <section className="px-4 sm:px-6 py-16 sm:py-24 bg-[#f3f2f1]">
         <div className="max-w-3xl mx-auto">
           <div className="text-center mb-8">
-            <span className="inline-block mb-4 px-4 py-1 rounded-full text-xs font-bold border border-white/20 text-white/60 tracking-[0.15em] uppercase">
+            <span className="inline-block mb-4 px-4 py-1 rounded-full text-xs font-bold border border-emerald-300 text-emerald-700 bg-emerald-50 tracking-[0.15em] uppercase">
               Real data &#183; LinkedIn Analytics
             </span>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-white mb-3 tracking-tight">
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-[#1b1916] mb-3 tracking-tight">
               From invisible &#8594; to inbound
             </h2>
-            <div className="flex flex-col sm:flex-row items-stretch justify-center gap-4 mb-8 mt-8">
-              <div className="flex-1 max-w-[220px] mx-auto sm:mx-0 bg-white/10 border border-white/10 rounded-2xl px-8 py-6 text-center">
-                <div className="text-xs font-bold uppercase tracking-widest text-white/40 mb-4">Before</div>
-                <div className="space-y-3">
-                  <div className="text-white/60 text-base">0&#8211;1 posts/month</div>
-                  <div className="text-white/60 text-base">~200&#8211;500 views</div>
-                  <div className="text-white/60 text-base">no inbound</div>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-6 mb-4 mt-6">
+              <div className="bg-red-50 border border-red-200 rounded-2xl px-6 py-4 text-center min-w-[140px]">
+                <div className="text-xs font-bold uppercase tracking-widest text-red-500 mb-2">Before</div>
+                <div className="text-sm text-slate-700 space-y-1">
+                  <div>0&#8211;1 posts/month</div>
+                  <div>~200&#8211;500 views</div>
+                  <div>no inbound</div>
                 </div>
               </div>
-              <div className="flex items-center justify-center text-white/30 text-3xl font-light">&#8594;</div>
-              <div className="flex-1 max-w-[220px] mx-auto sm:mx-0 bg-gradient-to-br from-violet-600 to-indigo-600 rounded-2xl px-8 py-6 text-center shadow-lg shadow-violet-900/40">
-                <div className="text-xs font-bold uppercase tracking-widest text-white/70 mb-4">After 2 Weeks</div>
-                <div className="space-y-3">
-                  <div className="text-white font-semibold text-base">7 posts/week</div>
-                  <div className="text-white font-semibold text-base">10,000+ views</div>
-                  <div className="text-white font-semibold text-base">5&#8211;15 inbound messages</div>
+              <div className="text-2xl text-slate-400">&#8594;</div>
+              <div className="bg-emerald-50 border border-emerald-200 rounded-2xl px-6 py-4 text-center min-w-[140px]">
+                <div className="text-xs font-bold uppercase tracking-widest text-emerald-600 mb-2">After 2 Weeks</div>
+                <div className="text-sm text-slate-700 space-y-1">
+                  <div>7 posts/week</div>
+                  <div>10,000+ views</div>
+                  <div>5&#8211;15 inbound messages</div>
                 </div>
               </div>
             </div>
-            <div className="inline-block bg-white text-[#1b1916] text-sm font-bold px-6 py-3 rounded-full mb-6">
+            <div className="inline-block bg-[#1b1916] text-white text-sm font-semibold px-5 py-2 rounded-full mb-4">
               One post can close a deal
             </div>
+            <p className="text-slate-500 text-base max-w-xl mx-auto">
+              Select a time period to see real analytics
+            </p>
           </div>
 
           <div className="flex justify-center mb-6">
-            <div className="inline-flex bg-white/10 border border-white/10 rounded-full p-1 gap-1">
+            <div className="inline-flex bg-white border border-black/10 rounded-full p-1 gap-1 shadow-sm">
               {(["week", "month", "3months"] as const).map((tab) => {
                 const label = tab === "week" ? "1 Week" : tab === "month" ? "1 Month" : "3 Months"
                 return (
@@ -563,8 +566,8 @@ export default function LandingPageB() {
                     onClick={() => setResultsTab(tab)}
                     className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-all ${
                       resultsTab === tab
-                        ? "bg-white text-[#1b1916] shadow"
-                        : "text-white/50 hover:text-white"
+                        ? "bg-[#1b1916] text-white shadow"
+                        : "text-slate-500 hover:text-[#1b1916]"
                     }`}
                   >
                     {label}
