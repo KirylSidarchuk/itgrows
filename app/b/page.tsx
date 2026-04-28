@@ -1,15 +1,181 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+
+const AI_IMAGE_ICON = (
+  <svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-10 h-10">
+    <rect width="56" height="56" rx="12" fill="url(#bg)" />
+    <rect x="8" y="10" width="32" height="28" rx="4" fill="url(#frame)" />
+    <ellipse cx="16" cy="30" rx="6" ry="4" fill="#3b2f8a" opacity="0.7" />
+    <ellipse cx="28" cy="28" rx="8" ry="5" fill="#4c3aa3" opacity="0.7" />
+    <circle cx="22" cy="18" r="4" fill="#fbbf24" />
+    <path d="M8 30 Q16 22 24 26 Q32 30 40 24" stroke="white" strokeWidth="1.5" strokeOpacity="0.3" fill="none" />
+    <circle cx="38" cy="38" r="10" fill="url(#badge)" />
+    <text x="38" y="42" textAnchor="middle" fontSize="9" fontWeight="bold" fill="white" fontFamily="sans-serif">AI</text>
+    <path d="M44 10 L45 13 L48 14 L45 15 L44 18 L43 15 L40 14 L43 13Z" fill="white" opacity="0.7" />
+    <path d="M6 8 L6.7 10 L9 10.7 L6.7 11.4 L6 13.4 L5.3 11.4 L3 10.7 L5.3 10Z" fill="white" opacity="0.5" />
+    <defs>
+      <linearGradient id="bg" x1="0" y1="0" x2="56" y2="56" gradientUnits="userSpaceOnUse">
+        <stop stopColor="#1e1b4b" />
+        <stop offset="1" stopColor="#312e81" />
+      </linearGradient>
+      <linearGradient id="frame" x1="8" y1="10" x2="40" y2="38" gradientUnits="userSpaceOnUse">
+        <stop stopColor="#7c3aed" />
+        <stop offset="1" stopColor="#c026d3" />
+      </linearGradient>
+      <linearGradient id="badge" x1="28" y1="28" x2="48" y2="48" gradientUnits="userSpaceOnUse">
+        <stop stopColor="#6366f1" />
+        <stop offset="1" stopColor="#3b82f6" />
+      </linearGradient>
+    </defs>
+  </svg>
+)
+
+const features = [
+  {
+    icon: "🎯",
+    title: "Posts Written in Your Voice",
+    desc: "We analyze your professional profile and write in your unique tone — not generic AI filler.",
+  },
+  {
+    icon: "📅",
+    title: "7 Posts Published Weekly",
+    desc: "One post every day, Monday through Sunday. Consistent presence that brings inbound leads.",
+  },
+  {
+    icon: AI_IMAGE_ICON,
+    title: "Images Generated Automatically",
+    desc: "Every post comes with a custom AI-generated image that matches your content.",
+  },
+  {
+    icon: "⏰",
+    title: "Publishes at Peak Time",
+    desc: "Posts go live at 10am UTC — when LinkedIn engagement is highest.",
+  },
+  {
+    icon: "🧬",
+    title: "Built on Your Client-Getting DNA",
+    desc: "We study your niche, ideal clients, and goals before writing a single word. Nothing generic.",
+  },
+]
+
+const steps = [
+  {
+    num: "01",
+    title: "Connect LinkedIn",
+    desc: "One click. No passwords shared. We use LinkedIn's secure OAuth connection.",
+  },
+  {
+    num: "02",
+    title: "Tell Us About You",
+    desc: "Fill a 2-minute brief: your niche, audience, and goals. That's your content DNA.",
+  },
+  {
+    num: "03",
+    title: "We Post for You",
+    desc: "AI-crafted posts publish daily to your profile. Review, edit, or let them run on autopilot.",
+  },
+]
+
+const faqs = [
+  {
+    q: "Is it safe to connect my LinkedIn account?",
+    a: "Absolutely. We use LinkedIn's official OAuth — the same secure standard used by tools like Salesforce, HubSpot, and Notion. You log in directly on LinkedIn's website, not on ours. We never see or store your LinkedIn password. You can revoke access from your LinkedIn settings at any time in seconds.",
+  },
+  {
+    q: "How do you post to LinkedIn without my password?",
+    a: "When you connect your account, LinkedIn gives ItGrows.ai a secure access token — like a temporary key that only allows posting on your behalf. Think of it like letting a trusted assistant publish posts for you, without giving them your email and password. Your credentials stay on LinkedIn's servers, never ours.",
+  },
+  {
+    q: "Can ItGrows.ai read my private messages or connections?",
+    a: "No. We only request the minimum permissions needed to publish posts. We cannot read your messages, see your connections list, or access any private data. Our access is strictly limited to creating and scheduling posts on your public feed.",
+  },
+  {
+    q: "What happens if I cancel my subscription?",
+    a: "You can cancel anytime from your account settings. After cancellation, we immediately revoke our access token — we can no longer post on your behalf. Any scheduled posts that haven't been published yet will not go out.",
+  },
+  {
+    q: "Is this generic AI content?",
+    a: "No. Before writing anything, we analyze your LinkedIn profile, your niche, and your professional goals. Every post is written specifically for you — in your voice, for your audience.",
+  },
+  {
+    q: "Do I need to do anything after setup?",
+    a: "Just connect LinkedIn and fill a 2-minute brief. After that, posts are generated and scheduled automatically. You can review and edit before they go live if you'd like.",
+  },
+  {
+    q: "Can I edit posts before they publish?",
+    a: "Yes. Every post appears in your dashboard before it goes live. Approve as-is, tweak the wording, or regenerate entirely — you're always in control.",
+  },
+  {
+    q: "Can I cancel anytime?",
+    a: "Absolutely. No contracts, no lock-ins. Cancel from your account settings in seconds. Your subscription ends at the current billing period.",
+  },
+  {
+    q: "Do I need a credit card to start?",
+    a: "No. You get 7 days completely free — no credit card required. Explore the full product, see your LinkedIn posts go live, and only subscribe once you've experienced the results. After 7 days, choose monthly ($29/mo) or annual ($288/yr, save 20%).",
+  },
+  {
+    q: "What happens after my trial ends?",
+    a: "Your scheduled posts will pause. You'll see a clear prompt to subscribe in your dashboard. No charges, no surprises — just a simple decision to continue or walk away.",
+  },
+]
 
 export default function LandingPageB() {
+  const [annual, setAnnual] = useState(false)
+  const [openFaq, setOpenFaq] = useState<number | null>(null)
+  const [sessionUser, setSessionUser] = useState<{ name?: string | null; email?: string | null } | null>(null)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [ghostThoughts, setGhostThoughts] = useState("")
   const [ghostLoading, setGhostLoading] = useState(false)
   const [ghostPosts, setGhostPosts] = useState<string[]>([])
   const [ghostImages, setGhostImages] = useState<(string | null)[]>([])
   const [ghostError, setGhostError] = useState("")
-  const [openFaq, setOpenFaq] = useState<number | null>(null)
+
+  // Feedback form state
+  const [feedbackOpen, setFeedbackOpen] = useState(false)
+  const [feedbackType, setFeedbackType] = useState("Question")
+  const [feedbackEmail, setFeedbackEmail] = useState("")
+  const [feedbackMessage, setFeedbackMessage] = useState("")
+  const [feedbackLoading, setFeedbackLoading] = useState(false)
+  const [feedbackDone, setFeedbackDone] = useState(false)
+  const [feedbackError, setFeedbackError] = useState("")
+  const [resultsTab, setResultsTab] = useState<"week" | "month" | "3months">("week")
+
+  async function handleFeedbackSubmit() {
+    if (feedbackMessage.trim().length < 10) {
+      setFeedbackError("Please enter at least 10 characters.")
+      return
+    }
+    setFeedbackLoading(true)
+    setFeedbackError("")
+    try {
+      const res = await fetch("/api/public/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type: feedbackType, email: feedbackEmail, message: feedbackMessage }),
+      })
+      if (res.ok) {
+        setFeedbackDone(true)
+        setTimeout(() => {
+          setFeedbackOpen(false)
+          setFeedbackDone(false)
+          setFeedbackType("Question")
+          setFeedbackEmail("")
+          setFeedbackMessage("")
+        }, 3000)
+      } else {
+        setFeedbackError("Something went wrong. Please try again.")
+      }
+    } catch {
+      setFeedbackError("Something went wrong. Please try again.")
+    } finally {
+      setFeedbackLoading(false)
+    }
+  }
 
   async function handleGhostGenerate() {
     if (ghostThoughts.trim().length < 10) return
@@ -28,7 +194,7 @@ export default function LandingPageB() {
         setGhostPosts(data.posts)
         setGhostImages(data.images ?? [])
       } else if (res.status === 429) {
-        setGhostError("You've used your 2 free previews. Sign up →")
+        setGhostError("You've used your 2 free previews. Sign up to generate unlimited LinkedIn posts →")
       } else if (data.error) {
         setGhostError(data.error)
       } else {
@@ -41,671 +207,1052 @@ export default function LandingPageB() {
     }
   }
 
-  function handleStartTrial() {
-    window.location.href = "/signup"
+  useEffect(() => {
+    fetch("/api/auth/session")
+      .then((r) => r.json())
+      .then((data: { user?: { id?: string; name?: string; email?: string } }) => {
+        if (data?.user?.id) setSessionUser(data.user)
+      })
+      .catch(() => {})
+  }, [])
+
+  async function handleStartTrial() {
+    const sessionRes = await fetch("/api/auth/session")
+    const sessionData = await sessionRes.json() as { user?: { id: string } }
+    if (!sessionData?.user?.id) {
+      window.location.href = `/signup?callbackUrl=${encodeURIComponent("/cabinet")}`
+      return
+    }
+    const res = await fetch("/api/trial/start", { method: "POST" })
+    if (res.status === 401) {
+      window.location.href = `/signup?callbackUrl=${encodeURIComponent("/cabinet")}`
+      return
+    }
+    window.location.href = "/cabinet"
   }
 
-  const faqs = [
-    {
-      q: "Is it safe?",
-      a: "Yes, we use LinkedIn's official OAuth. We never see your password.",
-    },
-    {
-      q: "Can I edit posts?",
-      a: "Yes, you can review and edit every post before it goes live.",
-    },
-    {
-      q: "Can I cancel?",
-      a: "Anytime, no questions asked.",
-    },
-    {
-      q: "Is this generic AI?",
-      a: "No. We analyze your profile, niche, and writing style to generate posts in your voice.",
-    },
-  ]
+  async function handleCheckout(planType: "monthly" | "annual") {
+    const sessionRes = await fetch("/api/auth/session")
+    const sessionData = await sessionRes.json() as { user?: { id: string } }
+    if (!sessionData?.user?.id) {
+      window.location.href = `/signup?callbackUrl=${encodeURIComponent("/cabinet")}`
+      return
+    }
+    const res = await fetch("/api/stripe/checkout", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ planType }),
+    })
+    if (res.status === 401) {
+      window.location.href = `/signup?callbackUrl=${encodeURIComponent("/cabinet")}`
+      return
+    }
+    const data = await res.json() as { url?: string; error?: string }
+    if (data.url) {
+      window.location.href = data.url
+    } else {
+      window.location.href = "/cabinet"
+    }
+  }
 
   return (
-    <div style={{ backgroundColor: "#0A0A0A", color: "#ffffff", fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" }}>
-
-      {/* HERO SECTION */}
-      <section style={{ backgroundColor: "#0A0A0A", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
-        {/* NAV */}
-        <nav style={{ padding: "20px 32px", display: "flex", alignItems: "center", justifyContent: "space-between", maxWidth: "1200px", margin: "0 auto", width: "100%" }}>
-          <Link href="/" style={{ color: "#ffffff", fontWeight: 800, fontSize: "20px", textDecoration: "none", letterSpacing: "-0.02em" }}>
-            ItGrows
+    <div
+      className="min-h-screen text-[#1b1916] scroll-smooth"
+      style={{ backgroundColor: "#f3f2f1", fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" }}
+    >
+      {/* Nav */}
+      <nav className="border-b border-black/10 px-4 sm:px-6 py-4 sticky top-0 z-50" style={{ backgroundColor: "#f3f2f1" }}>
+        <div className="max-w-6xl mx-auto flex items-center justify-between">
+          {/* Logo */}
+          <Link href="/" className="flex items-center gap-2 text-xl font-bold bg-gradient-to-r from-violet-600 to-cyan-600 bg-clip-text text-transparent shrink-0">
+            <img src="/logo.jpg" className="h-8 w-8 rounded-lg" alt="ItGrows" />
+            <span>ItGrows.ai</span>
           </Link>
-          <Link href="/login?callbackUrl=/cabinet" style={{ color: "#d1d5db", fontSize: "14px", textDecoration: "none", fontWeight: 500 }}>
-            Sign in
-          </Link>
-        </nav>
 
-        {/* HERO CONTENT */}
-        <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "60px 24px 80px", textAlign: "center" }}>
-          <div style={{ maxWidth: "900px", width: "100%" }}>
-            {/* Badge */}
-            <div style={{ display: "inline-block", border: "1px solid rgba(255,255,255,0.2)", borderRadius: "9999px", padding: "6px 16px", marginBottom: "32px" }}>
-              <span style={{ color: "#ffffff", fontSize: "11px", fontWeight: 600, letterSpacing: "0.15em", textTransform: "uppercase" }}>✦ NO SIGNUP REQUIRED</span>
-            </div>
-
-            {/* H1 */}
-            <h1 style={{ fontSize: "clamp(42px, 7vw, 80px)", fontWeight: 900, lineHeight: 1.05, letterSpacing: "-0.04em", color: "#ffffff", marginBottom: "24px" }}>
-              Turn your LinkedIn into a<br />
-              <span style={{ color: "#7C3AED" }}>client acquisition machine</span><br />
-              — on autopilot
-            </h1>
-
-            {/* Sub */}
-            <p style={{ fontSize: "20px", color: "#9ca3af", lineHeight: 1.6, marginBottom: "40px", maxWidth: "560px", margin: "0 auto 40px" }}>
-              We write and publish posts that bring you inbound leads — in your voice, every day.
-            </p>
-
-            {/* CTA Button */}
-            <button
-              onClick={handleStartTrial}
-              style={{
-                background: "linear-gradient(135deg, #7C3AED 0%, #4F46E5 100%)",
-                color: "#ffffff",
-                padding: "18px 40px",
-                borderRadius: "9999px",
-                fontSize: "18px",
-                fontWeight: 700,
-                border: "none",
-                cursor: "pointer",
-                marginBottom: "12px",
-                display: "inline-block",
-                boxShadow: "0 8px 32px rgba(124,58,237,0.5)",
-                transition: "opacity 0.2s",
-              }}
-              onMouseOver={(e) => { e.currentTarget.style.opacity = "0.9" }}
-              onMouseOut={(e) => { e.currentTarget.style.opacity = "1" }}
-            >
-              Generate My First Post — takes 30 sec →
-            </button>
-            <p style={{ color: "#6b7280", fontSize: "14px", marginTop: "12px" }}>No signup required</p>
+          {/* Desktop center nav links */}
+          <div className="hidden md:flex items-center gap-7">
+            <a href="#how-it-works" className="text-sm text-slate-600 hover:text-[#1b1916] transition-colors font-medium">How It Works</a>
+            <a href="#results" onClick={() => setMobileMenuOpen(false)} className="text-sm text-slate-600 hover:text-[#1b1916] transition-colors font-medium">Results</a>
+            <a href="#features" className="text-sm text-slate-600 hover:text-[#1b1916] transition-colors font-medium">Features</a>
+            <a href="#pricing" className="text-sm text-slate-600 hover:text-[#1b1916] transition-colors font-medium">Pricing</a>
+            <Link href="/blog" className="text-sm text-slate-600 hover:text-[#1b1916] transition-colors font-medium">Blog</Link>
           </div>
+
+          {/* Desktop right side: auth */}
+          <div className="hidden md:flex items-center gap-2">
+            {sessionUser ? (
+              <>
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-full bg-violet-600 flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
+                    {(sessionUser.name || sessionUser.email || "U").charAt(0).toUpperCase()}
+                  </div>
+                  <span className="text-sm text-slate-600 max-w-[140px] truncate">
+                    {sessionUser.name || sessionUser.email}
+                  </span>
+                </div>
+                <Link href="/cabinet">
+                  <Button className="bg-violet-600 hover:bg-violet-500 text-white text-sm px-4">Cabinet &#8594;</Button>
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link href="/login?callbackUrl=/cabinet">
+                  <Button variant="ghost" className="text-slate-600 hover:text-[#1b1916] text-sm px-3">Login</Button>
+                </Link>
+                <Button onClick={handleStartTrial} className="bg-violet-600 hover:bg-violet-500 text-white text-sm px-4">
+                  Try Free &#8212; No Card
+                </Button>
+              </>
+            )}
+          </div>
+
+          {/* Mobile: hamburger */}
+          <button
+            className="md:hidden flex flex-col justify-center items-center w-9 h-9 gap-1.5 rounded-lg hover:bg-black/5 transition-colors"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label="Toggle menu"
+          >
+            <span className={`block w-5 h-0.5 bg-[#1b1916] transition-all duration-200 ${mobileMenuOpen ? "rotate-45 translate-y-2" : ""}`} />
+            <span className={`block w-5 h-0.5 bg-[#1b1916] transition-all duration-200 ${mobileMenuOpen ? "opacity-0" : ""}`} />
+            <span className={`block w-5 h-0.5 bg-[#1b1916] transition-all duration-200 ${mobileMenuOpen ? "-rotate-45 -translate-y-2" : ""}`} />
+          </button>
+        </div>
+
+        {/* Mobile dropdown menu */}
+        {mobileMenuOpen && (
+          <div className="md:hidden border-t border-black/10 mt-4 pt-4 pb-2 flex flex-col gap-1">
+            <a
+              href="#how-it-works"
+              className="px-3 py-2.5 text-sm font-medium text-slate-600 hover:text-[#1b1916] hover:bg-black/5 rounded-lg transition-colors"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              How It Works
+            </a>
+            <a
+              href="#results"
+              className="px-3 py-2.5 text-sm font-medium text-slate-600 hover:text-[#1b1916] hover:bg-black/5 rounded-lg transition-colors"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Results
+            </a>
+            <a
+              href="#features"
+              className="px-3 py-2.5 text-sm font-medium text-slate-600 hover:text-[#1b1916] hover:bg-black/5 rounded-lg transition-colors"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Features
+            </a>
+            <a
+              href="#pricing"
+              className="px-3 py-2.5 text-sm font-medium text-slate-600 hover:text-[#1b1916] hover:bg-black/5 rounded-lg transition-colors"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Pricing
+            </a>
+            <Link
+              href="/blog"
+              className="px-3 py-2.5 text-sm font-medium text-slate-600 hover:text-[#1b1916] hover:bg-black/5 rounded-lg transition-colors"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Blog
+            </Link>
+            <div className="border-t border-black/10 mt-2 pt-3 flex flex-col gap-2">
+              {sessionUser ? (
+                <>
+                  <div className="flex items-center gap-2 px-3 py-1">
+                    <div className="w-8 h-8 rounded-full bg-violet-600 flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
+                      {(sessionUser.name || sessionUser.email || "U").charAt(0).toUpperCase()}
+                    </div>
+                    <span className="text-sm text-slate-600 truncate">
+                      {sessionUser.name || sessionUser.email}
+                    </span>
+                  </div>
+                  <Link href="/cabinet" onClick={() => setMobileMenuOpen(false)}>
+                    <Button className="w-full bg-violet-600 hover:bg-violet-500 text-white text-sm">Cabinet &#8594;</Button>
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <Link href="/login?callbackUrl=/cabinet" onClick={() => setMobileMenuOpen(false)}>
+                    <Button variant="outline" className="w-full text-sm border-black/20">Login</Button>
+                  </Link>
+                  <Button
+                    onClick={() => { setMobileMenuOpen(false); handleStartTrial() }}
+                    className="w-full bg-violet-600 hover:bg-violet-500 text-white text-sm"
+                  >
+                    Try Free &#8212; No Card
+                  </Button>
+                </>
+              )}
+            </div>
+          </div>
+        )}
+      </nav>
+
+      {/* Hero */}
+      <section className="relative px-4 sm:px-6 pt-16 sm:pt-24 pb-20 sm:pb-32 text-center overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-violet-100/60 to-transparent pointer-events-none" />
+        <div className="absolute top-10 left-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-violet-400/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="relative max-w-4xl mx-auto">
+          <Badge className="mb-4 sm:mb-6 bg-violet-100 text-violet-700 border-violet-200 text-xs sm:text-sm px-3 sm:px-4 py-1">
+            LinkedIn Automation &#183; $29/month
+          </Badge>
+          <h1 className="text-4xl sm:text-5xl md:text-7xl font-extrabold leading-tight mb-4 sm:mb-6 tracking-tight text-[#1b1916]">
+            Turn your LinkedIn into a
+            <span className="block bg-gradient-to-r from-violet-600 via-pink-500 to-cyan-500 bg-clip-text text-transparent">
+              client acquisition machine
+            </span>
+            &#8212; on autopilot
+          </h1>
+          <p className="text-base sm:text-xl text-slate-600 max-w-2xl mx-auto mb-8 sm:mb-10 leading-relaxed">
+            We write and publish posts that bring you inbound leads &#8212; in your voice, every day.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center">
+            <div className="relative w-full sm:w-auto">
+              <span className="absolute inset-0 rounded-xl animate-pulse bg-violet-400/30 pointer-events-none" style={{ margin: "-4px" }} />
+              <Button size="lg" onClick={handleStartTrial} className="relative bg-violet-600 hover:bg-violet-500 text-white px-10 py-4 text-base sm:text-lg rounded-xl w-full sm:w-auto font-semibold shadow-lg shadow-violet-600/30">
+                Generate My First Post &#8212; takes 30 sec &#8594;
+              </Button>
+            </div>
+            <Button size="lg" onClick={() => { document.getElementById("ghost-mode")?.scrollIntoView({ behavior: "smooth" }) }} variant="outline" className="border-[#1b1916] text-[#1b1916] hover:bg-[#1b1916] hover:text-[#f3f2f1] px-6 sm:px-8 py-5 sm:py-6 text-base sm:text-lg rounded-xl w-full sm:w-auto">
+              Try Free &#8212; No Card
+            </Button>
+          </div>
+          <p className="mt-3 text-xs sm:text-sm text-slate-500 font-medium">No credit card required &#183; Cancel anytime</p>
         </div>
       </section>
 
-      {/* GHOST MODE DEMO — floating card */}
-      <section style={{ backgroundColor: "#0A0A0A", padding: "0 24px 80px" }}>
-        <div style={{
-          backgroundColor: "#ffffff",
-          borderRadius: "24px",
-          boxShadow: "0 25px 80px rgba(0,0,0,0.4)",
-          maxWidth: "640px",
-          margin: "0 auto",
-          padding: "40px",
-        }}>
-          <p style={{ color: "#4b5563", fontWeight: 600, fontSize: "15px", marginBottom: "16px", textAlign: "center" }}>
-            Write 2–3 lines about yourself → get 3 real LinkedIn posts instantly
+      {/* Social proof strip */}
+      <div className="px-6 py-5 bg-gradient-to-r from-violet-600 to-pink-600 text-center">
+        <p className="text-white text-base font-medium">
+          Join <span className="font-extrabold">2,400+ professionals</span> growing their LinkedIn presence with ItGrows.ai
+        </p>
+      </div>
+
+      {/* Ghost Mode */}
+      <section id="ghost-mode" className="px-4 sm:px-6 py-16 sm:py-24 bg-white">
+        <div className="max-w-3xl mx-auto text-center">
+          <span className="inline-block mb-4 px-4 py-1 rounded-full text-xs font-bold border border-violet-300 text-violet-600 bg-violet-50 tracking-[0.15em] uppercase">
+            No signup required
+          </span>
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-4 text-[#1b1916] leading-tight tracking-tight">
+            See your posts in{" "}
+            <span className="bg-gradient-to-r from-violet-600 to-pink-500 bg-clip-text text-transparent">30 seconds</span>
+          </h2>
+          <p className="text-slate-500 text-base sm:text-lg mb-8 max-w-xl mx-auto">
+            Write 2&#8211;3 thoughts about yourself or your work. We&apos;ll generate 3 real LinkedIn posts &#8212; no account needed.
           </p>
-          <textarea
-            value={ghostThoughts}
-            onChange={(e) => setGhostThoughts(e.target.value)}
-            placeholder="I'm a [role] helping [audience] with [problem]..."
-            rows={4}
-            style={{
-              width: "100%",
-              border: "1.5px solid #e5e7eb",
-              borderRadius: "12px",
-              padding: "16px",
-              fontSize: "15px",
-              color: "#111827",
-              backgroundColor: "#ffffff",
-              resize: "none",
-              outline: "none",
-              boxSizing: "border-box",
-              fontFamily: "inherit",
-              lineHeight: 1.6,
-            }}
-            onFocus={(e) => { e.currentTarget.style.borderColor = "#7C3AED"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(124,58,237,0.12)" }}
-            onBlur={(e) => { e.currentTarget.style.borderColor = "#e5e7eb"; e.currentTarget.style.boxShadow = "none" }}
-          />
-          <button
-            onClick={handleGhostGenerate}
-            disabled={ghostLoading || ghostThoughts.trim().length < 10}
-            style={{
-              marginTop: "16px",
-              width: "100%",
-              background: ghostLoading || ghostThoughts.trim().length < 10
-                ? "#a78bfa"
-                : "linear-gradient(135deg, #7C3AED 0%, #4F46E5 100%)",
-              color: "#ffffff",
-              padding: "18px",
-              borderRadius: "12px",
-              fontSize: "17px",
-              fontWeight: 700,
-              border: "none",
-              cursor: ghostLoading || ghostThoughts.trim().length < 10 ? "not-allowed" : "pointer",
-              boxShadow: ghostLoading || ghostThoughts.trim().length < 10 ? "none" : "0 4px 16px rgba(124,58,237,0.4)",
-              opacity: ghostLoading || ghostThoughts.trim().length < 10 ? 0.7 : 1,
-              fontFamily: "inherit",
-            }}
-          >
-            {ghostLoading ? "Generating…" : "Generate My Posts →"}
-          </button>
+
+          <div className="bg-[#f8f7f6] border border-black/10 rounded-2xl p-5 sm:p-6 text-left">
+            <label className="block text-sm font-semibold text-[#1b1916] mb-2">
+              Tell us a bit about yourself
+            </label>
+            <textarea
+              value={ghostThoughts}
+              onChange={(e) => setGhostThoughts(e.target.value)}
+              placeholder="E.g. I'm a B2B consultant helping SaaS companies close more deals. I specialize in outbound strategy and have helped 30+ clients generate inbound from LinkedIn."
+              className="w-full h-28 resize-none rounded-xl border border-black/15 bg-white px-4 py-3 text-sm text-[#1b1916] placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-400"
+            />
+            <div className="flex items-center justify-between mt-3 gap-3">
+              <span className="text-xs text-slate-400">{ghostThoughts.length}/500 chars</span>
+              <button
+                onClick={handleGhostGenerate}
+                disabled={ghostLoading || ghostThoughts.trim().length < 10}
+                className="px-6 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold transition-colors flex items-center gap-2"
+              >
+                {ghostLoading ? (
+                  <>
+                    <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    Generating posts &amp; images...
+                  </>
+                ) : (
+                  "Generate My Posts \u2192"
+                )}
+              </button>
+            </div>
+          </div>
 
           {ghostError && (
-            <div style={{ marginTop: "16px", fontSize: "14px", fontWeight: 600, color: "#dc2626" }}>
-              {ghostError.includes("Sign up") ? (
-                <>
-                  {"You've used your 2 free previews. "}
-                  <Link href="/signup" style={{ color: "#7C3AED", textDecoration: "underline" }}>Sign up →</Link>
-                </>
-              ) : ghostError}
+            <p className="mt-4 text-sm text-red-500">{ghostError}</p>
+          )}
+
+          {ghostPosts.length > 0 && (
+            <div className="mt-8 space-y-4 text-left">
+              {ghostPosts.map((post, i) => (
+                <div key={i} className="bg-white border border-black/10 rounded-2xl overflow-hidden shadow-sm">
+                  {ghostImages[i] && (
+                    <img src={ghostImages[i]!} alt="Post cover" className="w-full h-48 object-cover" />
+                  )}
+                  <div className="p-5 sm:p-6">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-500 to-pink-500 flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
+                        Y
+                      </div>
+                      <div>
+                        <div className="font-semibold text-sm text-[#1b1916]">You</div>
+                        <div className="text-xs text-slate-400">LinkedIn &#183; Just now</div>
+                      </div>
+                    </div>
+                    <p className="text-sm text-[#1b1916] whitespace-pre-wrap leading-relaxed">{post}</p>
+                    <div className="mt-4 pt-4 border-t border-black/5 flex items-center justify-between">
+                      <div className="flex gap-4 text-xs text-slate-400">
+                        <span>&#128077; Like</span>
+                        <span>&#128172; Comment</span>
+                        <span>&#128260; Repost</span>
+                      </div>
+                      <a
+                        href="/signup"
+                        className="inline-block px-4 py-2 rounded-lg text-sm font-semibold text-white transition-colors"
+                        style={{ backgroundColor: "#7C3AED" }}
+                        onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#6d28d9")}
+                        onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#7C3AED")}
+                      >
+                        Automate This Post &#8594;
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              ))}
+
+              <div className="bg-gradient-to-r from-violet-600 to-pink-600 rounded-2xl p-6 sm:p-8 text-center text-white">
+                <div className="text-2xl font-extrabold mb-2">Want these posted for you every day?</div>
+                <p className="text-white/80 text-sm mb-5">Start your 7-day free trial. No card required.</p>
+                <a
+                  href="/signup"
+                  className="inline-block px-8 py-3 rounded-xl bg-white text-violet-600 font-bold text-sm hover:bg-violet-50 transition-colors"
+                >
+                  Start Free Trial &#8594;
+                </a>
+              </div>
             </div>
           )}
         </div>
       </section>
 
-      {/* GENERATED RESULTS */}
-      {ghostPosts.length > 0 && (
-        <section style={{ backgroundColor: "#0A0A0A", padding: "0 24px 80px" }}>
-          <div style={{ maxWidth: "1000px", margin: "0 auto" }}>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "20px" }}>
-              {ghostPosts.map((post, i) => (
-                <div
-                  key={i}
-                  style={{
-                    backgroundColor: "#ffffff",
-                    borderRadius: "16px",
-                    overflow: "hidden",
-                    display: "flex",
-                    flexDirection: "column",
-                    boxShadow: "0 8px 32px rgba(0,0,0,0.3)",
-                  }}
-                >
-                  {ghostImages[i] ? (
-                    <img
-                      src={ghostImages[i]!}
-                      alt={`Post ${i + 1} cover`}
-                      style={{ width: "100%", height: "140px", objectFit: "cover" }}
-                    />
-                  ) : (
-                    <div
-                      style={{
-                        width: "100%",
-                        height: "140px",
-                        background: "linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%)",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        fontSize: "32px",
-                      }}
-                    >
-                      ✨
-                    </div>
-                  )}
-                  <div style={{ padding: "20px", display: "flex", flexDirection: "column", flex: 1 }}>
-                    <p style={{ fontSize: "14px", lineHeight: 1.6, color: "#374151", flex: 1, whiteSpace: "pre-wrap" }}>
-                      {post.length > 220 ? post.slice(0, 220) + "…" : post}
-                    </p>
-                    <Link
-                      href="/signup"
-                      style={{
-                        marginTop: "16px",
-                        display: "block",
-                        textAlign: "center",
-                        padding: "12px",
-                        borderRadius: "10px",
-                        background: "linear-gradient(135deg, #7C3AED 0%, #4F46E5 100%)",
-                        color: "#ffffff",
-                        fontWeight: 700,
-                        fontSize: "14px",
-                        textDecoration: "none",
-                      }}
-                    >
-                      Start Free Trial to Publish This →
-                    </Link>
+      {/* Real Results tabbed */}
+      <section className="px-4 sm:px-6 py-16 sm:py-24 bg-[#f3f2f1]">
+        <div className="max-w-3xl mx-auto">
+          <div className="text-center mb-8">
+            <span className="inline-block mb-4 px-4 py-1 rounded-full text-xs font-bold border border-emerald-300 text-emerald-700 bg-emerald-50 tracking-[0.15em] uppercase">
+              Real data &#183; LinkedIn Analytics
+            </span>
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-[#1b1916] mb-3 tracking-tight">
+              Real Statistics
+            </h2>
+            <p className="text-slate-500 text-base max-w-xl mx-auto">
+              select a time period
+            </p>
+          </div>
+
+          <div className="flex justify-center mb-6">
+            <div className="inline-flex bg-white border border-black/10 rounded-full p-1 gap-1 shadow-sm">
+              {(["week", "month", "3months"] as const).map((tab) => {
+                const label = tab === "week" ? "1 Week" : tab === "month" ? "1 Month" : "3 Months"
+                return (
+                  <button
+                    key={tab}
+                    onClick={() => setResultsTab(tab)}
+                    className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-all ${
+                      resultsTab === tab
+                        ? "bg-[#1b1916] text-white shadow"
+                        : "text-slate-500 hover:text-[#1b1916]"
+                    }`}
+                  >
+                    {label}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+
+          <div className="bg-white rounded-2xl border border-black/10 shadow-sm p-6 sm:p-8">
+            {resultsTab === "week" && (
+              <>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-sm font-semibold text-[#1b1916]">Content performance</span>
+                  <span className="text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">7 days</span>
+                </div>
+                <div className="mt-3 mb-1">
+                  <span className="text-4xl font-black text-[#1b1916]">1,367</span>
+                  <span className="text-sm text-slate-500 ml-2">Impressions</span>
+                </div>
+                <div className="flex items-center gap-1 mb-5">
+                  <svg viewBox="0 0 12 12" fill="none" className="w-3 h-3"><path d="M2 9L5 5.5L8 7.5L10 4" stroke="#059669" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                  <span className="text-emerald-600 text-xs font-bold">+1,354%</span>
+                  <span className="text-slate-400 text-xs">vs. prior 7 days</span>
+                </div>
+                <div className="relative h-28 mb-5">
+                  <svg viewBox="0 0 300 100" className="w-full h-full" preserveAspectRatio="none">
+                    <line x1="0" y1="33" x2="300" y2="33" stroke="#f1f5f9" strokeWidth="1"/>
+                    <line x1="0" y1="66" x2="300" y2="66" stroke="#f1f5f9" strokeWidth="1"/>
+                    <defs>
+                      <linearGradient id="chartGradW" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#0d9488" stopOpacity="0.2"/>
+                        <stop offset="100%" stopColor="#0d9488" stopOpacity="0"/>
+                      </linearGradient>
+                    </defs>
+                    <path d="M0 98 L40 96 L80 88 L120 70 L160 42 L200 25 L240 16 L300 8 L300 100 L0 100 Z" fill="url(#chartGradW)"/>
+                    <path d="M0 98 L40 96 L80 88 L120 70 L160 42 L200 25 L240 16 L300 8" fill="none" stroke="#0d9488" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    <circle cx="300" cy="8" r="4" fill="#0d9488"/>
+                  </svg>
+                  <div className="absolute bottom-0 left-0 right-0 flex justify-between text-xs text-slate-400 px-1">
+                    <span>Day 1</span><span>Day 3</span><span>Day 5</span><span>Day 7</span>
                   </div>
                 </div>
-              ))}
-            </div>
-            <p style={{ marginTop: "20px", textAlign: "center", fontSize: "14px", color: "#6b7280" }}>
-              7-day free trial · No credit card
-            </p>
-          </div>
-        </section>
-      )}
-
-      {/* PAIN SECTION — white */}
-      <section style={{ backgroundColor: "#ffffff", padding: "96px 24px" }}>
-        <div style={{ maxWidth: "900px", margin: "0 auto", textAlign: "center" }}>
-          <h2 style={{ fontSize: "clamp(32px, 4vw, 48px)", fontWeight: 900, letterSpacing: "-0.03em", color: "#0A0A0A", marginBottom: "48px", lineHeight: 1.1 }}>
-            If you&apos;re not posting, <span style={{ color: "#EF4444" }}>you&apos;re invisible</span>
-          </h2>
-          <div style={{ display: "flex", flexDirection: "column", gap: "20px", maxWidth: "600px", margin: "0 auto 48px", textAlign: "left" }}>
-            {[
-              "Your competitors show up daily — you don't",
-              "Decision-makers check LinkedIn before buying",
-              "The one who posts → gets the deal",
-            ].map((point) => (
-              <div key={point} style={{ display: "flex", alignItems: "flex-start", gap: "16px" }}>
-                <span style={{ color: "#EF4444", fontSize: "22px", flexShrink: 0, lineHeight: 1.3 }}>❌</span>
-                <span style={{ fontWeight: 700, fontSize: "20px", color: "#0A0A0A", lineHeight: 1.4 }}>{point}</span>
-              </div>
-            ))}
-          </div>
-          <div style={{
-            backgroundColor: "#0A0A0A",
-            borderRadius: "20px",
-            padding: "40px 48px",
-            textAlign: "center",
-          }}>
-            <p style={{ color: "#ffffff", fontSize: "24px", fontWeight: 700, lineHeight: 1.3 }}>
-              Every day you stay silent, someone else takes your clients
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* WHAT YOU GET — light gray */}
-      <section style={{ backgroundColor: "#F8F8F8", padding: "96px 24px" }}>
-        <div style={{ maxWidth: "900px", margin: "0 auto" }}>
-          <h2 style={{ fontSize: "clamp(32px, 4vw, 48px)", fontWeight: 900, letterSpacing: "-0.03em", color: "#0A0A0A", marginBottom: "48px", textAlign: "center", lineHeight: 1.2 }}>
-            We don&apos;t help you &apos;grow&apos; —<br />we bring you <span style={{ background: "linear-gradient(135deg, #7C3AED, #4F46E5)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>inbound</span>
-          </h2>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "20px" }}>
-            {[
-              { title: "7 posts per week", desc: "Every week, no gaps, no excuses" },
-              { title: "Written in your voice", desc: "Not generic AI — your tone, your style" },
-              { title: "Designed for clients", desc: "Not likes. Not followers. Inbound leads." },
-              { title: "Fully automated", desc: "No thinking, no effort, no writing" },
-              { title: "Custom AI images", desc: "Professional cover image for every post" },
-            ].map(({ title, desc }) => (
-              <div key={title} style={{
-                backgroundColor: "#ffffff",
-                borderRadius: "16px",
-                padding: "28px",
-                boxShadow: "0 2px 12px rgba(0,0,0,0.06)",
-                display: "flex",
-                gap: "16px",
-                alignItems: "flex-start",
-              }}>
-                <div style={{
-                  width: "32px",
-                  height: "32px",
-                  borderRadius: "50%",
-                  background: "linear-gradient(135deg, #7C3AED, #4F46E5)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  flexShrink: 0,
-                  color: "#ffffff",
-                  fontWeight: 700,
-                  fontSize: "15px",
-                }}>
-                  ✓
+                <div className="pt-4 border-t border-black/5 grid grid-cols-2 sm:grid-cols-4 gap-4">
+                  <div><div className="text-xl font-black text-[#1b1916]">1,367</div><div className="text-xs text-slate-500">Impressions</div></div>
+                  <div><div className="text-xl font-black text-[#1b1916]">447</div><div className="text-xs text-slate-500">Members reached</div></div>
+                  <div><div className="text-xl font-black text-emerald-600">7</div><div className="text-xs text-slate-500">Posts published</div></div>
+                  <div><div className="text-xl font-black text-violet-600">+89%</div><div className="text-xs text-slate-500">Profile views</div></div>
                 </div>
-                <div>
-                  <p style={{ fontWeight: 700, fontSize: "16px", color: "#0A0A0A", marginBottom: "4px" }}>{title}</p>
-                  <p style={{ fontSize: "14px", color: "#6b7280", lineHeight: 1.5 }}>{desc}</p>
+                <div className="mt-3 flex items-center gap-2 bg-emerald-50 border border-emerald-100 rounded-xl px-4 py-2">
+                  <svg viewBox="0 0 16 16" fill="none" className="w-4 h-4 flex-shrink-0"><circle cx="8" cy="8" r="7" stroke="#059669" strokeWidth="1.5"/><path d="M8 5v3.5l2 1.5" stroke="#059669" strokeWidth="1.5" strokeLinecap="round"/></svg>
+                  <span className="text-xs text-emerald-700 font-semibold">0 min spent writing &#8212; fully automated</span>
                 </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+              </>
+            )}
 
-      {/* BEFORE / AFTER — dark */}
-      <section style={{ backgroundColor: "#0A0A0A", padding: "96px 24px" }}>
-        <div style={{ maxWidth: "900px", margin: "0 auto" }}>
-          <h2 style={{ fontSize: "clamp(32px, 4vw, 48px)", fontWeight: 900, letterSpacing: "-0.03em", color: "#ffffff", textAlign: "center", marginBottom: "48px" }}>
-            From invisible → to inbound
-          </h2>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px", marginBottom: "40px" }}>
-            {/* Before */}
-            <div style={{
-              backgroundColor: "rgba(255,255,255,0.06)",
-              border: "1px solid rgba(255,255,255,0.12)",
-              borderRadius: "20px",
-              padding: "40px",
-            }}>
-              <p style={{ color: "#9ca3af", fontSize: "12px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "24px" }}>BEFORE</p>
-              <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-                {["0–1 posts/month", "~200–500 views", "no inbound"].map((s) => (
-                  <p key={s} style={{ color: "#6b7280", fontSize: "18px", fontWeight: 600 }}>{s}</p>
-                ))}
-              </div>
-            </div>
-            {/* After */}
-            <div style={{
-              background: "linear-gradient(135deg, #7C3AED 0%, #4F46E5 100%)",
-              borderRadius: "20px",
-              padding: "40px",
-            }}>
-              <p style={{ color: "rgba(255,255,255,0.7)", fontSize: "12px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "24px" }}>AFTER 2 WEEKS</p>
-              <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-                {["7 posts/week", "10,000+ views", "5–15 inbound messages"].map((s) => (
-                  <p key={s} style={{ color: "#ffffff", fontSize: "20px", fontWeight: 700 }}>{s}</p>
-                ))}
-              </div>
-            </div>
+            {resultsTab === "month" && (
+              <>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-sm font-semibold text-[#1b1916]">Content performance</span>
+                  <span className="text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">30 days</span>
+                </div>
+                <div className="mt-3 mb-1">
+                  <span className="text-4xl font-black text-[#1b1916]">9,240</span>
+                  <span className="text-sm text-slate-500 ml-2">Impressions</span>
+                </div>
+                <div className="flex items-center gap-1 mb-5">
+                  <svg viewBox="0 0 12 12" fill="none" className="w-3 h-3"><path d="M2 9L5 5.5L8 7.5L10 4" stroke="#059669" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                  <span className="text-emerald-600 text-xs font-bold">+847%</span>
+                  <span className="text-slate-400 text-xs">vs. prior month</span>
+                </div>
+                <div className="relative h-28 mb-5">
+                  <svg viewBox="0 0 300 100" className="w-full h-full" preserveAspectRatio="none">
+                    <line x1="0" y1="33" x2="300" y2="33" stroke="#f1f5f9" strokeWidth="1"/>
+                    <line x1="0" y1="66" x2="300" y2="66" stroke="#f1f5f9" strokeWidth="1"/>
+                    <defs>
+                      <linearGradient id="chartGradM" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#0d9488" stopOpacity="0.2"/>
+                        <stop offset="100%" stopColor="#0d9488" stopOpacity="0"/>
+                      </linearGradient>
+                    </defs>
+                    <path d="M0 95 L60 85 L120 68 L180 40 L240 20 L300 6 L300 100 L0 100 Z" fill="url(#chartGradM)"/>
+                    <path d="M0 95 L60 85 L120 68 L180 40 L240 20 L300 6" fill="none" stroke="#0d9488" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    <circle cx="300" cy="6" r="4" fill="#0d9488"/>
+                  </svg>
+                  <div className="absolute bottom-0 left-0 right-0 flex justify-between text-xs text-slate-400 px-1">
+                    <span>Week 1</span><span>Week 2</span><span>Week 3</span><span>Week 4</span>
+                  </div>
+                </div>
+                <div className="pt-4 border-t border-black/5 grid grid-cols-2 sm:grid-cols-4 gap-4">
+                  <div><div className="text-xl font-black text-[#1b1916]">3,180</div><div className="text-xs text-slate-500">Members reached</div></div>
+                  <div><div className="text-xl font-black text-emerald-600">28</div><div className="text-xs text-slate-500">Posts published</div></div>
+                  <div><div className="text-xl font-black text-violet-600">+47</div><div className="text-xs text-slate-500">Inbound connections</div></div>
+                  <div><div className="text-xl font-black text-violet-600">+312%</div><div className="text-xs text-slate-500">Profile views</div></div>
+                </div>
+                <div className="mt-3 flex items-center gap-2 bg-emerald-50 border border-emerald-100 rounded-xl px-4 py-2">
+                  <svg viewBox="0 0 16 16" fill="none" className="w-4 h-4 flex-shrink-0"><circle cx="8" cy="8" r="7" stroke="#059669" strokeWidth="1.5"/><path d="M8 5v3.5l2 1.5" stroke="#059669" strokeWidth="1.5" strokeLinecap="round"/></svg>
+                  <span className="text-xs text-emerald-700 font-semibold">0 min spent writing &#8212; fully automated</span>
+                </div>
+              </>
+            )}
+
+            {resultsTab === "3months" && (
+              <>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-sm font-semibold text-[#1b1916]">Content performance</span>
+                  <span className="text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">90 days</span>
+                </div>
+                <div className="mt-3 mb-1">
+                  <span className="text-4xl font-black text-[#1b1916]">38,500</span>
+                  <span className="text-sm text-slate-500 ml-2">Impressions</span>
+                </div>
+                <div className="flex items-center gap-1 mb-5">
+                  <svg viewBox="0 0 12 12" fill="none" className="w-3 h-3"><path d="M2 9L5 5.5L8 7.5L10 4" stroke="#059669" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                  <span className="text-emerald-600 text-xs font-bold">+2,140%</span>
+                  <span className="text-slate-400 text-xs">vs. prior 3 months</span>
+                </div>
+                <div className="relative h-28 mb-5">
+                  <svg viewBox="0 0 300 100" className="w-full h-full" preserveAspectRatio="none">
+                    <line x1="0" y1="33" x2="300" y2="33" stroke="#f1f5f9" strokeWidth="1"/>
+                    <line x1="0" y1="66" x2="300" y2="66" stroke="#f1f5f9" strokeWidth="1"/>
+                    <defs>
+                      <linearGradient id="chartGrad3M" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#0d9488" stopOpacity="0.2"/>
+                        <stop offset="100%" stopColor="#0d9488" stopOpacity="0"/>
+                      </linearGradient>
+                    </defs>
+                    <path d="M0 97 L75 88 L150 62 L225 28 L300 4 L300 100 L0 100 Z" fill="url(#chartGrad3M)"/>
+                    <path d="M0 97 L75 88 L150 62 L225 28 L300 4" fill="none" stroke="#0d9488" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    <circle cx="300" cy="4" r="4" fill="#0d9488"/>
+                  </svg>
+                  <div className="absolute bottom-0 left-0 right-0 flex justify-between text-xs text-slate-400 px-1">
+                    <span>Month 1</span><span>Month 2</span><span>Month 3</span>
+                  </div>
+                </div>
+                <div className="pt-4 border-t border-black/5 grid grid-cols-2 sm:grid-cols-4 gap-4">
+                  <div><div className="text-xl font-black text-[#1b1916]">12,400</div><div className="text-xs text-slate-500">Members reached</div></div>
+                  <div><div className="text-xl font-black text-emerald-600">84</div><div className="text-xs text-slate-500">Posts published</div></div>
+                  <div><div className="text-xl font-black text-violet-600">23</div><div className="text-xs text-slate-500">Inbound DMs / leads</div></div>
+                  <div><div className="text-xl font-black text-violet-600">+890%</div><div className="text-xs text-slate-500">Profile views</div></div>
+                </div>
+                <div className="mt-3 flex items-center gap-2 bg-emerald-50 border border-emerald-100 rounded-xl px-4 py-2">
+                  <svg viewBox="0 0 16 16" fill="none" className="w-4 h-4 flex-shrink-0"><circle cx="8" cy="8" r="7" stroke="#059669" strokeWidth="1.5"/><path d="M8 5v3.5l2 1.5" stroke="#059669" strokeWidth="1.5" strokeLinecap="round"/></svg>
+                  <span className="text-xs text-emerald-700 font-semibold">0 min spent writing &#8212; fully automated</span>
+                </div>
+              </>
+            )}
           </div>
-          <p style={{ color: "#ffffff", fontSize: "22px", fontStyle: "italic", textAlign: "center", opacity: 0.85 }}>
-            &ldquo;One post can close a deal&rdquo;
+
+          <p className="text-center text-xs text-slate-400 mt-4">
+            * Based on real user data. Individual results may vary.
+          </p>
+          <p className="text-center text-xs text-slate-400 mt-1 italic">
+            &#8212; K.S., Startup Founder (real account, shared with permission)
           </p>
         </div>
       </section>
 
-      {/* WHY IT WORKS — white */}
-      <section style={{ backgroundColor: "#ffffff", padding: "96px 24px" }}>
-        <div style={{ maxWidth: "800px", margin: "0 auto", textAlign: "center" }}>
-          <h2 style={{ fontSize: "clamp(30px, 4vw, 48px)", fontWeight: 900, letterSpacing: "-0.03em", color: "#0A0A0A", marginBottom: "48px", lineHeight: 1.15 }}>
-            LinkedIn rewards consistency —{" "}
-            <span style={{ background: "linear-gradient(135deg, #7C3AED, #4F46E5)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>not effort</span>
-          </h2>
-          <div style={{ display: "flex", flexDirection: "column", gap: "24px", marginBottom: "56px" }}>
-            {[
-              { n: "1", text: "Posting daily = algorithm boost" },
-              { n: "2", text: "Visibility → trust → clients" },
-              { n: "3", text: "People buy from those they see often" },
-            ].map(({ n, text }) => (
-              <div key={n} style={{ display: "flex", alignItems: "center", gap: "20px" }}>
-                <div style={{
-                  width: "48px",
-                  height: "48px",
-                  borderRadius: "50%",
-                  background: "linear-gradient(135deg, #7C3AED, #4F46E5)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  color: "#ffffff",
-                  fontWeight: 800,
-                  fontSize: "18px",
-                  flexShrink: 0,
-                }}>
-                  {n}
+      {/* Results / Outcomes */}
+      <section id="results" className="px-4 sm:px-6 py-16 sm:py-28" style={{ background: "linear-gradient(135deg, #1e0a3c 0%, #0f0f23 50%, #0d1117 100%)" }}>
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-12 sm:mb-16">
+            <span className="inline-block mb-4 px-4 py-1 rounded-full text-xs font-bold border border-violet-500/50 text-violet-400 bg-violet-500/10 tracking-[0.2em] uppercase">
+              Results
+            </span>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-4 text-white leading-tight tracking-tight">
+              What 7 posts a week gets you
+            </h2>
+            <p className="text-slate-400 text-base sm:text-lg max-w-xl mx-auto">
+              The numbers behind consistent LinkedIn presence
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6">
+            <div className="rounded-2xl border border-white/10 p-6 sm:p-8 flex flex-col gap-5" style={{ background: "rgba(255,255,255,0.04)" }}>
+              <div className="flex items-start gap-4">
+                <div className="flex-shrink-0 w-11 h-11 rounded-xl bg-violet-600/20 border border-violet-500/30 flex items-center justify-center">
+                  <svg viewBox="0 0 24 24" fill="none" className="w-5 h-5 text-violet-400" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
+                    <polyline points="17 6 23 6 23 12" />
+                  </svg>
                 </div>
-                <p style={{ fontSize: "20px", fontWeight: 600, color: "#0A0A0A", textAlign: "left" }}>{text}</p>
-              </div>
-            ))}
-          </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-            <p style={{ fontSize: "26px", fontWeight: 800, color: "#0A0A0A" }}>It&apos;s not about writing better.</p>
-            <p style={{ fontSize: "26px", fontWeight: 800, color: "#7C3AED" }}>It&apos;s about showing up more.</p>
-          </div>
-        </div>
-      </section>
-
-      {/* RESULTS — light gray */}
-      <section style={{ backgroundColor: "#F8F8F8", padding: "96px 24px" }}>
-        <div style={{ maxWidth: "900px", margin: "0 auto" }}>
-          <h2 style={{ fontSize: "clamp(30px, 4vw, 44px)", fontWeight: 900, letterSpacing: "-0.03em", color: "#0A0A0A", textAlign: "center", marginBottom: "48px" }}>
-            What consistent posting gets you:
-          </h2>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "24px" }}>
-            {[
-              { stat: "+3.8x", label: "profile views" },
-              { stat: "+280%", label: "inbound messages" },
-              { stat: "More deals", label: "from visibility" },
-            ].map(({ stat, label }) => (
-              <div key={stat} style={{
-                backgroundColor: "#ffffff",
-                borderRadius: "20px",
-                padding: "40px 24px",
-                textAlign: "center",
-                boxShadow: "0 4px 20px rgba(0,0,0,0.07)",
-              }}>
-                <p style={{ fontSize: stat.length > 5 ? "40px" : "56px", fontWeight: 900, color: "#7C3AED", letterSpacing: "-0.04em", lineHeight: 1, marginBottom: "8px" }}>{stat}</p>
-                <p style={{ fontSize: "15px", color: "#6b7280", fontWeight: 500 }}>{label}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* REMOVE AI FEAR — white */}
-      <section style={{ backgroundColor: "#ffffff", padding: "96px 24px" }}>
-        <div style={{ maxWidth: "800px", margin: "0 auto" }}>
-          <h2 style={{ fontSize: "clamp(30px, 4vw, 48px)", fontWeight: 900, letterSpacing: "-0.03em", color: "#0A0A0A", textAlign: "center", marginBottom: "48px" }}>
-            This doesn&apos;t sound like AI
-          </h2>
-          <div style={{ display: "flex", flexDirection: "column", gap: "20px", maxWidth: "480px", margin: "0 auto 40px" }}>
-            {[
-              "Matches your tone",
-              "Based on your profile & niche",
-              "No templates, no generic content",
-              "Every post reads like you wrote it",
-            ].map((item) => (
-              <div key={item} style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-                <div style={{
-                  width: "28px",
-                  height: "28px",
-                  borderRadius: "50%",
-                  background: "linear-gradient(135deg, #7C3AED, #4F46E5)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  color: "#ffffff",
-                  fontWeight: 700,
-                  fontSize: "13px",
-                  flexShrink: 0,
-                }}>
-                  ✓
+                <div className="flex-1 min-w-0">
+                  <div className="text-4xl sm:text-5xl font-black mb-1" style={{ background: "linear-gradient(90deg, #a78bfa, #818cf8)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+                    3.8&#215;
+                  </div>
+                  <div className="text-white font-semibold text-base leading-snug">more profile views</div>
+                  <p className="text-slate-400 text-sm mt-2 leading-relaxed">
+                    Professionals who post consistently get 3.8&#215; more profile views and 5&#215; more connection requests.
+                  </p>
                 </div>
-                <p style={{ fontSize: "17px", fontWeight: 600, color: "#0A0A0A" }}>{item}</p>
               </div>
-            ))}
-          </div>
-          <div style={{
-            backgroundColor: "#0A0A0A",
-            borderRadius: "16px",
-            padding: "32px",
-            textAlign: "center",
-          }}>
-            <p style={{ color: "#ffffff", fontSize: "22px", fontWeight: 800 }}>People think you wrote it</p>
-          </div>
-        </div>
-      </section>
-
-      {/* HOW IT WORKS — dark */}
-      <section style={{ backgroundColor: "#111111", padding: "96px 24px" }}>
-        <div style={{ maxWidth: "900px", margin: "0 auto" }}>
-          <h2 style={{ fontSize: "clamp(30px, 4vw, 48px)", fontWeight: 900, letterSpacing: "-0.03em", color: "#ffffff", textAlign: "center", marginBottom: "56px" }}>
-            Up and running in 3 minutes
-          </h2>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "32px" }}>
-            {[
-              { step: "1", title: "Connect LinkedIn", desc: "Secure OAuth — no passwords" },
-              { step: "2", title: "Tell us about yourself", desc: "2-minute input → your content DNA" },
-              { step: "3", title: "We post for you", desc: "Daily posts, fully automated" },
-            ].map(({ step, title, desc }) => (
-              <div key={step} style={{ textAlign: "center" }}>
-                <div style={{
-                  width: "56px",
-                  height: "56px",
-                  borderRadius: "50%",
-                  background: "linear-gradient(135deg, #7C3AED, #4F46E5)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  color: "#ffffff",
-                  fontWeight: 800,
-                  fontSize: "22px",
-                  margin: "0 auto 20px",
-                  boxShadow: "0 4px 20px rgba(124,58,237,0.4)",
-                }}>
-                  {step}
-                </div>
-                <p style={{ color: "#ffffff", fontWeight: 700, fontSize: "18px", marginBottom: "8px" }}>{title}</p>
-                <p style={{ color: "#9ca3af", fontSize: "14px", lineHeight: 1.6 }}>{desc}</p>
+              <div className="flex items-end gap-2 h-14 pt-2">
+                <div className="flex-1 rounded-t-md bg-slate-700/60" style={{ height: "30%" }} />
+                <div className="flex-1 rounded-t-md bg-slate-600/70" style={{ height: "50%" }} />
+                <div className="flex-1 rounded-t-md bg-violet-500/60" style={{ height: "70%" }} />
+                <div className="flex-1 rounded-t-md" style={{ height: "100%", background: "linear-gradient(180deg, #a78bfa, #7c3aed)" }} />
+                <div className="text-xs text-slate-500 self-end pb-0.5 ml-1 whitespace-nowrap">You &#8594;</div>
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* PRICING — white */}
-      <section style={{ backgroundColor: "#ffffff", padding: "96px 24px" }} id="pricing">
-        <div style={{ maxWidth: "900px", margin: "0 auto", textAlign: "center" }}>
-          <h2 style={{ fontSize: "clamp(30px, 4vw, 48px)", fontWeight: 900, letterSpacing: "-0.03em", color: "#0A0A0A", marginBottom: "56px" }}>
-            One client pays for years of this tool
-          </h2>
-          <div style={{
-            border: "2px solid #7C3AED",
-            borderRadius: "28px",
-            padding: "56px 48px",
-            maxWidth: "420px",
-            margin: "0 auto",
-            boxShadow: "0 12px 48px rgba(124,58,237,0.15)",
-          }}>
-            <div style={{ marginBottom: "8px" }}>
-              <span style={{ fontSize: "80px", fontWeight: 900, color: "#7C3AED", letterSpacing: "-0.05em", lineHeight: 1 }}>$29</span>
-              <span style={{ fontSize: "20px", color: "#9ca3af", fontWeight: 500, marginLeft: "4px" }}> / month</span>
             </div>
-            <p style={{ color: "#9ca3af", fontSize: "14px", marginBottom: "32px" }}>or $203/year (save 30%)</p>
 
-            <div style={{ display: "flex", flexDirection: "column", gap: "14px", marginBottom: "36px", textAlign: "left" }}>
+            <div className="rounded-2xl border border-white/10 p-6 sm:p-8 flex flex-col gap-5" style={{ background: "rgba(255,255,255,0.04)" }}>
+              <div className="flex items-start gap-4">
+                <div className="flex-shrink-0 w-11 h-11 rounded-xl bg-pink-600/20 border border-pink-500/30 flex items-center justify-center">
+                  <svg viewBox="0 0 24 24" fill="none" className="w-5 h-5 text-pink-400" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="2" y="7" width="20" height="14" rx="2" />
+                    <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" />
+                    <line x1="12" y1="12" x2="12" y2="16" />
+                    <line x1="10" y1="14" x2="14" y2="14" />
+                  </svg>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-3xl sm:text-4xl font-black mb-1" style={{ background: "linear-gradient(90deg, #f472b6, #ec4899)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+                    73%
+                  </div>
+                  <div className="text-white font-semibold text-base leading-snug">of B2B buyers check LinkedIn before meeting</div>
+                  <p className="text-slate-400 text-sm mt-2 leading-relaxed">
+                    A strong content presence turns cold outreach into warm conversations &#8212; before you even say hello.
+                  </p>
+                </div>
+              </div>
+              <div className="flex flex-col items-center gap-1 pt-1">
+                <div className="rounded-sm h-5 bg-pink-500/50" style={{ width: "90%" }} />
+                <div className="rounded-sm h-5 bg-pink-500/35" style={{ width: "62%" }} />
+                <div className="rounded-sm h-5 bg-pink-500/55" style={{ width: "36%" }} />
+                <div className="text-xs text-slate-500 mt-1">Leads &#8594; Prospects &#8594; Clients</div>
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-white/10 p-6 sm:p-8 flex flex-col gap-5" style={{ background: "rgba(255,255,255,0.04)" }}>
+              <div className="flex items-start gap-4">
+                <div className="flex-shrink-0 w-11 h-11 rounded-xl bg-cyan-600/20 border border-cyan-500/30 flex items-center justify-center">
+                  <svg viewBox="0 0 24 24" fill="none" className="w-5 h-5 text-cyan-400" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="5" r="2" />
+                    <circle cx="4" cy="19" r="2" />
+                    <circle cx="20" cy="19" r="2" />
+                    <line x1="12" y1="7" x2="4" y2="17" />
+                    <line x1="12" y1="7" x2="20" y2="17" />
+                    <line x1="6" y1="19" x2="18" y2="19" />
+                  </svg>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-4xl sm:text-5xl font-black mb-1" style={{ background: "linear-gradient(90deg, #67e8f9, #22d3ee)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+                    +280%
+                  </div>
+                  <div className="text-white font-semibold text-base leading-snug">inbound messages</div>
+                  <p className="text-slate-400 text-sm mt-2 leading-relaxed">
+                    Thought leaders on LinkedIn receive 2.8&#215; more inbound partnership and collaboration requests.
+                  </p>
+                </div>
+              </div>
+              <div className="relative h-14 mt-1">
+                <div className="absolute w-4 h-4 rounded-full bg-cyan-400" style={{ top: "50%", left: "50%", transform: "translate(-50%,-50%)" }} />
+                {[
+                  { top: "10%", left: "20%" },
+                  { top: "10%", left: "75%" },
+                  { top: "75%", left: "12%" },
+                  { top: "75%", left: "82%" },
+                  { top: "40%", left: "88%" },
+                ].map((pos, idx) => (
+                  <div key={idx}>
+                    <div
+                      className="absolute w-2.5 h-2.5 rounded-full bg-slate-500"
+                      style={{ top: pos.top, left: pos.left, transform: "translate(-50%,-50%)" }}
+                    />
+                  </div>
+                ))}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="text-xs text-slate-500 mt-8">Your network expands</div>
+                </div>
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-white/10 p-6 sm:p-8 flex flex-col gap-5" style={{ background: "rgba(255,255,255,0.04)" }}>
+              <div className="flex items-start gap-4">
+                <div className="flex-shrink-0 w-11 h-11 rounded-xl bg-amber-600/20 border border-amber-500/30 flex items-center justify-center">
+                  <svg viewBox="0 0 24 24" fill="none" className="w-5 h-5 text-amber-400" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                  </svg>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-4xl sm:text-5xl font-black mb-1" style={{ background: "linear-gradient(90deg, #fcd34d, #f59e0b)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+                    89%
+                  </div>
+                  <div className="text-white font-semibold text-base leading-snug">of clients Google you first</div>
+                  <p className="text-slate-400 text-sm mt-2 leading-relaxed">
+                    Your LinkedIn is your digital first impression. Make it count before the sales call.
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 pt-1">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <div
+                    key={star}
+                    className="flex-1 h-3 rounded-full"
+                    style={{ background: star <= 4 ? "linear-gradient(90deg, #fcd34d, #f59e0b)" : "rgba(255,255,255,0.1)" }}
+                  />
+                ))}
+                <span className="text-xs text-slate-500 ml-1 whitespace-nowrap">4.8 / 5</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="text-center mt-12 sm:mt-16">
+            <a
+              href="/signup"
+              className="inline-flex items-center gap-2 bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-white px-10 py-4 rounded-xl text-base font-semibold transition-all shadow-lg shadow-violet-700/30"
+            >
+              Start attracting clients today
+              <svg viewBox="0 0 24 24" fill="none" className="w-4 h-4" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="5" y1="12" x2="19" y2="12" />
+                <polyline points="12 5 19 12 12 19" />
+              </svg>
+            </a>
+          </div>
+        </div>
+      </section>
+
+      {/* FOMO */}
+      <section className="px-4 sm:px-6 py-16 sm:py-24" style={{ backgroundColor: "#07071a" }}>
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-10 sm:mb-16">
+            <span className="inline-block mb-4 px-4 py-1 rounded-full text-sm font-medium border border-red-500/40 text-red-400 bg-red-500/10 tracking-widest uppercase">
+              The Hard Truth
+            </span>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-5 text-white leading-tight">
+              If You&apos;re Not Posting,{" "}
+              <span className="bg-gradient-to-r from-red-400 via-orange-400 to-yellow-400 bg-clip-text text-transparent">
+                You&apos;re Invisible
+              </span>
+            </h2>
+            <p className="text-slate-400 text-base sm:text-lg max-w-2xl mx-auto">
+              LinkedIn isn&apos;t a social network &#8212; it&apos;s where buying decisions get made. Every day you don&apos;t post, you&apos;re invisible to the clients who would hire you.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 mb-10 sm:mb-14">
+            {[
+              { number: "99%", label: "of LinkedIn users never post", sub: "yet the 1% who do get 9 billion impressions per week", source: "Buffer, 2025", sourceUrl: "https://buffer.com/resources/linkedin-statistics/" },
+              { number: "80%", label: "of all B2B leads on social come from LinkedIn", sub: "it's not Instagram or Facebook — it's here", source: "Foundation Inc, 2025", sourceUrl: "https://foundationinc.co/lab/b2b-marketing-linkedin-stats/" },
+              { number: "23%", label: "of decision-makers bought after reading a post", sub: "thought leadership directly turns readers into clients", source: "Edelman x LinkedIn, 2024", sourceUrl: "https://www.edelman.com/expertise/Business-Marketing/2024-b2b-thought-leadership-report" },
+            ].map((s, i) => (
+              <div key={i} className="rounded-2xl p-8 border border-white/10 text-center" style={{ background: "rgba(255,255,255,0.04)" }}>
+                <div className="text-5xl font-black bg-gradient-to-r from-red-400 to-orange-400 bg-clip-text text-transparent mb-3">{s.number}</div>
+                <div className="text-white font-semibold text-base mb-2">{s.label}</div>
+                <div className="text-slate-500 text-sm leading-relaxed mb-3">{s.sub}</div>
+                <a href={s.sourceUrl} target="_blank" rel="noopener noreferrer" className="text-[10px] text-slate-600 hover:text-slate-400 underline underline-offset-2 transition-colors">
+                  Source: {s.source}
+                </a>
+              </div>
+            ))}
+          </div>
+
+          <div className="rounded-2xl border border-red-500/20 p-5 sm:p-8" style={{ background: "linear-gradient(135deg, rgba(239,68,68,0.06) 0%, rgba(255,255,255,0.02) 100%)" }}>
+            <h3 className="text-white font-bold text-lg sm:text-xl mb-4 sm:mb-6">Every week without posting, you miss:</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
               {[
-                "7 AI-written posts per week",
-                "Custom images for every post",
-                "Auto-posting at peak time",
-                "Profile-based personalization",
-                "Edit anytime",
-                "7-day free trial",
-              ].map((item) => (
-                <div key={item} style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                  <span style={{ color: "#7C3AED", fontWeight: 700, fontSize: "16px", flexShrink: 0 }}>✓</span>
-                  <span style={{ fontSize: "15px", color: "#374151", fontWeight: 500 }}>{item}</span>
+                "65 million decision-makers who could see your name — but don't",
+                "Inbound leads that go to the person who showed up in their feed last week",
+                "Job offers and partnership requests that flow to visible experts",
+                "Algorithm visibility: inactive profiles get 50%+ less reach over time",
+                "Deals worth paying a premium for — 60% of buyers pay more for thought leaders",
+                "Your position as the go-to expert in your niche, taken by someone else",
+              ].map((item, i) => (
+                <div key={i} className="flex items-start gap-3">
+                  <span className="text-red-400 mt-0.5 text-lg flex-shrink-0">&#10005;</span>
+                  <span className="text-slate-300 text-sm leading-relaxed">{item}</span>
                 </div>
               ))}
             </div>
+          </div>
 
+          <div className="text-center mt-10">
+            <p className="text-slate-400 text-base mb-6">The good news? The bar is on the floor &#8212; 99% of people don&apos;t post. You just need to show up.</p>
             <button
               onClick={handleStartTrial}
-              style={{
-                width: "100%",
-                background: "linear-gradient(135deg, #7C3AED 0%, #4F46E5 100%)",
-                color: "#ffffff",
-                padding: "18px",
-                borderRadius: "14px",
-                fontSize: "17px",
-                fontWeight: 700,
-                border: "none",
-                cursor: "pointer",
-                boxShadow: "0 4px 20px rgba(124,58,237,0.4)",
-                fontFamily: "inherit",
-              }}
+              className="bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-white px-10 py-4 rounded-xl text-base font-semibold transition-all"
             >
-              Start Free — No Card
+              Start Free &#8212; No Credit Card
             </button>
-            <p style={{ marginTop: "12px", color: "#9ca3af", fontSize: "13px" }}>Cancel anytime</p>
           </div>
         </div>
       </section>
 
-      {/* FOMO + WHAT YOU'RE LOSING — dark */}
-      <section style={{ backgroundColor: "#0A0A0A", padding: "96px 24px" }}>
-        <div style={{ maxWidth: "800px", margin: "0 auto" }}>
-          <h2 style={{ fontSize: "clamp(28px, 4vw, 44px)", fontWeight: 900, letterSpacing: "-0.03em", color: "#ffffff", marginBottom: "40px", textAlign: "center" }}>
-            While you stay silent, someone else takes your deals
-          </h2>
-          <div style={{ display: "flex", flexDirection: "column", gap: "16px", marginBottom: "40px" }}>
-            {[
-              "99% of people don't post",
-              "The 1% capture all attention",
-              "Buyers choose visible experts",
-            ].map((point) => (
-              <div key={point} style={{ display: "flex", alignItems: "flex-start", gap: "16px" }}>
-                <span style={{ color: "#7C3AED", fontSize: "20px", flexShrink: 0, lineHeight: 1.4 }}>•</span>
-                <p style={{ color: "#d1d5db", fontSize: "18px", fontWeight: 500 }}>{point}</p>
+      {/* How it works */}
+      <section id="how-it-works" className="px-4 sm:px-6 py-16 sm:py-24" style={{ backgroundColor: "#f3f2f1" }}>
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-10 sm:mb-16">
+            <Badge className="mb-4 bg-pink-100 text-pink-700 border-pink-200">Simple Setup</Badge>
+            <h2 className="text-3xl sm:text-4xl font-bold mb-4 text-[#1b1916]">Up and Running in 3 Minutes</h2>
+            <p className="text-slate-600 text-base sm:text-lg">No copywriting. No scheduling. No thinking about what to post.</p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {steps.map((s, i) => (
+              <div key={i} className="relative text-center">
+                {i < steps.length - 1 && (
+                  <div className="hidden md:block absolute top-8 left-[calc(50%+2.5rem)] right-[-50%] h-px bg-gradient-to-r from-violet-300 to-transparent" />
+                )}
+                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-600 to-pink-600 flex items-center justify-center text-2xl font-black mx-auto mb-6 text-white">
+                  {s.num}
+                </div>
+                <h3 className="text-xl font-semibold mb-3 text-[#1b1916]">{s.title}</h3>
+                <p className="text-slate-600 text-sm leading-relaxed">{s.desc}</p>
               </div>
             ))}
           </div>
-          <div style={{ textAlign: "center", marginBottom: "56px" }}>
-            <p style={{ fontSize: "22px", fontWeight: 800, color: "#ffffff", marginBottom: "8px" }}>You don&apos;t need to be better</p>
-            <p style={{ fontSize: "22px", fontWeight: 800, color: "#7C3AED" }}>You just need to show up</p>
-          </div>
+        </div>
+      </section>
 
-          <div style={{ borderTop: "1px solid rgba(255,255,255,0.1)", paddingTop: "56px" }}>
-            <h3 style={{ color: "#ffffff", fontSize: "28px", fontWeight: 800, textAlign: "center", marginBottom: "32px" }}>
-              Every week without posting, you miss:
-            </h3>
-            <div style={{ display: "flex", flexDirection: "column", gap: "16px", marginBottom: "32px" }}>
-              {[
-                "inbound leads",
-                "partnership opportunities",
-                "visibility in your niche",
-                "trust before the first message",
-              ].map((item) => (
-                <div key={item} style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-                  <span style={{ color: "#f87171", fontSize: "18px", flexShrink: 0 }}>•</span>
-                  <p style={{ color: "#f87171", fontSize: "17px", fontWeight: 600 }}>{item}</p>
-                </div>
-              ))}
-            </div>
-            <p style={{ color: "#ef4444", fontSize: "16px", fontStyle: "italic", textAlign: "center", fontWeight: 600 }}>
-              Algorithm forgets inactive profiles
+      {/* Features */}
+      <section id="features" className="relative px-4 sm:px-6 py-16 sm:py-28 overflow-hidden" style={{ backgroundColor: "#07071a" }}>
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-violet-700/20 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-pink-700/15 rounded-full blur-3xl pointer-events-none" />
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            backgroundImage: "radial-gradient(circle, rgba(139,92,246,0.12) 1px, transparent 1px)",
+            backgroundSize: "40px 40px",
+          }}
+        />
+        <div className="relative max-w-6xl mx-auto">
+          <div className="text-center mb-10 sm:mb-16">
+            <span className="inline-block mb-4 px-4 py-1 rounded-full text-sm font-medium border border-violet-500/40 text-violet-400 bg-violet-500/10 tracking-widest uppercase">
+              What You Get
+            </span>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-5 text-white leading-tight">
+              Everything You Need to{" "}
+              <span className="bg-gradient-to-r from-violet-400 via-pink-400 to-cyan-400 bg-clip-text text-transparent">
+                Turn LinkedIn into a Client Machine
+              </span>
+            </h2>
+            <p className="text-slate-400 text-base sm:text-lg max-w-2xl mx-auto">
+              One subscription. Daily posts. Real inbound leads.
             </p>
           </div>
-        </div>
-      </section>
-
-      {/* FOUNDER — white */}
-      <section style={{ backgroundColor: "#ffffff", padding: "96px 24px" }}>
-        <div style={{ maxWidth: "640px", margin: "0 auto", textAlign: "center" }}>
-          <div style={{ fontSize: "80px", color: "#e5e7eb", lineHeight: 0.7, marginBottom: "24px", fontFamily: "Georgia, serif" }}>&ldquo;</div>
-          <p style={{ fontSize: "20px", lineHeight: 1.7, color: "#374151", marginBottom: "28px", fontStyle: "italic" }}>
-            I built this because staying visible on LinkedIn felt like a second job. Now it runs on autopilot.
-          </p>
-          <p style={{ fontWeight: 800, fontSize: "16px", color: "#0A0A0A", marginBottom: "20px" }}>Kiryl Sidarchuk</p>
-          <Link
-            href="/signup"
-            style={{ color: "#7C3AED", fontWeight: 700, fontSize: "16px", textDecoration: "none", borderBottom: "2px solid #7C3AED", paddingBottom: "2px" }}
-          >
-            See pricing and start free →
-          </Link>
-        </div>
-      </section>
-
-      {/* FAQ — light gray */}
-      <section style={{ backgroundColor: "#F8F8F8", padding: "96px 24px" }}>
-        <div style={{ maxWidth: "700px", margin: "0 auto" }}>
-          <h2 style={{ fontSize: "36px", fontWeight: 900, letterSpacing: "-0.03em", color: "#0A0A0A", marginBottom: "40px", textAlign: "center" }}>
-            Questions
-          </h2>
-          <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-            {faqs.map((faq, i) => (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {features.map((f, i) => (
               <div
                 key={i}
-                style={{
-                  borderBottom: "1px solid #e5e7eb",
-                  backgroundColor: "#ffffff",
-                  overflow: "hidden",
-                }}
+                className="group relative rounded-2xl p-6 border border-violet-500/20 hover:border-violet-500/50 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_0_30px_rgba(139,92,246,0.18),inset_0_0_30px_rgba(139,92,246,0.04)]"
+                style={{ background: "linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.02) 100%)" }}
+              >
+                <div className="mb-4 text-4xl">{f.icon}</div>
+                <h3 className="text-white font-semibold text-lg mb-2 tracking-tight">{f.title}</h3>
+                <p className="text-slate-400 text-sm leading-relaxed">{f.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Example Posts */}
+      <section className="px-4 sm:px-6 py-16 sm:py-24" style={{ backgroundColor: "#f3f2f1" }}>
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-10 sm:mb-16">
+            <Badge className="mb-4 bg-violet-100 text-violet-700 border-violet-200">Real Output</Badge>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 text-[#1b1916]">
+              See what AI writes for your audience
+            </h2>
+            <p className="text-slate-600 text-base sm:text-lg max-w-2xl mx-auto">
+              Real posts, generated in seconds. Scheduled automatically. Clients come to you.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="bg-white rounded-2xl shadow-md border border-black/8 overflow-hidden flex flex-col">
+              <div className="p-5 flex-1">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-11 h-11 rounded-full flex-shrink-0 flex items-center justify-center text-white text-sm font-bold" style={{ background: "linear-gradient(135deg, #7c3aed, #4f46e5)" }}>
+                    AK
+                  </div>
+                  <div>
+                    <div className="font-semibold text-[#1b1916] text-sm leading-tight">Alex Kim</div>
+                    <div className="text-slate-400 text-xs">LinkedIn Member &#183; B2B Consultant</div>
+                  </div>
+                </div>
+                <div className="text-[#1b1916] text-sm leading-relaxed space-y-2">
+                  <p>I closed a $40k deal last month. The client messaged me first.</p>
+                  <p>They&apos;d been reading my posts for 3 weeks. By the time they reached out, they were already sold.</p>
+                  <p>Inbound is the new outbound. But only if you&apos;re visible.</p>
+                </div>
+                <div className="mt-3 text-violet-600 text-xs font-medium">#B2B #Consulting #LinkedInGrowth</div>
+              </div>
+              <div className="mx-5 mb-4 rounded-xl h-32 overflow-hidden">
+                <img src="/landing-post-1.jpg" alt="Example post" className="w-full h-full object-cover" />
+              </div>
+              <div className="px-5 pb-4 flex items-center gap-4 border-t border-black/5 pt-3">
+                <span className="text-slate-400 text-xs">&#128077; 63 likes</span>
+                <span className="text-slate-400 text-xs">&#128172; 18 comments</span>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-2xl shadow-md border border-black/8 overflow-hidden flex flex-col">
+              <div className="p-5 flex-1">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-11 h-11 rounded-full flex-shrink-0 flex items-center justify-center text-white text-sm font-bold" style={{ background: "linear-gradient(135deg, #db2777, #e11d48)" }}>
+                    SR
+                  </div>
+                  <div>
+                    <div className="font-semibold text-[#1b1916] text-sm leading-tight">Sofia Rodriguez</div>
+                    <div className="text-slate-400 text-xs">LinkedIn Member &#183; Sales Director</div>
+                  </div>
+                </div>
+                <div className="text-[#1b1916] text-sm leading-relaxed space-y-2">
+                  <p>Cold outreach used to take 8 hours a week. Now my pipeline fills itself.</p>
+                  <p>Posting consistently on LinkedIn turned my profile into a lead magnet. 3 inbound demo requests this week alone.</p>
+                  <p>You don&apos;t need more cold calls. You need more visibility.</p>
+                </div>
+                <div className="mt-3 text-pink-600 text-xs font-medium">#Sales #LeadGeneration #LinkedIn</div>
+              </div>
+              <div className="mx-5 mb-4 rounded-xl h-32 overflow-hidden">
+                <img src="/landing-post-2.jpg" alt="Example post" className="w-full h-full object-cover" />
+              </div>
+              <div className="px-5 pb-4 flex items-center gap-4 border-t border-black/5 pt-3">
+                <span className="text-slate-400 text-xs">&#128077; 147 likes</span>
+                <span className="text-slate-400 text-xs">&#128172; 29 comments</span>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-2xl shadow-md border border-black/8 overflow-hidden flex flex-col">
+              <div className="p-5 flex-1">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-11 h-11 rounded-full flex-shrink-0 flex items-center justify-center text-white text-sm font-bold" style={{ background: "linear-gradient(135deg, #0891b2, #0284c7)" }}>
+                    MT
+                  </div>
+                  <div>
+                    <div className="font-semibold text-[#1b1916] text-sm leading-tight">Marcus Taylor</div>
+                    <div className="text-slate-400 text-xs">LinkedIn Member &#183; Agency Owner</div>
+                  </div>
+                </div>
+                <div className="text-[#1b1916] text-sm leading-relaxed space-y-2">
+                  <p>My agency doubled its retainer clients in 6 months. Zero paid ads.</p>
+                  <p>The only thing that changed: I started posting on LinkedIn every day. Decision-makers saw my thinking before they ever got on a call.</p>
+                  <p>Content is the best sales call you never have to make.</p>
+                </div>
+                <div className="mt-3 text-cyan-600 text-xs font-medium">#Agency #ClientAcquisition #ContentMarketing</div>
+              </div>
+              <div className="mx-5 mb-4 rounded-xl h-32 overflow-hidden">
+                <img src="/landing-post-3.jpg" alt="Example post" className="w-full h-full object-cover" />
+              </div>
+              <div className="px-5 pb-4 flex items-center gap-4 border-t border-black/5 pt-3">
+                <span className="text-slate-400 text-xs">&#128077; 88 likes</span>
+                <span className="text-slate-400 text-xs">&#128172; 16 comments</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Founder */}
+      <section className="px-4 sm:px-6 py-16 sm:py-24" style={{ backgroundColor: "#faf9f7" }}>
+        <div className="max-w-4xl mx-auto">
+          <div className="flex flex-col md:flex-row gap-10 md:gap-16 items-center">
+            <div className="w-full md:w-2/5 flex-shrink-0">
+              <img
+                src="/founder-kiryl.jpg"
+                alt="Kiryl Sidarchuk"
+                className="rounded-2xl object-cover w-full shadow-lg"
+                style={{ height: "400px" }}
+              />
+            </div>
+            <div className="flex-1">
+              <p className="text-xs font-bold tracking-[0.2em] uppercase text-violet-600 mb-3">From the Founder</p>
+              <h2 className="text-2xl sm:text-3xl font-bold text-[#1b1916] mb-6 leading-snug">
+                Built by an entrepreneur,<br className="hidden sm:block" /> who needed clients too
+              </h2>
+              <div className="space-y-4 text-slate-600 text-base leading-relaxed mb-6">
+                <p>
+                  I&apos;ve been in your shoes &#8212; trying to grow a business while staying visible on LinkedIn felt like a second job.
+                </p>
+                <p>
+                  So I built ItGrows.ai to turn your LinkedIn into a client acquisition machine &#8212; on autopilot. The AI writes, schedules, and publishes posts that sound like you, while you focus on closing deals.
+                </p>
+                <p>
+                  This isn&apos;t a tool made by a tech team that&apos;s never sold anything. It&apos;s a product from someone who knows what client acquisition actually looks like.
+                </p>
+              </div>
+              <p className="text-lg font-bold text-[#1b1916]">Kiryl Sidarchuk</p>
+              <p className="text-violet-600 font-semibold text-sm mb-4">Serial IT Entrepreneur &#183; 3&#215; Founder &#183; Exit in 2022 &#183; Angel Investor</p>
+              <a
+                href="https://www.linkedin.com/in/kiryl-sidarchuk/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm font-medium hover:underline"
+                style={{ color: "#0a66c2" }}
+              >
+                Connect on LinkedIn &#8594;
+              </a>
+              <div className="mt-3">
+                <a href="#pricing" className="text-sm text-violet-600 underline underline-offset-2 hover:text-violet-500 transition-colors">
+                  See pricing and start free &#8594;
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Pricing */}
+      <section id="pricing" className="px-4 sm:px-6 py-16 sm:py-24" style={{ backgroundColor: "#ebe9e5" }}>
+        <div className="max-w-2xl mx-auto">
+          <div className="text-center mb-12">
+            <Badge className="mb-4 bg-violet-100 text-violet-700 border-violet-200">Pricing</Badge>
+            <h2 className="text-4xl font-bold mb-4 text-[#1b1916]">One client pays for this entire year.</h2>
+            <p className="text-slate-600 text-lg">No upsells. No tiers. Just inbound leads.</p>
+          </div>
+
+          <div className="flex items-center justify-center gap-4 mb-10">
+            <span className={`text-sm font-medium ${!annual ? "text-[#1b1916]" : "text-slate-400"}`}>Monthly</span>
+            <button
+              onClick={() => setAnnual(!annual)}
+              className={`relative w-14 h-7 rounded-full transition-colors duration-200 ${annual ? "bg-violet-600" : "bg-slate-300"}`}
+              aria-label="Toggle annual billing"
+            >
+              <span className={`absolute top-1 left-1 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200 ${annual ? "translate-x-7" : ""}`} />
+            </button>
+            <span className={`text-sm font-medium ${annual ? "text-[#1b1916]" : "text-slate-400"}`}>
+              Annual
+              <span className="ml-2 px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full font-semibold">Save 20%</span>
+            </span>
+          </div>
+
+          <Card className="relative border-violet-500 bg-gradient-to-b from-violet-50 to-white shadow-2xl shadow-violet-200">
+            <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+              <Badge className="bg-violet-600 text-white border-0 px-4 py-1">Most Popular</Badge>
+            </div>
+            <CardHeader className="text-center pb-2 pt-8">
+              <CardTitle className="text-[#1b1916] text-2xl">Client Acquisition Autopilot</CardTitle>
+              <p className="text-slate-500 text-sm mt-1">Everything you need to get inbound leads from LinkedIn</p>
+              <div className="flex items-end gap-1 mt-4 justify-center">
+                <span className="text-6xl font-extrabold text-[#1b1916]">{annual ? "$24" : "$29"}</span>
+                <span className="text-slate-500 mb-2 text-lg">/month</span>
+              </div>
+              {annual && (
+                <>
+                  <p className="text-sm text-green-600 font-medium mt-1">Billed $288/year &#183; Save $60</p>
+                  <p className="text-xs text-slate-500 mt-1">7-day money-back guarantee &#8212; cancel anytime</p>
+                </>
+              )}
+              {!annual && (
+                <p className="text-sm text-slate-400 mt-1">or <button onClick={() => setAnnual(true)} className="underline text-violet-600">save 20% with annual</button></p>
+              )}
+            </CardHeader>
+            <CardContent className="space-y-5 px-8 pb-8">
+              <Button
+                onClick={annual ? () => handleCheckout("annual") : handleStartTrial}
+                className="w-full bg-violet-600 hover:bg-violet-500 text-white py-6 text-base rounded-xl mt-2"
+              >
+                {annual ? "Start Annual Plan" : "Start Free Trial &#8212; No Credit Card"}
+              </Button>
+              <p className="text-center text-xs text-slate-500">{annual ? "Billed annually &#183; Cancel anytime" : "7-day free trial &#183; No credit card required &#183; $29/month after"}</p>
+              <ul className="space-y-3 pt-2">
+                {[
+                  "7 AI-written posts per week",
+                  "Custom images for every post",
+                  "Auto-scheduling at peak time (10am UTC)",
+                  "Profile DNA analysis",
+                  "Review & edit before publishing",
+                  "Cancel anytime, no commitment",
+                ].map((item, i) => (
+                  <li key={i} className="flex items-center gap-3 text-sm text-slate-600">
+                    <span className="text-violet-600 font-bold text-base">&#10003;</span>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </CardContent>
+          </Card>
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section id="faq" className="px-4 sm:px-6 py-16 sm:py-24" style={{ backgroundColor: "#f3f2f1" }}>
+        <div className="max-w-3xl mx-auto">
+          <div className="text-center mb-10 sm:mb-16">
+            <Badge className="mb-4 bg-cyan-100 text-cyan-700 border-cyan-200">FAQ</Badge>
+            <h2 className="text-3xl sm:text-4xl font-bold mb-4 text-violet-700">Frequently Asked Questions</h2>
+            <p className="text-slate-600 text-base sm:text-lg">Everything you need to know before getting started.</p>
+          </div>
+          <div className="space-y-4">
+            {faqs.map((item, i) => (
+              <div
+                key={i}
+                className="bg-white rounded-2xl border border-black/10 hover:border-violet-300 transition-colors overflow-hidden"
               >
                 <button
                   onClick={() => setOpenFaq(openFaq === i ? null : i)}
-                  style={{
-                    width: "100%",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    padding: "22px 28px",
-                    textAlign: "left",
-                    backgroundColor: "transparent",
-                    border: "none",
-                    cursor: "pointer",
-                    fontFamily: "inherit",
-                  }}
+                  className="w-full flex items-center justify-between gap-4 p-6 text-left"
+                  aria-expanded={openFaq === i}
                 >
-                  <span style={{ fontWeight: 600, fontSize: "16px", color: "#0A0A0A" }}>{faq.q}</span>
-                  <span style={{
-                    color: "#7C3AED",
-                    fontSize: "24px",
-                    fontWeight: 300,
-                    transform: openFaq === i ? "rotate(45deg)" : "rotate(0deg)",
-                    transition: "transform 0.2s",
-                    flexShrink: 0,
-                    marginLeft: "16px",
-                  }}>
-                    +
+                  <h3 className="text-violet-700 font-semibold text-base leading-snug">{item.q}</h3>
+                  <span className="flex-shrink-0 text-violet-400 text-sm transition-transform duration-200" style={{ transform: openFaq === i ? "rotate(180deg)" : "rotate(0deg)" }}>
+                    &#9660;
                   </span>
                 </button>
                 {openFaq === i && (
-                  <div style={{ padding: "0 28px 24px" }}>
-                    <p style={{ fontSize: "15px", color: "#6b7280", lineHeight: 1.7 }}>{faq.a}</p>
+                  <div className="px-6 pb-6">
+                    <p className="text-gray-900 text-sm leading-relaxed">{item.a}</p>
                   </div>
                 )}
               </div>
@@ -714,53 +1261,144 @@ export default function LandingPageB() {
         </div>
       </section>
 
-      {/* FINAL CTA — violet gradient dark */}
-      <section style={{
-        background: "linear-gradient(135deg, #4C1D95 0%, #3730A3 100%)",
-        padding: "96px 24px",
-        textAlign: "center",
-      }}>
-        <div style={{ maxWidth: "700px", margin: "0 auto" }}>
-          <h2 style={{ fontSize: "clamp(28px, 4vw, 48px)", fontWeight: 900, letterSpacing: "-0.03em", color: "#ffffff", marginBottom: "20px", lineHeight: 1.15 }}>
-            Ready to get clients from LinkedIn — without posting?
+      {/* Bottom CTA */}
+      <section className="px-4 sm:px-6 py-16 sm:py-24 text-center" style={{ backgroundColor: "#ebe9e5" }}>
+        <div className="max-w-3xl mx-auto">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-4 sm:mb-6 text-[#1b1916]">
+            Ready to Turn LinkedIn into Your{" "}
+            <span className="bg-gradient-to-r from-violet-600 to-cyan-600 bg-clip-text text-transparent">
+              Client Machine?
+            </span>
           </h2>
-          <p style={{ color: "#d1d5db", fontSize: "18px", marginBottom: "40px" }}>
-            Join professionals who turned visibility into inbound.
+          <p className="text-slate-600 text-base sm:text-lg mb-8 sm:mb-10">
+            Join 2,400+ professionals who turned their LinkedIn presence into inbound leads.
           </p>
-          <button
+          <Button
+            size="lg"
             onClick={handleStartTrial}
-            style={{
-              backgroundColor: "#ffffff",
-              color: "#4C1D95",
-              padding: "18px 48px",
-              borderRadius: "9999px",
-              fontSize: "18px",
-              fontWeight: 800,
-              border: "none",
-              cursor: "pointer",
-              boxShadow: "0 8px 32px rgba(0,0,0,0.3)",
-              fontFamily: "inherit",
-              marginBottom: "16px",
-            }}
+            className="bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-white px-8 sm:px-10 py-5 sm:py-6 text-base sm:text-lg rounded-xl w-full sm:w-auto"
           >
-            Generate My First Post — 30 sec
-          </button>
-          <br />
-          <span style={{ color: "rgba(255,255,255,0.6)", fontSize: "14px" }}>No signup required</span>
+            Generate My First Post &#8212; takes 30 sec &#8594;
+          </Button>
+          <p className="mt-4 text-xs sm:text-sm text-slate-500">No credit card required &#183; $29/month after &#183; Cancel anytime</p>
         </div>
       </section>
 
-      {/* FOOTER */}
-      <footer style={{ backgroundColor: "#0A0A0A", padding: "32px 24px", borderTop: "1px solid rgba(255,255,255,0.08)" }}>
-        <div style={{ maxWidth: "900px", margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "12px" }}>
-          <p style={{ color: "#6b7280", fontSize: "14px" }}>© 2026 ItGrows</p>
-          <div style={{ display: "flex", gap: "24px" }}>
-            <Link href="/privacy" style={{ color: "#6b7280", fontSize: "14px", textDecoration: "none" }}>Privacy</Link>
-            <Link href="/terms" style={{ color: "#6b7280", fontSize: "14px", textDecoration: "none" }}>Terms</Link>
-          </div>
-        </div>
+      {/* Footer */}
+      <footer className="border-t border-black/10 px-6 py-8 text-center text-slate-500 text-sm" style={{ backgroundColor: "#ebe9e5" }}>
+        <p>
+          &#169; 2026 ItGrows.ai. All rights reserved. &#183;{" "}
+          <Link href="/privacy" className="hover:text-[#1b1916] transition-colors">Privacy Policy</Link>
+          {" "}&#183;{" "}
+          <Link href="/terms" className="hover:text-[#1b1916] transition-colors">Terms of Service</Link>
+        </p>
+        <p className="mt-2 text-xs text-slate-400">Magiscan Inc. &#183; 919 North Market Street, Wilmington, DE 19801, USA</p>
       </footer>
 
+      {/* Floating Feedback Button */}
+      <button
+        onClick={() => { setFeedbackOpen(true); setFeedbackDone(false); setFeedbackError("") }}
+        className="fixed bottom-6 right-6 z-50 flex items-center gap-2 px-4 py-3 rounded-full text-white text-sm font-semibold shadow-lg transition-all hover:scale-105 active:scale-95"
+        style={{ background: "linear-gradient(135deg, #7C3AED, #6d28d9)" }}
+        aria-label="Open feedback form"
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+        </svg>
+        Feedback
+      </button>
+
+      {/* Feedback Modal */}
+      {feedbackOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4"
+          style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+          onClick={(e) => { if (e.target === e.currentTarget) setFeedbackOpen(false) }}
+        >
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 relative">
+            <button
+              onClick={() => setFeedbackOpen(false)}
+              className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors text-gray-400 hover:text-gray-700"
+              aria-label="Close"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="w-4 h-4">
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </button>
+
+            {feedbackDone ? (
+              <div className="py-8 text-center">
+                <div className="w-14 h-14 rounded-full bg-violet-100 flex items-center justify-center mx-auto mb-4">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="#7C3AED" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-7 h-7">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-bold text-[#1b1916] mb-2">Thank you!</h3>
+                <p className="text-slate-500 text-sm">We&apos;ll get back to you soon.</p>
+              </div>
+            ) : (
+              <>
+                <h2 className="text-xl font-bold text-[#1b1916] mb-1">Share your thoughts</h2>
+                <p className="text-slate-500 text-sm mb-5">We read every message and use it to improve.</p>
+
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-[#1b1916] mb-2">Type</label>
+                  <div className="flex flex-wrap gap-2">
+                    {["Question", "Bug Report", "Idea", "Other"].map((t) => (
+                      <button
+                        key={t}
+                        onClick={() => setFeedbackType(t)}
+                        className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-colors ${
+                          feedbackType === t
+                            ? "bg-violet-600 text-white border-violet-600"
+                            : "bg-white text-slate-600 border-slate-200 hover:border-violet-400"
+                        }`}
+                      >
+                        {t}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-[#1b1916] mb-1.5">
+                    Email <span className="text-slate-400 font-normal">(optional)</span>
+                  </label>
+                  <input
+                    type="email"
+                    value={feedbackEmail}
+                    onChange={(e) => setFeedbackEmail(e.target.value)}
+                    placeholder="you@example.com"
+                    className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-[#1b1916] placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-400 focus:border-transparent transition"
+                  />
+                </div>
+
+                <div className="mb-5">
+                  <label className="block text-sm font-medium text-[#1b1916] mb-1.5">Message</label>
+                  <textarea
+                    value={feedbackMessage}
+                    onChange={(e) => setFeedbackMessage(e.target.value)}
+                    placeholder="Tell us what's on your mind..."
+                    rows={4}
+                    className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-[#1b1916] placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-400 focus:border-transparent transition resize-none"
+                  />
+                  {feedbackError && <p className="text-red-500 text-xs mt-1">{feedbackError}</p>}
+                </div>
+
+                <button
+                  onClick={handleFeedbackSubmit}
+                  disabled={feedbackLoading}
+                  className="w-full py-3 rounded-xl text-white font-semibold text-sm transition-all hover:opacity-90 disabled:opacity-60"
+                  style={{ background: "linear-gradient(135deg, #7C3AED, #6d28d9)" }}
+                >
+                  {feedbackLoading ? "Sending..." : "Send"}
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
