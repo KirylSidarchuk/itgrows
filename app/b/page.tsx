@@ -3,48 +3,6 @@
 import { useState } from "react"
 import Link from "next/link"
 
-// LinkedIn Analytics SVG Mockup
-const LinkedInAnalyticsMockup = () => (
-  <svg viewBox="0 0 480 220" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full max-w-md mx-auto rounded-xl" style={{ border: "1px solid #e5e7eb" }}>
-    <rect width="480" height="220" rx="12" fill="#ffffff" />
-    {/* Header */}
-    <rect width="480" height="44" rx="12" fill="#f9fafb" />
-    <rect x="0" y="32" width="480" height="12" fill="#f9fafb" />
-    <circle cx="22" cy="22" r="10" fill="#0077b5" />
-    <text x="22" y="27" textAnchor="middle" fontSize="10" fill="white" fontWeight="bold" fontFamily="sans-serif">in</text>
-    <text x="42" y="27" fontSize="11" fill="#0f0f0f" fontWeight="600" fontFamily="sans-serif">Post Analytics</text>
-    {/* Stat boxes */}
-    <rect x="16" y="56" width="96" height="56" rx="8" fill="#f3f4f6" />
-    <text x="64" y="80" textAnchor="middle" fontSize="22" fontWeight="700" fill="#0f0f0f" fontFamily="sans-serif">1,367</text>
-    <text x="64" y="98" textAnchor="middle" fontSize="10" fill="#6b7280" fontFamily="sans-serif">Impressions</text>
-    <rect x="124" y="56" width="96" height="56" rx="8" fill="#f3f4f6" />
-    <text x="172" y="80" textAnchor="middle" fontSize="22" fontWeight="700" fill="#0f0f0f" fontFamily="sans-serif">84</text>
-    <text x="172" y="98" textAnchor="middle" fontSize="10" fill="#6b7280" fontFamily="sans-serif">Reactions</text>
-    <rect x="232" y="56" width="96" height="56" rx="8" fill="#f3f4f6" />
-    <text x="280" y="80" textAnchor="middle" fontSize="22" fontWeight="700" fill="#0f0f0f" fontFamily="sans-serif">23</text>
-    <text x="280" y="98" textAnchor="middle" fontSize="10" fill="#6b7280" fontFamily="sans-serif">Comments</text>
-    <rect x="340" y="56" width="96" height="56" rx="8" fill="#f3f4f6" />
-    <text x="388" y="80" textAnchor="middle" fontSize="22" fontWeight="700" fill="#0f0f0f" fontFamily="sans-serif">6.1%</text>
-    <text x="388" y="98" textAnchor="middle" fontSize="10" fill="#6b7280" fontFamily="sans-serif">Eng. Rate</text>
-    {/* Chart bars */}
-    <text x="16" y="132" fontSize="9" fill="#9ca3af" fontFamily="sans-serif">Impressions over 7 days</text>
-    {[
-      { x: 16, h: 32, day: "M" },
-      { x: 76, h: 52, day: "T" },
-      { x: 136, h: 44, day: "W" },
-      { x: 196, h: 68, day: "T" },
-      { x: 256, h: 48, day: "F" },
-      { x: 316, h: 56, day: "S" },
-      { x: 376, h: 40, day: "S" },
-    ].map((bar) => (
-      <g key={bar.day}>
-        <rect x={bar.x} y={196 - bar.h} width="44" height={bar.h} rx="4" fill="#7c3aed" opacity="0.75" />
-        <text x={bar.x + 22} y="212" textAnchor="middle" fontSize="9" fill="#9ca3af" fontFamily="sans-serif">{bar.day}</text>
-      </g>
-    ))}
-  </svg>
-)
-
 export default function LandingPageB() {
   const [ghostThoughts, setGhostThoughts] = useState("")
   const [ghostLoading, setGhostLoading] = useState(false)
@@ -83,33 +41,26 @@ export default function LandingPageB() {
     }
   }
 
-  async function handleStartTrial() {
-    const sessionRes = await fetch("/api/auth/session")
-    const sessionData = await sessionRes.json() as { user?: { id: string } }
-    if (!sessionData?.user?.id) {
-      window.location.href = `/signup?callbackUrl=${encodeURIComponent("/cabinet")}`
-      return
-    }
-    const res = await fetch("/api/trial/start", { method: "POST" })
-    if (res.status === 401) {
-      window.location.href = `/signup?callbackUrl=${encodeURIComponent("/cabinet")}`
-      return
-    }
-    window.location.href = "/cabinet"
+  function handleStartTrial() {
+    window.location.href = "/signup"
   }
 
   const faqs = [
     {
-      q: "Is my LinkedIn account safe?",
-      a: "Yes. We use LinkedIn's official OAuth — the same secure standard used by tools like Salesforce and HubSpot. You log in directly on LinkedIn's website. We never see or store your password, and you can revoke access from your LinkedIn settings at any time.",
+      q: "Is it safe?",
+      a: "Yes, we use LinkedIn's official OAuth. We never see your password.",
     },
     {
-      q: "How does it actually work?",
-      a: "You fill a short brief about yourself — your role, audience, and goals. Our AI writes 7 LinkedIn posts per week in your voice, generates matching cover images, and schedules everything to publish at peak engagement time. Zero writing time on your end.",
+      q: "Can I edit posts?",
+      a: "Yes, you can review and edit every post before it goes live.",
     },
     {
-      q: "What happens after the trial?",
-      a: "After 7 days, your scheduled posts pause. You'll see a simple prompt to subscribe — monthly ($15/mo) or annual ($144/yr). No charges during the trial, no surprises. Cancel anytime from account settings.",
+      q: "Can I cancel?",
+      a: "Anytime, no questions asked.",
+    },
+    {
+      q: "Is this generic AI?",
+      a: "No. We analyze your profile, niche, and writing style to generate posts in your voice.",
     },
   ]
 
@@ -118,7 +69,7 @@ export default function LandingPageB() {
       className="min-h-screen"
       style={{ backgroundColor: "#ffffff", color: "#0f0f0f", fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" }}
     >
-      {/* ── NAV ── */}
+      {/* NAV */}
       <nav className="px-6 py-5 flex items-center justify-between max-w-3xl mx-auto">
         <Link href="/" className="text-lg font-bold tracking-tight" style={{ color: "#0f0f0f" }}>
           ItGrows
@@ -128,39 +79,41 @@ export default function LandingPageB() {
         </Link>
       </nav>
 
-      {/* ── HERO ── */}
-      <section className="px-6 pt-12 pb-16 max-w-3xl mx-auto">
-        {/* Badge */}
-        <div className="mb-6">
-          <span
-            className="inline-block text-xs font-semibold px-3 py-1 rounded-full"
-            style={{ backgroundColor: "#ede9fe", color: "#7c3aed" }}
-          >
-            No signup required
-          </span>
-        </div>
-
-        {/* Headline */}
+      {/* HERO */}
+      <section className="px-6 pt-12 pb-10 max-w-3xl mx-auto">
         <h1
-          className="text-5xl md:text-7xl font-extrabold leading-tight tracking-tight mb-5"
+          className="text-5xl md:text-6xl font-extrabold leading-tight tracking-tight mb-5"
           style={{ color: "#0f0f0f", letterSpacing: "-0.03em" }}
         >
-          Your LinkedIn posts,
-          <br />
-          written by AI.
+          Turn your LinkedIn into a client acquisition machine — on autopilot
         </h1>
 
-        {/* Subtext */}
-        <p className="text-lg md:text-xl mb-10 leading-relaxed" style={{ color: "#6b7280", maxWidth: "540px" }}>
-          Type 2–3 sentences about yourself. Get 3 ready-to-post LinkedIn posts in 30 seconds.
+        <p className="text-lg md:text-xl mb-8 leading-relaxed" style={{ color: "#6b7280", maxWidth: "560px" }}>
+          We write and publish posts that bring you inbound leads — in your voice, every day.
         </p>
 
-        {/* ── INLINE GHOST MODE DEMO ── */}
+        <button
+          onClick={handleStartTrial}
+          className="px-8 py-4 rounded-xl font-bold text-base text-white transition-all mb-2"
+          style={{
+            background: "linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%)",
+            boxShadow: "0 4px 16px rgba(124,58,237,0.4)",
+          }}
+        >
+          Generate My First Post — takes 30 sec
+        </button>
+
+        <p className="text-xs mb-10" style={{ color: "#9ca3af" }}>No signup required</p>
+
+        {/* Ghost Mode Demo */}
         <div className="w-full">
+          <p className="text-sm font-semibold mb-2" style={{ color: "#374151" }}>
+            Write 2–3 lines about yourself → get 3 real LinkedIn posts instantly
+          </p>
           <textarea
             value={ghostThoughts}
             onChange={(e) => setGhostThoughts(e.target.value)}
-            placeholder="I'm a [role] who helps [audience] with [what you do]..."
+            placeholder="I'm a [role] helping [audience] with [problem]..."
             rows={3}
             className="w-full rounded-xl px-4 py-3 text-base resize-none outline-none transition-all"
             style={{
@@ -186,12 +139,6 @@ export default function LandingPageB() {
             {ghostLoading ? "Generating…" : "Generate My Posts →"}
           </button>
 
-          {/* Social proof */}
-          <p className="mt-4 text-sm" style={{ color: "#9ca3af" }}>
-            2,400+ professionals already using ItGrows
-          </p>
-
-          {/* Error */}
           {ghostError && (
             <div className="mt-4 text-sm font-medium" style={{ color: "#dc2626" }}>
               {ghostError.includes("Sign up") ? (
@@ -205,9 +152,9 @@ export default function LandingPageB() {
         </div>
       </section>
 
-      {/* ── GENERATED RESULTS ── */}
+      {/* GENERATED RESULTS */}
       {ghostPosts.length > 0 && (
-        <section className="px-6 pb-20 max-w-3xl mx-auto">
+        <section className="px-6 pb-16 max-w-3xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             {ghostPosts.map((post, i) => (
               <div
@@ -215,7 +162,6 @@ export default function LandingPageB() {
                 className="rounded-2xl overflow-hidden flex flex-col"
                 style={{ border: "1.5px solid #e5e7eb", boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}
               >
-                {/* Post image */}
                 {ghostImages[i] ? (
                   <img
                     src={ghostImages[i]!}
@@ -231,18 +177,17 @@ export default function LandingPageB() {
                     <span style={{ fontSize: "28px" }}>✨</span>
                   </div>
                 )}
-                {/* Post text */}
                 <div className="p-4 flex flex-col flex-1">
                   <p className="text-sm leading-relaxed flex-1" style={{ color: "#374151", whiteSpace: "pre-wrap" }}>
                     {post.length > 220 ? post.slice(0, 220) + "…" : post}
                   </p>
-                  <button
-                    onClick={handleStartTrial}
-                    className="mt-4 w-full py-2.5 rounded-lg text-sm font-semibold text-white transition-all"
+                  <Link
+                    href="/signup"
+                    className="mt-4 w-full py-2.5 rounded-lg text-sm font-semibold text-white text-center transition-all block"
                     style={{ background: "linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%)" }}
                   >
-                    Start Free Trial to Publish This
-                  </button>
+                    Start Free Trial to Publish This →
+                  </Link>
                 </div>
               </div>
             ))}
@@ -253,37 +198,227 @@ export default function LandingPageB() {
         </section>
       )}
 
-      {/* ── SOCIAL PROOF STAT ── */}
-      <section className="px-6 py-20 max-w-3xl mx-auto">
-        <div
-          className="rounded-2xl p-8 md:p-12"
-          style={{ backgroundColor: "#fafafa", border: "1.5px solid #f3f4f6" }}
+      {/* PAIN SECTION */}
+      <section className="px-6 py-16 max-w-3xl mx-auto">
+        <h2
+          className="text-3xl md:text-4xl font-extrabold tracking-tight mb-8"
+          style={{ color: "#0f0f0f", letterSpacing: "-0.03em" }}
         >
-          <div className="mb-8">
-            <p
-              className="text-6xl md:text-7xl font-extrabold tracking-tight mb-2"
-              style={{ color: "#0f0f0f", letterSpacing: "-0.04em" }}
-            >
-              1,367
-            </p>
-            <p className="text-lg font-medium" style={{ color: "#6b7280" }}>
-              impressions in the first week, zero writing time
-            </p>
-          </div>
-          <LinkedInAnalyticsMockup />
-          <p className="mt-5 text-sm" style={{ color: "#9ca3af" }}>
-            — K.S., Startup Founder
+          If you&apos;re not posting, you&apos;re invisible
+        </h2>
+        <ul className="space-y-4 mb-8">
+          {[
+            "Your competitors show up daily — you don't",
+            "Decision-makers check LinkedIn before buying",
+            "The one who posts → gets the deal",
+          ].map((point) => (
+            <li key={point} className="flex items-start gap-3">
+              <span style={{ color: "#7c3aed", fontWeight: 700, fontSize: "18px", flexShrink: 0 }}>•</span>
+              <span className="font-bold text-lg" style={{ color: "#0f0f0f" }}>{point}</span>
+            </li>
+          ))}
+        </ul>
+        <div
+          className="rounded-xl p-5"
+          style={{ backgroundColor: "#0f0f0f", borderLeft: "4px solid #7c3aed" }}
+        >
+          <p className="font-bold text-lg" style={{ color: "#ffffff" }}>
+            Every day you stay silent, someone else takes your clients
           </p>
         </div>
       </section>
 
-      {/* ── PRICING ── */}
+      {/* WHAT YOU GET */}
+      <section className="px-6 py-16 max-w-3xl mx-auto" style={{ backgroundColor: "#fafafa", borderRadius: "24px" }}>
+        <h2
+          className="text-3xl md:text-4xl font-extrabold tracking-tight mb-8"
+          style={{ color: "#0f0f0f", letterSpacing: "-0.03em" }}
+        >
+          We don&apos;t help you &apos;grow&apos; — we bring you inbound
+        </h2>
+        <ul className="space-y-4">
+          {[
+            "7 posts per week, every week",
+            "Written in your voice (not generic AI)",
+            "Designed to attract clients, not likes",
+            "Fully automated — no thinking, no effort",
+            "Custom AI images for every post",
+          ].map((item) => (
+            <li key={item} className="flex items-start gap-3">
+              <span style={{ color: "#7c3aed", fontWeight: 700, fontSize: "18px", flexShrink: 0 }}>✓</span>
+              <span className="text-base font-medium" style={{ color: "#374151" }}>{item}</span>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      {/* REAL PROOF — Before / After */}
+      <section className="px-6 py-16 max-w-3xl mx-auto">
+        <h2
+          className="text-3xl md:text-4xl font-extrabold tracking-tight mb-10"
+          style={{ color: "#0f0f0f", letterSpacing: "-0.03em" }}
+        >
+          From invisible → to inbound
+        </h2>
+        <div className="grid grid-cols-2 gap-6 mb-8">
+          {/* Before */}
+          <div
+            className="rounded-2xl p-6"
+            style={{ backgroundColor: "#f3f4f6", border: "1.5px solid #e5e7eb" }}
+          >
+            <p className="text-xs font-bold uppercase tracking-widest mb-4" style={{ color: "#9ca3af" }}>BEFORE</p>
+            <ul className="space-y-3">
+              {["0–1 posts/month", "~200–500 views", "no inbound"].map((s) => (
+                <li key={s} className="text-base font-semibold" style={{ color: "#6b7280" }}>{s}</li>
+              ))}
+            </ul>
+          </div>
+          {/* After */}
+          <div
+            className="rounded-2xl p-6"
+            style={{ backgroundColor: "#f0fdf4", border: "1.5px solid #86efac" }}
+          >
+            <p className="text-xs font-bold uppercase tracking-widest mb-4" style={{ color: "#16a34a" }}>AFTER 2 WEEKS</p>
+            <ul className="space-y-3">
+              {["7 posts/week", "10,000+ views", "5–15 inbound messages"].map((s) => (
+                <li key={s} className="text-base font-semibold" style={{ color: "#15803d" }}>{s}</li>
+              ))}
+            </ul>
+          </div>
+        </div>
+        <div
+          className="rounded-xl p-4 text-center"
+          style={{ backgroundColor: "#ede9fe", border: "1.5px solid #c4b5fd" }}
+        >
+          <p className="font-bold text-base" style={{ color: "#7c3aed" }}>One post can close a deal</p>
+        </div>
+      </section>
+
+      {/* WHY IT WORKS */}
+      <section className="px-6 py-16 max-w-3xl mx-auto">
+        <h2
+          className="text-3xl md:text-4xl font-extrabold tracking-tight mb-8"
+          style={{ color: "#0f0f0f", letterSpacing: "-0.03em" }}
+        >
+          LinkedIn rewards consistency — not effort
+        </h2>
+        <ul className="space-y-4 mb-8">
+          {[
+            "Posting daily = algorithm boost",
+            "Visibility → trust → clients",
+            "People buy from those they see often",
+          ].map((point) => (
+            <li key={point} className="flex items-start gap-3">
+              <span style={{ color: "#7c3aed", fontWeight: 700, fontSize: "18px", flexShrink: 0 }}>•</span>
+              <span className="text-base font-medium" style={{ color: "#374151" }}>{point}</span>
+            </li>
+          ))}
+        </ul>
+        <div className="space-y-2">
+          <p className="text-lg font-bold" style={{ color: "#0f0f0f" }}>It&apos;s not about writing better</p>
+          <p className="text-lg font-bold" style={{ color: "#7c3aed" }}>It&apos;s about showing up more</p>
+        </div>
+      </section>
+
+      {/* RESULTS */}
+      <section className="px-6 py-16 max-w-3xl mx-auto">
+        <h2
+          className="text-3xl md:text-4xl font-extrabold tracking-tight mb-10"
+          style={{ color: "#0f0f0f", letterSpacing: "-0.03em" }}
+        >
+          What consistent posting gets you:
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {[
+            { stat: "+3.8x", label: "profile views" },
+            { stat: "+280%", label: "inbound messages" },
+            { stat: "More visibility", label: "→ more deals" },
+          ].map(({ stat, label }) => (
+            <div
+              key={stat}
+              className="rounded-2xl p-6 text-center"
+              style={{ backgroundColor: "#fafafa", border: "1.5px solid #e5e7eb" }}
+            >
+              <p
+                className="text-4xl font-extrabold tracking-tight mb-2"
+                style={{ color: "#7c3aed", letterSpacing: "-0.03em" }}
+              >
+                {stat}
+              </p>
+              <p className="text-sm font-medium" style={{ color: "#6b7280" }}>{label}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* REMOVE AI FEAR */}
+      <section
+        className="px-6 py-16 max-w-3xl mx-auto rounded-2xl"
+        style={{ backgroundColor: "#fafafa", border: "1.5px solid #f3f4f6" }}
+      >
+        <h2
+          className="text-3xl md:text-4xl font-extrabold tracking-tight mb-8"
+          style={{ color: "#0f0f0f", letterSpacing: "-0.03em" }}
+        >
+          This doesn&apos;t sound like AI
+        </h2>
+        <ul className="space-y-4 mb-8">
+          {[
+            "Matches your tone",
+            "Based on your profile & niche",
+            "No templates, no generic content",
+          ].map((item) => (
+            <li key={item} className="flex items-start gap-3">
+              <span style={{ color: "#7c3aed", fontWeight: 700, fontSize: "18px", flexShrink: 0 }}>✓</span>
+              <span className="text-base font-medium" style={{ color: "#374151" }}>{item}</span>
+            </li>
+          ))}
+        </ul>
+        <div
+          className="rounded-xl p-4"
+          style={{ backgroundColor: "#ede9fe", border: "1.5px solid #c4b5fd" }}
+        >
+          <p className="font-bold text-base" style={{ color: "#7c3aed" }}>People think you wrote it</p>
+        </div>
+      </section>
+
+      {/* HOW IT WORKS */}
+      <section className="px-6 py-16 max-w-3xl mx-auto">
+        <h2
+          className="text-3xl md:text-4xl font-extrabold tracking-tight mb-10"
+          style={{ color: "#0f0f0f", letterSpacing: "-0.03em" }}
+        >
+          Up and running in 3 minutes
+        </h2>
+        <div className="space-y-6">
+          {[
+            { step: "1", title: "Connect LinkedIn", desc: "Secure OAuth — no passwords" },
+            { step: "2", title: "Tell us about yourself", desc: "2-minute input → your content DNA" },
+            { step: "3", title: "We post for you", desc: "Daily posts, fully automated" },
+          ].map(({ step, title, desc }) => (
+            <div key={step} className="flex items-start gap-5">
+              <div
+                className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center font-bold text-base"
+                style={{ backgroundColor: "#ede9fe", color: "#7c3aed" }}
+              >
+                {step}
+              </div>
+              <div>
+                <p className="font-bold text-base mb-1" style={{ color: "#0f0f0f" }}>{title}</p>
+                <p className="text-sm" style={{ color: "#6b7280" }}>{desc}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* PRICING */}
       <section className="px-6 py-20 max-w-3xl mx-auto" id="pricing">
         <h2
           className="text-3xl md:text-4xl font-extrabold tracking-tight mb-12 text-center"
           style={{ color: "#0f0f0f", letterSpacing: "-0.03em" }}
         >
-          One plan. Everything included.
+          One client pays for years of this tool
         </h2>
 
         <div
@@ -292,22 +427,22 @@ export default function LandingPageB() {
         >
           <div className="mb-6">
             <span
-              className="text-5xl font-extrabold tracking-tight"
+              className="text-6xl font-extrabold tracking-tight"
               style={{ color: "#0f0f0f", letterSpacing: "-0.04em" }}
             >
-              $15
+              $29
             </span>
             <span className="text-xl font-medium ml-1" style={{ color: "#6b7280" }}> / month</span>
-            <p className="mt-1 text-sm" style={{ color: "#9ca3af" }}>or $144/year <span style={{ color: "#7c3aed", fontWeight: 600 }}>(save 20%)</span></p>
           </div>
 
           <ul className="space-y-3 mb-8">
             {[
               "7 AI-written posts per week",
-              "AI cover images for each post",
-              "Auto-scheduled publishing",
-              "LinkedIn profile optimization",
-              "Cancel anytime",
+              "Custom images for every post",
+              "Auto-posting at peak time",
+              "Profile-based personalization",
+              "Edit anytime",
+              "7-day free trial",
             ].map((item) => (
               <li key={item} className="flex items-center gap-3 text-sm font-medium" style={{ color: "#374151" }}>
                 <span style={{ color: "#7c3aed", fontSize: "16px", flexShrink: 0 }}>✓</span>
@@ -324,16 +459,88 @@ export default function LandingPageB() {
               boxShadow: "0 4px 16px rgba(124,58,237,0.4)",
             }}
           >
-            Start 7-Day Free Trial →
+            Start Free — No Card
           </button>
 
           <p className="mt-3 text-center text-xs" style={{ color: "#9ca3af" }}>
-            No credit card required to start
+            Cancel anytime
           </p>
         </div>
       </section>
 
-      {/* ── FAQs ── */}
+      {/* FOMO BLOCK */}
+      <section className="px-6 py-16 max-w-3xl mx-auto">
+        <h2
+          className="text-3xl md:text-4xl font-extrabold tracking-tight mb-8"
+          style={{ color: "#0f0f0f", letterSpacing: "-0.03em" }}
+        >
+          While you stay silent, someone else takes your deals
+        </h2>
+        <ul className="space-y-4 mb-8">
+          {[
+            "99% of people don't post",
+            "The 1% capture all attention",
+            "Buyers choose visible experts",
+          ].map((point) => (
+            <li key={point} className="flex items-start gap-3">
+              <span style={{ color: "#7c3aed", fontWeight: 700, fontSize: "18px", flexShrink: 0 }}>•</span>
+              <span className="text-base font-medium" style={{ color: "#374151" }}>{point}</span>
+            </li>
+          ))}
+        </ul>
+        <div className="space-y-2">
+          <p className="text-lg font-bold" style={{ color: "#0f0f0f" }}>You don&apos;t need to be better</p>
+          <p className="text-lg font-bold" style={{ color: "#7c3aed" }}>You just need to show up</p>
+        </div>
+      </section>
+
+      {/* WHAT YOU'RE LOSING */}
+      <section
+        className="px-6 py-16 max-w-3xl mx-auto rounded-2xl"
+        style={{ backgroundColor: "#fff7f7", border: "1.5px solid #fecaca" }}
+      >
+        <h2
+          className="text-3xl md:text-4xl font-extrabold tracking-tight mb-8"
+          style={{ color: "#0f0f0f", letterSpacing: "-0.03em" }}
+        >
+          Every week without posting, you miss:
+        </h2>
+        <ul className="space-y-4 mb-8">
+          {[
+            "inbound leads",
+            "partnership opportunities",
+            "visibility in your niche",
+            "trust before the first message",
+          ].map((item) => (
+            <li key={item} className="flex items-start gap-3">
+              <span style={{ color: "#dc2626", fontWeight: 700, fontSize: "18px", flexShrink: 0 }}>•</span>
+              <span className="text-base font-medium" style={{ color: "#991b1b" }}>{item}</span>
+            </li>
+          ))}
+        </ul>
+        <div
+          className="rounded-xl p-4"
+          style={{ backgroundColor: "#fee2e2", border: "1.5px solid #fca5a5" }}
+        >
+          <p className="font-bold text-base" style={{ color: "#dc2626" }}>Algorithm forgets inactive profiles</p>
+        </div>
+      </section>
+
+      {/* FOUNDER */}
+      <section className="px-6 py-16 max-w-3xl mx-auto">
+        <h2
+          className="text-2xl font-extrabold tracking-tight mb-4"
+          style={{ color: "#0f0f0f", letterSpacing: "-0.02em" }}
+        >
+          Built by an entrepreneur, for entrepreneurs
+        </h2>
+        <p className="text-base leading-relaxed mb-4" style={{ color: "#6b7280", maxWidth: "520px" }}>
+          I built this because staying visible on LinkedIn felt like a second job. Now it runs on autopilot.
+        </p>
+        <p className="font-bold text-sm" style={{ color: "#374151" }}>Kiryl Sidarchuk</p>
+      </section>
+
+      {/* FAQ */}
       <section className="px-6 py-20 max-w-3xl mx-auto">
         <h2
           className="text-2xl font-bold mb-8 tracking-tight"
@@ -378,9 +585,36 @@ export default function LandingPageB() {
         </div>
       </section>
 
-      {/* ── FOOTER ── */}
+      {/* FINAL CTA */}
+      <section
+        className="px-6 py-20 max-w-3xl mx-auto text-center rounded-2xl"
+        style={{ backgroundColor: "#ede9fe", border: "1.5px solid #c4b5fd" }}
+      >
+        <h2
+          className="text-3xl md:text-4xl font-extrabold tracking-tight mb-4"
+          style={{ color: "#0f0f0f", letterSpacing: "-0.03em" }}
+        >
+          Ready to get clients from LinkedIn — without posting?
+        </h2>
+        <p className="text-base mb-8" style={{ color: "#6b7280" }}>
+          Join professionals who turned visibility into inbound.
+        </p>
+        <button
+          onClick={handleStartTrial}
+          className="px-10 py-4 rounded-xl font-bold text-base text-white transition-all mb-3"
+          style={{
+            background: "linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%)",
+            boxShadow: "0 4px 16px rgba(124,58,237,0.4)",
+          }}
+        >
+          Generate My First Post — 30 sec
+        </button>
+        <p className="text-xs" style={{ color: "#9ca3af" }}>No signup required</p>
+      </section>
+
+      {/* FOOTER */}
       <footer
-        className="px-6 py-8 border-t"
+        className="px-6 py-8 border-t mt-12"
         style={{ borderColor: "#f3f4f6" }}
       >
         <div className="max-w-3xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
