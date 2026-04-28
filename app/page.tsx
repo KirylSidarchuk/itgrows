@@ -195,6 +195,10 @@ export default function PersonalPage() {
       if (data.posts && data.posts.length > 0) {
         setGhostPosts(data.posts)
         setGhostImages(data.images ?? [])
+      } else if (res.status === 429) {
+        setGhostError("You've used your 2 free previews. Sign up to generate unlimited LinkedIn posts →")
+      } else if (data.error) {
+        setGhostError(data.error)
       } else {
         setGhostError("Something went wrong. Try again.")
       }
