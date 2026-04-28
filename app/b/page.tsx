@@ -37,29 +37,29 @@ const AI_IMAGE_ICON = (
 
 const features = [
   {
-    icon: "🎯",
-    title: "Posts Written in Your Voice",
-    desc: "We analyze your professional profile and write in your unique tone — not generic AI filler.",
-  },
-  {
     icon: "📅",
-    title: "7 Posts Published Weekly",
+    title: "7 posts per week, every week",
     desc: "One post every day, Monday through Sunday. Consistent presence that brings inbound leads.",
   },
   {
+    icon: "🎯",
+    title: "Written in your voice (not generic AI)",
+    desc: "We analyze your professional profile and write in your unique tone — not generic AI filler.",
+  },
+  {
+    icon: "💼",
+    title: "Designed to attract clients, not likes",
+    desc: "Every post is crafted to generate inbound interest, not just engagement vanity metrics.",
+  },
+  {
+    icon: "⚡",
+    title: "Fully automated — no thinking, no effort",
+    desc: "Posts go live automatically. No scheduling, no copywriting, no thinking about what to post.",
+  },
+  {
     icon: AI_IMAGE_ICON,
-    title: "Images Generated Automatically",
+    title: "Custom AI images for every post",
     desc: "Every post comes with a custom AI-generated image that matches your content.",
-  },
-  {
-    icon: "⏰",
-    title: "Publishes at Peak Time",
-    desc: "Posts go live at 10am UTC — when LinkedIn engagement is highest.",
-  },
-  {
-    icon: "🧬",
-    title: "Built on Your Client-Getting DNA",
-    desc: "We study your niche, ideal clients, and goals before writing a single word. Nothing generic.",
   },
 ]
 
@@ -67,60 +67,36 @@ const steps = [
   {
     num: "01",
     title: "Connect LinkedIn",
-    desc: "One click. No passwords shared. We use LinkedIn's secure OAuth connection.",
+    desc: "Secure OAuth — no passwords.",
   },
   {
     num: "02",
-    title: "Tell Us About You",
-    desc: "Fill a 2-minute brief: your niche, audience, and goals. That's your content DNA.",
+    title: "Tell us about yourself",
+    desc: "2-minute input \u2192 your content DNA.",
   },
   {
     num: "03",
-    title: "We Post for You",
-    desc: "AI-crafted posts publish daily to your profile. Review, edit, or let them run on autopilot.",
+    title: "We post for you",
+    desc: "Daily posts, fully automated.",
   },
 ]
 
 const faqs = [
   {
-    q: "Is it safe to connect my LinkedIn account?",
-    a: "Absolutely. We use LinkedIn's official OAuth — the same secure standard used by tools like Salesforce, HubSpot, and Notion. You log in directly on LinkedIn's website, not on ours. We never see or store your LinkedIn password. You can revoke access from your LinkedIn settings at any time in seconds.",
+    q: "Is it safe?",
+    a: "Yes. We use LinkedIn's official OAuth — no passwords, ever.",
   },
   {
-    q: "How do you post to LinkedIn without my password?",
-    a: "When you connect your account, LinkedIn gives ItGrows.ai a secure access token — like a temporary key that only allows posting on your behalf. Think of it like letting a trusted assistant publish posts for you, without giving them your email and password. Your credentials stay on LinkedIn's servers, never ours.",
+    q: "Can I edit posts?",
+    a: "Yes. Review and edit every post before it goes live.",
   },
   {
-    q: "Can ItGrows.ai read my private messages or connections?",
-    a: "No. We only request the minimum permissions needed to publish posts. We cannot read your messages, see your connections list, or access any private data. Our access is strictly limited to creating and scheduling posts on your public feed.",
+    q: "Can I cancel?",
+    a: "Anytime. No contracts, no questions asked.",
   },
   {
-    q: "What happens if I cancel my subscription?",
-    a: "You can cancel anytime from your account settings. After cancellation, we immediately revoke our access token — we can no longer post on your behalf. Any scheduled posts that haven't been published yet will not go out.",
-  },
-  {
-    q: "Is this generic AI content?",
-    a: "No. Before writing anything, we analyze your LinkedIn profile, your niche, and your professional goals. Every post is written specifically for you — in your voice, for your audience.",
-  },
-  {
-    q: "Do I need to do anything after setup?",
-    a: "Just connect LinkedIn and fill a 2-minute brief. After that, posts are generated and scheduled automatically. You can review and edit before they go live if you'd like.",
-  },
-  {
-    q: "Can I edit posts before they publish?",
-    a: "Yes. Every post appears in your dashboard before it goes live. Approve as-is, tweak the wording, or regenerate entirely — you're always in control.",
-  },
-  {
-    q: "Can I cancel anytime?",
-    a: "Absolutely. No contracts, no lock-ins. Cancel from your account settings in seconds. Your subscription ends at the current billing period.",
-  },
-  {
-    q: "Do I need a credit card to start?",
-    a: "No. You get 7 days completely free — no credit card required. Explore the full product, see your LinkedIn posts go live, and only subscribe once you've experienced the results. After 7 days, choose monthly ($29/mo) or annual ($288/yr, save 20%).",
-  },
-  {
-    q: "What happens after my trial ends?",
-    a: "Your scheduled posts will pause. You'll see a clear prompt to subscribe in your dashboard. No charges, no surprises — just a simple decision to continue or walk away.",
+    q: "Is this generic AI?",
+    a: "No. Posts are written in your voice, based on your profile and niche.",
   },
 ]
 
@@ -414,11 +390,98 @@ export default function LandingPageB() {
                 Generate My First Post &#8212; takes 30 sec &#8594;
               </Button>
             </div>
-            <Button size="lg" onClick={() => { document.getElementById("ghost-mode")?.scrollIntoView({ behavior: "smooth" }) }} variant="outline" className="border-[#1b1916] text-[#1b1916] hover:bg-[#1b1916] hover:text-[#f3f2f1] px-6 sm:px-8 py-5 sm:py-6 text-base sm:text-lg rounded-xl w-full sm:w-auto">
-              Try Free &#8212; No Card
+            <Button size="lg" onClick={handleStartTrial} variant="outline" className="border-[#1b1916] text-[#1b1916] hover:bg-[#1b1916] hover:text-[#f3f2f1] px-6 sm:px-8 py-5 sm:py-6 text-base sm:text-lg rounded-xl w-full sm:w-auto">
+              Start Free &#8212; No Card
             </Button>
           </div>
           <p className="mt-3 text-xs sm:text-sm text-slate-500 font-medium">No credit card required &#183; Cancel anytime</p>
+
+          {/* Ghost Mode — inline in hero */}
+          <div className="mt-10 max-w-xl mx-auto text-left">
+            <div className="bg-white/80 backdrop-blur border border-black/10 rounded-2xl p-5 sm:p-6 shadow-sm">
+              <label className="block text-sm font-semibold text-[#1b1916] mb-2">
+                Try it now &#8212; no signup
+              </label>
+              <textarea
+                value={ghostThoughts}
+                onChange={(e) => setGhostThoughts(e.target.value)}
+                placeholder="E.g. I'm a B2B consultant helping SaaS companies close more deals. I specialize in outbound strategy and have helped 30+ clients generate inbound from LinkedIn."
+                className="w-full h-24 resize-none rounded-xl border border-black/15 bg-white px-4 py-3 text-sm text-[#1b1916] placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-400"
+              />
+              <div className="flex items-center justify-between mt-3 gap-3">
+                <span className="text-xs text-slate-400">{ghostThoughts.length}/500 chars</span>
+                <button
+                  onClick={handleGhostGenerate}
+                  disabled={ghostLoading || ghostThoughts.trim().length < 10}
+                  className="px-6 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold transition-colors flex items-center gap-2"
+                >
+                  {ghostLoading ? (
+                    <>
+                      <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      Generating...
+                    </>
+                  ) : (
+                    "Generate My Posts \u2192"
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {ghostError && (
+              <p className="mt-3 text-sm text-red-500">{ghostError}</p>
+            )}
+
+            {ghostPosts.length > 0 && (
+              <div className="mt-6 space-y-4">
+                {ghostPosts.map((post, i) => (
+                  <div key={i} className="bg-white border border-black/10 rounded-2xl overflow-hidden shadow-sm">
+                    {ghostImages[i] && (
+                      <img src={ghostImages[i]!} alt="Post cover" className="w-full h-48 object-cover" />
+                    )}
+                    <div className="p-5">
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-500 to-pink-500 flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
+                          Y
+                        </div>
+                        <div>
+                          <div className="font-semibold text-sm text-[#1b1916]">You</div>
+                          <div className="text-xs text-slate-400">LinkedIn &#183; Just now</div>
+                        </div>
+                      </div>
+                      <p className="text-sm text-[#1b1916] whitespace-pre-wrap leading-relaxed">{post}</p>
+                      <div className="mt-4 pt-4 border-t border-black/5 flex items-center justify-between">
+                        <div className="flex gap-4 text-xs text-slate-400">
+                          <span>&#128077; Like</span>
+                          <span>&#128172; Comment</span>
+                          <span>&#128260; Repost</span>
+                        </div>
+                        <a
+                          href="/signup"
+                          className="inline-block px-4 py-2 rounded-lg text-sm font-semibold text-white transition-colors"
+                          style={{ backgroundColor: "#7C3AED" }}
+                          onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#6d28d9")}
+                          onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#7C3AED")}
+                        >
+                          Automate This &#8594;
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+
+                <div className="bg-gradient-to-r from-violet-600 to-pink-600 rounded-2xl p-6 text-center text-white">
+                  <div className="text-xl font-extrabold mb-2">Want these posted for you every day?</div>
+                  <p className="text-white/80 text-sm mb-4">Start free. No card required.</p>
+                  <a
+                    href="/signup"
+                    className="inline-block px-8 py-3 rounded-xl bg-white text-violet-600 font-bold text-sm hover:bg-violet-50 transition-colors"
+                  >
+                    Start Free &#8594;
+                  </a>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </section>
 
@@ -429,103 +492,30 @@ export default function LandingPageB() {
         </p>
       </div>
 
-      {/* Ghost Mode */}
+      {/* Pain Section */}
       <section id="ghost-mode" className="px-4 sm:px-6 py-16 sm:py-24 bg-white">
         <div className="max-w-3xl mx-auto text-center">
-          <span className="inline-block mb-4 px-4 py-1 rounded-full text-xs font-bold border border-violet-300 text-violet-600 bg-violet-50 tracking-[0.15em] uppercase">
-            No signup required
-          </span>
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-4 text-[#1b1916] leading-tight tracking-tight">
-            See your posts in{" "}
-            <span className="bg-gradient-to-r from-violet-600 to-pink-500 bg-clip-text text-transparent">30 seconds</span>
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-8 text-[#1b1916] leading-tight tracking-tight">
+            If you&apos;re not posting,{" "}
+            <span className="bg-gradient-to-r from-violet-600 to-pink-500 bg-clip-text text-transparent">you&apos;re invisible</span>
           </h2>
-          <p className="text-slate-500 text-base sm:text-lg mb-8 max-w-xl mx-auto">
-            Write 2&#8211;3 thoughts about yourself or your work. We&apos;ll generate 3 real LinkedIn posts &#8212; no account needed.
-          </p>
-
-          <div className="bg-[#f8f7f6] border border-black/10 rounded-2xl p-5 sm:p-6 text-left">
-            <label className="block text-sm font-semibold text-[#1b1916] mb-2">
-              Tell us a bit about yourself
-            </label>
-            <textarea
-              value={ghostThoughts}
-              onChange={(e) => setGhostThoughts(e.target.value)}
-              placeholder="E.g. I'm a B2B consultant helping SaaS companies close more deals. I specialize in outbound strategy and have helped 30+ clients generate inbound from LinkedIn."
-              className="w-full h-28 resize-none rounded-xl border border-black/15 bg-white px-4 py-3 text-sm text-[#1b1916] placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-400"
-            />
-            <div className="flex items-center justify-between mt-3 gap-3">
-              <span className="text-xs text-slate-400">{ghostThoughts.length}/500 chars</span>
-              <button
-                onClick={handleGhostGenerate}
-                disabled={ghostLoading || ghostThoughts.trim().length < 10}
-                className="px-6 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold transition-colors flex items-center gap-2"
-              >
-                {ghostLoading ? (
-                  <>
-                    <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    Generating posts &amp; images...
-                  </>
-                ) : (
-                  "Generate My Posts \u2192"
-                )}
-              </button>
-            </div>
-          </div>
-
-          {ghostError && (
-            <p className="mt-4 text-sm text-red-500">{ghostError}</p>
-          )}
-
-          {ghostPosts.length > 0 && (
-            <div className="mt-8 space-y-4 text-left">
-              {ghostPosts.map((post, i) => (
-                <div key={i} className="bg-white border border-black/10 rounded-2xl overflow-hidden shadow-sm">
-                  {ghostImages[i] && (
-                    <img src={ghostImages[i]!} alt="Post cover" className="w-full h-48 object-cover" />
-                  )}
-                  <div className="p-5 sm:p-6">
-                    <div className="flex items-center gap-3 mb-4">
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-500 to-pink-500 flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
-                        Y
-                      </div>
-                      <div>
-                        <div className="font-semibold text-sm text-[#1b1916]">You</div>
-                        <div className="text-xs text-slate-400">LinkedIn &#183; Just now</div>
-                      </div>
-                    </div>
-                    <p className="text-sm text-[#1b1916] whitespace-pre-wrap leading-relaxed">{post}</p>
-                    <div className="mt-4 pt-4 border-t border-black/5 flex items-center justify-between">
-                      <div className="flex gap-4 text-xs text-slate-400">
-                        <span>&#128077; Like</span>
-                        <span>&#128172; Comment</span>
-                        <span>&#128260; Repost</span>
-                      </div>
-                      <a
-                        href="/signup"
-                        className="inline-block px-4 py-2 rounded-lg text-sm font-semibold text-white transition-colors"
-                        style={{ backgroundColor: "#7C3AED" }}
-                        onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#6d28d9")}
-                        onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#7C3AED")}
-                      >
-                        Automate This Post &#8594;
-                      </a>
-                    </div>
-                  </div>
-                </div>
-              ))}
-
-              <div className="bg-gradient-to-r from-violet-600 to-pink-600 rounded-2xl p-6 sm:p-8 text-center text-white">
-                <div className="text-2xl font-extrabold mb-2">Want these posted for you every day?</div>
-                <p className="text-white/80 text-sm mb-5">Start your 7-day free trial. No card required.</p>
-                <a
-                  href="/signup"
-                  className="inline-block px-8 py-3 rounded-xl bg-white text-violet-600 font-bold text-sm hover:bg-violet-50 transition-colors"
-                >
-                  Start Free Trial &#8594;
-                </a>
+          <div className="space-y-4 mb-8 text-left max-w-xl mx-auto">
+            {[
+              "Your competitors show up daily \u2014 you don\u2019t",
+              "Decision-makers check LinkedIn before buying",
+              "The one who posts \u2192 gets the deal",
+            ].map((item, i) => (
+              <div key={i} className="flex items-start gap-3">
+                <span className="text-violet-600 font-bold text-lg flex-shrink-0">&#10003;</span>
+                <span className="text-slate-700 text-base leading-relaxed">{item}</span>
               </div>
-            </div>
-          )}
+            ))}
+          </div>
+          <div className="bg-gradient-to-r from-violet-50 to-pink-50 border border-violet-200 rounded-2xl px-6 py-5">
+            <p className="text-[#1b1916] font-semibold text-base sm:text-lg">
+              Every day you stay silent, someone else takes your clients
+            </p>
+          </div>
         </div>
       </section>
 
@@ -537,10 +527,32 @@ export default function LandingPageB() {
               Real data &#183; LinkedIn Analytics
             </span>
             <h2 className="text-3xl sm:text-4xl font-extrabold text-[#1b1916] mb-3 tracking-tight">
-              Real Statistics
+              From invisible &#8594; to inbound
             </h2>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-6 mb-4 mt-6">
+              <div className="bg-red-50 border border-red-200 rounded-2xl px-6 py-4 text-center min-w-[140px]">
+                <div className="text-xs font-bold uppercase tracking-widest text-red-500 mb-2">Before</div>
+                <div className="text-sm text-slate-700 space-y-1">
+                  <div>0&#8211;1 posts/month</div>
+                  <div>~200&#8211;500 views</div>
+                  <div>no inbound</div>
+                </div>
+              </div>
+              <div className="text-2xl text-slate-400">&#8594;</div>
+              <div className="bg-emerald-50 border border-emerald-200 rounded-2xl px-6 py-4 text-center min-w-[140px]">
+                <div className="text-xs font-bold uppercase tracking-widest text-emerald-600 mb-2">After 2 Weeks</div>
+                <div className="text-sm text-slate-700 space-y-1">
+                  <div>7 posts/week</div>
+                  <div>10,000+ views</div>
+                  <div>5&#8211;15 inbound messages</div>
+                </div>
+              </div>
+            </div>
+            <div className="inline-block bg-[#1b1916] text-white text-sm font-semibold px-5 py-2 rounded-full mb-4">
+              One post can close a deal
+            </div>
             <p className="text-slate-500 text-base max-w-xl mx-auto">
-              select a time period
+              Select a time period to see real analytics
             </p>
           </div>
 
@@ -722,10 +734,10 @@ export default function LandingPageB() {
               Results
             </span>
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-4 text-white leading-tight tracking-tight">
-              What 7 posts a week gets you
+              What consistent posting gets you:
             </h2>
             <p className="text-slate-400 text-base sm:text-lg max-w-xl mx-auto">
-              The numbers behind consistent LinkedIn presence
+              LinkedIn rewards consistency &#8212; not effort
             </p>
           </div>
 
@@ -740,9 +752,9 @@ export default function LandingPageB() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="text-4xl sm:text-5xl font-black mb-1" style={{ background: "linear-gradient(90deg, #a78bfa, #818cf8)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
-                    3.8&#215;
+                    +3.8x
                   </div>
-                  <div className="text-white font-semibold text-base leading-snug">more profile views</div>
+                  <div className="text-white font-semibold text-base leading-snug">profile views</div>
                   <p className="text-slate-400 text-sm mt-2 leading-relaxed">
                     Professionals who post consistently get 3.8&#215; more profile views and 5&#215; more connection requests.
                   </p>
@@ -769,9 +781,9 @@ export default function LandingPageB() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="text-3xl sm:text-4xl font-black mb-1" style={{ background: "linear-gradient(90deg, #f472b6, #ec4899)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
-                    73%
+                    +280%
                   </div>
-                  <div className="text-white font-semibold text-base leading-snug">of B2B buyers check LinkedIn before meeting</div>
+                  <div className="text-white font-semibold text-base leading-snug">inbound messages</div>
                   <p className="text-slate-400 text-sm mt-2 leading-relaxed">
                     A strong content presence turns cold outreach into warm conversations &#8212; before you even say hello.
                   </p>
@@ -799,9 +811,9 @@ export default function LandingPageB() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="text-4xl sm:text-5xl font-black mb-1" style={{ background: "linear-gradient(90deg, #67e8f9, #22d3ee)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
-                    +280%
+                    More visibility
                   </div>
-                  <div className="text-white font-semibold text-base leading-snug">inbound messages</div>
+                  <div className="text-white font-semibold text-base leading-snug">&#8594; more deals</div>
                   <p className="text-slate-400 text-sm mt-2 leading-relaxed">
                     Thought leaders on LinkedIn receive 2.8&#215; more inbound partnership and collaboration requests.
                   </p>
@@ -838,11 +850,11 @@ export default function LandingPageB() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="text-4xl sm:text-5xl font-black mb-1" style={{ background: "linear-gradient(90deg, #fcd34d, #f59e0b)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
-                    89%
+                    Visibility
                   </div>
-                  <div className="text-white font-semibold text-base leading-snug">of clients Google you first</div>
+                  <div className="text-white font-semibold text-base leading-snug">&#8594; trust &#8594; clients</div>
                   <p className="text-slate-400 text-sm mt-2 leading-relaxed">
-                    Your LinkedIn is your digital first impression. Make it count before the sales call.
+                    People buy from those they see often. Your LinkedIn is your digital first impression.
                   </p>
                 </div>
               </div>
@@ -874,6 +886,35 @@ export default function LandingPageB() {
         </div>
       </section>
 
+      {/* Why It Works */}
+      <section className="px-4 sm:px-6 py-16 sm:py-24 bg-white">
+        <div className="max-w-3xl mx-auto text-center">
+          <h2 className="text-3xl sm:text-4xl font-extrabold mb-8 text-[#1b1916] leading-tight tracking-tight">
+            LinkedIn rewards consistency &#8212; not effort
+          </h2>
+          <div className="space-y-4 mb-8 text-left max-w-xl mx-auto">
+            {[
+              "Posting daily = algorithm boost",
+              "Visibility \u2192 trust \u2192 clients",
+              "People buy from those they see often",
+            ].map((item, i) => (
+              <div key={i} className="flex items-start gap-3">
+                <span className="text-violet-600 font-bold text-lg flex-shrink-0">&#10003;</span>
+                <span className="text-slate-700 text-base leading-relaxed">{item}</span>
+              </div>
+            ))}
+          </div>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <div className="bg-[#1b1916] text-white text-sm font-semibold px-6 py-3 rounded-full">
+              It&apos;s not about writing better
+            </div>
+            <div className="bg-violet-600 text-white text-sm font-semibold px-6 py-3 rounded-full">
+              It&apos;s about showing up more
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* FOMO */}
       <section className="px-4 sm:px-6 py-16 sm:py-24" style={{ backgroundColor: "#07071a" }}>
         <div className="max-w-5xl mx-auto">
@@ -882,21 +923,18 @@ export default function LandingPageB() {
               The Hard Truth
             </span>
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-5 text-white leading-tight">
-              If You&apos;re Not Posting,{" "}
+              While you stay silent,{" "}
               <span className="bg-gradient-to-r from-red-400 via-orange-400 to-yellow-400 bg-clip-text text-transparent">
-                You&apos;re Invisible
+                someone else takes your deals
               </span>
             </h2>
-            <p className="text-slate-400 text-base sm:text-lg max-w-2xl mx-auto">
-              LinkedIn isn&apos;t a social network &#8212; it&apos;s where buying decisions get made. Every day you don&apos;t post, you&apos;re invisible to the clients who would hire you.
-            </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 mb-10 sm:mb-14">
             {[
-              { number: "99%", label: "of LinkedIn users never post", sub: "yet the 1% who do get 9 billion impressions per week", source: "Buffer, 2025", sourceUrl: "https://buffer.com/resources/linkedin-statistics/" },
-              { number: "80%", label: "of all B2B leads on social come from LinkedIn", sub: "it's not Instagram or Facebook — it's here", source: "Foundation Inc, 2025", sourceUrl: "https://foundationinc.co/lab/b2b-marketing-linkedin-stats/" },
-              { number: "23%", label: "of decision-makers bought after reading a post", sub: "thought leadership directly turns readers into clients", source: "Edelman x LinkedIn, 2024", sourceUrl: "https://www.edelman.com/expertise/Business-Marketing/2024-b2b-thought-leadership-report" },
+              { number: "99%", label: "of people don\u2019t post", sub: "yet the 1% who do capture all attention", source: "Buffer, 2025", sourceUrl: "https://buffer.com/resources/linkedin-statistics/" },
+              { number: "1%", label: "capture all attention", sub: "the 1% who post consistently dominate their niche", source: "Foundation Inc, 2025", sourceUrl: "https://foundationinc.co/lab/b2b-marketing-linkedin-stats/" },
+              { number: "100%", label: "buyers choose visible experts", sub: "people buy from those they see in their feed", source: "Edelman x LinkedIn, 2024", sourceUrl: "https://www.edelman.com/expertise/Business-Marketing/2024-b2b-thought-leadership-report" },
             ].map((s, i) => (
               <div key={i} className="rounded-2xl p-8 border border-white/10 text-center" style={{ background: "rgba(255,255,255,0.04)" }}>
                 <div className="text-5xl font-black bg-gradient-to-r from-red-400 to-orange-400 bg-clip-text text-transparent mb-3">{s.number}</div>
@@ -909,16 +947,14 @@ export default function LandingPageB() {
             ))}
           </div>
 
-          <div className="rounded-2xl border border-red-500/20 p-5 sm:p-8" style={{ background: "linear-gradient(135deg, rgba(239,68,68,0.06) 0%, rgba(255,255,255,0.02) 100%)" }}>
+          <div className="rounded-2xl border border-red-500/20 p-5 sm:p-8 mb-8" style={{ background: "linear-gradient(135deg, rgba(239,68,68,0.06) 0%, rgba(255,255,255,0.02) 100%)" }}>
             <h3 className="text-white font-bold text-lg sm:text-xl mb-4 sm:mb-6">Every week without posting, you miss:</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
               {[
-                "65 million decision-makers who could see your name — but don't",
-                "Inbound leads that go to the person who showed up in their feed last week",
-                "Job offers and partnership requests that flow to visible experts",
-                "Algorithm visibility: inactive profiles get 50%+ less reach over time",
-                "Deals worth paying a premium for — 60% of buyers pay more for thought leaders",
-                "Your position as the go-to expert in your niche, taken by someone else",
+                "inbound leads",
+                "partnership opportunities",
+                "visibility in your niche",
+                "trust before the first message",
               ].map((item, i) => (
                 <div key={i} className="flex items-start gap-3">
                   <span className="text-red-400 mt-0.5 text-lg flex-shrink-0">&#10005;</span>
@@ -926,10 +962,21 @@ export default function LandingPageB() {
                 </div>
               ))}
             </div>
+            <div className="mt-5 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3 text-center">
+              <p className="text-red-300 text-sm font-semibold">Algorithm forgets inactive profiles</p>
+            </div>
           </div>
 
-          <div className="text-center mt-10">
-            <p className="text-slate-400 text-base mb-6">The good news? The bar is on the floor &#8212; 99% of people don&apos;t post. You just need to show up.</p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center mb-8">
+            <div className="bg-white/10 text-white text-sm font-semibold px-6 py-3 rounded-full text-center">
+              You don&apos;t need to be better
+            </div>
+            <div className="bg-violet-600 text-white text-sm font-semibold px-6 py-3 rounded-full text-center">
+              You just need to show up
+            </div>
+          </div>
+
+          <div className="text-center mt-4">
             <button
               onClick={handleStartTrial}
               className="bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-white px-10 py-4 rounded-xl text-base font-semibold transition-all"
@@ -945,7 +992,7 @@ export default function LandingPageB() {
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-10 sm:mb-16">
             <Badge className="mb-4 bg-pink-100 text-pink-700 border-pink-200">Simple Setup</Badge>
-            <h2 className="text-3xl sm:text-4xl font-bold mb-4 text-[#1b1916]">Up and Running in 3 Minutes</h2>
+            <h2 className="text-3xl sm:text-4xl font-bold mb-4 text-[#1b1916]">Up and running in 3 minutes</h2>
             <p className="text-slate-600 text-base sm:text-lg">No copywriting. No scheduling. No thinking about what to post.</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -982,9 +1029,9 @@ export default function LandingPageB() {
               What You Get
             </span>
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-5 text-white leading-tight">
-              Everything You Need to{" "}
+              We don&apos;t help you &apos;grow&apos; &#8212;{" "}
               <span className="bg-gradient-to-r from-violet-400 via-pink-400 to-cyan-400 bg-clip-text text-transparent">
-                Turn LinkedIn into a Client Machine
+                we bring you inbound
               </span>
             </h2>
             <p className="text-slate-400 text-base sm:text-lg max-w-2xl mx-auto">
@@ -1007,8 +1054,30 @@ export default function LandingPageB() {
         </div>
       </section>
 
-      {/* Example Posts */}
+      {/* Remove AI Fear */}
       <section className="px-4 sm:px-6 py-16 sm:py-24" style={{ backgroundColor: "#f3f2f1" }}>
+        <div className="max-w-3xl mx-auto text-center">
+          <h2 className="text-3xl sm:text-4xl font-extrabold mb-8 text-[#1b1916] leading-tight tracking-tight">
+            This doesn&apos;t sound like AI
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {[
+              "Matches your tone",
+              "Based on your profile &amp; niche",
+              "No templates, no generic content",
+              "People think you wrote it",
+            ].map((item, i) => (
+              <div key={i} className="bg-white border border-black/10 rounded-2xl px-6 py-4 flex items-center gap-3 text-left">
+                <span className="text-violet-600 font-bold text-lg flex-shrink-0">&#10003;</span>
+                <span className="text-[#1b1916] text-sm font-medium" dangerouslySetInnerHTML={{ __html: item }} />
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Example Posts */}
+      <section className="px-4 sm:px-6 py-16 sm:py-24" style={{ backgroundColor: "#ebe9e5" }}>
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-10 sm:mb-16">
             <Badge className="mb-4 bg-violet-100 text-violet-700 border-violet-200">Real Output</Badge>
@@ -1119,17 +1188,11 @@ export default function LandingPageB() {
             <div className="flex-1">
               <p className="text-xs font-bold tracking-[0.2em] uppercase text-violet-600 mb-3">From the Founder</p>
               <h2 className="text-2xl sm:text-3xl font-bold text-[#1b1916] mb-6 leading-snug">
-                Built by an entrepreneur,<br className="hidden sm:block" /> who needed clients too
+                Built by an entrepreneur, for entrepreneurs
               </h2>
               <div className="space-y-4 text-slate-600 text-base leading-relaxed mb-6">
-                <p>
-                  I&apos;ve been in your shoes &#8212; trying to grow a business while staying visible on LinkedIn felt like a second job.
-                </p>
-                <p>
-                  So I built ItGrows.ai to turn your LinkedIn into a client acquisition machine &#8212; on autopilot. The AI writes, schedules, and publishes posts that sound like you, while you focus on closing deals.
-                </p>
-                <p>
-                  This isn&apos;t a tool made by a tech team that&apos;s never sold anything. It&apos;s a product from someone who knows what client acquisition actually looks like.
+                <p className="text-lg italic text-[#1b1916]">
+                  &ldquo;I built this because staying visible on LinkedIn felt like a second job. Now it runs on autopilot.&rdquo;
                 </p>
               </div>
               <p className="text-lg font-bold text-[#1b1916]">Kiryl Sidarchuk</p>
@@ -1158,7 +1221,7 @@ export default function LandingPageB() {
         <div className="max-w-2xl mx-auto">
           <div className="text-center mb-12">
             <Badge className="mb-4 bg-violet-100 text-violet-700 border-violet-200">Pricing</Badge>
-            <h2 className="text-4xl font-bold mb-4 text-[#1b1916]">One client pays for this entire year.</h2>
+            <h2 className="text-4xl font-bold mb-4 text-[#1b1916]">One client pays for years of this tool</h2>
             <p className="text-slate-600 text-lg">No upsells. No tiers. Just inbound leads.</p>
           </div>
 
@@ -1203,17 +1266,16 @@ export default function LandingPageB() {
                 onClick={annual ? () => handleCheckout("annual") : handleStartTrial}
                 className="w-full bg-violet-600 hover:bg-violet-500 text-white py-6 text-base rounded-xl mt-2"
               >
-                {annual ? "Start Annual Plan" : "Start Free Trial &#8212; No Credit Card"}
+                {annual ? "Start Annual Plan" : "Start Free \u2014 No Card"}
               </Button>
-              <p className="text-center text-xs text-slate-500">{annual ? "Billed annually &#183; Cancel anytime" : "7-day free trial &#183; No credit card required &#183; $29/month after"}</p>
+              <p className="text-center text-xs text-slate-500">Cancel anytime</p>
               <ul className="space-y-3 pt-2">
                 {[
                   "7 AI-written posts per week",
-                  "Custom images for every post",
-                  "Auto-scheduling at peak time (10am UTC)",
-                  "Profile DNA analysis",
-                  "Review & edit before publishing",
-                  "Cancel anytime, no commitment",
+                  "Custom images",
+                  "Auto-posting at peak time",
+                  "Profile-based personalization",
+                  "Edit anytime",
                 ].map((item, i) => (
                   <li key={i} className="flex items-center gap-3 text-sm text-slate-600">
                     <span className="text-violet-600 font-bold text-base">&#10003;</span>
@@ -1265,22 +1327,22 @@ export default function LandingPageB() {
       <section className="px-4 sm:px-6 py-16 sm:py-24 text-center" style={{ backgroundColor: "#ebe9e5" }}>
         <div className="max-w-3xl mx-auto">
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-4 sm:mb-6 text-[#1b1916]">
-            Ready to Turn LinkedIn into Your{" "}
+            Ready to get clients from LinkedIn &#8212;{" "}
             <span className="bg-gradient-to-r from-violet-600 to-cyan-600 bg-clip-text text-transparent">
-              Client Machine?
+              without posting?
             </span>
           </h2>
           <p className="text-slate-600 text-base sm:text-lg mb-8 sm:mb-10">
-            Join 2,400+ professionals who turned their LinkedIn presence into inbound leads.
+            Join professionals who turned visibility into inbound.
           </p>
           <Button
             size="lg"
             onClick={handleStartTrial}
             className="bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-white px-8 sm:px-10 py-5 sm:py-6 text-base sm:text-lg rounded-xl w-full sm:w-auto"
           >
-            Generate My First Post &#8212; takes 30 sec &#8594;
+            Generate My First Post &#8212; 30 sec &#8594;
           </Button>
-          <p className="mt-4 text-xs sm:text-sm text-slate-500">No credit card required &#183; $29/month after &#183; Cancel anytime</p>
+          <p className="mt-4 text-xs sm:text-sm text-slate-500">No signup required</p>
         </div>
       </section>
 
