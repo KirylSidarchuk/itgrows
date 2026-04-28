@@ -1239,11 +1239,6 @@ export default function LandingPageB() {
               >
                 Connect on LinkedIn &#8594;
               </a>
-              <div className="mt-3">
-                <a href="#pricing" className="text-sm text-violet-600 underline underline-offset-2 hover:text-violet-500 transition-colors">
-                  See pricing and start free &#8594;
-                </a>
-              </div>
             </div>
           </div>
         </div>
