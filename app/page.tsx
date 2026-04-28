@@ -129,6 +129,7 @@ const faqs = [
 
 export default function PersonalPage() {
   const [annual, setAnnual] = useState(false)
+  const [openFaq, setOpenFaq] = useState<number | null>(null)
   const [sessionUser, setSessionUser] = useState<{ name?: string | null; email?: string | null } | null>(null)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [ghostThoughts, setGhostThoughts] = useState("")
@@ -415,14 +416,14 @@ export default function PersonalPage() {
           </p>
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center">
             <div className="relative w-full sm:w-auto">
-              {/* Pulse ring behind the button */}
+              {/* Pulse ring behind the primary CTA button */}
               <span className="absolute inset-0 rounded-xl animate-pulse bg-violet-400/30 pointer-events-none" style={{ margin: "-4px" }} />
-              <Button size="lg" onClick={() => { document.getElementById("ghost-mode")?.scrollIntoView({ behavior: "smooth" }) }} className="relative bg-violet-600 hover:bg-violet-500 text-white px-10 py-4 text-base sm:text-lg rounded-xl w-full sm:w-auto font-semibold shadow-lg shadow-violet-600/30">
-                See Your Posts in 30 Seconds →
+              <Button size="lg" onClick={handleStartTrial} className="relative bg-violet-600 hover:bg-violet-500 text-white px-10 py-4 text-base sm:text-lg rounded-xl w-full sm:w-auto font-semibold shadow-lg shadow-violet-600/30">
+                Try Free — No Card
               </Button>
             </div>
-            <Button size="lg" onClick={handleStartTrial} variant="outline" className="border-[#1b1916] text-[#1b1916] hover:bg-[#1b1916] hover:text-[#f3f2f1] px-6 sm:px-8 py-5 sm:py-6 text-base sm:text-lg rounded-xl w-full sm:w-auto">
-              Try Free — No Card
+            <Button size="lg" onClick={() => { document.getElementById("ghost-mode")?.scrollIntoView({ behavior: "smooth" }) }} variant="outline" className="border-[#1b1916] text-[#1b1916] hover:bg-[#1b1916] hover:text-[#f3f2f1] px-6 sm:px-8 py-5 sm:py-6 text-base sm:text-lg rounded-xl w-full sm:w-auto">
+              See Your Posts in 30 Seconds →
             </Button>
           </div>
           <p className="mt-3 text-xs sm:text-sm text-slate-500 font-medium">No credit card required · Cancel anytime</p>
@@ -509,9 +510,12 @@ export default function PersonalPage() {
                     </div>
                     <a
                       href="/signup"
-                      className="text-xs font-semibold text-violet-600 hover:text-violet-500 transition-colors"
+                      className="inline-block px-4 py-2 rounded-lg text-sm font-semibold text-white transition-colors"
+                      style={{ backgroundColor: "#7C3AED" }}
+                      onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#6d28d9")}
+                      onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#7C3AED")}
                     >
-                      Post this automatically →
+                      Automate This Post →
                     </a>
                   </div>
                   </div>
@@ -718,6 +722,9 @@ export default function PersonalPage() {
           {/* Disclaimer */}
           <p className="text-center text-xs text-slate-400 mt-4">
             * Based on real user data. Individual results may vary.
+          </p>
+          <p className="text-center text-xs text-slate-400 mt-1 italic">
+            — K.S., Startup Founder (real account, shared with permission)
           </p>
         </div>
       </section>
@@ -1174,6 +1181,11 @@ export default function PersonalPage() {
               >
                 Connect on LinkedIn →
               </a>
+              <div className="mt-3">
+                <a href="#pricing" className="text-sm text-violet-600 underline underline-offset-2 hover:text-violet-500 transition-colors">
+                  See pricing and start free →
+                </a>
+              </div>
             </div>
           </div>
         </div>
@@ -1216,7 +1228,10 @@ export default function PersonalPage() {
                 <span className="text-slate-500 mb-2 text-lg">/month</span>
               </div>
               {annual && (
-                <p className="text-sm text-green-600 font-medium mt-1">Billed $144/year · Save $36</p>
+                <>
+                  <p className="text-sm text-green-600 font-medium mt-1">Billed $144/year · Save $36</p>
+                  <p className="text-xs text-slate-500 mt-1">7-day money-back guarantee — cancel anytime</p>
+                </>
               )}
               {!annual && (
                 <p className="text-sm text-slate-400 mt-1">or <button onClick={() => setAnnual(true)} className="underline text-violet-600">save 20% with annual</button></p>
@@ -1260,9 +1275,25 @@ export default function PersonalPage() {
           </div>
           <div className="space-y-4">
             {faqs.map((item, i) => (
-              <div key={i} className="bg-white rounded-2xl border border-black/10 p-6 hover:border-violet-300 transition-colors">
-                <h3 className="text-violet-700 font-semibold text-base mb-3 leading-snug">{item.q}</h3>
-                <p className="text-gray-900 text-sm leading-relaxed">{item.a}</p>
+              <div
+                key={i}
+                className="bg-white rounded-2xl border border-black/10 hover:border-violet-300 transition-colors overflow-hidden"
+              >
+                <button
+                  onClick={() => setOpenFaq(openFaq === i ? null : i)}
+                  className="w-full flex items-center justify-between gap-4 p-6 text-left"
+                  aria-expanded={openFaq === i}
+                >
+                  <h3 className="text-violet-700 font-semibold text-base leading-snug">{item.q}</h3>
+                  <span className="flex-shrink-0 text-violet-400 text-sm transition-transform duration-200" style={{ transform: openFaq === i ? "rotate(180deg)" : "rotate(0deg)" }}>
+                    ▼
+                  </span>
+                </button>
+                {openFaq === i && (
+                  <div className="px-6 pb-6">
+                    <p className="text-gray-900 text-sm leading-relaxed">{item.a}</p>
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -1279,7 +1310,7 @@ export default function PersonalPage() {
             </span>
           </h2>
           <p className="text-slate-600 text-base sm:text-lg mb-8 sm:mb-10">
-            Join 200+ professionals who stopped worrying about what to post.
+            Join 2,400+ professionals who stopped worrying about what to post.
           </p>
           <Button
             size="lg"
