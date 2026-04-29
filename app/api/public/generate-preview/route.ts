@@ -151,19 +151,60 @@ Return ONLY a valid JSON array of exactly 3 strings. No markdown, no code blocks
     }
 
     const tryParse = (s: string) => { try { return JSON.parse(s) } catch { return null } }
-    let posts: string[] | null = tryParse(match[0])
-    if (!posts) {
-      // Fix invalid escape sequences and unescaped control chars inside JSON strings
-      // LLM sometimes emits \' (not valid in JSON) and literal newlines/tabs
-      const fixed = match[0].replace(/("(?:[^"\\]|\\.)*")/g, (m) =>
-        m
-          .replace(/\\'/g, "'")       // \' is not valid JSON; unescape to plain '
-          .replace(/\n/g, "\\n")
-          .replace(/\r/g, "\\r")
-          .replace(/\t/g, "\\t")
-      )
-      posts = tryParse(fixed)
+
+    // State-machine parser: handles literal (unescaped) quotes inside JSON strings,
+    // which Gemini sometimes emits when posts contain quoted phrases like "job search".
+    // Falls back to JSON.parse first; if that fails, walks char-by-char and treats
+    // a quote followed by , or ] as a string terminator, otherwise as a literal char.
+    function extractStringArray(raw: string): string[] | null {
+      const direct = tryParse(raw)
+      if (Array.isArray(direct) && direct.length > 0) return direct as string[]
+
+      const s = raw.trim()
+      if (s[0] !== "[") return null
+      const result: string[] = []
+      let i = 1
+      while (i < s.length && /\s/.test(s[i])) i++
+
+      while (i < s.length && s[i] !== "]") {
+        if (s[i] !== '"') { i++; continue }
+        i++ // skip opening quote
+        let str = ""
+        while (i < s.length) {
+          if (s[i] === "\\") {
+            // Escape sequence — consume the next char as-is
+            i++
+            if (i < s.length) {
+              // Handle common JSON escapes; pass others through
+              const esc: Record<string, string> = { n: "\n", r: "\r", t: "\t", '"': '"', "\\": "\\" }
+              str += esc[s[i]] ?? s[i]
+              i++
+            }
+          } else if (s[i] === '"') {
+            // Quote: check if it's the string terminator (next non-space is , or ] or end)
+            const rest = s.slice(i + 1).trimStart()
+            if (!rest || rest[0] === "," || rest[0] === "]") {
+              i++ // closing quote
+              break
+            }
+            // Otherwise it's a literal unescaped quote inside the string — keep it
+            str += '"'
+            i++
+          } else if (s[i] === "\n" || s[i] === "\r") {
+            str += s[i]
+            i++
+          } else {
+            str += s[i]
+            i++
+          }
+        }
+        result.push(str)
+        while (i < s.length && /[\s,]/.test(s[i])) i++
+      }
+      return result.length > 0 ? result : null
     }
+
+    const posts = extractStringArray(match[0])
     if (!Array.isArray(posts) || posts.length === 0) {
       db.insert(ghostModeLogs).values({ success: false, error: "invalid_response", durationMs: Date.now() - startTime, ip: clientIP }).catch(() => {})
       return NextResponse.json({ error: "Invalid response" }, { status: 500 })
