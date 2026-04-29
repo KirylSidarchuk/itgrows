@@ -1183,17 +1183,16 @@ function LinkedInPageContent() {
             <LinkedInIcon className="w-4 h-4 shrink-0" />
             <span className="text-sm font-semibold">LinkedIn</span>
           </button>
-          {/* Instagram */}
+          {/* Instagram — coming soon */}
           <button
-            onClick={() => setActivePlatform("instagram")}
-            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl mb-1 transition-colors ${
-              activePlatform === "instagram"
-                ? "bg-gradient-to-r from-pink-500 to-orange-400 text-white"
-                : "text-slate-600 hover:bg-slate-50 hover:text-pink-600"
-            }`}
+            disabled
+            className="w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl text-slate-400 cursor-not-allowed mb-1"
           >
-            <InstagramIcon className="w-4 h-4 shrink-0" />
-            <span className="text-sm font-semibold">Instagram</span>
+            <div className="flex items-center gap-3">
+              <InstagramIcon className="w-4 h-4 shrink-0 opacity-50" />
+              <span className="text-sm">Instagram</span>
+            </div>
+            <span className="text-[10px] font-semibold bg-slate-100 text-slate-500 rounded-full px-2 py-0.5">Soon</span>
           </button>
           {/* Twitter/X — coming soon */}
           <button
