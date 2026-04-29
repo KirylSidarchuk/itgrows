@@ -105,7 +105,10 @@ export default function LandingPageB() {
   const [openFaq, setOpenFaq] = useState<number | null>(null)
   const [sessionUser, setSessionUser] = useState<{ name?: string | null; email?: string | null } | null>(null)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const [ghostThoughts, setGhostThoughts] = useState("")
+  const [ghostWhatYouDo, setGhostWhatYouDo] = useState("")
+  const [ghostAudience, setGhostAudience] = useState("")
+  const [ghostTone, setGhostTone] = useState("Professional")
+  const [ghostGoal, setGhostGoal] = useState("Get clients")
   const [ghostLoading, setGhostLoading] = useState(false)
   const [ghostPosts, setGhostPosts] = useState<string[]>([])
   const [ghostImages, setGhostImages] = useState<(string | null)[]>([])
@@ -154,7 +157,8 @@ export default function LandingPageB() {
   }
 
   async function handleGhostGenerate() {
-    if (ghostThoughts.trim().length < 10) return
+    if (ghostWhatYouDo.trim().length < 5) return
+    const thoughts = `${ghostWhatYouDo}. Audience: ${ghostAudience || "general professionals"}. Tone: ${ghostTone}. Goal: ${ghostGoal}.`
     setGhostLoading(true)
     setGhostError("")
     setGhostPosts([])
@@ -163,7 +167,7 @@ export default function LandingPageB() {
       const res = await fetch("/api/public/generate-preview", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ thoughts: ghostThoughts }),
+        body: JSON.stringify({ thoughts }),
       })
       const data = await res.json() as { posts?: string[]; images?: (string | null)[]; error?: string }
       if (data.posts && data.posts.length > 0) {
@@ -399,20 +403,61 @@ export default function LandingPageB() {
           {/* Ghost Mode — inline in hero */}
           <div className="mt-10 max-w-xl mx-auto text-left">
             <div className="bg-white/80 backdrop-blur border border-black/10 rounded-2xl p-5 sm:p-6 shadow-sm">
-              <label className="block text-sm font-semibold text-[#1b1916] mb-2">
-                Try it now &#8212; no signup
-              </label>
-              <textarea
-                value={ghostThoughts}
-                onChange={(e) => setGhostThoughts(e.target.value)}
-                placeholder="E.g. I'm a B2B consultant helping SaaS companies close more deals. I specialize in outbound strategy and have helped 30+ clients generate inbound from LinkedIn."
-                className="w-full h-24 resize-none rounded-xl border border-black/15 bg-white px-4 py-3 text-sm text-[#1b1916] placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-400"
-              />
-              <div className="flex items-center justify-between mt-3 gap-3">
-                <span className="text-xs text-slate-400">{ghostThoughts.length}/500 chars</span>
+              <p className="text-sm font-semibold text-[#1b1916] mb-4">Try it now &#8212; no signup</p>
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wide">What do you do? <span className="text-violet-500">*</span></label>
+                  <input
+                    type="text"
+                    value={ghostWhatYouDo}
+                    onChange={(e) => setGhostWhatYouDo(e.target.value)}
+                    placeholder="e.g. I'm a sales consultant helping B2B startups close more deals"
+                    className="w-full rounded-xl border border-black/15 bg-white px-4 py-2.5 text-sm text-[#1b1916] placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-400"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wide">Who is your audience?</label>
+                  <input
+                    type="text"
+                    value={ghostAudience}
+                    onChange={(e) => setGhostAudience(e.target.value)}
+                    placeholder="e.g. Founders, sales managers at SaaS companies"
+                    className="w-full rounded-xl border border-black/15 bg-white px-4 py-2.5 text-sm text-[#1b1916] placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-400"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wide">Your tone</label>
+                    <select
+                      value={ghostTone}
+                      onChange={(e) => setGhostTone(e.target.value)}
+                      className="w-full rounded-xl border border-black/15 bg-white px-3 py-2.5 text-sm text-[#1b1916] focus:outline-none focus:ring-2 focus:ring-violet-400"
+                    >
+                      <option>Professional</option>
+                      <option>Bold &amp; Contrarian</option>
+                      <option>Inspiring</option>
+                      <option>Conversational</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wide">Your goal</label>
+                    <select
+                      value={ghostGoal}
+                      onChange={(e) => setGhostGoal(e.target.value)}
+                      className="w-full rounded-xl border border-black/15 bg-white px-3 py-2.5 text-sm text-[#1b1916] focus:outline-none focus:ring-2 focus:ring-violet-400"
+                    >
+                      <option>Get clients</option>
+                      <option>Build personal brand</option>
+                      <option>Network</option>
+                      <option>Share expertise</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center justify-end mt-4">
                 <button
                   onClick={handleGhostGenerate}
-                  disabled={ghostLoading || ghostThoughts.trim().length < 10}
+                  disabled={ghostLoading || ghostWhatYouDo.trim().length < 5}
                   className="px-6 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold transition-colors flex items-center gap-2"
                 >
                   {ghostLoading ? (
