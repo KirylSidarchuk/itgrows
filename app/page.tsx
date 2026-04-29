@@ -135,7 +135,7 @@ export default function PersonalPage() {
   const [ghostWhatYouDo, setGhostWhatYouDo] = useState("")
   const [ghostAudience, setGhostAudience] = useState("")
   const [ghostTone, setGhostTone] = useState("Professional")
-  const [ghostGoal, setGhostGoal] = useState("Get clients")
+  const [ghostGoals, setGhostGoals] = useState<string[]>([])
   const [ghostLoading, setGhostLoading] = useState(false)
   const [ghostPosts, setGhostPosts] = useState<string[]>([])
   const [ghostImages, setGhostImages] = useState<(string | null)[]>([])
@@ -185,7 +185,8 @@ export default function PersonalPage() {
 
   async function handleGhostGenerate() {
     if (ghostWhatYouDo.trim().length < 5) return
-    const thoughts = `${ghostWhatYouDo}. Audience: ${ghostAudience || "general professionals"}. Tone: ${ghostTone}. Goal: ${ghostGoal}.`
+    const goalStr = ghostGoals.length > 0 ? ghostGoals.join(", ") : "Build personal brand"
+    const thoughts = `${ghostWhatYouDo}. Audience: ${ghostAudience || "general professionals"}. Tone: ${ghostTone}. Goal: ${goalStr}.`
     setGhostLoading(true)
     setGhostError("")
     setGhostPosts([])
@@ -494,16 +495,21 @@ export default function PersonalPage() {
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wide">Your goal</label>
-                  <select
-                    value={ghostGoal}
-                    onChange={(e) => setGhostGoal(e.target.value)}
-                    className="w-full rounded-xl border border-black/15 bg-white px-3 py-2.5 text-sm text-[#1b1916] focus:outline-none focus:ring-2 focus:ring-violet-400"
-                  >
-                    <option>Get clients</option>
-                    <option>Build personal brand</option>
-                    <option>Network</option>
-                    <option>Share expertise</option>
-                  </select>
+                  <div className="flex flex-wrap gap-2">
+                    {["Get clients", "Build personal brand", "Network", "Share expertise"].map((goal) => {
+                      const selected = ghostGoals.includes(goal)
+                      return (
+                        <button
+                          key={goal}
+                          type="button"
+                          onClick={() => setGhostGoals(selected ? ghostGoals.filter((g) => g !== goal) : [...ghostGoals, goal])}
+                          className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${selected ? "bg-violet-600 border-violet-600 text-white" : "bg-white border-black/15 text-slate-600 hover:border-violet-400 hover:text-violet-600"}`}
+                        >
+                          {goal}
+                        </button>
+                      )
+                    })}
+                  </div>
                 </div>
               </div>
             </div>
