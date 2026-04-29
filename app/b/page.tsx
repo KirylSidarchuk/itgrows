@@ -245,7 +245,7 @@ export default function LandingPageB() {
       <nav className="border-b border-black/10 px-4 sm:px-6 py-4 sticky top-0 z-50" style={{ backgroundColor: "#f3f2f1" }}>
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 text-xl font-bold bg-gradient-to-r from-violet-600 to-cyan-600 bg-clip-text text-transparent shrink-0">
+          <Link href="/b" className="flex items-center gap-2 text-xl font-bold bg-gradient-to-r from-violet-600 to-cyan-600 bg-clip-text text-transparent shrink-0">
             <img src="/logo.jpg" className="h-8 w-8 rounded-lg" alt="ItGrows" />
             <span>ItGrows.ai</span>
           </Link>
