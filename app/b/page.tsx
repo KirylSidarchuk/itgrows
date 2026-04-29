@@ -1257,44 +1257,6 @@ export default function LandingPageB() {
         </div>
       </section>
 
-      {/* Founder */}
-      <section className="px-4 sm:px-6 py-16 sm:py-24" style={{ backgroundColor: "#faf9f7" }}>
-        <div className="max-w-4xl mx-auto">
-          <div className="flex flex-col md:flex-row gap-10 md:gap-16 items-center">
-            <div className="w-full md:w-2/5 flex-shrink-0">
-              <img
-                src="/founder-kiryl.jpg"
-                alt="Kiryl Sidarchuk"
-                className="rounded-2xl object-cover w-full shadow-lg"
-                style={{ height: "400px" }}
-              />
-            </div>
-            <div className="flex-1">
-              <p className="text-xs font-bold tracking-[0.2em] uppercase text-violet-600 mb-3">From the Founder</p>
-              <h2 className="text-2xl sm:text-3xl font-bold text-[#1b1916] mb-6 leading-snug">
-                Built by an entrepreneur, for entrepreneurs
-              </h2>
-              <div className="space-y-4 text-slate-600 text-base leading-relaxed mb-6">
-                <p className="text-lg italic text-[#1b1916]">
-                  &ldquo;I built this because staying visible on LinkedIn felt like a second job. Now it runs on autopilot.&rdquo;
-                </p>
-              </div>
-              <p className="text-lg font-bold text-[#1b1916]">Kiryl Sidarchuk</p>
-              <p className="text-violet-600 font-semibold text-sm mb-4">Serial IT Entrepreneur &#183; 3&#215; Founder &#183; Exit in 2022 &#183; Angel Investor</p>
-              <a
-                href="https://www.linkedin.com/in/kiryl-sidarchuk/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-sm font-medium hover:underline"
-                style={{ color: "#0a66c2" }}
-              >
-                Connect on LinkedIn &#8594;
-              </a>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* Pricing */}
       <section id="pricing" className="px-4 sm:px-6 py-16 sm:py-24" style={{ backgroundColor: "#ebe9e5" }}>
         <div className="max-w-2xl mx-auto">
