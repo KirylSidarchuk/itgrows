@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Playfair_Display } from "next/font/google";
 import { SessionProvider } from "next-auth/react"
 import { Analytics } from "@vercel/analytics/next"
+import Script from "next/script"
 import CookieBanner from "@/components/CookieBanner"
 import "./globals.css";
 
@@ -65,6 +66,7 @@ export default function RootLayout({
         <SessionProvider>{children}</SessionProvider>
         <Analytics />
         <CookieBanner />
+        <Script src="https://t.contentsquare.net/uxa/973805ba839a0.js" strategy="afterInteractive" />
       </body>
     </html>
   );
