@@ -136,7 +136,11 @@ Return ONLY a valid JSON array of exactly 3 strings. No markdown, no code blocks
       return NextResponse.json({ error: "Generation failed" }, { status: 500 })
     }
 
-    const data = await res.json() as { choices?: Array<{ message?: { content?: string } }> }
+    // Read as text first so we can fix invalid JSON escape sequences (\') before parsing
+    const rawText = await res.text()
+    // \' is not valid JSON but Gemini sometimes emits it; fix by replacing with plain '
+    const sanitized = rawText.replace(/\\'/g, "'")
+    const data = JSON.parse(sanitized) as { choices?: Array<{ message?: { content?: string } }> }
     const text = data.choices?.[0]?.message?.content ?? ""
 
     const cleaned = text.replace(/```json\s*/gi, "").replace(/```\s*/g, "").trim()
