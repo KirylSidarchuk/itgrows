@@ -673,6 +673,16 @@ function LinkedInPageContent() {
   const userName = session?.user?.name ?? session?.user?.email?.split("@")[0] ?? "there"
 
   useEffect(() => {
+    if (typeof window !== 'undefined' && typeof (window as any).gtag === 'function') {
+      (window as any).gtag('event', 'conversion', {
+        send_to: 'AW-17930749593/Q9ZlCNCDu_IbEJmNhuZC',
+        value: 1.0,
+        currency: 'USD',
+      })
+    }
+  }, [])
+
+  useEffect(() => {
     if (connected === "1") {
       setStatusMessage("LinkedIn connected successfully!")
     } else if (error && !loading && accounts.length === 0) {
