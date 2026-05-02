@@ -10,7 +10,7 @@ const resend = new Resend(process.env.RESEND_API_KEY)
 
 export async function POST(req: NextRequest) {
   try {
-    const { email, password, name } = await req.json()
+    const { email, password, name, source } = await req.json()
 
     if (!email || !password || password.length < 8) {
       return NextResponse.json({ error: "Invalid input" }, { status: 400 })
@@ -27,6 +27,7 @@ export async function POST(req: NextRequest) {
       name: name || email.split("@")[0],
       passwordHash,
       plan: "starter",
+      source: source || null,
     }).returning()
 
     // Create verification token
@@ -64,7 +65,7 @@ export async function POST(req: NextRequest) {
     fetch(`https://api.telegram.org/bot8213146538:AAH9ceXiIQ62-ICZJlUFx0psyd2nYq1gN7g/sendMessage`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ chat_id: 372194458, text: `🆕 New user: ${name || ""} ${email.toLowerCase()}`.trim() }),
+      body: JSON.stringify({ chat_id: 372194458, text: `🆕 New user: ${name || ""} ${email.toLowerCase()} [${source || "unknown"}]`.trim() }),
     }).catch(() => {})
 
     return NextResponse.json({ success: true, userId: user.id, emailSent: true })

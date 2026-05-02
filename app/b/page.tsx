@@ -201,12 +201,12 @@ export default function LandingPageB() {
     const sessionRes = await fetch("/api/auth/session")
     const sessionData = await sessionRes.json() as { user?: { id: string } }
     if (!sessionData?.user?.id) {
-      window.location.href = `/signup?callbackUrl=${encodeURIComponent("/cabinet")}`
+      window.location.href = `/signup?source=b&callbackUrl=${encodeURIComponent("/cabinet")}`
       return
     }
     const res = await fetch("/api/trial/start", { method: "POST" })
     if (res.status === 401) {
-      window.location.href = `/signup?callbackUrl=${encodeURIComponent("/cabinet")}`
+      window.location.href = `/signup?source=b&callbackUrl=${encodeURIComponent("/cabinet")}`
       return
     }
     window.location.href = "/cabinet"
@@ -216,7 +216,7 @@ export default function LandingPageB() {
     const sessionRes = await fetch("/api/auth/session")
     const sessionData = await sessionRes.json() as { user?: { id: string } }
     if (!sessionData?.user?.id) {
-      window.location.href = `/signup?callbackUrl=${encodeURIComponent("/cabinet")}`
+      window.location.href = `/signup?source=b&callbackUrl=${encodeURIComponent("/cabinet")}`
       return
     }
     const res = await fetch("/api/stripe/checkout", {
@@ -225,7 +225,7 @@ export default function LandingPageB() {
       body: JSON.stringify({ planType }),
     })
     if (res.status === 401) {
-      window.location.href = `/signup?callbackUrl=${encodeURIComponent("/cabinet")}`
+      window.location.href = `/signup?source=b&callbackUrl=${encodeURIComponent("/cabinet")}`
       return
     }
     const data = await res.json() as { url?: string; error?: string }
@@ -507,7 +507,7 @@ export default function LandingPageB() {
                           <span>&#128260; Repost</span>
                         </div>
                         <a
-                          href="/signup"
+                          href="/signup?source=b"
                           className="inline-block px-4 py-2 rounded-lg text-sm font-semibold text-white transition-colors"
                           style={{ backgroundColor: "#7C3AED" }}
                           onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#6d28d9")}
@@ -524,7 +524,7 @@ export default function LandingPageB() {
                   <div className="text-xl font-extrabold mb-2">Want these posted for you every day?</div>
                   <p className="text-white/80 text-sm mb-4">Start free. No card required.</p>
                   <a
-                    href="/signup"
+                    href="/signup?source=b"
                     className="inline-block px-8 py-3 rounded-xl bg-white text-violet-600 font-bold text-sm hover:bg-violet-50 transition-colors"
                   >
                     Start Free &#8594;
@@ -957,7 +957,7 @@ export default function LandingPageB() {
 
           <div className="text-center mt-12 sm:mt-16">
             <a
-              href="/signup"
+              href="/signup?source=b"
               className="inline-flex items-center gap-2 bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-white px-10 py-4 rounded-xl text-base font-semibold transition-all shadow-lg shadow-violet-700/30"
             >
               Start attracting clients today

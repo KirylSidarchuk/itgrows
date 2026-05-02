@@ -16,6 +16,7 @@ export const users = pgTable("users", {
   cancelAtPeriodEnd: boolean("cancel_at_period_end").default(false),
   cancelAt: timestamp("cancel_at"),
   trialEndsAt: timestamp("trial_ends_at"),
+  source: text("source"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 })
 
