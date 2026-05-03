@@ -18,6 +18,9 @@ export const users = pgTable("users", {
   trialEndsAt: timestamp("trial_ends_at"),
   source: text("source"),
   linkedinReminderSent: boolean("linkedin_reminder_sent").notNull().default(false),
+  trialReminder1Sent: boolean("trial_reminder_1_sent").notNull().default(false),
+  trialReminderLastSent: boolean("trial_reminder_last_sent").notNull().default(false),
+  trialDiscountSent: boolean("trial_discount_sent").notNull().default(false),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 })
 
