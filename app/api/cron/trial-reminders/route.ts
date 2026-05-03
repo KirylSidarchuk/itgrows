@@ -59,7 +59,7 @@ function trialDiscountEmail(name: string): string {
         <p style="color: #374151;">Your trial ended a couple of days ago. We'd love to have you back.</p>
         <p style="color: #374151;">As a thank-you for trying ItGrows, we're offering you <strong>50% off your first year</strong> — that's just <strong>$101.50</strong> instead of $203.</p>
         <p style="color: #374151;">Your LinkedIn posts are already written. Subscribe and they'll start publishing automatically.</p>
-        <a href="https://itgrows.ai/cabinet" style="display: inline-block; background: #059669; color: white; padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; margin-top: 8px; font-size: 15px;">Get 50% Off — $101.50/year</a>
+        <a href="https://itgrows.ai/subscribe-discount" style="display: inline-block; background: #059669; color: white; padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; margin-top: 8px; font-size: 15px;">Get 50% Off — $101.50/year</a>
         <p style="color: #6b7280; font-size: 12px; margin-top: 24px;">This offer is valid for 48 hours.</p>
         <p style="color: #9ca3af; font-size: 12px; margin-top: 16px;">ItGrows.ai · <a href="https://itgrows.ai/cabinet" style="color: #9ca3af;">Manage your account</a></p>
       </div>
