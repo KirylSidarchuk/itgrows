@@ -197,3 +197,10 @@ export const ghostModeLogs = pgTable("ghost_mode_logs", {
   durationMs: integer("duration_ms"),
   ip: text("ip"),
 })
+
+export const waitlist = pgTable("waitlist", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  email: text("email").notNull(),
+  platform: text("platform").notNull().default("x"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+})

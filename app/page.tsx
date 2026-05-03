@@ -69,17 +69,17 @@ const features = [
 const steps = [
   {
     num: "01",
-    title: "Connect LinkedIn",
+    title: "Connect your LinkedIn profile",
     desc: "One click. No passwords shared. We use LinkedIn's secure OAuth connection.",
   },
   {
     num: "02",
-    title: "Tell Us About You",
+    title: "Define your direction and goals",
     desc: "Fill a 2-minute brief: your niche, audience, and goals. That's your content DNA.",
   },
   {
     num: "03",
-    title: "We Post for You",
+    title: "Content runs daily — automatically",
     desc: "AI-crafted posts publish daily to your profile. Review, edit, or let them run on autopilot.",
   },
 ]
@@ -140,6 +140,12 @@ export default function PersonalPage() {
   const [ghostPosts, setGhostPosts] = useState<string[]>([])
   const [ghostImages, setGhostImages] = useState<(string | null)[]>([])
   const [ghostError, setGhostError] = useState("")
+
+  // Waitlist state
+  const [waitlistEmail, setWaitlistEmail] = useState("")
+  const [waitlistLoading, setWaitlistLoading] = useState(false)
+  const [waitlistDone, setWaitlistDone] = useState(false)
+  const [waitlistError, setWaitlistError] = useState("")
 
   // Feedback form state
   const [feedbackOpen, setFeedbackOpen] = useState(false)
@@ -265,6 +271,31 @@ export default function PersonalPage() {
     } else {
       // Stripe not configured yet — go to cabinet directly
       window.location.href = "/cabinet"
+    }
+  }
+
+  async function handleWaitlistSubmit() {
+    if (!waitlistEmail.includes("@")) {
+      setWaitlistError("Please enter a valid email address.")
+      return
+    }
+    setWaitlistLoading(true)
+    setWaitlistError("")
+    try {
+      const res = await fetch("/api/public/waitlist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: waitlistEmail, platform: "x" }),
+      })
+      if (res.ok) {
+        setWaitlistDone(true)
+      } else {
+        setWaitlistError("Something went wrong. Please try again.")
+      }
+    } catch {
+      setWaitlistError("Something went wrong. Please try again.")
+    } finally {
+      setWaitlistLoading(false)
     }
   }
 
@@ -411,20 +442,20 @@ export default function PersonalPage() {
             LinkedIn Automation · $29/month
           </Badge>
           <h1 className="text-4xl sm:text-5xl md:text-7xl font-extrabold leading-tight mb-4 sm:mb-6 tracking-tight text-[#1b1916]">
-            We make you look like
+            Turn Your LinkedIn Into a
             <span className="block bg-gradient-to-r from-violet-600 via-pink-500 to-cyan-500 bg-clip-text text-transparent">
-              someone worth following
+              Consistent Source of Opportunities
             </span>
           </h1>
           <p className="text-base sm:text-xl text-slate-600 max-w-2xl mx-auto mb-8 sm:mb-10 leading-relaxed">
-            AI writes and publishes 7 LinkedIn posts a week in your voice — crafted to build your reputation, attract clients, and make people want to connect with you.
+            Clients, offers, and professional visibility — built for you automatically.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center">
             <div className="relative w-full sm:w-auto">
               {/* Pulse ring behind the primary CTA button */}
               <span className="absolute inset-0 rounded-xl animate-pulse bg-violet-400/30 pointer-events-none" style={{ margin: "-4px" }} />
-              <Button size="lg" onClick={handleStartTrial} className="relative bg-violet-600 hover:bg-violet-500 text-white px-10 py-4 text-base sm:text-lg rounded-xl w-full sm:w-auto font-semibold shadow-lg shadow-violet-600/30">
-                Try Free — No Card
+              <Button size="lg" onClick={() => { document.getElementById("ghost-mode")?.scrollIntoView({ behavior: "smooth" }) }} className="relative bg-violet-600 hover:bg-violet-500 text-white px-10 py-4 text-base sm:text-lg rounded-xl w-full sm:w-auto font-semibold shadow-lg shadow-violet-600/30">
+                Try It Free — No Signup
               </Button>
             </div>
             <Button size="lg" onClick={() => { document.getElementById("ghost-mode")?.scrollIntoView({ behavior: "smooth" }) }} variant="outline" className="border-[#1b1916] text-[#1b1916] hover:bg-[#1b1916] hover:text-[#f3f2f1] px-6 sm:px-8 py-5 sm:py-6 text-base sm:text-lg rounded-xl w-full sm:w-auto">
@@ -441,6 +472,60 @@ export default function PersonalPage() {
           Join <span className="font-extrabold">2,400+ professionals</span> growing their LinkedIn presence with ItGrows Personal
         </p>
       </div>
+
+      {/* What you want / What stops you / What you get */}
+      <section className="px-4 sm:px-6 py-16 sm:py-24" style={{ backgroundColor: "#f3f2f1" }}>
+        <div className="max-w-5xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
+            {/* Column 1 */}
+            <div className="rounded-2xl border border-black/10 bg-white p-6 sm:p-8">
+              <h3 className="text-lg font-bold text-[#1b1916] mb-5 pb-3 border-b border-black/10">What you want</h3>
+              <ul className="space-y-3">
+                {["Clients", "Career opportunities", "Strategic connections", "Professional visibility"].map((item, i) => (
+                  <li key={i} className="flex items-center gap-3 text-slate-700 text-sm font-medium">
+                    <span className="w-2 h-2 rounded-full bg-violet-500 flex-shrink-0" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            {/* Column 2 */}
+            <div className="rounded-2xl border border-red-200 p-6 sm:p-8" style={{ backgroundColor: "#fff5f5" }}>
+              <h3 className="text-lg font-bold text-[#1b1916] mb-5 pb-3 border-b border-red-100">What stops you</h3>
+              <ul className="space-y-3">
+                {[
+                  "No time for consistent posting",
+                  "Unclear positioning",
+                  "Low visibility",
+                  "Irregular activity",
+                ].map((item, i) => (
+                  <li key={i} className="flex items-center gap-3 text-slate-700 text-sm font-medium">
+                    <span className="text-red-400 text-base flex-shrink-0">✕</span>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            {/* Column 3 */}
+            <div className="rounded-2xl border border-violet-200 p-6 sm:p-8" style={{ backgroundColor: "#f5f3ff" }}>
+              <h3 className="text-lg font-bold text-[#1b1916] mb-5 pb-3 border-b border-violet-100">What you get with ItGrows</h3>
+              <ul className="space-y-3">
+                {[
+                  "Inbound interest",
+                  "Clear expert positioning",
+                  "Continuous presence",
+                  "New opportunities",
+                ].map((item, i) => (
+                  <li key={i} className="flex items-center gap-3 text-slate-700 text-sm font-medium">
+                    <span className="text-violet-600 font-bold text-base flex-shrink-0">✓</span>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* Ghost Mode — try without signup */}
       <section id="ghost-mode" className="px-4 sm:px-6 py-16 sm:py-24 bg-white">
@@ -1045,6 +1130,13 @@ export default function PersonalPage() {
               </div>
             ))}
           </div>
+          {/* Result callout */}
+          <div className="mt-12 text-center">
+            <div className="inline-flex items-center gap-3 bg-gradient-to-r from-violet-50 to-pink-50 border border-violet-200 rounded-2xl px-8 py-4">
+              <span className="text-2xl">🎯</span>
+              <span className="text-[#1b1916] font-semibold text-lg">Result: Opportunities come to you</span>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -1239,6 +1331,55 @@ export default function PersonalPage() {
               </div>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* X (Twitter) Waitlist */}
+      <section className="px-4 sm:px-6 py-16 sm:py-24" style={{ backgroundColor: "#07071a" }}>
+        <div className="max-w-2xl mx-auto text-center">
+          <span className="inline-block mb-4 px-4 py-1 rounded-full text-xs font-bold border border-violet-500/50 text-violet-400 bg-violet-500/10 tracking-[0.2em] uppercase">
+            Coming Soon
+          </span>
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-4 text-white leading-tight tracking-tight">
+            X (Twitter) —{" "}
+            <span className="bg-gradient-to-r from-violet-400 via-pink-400 to-cyan-400 bg-clip-text text-transparent">
+              Coming Soon
+            </span>
+          </h2>
+          <p className="text-slate-400 text-base sm:text-lg mb-8 max-w-xl mx-auto">
+            We&apos;re bringing the same autopilot to X. Leave your email and we&apos;ll notify you when it&apos;s ready.
+          </p>
+          {waitlistDone ? (
+            <div className="flex flex-col items-center gap-4 py-6">
+              <div className="w-14 h-14 rounded-full bg-violet-600/20 border border-violet-500/40 flex items-center justify-center">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-7 h-7">
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+              </div>
+              <p className="text-white font-semibold text-lg">You&apos;re on the list!</p>
+              <p className="text-slate-400 text-sm">We&apos;ll email you as soon as X autopilot launches.</p>
+            </div>
+          ) : (
+            <div className="flex flex-col sm:flex-row gap-3 justify-center max-w-md mx-auto">
+              <input
+                type="email"
+                value={waitlistEmail}
+                onChange={(e) => setWaitlistEmail(e.target.value)}
+                placeholder="your@email.com"
+                className="flex-1 rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-violet-400"
+              />
+              <button
+                onClick={handleWaitlistSubmit}
+                disabled={waitlistLoading}
+                className="px-6 py-3 rounded-xl bg-violet-600 hover:bg-violet-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold transition-colors whitespace-nowrap"
+              >
+                {waitlistLoading ? "Saving..." : "Notify Me"}
+              </button>
+            </div>
+          )}
+          {waitlistError && (
+            <p className="mt-3 text-sm text-red-400">{waitlistError}</p>
+          )}
         </div>
       </section>
 
