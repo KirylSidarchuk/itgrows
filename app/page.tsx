@@ -30,40 +30,12 @@ const faqs = [
     a: "Absolutely. We use LinkedIn's official OAuth — the same secure standard used by tools like Salesforce, HubSpot, and Notion. You log in directly on LinkedIn's website, not on ours. We never see or store your LinkedIn password. You can revoke access from your LinkedIn settings at any time in seconds.",
   },
   {
-    q: "How do you post to LinkedIn without my password?",
-    a: "When you connect your account, LinkedIn gives ItGrows.ai a secure access token — like a temporary key that only allows posting on your behalf. Think of it like letting a trusted assistant publish posts for you, without giving them your email and password. Your credentials stay on LinkedIn's servers, never ours.",
-  },
-  {
-    q: "Can ItGrows.ai read my private messages or connections?",
-    a: "No. We only request the minimum permissions needed to publish posts. We cannot read your messages, see your connections list, or access any private data. Our access is strictly limited to creating and scheduling posts on your public feed.",
-  },
-  {
-    q: "What happens if I cancel my subscription?",
-    a: "You can cancel anytime from your account settings. After cancellation, we immediately revoke our access token — we can no longer post on your behalf. Any scheduled posts that haven't been published yet will not go out.",
-  },
-  {
     q: "Is this generic AI content?",
     a: "No. Before writing anything, we analyze your LinkedIn profile, your niche, and your professional goals. Every post is written specifically for you — in your voice, for your audience.",
   },
   {
-    q: "Do I need to do anything after setup?",
-    a: "Just connect LinkedIn and fill a 2-minute brief. After that, posts are generated and scheduled automatically. You can review and edit before they go live if you'd like.",
-  },
-  {
-    q: "Can I edit posts before they publish?",
-    a: "Yes. Every post appears in your dashboard before it goes live. Approve as-is, tweak the wording, or regenerate entirely — you're always in control.",
-  },
-  {
-    q: "Can I cancel anytime?",
-    a: "Absolutely. No contracts, no lock-ins. Cancel from your account settings in seconds. Your subscription ends at the current billing period.",
-  },
-  {
     q: "Do I need a credit card to start?",
     a: "No. You get 7 days completely free — no credit card required. Explore the full product, see your LinkedIn posts go live, and only subscribe once you've experienced the results. After 7 days, choose monthly ($29/mo) or annual ($203/yr, save 30%).",
-  },
-  {
-    q: "What happens after my trial ends?",
-    a: "Your scheduled posts will pause. You'll see a clear prompt to subscribe in your dashboard. No charges, no surprises — just a simple decision to continue or walk away.",
   },
 ]
 
@@ -95,7 +67,6 @@ export default function PersonalPage() {
   const [feedbackLoading, setFeedbackLoading] = useState(false)
   const [feedbackDone, setFeedbackDone] = useState(false)
   const [feedbackError, setFeedbackError] = useState("")
-  const [resultsTab, setResultsTab] = useState<"week" | "month" | "3months">("week")
 
   async function handleFeedbackSubmit() {
     if (feedbackMessage.trim().length < 10) {
@@ -394,16 +365,9 @@ export default function PersonalPage() {
               See Your Posts in 30 Seconds →
             </Button>
           </div>
-          <p className="mt-3 text-xs sm:text-sm text-slate-500 font-medium">No credit card required · Cancel anytime</p>
+          <p className="mt-3 text-xs sm:text-sm text-slate-500 font-medium">No credit card required · Cancel anytime · Trusted by 2,400+ professionals</p>
         </div>
       </section>
-
-      {/* Social proof strip */}
-      <div className="px-6 py-5 bg-gradient-to-r from-violet-600 to-pink-600 text-center">
-        <p className="text-white text-base font-medium">
-          Join <span className="font-extrabold">2,400+ professionals</span> growing their LinkedIn presence with ItGrows Personal
-        </p>
-      </div>
 
       {/* What you want / What stops you / What you get */}
       <section className="px-4 sm:px-6 py-16 sm:py-24 overflow-hidden" style={{ background: "linear-gradient(135deg, #1e0a3c 0%, #0f0f23 50%, #0d1117 100%)" }}>
@@ -641,198 +605,6 @@ export default function PersonalPage() {
         </div>
       </section>
 
-      {/* Real Results — tabbed */}
-      <section className="px-4 sm:px-6 py-16 sm:py-24 bg-[#f3f2f1]">
-        <div className="max-w-3xl mx-auto">
-          {/* Header */}
-          <div className="text-center mb-8">
-            <span className="inline-block mb-4 px-4 py-1 rounded-full text-xs font-bold border border-emerald-300 text-emerald-700 bg-emerald-50 tracking-[0.15em] uppercase">
-              Real data · LinkedIn Analytics
-            </span>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-[#1b1916] mb-3 tracking-tight">
-              Real Statistics
-            </h2>
-            <p className="text-slate-500 text-base max-w-xl mx-auto">
-              select a time period
-            </p>
-          </div>
-
-          {/* Tab pills */}
-          <div className="flex justify-center mb-6">
-            <div className="inline-flex bg-white border border-black/10 rounded-full p-1 gap-1 shadow-sm">
-              {(["week", "month", "3months"] as const).map((tab) => {
-                const label = tab === "week" ? "1 Week" : tab === "month" ? "1 Month" : "3 Months"
-                return (
-                  <button
-                    key={tab}
-                    onClick={() => setResultsTab(tab)}
-                    className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-all ${
-                      resultsTab === tab
-                        ? "bg-[#1b1916] text-white shadow"
-                        : "text-slate-500 hover:text-[#1b1916]"
-                    }`}
-                  >
-                    {label}
-                  </button>
-                )
-              })}
-            </div>
-          </div>
-
-          {/* Analytics card */}
-          <div className="bg-white rounded-2xl border border-black/10 shadow-sm p-6 sm:p-8">
-            {resultsTab === "week" && (
-              <>
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-sm font-semibold text-[#1b1916]">Content performance</span>
-                  <span className="text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">7 days</span>
-                </div>
-                <div className="mt-3 mb-1">
-                  <span className="text-4xl font-black text-[#1b1916]">1,367</span>
-                  <span className="text-sm text-slate-500 ml-2">Impressions</span>
-                </div>
-                <div className="flex items-center gap-1 mb-5">
-                  <svg viewBox="0 0 12 12" fill="none" className="w-3 h-3"><path d="M2 9L5 5.5L8 7.5L10 4" stroke="#059669" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                  <span className="text-emerald-600 text-xs font-bold">+1,354%</span>
-                  <span className="text-slate-400 text-xs">vs. prior 7 days</span>
-                </div>
-                {/* Chart */}
-                <div className="relative h-28 mb-5">
-                  <svg viewBox="0 0 300 100" className="w-full h-full" preserveAspectRatio="none">
-                    <line x1="0" y1="33" x2="300" y2="33" stroke="#f1f5f9" strokeWidth="1"/>
-                    <line x1="0" y1="66" x2="300" y2="66" stroke="#f1f5f9" strokeWidth="1"/>
-                    <defs>
-                      <linearGradient id="chartGradW" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#0d9488" stopOpacity="0.2"/>
-                        <stop offset="100%" stopColor="#0d9488" stopOpacity="0"/>
-                      </linearGradient>
-                    </defs>
-                    <path d="M0 98 L40 96 L80 88 L120 70 L160 42 L200 25 L240 16 L300 8 L300 100 L0 100 Z" fill="url(#chartGradW)"/>
-                    <path d="M0 98 L40 96 L80 88 L120 70 L160 42 L200 25 L240 16 L300 8" fill="none" stroke="#0d9488" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-                    <circle cx="300" cy="8" r="4" fill="#0d9488"/>
-                  </svg>
-                  <div className="absolute bottom-0 left-0 right-0 flex justify-between text-xs text-slate-400 px-1">
-                    <span>Day 1</span><span>Day 3</span><span>Day 5</span><span>Day 7</span>
-                  </div>
-                </div>
-                <div className="pt-4 border-t border-black/5 grid grid-cols-2 sm:grid-cols-4 gap-4">
-                  <div><div className="text-xl font-black text-[#1b1916]">1,367</div><div className="text-xs text-slate-500">Impressions</div></div>
-                  <div><div className="text-xl font-black text-[#1b1916]">447</div><div className="text-xs text-slate-500">Members reached</div></div>
-                  <div><div className="text-xl font-black text-emerald-600">7</div><div className="text-xs text-slate-500">Posts published</div></div>
-                  <div><div className="text-xl font-black text-violet-600">+89%</div><div className="text-xs text-slate-500">Profile views</div></div>
-                </div>
-                <div className="mt-3 flex items-center gap-2 bg-emerald-50 border border-emerald-100 rounded-xl px-4 py-2">
-                  <svg viewBox="0 0 16 16" fill="none" className="w-4 h-4 flex-shrink-0"><circle cx="8" cy="8" r="7" stroke="#059669" strokeWidth="1.5"/><path d="M8 5v3.5l2 1.5" stroke="#059669" strokeWidth="1.5" strokeLinecap="round"/></svg>
-                  <span className="text-xs text-emerald-700 font-semibold">0 min spent writing — fully automated</span>
-                </div>
-              </>
-            )}
-
-            {resultsTab === "month" && (
-              <>
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-sm font-semibold text-[#1b1916]">Content performance</span>
-                  <span className="text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">30 days</span>
-                </div>
-                <div className="mt-3 mb-1">
-                  <span className="text-4xl font-black text-[#1b1916]">9,240</span>
-                  <span className="text-sm text-slate-500 ml-2">Impressions</span>
-                </div>
-                <div className="flex items-center gap-1 mb-5">
-                  <svg viewBox="0 0 12 12" fill="none" className="w-3 h-3"><path d="M2 9L5 5.5L8 7.5L10 4" stroke="#059669" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                  <span className="text-emerald-600 text-xs font-bold">+847%</span>
-                  <span className="text-slate-400 text-xs">vs. prior month</span>
-                </div>
-                {/* Chart */}
-                <div className="relative h-28 mb-5">
-                  <svg viewBox="0 0 300 100" className="w-full h-full" preserveAspectRatio="none">
-                    <line x1="0" y1="33" x2="300" y2="33" stroke="#f1f5f9" strokeWidth="1"/>
-                    <line x1="0" y1="66" x2="300" y2="66" stroke="#f1f5f9" strokeWidth="1"/>
-                    <defs>
-                      <linearGradient id="chartGradM" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#0d9488" stopOpacity="0.2"/>
-                        <stop offset="100%" stopColor="#0d9488" stopOpacity="0"/>
-                      </linearGradient>
-                    </defs>
-                    <path d="M0 95 L60 85 L120 68 L180 40 L240 20 L300 6 L300 100 L0 100 Z" fill="url(#chartGradM)"/>
-                    <path d="M0 95 L60 85 L120 68 L180 40 L240 20 L300 6" fill="none" stroke="#0d9488" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-                    <circle cx="300" cy="6" r="4" fill="#0d9488"/>
-                  </svg>
-                  <div className="absolute bottom-0 left-0 right-0 flex justify-between text-xs text-slate-400 px-1">
-                    <span>Week 1</span><span>Week 2</span><span>Week 3</span><span>Week 4</span>
-                  </div>
-                </div>
-                <div className="pt-4 border-t border-black/5 grid grid-cols-2 sm:grid-cols-4 gap-4">
-                  <div><div className="text-xl font-black text-[#1b1916]">3,180</div><div className="text-xs text-slate-500">Members reached</div></div>
-                  <div><div className="text-xl font-black text-emerald-600">28</div><div className="text-xs text-slate-500">Posts published</div></div>
-                  <div><div className="text-xl font-black text-violet-600">+47</div><div className="text-xs text-slate-500">Inbound connections</div></div>
-                  <div><div className="text-xl font-black text-violet-600">+312%</div><div className="text-xs text-slate-500">Profile views</div></div>
-                </div>
-                <div className="mt-3 flex items-center gap-2 bg-emerald-50 border border-emerald-100 rounded-xl px-4 py-2">
-                  <svg viewBox="0 0 16 16" fill="none" className="w-4 h-4 flex-shrink-0"><circle cx="8" cy="8" r="7" stroke="#059669" strokeWidth="1.5"/><path d="M8 5v3.5l2 1.5" stroke="#059669" strokeWidth="1.5" strokeLinecap="round"/></svg>
-                  <span className="text-xs text-emerald-700 font-semibold">0 min spent writing — fully automated</span>
-                </div>
-              </>
-            )}
-
-            {resultsTab === "3months" && (
-              <>
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-sm font-semibold text-[#1b1916]">Content performance</span>
-                  <span className="text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">90 days</span>
-                </div>
-                <div className="mt-3 mb-1">
-                  <span className="text-4xl font-black text-[#1b1916]">38,500</span>
-                  <span className="text-sm text-slate-500 ml-2">Impressions</span>
-                </div>
-                <div className="flex items-center gap-1 mb-5">
-                  <svg viewBox="0 0 12 12" fill="none" className="w-3 h-3"><path d="M2 9L5 5.5L8 7.5L10 4" stroke="#059669" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                  <span className="text-emerald-600 text-xs font-bold">+2,140%</span>
-                  <span className="text-slate-400 text-xs">vs. prior 3 months</span>
-                </div>
-                {/* Chart */}
-                <div className="relative h-28 mb-5">
-                  <svg viewBox="0 0 300 100" className="w-full h-full" preserveAspectRatio="none">
-                    <line x1="0" y1="33" x2="300" y2="33" stroke="#f1f5f9" strokeWidth="1"/>
-                    <line x1="0" y1="66" x2="300" y2="66" stroke="#f1f5f9" strokeWidth="1"/>
-                    <defs>
-                      <linearGradient id="chartGrad3M" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#0d9488" stopOpacity="0.2"/>
-                        <stop offset="100%" stopColor="#0d9488" stopOpacity="0"/>
-                      </linearGradient>
-                    </defs>
-                    <path d="M0 97 L75 88 L150 62 L225 28 L300 4 L300 100 L0 100 Z" fill="url(#chartGrad3M)"/>
-                    <path d="M0 97 L75 88 L150 62 L225 28 L300 4" fill="none" stroke="#0d9488" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-                    <circle cx="300" cy="4" r="4" fill="#0d9488"/>
-                  </svg>
-                  <div className="absolute bottom-0 left-0 right-0 flex justify-between text-xs text-slate-400 px-1">
-                    <span>Month 1</span><span>Month 2</span><span>Month 3</span>
-                  </div>
-                </div>
-                <div className="pt-4 border-t border-black/5 grid grid-cols-2 sm:grid-cols-4 gap-4">
-                  <div><div className="text-xl font-black text-[#1b1916]">12,400</div><div className="text-xs text-slate-500">Members reached</div></div>
-                  <div><div className="text-xl font-black text-emerald-600">84</div><div className="text-xs text-slate-500">Posts published</div></div>
-                  <div><div className="text-xl font-black text-violet-600">23</div><div className="text-xs text-slate-500">Inbound DMs / leads</div></div>
-                  <div><div className="text-xl font-black text-violet-600">+890%</div><div className="text-xs text-slate-500">Profile views</div></div>
-                </div>
-                <div className="mt-3 flex items-center gap-2 bg-emerald-50 border border-emerald-100 rounded-xl px-4 py-2">
-                  <svg viewBox="0 0 16 16" fill="none" className="w-4 h-4 flex-shrink-0"><circle cx="8" cy="8" r="7" stroke="#059669" strokeWidth="1.5"/><path d="M8 5v3.5l2 1.5" stroke="#059669" strokeWidth="1.5" strokeLinecap="round"/></svg>
-                  <span className="text-xs text-emerald-700 font-semibold">0 min spent writing — fully automated</span>
-                </div>
-              </>
-            )}
-          </div>
-
-          {/* Disclaimer */}
-          <p className="text-center text-xs text-slate-400 mt-4">
-            * Based on real user data. Individual results may vary.
-          </p>
-          <p className="text-center text-xs text-slate-400 mt-1 italic">
-            — K.S., Startup Founder (real account, shared with permission)
-          </p>
-        </div>
-      </section>
-
       {/* Results / Outcomes */}
       <section id="results" className="px-4 sm:px-6 py-16 sm:py-28" style={{ background: "linear-gradient(135deg, #1e0a3c 0%, #0f0f23 50%, #0d1117 100%)" }}>
         <div className="max-w-6xl mx-auto">
@@ -991,20 +763,6 @@ export default function PersonalPage() {
             </div>
 
           </div>
-
-          {/* Bottom CTA */}
-          <div className="text-center mt-12 sm:mt-16">
-            <a
-              href="/signup"
-              className="inline-flex items-center gap-2 bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-white px-10 py-4 rounded-xl text-base font-semibold transition-all shadow-lg shadow-violet-700/30"
-            >
-              Start building your presence today
-              <svg viewBox="0 0 24 24" fill="none" className="w-4 h-4" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="5" y1="12" x2="19" y2="12" />
-                <polyline points="12 5 19 12 12 19" />
-              </svg>
-            </a>
-          </div>
         </div>
       </section>
 
@@ -1037,55 +795,6 @@ export default function PersonalPage() {
               <span className="text-[#1b1916] font-semibold text-lg">Result: Opportunities come to you</span>
             </div>
           </div>
-        </div>
-      </section>
-
-      {/* X (Twitter) Waitlist */}
-      <section className="px-4 sm:px-6 py-16 sm:py-24" style={{ backgroundColor: "#07071a" }}>
-        <div className="max-w-2xl mx-auto text-center">
-          <span className="inline-block mb-4 px-4 py-1 rounded-full text-xs font-bold border border-violet-500/50 text-violet-400 bg-violet-500/10 tracking-[0.2em] uppercase">
-            Coming Soon
-          </span>
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-4 text-white leading-tight tracking-tight">
-            X (Twitter) —{" "}
-            <span className="bg-gradient-to-r from-violet-400 via-pink-400 to-cyan-400 bg-clip-text text-transparent">
-              Coming Soon
-            </span>
-          </h2>
-          <p className="text-slate-400 text-base sm:text-lg mb-8 max-w-xl mx-auto">
-            We&apos;re bringing the same autopilot to X. Leave your email and we&apos;ll notify you when it&apos;s ready.
-          </p>
-          {waitlistDone ? (
-            <div className="flex flex-col items-center gap-4 py-6">
-              <div className="w-14 h-14 rounded-full bg-violet-600/20 border border-violet-500/40 flex items-center justify-center">
-                <svg viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-7 h-7">
-                  <polyline points="20 6 9 17 4 12" />
-                </svg>
-              </div>
-              <p className="text-white font-semibold text-lg">You&apos;re on the list!</p>
-              <p className="text-slate-400 text-sm">We&apos;ll email you as soon as X autopilot launches.</p>
-            </div>
-          ) : (
-            <div className="flex flex-col sm:flex-row gap-3 justify-center max-w-md mx-auto">
-              <input
-                type="email"
-                value={waitlistEmail}
-                onChange={(e) => setWaitlistEmail(e.target.value)}
-                placeholder="your@email.com"
-                className="flex-1 rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-violet-400"
-              />
-              <button
-                onClick={handleWaitlistSubmit}
-                disabled={waitlistLoading}
-                className="px-6 py-3 rounded-xl bg-violet-600 hover:bg-violet-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold transition-colors whitespace-nowrap"
-              >
-                {waitlistLoading ? "Saving..." : "Notify Me"}
-              </button>
-            </div>
-          )}
-          {waitlistError && (
-            <p className="mt-3 text-sm text-red-400">{waitlistError}</p>
-          )}
         </div>
       </section>
 
