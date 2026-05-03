@@ -6,66 +6,6 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
-const AI_IMAGE_ICON = (
-  <svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-10 h-10">
-    <rect width="56" height="56" rx="12" fill="url(#bg)" />
-    {/* landscape image */}
-    <rect x="8" y="10" width="32" height="28" rx="4" fill="url(#frame)" />
-    <ellipse cx="16" cy="30" rx="6" ry="4" fill="#3b2f8a" opacity="0.7" />
-    <ellipse cx="28" cy="28" rx="8" ry="5" fill="#4c3aa3" opacity="0.7" />
-    <circle cx="22" cy="18" r="4" fill="#fbbf24" />
-    <path d="M8 30 Q16 22 24 26 Q32 30 40 24" stroke="white" strokeWidth="1.5" strokeOpacity="0.3" fill="none" />
-    {/* AI badge */}
-    <circle cx="38" cy="38" r="10" fill="url(#badge)" />
-    <text x="38" y="42" textAnchor="middle" fontSize="9" fontWeight="bold" fill="white" fontFamily="sans-serif">AI</text>
-    {/* sparkles */}
-    <path d="M44 10 L45 13 L48 14 L45 15 L44 18 L43 15 L40 14 L43 13Z" fill="white" opacity="0.7" />
-    <path d="M6 8 L6.7 10 L9 10.7 L6.7 11.4 L6 13.4 L5.3 11.4 L3 10.7 L5.3 10Z" fill="white" opacity="0.5" />
-    <defs>
-      <linearGradient id="bg" x1="0" y1="0" x2="56" y2="56" gradientUnits="userSpaceOnUse">
-        <stop stopColor="#1e1b4b" />
-        <stop offset="1" stopColor="#312e81" />
-      </linearGradient>
-      <linearGradient id="frame" x1="8" y1="10" x2="40" y2="38" gradientUnits="userSpaceOnUse">
-        <stop stopColor="#7c3aed" />
-        <stop offset="1" stopColor="#c026d3" />
-      </linearGradient>
-      <linearGradient id="badge" x1="28" y1="28" x2="48" y2="48" gradientUnits="userSpaceOnUse">
-        <stop stopColor="#6366f1" />
-        <stop offset="1" stopColor="#3b82f6" />
-      </linearGradient>
-    </defs>
-  </svg>
-)
-
-const features = [
-  {
-    icon: "🎯",
-    title: "Posts Tailored to Your Voice & Niche",
-    desc: "We analyze your professional profile and write in your unique tone — not generic AI filler.",
-  },
-  {
-    icon: "📅",
-    title: "7 Posts Scheduled Weekly",
-    desc: "One post every day, Monday through Sunday. Consistent presence without the effort.",
-  },
-  {
-    icon: AI_IMAGE_ICON,
-    title: "Images Generated Automatically",
-    desc: "Every post comes with a custom AI-generated image that matches your content.",
-  },
-  {
-    icon: "⏰",
-    title: "Publishes at Peak Time",
-    desc: "Posts go live at 10am UTC — when LinkedIn engagement is highest.",
-  },
-  {
-    icon: "🧬",
-    title: "Built on Your Professional DNA",
-    desc: "We study your niche, goals, and audience before writing a single word. Nothing generic.",
-  },
-]
-
 const steps = [
   {
     num: "01",
@@ -317,7 +257,6 @@ export default function PersonalPage() {
           <div className="hidden md:flex items-center gap-7">
             <a href="#how-it-works" className="text-sm text-slate-600 hover:text-[#1b1916] transition-colors font-medium">How It Works</a>
             <a href="#results" onClick={() => setMobileMenuOpen(false)} className="text-sm text-slate-600 hover:text-[#1b1916] transition-colors font-medium">Results</a>
-            <a href="#features" className="text-sm text-slate-600 hover:text-[#1b1916] transition-colors font-medium">Features</a>
             <a href="#pricing" className="text-sm text-slate-600 hover:text-[#1b1916] transition-colors font-medium">Pricing</a>
             <Link href="/blog" className="text-sm text-slate-600 hover:text-[#1b1916] transition-colors font-medium">Blog</Link>
           </div>
@@ -378,13 +317,6 @@ export default function PersonalPage() {
               onClick={() => setMobileMenuOpen(false)}
             >
               Results
-            </a>
-            <a
-              href="#features"
-              className="px-3 py-2.5 text-sm font-medium text-slate-600 hover:text-[#1b1916] hover:bg-black/5 rounded-lg transition-colors"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Features
             </a>
             <a
               href="#pricing"
@@ -874,10 +806,10 @@ export default function PersonalPage() {
               Results
             </span>
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-4 text-white leading-tight tracking-tight">
-              What 7 posts a week gets you
+              What consistent presence brings you
             </h2>
             <p className="text-slate-400 text-base sm:text-lg max-w-xl mx-auto">
-              The numbers behind consistent LinkedIn presence
+              Data behind professionals who grow their brand on LinkedIn
             </p>
           </div>
 
@@ -1040,74 +972,6 @@ export default function PersonalPage() {
         </div>
       </section>
 
-      {/* FOMO — What you're missing */}
-      <section className="px-4 sm:px-6 py-16 sm:py-24" style={{ backgroundColor: "#07071a" }}>
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-10 sm:mb-16">
-            <span className="inline-block mb-4 px-4 py-1 rounded-full text-sm font-medium border border-red-500/40 text-red-400 bg-red-500/10 tracking-widest uppercase">
-              The Hard Truth
-            </span>
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-5 text-white leading-tight">
-              While You Stay Silent,{" "}
-              <span className="bg-gradient-to-r from-red-400 via-orange-400 to-yellow-400 bg-clip-text text-transparent">
-                Someone Else Takes Your Deals
-              </span>
-            </h2>
-            <p className="text-slate-400 text-base sm:text-lg max-w-2xl mx-auto">
-              LinkedIn isn't a social network — it's where business decisions get made. Every day you don't post, you're invisible to the people who would hire, buy from, or partner with you.
-            </p>
-          </div>
-
-          {/* Big stats */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 mb-10 sm:mb-14">
-            {[
-              { number: "99%", label: "of LinkedIn users never post", sub: "yet the 1% who do get 9 billion impressions per week", source: "Buffer, 2025", sourceUrl: "https://buffer.com/resources/linkedin-statistics/" },
-              { number: "80%", label: "of all B2B leads on social come from LinkedIn", sub: "it's not Instagram or Facebook — it's here", source: "Foundation Inc, 2025", sourceUrl: "https://foundationinc.co/lab/b2b-marketing-linkedin-stats/" },
-              { number: "23%", label: "of decision-makers bought after reading a post", sub: "thought leadership directly turns readers into clients", source: "Edelman × LinkedIn, 2024", sourceUrl: "https://www.edelman.com/expertise/Business-Marketing/2024-b2b-thought-leadership-report" },
-            ].map((s, i) => (
-              <div key={i} className="rounded-2xl p-8 border border-white/10 text-center" style={{ background: "rgba(255,255,255,0.04)" }}>
-                <div className="text-5xl font-black bg-gradient-to-r from-red-400 to-orange-400 bg-clip-text text-transparent mb-3">{s.number}</div>
-                <div className="text-white font-semibold text-base mb-2">{s.label}</div>
-                <div className="text-slate-500 text-sm leading-relaxed mb-3">{s.sub}</div>
-                <a href={s.sourceUrl} target="_blank" rel="noopener noreferrer" className="text-[10px] text-slate-600 hover:text-slate-400 underline underline-offset-2 transition-colors">
-                  Source: {s.source}
-                </a>
-              </div>
-            ))}
-          </div>
-
-          {/* What you're losing list */}
-          <div className="rounded-2xl border border-red-500/20 p-5 sm:p-8" style={{ background: "linear-gradient(135deg, rgba(239,68,68,0.06) 0%, rgba(255,255,255,0.02) 100%)" }}>
-            <h3 className="text-white font-bold text-lg sm:text-xl mb-4 sm:mb-6">Every week without posting, you miss:</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
-              {[
-                "65 million decision-makers who could see your name — but don't",
-                "Inbound leads that go to the person who showed up in their feed last week",
-                "Job offers and partnership requests that flow to visible experts",
-                "Algorithm visibility: inactive profiles get 50%+ less reach over time",
-                "Deals worth paying a premium for — 60% of buyers pay more for thought leaders",
-                "Your position as the go-to expert in your niche, taken by someone else",
-              ].map((item, i) => (
-                <div key={i} className="flex items-start gap-3">
-                  <span className="text-red-400 mt-0.5 text-lg flex-shrink-0">✕</span>
-                  <span className="text-slate-300 text-sm leading-relaxed">{item}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="text-center mt-10">
-            <p className="text-slate-400 text-base mb-6">The good news? The bar is on the floor — 99% of people don't post. You just need to show up.</p>
-            <button
-              onClick={handleStartTrial}
-              className="bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-white px-10 py-4 rounded-xl text-base font-semibold transition-all"
-            >
-              Start Free — No Credit Card
-            </button>
-          </div>
-        </div>
-      </section>
-
       {/* How it works */}
       <section id="how-it-works" className="px-4 sm:px-6 py-16 sm:py-24" style={{ backgroundColor: "#f3f2f1" }}>
         <div className="max-w-5xl mx-auto">
@@ -1135,200 +999,6 @@ export default function PersonalPage() {
             <div className="inline-flex items-center gap-3 bg-gradient-to-r from-violet-50 to-pink-50 border border-violet-200 rounded-2xl px-8 py-4">
               <span className="text-2xl">🎯</span>
               <span className="text-[#1b1916] font-semibold text-lg">Result: Opportunities come to you</span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Features */}
-      <section id="features" className="relative px-4 sm:px-6 py-16 sm:py-28 overflow-hidden" style={{ backgroundColor: "#07071a" }}>
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-violet-700/20 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-pink-700/15 rounded-full blur-3xl pointer-events-none" />
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            backgroundImage: "radial-gradient(circle, rgba(139,92,246,0.12) 1px, transparent 1px)",
-            backgroundSize: "40px 40px",
-          }}
-        />
-        <div className="relative max-w-6xl mx-auto">
-          <div className="text-center mb-10 sm:mb-16">
-            <span className="inline-block mb-4 px-4 py-1 rounded-full text-sm font-medium border border-violet-500/40 text-violet-400 bg-violet-500/10 tracking-widest uppercase">
-              What You Get
-            </span>
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-5 text-white leading-tight">
-              Everything You Need to{" "}
-              <span className="bg-gradient-to-r from-violet-400 via-pink-400 to-cyan-400 bg-clip-text text-transparent">
-                Own Your LinkedIn
-              </span>
-            </h2>
-            <p className="text-slate-400 text-base sm:text-lg max-w-2xl mx-auto">
-              One subscription. Daily posts. Real professional growth.
-            </p>
-          </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {features.map((f, i) => (
-              <div
-                key={i}
-                className="group relative rounded-2xl p-6 border border-violet-500/20 hover:border-violet-500/50 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_0_30px_rgba(139,92,246,0.18),inset_0_0_30px_rgba(139,92,246,0.04)]"
-                style={{ background: "linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.02) 100%)" }}
-              >
-                <div className="mb-4 text-4xl">{f.icon}</div>
-                <h3 className="text-white font-semibold text-lg mb-2 tracking-tight">{f.title}</h3>
-                <p className="text-slate-400 text-sm leading-relaxed">{f.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Example Posts */}
-      <section className="px-4 sm:px-6 py-16 sm:py-24" style={{ backgroundColor: "#f3f2f1" }}>
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-10 sm:mb-16">
-            <Badge className="mb-4 bg-violet-100 text-violet-700 border-violet-200">Real Output</Badge>
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 text-[#1b1916]">
-              See what AI writes for your audience
-            </h2>
-            <p className="text-slate-600 text-base sm:text-lg max-w-2xl mx-auto">
-              Real posts, generated in seconds. Scheduled automatically.
-            </p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Post 1 — Tech/startup founder */}
-            <div className="bg-white rounded-2xl shadow-md border border-black/8 overflow-hidden flex flex-col">
-              <div className="p-5 flex-1">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-11 h-11 rounded-full flex-shrink-0 flex items-center justify-center text-white text-sm font-bold" style={{ background: "linear-gradient(135deg, #7c3aed, #4f46e5)" }}>
-                    AK
-                  </div>
-                  <div>
-                    <div className="font-semibold text-[#1b1916] text-sm leading-tight">Alex Kim</div>
-                    <div className="text-slate-400 text-xs">LinkedIn Member · Founder & CEO</div>
-                  </div>
-                </div>
-                <div className="text-[#1b1916] text-sm leading-relaxed space-y-2">
-                  <p>Most founders think AI will replace their team. I thought that too — until it replaced my excuses.</p>
-                  <p>We cut our content pipeline from 12 hours/week to 45 minutes. Not by hiring faster writers. By letting AI handle the first draft while humans bring the judgment.</p>
-                  <p>The teams winning right now aren't the ones with the biggest budgets. They're the ones who stopped protecting busy work.</p>
-                </div>
-                <div className="mt-3 text-violet-600 text-xs font-medium">#AI #StartupLeadership #FutureOfWork</div>
-              </div>
-              {/* Image placeholder */}
-              <div className="mx-5 mb-4 rounded-xl h-32 overflow-hidden">
-                <img src="/landing-post-1.jpg" alt="Example post" className="w-full h-full object-cover" />
-              </div>
-              <div className="px-5 pb-4 flex items-center gap-4 border-t border-black/5 pt-3">
-                <span className="text-slate-400 text-xs">👍 47 likes</span>
-                <span className="text-slate-400 text-xs">💬 12 comments</span>
-              </div>
-            </div>
-
-            {/* Post 2 — Marketing professional */}
-            <div className="bg-white rounded-2xl shadow-md border border-black/8 overflow-hidden flex flex-col">
-              <div className="p-5 flex-1">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-11 h-11 rounded-full flex-shrink-0 flex items-center justify-center text-white text-sm font-bold" style={{ background: "linear-gradient(135deg, #db2777, #e11d48)" }}>
-                    SR
-                  </div>
-                  <div>
-                    <div className="font-semibold text-[#1b1916] text-sm leading-tight">Sofia Rodriguez</div>
-                    <div className="text-slate-400 text-xs">LinkedIn Member · Head of Marketing</div>
-                  </div>
-                </div>
-                <div className="text-[#1b1916] text-sm leading-relaxed space-y-2">
-                  <p>Your personal brand isn't your job title. It's what people say about you when you leave the room.</p>
-                  <p>I spent 3 years hiding behind my company's logo. Then I started posting under my own name — and inbound opportunities tripled in 6 months.</p>
-                  <p>Lesson: companies come and go. Your reputation is the only asset you truly own. Start building it today.</p>
-                </div>
-                <div className="mt-3 text-pink-600 text-xs font-medium">#PersonalBrand #Marketing #CareerGrowth</div>
-              </div>
-              <div className="mx-5 mb-4 rounded-xl h-32 overflow-hidden">
-                <img src="/landing-post-2.jpg" alt="Example post" className="w-full h-full object-cover" />
-              </div>
-              <div className="px-5 pb-4 flex items-center gap-4 border-t border-black/5 pt-3">
-                <span className="text-slate-400 text-xs">👍 183 likes</span>
-                <span className="text-slate-400 text-xs">💬 34 comments</span>
-              </div>
-            </div>
-
-            {/* Post 3 — Sales executive */}
-            <div className="bg-white rounded-2xl shadow-md border border-black/8 overflow-hidden flex flex-col">
-              <div className="p-5 flex-1">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-11 h-11 rounded-full flex-shrink-0 flex items-center justify-center text-white text-sm font-bold" style={{ background: "linear-gradient(135deg, #0891b2, #0284c7)" }}>
-                    MT
-                  </div>
-                  <div>
-                    <div className="font-semibold text-[#1b1916] text-sm leading-tight">Marcus Taylor</div>
-                    <div className="text-slate-400 text-xs">LinkedIn Member · VP of Sales</div>
-                  </div>
-                </div>
-                <div className="text-[#1b1916] text-sm leading-relaxed space-y-2">
-                  <p>The best deal I ever closed started with a LinkedIn comment I left 8 months earlier.</p>
-                  <p>The prospect remembered my name. Not because I cold-called them 12 times — because I was consistently adding value in their feed. When they were ready to buy, they came to me.</p>
-                  <p>Modern selling isn't about interrupting people. It's about being visible when they're ready.</p>
-                </div>
-                <div className="mt-3 text-cyan-600 text-xs font-medium">#Sales #B2B #RelationshipSelling</div>
-              </div>
-              <div className="mx-5 mb-4 rounded-xl h-32 overflow-hidden">
-                <img src="/landing-post-3.jpg" alt="Example post" className="w-full h-full object-cover" />
-              </div>
-              <div className="px-5 pb-4 flex items-center gap-4 border-t border-black/5 pt-3">
-                <span className="text-slate-400 text-xs">👍 91 likes</span>
-                <span className="text-slate-400 text-xs">💬 21 comments</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Founder */}
-      <section className="px-4 sm:px-6 py-16 sm:py-24" style={{ backgroundColor: "#faf9f7" }}>
-        <div className="max-w-4xl mx-auto">
-          <div className="flex flex-col md:flex-row gap-10 md:gap-16 items-center">
-            {/* Photo */}
-            <div className="w-full md:w-2/5 flex-shrink-0">
-              <img
-                src="/founder-kiryl.jpg"
-                alt="Kiryl Sidarchuk"
-                className="rounded-2xl object-cover w-full shadow-lg"
-                style={{ height: "400px" }}
-              />
-            </div>
-            {/* Text */}
-            <div className="flex-1">
-              <p className="text-xs font-bold tracking-[0.2em] uppercase text-violet-600 mb-3">From the Founder</p>
-              <h2 className="text-2xl sm:text-3xl font-bold text-[#1b1916] mb-6 leading-snug">
-                Built by an entrepreneur,<br className="hidden sm:block" /> for entrepreneurs
-              </h2>
-              <div className="space-y-4 text-slate-600 text-base leading-relaxed mb-6">
-                <p>
-                  I&apos;ve been in your shoes — growing a business while trying to stay visible on LinkedIn felt like a second job.
-                </p>
-                <p>
-                  So I built ItGrows.ai to take that off your plate. The AI writes, schedules, and publishes posts that sound like you — while you focus on what actually moves your business.
-                </p>
-                <p>
-                  This isn&apos;t a tool made by a tech team that&apos;s never sold anything. It&apos;s a product from someone who knows what it takes to build in public.
-                </p>
-              </div>
-              <p className="text-lg font-bold text-[#1b1916]">Kiryl Sidarchuk</p>
-              <p className="text-violet-600 font-semibold text-sm mb-4">Serial IT Entrepreneur · 3× Founder · Exit in 2022 · Angel Investor</p>
-              <a
-                href="https://www.linkedin.com/in/kiryl-sidarchuk/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-sm font-medium hover:underline"
-                style={{ color: "#0a66c2" }}
-              >
-                Connect on LinkedIn →
-              </a>
-              <div className="mt-3">
-                <a href="#pricing" className="text-sm text-violet-600 underline underline-offset-2 hover:text-violet-500 transition-colors">
-                  See pricing and start free →
-                </a>
-              </div>
             </div>
           </div>
         </div>
@@ -1496,13 +1166,13 @@ export default function PersonalPage() {
       <section className="px-4 sm:px-6 py-16 sm:py-24 text-center" style={{ backgroundColor: "#ebe9e5" }}>
         <div className="max-w-3xl mx-auto">
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-4 sm:mb-6 text-[#1b1916]">
-            Ready to Grow Your LinkedIn{" "}
+            Ready to Build a Brand That Works{" "}
             <span className="bg-gradient-to-r from-violet-600 to-cyan-600 bg-clip-text text-transparent">
               While You Sleep?
             </span>
           </h2>
           <p className="text-slate-600 text-base sm:text-lg mb-8 sm:mb-10">
-            Join 2,400+ professionals who stopped worrying about what to post.
+            Join professionals who attract clients, partners and opportunities — on autopilot.
           </p>
           <Button
             size="lg"
