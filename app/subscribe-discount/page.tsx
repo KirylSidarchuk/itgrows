@@ -1,9 +1,9 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { Suspense, useEffect, useState } from "react"
 import { useSearchParams } from "next/navigation"
 
-export default function SubscribeDiscountPage() {
+function SubscribeDiscountContent() {
   const searchParams = useSearchParams()
   const [error, setError] = useState(false)
 
@@ -72,5 +72,17 @@ export default function SubscribeDiscountPage() {
       <p style={{ color: "#6b7280" }}>Redirecting to checkout...</p>
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
+  )
+}
+
+export default function SubscribeDiscountPage() {
+  return (
+    <Suspense fallback={
+      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <p style={{ color: "#6b7280", fontFamily: "sans-serif" }}>Loading...</p>
+      </div>
+    }>
+      <SubscribeDiscountContent />
+    </Suspense>
   )
 }
