@@ -406,54 +406,90 @@ export default function PersonalPage() {
       </div>
 
       {/* What you want / What stops you / What you get */}
-      <section className="px-4 sm:px-6 py-16 sm:py-24" style={{ backgroundColor: "#f3f2f1" }}>
+      <section className="px-4 sm:px-6 py-16 sm:py-24 overflow-hidden" style={{ background: "linear-gradient(135deg, #1e0a3c 0%, #0f0f23 50%, #0d1117 100%)" }}>
         <div className="max-w-5xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
-            {/* Column 1 */}
-            <div className="rounded-2xl border border-black/10 bg-white p-6 sm:p-8">
-              <h3 className="text-lg font-bold text-[#1b1916] mb-5 pb-3 border-b border-black/10">What you want</h3>
-              <ul className="space-y-3">
-                {["Clients", "Career opportunities", "Strategic connections", "Professional visibility"].map((item, i) => (
-                  <li key={i} className="flex items-center gap-3 text-slate-700 text-sm font-medium">
-                    <span className="w-2 h-2 rounded-full bg-violet-500 flex-shrink-0" />
-                    {item}
+          <div className="text-center mb-10 sm:mb-14">
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-white mb-3 tracking-tight">
+              The gap between where you are<br className="hidden sm:block" /> and where you want to be
+            </h2>
+            <p className="text-slate-400 text-base max-w-xl mx-auto">Most professionals have the ambition. What they're missing is consistent execution.</p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 items-stretch">
+            {/* Column 1 — Goals */}
+            <div className="rounded-2xl p-6 sm:p-8 border border-white/10" style={{ background: "rgba(255,255,255,0.04)" }}>
+              <div className="flex items-center gap-2 mb-6">
+                <span className="text-2xl">🎯</span>
+                <h3 className="text-base font-bold text-white tracking-wide uppercase">You want</h3>
+              </div>
+              <ul className="space-y-4">
+                {[
+                  { icon: "💼", text: "Clients who come to you" },
+                  { icon: "🚀", text: "Career opportunities" },
+                  { icon: "🤝", text: "Strategic connections" },
+                  { icon: "👁", text: "Professional visibility" },
+                ].map((item, i) => (
+                  <li key={i} className="flex items-center gap-3">
+                    <span className="text-lg flex-shrink-0">{item.icon}</span>
+                    <span className="text-slate-300 text-sm font-medium">{item.text}</span>
                   </li>
                 ))}
               </ul>
             </div>
-            {/* Column 2 */}
-            <div className="rounded-2xl border border-red-200 p-6 sm:p-8" style={{ backgroundColor: "#fff5f5" }}>
-              <h3 className="text-lg font-bold text-[#1b1916] mb-5 pb-3 border-b border-red-100">What stops you</h3>
-              <ul className="space-y-3">
+
+            {/* Column 2 — Blockers */}
+            <div className="rounded-2xl p-6 sm:p-8 border border-red-500/20 relative" style={{ background: "linear-gradient(135deg, rgba(239,68,68,0.08) 0%, rgba(255,255,255,0.02) 100%)" }}>
+              <div className="flex items-center gap-2 mb-6">
+                <span className="text-2xl">🚧</span>
+                <h3 className="text-base font-bold text-red-400 tracking-wide uppercase">What stops you</h3>
+              </div>
+              <ul className="space-y-4">
                 {[
                   "No time for consistent posting",
                   "Unclear positioning",
                   "Low visibility",
                   "Irregular activity",
                 ].map((item, i) => (
-                  <li key={i} className="flex items-center gap-3 text-slate-700 text-sm font-medium">
-                    <span className="text-red-400 text-base flex-shrink-0">✕</span>
-                    {item}
+                  <li key={i} className="flex items-center gap-3">
+                    <span className="w-5 h-5 rounded-full border border-red-500/40 flex items-center justify-center flex-shrink-0">
+                      <span className="text-red-400 text-xs font-bold">✕</span>
+                    </span>
+                    <span className="text-slate-400 text-sm line-through decoration-red-500/40">{item}</span>
                   </li>
                 ))}
               </ul>
+              {/* Arrow down on mobile */}
+              <div className="md:hidden absolute -bottom-5 left-1/2 -translate-x-1/2 w-10 h-10 rounded-full bg-violet-600 flex items-center justify-center shadow-lg z-10">
+                <span className="text-white text-lg">↓</span>
+              </div>
             </div>
-            {/* Column 3 */}
-            <div className="rounded-2xl border border-violet-200 p-6 sm:p-8" style={{ backgroundColor: "#f5f3ff" }}>
-              <h3 className="text-lg font-bold text-[#1b1916] mb-5 pb-3 border-b border-violet-100">What you get with ItGrows</h3>
-              <ul className="space-y-3">
+
+            {/* Column 3 — Solution */}
+            <div className="rounded-2xl p-6 sm:p-8 border border-violet-500/30 relative" style={{ background: "linear-gradient(135deg, rgba(124,58,237,0.15) 0%, rgba(139,92,246,0.05) 100%)" }}>
+              <div className="flex items-center gap-2 mb-6">
+                <span className="text-2xl">⚡</span>
+                <h3 className="text-base font-bold text-violet-400 tracking-wide uppercase">With ItGrows</h3>
+              </div>
+              <ul className="space-y-4">
                 {[
-                  "Inbound interest",
-                  "Clear expert positioning",
-                  "Continuous presence",
-                  "New opportunities",
+                  { icon: "📥", text: "Inbound interest" },
+                  { icon: "🧭", text: "Clear expert positioning" },
+                  { icon: "📡", text: "Continuous presence" },
+                  { icon: "🌱", text: "New opportunities, daily" },
                 ].map((item, i) => (
-                  <li key={i} className="flex items-center gap-3 text-slate-700 text-sm font-medium">
-                    <span className="text-violet-600 font-bold text-base flex-shrink-0">✓</span>
-                    {item}
+                  <li key={i} className="flex items-center gap-3">
+                    <span className="text-lg flex-shrink-0">{item.icon}</span>
+                    <span className="text-white text-sm font-semibold">{item.text}</span>
                   </li>
                 ))}
               </ul>
+              <div className="mt-6 pt-5 border-t border-violet-500/20">
+                <button
+                  onClick={() => { document.getElementById("ghost-mode")?.scrollIntoView({ behavior: "smooth" }) }}
+                  className="w-full py-2.5 rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-sm font-semibold transition-colors"
+                >
+                  Try it free →
+                </button>
+              </div>
             </div>
           </div>
         </div>
