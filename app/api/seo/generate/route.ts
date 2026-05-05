@@ -298,7 +298,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "keyword is required" }, { status: 400 })
     }
 
-    const prompt = buildPrompt(keyword, language, tone, siteContext)
+    const trimmedKeyword = keyword.trim()
+    if (trimmedKeyword.length === 0) {
+      return NextResponse.json({ error: "keyword must not be empty" }, { status: 400 })
+    }
+    if (trimmedKeyword.includes("[")) {
+      return NextResponse.json({ error: "keyword contains template placeholder — invalid keyword" }, { status: 400 })
+    }
+
+    const prompt = buildPrompt(trimmedKeyword, language, tone, siteContext)
 
     const rawContent = await callLLM(
       [{ role: "user", content: prompt }],
@@ -306,6 +314,21 @@ export async function POST(req: NextRequest) {
     )
 
     const parsed = parseArticle(rawContent)
+
+    // Guard: reject content that still contains template placeholders
+    const placeholderPatterns = [
+      /\[Your Topic Here\]/i,
+      /\[mention/i,
+      /\[insert/i,
+      /\[Your [A-Z]/i,
+      /\[Add /i,
+    ]
+    const hasPlaceholder = placeholderPatterns.some((re) => re.test(parsed.content) || re.test(parsed.title))
+    if (hasPlaceholder) {
+      console.error("[seo/generate] Generated content contains placeholder text — rejecting. Keyword:", trimmedKeyword)
+      throw new Error("Generated content contains placeholder text — LLM failed to fill template")
+    }
+
     const { score: seoScore, breakdown: seoBreakdown } = computeSeoScore(
       parsed.content,
       parsed.keywords,

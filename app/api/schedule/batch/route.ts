@@ -195,6 +195,16 @@ Return ONLY valid JSON, no markdown.`
   const today = new Date()
   const insertedPosts = []
 
+  // Filter out any topics where keyword is empty or contains placeholder brackets
+  topics = topics.filter((t) => {
+    const kw = (t.keyword ?? "").trim()
+    return kw.length > 0 && !kw.includes("[")
+  })
+
+  if (topics.length === 0) {
+    return NextResponse.json({ error: "All generated topics had invalid keywords" }, { status: 500 })
+  }
+
   for (let i = 0; i < topics.length; i++) {
     const topic = topics[i]
     const scheduledDate = new Date(today)
@@ -205,7 +215,7 @@ Return ONLY valid JSON, no markdown.`
       .insert(scheduledPosts)
       .values({
         userId,
-        keyword: topic.keyword,
+        keyword: topic.keyword.trim(),
         language,
         tone,
         scheduledDate: dateStr,

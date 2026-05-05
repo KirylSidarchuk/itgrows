@@ -43,6 +43,18 @@ export async function GET(req: NextRequest) {
 
   for (const post of duePosts) {
     try {
+      // Validate keyword before processing
+      const kw = (post.keyword ?? "").trim()
+      if (!kw || kw.includes("[")) {
+        await db
+          .update(scheduledPosts)
+          .set({ status: "failed", publishError: "invalid_keyword: keyword is empty or contains placeholder" })
+          .where(eq(scheduledPosts.id, post.id))
+        errors.push({ id: post.id, keyword: post.keyword, error: "invalid_keyword" })
+        processed.push({ id: post.id, keyword: post.keyword, status: "failed", error: "invalid_keyword" })
+        continue
+      }
+
       // Mark as generating
       await db
         .update(scheduledPosts)
