@@ -53,12 +53,6 @@ export default function PersonalPage() {
   const [ghostImages, setGhostImages] = useState<(string | null)[]>([])
   const [ghostError, setGhostError] = useState("")
 
-  // Waitlist state
-  const [waitlistEmail, setWaitlistEmail] = useState("")
-  const [waitlistLoading, setWaitlistLoading] = useState(false)
-  const [waitlistDone, setWaitlistDone] = useState(false)
-  const [waitlistError, setWaitlistError] = useState("")
-
   // Feedback form state
   const [feedbackOpen, setFeedbackOpen] = useState(false)
   const [feedbackType, setFeedbackType] = useState("Question")
@@ -185,31 +179,6 @@ export default function PersonalPage() {
     }
   }
 
-  async function handleWaitlistSubmit() {
-    if (!waitlistEmail.includes("@")) {
-      setWaitlistError("Please enter a valid email address.")
-      return
-    }
-    setWaitlistLoading(true)
-    setWaitlistError("")
-    try {
-      const res = await fetch("/api/public/waitlist", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: waitlistEmail, platform: "x" }),
-      })
-      if (res.ok) {
-        setWaitlistDone(true)
-      } else {
-        setWaitlistError("Something went wrong. Please try again.")
-      }
-    } catch {
-      setWaitlistError("Something went wrong. Please try again.")
-    } finally {
-      setWaitlistLoading(false)
-    }
-  }
-
   return (
     <div
       className="min-h-screen text-[#1b1916] scroll-smooth"
@@ -227,7 +196,6 @@ export default function PersonalPage() {
           {/* Desktop center nav links */}
           <div className="hidden md:flex items-center gap-7">
             <a href="#how-it-works" className="text-sm text-slate-600 hover:text-[#1b1916] transition-colors font-medium">How It Works</a>
-            <a href="#results" onClick={() => setMobileMenuOpen(false)} className="text-sm text-slate-600 hover:text-[#1b1916] transition-colors font-medium">Results</a>
             <a href="#pricing" className="text-sm text-slate-600 hover:text-[#1b1916] transition-colors font-medium">Pricing</a>
             <Link href="/blog" className="text-sm text-slate-600 hover:text-[#1b1916] transition-colors font-medium">Blog</Link>
           </div>
@@ -283,13 +251,6 @@ export default function PersonalPage() {
               How It Works
             </a>
             <a
-              href="#results"
-              className="px-3 py-2.5 text-sm font-medium text-slate-600 hover:text-[#1b1916] hover:bg-black/5 rounded-lg transition-colors"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Results
-            </a>
-            <a
               href="#pricing"
               className="px-3 py-2.5 text-sm font-medium text-slate-600 hover:text-[#1b1916] hover:bg-black/5 rounded-lg transition-colors"
               onClick={() => setMobileMenuOpen(false)}
@@ -341,119 +302,60 @@ export default function PersonalPage() {
         <div className="absolute inset-0 bg-gradient-to-b from-violet-100/60 to-transparent pointer-events-none" />
         <div className="absolute top-10 left-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-violet-400/10 rounded-full blur-3xl pointer-events-none" />
         <div className="relative max-w-4xl mx-auto">
-          <Badge className="mb-4 sm:mb-6 bg-violet-100 text-violet-700 border-violet-200 text-xs sm:text-sm px-3 sm:px-4 py-1">
-            Personal Brand Autopilot · $29/month
-          </Badge>
           <h1 className="text-4xl sm:text-5xl md:text-7xl font-extrabold leading-tight mb-4 sm:mb-6 tracking-tight text-[#1b1916]">
-            Build a Personal Brand That
-            <span className="block bg-gradient-to-r from-violet-600 via-pink-500 to-cyan-500 bg-clip-text text-transparent">
-              Attracts Clients, Jobs and Opportunities
-            </span>
+            Your LinkedIn. 7 Posts a Week. Zero Effort.
           </h1>
-          <p className="text-base sm:text-xl text-slate-600 max-w-2xl mx-auto mb-8 sm:mb-10 leading-relaxed">
-            We create and publish content for you — daily, automatically, in your voice.
+          <p className="text-base sm:text-xl text-slate-600 max-w-xl mx-auto mb-8 sm:mb-10 leading-relaxed">
+            We write and publish LinkedIn posts for you — daily, in your voice.
+            You show up as an expert. Clients, recruiters, and partners come to you.
           </p>
-          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center">
+          <div className="flex justify-center items-center">
             <div className="relative w-full sm:w-auto">
               {/* Pulse ring behind the primary CTA button */}
               <span className="absolute inset-0 rounded-xl animate-pulse bg-violet-400/30 pointer-events-none" style={{ margin: "-4px" }} />
-              <Button size="lg" onClick={() => { document.getElementById("ghost-mode")?.scrollIntoView({ behavior: "smooth" }) }} className="relative bg-violet-600 hover:bg-violet-500 text-white px-10 py-4 text-base sm:text-lg rounded-xl w-full sm:w-auto font-semibold shadow-lg shadow-violet-600/30">
-                Try It Free — No Signup
+              <Button
+                size="lg"
+                onClick={() => { document.getElementById("ghost-mode")?.scrollIntoView({ behavior: "smooth" }) }}
+                className="relative bg-violet-600 hover:bg-violet-500 text-white px-10 py-4 text-base sm:text-lg rounded-xl w-full sm:w-auto font-semibold shadow-lg shadow-violet-600/30"
+              >
+                See Your Posts in 30 Seconds — No Signup
               </Button>
             </div>
-            <Button size="lg" onClick={() => { document.getElementById("ghost-mode")?.scrollIntoView({ behavior: "smooth" }) }} variant="outline" className="border-[#1b1916] text-[#1b1916] hover:bg-[#1b1916] hover:text-[#f3f2f1] px-6 sm:px-8 py-5 sm:py-6 text-base sm:text-lg rounded-xl w-full sm:w-auto">
-              See How It Works in 30 Seconds →
-            </Button>
           </div>
-          <p className="mt-3 text-xs sm:text-sm text-slate-500 font-medium">No credit card required · Cancel anytime · Trusted by 2,400+ professionals</p>
+          <p className="mt-4 text-xs sm:text-sm text-slate-500 font-medium">No credit card required · Trusted by 2,400+ professionals</p>
         </div>
       </section>
 
-      {/* What you want / What stops you / What you get */}
-      <section className="px-4 sm:px-6 py-16 sm:py-24 overflow-hidden" style={{ background: "linear-gradient(135deg, #1e0a3c 0%, #0f0f23 50%, #0d1117 100%)" }}>
+      {/* Social Proof Strip */}
+      <div className="px-4 sm:px-6 py-4 text-center text-sm text-white font-medium" style={{ backgroundColor: "#1b1916" }}>
+        &ldquo;In 3 months: 38,500 impressions, 23 inbound DMs, +890% profile views.&rdquo; — K.S., Startup Founder
+      </div>
+
+      {/* How it works */}
+      <section id="how-it-works" className="px-4 sm:px-6 py-16 sm:py-24" style={{ backgroundColor: "#f3f2f1" }}>
         <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-10 sm:mb-14">
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-white mb-3 tracking-tight">
-              The gap between where you are<br className="hidden sm:block" /> and where you want to be
-            </h2>
-            <p className="text-slate-400 text-base max-w-xl mx-auto">Most professionals have the ambition. What they're missing is consistent execution.</p>
+          <div className="text-center mb-10 sm:mb-16">
+            <h2 className="text-3xl sm:text-4xl font-bold mb-4 text-[#1b1916]">Up and running in 3 steps</h2>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 items-stretch">
-            {/* Column 1 — Goals */}
-            <div className="rounded-2xl p-6 sm:p-8 border border-white/10" style={{ background: "rgba(255,255,255,0.04)" }}>
-              <div className="flex items-center gap-2 mb-6">
-                <span className="text-2xl">🎯</span>
-                <h3 className="text-base font-bold text-white tracking-wide uppercase">You want</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {steps.map((s, i) => (
+              <div key={i} className="relative text-center">
+                {i < steps.length - 1 && (
+                  <div className="hidden md:block absolute top-8 left-[calc(50%+2.5rem)] right-[-50%] h-px bg-gradient-to-r from-violet-300 to-transparent" />
+                )}
+                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-600 to-pink-600 flex items-center justify-center text-2xl font-black mx-auto mb-6 text-white">
+                  {s.num}
+                </div>
+                <h3 className="text-xl font-semibold mb-3 text-[#1b1916]">{s.title}</h3>
+                <p className="text-slate-600 text-sm leading-relaxed">{s.desc}</p>
               </div>
-              <ul className="space-y-4">
-                {[
-                  { icon: "💼", text: "Clients who come to you" },
-                  { icon: "🚀", text: "Career opportunities" },
-                  { icon: "🤝", text: "Strategic connections" },
-                  { icon: "👁", text: "Professional visibility" },
-                ].map((item, i) => (
-                  <li key={i} className="flex items-center gap-3">
-                    <span className="text-lg flex-shrink-0">{item.icon}</span>
-                    <span className="text-slate-300 text-sm font-medium">{item.text}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Column 2 — Blockers */}
-            <div className="rounded-2xl p-6 sm:p-8 border border-red-500/20 relative" style={{ background: "linear-gradient(135deg, rgba(239,68,68,0.08) 0%, rgba(255,255,255,0.02) 100%)" }}>
-              <div className="flex items-center gap-2 mb-6">
-                <span className="text-2xl">🚧</span>
-                <h3 className="text-base font-bold text-red-400 tracking-wide uppercase">What stops you</h3>
-              </div>
-              <ul className="space-y-4">
-                {[
-                  "No time for consistent posting",
-                  "Unclear positioning",
-                  "Low visibility",
-                  "Irregular activity",
-                ].map((item, i) => (
-                  <li key={i} className="flex items-center gap-3">
-                    <span className="w-5 h-5 rounded-full border border-red-500/40 flex items-center justify-center flex-shrink-0">
-                      <span className="text-red-400 text-xs font-bold">✕</span>
-                    </span>
-                    <span className="text-slate-400 text-sm line-through decoration-red-500/40">{item}</span>
-                  </li>
-                ))}
-              </ul>
-              {/* Arrow down on mobile */}
-              <div className="md:hidden absolute -bottom-5 left-1/2 -translate-x-1/2 w-10 h-10 rounded-full bg-violet-600 flex items-center justify-center shadow-lg z-10">
-                <span className="text-white text-lg">↓</span>
-              </div>
-            </div>
-
-            {/* Column 3 — Solution */}
-            <div className="rounded-2xl p-6 sm:p-8 border border-violet-500/30 relative" style={{ background: "linear-gradient(135deg, rgba(124,58,237,0.15) 0%, rgba(139,92,246,0.05) 100%)" }}>
-              <div className="flex items-center gap-2 mb-6">
-                <span className="text-2xl">⚡</span>
-                <h3 className="text-base font-bold text-violet-400 tracking-wide uppercase">With ItGrows</h3>
-              </div>
-              <ul className="space-y-4">
-                {[
-                  { icon: "📥", text: "Inbound interest" },
-                  { icon: "🧭", text: "Clear expert positioning" },
-                  { icon: "📡", text: "Continuous presence" },
-                  { icon: "🌱", text: "New opportunities, daily" },
-                ].map((item, i) => (
-                  <li key={i} className="flex items-center gap-3">
-                    <span className="text-lg flex-shrink-0">{item.icon}</span>
-                    <span className="text-white text-sm font-semibold">{item.text}</span>
-                  </li>
-                ))}
-              </ul>
-              <div className="mt-6 pt-5 border-t border-violet-500/20">
-                <button
-                  onClick={() => { document.getElementById("ghost-mode")?.scrollIntoView({ behavior: "smooth" }) }}
-                  className="w-full py-2.5 rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-sm font-semibold transition-colors"
-                >
-                  Try it free →
-                </button>
-              </div>
+            ))}
+          </div>
+          {/* Result callout */}
+          <div className="mt-12 text-center">
+            <div className="inline-flex items-center gap-3 bg-gradient-to-r from-violet-50 to-pink-50 border border-violet-200 rounded-2xl px-8 py-4">
+              <span className="text-2xl">🎯</span>
+              <span className="text-[#1b1916] font-semibold text-lg">Result: Opportunities come to you</span>
             </div>
           </div>
         </div>
@@ -610,14 +512,11 @@ export default function PersonalPage() {
         <div className="max-w-6xl mx-auto">
           {/* Section header */}
           <div className="text-center mb-12 sm:mb-16">
-            <span className="inline-block mb-4 px-4 py-1 rounded-full text-xs font-bold border border-violet-500/50 text-violet-400 bg-violet-500/10 tracking-[0.2em] uppercase">
-              Results
-            </span>
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-4 text-white leading-tight tracking-tight">
-              What consistent presence brings you
+              What happens when you show up every day
             </h2>
             <p className="text-slate-400 text-base sm:text-lg max-w-xl mx-auto">
-              Data behind professionals who grow their brand on LinkedIn
+              Real data from professionals who post consistently on LinkedIn
             </p>
           </div>
 
@@ -762,38 +661,6 @@ export default function PersonalPage() {
               </div>
             </div>
 
-          </div>
-        </div>
-      </section>
-
-      {/* How it works */}
-      <section id="how-it-works" className="px-4 sm:px-6 py-16 sm:py-24" style={{ backgroundColor: "#f3f2f1" }}>
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-10 sm:mb-16">
-            <Badge className="mb-4 bg-pink-100 text-pink-700 border-pink-200">Simple Setup</Badge>
-            <h2 className="text-3xl sm:text-4xl font-bold mb-4 text-[#1b1916]">Up and Running in 3 Minutes</h2>
-            <p className="text-slate-600 text-base sm:text-lg">No copywriting. No scheduling. No thinking about what to post.</p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {steps.map((s, i) => (
-              <div key={i} className="relative text-center">
-                {i < steps.length - 1 && (
-                  <div className="hidden md:block absolute top-8 left-[calc(50%+2.5rem)] right-[-50%] h-px bg-gradient-to-r from-violet-300 to-transparent" />
-                )}
-                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-600 to-pink-600 flex items-center justify-center text-2xl font-black mx-auto mb-6 text-white">
-                  {s.num}
-                </div>
-                <h3 className="text-xl font-semibold mb-3 text-[#1b1916]">{s.title}</h3>
-                <p className="text-slate-600 text-sm leading-relaxed">{s.desc}</p>
-              </div>
-            ))}
-          </div>
-          {/* Result callout */}
-          <div className="mt-12 text-center">
-            <div className="inline-flex items-center gap-3 bg-gradient-to-r from-violet-50 to-pink-50 border border-violet-200 rounded-2xl px-8 py-4">
-              <span className="text-2xl">🎯</span>
-              <span className="text-[#1b1916] font-semibold text-lg">Result: Opportunities come to you</span>
-            </div>
           </div>
         </div>
       </section>
