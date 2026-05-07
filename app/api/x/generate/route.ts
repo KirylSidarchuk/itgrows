@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/auth"
 import { db } from "@/lib/db"
 import { twitterAccounts, twitterPosts, linkedinBriefs, twitterBriefs } from "@/lib/db/schema"
-import { eq } from "drizzle-orm"
+import { eq, and, desc } from "drizzle-orm"
 
 export const maxDuration = 300
 
@@ -147,20 +147,44 @@ Return only the JSON array, no markdown, no extra text.`
       throw new Error("Invalid posts data from LLM")
     }
 
-    // Insert posts as drafts
+    // Find the latest scheduledAt among existing scheduled posts for this user
+    const [latestScheduled] = await db
+      .select({ scheduledAt: twitterPosts.scheduledAt })
+      .from(twitterPosts)
+      .where(and(eq(twitterPosts.userId, userId), eq(twitterPosts.status, "scheduled")))
+      .orderBy(desc(twitterPosts.scheduledAt))
+      .limit(1)
+
+    // Start from tomorrow at 10:00 UTC, or day after last scheduled post, whichever is later
+    const now = new Date()
+    const tomorrow = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1, 10, 0, 0, 0))
+    let nextDate = tomorrow
+    if (latestScheduled?.scheduledAt) {
+      const dayAfterLast = new Date(latestScheduled.scheduledAt)
+      dayAfterLast.setUTCDate(dayAfterLast.getUTCDate() + 1)
+      dayAfterLast.setUTCHours(10, 0, 0, 0)
+      if (dayAfterLast > tomorrow) {
+        nextDate = dayAfterLast
+      }
+    }
+
+    // Insert posts as scheduled, 1 day apart at 10:00 UTC
     const insertedPosts = []
     for (const postData of postsData.slice(0, 5)) {
       const content = (postData.content ?? "").slice(0, 280)
+      const scheduledAt = new Date(nextDate)
       const [inserted] = await db
         .insert(twitterPosts)
         .values({
           userId,
           content,
           isThread: false,
-          status: "draft",
+          status: "scheduled",
+          scheduledAt,
         })
         .returning()
       insertedPosts.push(inserted)
+      nextDate = new Date(Date.UTC(nextDate.getUTCFullYear(), nextDate.getUTCMonth(), nextDate.getUTCDate() + 1, 10, 0, 0, 0))
     }
 
     return NextResponse.json({ posts: insertedPosts, count: insertedPosts.length })

@@ -888,6 +888,7 @@ function LinkedInPageContent() {
   const [xSavingBrief, setXSavingBrief] = useState(false)
   const [xBriefSaved, setXBriefSaved] = useState(false)
   const [showXOnboarding, setShowXOnboarding] = useState(false)
+  const [xOnboardingStep, setXOnboardingStep] = useState(0)
 
   const hour = new Date().getHours()
   const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening"
@@ -3452,87 +3453,115 @@ function LinkedInPageContent() {
       </main>
 
       {/* X Onboarding Modal */}
-      {showXOnboarding && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl p-8 max-w-lg w-full shadow-2xl relative">
-            {/* Badge */}
-            <div className="mb-4">
-              <span className="inline-flex items-center gap-1.5 bg-slate-900 text-white text-xs font-semibold px-3 py-1.5 rounded-full">
-                <XIcon className="w-3 h-3" />
-                X Autopilot
-              </span>
-            </div>
-
-            {/* Header */}
-            <h2 className="text-2xl font-bold text-slate-900 mb-2">Let AI run your X — in your voice</h2>
-            <p className="text-slate-500 text-sm mb-8">
-              We&apos;ll learn how you think, what you stand for, and post daily content that sounds exactly like you.
-            </p>
-
-            {/* Steps */}
-            <div className="space-y-5 mb-8">
-              {[
-                {
-                  n: 1,
-                  title: "Connect your X account",
-                  desc: "One click. We never post without your approval.",
-                },
-                {
-                  n: 2,
-                  title: "Fill in DNA.X",
-                  desc: "Tell the AI your topics, tone, and goals. The more detail — the better it sounds like you.",
-                },
-                {
-                  n: 3,
-                  title: "Generate & publish",
-                  desc: "Get 5 ready-to-post tweets. Edit text, add an image, set a schedule — or publish instantly.",
-                },
-                {
-                  n: 4,
-                  title: "Watch your X grow",
-                  desc: "Consistent content = more followers, more DMs, more opportunities. We just handle the publishing.",
-                },
-              ].map((step) => (
-                <div key={step.n} className="flex gap-4 items-start">
-                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-violet-600 text-white flex items-center justify-center text-sm font-bold">
-                    {step.n}
-                  </div>
-                  <div>
-                    <p className="font-semibold text-slate-800 text-sm">{step.title}</p>
-                    <p className="text-slate-500 text-sm mt-0.5">{step.desc}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* CTA */}
-            <Button
-              className="w-full bg-violet-600 hover:bg-violet-500 text-white rounded-xl h-11 text-base font-semibold"
-              onClick={() => {
-                if (typeof window !== "undefined") {
-                  localStorage.setItem("x_onboarding_seen", "1")
-                }
-                setShowXOnboarding(false)
-              }}
-            >
-              Get Started →
-            </Button>
-            <div className="text-center mt-3">
+      {showXOnboarding && (() => {
+        const xOnboardingScreens = [
+          {
+            badge: true,
+            icon: <div className="text-6xl text-center mb-6 font-bold text-slate-900">𝕏</div>,
+            stepLabel: null,
+            title: "Let AI run your X — in your voice",
+            text: "We publish 1 tweet every day for you. The AI learns how you think, what you stand for, and posts content that sounds exactly like you.",
+          },
+          {
+            badge: false,
+            icon: <div className="text-6xl text-center mb-6">🔗</div>,
+            stepLabel: "Step 1 of 4",
+            title: "Connect your X account",
+            text: "One click to link your account. We only post with your explicit approval — nothing goes out without you saying so.",
+          },
+          {
+            badge: false,
+            icon: <div className="text-6xl text-center mb-6">🧬</div>,
+            stepLabel: "Step 2 of 4",
+            title: "Fill in DNA.X",
+            text: "Tell the AI your topics, tone, and goals. The more detail you give — the better each tweet sounds like you. This is your voice fingerprint.",
+          },
+          {
+            badge: false,
+            icon: <div className="text-6xl text-center mb-6">⚡</div>,
+            stepLabel: "Step 3 of 4",
+            title: "Generate & publish",
+            text: "Get 5 ready-to-post tweets in seconds. Edit the text, add an image, or publish instantly. Posts go out automatically — 1 tweet per day.",
+          },
+          {
+            badge: false,
+            icon: <div className="text-6xl text-center mb-6">📈</div>,
+            stepLabel: "Step 4 of 4",
+            title: "Watch your X grow",
+            text: "Consistent daily content = more followers, more DMs, more opportunities. You focus on the work — we handle the publishing.",
+          },
+        ]
+        const screen = xOnboardingScreens[xOnboardingStep]
+        const isLast = xOnboardingStep === xOnboardingScreens.length - 1
+        const handleClose = () => {
+          if (typeof window !== "undefined") {
+            localStorage.setItem("x_onboarding_seen", "1")
+          }
+          setShowXOnboarding(false)
+          setXOnboardingStep(0)
+        }
+        return (
+          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl relative">
+              {/* Close button */}
               <button
-                className="text-slate-400 text-sm hover:text-slate-600 transition-colors"
+                className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-colors text-xl leading-none"
+                onClick={handleClose}
+                aria-label="Close"
+              >
+                ×
+              </button>
+
+              {/* Badge (intro screen only) */}
+              {screen.badge && (
+                <div className="mb-4">
+                  <span className="inline-flex items-center gap-1.5 bg-slate-900 text-white text-xs font-semibold px-3 py-1.5 rounded-full">
+                    🤖 X Autopilot
+                  </span>
+                </div>
+              )}
+
+              {/* Step label */}
+              {screen.stepLabel && (
+                <p className="text-xs font-medium text-violet-500 uppercase tracking-wider mb-2">{screen.stepLabel}</p>
+              )}
+
+              {/* Icon */}
+              {screen.icon}
+
+              {/* Title */}
+              <h2 className="text-2xl font-bold text-slate-900 mb-3">{screen.title}</h2>
+
+              {/* Text */}
+              <p className="text-slate-500 text-sm leading-relaxed mb-8">{screen.text}</p>
+
+              {/* Progress dots */}
+              <div className="flex items-center justify-center gap-2 mb-4">
+                {xOnboardingScreens.map((_, i) => (
+                  <div
+                    key={i}
+                    className={`w-2 h-2 rounded-full ${i === xOnboardingStep ? "bg-violet-600" : "bg-slate-200"}`}
+                  />
+                ))}
+              </div>
+
+              {/* Next / CTA button */}
+              <Button
+                className="w-full bg-violet-600 hover:bg-violet-500 text-white rounded-xl py-3 font-semibold transition-colors mt-4"
                 onClick={() => {
-                  if (typeof window !== "undefined") {
-                    localStorage.setItem("x_onboarding_seen", "1")
+                  if (isLast) {
+                    handleClose()
+                  } else {
+                    setXOnboardingStep(xOnboardingStep + 1)
                   }
-                  setShowXOnboarding(false)
                 }}
               >
-                Learn more later
-              </button>
+                {isLast ? "Let's Go →" : "Next →"}
+              </Button>
             </div>
           </div>
-        </div>
-      )}
+        )
+      })()}
     </div>
   )
 }
