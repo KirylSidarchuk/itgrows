@@ -49,6 +49,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "ItGrows.ai — LinkedIn Autopilot",
     description: "AI writes and auto-publishes LinkedIn posts for you. Start your 7-day free trial — no credit card needed.",
+    images: ["https://itgrows.ai/og-image.png"],
   },
 };
 
