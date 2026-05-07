@@ -207,3 +207,30 @@ export const waitlist = pgTable("waitlist", {
   platform: text("platform").notNull().default("x"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 })
+
+export const twitterAccounts = pgTable("twitter_accounts", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  twitterUserId: text("twitter_user_id").notNull(),
+  username: text("username").notNull(),
+  displayName: text("display_name"),
+  accessToken: text("access_token").notNull(),
+  refreshToken: text("refresh_token"),
+  expiresAt: timestamp("expires_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+}, (t) => [index("twitter_accounts_user_id_idx").on(t.userId)])
+
+export const twitterPosts = pgTable("twitter_posts", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  content: text("content").notNull(),
+  isThread: boolean("is_thread").default(false),
+  threadTweets: jsonb("thread_tweets"),
+  imageUrl: text("image_url"),
+  status: text("status").notNull().default("draft"), // draft | scheduled | published | failed
+  scheduledAt: timestamp("scheduled_at", { withTimezone: true }),
+  publishedAt: timestamp("published_at", { withTimezone: true }),
+  twitterPostId: text("twitter_post_id"),
+  errorMessage: text("error_message"),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+}, (t) => [index("twitter_posts_user_id_idx").on(t.userId), index("twitter_posts_status_idx").on(t.status)])
