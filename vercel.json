@@ -39,6 +39,10 @@
     {
       "path": "/api/cron/publish-x",
       "schedule": "35 10 * * *"
+    },
+    {
+      "path": "/api/cron/auto-generate-x",
+      "schedule": "0 12 * * *"
     }
   ]
 }

@@ -95,6 +95,7 @@ export async function GET(req: NextRequest) {
         name: users.name,
         trialEndsAt: users.trialEndsAt,
         subscriptionStatus: users.subscriptionStatus,
+        trialReminderLastSent: users.trialReminderLastSent,
       })
       .from(users)
       .where(isNotNull(users.trialEndsAt))
@@ -134,7 +135,8 @@ export async function GET(req: NextRequest) {
           html: trialTwoDaysLeftEmail(displayName),
         })
         sent++
-      } else if (daysUntilTrialEnd === 0) {
+      } else if (daysUntilTrialEnd === 0 && !user.trialReminderLastSent) {
+        // Only send if trial-reminders hasn't already sent the last-day email (dedup guard)
         await sendEmail({
           to: user.email,
           subject: "Your ItGrows trial ends today",

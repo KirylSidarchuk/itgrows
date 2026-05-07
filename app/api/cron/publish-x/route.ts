@@ -29,17 +29,17 @@ export async function GET(req: NextRequest) {
     let failed = 0
 
     for (const post of duePosts) {
-      // Get Twitter account for this user
+      // Get Twitter account for this user matching the post's accountType
       const [account] = await db
         .select()
         .from(twitterAccounts)
-        .where(eq(twitterAccounts.userId, post.userId))
+        .where(and(eq(twitterAccounts.userId, post.userId), eq(twitterAccounts.accountType, post.accountType)))
         .limit(1)
 
       if (!account) {
         await db
           .update(twitterPosts)
-          .set({ status: "failed", errorMessage: "No Twitter account connected" })
+          .set({ status: "failed", errorMessage: `No Twitter ${post.accountType} account connected` })
           .where(eq(twitterPosts.id, post.id))
         failed++
         continue

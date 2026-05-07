@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
-import { auth } from "@/auth"
 import { db } from "@/lib/db"
-import { twitterAccounts, twitterPosts, linkedinBriefs, twitterBriefs, twitterCompanyBriefs, users } from "@/lib/db/schema"
-import { eq, and, or, desc } from "drizzle-orm"
+import { twitterAccounts, twitterPosts, twitterBriefs, twitterCompanyBriefs, linkedinBriefs, users } from "@/lib/db/schema"
+import { eq, and, or, gt, count, desc } from "drizzle-orm"
 import { hasAccess } from "@/lib/access"
 
 export const maxDuration = 300
@@ -11,50 +10,11 @@ const LLM_BASE_URL = "http://34.60.133.229:4000"
 const LLM_MODEL = "claude-sonnet-4-6"
 const LLM_API_KEY = "jtotFgxS1WQorT52LZym2ncyYzboliS6p04RqUwneFI"
 
-interface GenerateXRequest {
-  topic?: string
-  accountType?: string
-  brief?: {
-    niche?: string
-    tone?: string
-    goals?: string
-    targetAudience?: string
-  }
-}
+const MIN_SCHEDULED = 3
 
-export async function POST(req: NextRequest) {
+async function generateTweetsForUser(userId: string, accountType: string): Promise<{ success: boolean; error?: string }> {
   try {
-    const session = await auth()
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
-    const userId = session.user.id
-
-    // Check subscription or trial
-    const [user] = await db
-      .select({ subscriptionPlan: users.subscriptionPlan, subscriptionStatus: users.subscriptionStatus, trialEndsAt: users.trialEndsAt })
-      .from(users)
-      .where(eq(users.id, userId))
-      .limit(1)
-    if (!user || !hasAccess({ subscriptionStatus: user.subscriptionStatus ?? null, subscriptionPlan: user.subscriptionPlan ?? null, trialEndsAt: user.trialEndsAt ?? null })) {
-      return NextResponse.json({ error: "subscription_required", message: "Active Personal subscription or active trial required" }, { status: 403 })
-    }
-
-    const body = await req.json() as GenerateXRequest
-    const accountType = body.accountType === "company" ? "company" : "personal"
-
-    // Get user's Twitter account filtered by accountType
-    const [account] = await db
-      .select()
-      .from(twitterAccounts)
-      .where(and(eq(twitterAccounts.userId, userId), eq(twitterAccounts.accountType, accountType)))
-      .limit(1)
-
-    if (!account) {
-      return NextResponse.json({ error: `No Twitter/X ${accountType} account connected` }, { status: 400 })
-    }
-
-    // Get brief — from request body, then appropriate brief table, then linkedinBriefs
+    // Get brief based on accountType
     let briefContent: string | null = null
     let structuredBrief: {
       niche?: string | null
@@ -63,20 +23,14 @@ export async function POST(req: NextRequest) {
       targetAudience?: string | null
     } = {}
 
-    if (body.brief) {
-      structuredBrief = body.brief
-    } else if (accountType === "company") {
-      // Use company brief
+    if (accountType === "company") {
       const [companyBrief] = await db
         .select()
         .from(twitterCompanyBriefs)
         .where(eq(twitterCompanyBriefs.userId, userId))
         .limit(1)
-      if (companyBrief) {
-        briefContent = companyBrief.content
-      }
+      if (companyBrief) briefContent = companyBrief.content
     } else {
-      // Try twitter brief first
       const [twitterBrief] = await db
         .select()
         .from(twitterBriefs)
@@ -85,7 +39,6 @@ export async function POST(req: NextRequest) {
       if (twitterBrief) {
         briefContent = twitterBrief.content
       } else {
-        // Fall back to linkedin brief
         const [dbBrief] = await db
           .select()
           .from(linkedinBriefs)
@@ -96,12 +49,7 @@ export async function POST(req: NextRequest) {
     }
 
     const currentYear = new Date().getFullYear()
-    const topicHint = body.topic ? `Focus on topic: ${body.topic}.` : ""
-
-    // Sanitize briefContent for safe embedding in prompt
-    const safeBriefContent = briefContent
-      ? briefContent.replace(/`/g, "'").slice(0, 1000)
-      : null
+    const safeBriefContent = briefContent ? briefContent.replace(/`/g, "'").slice(0, 1000) : null
 
     let promptContext: string
     if (safeBriefContent) {
@@ -119,7 +67,7 @@ export async function POST(req: NextRequest) {
     const prompt = `${jsonInstruction}
 
 You are a Twitter/X thought leadership expert writing in the first person.
-${promptContext} Current year: ${currentYear}. ${topicHint}
+${promptContext} Current year: ${currentYear}.
 
 Generate 5 engaging tweets that feel authentic and personal.
 
@@ -160,73 +108,40 @@ ${jsonInstruction}`
 
     const llmData = await llmRes.json() as { choices: Array<{ message: { content: string } }> }
     const rawContent = llmData.choices?.[0]?.message?.content ?? ""
-
-    if (!rawContent) {
-      throw new Error("LLM returned empty response")
-    }
+    if (!rawContent) throw new Error("LLM returned empty response")
 
     const cleaned = rawContent.replace(/```json\s*/gi, "").replace(/```\s*/g, "").trim()
-
     let postsData: Array<{ content: string }> | null = null
 
-    // Strategy 1: direct parse
-    try {
-      postsData = JSON.parse(cleaned) as Array<{ content: string }>
-    } catch {
-      // continue to next strategy
-    }
-
-    // Strategy 2: extract [...] with regex
+    try { postsData = JSON.parse(cleaned) } catch { /* continue */ }
     if (!postsData) {
       const arrayMatch = cleaned.match(/\[[\s\S]*\]/)
-      if (arrayMatch) {
-        try {
-          postsData = JSON.parse(arrayMatch[0]) as Array<{ content: string }>
-        } catch {
-          // continue to next strategy
-        }
-      }
+      if (arrayMatch) try { postsData = JSON.parse(arrayMatch[0]) } catch { /* continue */ }
     }
-
-    // Strategy 3: extract first { to last } and wrap in array
     if (!postsData) {
       const firstBrace = cleaned.indexOf("{")
       const lastBrace = cleaned.lastIndexOf("}")
       if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
-        try {
-          postsData = JSON.parse(`[${cleaned.slice(firstBrace, lastBrace + 1)}]`) as Array<{ content: string }>
-        } catch {
-          // all strategies failed
-        }
+        try { postsData = JSON.parse(`[${cleaned.slice(firstBrace, lastBrace + 1)}]`) } catch { /* failed */ }
       }
     }
 
-    if (!postsData) {
+    if (!postsData || !Array.isArray(postsData) || postsData.length === 0) {
       throw new Error("Could not parse JSON array from LLM response")
     }
-
-    if (!Array.isArray(postsData) || postsData.length === 0) {
-      throw new Error("Invalid posts data from LLM")
-    }
-
-    // Delete all existing draft/scheduled posts for this user+accountType before generating new ones
-    await db.delete(twitterPosts).where(
-      and(
-        eq(twitterPosts.userId, userId),
-        eq(twitterPosts.accountType, accountType),
-        or(eq(twitterPosts.status, "draft"), eq(twitterPosts.status, "scheduled"))
-      )
-    )
 
     // Find the latest scheduledAt among existing scheduled posts for this user+accountType
     const [latestScheduled] = await db
       .select({ scheduledAt: twitterPosts.scheduledAt })
       .from(twitterPosts)
-      .where(and(eq(twitterPosts.userId, userId), eq(twitterPosts.accountType, accountType), eq(twitterPosts.status, "scheduled")))
+      .where(and(
+        eq(twitterPosts.userId, userId),
+        eq(twitterPosts.accountType, accountType),
+        eq(twitterPosts.status, "scheduled")
+      ))
       .orderBy(desc(twitterPosts.scheduledAt))
       .limit(1)
 
-    // Start from tomorrow at 10:00 UTC, or day after last scheduled post, whichever is later
     const now = new Date()
     const tomorrow = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1, 10, 0, 0, 0))
     let nextDate = tomorrow
@@ -234,34 +149,126 @@ ${jsonInstruction}`
       const dayAfterLast = new Date(latestScheduled.scheduledAt)
       dayAfterLast.setUTCDate(dayAfterLast.getUTCDate() + 1)
       dayAfterLast.setUTCHours(10, 0, 0, 0)
-      if (dayAfterLast > tomorrow) {
-        nextDate = dayAfterLast
-      }
+      if (dayAfterLast > tomorrow) nextDate = dayAfterLast
     }
 
-    // Insert posts as scheduled, 1 day apart at 10:00 UTC
-    const insertedPosts = []
     for (const postData of postsData.slice(0, 5)) {
       const content = (postData.content ?? "").slice(0, 280)
       const scheduledAt = new Date(nextDate)
-      const [inserted] = await db
-        .insert(twitterPosts)
-        .values({
-          userId,
-          content,
-          isThread: false,
-          accountType,
-          status: "scheduled",
-          scheduledAt,
-        })
-        .returning()
-      insertedPosts.push(inserted)
+      await db.insert(twitterPosts).values({
+        userId,
+        content,
+        isThread: false,
+        accountType,
+        status: "scheduled",
+        scheduledAt,
+      })
       nextDate = new Date(Date.UTC(nextDate.getUTCFullYear(), nextDate.getUTCMonth(), nextDate.getUTCDate() + 1, 10, 0, 0, 0))
     }
 
-    return NextResponse.json({ posts: insertedPosts, count: insertedPosts.length })
+    return { success: true }
+  } catch (err) {
+    return { success: false, error: err instanceof Error ? err.message : "Unknown error" }
+  }
+}
+
+export async function GET(req: NextRequest) {
+  const authHeader = req.headers.get("Authorization")
+  const cronSecret = process.env.CRON_SECRET
+
+  if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  }
+
+  try {
+    const now = new Date()
+
+    // Find all users with active subscription or active trial
+    const allCandidates = await db
+      .select({
+        id: users.id,
+        subscriptionPlan: users.subscriptionPlan,
+        subscriptionStatus: users.subscriptionStatus,
+        trialEndsAt: users.trialEndsAt,
+      })
+      .from(users)
+      .where(
+        or(
+          eq(users.subscriptionStatus, "active"),
+          gt(users.trialEndsAt, now)
+        )
+      )
+
+    const eligibleUsers = allCandidates.filter((u) =>
+      hasAccess({
+        subscriptionStatus: u.subscriptionStatus ?? null,
+        subscriptionPlan: u.subscriptionPlan ?? null,
+        trialEndsAt: u.trialEndsAt ?? null,
+      })
+    )
+
+    let generated = 0
+    let skipped = 0
+    let failed = 0
+    const total = eligibleUsers.length
+
+    for (const user of eligibleUsers) {
+      // Find all twitter accounts for this user
+      const accounts = await db
+        .select()
+        .from(twitterAccounts)
+        .where(eq(twitterAccounts.userId, user.id))
+
+      if (accounts.length === 0) {
+        skipped++
+        continue
+      }
+
+      let userGenerated = false
+      for (const account of accounts) {
+        const accountType = account.accountType
+
+        // Count future scheduled posts for this user+accountType
+        const [result] = await db
+          .select({ cnt: count() })
+          .from(twitterPosts)
+          .where(
+            and(
+              eq(twitterPosts.userId, user.id),
+              eq(twitterPosts.accountType, accountType),
+              eq(twitterPosts.status, "scheduled"),
+              gt(twitterPosts.scheduledAt, now)
+            )
+          )
+
+        const scheduledCount = Number(result?.cnt ?? 0)
+
+        if (scheduledCount >= MIN_SCHEDULED) {
+          continue
+        }
+
+        // Less than MIN_SCHEDULED future posts — generate new batch
+        console.log(`[auto-generate-x] Generating posts for user ${user.id} accountType=${accountType}`)
+        const genResult = await generateTweetsForUser(user.id, accountType)
+        if (genResult.success) {
+          userGenerated = true
+        } else {
+          console.error(`[auto-generate-x] Failed for user ${user.id} accountType=${accountType}: ${genResult.error}`)
+          failed++
+        }
+      }
+
+      if (userGenerated) {
+        generated++
+      } else if (!userGenerated && failed === 0) {
+        skipped++
+      }
+    }
+
+    return NextResponse.json({ generated, skipped, failed, total })
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error"
+    console.error("[auto-generate-x] cron error:", message)
     return NextResponse.json({ error: message }, { status: 500 })
   }
 }

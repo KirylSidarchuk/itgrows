@@ -38,57 +38,25 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Post already published" }, { status: 400 })
     }
 
-    // Get Twitter account
+    // Get Twitter account matching the post's accountType
     const [account] = await db
       .select()
       .from(twitterAccounts)
-      .where(eq(twitterAccounts.userId, userId))
+      .where(and(eq(twitterAccounts.userId, userId), eq(twitterAccounts.accountType, post.accountType)))
       .limit(1)
 
     if (!account) {
-      return NextResponse.json({ error: "No Twitter/X account connected" }, { status: 400 })
+      return NextResponse.json({ error: `No Twitter/X ${post.accountType} account connected` }, { status: 400 })
     }
 
-    // If post has an image, upload it to Twitter media upload endpoint first
-    let mediaId: string | null = null
+    // TODO: Media upload requires OAuth 1.0a (not Bearer token) for Twitter v1.1 media/upload.json
+    // Skipping media upload for now — posting text-only even if imageUrl exists
     if (post.imageUrl) {
-      try {
-        // Download the image
-        const imgRes = await fetch(post.imageUrl)
-        if (imgRes.ok) {
-          const imgBuffer = await imgRes.arrayBuffer()
-          const imgBytes = Buffer.from(imgBuffer)
-          const contentType = imgRes.headers.get("content-type") ?? "image/jpeg"
-
-          // Upload to Twitter media upload (v1.1)
-          const formData = new FormData()
-          const blob = new Blob([imgBytes], { type: contentType })
-          formData.append("media", blob, "image.jpg")
-
-          const mediaRes = await fetch("https://upload.twitter.com/1.1/media/upload.json", {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${account.accessToken}`,
-            },
-            body: formData,
-          })
-
-          if (mediaRes.ok) {
-            const mediaData = await mediaRes.json() as { media_id_string?: string }
-            mediaId = mediaData.media_id_string ?? null
-          }
-        }
-      } catch {
-        // If media upload fails, publish without image
-        mediaId = null
-      }
+      console.warn(`[publish-x] Media upload not yet supported (post ${post.id}). Publishing text-only.`)
     }
 
-    // Build tweet body
-    const tweetBody: { text: string; media?: { media_ids: string[] } } = { text: post.content }
-    if (mediaId) {
-      tweetBody.media = { media_ids: [mediaId] }
-    }
+    // Build tweet body (text only)
+    const tweetBody = { text: post.content }
 
     // Post to Twitter API v2
     const tweetRes = await fetch("https://api.twitter.com/2/tweets", {

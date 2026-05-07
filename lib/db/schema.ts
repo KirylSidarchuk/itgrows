@@ -241,6 +241,7 @@ export const twitterPosts = pgTable("twitter_posts", {
   isThread: boolean("is_thread").default(false),
   threadTweets: jsonb("thread_tweets"),
   imageUrl: text("image_url"),
+  accountType: text("account_type").notNull().default("personal"),
   status: text("status").notNull().default("draft"), // draft | scheduled | published | failed
   scheduledAt: timestamp("scheduled_at", { withTimezone: true }),
   publishedAt: timestamp("published_at", { withTimezone: true }),
