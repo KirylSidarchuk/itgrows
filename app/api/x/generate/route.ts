@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/auth"
 import { db } from "@/lib/db"
-import { twitterAccounts, twitterPosts, linkedinBriefs } from "@/lib/db/schema"
+import { twitterAccounts, twitterPosts, linkedinBriefs, twitterBriefs } from "@/lib/db/schema"
 import { eq } from "drizzle-orm"
 
 export const maxDuration = 300
@@ -41,8 +41,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "No Twitter/X account connected" }, { status: 400 })
     }
 
-    // Get brief — from request body or DB (reuse linkedinBriefs)
-    let brief: {
+    // Get brief — from request body, then twitterBriefs, then linkedinBriefs
+    let briefContent: string | null = null
+    let structuredBrief: {
       niche?: string | null
       tone?: string | null
       goals?: string | null
@@ -50,25 +51,43 @@ export async function POST(req: NextRequest) {
     } = {}
 
     if (body.brief) {
-      brief = body.brief
+      structuredBrief = body.brief
     } else {
-      const [dbBrief] = await db
+      // Try twitter brief first
+      const [twitterBrief] = await db
         .select()
-        .from(linkedinBriefs)
-        .where(eq(linkedinBriefs.userId, userId))
+        .from(twitterBriefs)
+        .where(eq(twitterBriefs.userId, userId))
         .limit(1)
-      if (dbBrief) brief = dbBrief
+      if (twitterBrief) {
+        briefContent = twitterBrief.content
+      } else {
+        // Fall back to linkedin brief
+        const [dbBrief] = await db
+          .select()
+          .from(linkedinBriefs)
+          .where(eq(linkedinBriefs.userId, userId))
+          .limit(1)
+        if (dbBrief) structuredBrief = dbBrief
+      }
     }
 
     const currentYear = new Date().getFullYear()
-    const tone = brief.tone ?? "professional"
-    const niche = brief.niche ?? "business"
-    const goals = brief.goals ?? "build authority and engage audience"
-    const audience = brief.targetAudience ? `Target audience: ${brief.targetAudience}.` : ""
     const topicHint = body.topic ? `Focus on topic: ${body.topic}.` : ""
 
-    const prompt = `You are a Twitter/X thought leadership expert writing in the first person for a ${tone} professional in the ${niche} space.
-${audience} Goals: ${goals}. Current year: ${currentYear}. ${topicHint}
+    let promptContext: string
+    if (briefContent) {
+      promptContext = `Use this user brief to tailor the tweets:\n${briefContent}`
+    } else {
+      const tone = structuredBrief.tone ?? "professional"
+      const niche = structuredBrief.niche ?? "business"
+      const goals = structuredBrief.goals ?? "build authority and engage audience"
+      const audience = structuredBrief.targetAudience ? `Target audience: ${structuredBrief.targetAudience}.` : ""
+      promptContext = `Writing for a ${tone} professional in the ${niche} space. ${audience} Goals: ${goals}.`
+    }
+
+    const prompt = `You are a Twitter/X thought leadership expert writing in the first person.
+${promptContext} Current year: ${currentYear}. ${topicHint}
 
 Generate 5 engaging tweets that feel authentic and personal.
 

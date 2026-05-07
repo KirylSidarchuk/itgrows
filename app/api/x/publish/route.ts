@@ -49,6 +49,47 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "No Twitter/X account connected" }, { status: 400 })
     }
 
+    // If post has an image, upload it to Twitter media upload endpoint first
+    let mediaId: string | null = null
+    if (post.imageUrl) {
+      try {
+        // Download the image
+        const imgRes = await fetch(post.imageUrl)
+        if (imgRes.ok) {
+          const imgBuffer = await imgRes.arrayBuffer()
+          const imgBytes = Buffer.from(imgBuffer)
+          const contentType = imgRes.headers.get("content-type") ?? "image/jpeg"
+
+          // Upload to Twitter media upload (v1.1)
+          const formData = new FormData()
+          const blob = new Blob([imgBytes], { type: contentType })
+          formData.append("media", blob, "image.jpg")
+
+          const mediaRes = await fetch("https://upload.twitter.com/1.1/media/upload.json", {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${account.accessToken}`,
+            },
+            body: formData,
+          })
+
+          if (mediaRes.ok) {
+            const mediaData = await mediaRes.json() as { media_id_string?: string }
+            mediaId = mediaData.media_id_string ?? null
+          }
+        }
+      } catch {
+        // If media upload fails, publish without image
+        mediaId = null
+      }
+    }
+
+    // Build tweet body
+    const tweetBody: { text: string; media?: { media_ids: string[] } } = { text: post.content }
+    if (mediaId) {
+      tweetBody.media = { media_ids: [mediaId] }
+    }
+
     // Post to Twitter API v2
     const tweetRes = await fetch("https://api.twitter.com/2/tweets", {
       method: "POST",
@@ -56,7 +97,7 @@ export async function POST(req: NextRequest) {
         "Content-Type": "application/json",
         Authorization: `Bearer ${account.accessToken}`,
       },
-      body: JSON.stringify({ text: post.content }),
+      body: JSON.stringify(tweetBody),
     })
 
     if (!tweetRes.ok) {

@@ -83,12 +83,21 @@ interface TwitterPost {
   id: string
   content: string
   isThread: boolean | null
+  imageUrl: string | null
   status: string
   scheduledAt: string | null
   publishedAt: string | null
   twitterPostId: string | null
   errorMessage: string | null
   createdAt: string
+}
+
+interface TwitterBrief {
+  q1: string
+  q2: string
+  q3: string
+  q4: string
+  q5: string
 }
 
 const STATUS_COLORS: Record<string, string> = {
@@ -409,6 +418,7 @@ function PostCard({
 
 type ActiveTab = "posts" | "dna" | "account" | "support"
 type ActivePlatform = "linkedin" | "instagram" | "x"
+type XActiveTab = "posts" | "dna"
 
 function InstagramPostCard({
   post,
@@ -530,21 +540,60 @@ function InstagramPostCard({
 function XPostCard({
   post,
   onPublish,
+  onImageUpdate,
   hasSubscription,
   trialExpired,
 }: {
   post: TwitterPost
   onPublish: (postId: string) => Promise<void>
+  onImageUpdate: (postId: string, imageUrl: string | null) => void
   hasSubscription: boolean
   trialExpired?: boolean
 }) {
   const [publishing, setPublishing] = useState(false)
   const [expanded, setExpanded] = useState(false)
+  const [generatingImage, setGeneratingImage] = useState(false)
+  const [imageError, setImageError] = useState<string | null>(null)
 
   async function handlePublish() {
     setPublishing(true)
     await onPublish(post.id)
     setPublishing(false)
+  }
+
+  async function handleGenerateImage() {
+    setGeneratingImage(true)
+    setImageError(null)
+    try {
+      const res = await fetch("/api/x/generate-image", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ postId: post.id }),
+      })
+      const data = await res.json() as { imageUrl?: string; error?: string }
+      if (res.ok && data.imageUrl) {
+        onImageUpdate(post.id, data.imageUrl)
+      } else {
+        setImageError(data.error ?? "Failed to generate image")
+      }
+    } catch {
+      setImageError("Network error")
+    } finally {
+      setGeneratingImage(false)
+    }
+  }
+
+  async function handleRemoveImage() {
+    try {
+      await fetch("/api/x/delete-image", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ postId: post.id }),
+      })
+      onImageUpdate(post.id, null)
+    } catch {
+      // ignore
+    }
   }
 
   const previewText = post.content.length > 140 ? post.content.slice(0, 140) + "…" : post.content
@@ -606,6 +655,45 @@ function XPostCard({
         <div className="text-xs text-slate-400">
           {post.content.length}/280 chars
         </div>
+
+        {/* Image section */}
+        {post.imageUrl ? (
+          <div className="space-y-2">
+            <img
+              src={post.imageUrl}
+              alt="Tweet image"
+              className="w-40 h-40 object-cover rounded-xl border border-slate-100"
+            />
+            <button
+              onClick={handleRemoveImage}
+              className="text-xs text-slate-400 hover:text-red-500 transition-colors"
+            >
+              Remove image
+            </button>
+          </div>
+        ) : (
+          <div className="space-y-1">
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={generatingImage}
+              onClick={handleGenerateImage}
+              className="text-xs border-slate-200 text-slate-600 hover:bg-slate-50 h-7 px-2"
+            >
+              {generatingImage ? (
+                <>
+                  <Loader2 className="w-3 h-3 animate-spin mr-1" />
+                  Generating...
+                </>
+              ) : (
+                "Generate Image"
+              )}
+            </Button>
+            {imageError && (
+              <p className="text-xs text-red-500">{imageError}</p>
+            )}
+          </div>
+        )}
 
         {post.status !== "published" && (
           <div className="flex items-center gap-2 pt-1 border-t border-slate-50">
@@ -732,6 +820,11 @@ function LinkedInPageContent() {
   const [xGenerateTimer, setXGenerateTimer] = useState(120)
   const [xDisconnecting, setXDisconnecting] = useState(false)
   const [xPublishedCollapsed, setXPublishedCollapsed] = useState(false)
+  const [xActiveTab, setXActiveTab] = useState<XActiveTab>("posts")
+  const [xBrief, setXBrief] = useState<TwitterBrief>({ q1: "", q2: "", q3: "", q4: "", q5: "" })
+  const [xBriefLoaded, setXBriefLoaded] = useState(false)
+  const [xSavingBrief, setXSavingBrief] = useState(false)
+  const [xBriefSaved, setXBriefSaved] = useState(false)
 
   const hour = new Date().getHours()
   const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening"
@@ -940,6 +1033,7 @@ function LinkedInPageContent() {
     if (activePlatform === "x") {
       fetchXAccount()
       fetchXPosts()
+      fetchXBrief()
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activePlatform])
@@ -1063,6 +1157,49 @@ function LinkedInPageContent() {
       })
       .catch(() => setXPostsLoading(false))
   }, [])
+
+  const fetchXBrief = useCallback(() => {
+    fetch("/api/x/brief")
+      .then((r) => r.json())
+      .then((data: { brief?: { content?: string } | null }) => {
+        if (data.brief?.content) {
+          // Parse content back into individual answers
+          const lines = data.brief.content.split("\n\n")
+          const answers: TwitterBrief = { q1: "", q2: "", q3: "", q4: "", q5: "" }
+          lines.forEach((block, i) => {
+            const parts = block.split("\n")
+            if (parts.length >= 2) {
+              const key = `q${i + 1}` as keyof TwitterBrief
+              answers[key] = parts.slice(1).join("\n").replace(/^\(not provided\)$/, "")
+            }
+          })
+          setXBrief(answers)
+        }
+        setXBriefLoaded(true)
+      })
+      .catch(() => setXBriefLoaded(true))
+  }, [])
+
+  function handleXImageUpdate(postId: string, imageUrl: string | null) {
+    setXPosts((prev) => prev.map((p) => p.id === postId ? { ...p, imageUrl } : p))
+  }
+
+  async function handleXSaveBrief() {
+    setXSavingBrief(true)
+    try {
+      await fetch("/api/x/brief", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ answers: xBrief }),
+      })
+      setXBriefSaved(true)
+      setTimeout(() => setXBriefSaved(false), 2000)
+    } catch {
+      // ignore
+    } finally {
+      setXSavingBrief(false)
+    }
+  }
 
   async function handleDisconnect(id?: string) {
     setDisconnecting(id ?? "all")
@@ -2058,132 +2195,245 @@ function LinkedInPageContent() {
                     </button>
                   </div>
 
-                  {/* Generate button */}
-                  <div className="flex items-center gap-3">
-                    {hasPersonalPlan ? (
-                      <Button
-                        disabled={xGenerating}
-                        onClick={handleXGenerate}
-                        className="bg-slate-900 hover:bg-slate-700 text-white font-semibold px-6 py-2.5 rounded-xl shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                  {/* Tabs: Posts | DNA.X */}
+                  <div className="flex items-center gap-1 bg-white rounded-2xl p-1 shadow-sm border border-slate-100 w-fit">
+                    {(["posts", "dna"] as XActiveTab[]).map((tab) => (
+                      <button
+                        key={tab}
+                        onClick={() => setXActiveTab(tab)}
+                        className={`px-5 py-2 rounded-xl text-sm font-semibold transition-all ${
+                          xActiveTab === tab
+                            ? "bg-slate-900 text-white shadow-sm"
+                            : "text-slate-500 hover:text-slate-700 hover:bg-slate-50"
+                        }`}
                       >
-                        {xGenerating ? (
-                          <>
-                            <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                            {xGenerateTimer > 0 ? `Generating... (${xGenerateTimer}s left)` : "Almost done..."}
-                          </>
-                        ) : (
-                          <>
-                            <Zap className="w-4 h-4 mr-2" />
-                            Generate 5 Tweets
-                          </>
-                        )}
-                      </Button>
-                    ) : trialExpired ? (
-                      <a
-                        href="/#pricing"
-                        className="inline-flex items-center gap-2 bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-500 hover:to-orange-400 text-white font-semibold px-6 py-2.5 rounded-xl shadow-sm text-sm transition-opacity"
-                      >
-                        <Lock className="w-4 h-4" />
-                        Subscribe to Generate
-                      </a>
-                    ) : (
-                      <Button
-                        onClick={handleStartTrial}
-                        disabled={startingTrial}
-                        className="bg-slate-900 hover:bg-slate-700 text-white font-semibold px-6 py-2.5 rounded-xl shadow-sm"
-                      >
-                        {startingTrial ? "Starting..." : "Start Free Trial — No Card"}
-                      </Button>
-                    )}
+                        {tab === "posts" ? "Posts" : "DNA.X"}
+                      </button>
+                    ))}
                   </div>
 
-                  {xGenerateError && (
-                    <div className="px-4 py-3 rounded-xl bg-red-50 text-red-600 text-sm border border-red-100">
-                      {xGenerateError}
-                    </div>
-                  )}
-
-                  {/* Posts */}
-                  {xPostsLoading ? (
-                    <div className="flex justify-center py-16">
-                      <Loader2 className="w-7 h-7 animate-spin text-slate-400" />
-                    </div>
-                  ) : xActivePosts.length === 0 && xPublishedPosts.length === 0 ? (
-                    <div className="bg-white rounded-2xl border border-slate-100 shadow-sm py-14 flex flex-col items-center gap-5 text-center px-6">
-                      <div className="w-16 h-16 rounded-2xl bg-slate-900 flex items-center justify-center">
-                        <XIcon className="w-8 h-8 text-white" />
-                      </div>
-                      <div>
-                        <p className="text-base font-semibold text-slate-700 mb-1">No tweets yet</p>
-                        <p className="text-sm text-slate-400 max-w-xs">Generate 5 tweets in your voice, ready to publish.</p>
-                      </div>
-                      {hasPersonalPlan && (
-                        <button
-                          onClick={handleXGenerate}
-                          disabled={xGenerating}
-                          className="bg-slate-900 hover:bg-slate-700 text-white font-semibold text-sm px-6 py-2.5 rounded-xl shadow-sm transition-opacity disabled:opacity-70 flex items-center gap-2"
-                        >
-                          {xGenerating ? (
-                            <>
-                              <Loader2 className="w-4 h-4 animate-spin" />
-                              Generating...
-                            </>
-                          ) : (
-                            <>
-                              <Zap className="w-4 h-4" />
-                              Generate 5 Tweets
-                            </>
-                          )}
-                        </button>
-                      )}
-                    </div>
-                  ) : (
+                  {/* ===== POSTS TAB ===== */}
+                  {xActiveTab === "posts" && (
                     <>
-                      {xActivePosts.length > 0 && (
-                        <>
-                          <div className="flex items-center justify-between">
-                            <h2 className="text-sm font-semibold text-slate-700">
-                              Draft · {xActivePosts.length} tweet{xActivePosts.length !== 1 ? "s" : ""}
-                            </h2>
-                          </div>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {xActivePosts.map((post) => (
-                              <XPostCard
-                                key={post.id}
-                                post={post}
-                                onPublish={handleXPublishPost}
-                                hasSubscription={hasPersonalPlan}
-                                trialExpired={trialExpired}
-                              />
-                            ))}
-                          </div>
-                        </>
-                      )}
-                      {xPublishedPosts.length > 0 && (
-                        <div className="mt-4">
-                          <button
-                            onClick={() => setXPublishedCollapsed((c) => !c)}
-                            className="flex items-center gap-2 text-sm font-semibold text-slate-500 hover:text-slate-700 transition-colors mb-3"
+                      {/* Generate button */}
+                      <div className="flex items-center gap-3">
+                        {hasPersonalPlan ? (
+                          <Button
+                            disabled={xGenerating}
+                            onClick={handleXGenerate}
+                            className="bg-slate-900 hover:bg-slate-700 text-white font-semibold px-6 py-2.5 rounded-xl shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
                           >
-                            <span>{xPublishedCollapsed ? "▶" : "▼"}</span>
-                            Published · {xPublishedPosts.length} tweet{xPublishedPosts.length !== 1 ? "s" : ""}
-                          </button>
-                          {!xPublishedCollapsed && (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                              {xPublishedPosts.map((post) => (
-                                <XPostCard
-                                  key={post.id}
-                                  post={post}
-                                  onPublish={handleXPublishPost}
-                                  hasSubscription={hasPersonalPlan}
-                                  trialExpired={trialExpired}
-                                />
-                              ))}
-                            </div>
-                          )}
+                            {xGenerating ? (
+                              <>
+                                <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                                {xGenerateTimer > 0 ? `Generating... (${xGenerateTimer}s left)` : "Almost done..."}
+                              </>
+                            ) : (
+                              <>
+                                <Zap className="w-4 h-4 mr-2" />
+                                Generate 5 Tweets
+                              </>
+                            )}
+                          </Button>
+                        ) : trialExpired ? (
+                          <a
+                            href="/#pricing"
+                            className="inline-flex items-center gap-2 bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-500 hover:to-orange-400 text-white font-semibold px-6 py-2.5 rounded-xl shadow-sm text-sm transition-opacity"
+                          >
+                            <Lock className="w-4 h-4" />
+                            Subscribe to Generate
+                          </a>
+                        ) : (
+                          <Button
+                            onClick={handleStartTrial}
+                            disabled={startingTrial}
+                            className="bg-slate-900 hover:bg-slate-700 text-white font-semibold px-6 py-2.5 rounded-xl shadow-sm"
+                          >
+                            {startingTrial ? "Starting..." : "Start Free Trial — No Card"}
+                          </Button>
+                        )}
+                      </div>
+
+                      {xGenerateError && (
+                        <div className="px-4 py-3 rounded-xl bg-red-50 text-red-600 text-sm border border-red-100">
+                          {xGenerateError}
                         </div>
                       )}
+
+                      {/* Posts */}
+                      {xPostsLoading ? (
+                        <div className="flex justify-center py-16">
+                          <Loader2 className="w-7 h-7 animate-spin text-slate-400" />
+                        </div>
+                      ) : xActivePosts.length === 0 && xPublishedPosts.length === 0 ? (
+                        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm py-14 flex flex-col items-center gap-5 text-center px-6">
+                          <div className="w-16 h-16 rounded-2xl bg-slate-900 flex items-center justify-center">
+                            <XIcon className="w-8 h-8 text-white" />
+                          </div>
+                          <div>
+                            <p className="text-base font-semibold text-slate-700 mb-1">No tweets yet</p>
+                            <p className="text-sm text-slate-400 max-w-xs">Generate 5 tweets in your voice, ready to publish.</p>
+                          </div>
+                          {hasPersonalPlan && (
+                            <button
+                              onClick={handleXGenerate}
+                              disabled={xGenerating}
+                              className="bg-slate-900 hover:bg-slate-700 text-white font-semibold text-sm px-6 py-2.5 rounded-xl shadow-sm transition-opacity disabled:opacity-70 flex items-center gap-2"
+                            >
+                              {xGenerating ? (
+                                <>
+                                  <Loader2 className="w-4 h-4 animate-spin" />
+                                  Generating...
+                                </>
+                              ) : (
+                                <>
+                                  <Zap className="w-4 h-4" />
+                                  Generate 5 Tweets
+                                </>
+                              )}
+                            </button>
+                          )}
+                        </div>
+                      ) : (
+                        <>
+                          {xActivePosts.length > 0 && (
+                            <>
+                              <div className="flex items-center justify-between">
+                                <h2 className="text-sm font-semibold text-slate-700">
+                                  Draft · {xActivePosts.length} tweet{xActivePosts.length !== 1 ? "s" : ""}
+                                </h2>
+                              </div>
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {xActivePosts.map((post) => (
+                                  <XPostCard
+                                    key={post.id}
+                                    post={post}
+                                    onPublish={handleXPublishPost}
+                                    onImageUpdate={handleXImageUpdate}
+                                    hasSubscription={hasPersonalPlan}
+                                    trialExpired={trialExpired}
+                                  />
+                                ))}
+                              </div>
+                            </>
+                          )}
+                          {xPublishedPosts.length > 0 && (
+                            <div className="mt-4">
+                              <button
+                                onClick={() => setXPublishedCollapsed((c) => !c)}
+                                className="flex items-center gap-2 text-sm font-semibold text-slate-500 hover:text-slate-700 transition-colors mb-3"
+                              >
+                                <span>{xPublishedCollapsed ? "▶" : "▼"}</span>
+                                Published · {xPublishedPosts.length} tweet{xPublishedPosts.length !== 1 ? "s" : ""}
+                              </button>
+                              {!xPublishedCollapsed && (
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                  {xPublishedPosts.map((post) => (
+                                    <XPostCard
+                                      key={post.id}
+                                      post={post}
+                                      onPublish={handleXPublishPost}
+                                      onImageUpdate={handleXImageUpdate}
+                                      hasSubscription={hasPersonalPlan}
+                                      trialExpired={trialExpired}
+                                    />
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </>
+                      )}
                     </>
+                  )}
+
+                  {/* ===== DNA.X TAB ===== */}
+                  {xActiveTab === "dna" && (
+                    <div className="bg-slate-900 rounded-2xl border border-slate-800 shadow-sm p-6 space-y-5">
+                      <h2 className="text-base font-semibold text-white">DNA.X</h2>
+                      <p className="text-xs text-slate-400">Tell the AI about your X presence so it can generate tweets in your voice.</p>
+
+                      {/* Q1 */}
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-400 mb-1.5 uppercase tracking-wide">
+                          What topics do you post about on X? (your niche)
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="e.g. SaaS growth, AI tools, founder mindset"
+                          value={xBrief.q1}
+                          onChange={(e) => setXBrief((b) => ({ ...b, q1: e.target.value }))}
+                          className="w-full px-3 py-2.5 text-sm rounded-xl border border-slate-700 bg-slate-800 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-500 transition-colors"
+                        />
+                      </div>
+
+                      {/* Q2 */}
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-400 mb-1.5 uppercase tracking-wide">
+                          How would you describe your Twitter voice?
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="e.g. direct, witty, thought-provoking, controversial"
+                          value={xBrief.q2}
+                          onChange={(e) => setXBrief((b) => ({ ...b, q2: e.target.value }))}
+                          className="w-full px-3 py-2.5 text-sm rounded-xl border border-slate-700 bg-slate-800 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-500 transition-colors"
+                        />
+                      </div>
+
+                      {/* Q3 */}
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-400 mb-1.5 uppercase tracking-wide">
+                          Who is your target audience on X?
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="e.g. early-stage founders, growth marketers, devs"
+                          value={xBrief.q3}
+                          onChange={(e) => setXBrief((b) => ({ ...b, q3: e.target.value }))}
+                          className="w-full px-3 py-2.5 text-sm rounded-xl border border-slate-700 bg-slate-800 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-500 transition-colors"
+                        />
+                      </div>
+
+                      {/* Q4 */}
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-400 mb-1.5 uppercase tracking-wide">
+                          What&apos;s your goal on X?
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="e.g. build following, drive traffic, establish thought leadership"
+                          value={xBrief.q4}
+                          onChange={(e) => setXBrief((b) => ({ ...b, q4: e.target.value }))}
+                          className="w-full px-3 py-2.5 text-sm rounded-xl border border-slate-700 bg-slate-800 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-500 transition-colors"
+                        />
+                      </div>
+
+                      {/* Q5 */}
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-400 mb-1.5 uppercase tracking-wide">
+                          What type of content performs best for you?
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="e.g. hot takes, threads, insights, questions, stories"
+                          value={xBrief.q5}
+                          onChange={(e) => setXBrief((b) => ({ ...b, q5: e.target.value }))}
+                          className="w-full px-3 py-2.5 text-sm rounded-xl border border-slate-700 bg-slate-800 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-500 transition-colors"
+                        />
+                      </div>
+
+                      <Button
+                        disabled={xSavingBrief}
+                        onClick={handleXSaveBrief}
+                        className="bg-white hover:bg-slate-100 text-slate-900 font-semibold rounded-xl px-6"
+                      >
+                        {xSavingBrief ? (
+                          <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                        ) : null}
+                        {xBriefSaved ? "Saved!" : "Save DNA.X"}
+                      </Button>
+                    </div>
                   )}
                 </div>
               )}

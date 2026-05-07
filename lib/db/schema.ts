@@ -243,3 +243,11 @@ export const twitterPosts = pgTable("twitter_posts", {
   errorMessage: text("error_message"),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
 }, (t) => [index("twitter_posts_user_id_idx").on(t.userId), index("twitter_posts_status_idx").on(t.status)])
+
+export const twitterBriefs = pgTable("twitter_briefs", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: text("user_id").notNull().unique(),
+  content: text("content").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+})
