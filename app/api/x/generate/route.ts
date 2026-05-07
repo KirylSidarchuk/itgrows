@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/auth"
 import { db } from "@/lib/db"
 import { twitterAccounts, twitterPosts, linkedinBriefs, twitterBriefs } from "@/lib/db/schema"
-import { eq, and, desc } from "drizzle-orm"
+import { eq, and, or, desc } from "drizzle-orm"
 
 export const maxDuration = 300
 
@@ -75,9 +75,14 @@ export async function POST(req: NextRequest) {
     const currentYear = new Date().getFullYear()
     const topicHint = body.topic ? `Focus on topic: ${body.topic}.` : ""
 
+    // Sanitize briefContent for safe embedding in prompt
+    const safeBriefContent = briefContent
+      ? briefContent.replace(/`/g, "'").slice(0, 1000)
+      : null
+
     let promptContext: string
-    if (briefContent) {
-      promptContext = `Use this user brief to tailor the tweets:\n${briefContent}`
+    if (safeBriefContent) {
+      promptContext = `Use this user brief to tailor the tweets:\n${safeBriefContent}`
     } else {
       const tone = structuredBrief.tone ?? "professional"
       const niche = structuredBrief.niche ?? "business"
@@ -86,7 +91,11 @@ export async function POST(req: NextRequest) {
       promptContext = `Writing for a ${tone} professional in the ${niche} space. ${audience} Goals: ${goals}.`
     }
 
-    const prompt = `You are a Twitter/X thought leadership expert writing in the first person.
+    const jsonInstruction = "IMPORTANT: Your response must be ONLY a valid JSON array. No markdown, no code blocks, no explanations. Start with [ and end with ]."
+
+    const prompt = `${jsonInstruction}
+
+You are a Twitter/X thought leadership expert writing in the first person.
 ${promptContext} Current year: ${currentYear}. ${topicHint}
 
 Generate 5 engaging tweets that feel authentic and personal.
@@ -102,7 +111,7 @@ RULES:
 Return ONLY a valid JSON array with exactly 5 objects. Each object must have:
 - "content": string (the full tweet text, max 280 chars, including hashtags)
 
-Return only the JSON array, no markdown, no extra text.`
+${jsonInstruction}`
 
     const llmRes = await fetch(`${LLM_BASE_URL}/v1/chat/completions`, {
       method: "POST",
@@ -112,7 +121,10 @@ Return only the JSON array, no markdown, no extra text.`
       },
       body: JSON.stringify({
         model: LLM_MODEL,
-        messages: [{ role: "user", content: prompt }],
+        messages: [
+          { role: "system", content: "You are a JSON API. Always respond with valid JSON only. Never use markdown code blocks." },
+          { role: "user", content: prompt },
+        ],
         max_tokens: 2048,
         temperature: 0.8,
       }),
@@ -131,21 +143,56 @@ Return only the JSON array, no markdown, no extra text.`
     }
 
     const cleaned = rawContent.replace(/```json\s*/gi, "").replace(/```\s*/g, "").trim()
-    const jsonMatch = cleaned.match(/\[[\s\S]*\]/)
-    if (!jsonMatch) {
-      throw new Error("Could not parse JSON array from LLM response")
+
+    let postsData: Array<{ content: string }> | null = null
+
+    // Strategy 1: direct parse
+    try {
+      postsData = JSON.parse(cleaned) as Array<{ content: string }>
+    } catch {
+      // continue to next strategy
     }
 
-    let postsData: Array<{ content: string }>
-    try {
-      postsData = JSON.parse(jsonMatch[0]) as Array<{ content: string }>
-    } catch {
-      throw new Error("Failed to parse LLM JSON response")
+    // Strategy 2: extract [...] with regex
+    if (!postsData) {
+      const arrayMatch = cleaned.match(/\[[\s\S]*\]/)
+      if (arrayMatch) {
+        try {
+          postsData = JSON.parse(arrayMatch[0]) as Array<{ content: string }>
+        } catch {
+          // continue to next strategy
+        }
+      }
+    }
+
+    // Strategy 3: extract first { to last } and wrap in array
+    if (!postsData) {
+      const firstBrace = cleaned.indexOf("{")
+      const lastBrace = cleaned.lastIndexOf("}")
+      if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+        try {
+          postsData = JSON.parse(`[${cleaned.slice(firstBrace, lastBrace + 1)}]`) as Array<{ content: string }>
+        } catch {
+          // all strategies failed
+        }
+      }
+    }
+
+    if (!postsData) {
+      throw new Error("Could not parse JSON array from LLM response")
     }
 
     if (!Array.isArray(postsData) || postsData.length === 0) {
       throw new Error("Invalid posts data from LLM")
     }
+
+    // Delete all existing draft/scheduled posts for this user before generating new ones
+    await db.delete(twitterPosts).where(
+      and(
+        eq(twitterPosts.userId, userId),
+        or(eq(twitterPosts.status, "draft"), eq(twitterPosts.status, "scheduled"))
+      )
+    )
 
     // Find the latest scheduledAt among existing scheduled posts for this user
     const [latestScheduled] = await db
