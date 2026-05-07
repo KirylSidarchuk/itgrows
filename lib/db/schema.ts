@@ -220,6 +220,15 @@ export const twitterAccounts = pgTable("twitter_accounts", {
   createdAt: timestamp("created_at").defaultNow(),
 }, (t) => [index("twitter_accounts_user_id_idx").on(t.userId)])
 
+export const oauthState = pgTable("oauth_state", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: text("user_id").notNull(),
+  state: text("state").notNull(),
+  codeVerifier: text("code_verifier").notNull(),
+  platform: text("platform").notNull().default("twitter"),
+  createdAt: timestamp("created_at").defaultNow(),
+}, (t) => [index("idx_oauth_state_state").on(t.state)])
+
 export const twitterPosts = pgTable("twitter_posts", {
   id: uuid("id").defaultRandom().primaryKey(),
   userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),

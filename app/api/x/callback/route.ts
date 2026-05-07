@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db"
-import { twitterAccounts } from "@/lib/db/schema"
+import { twitterAccounts, oauthState } from "@/lib/db/schema"
 import { eq, and } from "drizzle-orm"
-import { cookies } from "next/headers"
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
@@ -10,39 +9,45 @@ export async function GET(req: NextRequest) {
   const state = searchParams.get("state")
   const error = searchParams.get("error")
 
-  const cookieStore = await cookies()
-  const storedState = cookieStore.get("x_oauth_state")?.value
-  const codeVerifier = cookieStore.get("x_oauth_code_verifier")?.value
-
-  // Clear cookies
-  cookieStore.delete("x_oauth_state")
-  cookieStore.delete("x_oauth_code_verifier")
-
-  if (error || !code || !state || !storedState || !codeVerifier) {
+  if (error || !code || !state) {
     return NextResponse.redirect(`${process.env.NEXTAUTH_URL}/cabinet?error=oauth_denied`)
   }
 
-  if (state !== storedState) {
-    return NextResponse.redirect(`${process.env.NEXTAUTH_URL}/cabinet?error=state_mismatch`)
+  // Look up state in DB
+  const stateRows = await db
+    .select()
+    .from(oauthState)
+    .where(and(eq(oauthState.state, state), eq(oauthState.platform, "twitter")))
+    .limit(1)
+
+  if (stateRows.length === 0) {
+    return NextResponse.redirect(`${process.env.NEXTAUTH_URL}/cabinet?error=oauth_denied`)
   }
 
+  const stateRow = stateRows[0]
+  const userId = stateRow.userId
+  const codeVerifier = stateRow.codeVerifier
+
+  // Delete the used state row
+  await db.delete(oauthState).where(eq(oauthState.id, stateRow.id))
+
   try {
-    // Exchange code for tokens
+    // Exchange code for tokens using Basic auth (confidential client)
     const clientId = process.env.TWITTER_CLIENT_ID!
     const clientSecret = process.env.TWITTER_CLIENT_SECRET!
+    const basicAuth = Buffer.from(`${clientId}:${clientSecret}`).toString("base64")
 
     const tokenRes = await fetch("https://api.twitter.com/2/oauth2/token", {
       method: "POST",
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
+        "Authorization": `Basic ${basicAuth}`,
       },
       body: new URLSearchParams({
         grant_type: "authorization_code",
         code,
         redirect_uri: "https://itgrows.ai/api/x/callback",
         code_verifier: codeVerifier,
-        client_id: clientId,
-        client_secret: clientSecret,
       }),
     })
 
@@ -88,33 +93,6 @@ export async function GET(req: NextRequest) {
     const twitterUserId = userData.data.id
     const username = userData.data.username
     const displayName = userData.data.name ?? null
-
-    // We need userId — get from the state (using state as userId like LinkedIn does)
-    // However the state was a random value for CSRF protection, not user ID.
-    // We need to look up the user by session. Since there is no session here (redirect),
-    // we stored the userId in a separate cookie.
-    // Let's check a userId cookie we should have set.
-    // Actually, we need to re-architect: store userId in another cookie during connect.
-    // But we didn't do that. The LinkedIn callback gets userId from state directly.
-    // Let's use state to hold userId instead of a random value — but then we lose CSRF protection.
-    // Best solution: store userId in a separate httpOnly cookie alongside state.
-    // Since we already cleared cookies, we need to re-read userId from the remaining cookie.
-    // Wait — we deleted all cookies above. Let me check if userId_cookie was set separately.
-
-    // Actually the cookies were deleted above but the userId cookie wasn't set.
-    // We need to look at the session — but callbacks don't have auth() sessions easily.
-    // The pattern used in LinkedIn is: state = userId (and CSRF is by-passed).
-    // Let's use the same approach for simplicity: we won't use state for userId here
-    // because we used state for CSRF. Instead, store userId in a third cookie.
-
-    // Since we already deleted state/verifier cookies and don't have a userId cookie,
-    // we must use auth() which may work in GET handlers.
-    const { auth } = await import("@/auth")
-    const session = await auth()
-    if (!session?.user?.id) {
-      return NextResponse.redirect(`${process.env.NEXTAUTH_URL}/login?callbackUrl=/cabinet`)
-    }
-    const userId = session.user.id
 
     // Upsert twitterAccounts
     const existing = await db

@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server"
 import { auth } from "@/auth"
 import crypto from "crypto"
-import { cookies } from "next/headers"
+import { db } from "@/lib/db"
+import { oauthState } from "@/lib/db/schema"
+import { and, eq } from "drizzle-orm"
 
 export async function GET() {
   const session = await auth()
@@ -24,21 +26,17 @@ export async function GET() {
   // Generate random state
   const state = crypto.randomBytes(16).toString("hex")
 
-  // Store in cookies
-  const cookieStore = await cookies()
-  cookieStore.set("x_oauth_state", state, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    maxAge: 600,
-    path: "/",
-    sameSite: "lax",
-  })
-  cookieStore.set("x_oauth_code_verifier", codeVerifier, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    maxAge: 600,
-    path: "/",
-    sameSite: "lax",
+  // Clean up old states for this user
+  await db
+    .delete(oauthState)
+    .where(and(eq(oauthState.userId, session.user.id), eq(oauthState.platform, "twitter")))
+
+  // Store state + codeVerifier in DB
+  await db.insert(oauthState).values({
+    userId: session.user.id,
+    state,
+    codeVerifier,
+    platform: "twitter",
   })
 
   const params = new URLSearchParams({
