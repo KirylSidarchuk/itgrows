@@ -541,12 +541,14 @@ function XPostCard({
   post,
   onPublish,
   onImageUpdate,
+  onContentUpdate,
   hasSubscription,
   trialExpired,
 }: {
   post: TwitterPost
   onPublish: (postId: string) => Promise<void>
   onImageUpdate: (postId: string, imageUrl: string | null) => void
+  onContentUpdate: (postId: string, content: string) => void
   hasSubscription: boolean
   trialExpired?: boolean
 }) {
@@ -554,6 +556,9 @@ function XPostCard({
   const [expanded, setExpanded] = useState(false)
   const [generatingImage, setGeneratingImage] = useState(false)
   const [imageError, setImageError] = useState<string | null>(null)
+  const [editing, setEditing] = useState(false)
+  const [editContent, setEditContent] = useState(post.content)
+  const [saving, setSaving] = useState(false)
 
   async function handlePublish() {
     setPublishing(true)
@@ -596,6 +601,26 @@ function XPostCard({
     }
   }
 
+  async function handleSaveEdit() {
+    if (!editContent.trim() || editContent.length > 280) return
+    setSaving(true)
+    try {
+      const res = await fetch("/api/x/posts", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ postId: post.id, content: editContent }),
+      })
+      if (res.ok) {
+        onContentUpdate(post.id, editContent)
+        setEditing(false)
+      }
+    } catch {
+      // ignore
+    } finally {
+      setSaving(false)
+    }
+  }
+
   const previewText = post.content.length > 140 ? post.content.slice(0, 140) + "…" : post.content
 
   return (
@@ -634,27 +659,58 @@ function XPostCard({
           <p className="text-xs text-red-500 bg-red-50 rounded-lg px-3 py-2 border border-red-100">{post.errorMessage}</p>
         )}
 
-        {!expanded ? (
-          <div>
-            <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-line">{previewText}</p>
-            {post.content.length > 140 && (
-              <button onClick={() => setExpanded(true)} className="text-xs text-slate-400 hover:text-slate-700 hover:underline mt-1">
-                Show more
+        {editing ? (
+          <div className="space-y-2">
+            <textarea
+              value={editContent}
+              onChange={(e) => setEditContent(e.target.value)}
+              rows={5}
+              className="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-500 resize-none"
+            />
+            <div className={`text-xs ${editContent.length > 280 ? "text-red-500 font-semibold" : "text-slate-400"}`}>
+              {editContent.length}/280 chars
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                size="sm"
+                disabled={saving || !editContent.trim() || editContent.length > 280}
+                onClick={handleSaveEdit}
+                className="text-xs bg-violet-600 hover:bg-violet-500 text-white"
+              >
+                {saving ? <Loader2 className="w-3 h-3 animate-spin" /> : "Save"}
+              </Button>
+              <button
+                onClick={() => { setEditing(false); setEditContent(post.content) }}
+                className="text-xs text-slate-500 hover:text-slate-700"
+              >
+                Cancel
               </button>
-            )}
+            </div>
           </div>
         ) : (
           <>
-            <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-line">{post.content}</p>
-            <button onClick={() => setExpanded(false)} className="text-xs text-slate-400 hover:underline">
-              Collapse
-            </button>
+            {!expanded ? (
+              <div>
+                <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-line">{previewText}</p>
+                {post.content.length > 140 && (
+                  <button onClick={() => setExpanded(true)} className="text-xs text-slate-400 hover:text-slate-700 hover:underline mt-1">
+                    Show more
+                  </button>
+                )}
+              </div>
+            ) : (
+              <>
+                <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-line">{post.content}</p>
+                <button onClick={() => setExpanded(false)} className="text-xs text-slate-400 hover:underline">
+                  Collapse
+                </button>
+              </>
+            )}
+            <div className="text-xs text-slate-400">
+              {post.content.length}/280 chars
+            </div>
           </>
         )}
-
-        <div className="text-xs text-slate-400">
-          {post.content.length}/280 chars
-        </div>
 
         {/* Image section */}
         {post.imageUrl ? (
@@ -695,7 +751,7 @@ function XPostCard({
           </div>
         )}
 
-        {post.status !== "published" && (
+        {post.status !== "published" && !editing && (
           <div className="flex items-center gap-2 pt-1 border-t border-slate-50">
             {hasSubscription ? (
               <Button
@@ -724,6 +780,12 @@ function XPostCard({
                 Publish
               </Button>
             )}
+            <button
+              onClick={() => { setEditing(true); setEditContent(post.content) }}
+              className="text-xs text-slate-500 hover:text-slate-700 transition-colors ml-auto"
+            >
+              Edit
+            </button>
           </div>
         )}
         {post.status === "published" && post.twitterPostId && (
@@ -1190,6 +1252,10 @@ function LinkedInPageContent() {
 
   function handleXImageUpdate(postId: string, imageUrl: string | null) {
     setXPosts((prev) => prev.map((p) => p.id === postId ? { ...p, imageUrl } : p))
+  }
+
+  function handleXContentUpdate(postId: string, content: string) {
+    setXPosts((prev) => prev.map((p) => p.id === postId ? { ...p, content } : p))
   }
 
   async function handleXSaveBrief() {
@@ -2318,6 +2384,7 @@ function LinkedInPageContent() {
                                     post={post}
                                     onPublish={handleXPublishPost}
                                     onImageUpdate={handleXImageUpdate}
+                                    onContentUpdate={handleXContentUpdate}
                                     hasSubscription={hasPersonalPlan}
                                     trialExpired={trialExpired}
                                   />
@@ -2342,6 +2409,7 @@ function LinkedInPageContent() {
                                       post={post}
                                       onPublish={handleXPublishPost}
                                       onImageUpdate={handleXImageUpdate}
+                                      onContentUpdate={handleXContentUpdate}
                                       hasSubscription={hasPersonalPlan}
                                       trialExpired={trialExpired}
                                     />
@@ -2357,13 +2425,13 @@ function LinkedInPageContent() {
 
                   {/* ===== DNA.X TAB ===== */}
                   {xActiveTab === "dna" && (
-                    <div className="bg-slate-900 rounded-2xl border border-slate-800 shadow-sm p-6 space-y-5">
-                      <h2 className="text-base font-semibold text-white">DNA.X</h2>
-                      <p className="text-xs text-slate-400">Tell the AI about your X presence so it can generate tweets in your voice.</p>
+                    <div className="bg-white border border-slate-100 rounded-2xl p-6 shadow-sm space-y-5">
+                      <h2 className="text-base font-semibold text-slate-800">DNA.X</h2>
+                      <p className="text-xs text-slate-500">Tell the AI about your X presence so it can generate tweets in your voice.</p>
 
                       {/* Q1 */}
                       <div>
-                        <label className="block text-xs font-semibold text-slate-400 mb-1.5 uppercase tracking-wide">
+                        <label className="block text-sm font-medium text-slate-700 mb-1">
                           What topics do you post about on X? (your niche)
                         </label>
                         <input
@@ -2371,13 +2439,13 @@ function LinkedInPageContent() {
                           placeholder="e.g. SaaS growth, AI tools, founder mindset"
                           value={xBrief.q1}
                           onChange={(e) => setXBrief((b) => ({ ...b, q1: e.target.value }))}
-                          className="w-full px-3 py-2.5 text-sm rounded-xl border border-slate-700 bg-slate-800 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-500 transition-colors"
+                          className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
                         />
                       </div>
 
                       {/* Q2 */}
                       <div>
-                        <label className="block text-xs font-semibold text-slate-400 mb-1.5 uppercase tracking-wide">
+                        <label className="block text-sm font-medium text-slate-700 mb-1">
                           How would you describe your Twitter voice?
                         </label>
                         <input
@@ -2385,13 +2453,13 @@ function LinkedInPageContent() {
                           placeholder="e.g. direct, witty, thought-provoking, controversial"
                           value={xBrief.q2}
                           onChange={(e) => setXBrief((b) => ({ ...b, q2: e.target.value }))}
-                          className="w-full px-3 py-2.5 text-sm rounded-xl border border-slate-700 bg-slate-800 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-500 transition-colors"
+                          className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
                         />
                       </div>
 
                       {/* Q3 */}
                       <div>
-                        <label className="block text-xs font-semibold text-slate-400 mb-1.5 uppercase tracking-wide">
+                        <label className="block text-sm font-medium text-slate-700 mb-1">
                           Who is your target audience on X?
                         </label>
                         <input
@@ -2399,13 +2467,13 @@ function LinkedInPageContent() {
                           placeholder="e.g. early-stage founders, growth marketers, devs"
                           value={xBrief.q3}
                           onChange={(e) => setXBrief((b) => ({ ...b, q3: e.target.value }))}
-                          className="w-full px-3 py-2.5 text-sm rounded-xl border border-slate-700 bg-slate-800 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-500 transition-colors"
+                          className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
                         />
                       </div>
 
                       {/* Q4 */}
                       <div>
-                        <label className="block text-xs font-semibold text-slate-400 mb-1.5 uppercase tracking-wide">
+                        <label className="block text-sm font-medium text-slate-700 mb-1">
                           What&apos;s your goal on X?
                         </label>
                         <input
@@ -2413,13 +2481,13 @@ function LinkedInPageContent() {
                           placeholder="e.g. build following, drive traffic, establish thought leadership"
                           value={xBrief.q4}
                           onChange={(e) => setXBrief((b) => ({ ...b, q4: e.target.value }))}
-                          className="w-full px-3 py-2.5 text-sm rounded-xl border border-slate-700 bg-slate-800 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-500 transition-colors"
+                          className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
                         />
                       </div>
 
                       {/* Q5 */}
                       <div>
-                        <label className="block text-xs font-semibold text-slate-400 mb-1.5 uppercase tracking-wide">
+                        <label className="block text-sm font-medium text-slate-700 mb-1">
                           What type of content performs best for you?
                         </label>
                         <input
@@ -2427,19 +2495,24 @@ function LinkedInPageContent() {
                           placeholder="e.g. hot takes, threads, insights, questions, stories"
                           value={xBrief.q5}
                           onChange={(e) => setXBrief((b) => ({ ...b, q5: e.target.value }))}
-                          className="w-full px-3 py-2.5 text-sm rounded-xl border border-slate-700 bg-slate-800 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-500 transition-colors"
+                          className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
                         />
                       </div>
 
                       <Button
                         disabled={xSavingBrief}
                         onClick={handleXSaveBrief}
-                        className="bg-white hover:bg-slate-100 text-slate-900 font-semibold rounded-xl px-6"
+                        className="bg-violet-600 hover:bg-violet-500 text-white rounded-xl px-6 py-2.5 text-sm font-semibold transition-colors"
                       >
                         {xSavingBrief ? (
                           <Loader2 className="w-4 h-4 animate-spin mr-2" />
                         ) : null}
-                        {xBriefSaved ? "Saved!" : "Save DNA.X"}
+                        {xBriefSaved ? (
+                          <span className="flex items-center gap-1.5 text-emerald-100">
+                            <Check className="w-4 h-4 text-emerald-300" />
+                            Saved!
+                          </span>
+                        ) : "Save DNA.X"}
                       </Button>
                     </div>
                   )}
