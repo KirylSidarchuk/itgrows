@@ -29,6 +29,7 @@ export async function GET(req: NextRequest) {
   try {
     // Exchange code for tokens
     const clientId = process.env.TWITTER_CLIENT_ID!
+    const clientSecret = process.env.TWITTER_CLIENT_SECRET!
 
     const tokenRes = await fetch("https://api.twitter.com/2/oauth2/token", {
       method: "POST",
@@ -41,6 +42,7 @@ export async function GET(req: NextRequest) {
         redirect_uri: "https://itgrows.ai/api/x/callback",
         code_verifier: codeVerifier,
         client_id: clientId,
+        client_secret: clientSecret,
       }),
     })
 
