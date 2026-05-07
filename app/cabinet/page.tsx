@@ -2268,7 +2268,7 @@ function LinkedInPageContent() {
                     <button
                       onClick={handleXDisconnect}
                       disabled={xDisconnecting}
-                      className="text-xs text-slate-400 hover:text-red-500 transition-colors"
+                      className="text-xs text-red-400 hover:text-red-600 transition-colors"
                     >
                       {xDisconnecting ? "..." : "Disconnect"}
                     </button>
