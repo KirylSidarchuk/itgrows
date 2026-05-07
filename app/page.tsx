@@ -9,33 +9,37 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 const steps = [
   {
     num: "01",
-    title: "Connect your LinkedIn profile",
-    desc: "One click. No passwords shared. We use LinkedIn's secure OAuth connection.",
+    title: "Tell us about you",
+    desc: "Fill in your brief: topics, tone, and goals. Works for personal accounts and company profiles.",
   },
   {
     num: "02",
-    title: "Define your direction and goals",
-    desc: "Fill a 2-minute brief: your niche, audience, and goals. That's your content DNA.",
+    title: "AI writes in your voice",
+    desc: "We generate LinkedIn posts and tweets that sound exactly like you (or your brand). Every day.",
   },
   {
     num: "03",
-    title: "Content runs daily — automatically",
-    desc: "AI-crafted posts publish daily to your profile. Review, edit, or let them run on autopilot.",
+    title: "Stay visible, grow your audience",
+    desc: "Posts go live automatically on LinkedIn and X. Watch followers, leads, and opportunities come to you.",
   },
 ]
 
 const faqs = [
   {
-    q: "Is it safe to connect my LinkedIn account?",
-    a: "Absolutely. We use LinkedIn's official OAuth — the same secure standard used by tools like Salesforce, HubSpot, and Notion. You log in directly on LinkedIn's website, not on ours. We never see or store your LinkedIn password. You can revoke access from your LinkedIn settings at any time in seconds.",
+    q: "Is it safe to connect my LinkedIn and X accounts?",
+    a: "Absolutely. We use LinkedIn's official OAuth and X's official API — the same secure standards used by tools like Salesforce, HubSpot, and Buffer. You log in directly on each platform's website, not on ours. We never see or store your passwords. You can revoke access at any time.",
   },
   {
     q: "Is this generic AI content?",
-    a: "No. Before writing anything, we analyze your LinkedIn profile, your niche, and your professional goals. Every post is written specifically for you — in your voice, for your audience.",
+    a: "No. Before writing anything, we analyze your profile, your niche, and your professional goals. Every post is written specifically for you — in your voice, for your audience. LinkedIn posts and X tweets have different styles and we tailor both accordingly.",
   },
   {
     q: "Do I need a credit card to start?",
-    a: "No. You get 7 days completely free — no credit card required. Explore the full product, see your LinkedIn posts go live, and only subscribe once you've experienced the results. After 7 days, choose monthly ($29/mo) or annual ($203/yr, save 30%).",
+    a: "No. You get 7 days completely free — no credit card required. Explore the full product, see your posts go live on LinkedIn and X, and only subscribe once you've experienced the results. After 7 days, choose the plan that fits you.",
+  },
+  {
+    q: "Can I use this for a company brand, not just a personal profile?",
+    a: "Yes. The platform works for both personal accounts (founders, executives, consultants) and company profiles. Just tell us your brand's voice and goals during the brief setup.",
   },
 ]
 
@@ -113,7 +117,7 @@ export default function PersonalPage() {
         setGhostPosts(data.posts)
         setGhostImages(data.images ?? [])
       } else if (res.status === 429) {
-        setGhostError("You've used your 2 free previews. Sign up to generate unlimited LinkedIn posts →")
+        setGhostError("You've used your 2 free previews. Sign up to generate unlimited posts →")
       } else if (data.error) {
         setGhostError(data.error)
       } else {
@@ -302,15 +306,17 @@ export default function PersonalPage() {
         <div className="absolute inset-0 bg-gradient-to-b from-violet-100/60 to-transparent pointer-events-none" />
         <div className="absolute top-10 left-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-violet-400/10 rounded-full blur-3xl pointer-events-none" />
         <div className="relative max-w-4xl mx-auto">
+          <div className="inline-block mb-4 px-4 py-1.5 rounded-full text-xs font-bold border border-violet-300 text-violet-600 bg-violet-50 tracking-[0.12em] uppercase">
+            Personal &amp; Company Brand Autopilot
+          </div>
           <h1 className="text-4xl sm:text-5xl md:text-7xl font-extrabold leading-tight mb-4 sm:mb-6 tracking-tight text-[#1b1916]">
-            The Personal Brand That Gets You
+            Your Brand on LinkedIn &amp; X —
             <span className="block bg-gradient-to-r from-violet-600 via-pink-500 to-cyan-500 bg-clip-text text-transparent">
-              Hired, Referred, and Chosen
+              Built by AI, Sounds Like You
             </span>
           </h1>
           <p className="text-base sm:text-xl text-slate-600 max-w-xl mx-auto mb-8 sm:mb-10 leading-relaxed">
-            We publish LinkedIn content for you every day — in your voice.
-            You become the go-to expert. Clients, recruiters, and partners come to you.
+            We publish daily content on LinkedIn and X in your voice. You stay visible, build authority, and attract clients — without spending hours on content.
           </p>
           <div className="flex justify-center items-center">
             <div className="relative w-full sm:w-auto">
@@ -331,7 +337,7 @@ export default function PersonalPage() {
 
       {/* Social Proof Strip */}
       <div className="px-4 sm:px-6 py-4 text-center text-sm text-white font-medium" style={{ backgroundColor: "#1b1916" }}>
-        &ldquo;In 3 months: 38,500 impressions, 23 inbound DMs, +890% profile views.&rdquo; — K.S., Startup Founder
+        &ldquo;In 3 months on LinkedIn &amp; X: 38,500 impressions, 23 inbound DMs, +890% profile views.&rdquo; — K.S., Startup Founder
       </div>
 
       {/* How it works */}
@@ -364,6 +370,62 @@ export default function PersonalPage() {
         </div>
       </section>
 
+      {/* Platforms Section */}
+      <section className="px-4 sm:px-6 py-16 sm:py-20" style={{ backgroundColor: "#ebe9e5" }}>
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-10">
+            <h2 className="text-3xl sm:text-4xl font-bold mb-3 text-[#1b1916]">Two platforms. One brand. Zero effort.</h2>
+            <p className="text-slate-600 text-base sm:text-lg max-w-xl mx-auto">We handle your presence on both LinkedIn and X — so you show up everywhere your audience is.</p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            {/* LinkedIn card */}
+            <div className="bg-white rounded-2xl border border-black/10 p-6 sm:p-8 flex flex-col gap-4">
+              <div className="flex items-center gap-3">
+                <div className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0" style={{ background: "linear-gradient(135deg, #0A66C2, #0077b6)" }}>
+                  <svg viewBox="0 0 24 24" fill="white" className="w-5 h-5">
+                    <path d="M20.447 20.452H16.89v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a1.977 1.977 0 0 1-1.972-1.98 1.977 1.977 0 0 1 1.972-1.979 1.977 1.977 0 0 1 1.972 1.979 1.977 1.977 0 0 1-1.972 1.98zm1.99 13.019H3.347V9h3.98v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+                  </svg>
+                </div>
+                <div>
+                  <div className="font-bold text-[#1b1916] text-base">LinkedIn</div>
+                  <div className="text-xs text-slate-500 font-medium uppercase tracking-wide">Professional Authority</div>
+                </div>
+              </div>
+              <p className="text-slate-600 text-sm leading-relaxed">Thought leadership posts, career positioning, and B2B lead generation — published daily in your professional voice.</p>
+              <ul className="space-y-2">
+                {["Thought leadership & expertise", "Career growth & job opportunities", "B2B leads & client outreach"].map((item) => (
+                  <li key={item} className="flex items-center gap-2 text-sm text-slate-600">
+                    <span className="text-blue-600 font-bold">✓</span> {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            {/* X (Twitter) card */}
+            <div className="bg-white rounded-2xl border border-black/10 p-6 sm:p-8 flex flex-col gap-4">
+              <div className="flex items-center gap-3">
+                <div className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 bg-black">
+                  <svg viewBox="0 0 24 24" fill="white" className="w-5 h-5">
+                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.253 5.622 5.912-5.622Zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                  </svg>
+                </div>
+                <div>
+                  <div className="font-bold text-[#1b1916] text-base">X (Twitter)</div>
+                  <div className="text-xs text-slate-500 font-medium uppercase tracking-wide">Real-Time Presence</div>
+                </div>
+              </div>
+              <p className="text-slate-600 text-sm leading-relaxed">Daily tweets and threads that keep you in trending conversations, grow followers, and build brand awareness in real time.</p>
+              <ul className="space-y-2">
+                {["Daily engagement & trending topics", "Brand awareness & follower growth", "Real-time presence in your niche"].map((item) => (
+                  <li key={item} className="flex items-center gap-2 text-sm text-slate-600">
+                    <span className="text-slate-800 font-bold">✓</span> {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Ghost Mode — try without signup */}
       <section id="ghost-mode" className="px-4 sm:px-6 py-16 sm:py-24 bg-white">
         <div className="max-w-3xl mx-auto text-center">
@@ -375,7 +437,7 @@ export default function PersonalPage() {
             <span className="bg-gradient-to-r from-violet-600 to-pink-500 bg-clip-text text-transparent">30 seconds</span>
           </h2>
           <p className="text-slate-500 text-base sm:text-lg mb-8 max-w-xl mx-auto">
-            Fill in a quick brief. We'll generate 3 real LinkedIn posts — no account needed.
+            Fill in a quick brief. We&apos;ll generate 3 real posts — no account needed.
           </p>
 
           <div className="bg-[#f8f7f6] border border-black/10 rounded-2xl p-5 sm:p-6 text-left">
@@ -670,11 +732,11 @@ export default function PersonalPage() {
 
       {/* Pricing */}
       <section id="pricing" className="px-4 sm:px-6 py-16 sm:py-24" style={{ backgroundColor: "#ebe9e5" }}>
-        <div className="max-w-2xl mx-auto">
+        <div className="max-w-5xl mx-auto">
           <div className="text-center mb-12">
             <Badge className="mb-4 bg-violet-100 text-violet-700 border-violet-200">Pricing</Badge>
-            <h2 className="text-4xl font-bold mb-4 text-[#1b1916]">One Plan. Everything Included.</h2>
-            <p className="text-slate-600 text-lg">No upsells. No tiers. Just LinkedIn growth.</p>
+            <h2 className="text-4xl font-bold mb-4 text-[#1b1916]">Simple, Transparent Pricing</h2>
+            <p className="text-slate-600 text-lg">Pick your platform — or go all-in on both.</p>
           </div>
 
           {/* Billing toggle */}
@@ -689,56 +751,132 @@ export default function PersonalPage() {
             </button>
             <span className={`text-sm font-medium ${annual ? "text-[#1b1916]" : "text-slate-400"}`}>
               Annual
-              <span className="ml-2 px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full font-semibold">Save 20%</span>
+              <span className="ml-2 px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full font-semibold">Save ~30%</span>
             </span>
           </div>
 
-          <Card className="relative border-violet-500 bg-gradient-to-b from-violet-50 to-white shadow-2xl shadow-violet-200">
-            <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-              <Badge className="bg-violet-600 text-white border-0 px-4 py-1">Most Popular</Badge>
-            </div>
-            <CardHeader className="text-center pb-2 pt-8">
-              <CardTitle className="text-[#1b1916] text-2xl">Personal Autopilot</CardTitle>
-              <p className="text-slate-500 text-sm mt-1">Everything you need to grow your LinkedIn</p>
-              <div className="flex items-end gap-1 mt-4 justify-center">
-                <span className="text-6xl font-extrabold text-[#1b1916]">{annual ? "$16.90" : "$29"}</span>
-                <span className="text-slate-500 mb-2 text-lg">/month</span>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
+
+            {/* LinkedIn Plan */}
+            <Card className="relative border-black/10 bg-white shadow-sm">
+              <CardHeader className="text-center pb-2 pt-8">
+                <div className="flex justify-center mb-3">
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: "linear-gradient(135deg, #0A66C2, #0077b6)" }}>
+                    <svg viewBox="0 0 24 24" fill="white" className="w-4 h-4">
+                      <path d="M20.447 20.452H16.89v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a1.977 1.977 0 0 1-1.972-1.98 1.977 1.977 0 0 1 1.972-1.979 1.977 1.977 0 0 1 1.972 1.979 1.977 1.977 0 0 1-1.972 1.98zm1.99 13.019H3.347V9h3.98v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+                    </svg>
+                  </div>
+                </div>
+                <CardTitle className="text-[#1b1916] text-xl">LinkedIn</CardTitle>
+                <p className="text-slate-500 text-sm mt-1">Professional authority &amp; B2B leads</p>
+                <div className="flex items-end gap-1 mt-4 justify-center">
+                  <span className="text-5xl font-extrabold text-[#1b1916]">{annual ? "$16.90" : "$29"}</span>
+                  <span className="text-slate-500 mb-2">/mo</span>
+                </div>
+                {annual && <p className="text-sm text-green-600 font-medium mt-1">Billed $203/year</p>}
+                {!annual && <p className="text-sm text-slate-400 mt-1">or <button onClick={() => setAnnual(true)} className="underline text-violet-600">save with annual</button></p>}
+              </CardHeader>
+              <CardContent className="space-y-4 px-6 pb-8">
+                <Button
+                  onClick={annual ? () => handleCheckout("annual") : handleStartTrial}
+                  className="w-full bg-blue-600 hover:bg-blue-500 text-white py-5 text-sm rounded-xl mt-2"
+                >
+                  {annual ? "Start Annual Plan" : "Start Free Trial"}
+                </Button>
+                <ul className="space-y-2 pt-1">
+                  {["7 AI-written LinkedIn posts/week", "Custom images for every post", "Auto-scheduling at peak time", "Profile DNA analysis", "Review & edit before publishing"].map((item, i) => (
+                    <li key={i} className="flex items-center gap-2 text-sm text-slate-600">
+                      <span className="text-blue-600 font-bold">✓</span> {item}
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
+
+            {/* Both Platforms — Most Popular */}
+            <Card className="relative border-violet-500 bg-gradient-to-b from-violet-50 to-white shadow-2xl shadow-violet-200 md:-mt-4">
+              <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+                <Badge className="bg-violet-600 text-white border-0 px-4 py-1">Most Popular</Badge>
               </div>
-              {annual && (
-                <>
-                  <p className="text-sm text-green-600 font-medium mt-1">Billed $203/year · Save 30%</p>
-                  <p className="text-xs text-slate-500 mt-1">7-day money-back guarantee — cancel anytime</p>
-                </>
-              )}
-              {!annual && (
-                <p className="text-sm text-slate-400 mt-1">or <button onClick={() => setAnnual(true)} className="underline text-violet-600">save 30% with annual</button></p>
-              )}
-            </CardHeader>
-            <CardContent className="space-y-5 px-8 pb-8">
-              <Button
-                onClick={annual ? () => handleCheckout("annual") : handleStartTrial}
-                className="w-full bg-violet-600 hover:bg-violet-500 text-white py-6 text-base rounded-xl mt-2"
-              >
-                {annual ? "Start Annual Plan" : "Start Free Trial — No Credit Card"}
-              </Button>
-              <p className="text-center text-xs text-slate-500">{annual ? "Billed $203/year · Cancel anytime" : "7-day free trial · No credit card required · $29/month after"}</p>
-              <ul className="space-y-3 pt-2">
-                {[
-                  "7 AI-written posts per week",
-                  "Custom images for every post",
-                  "Auto-scheduling at peak time (10am UTC)",
-                  "Profile DNA analysis",
-                  "Review & edit before publishing",
-                  "Cancel anytime, no commitment",
-                ].map((item, i) => (
-                  <li key={i} className="flex items-center gap-3 text-sm text-slate-600">
-                    <span className="text-violet-600 font-bold text-base">✓</span>
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
-          </Card>
+              <CardHeader className="text-center pb-2 pt-8">
+                <div className="flex justify-center gap-2 mb-3">
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: "linear-gradient(135deg, #0A66C2, #0077b6)" }}>
+                    <svg viewBox="0 0 24 24" fill="white" className="w-4 h-4">
+                      <path d="M20.447 20.452H16.89v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a1.977 1.977 0 0 1-1.972-1.98 1.977 1.977 0 0 1 1.972-1.979 1.977 1.977 0 0 1 1.972 1.979 1.977 1.977 0 0 1-1.972 1.98zm1.99 13.019H3.347V9h3.98v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+                    </svg>
+                  </div>
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-black">
+                    <svg viewBox="0 0 24 24" fill="white" className="w-4 h-4">
+                      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.253 5.622 5.912-5.622Zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                    </svg>
+                  </div>
+                </div>
+                <CardTitle className="text-[#1b1916] text-xl">Both Platforms</CardTitle>
+                <p className="text-slate-500 text-sm mt-1">LinkedIn + X · Personal + company</p>
+                <div className="flex items-end gap-1 mt-4 justify-center">
+                  <span className="text-5xl font-extrabold text-[#1b1916]">{annual ? "$28.58" : "$49"}</span>
+                  <span className="text-slate-500 mb-2">/mo</span>
+                </div>
+                {annual && <p className="text-sm text-green-600 font-medium mt-1">Billed $343/year · Save 30%</p>}
+                {!annual && <p className="text-sm text-slate-400 mt-1">or <button onClick={() => setAnnual(true)} className="underline text-violet-600">save 30% with annual</button></p>}
+              </CardHeader>
+              <CardContent className="space-y-4 px-6 pb-8">
+                {/* TODO: add Both-platforms Stripe checkout link when prices are confirmed */}
+                <Button
+                  onClick={handleStartTrial}
+                  className="w-full bg-violet-600 hover:bg-violet-500 text-white py-5 text-sm rounded-xl mt-2"
+                >
+                  Start Free Trial
+                </Button>
+                <p className="text-center text-xs text-slate-500">Twitter plan includes 2 accounts: personal + company</p>
+                <ul className="space-y-2 pt-1">
+                  {["Everything in LinkedIn plan", "7 AI-written tweets/threads per week", "Dual account posting (personal + company)", "Platform-specific voice & style", "Unified dashboard for both platforms"].map((item, i) => (
+                    <li key={i} className="flex items-center gap-2 text-sm text-slate-600">
+                      <span className="text-violet-600 font-bold">✓</span> {item}
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
+
+            {/* X (Twitter) Plan */}
+            <Card className="relative border-black/10 bg-white shadow-sm">
+              <CardHeader className="text-center pb-2 pt-8">
+                <div className="flex justify-center mb-3">
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-black">
+                    <svg viewBox="0 0 24 24" fill="white" className="w-4 h-4">
+                      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.253 5.622 5.912-5.622Zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                    </svg>
+                  </div>
+                </div>
+                <CardTitle className="text-[#1b1916] text-xl">X (Twitter)</CardTitle>
+                <p className="text-slate-500 text-sm mt-1">Real-time presence &amp; brand awareness</p>
+                <div className="flex items-end gap-1 mt-4 justify-center">
+                  <span className="text-5xl font-extrabold text-[#1b1916]">{annual ? "$16.90" : "$29"}</span>
+                  <span className="text-slate-500 mb-2">/mo</span>
+                </div>
+                {annual && <p className="text-sm text-green-600 font-medium mt-1">Billed $203/year</p>}
+                {!annual && <p className="text-sm text-slate-400 mt-1">or <button onClick={() => setAnnual(true)} className="underline text-violet-600">save with annual</button></p>}
+              </CardHeader>
+              <CardContent className="space-y-4 px-6 pb-8">
+                {/* TODO: add X/Twitter Stripe checkout link when prices are confirmed */}
+                <Button
+                  onClick={handleStartTrial}
+                  className="w-full bg-slate-900 hover:bg-slate-700 text-white py-5 text-sm rounded-xl mt-2"
+                >
+                  Start Free Trial
+                </Button>
+                <ul className="space-y-2 pt-1">
+                  {["7 AI-written tweets/threads per week", "Personal + company account posting", "Trending topic integration", "Brand voice analysis", "Review & edit before publishing"].map((item, i) => (
+                    <li key={i} className="flex items-center gap-2 text-sm text-slate-600">
+                      <span className="text-slate-800 font-bold">✓</span> {item}
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
+
+          </div>
         </div>
       </section>
 
@@ -787,7 +925,7 @@ export default function PersonalPage() {
             </span>
           </h2>
           <p className="text-slate-600 text-base sm:text-lg mb-8 sm:mb-10">
-            Join professionals who attract clients, partners and opportunities — on autopilot.
+            Join professionals who attract clients, partners and opportunities on LinkedIn and X — on autopilot.
           </p>
           <Button
             size="lg"
@@ -796,7 +934,7 @@ export default function PersonalPage() {
           >
             Try Free for 7 Days — No Card Required
           </Button>
-          <p className="mt-4 text-xs sm:text-sm text-slate-500">No credit card required · $29/month after · Cancel anytime</p>
+          <p className="mt-4 text-xs sm:text-sm text-slate-500">No credit card required · From $29/month · Cancel anytime</p>
         </div>
       </section>
 
