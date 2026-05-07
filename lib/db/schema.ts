@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, boolean, jsonb, uuid, index, integer, serial } from "drizzle-orm/pg-core"
+import { pgTable, text, timestamp, boolean, jsonb, uuid, index, integer, serial, uniqueIndex } from "drizzle-orm/pg-core"
 
 export const users = pgTable("users", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -217,8 +217,12 @@ export const twitterAccounts = pgTable("twitter_accounts", {
   accessToken: text("access_token").notNull(),
   refreshToken: text("refresh_token"),
   expiresAt: timestamp("expires_at"),
+  accountType: text("account_type").notNull().default("personal"),
   createdAt: timestamp("created_at").defaultNow(),
-}, (t) => [index("twitter_accounts_user_id_idx").on(t.userId)])
+}, (t) => [
+  index("twitter_accounts_user_id_idx").on(t.userId),
+  uniqueIndex("twitter_accounts_user_account_type_unique").on(t.userId, t.accountType),
+])
 
 export const oauthState = pgTable("oauth_state", {
   id: uuid("id").defaultRandom().primaryKey(),
@@ -226,6 +230,7 @@ export const oauthState = pgTable("oauth_state", {
   state: text("state").notNull(),
   codeVerifier: text("code_verifier").notNull(),
   platform: text("platform").notNull().default("twitter"),
+  accountType: text("account_type").notNull().default("personal"),
   createdAt: timestamp("created_at").defaultNow(),
 }, (t) => [index("idx_oauth_state_state").on(t.state)])
 
@@ -250,4 +255,12 @@ export const twitterBriefs = pgTable("twitter_briefs", {
   content: text("content").notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+})
+
+export const twitterCompanyBriefs = pgTable("twitter_company_briefs", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: text("user_id").notNull().unique(),
+  content: text("content").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 })

@@ -1,15 +1,18 @@
-import { NextResponse } from "next/server"
+import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/auth"
 import crypto from "crypto"
 import { db } from "@/lib/db"
 import { oauthState } from "@/lib/db/schema"
 import { and, eq } from "drizzle-orm"
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   const session = await auth()
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
+
+  const { searchParams } = new URL(req.url)
+  const accountType = searchParams.get("type") === "company" ? "company" : "personal"
 
   // Generate PKCE code_verifier (43-128 chars, URL-safe)
   const codeVerifier = crypto.randomBytes(32).toString("base64url")
@@ -37,6 +40,7 @@ export async function GET() {
     state,
     codeVerifier,
     platform: "twitter",
+    accountType,
   })
 
   const params = new URLSearchParams({

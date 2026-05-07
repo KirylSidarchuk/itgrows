@@ -75,8 +75,17 @@ interface TwitterAccount {
   twitterUserId: string
   username: string
   displayName: string | null
+  accountType: string
   expiresAt: string | null
   createdAt: string | null
+}
+
+interface TwitterCompanyBrief {
+  q1: string
+  q2: string
+  q3: string
+  q4: string
+  q5: string
 }
 
 interface TwitterPost {
@@ -418,7 +427,7 @@ function PostCard({
 
 type ActiveTab = "posts" | "dna" | "account" | "support"
 type ActivePlatform = "linkedin" | "instagram" | "x"
-type XActiveTab = "posts" | "dna"
+type XActiveTab = "posts" | "dna" | "company-dna"
 
 function InstagramPostCard({
   post,
@@ -874,19 +883,25 @@ function LinkedInPageContent() {
 
   // X (Twitter) state
   const [xAccount, setXAccount] = useState<TwitterAccount | null>(null)
+  const [xPersonalAccount, setXPersonalAccount] = useState<TwitterAccount | null>(null)
+  const [xCompanyAccount, setXCompanyAccount] = useState<TwitterAccount | null>(null)
   const [xAccountLoading, setXAccountLoading] = useState(false)
   const [xPosts, setXPosts] = useState<TwitterPost[]>([])
   const [xPostsLoading, setXPostsLoading] = useState(false)
   const [xGenerating, setXGenerating] = useState(false)
   const [xGenerateError, setXGenerateError] = useState<string | null>(null)
   const [xGenerateTimer, setXGenerateTimer] = useState(120)
-  const [xDisconnecting, setXDisconnecting] = useState(false)
+  const [xDisconnecting, setXDisconnecting] = useState<string | null>(null)
   const [xPublishedCollapsed, setXPublishedCollapsed] = useState(false)
   const [xActiveTab, setXActiveTab] = useState<XActiveTab>("posts")
   const [xBrief, setXBrief] = useState<TwitterBrief>({ q1: "", q2: "", q3: "", q4: "", q5: "" })
   const [xBriefLoaded, setXBriefLoaded] = useState(false)
   const [xSavingBrief, setXSavingBrief] = useState(false)
   const [xBriefSaved, setXBriefSaved] = useState(false)
+  const [xCompanyBrief, setXCompanyBrief] = useState<TwitterCompanyBrief>({ q1: "", q2: "", q3: "", q4: "", q5: "" })
+  const [xCompanyBriefLoaded, setXCompanyBriefLoaded] = useState(false)
+  const [xSavingCompanyBrief, setXSavingCompanyBrief] = useState(false)
+  const [xCompanyBriefSaved, setXCompanyBriefSaved] = useState(false)
   const [showXOnboarding, setShowXOnboarding] = useState(false)
   const [xOnboardingStep, setXOnboardingStep] = useState(0)
 
@@ -1106,6 +1121,7 @@ function LinkedInPageContent() {
       fetchXAccount()
       fetchXPosts()
       fetchXBrief()
+      fetchXCompanyBrief()
       if (typeof window !== "undefined" && !localStorage.getItem("x_onboarding_seen")) {
         setShowXOnboarding(true)
       }
@@ -1215,8 +1231,10 @@ function LinkedInPageContent() {
     setXAccountLoading(true)
     fetch("/api/x/account")
       .then((r) => r.json())
-      .then((data: { account?: TwitterAccount | null }) => {
+      .then((data: { account?: TwitterAccount | null; personalAccount?: TwitterAccount | null; companyAccount?: TwitterAccount | null }) => {
         setXAccount(data.account ?? null)
+        setXPersonalAccount(data.personalAccount ?? null)
+        setXCompanyAccount(data.companyAccount ?? null)
         setXAccountLoading(false)
       })
       .catch(() => setXAccountLoading(false))
@@ -1253,6 +1271,27 @@ function LinkedInPageContent() {
         setXBriefLoaded(true)
       })
       .catch(() => setXBriefLoaded(true))
+  }, [])
+
+  const fetchXCompanyBrief = useCallback(() => {
+    fetch("/api/x/company-brief")
+      .then((r) => r.json())
+      .then((data: { brief?: { content?: string } | null }) => {
+        if (data.brief?.content) {
+          const lines = data.brief.content.split("\n\n")
+          const answers: TwitterCompanyBrief = { q1: "", q2: "", q3: "", q4: "", q5: "" }
+          lines.forEach((block, i) => {
+            const parts = block.split("\n")
+            if (parts.length >= 2) {
+              const key = `q${i + 1}` as keyof TwitterCompanyBrief
+              answers[key] = parts.slice(1).join("\n").replace(/^\(not provided\)$/, "")
+            }
+          })
+          setXCompanyBrief(answers)
+        }
+        setXCompanyBriefLoaded(true)
+      })
+      .catch(() => setXCompanyBriefLoaded(true))
   }, [])
 
   function handleXImageUpdate(postId: string, imageUrl: string | null) {
@@ -1543,12 +1582,40 @@ function LinkedInPageContent() {
     setIgPosts((prev) => prev.filter((p) => p.id !== postId))
   }
 
-  async function handleXDisconnect() {
-    setXDisconnecting(true)
-    await fetch("/api/x/disconnect", { method: "POST" })
-    setXAccount(null)
-    setXPosts([])
-    setXDisconnecting(false)
+  async function handleXDisconnect(type?: "personal" | "company") {
+    const key = type ?? "all"
+    setXDisconnecting(key)
+    const url = type ? `/api/x/disconnect?type=${type}` : "/api/x/disconnect"
+    await fetch(url, { method: "POST" })
+    if (type === "personal") {
+      setXPersonalAccount(null)
+      setXAccount(xCompanyAccount)
+    } else if (type === "company") {
+      setXCompanyAccount(null)
+    } else {
+      setXAccount(null)
+      setXPersonalAccount(null)
+      setXCompanyAccount(null)
+      setXPosts([])
+    }
+    setXDisconnecting(null)
+  }
+
+  async function handleXSaveCompanyBrief() {
+    setXSavingCompanyBrief(true)
+    try {
+      await fetch("/api/x/company-brief", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ answers: xCompanyBrief }),
+      })
+      setXCompanyBriefSaved(true)
+      setTimeout(() => setXCompanyBriefSaved(false), 2000)
+    } catch {
+      // ignore
+    } finally {
+      setXSavingCompanyBrief(false)
+    }
   }
 
   async function handleXGenerate() {
@@ -1816,7 +1883,7 @@ function LinkedInPageContent() {
             ) : activePlatform === "x" ? (
               xIsConnected ? (
                 <p className="text-sm font-semibold text-slate-700">
-                  ✦ @{xAccount?.username} connected
+                  {xPersonalAccount ? `✦ @${xPersonalAccount.username}` : ""}{xPersonalAccount && xCompanyAccount ? " · " : ""}{xCompanyAccount ? `@${xCompanyAccount.username} (co.)` : ""}
                 </p>
               ) : (
                 <p className="text-slate-500 text-sm">Connect X (Twitter) to get started</p>
@@ -2231,62 +2298,110 @@ function LinkedInPageContent() {
                 <div className="flex justify-center py-16">
                   <Loader2 className="w-6 h-6 animate-spin text-slate-400" />
                 </div>
-              ) : !xIsConnected ? (
-                /* Not connected */
-                <div className="bg-white rounded-2xl border border-slate-100 shadow-sm py-16 flex flex-col items-center gap-5 text-center">
-                  <div className="w-16 h-16 rounded-2xl bg-slate-900 flex items-center justify-center shadow-lg">
-                    <XIcon className="w-9 h-9 text-white" />
-                  </div>
-                  <div>
-                    <p className="text-base font-semibold text-slate-700 mb-1">Connect X (Twitter)</p>
-                    <p className="text-sm text-slate-400 max-w-xs">
-                      Link your X account to generate and publish tweets automatically.
-                    </p>
-                  </div>
-                  <a href="/api/x/connect">
-                    <Button className="bg-slate-900 hover:bg-slate-700 text-white rounded-xl px-6">
-                      Connect X (Twitter)
-                    </Button>
-                  </a>
-                </div>
               ) : (
-                /* Connected */
-                <div className="space-y-5">
-                  {/* Account info + disconnect */}
-                  <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center shrink-0">
-                        <XIcon className="w-5 h-5 text-white" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-semibold text-slate-800">@{xAccount?.username}</p>
-                        {xAccount?.displayName && (
-                          <p className="text-xs text-slate-500">{xAccount.displayName}</p>
+                <>
+                  {/* Account connection cards */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {/* Personal Account Card */}
+                    <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
+                      <div className="flex items-center justify-between mb-3">
+                        <p className="text-xs font-bold text-slate-500 uppercase tracking-wide">Personal Account</p>
+                        {xPersonalAccount && (
+                          <button
+                            onClick={() => handleXDisconnect("personal")}
+                            disabled={xDisconnecting === "personal"}
+                            className="text-xs text-red-400 hover:text-red-600 transition-colors"
+                          >
+                            {xDisconnecting === "personal" ? "..." : "Disconnect"}
+                          </button>
                         )}
                       </div>
+                      {xPersonalAccount ? (
+                        <div className="flex items-center gap-3">
+                          <div className="w-9 h-9 rounded-xl bg-slate-900 flex items-center justify-center shrink-0">
+                            <XIcon className="w-4 h-4 text-white" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-semibold text-slate-800">@{xPersonalAccount.username}</p>
+                            {xPersonalAccount.displayName && (
+                              <p className="text-xs text-slate-500">{xPersonalAccount.displayName}</p>
+                            )}
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col items-start gap-2">
+                          <p className="text-xs text-slate-400">Personal X account not connected</p>
+                          <a href="/api/x/connect?type=personal">
+                            <Button size="sm" className="bg-slate-900 hover:bg-slate-700 text-white rounded-xl text-xs px-4">
+                              Connect Personal
+                            </Button>
+                          </a>
+                        </div>
+                      )}
                     </div>
-                    <button
-                      onClick={handleXDisconnect}
-                      disabled={xDisconnecting}
-                      className="text-xs text-red-400 hover:text-red-600 transition-colors"
-                    >
-                      {xDisconnecting ? "..." : "Disconnect"}
-                    </button>
+
+                    {/* Company Account Card */}
+                    <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
+                      <div className="flex items-center justify-between mb-3">
+                        <p className="text-xs font-bold text-slate-500 uppercase tracking-wide">Company Account</p>
+                        {xCompanyAccount && (
+                          <button
+                            onClick={() => handleXDisconnect("company")}
+                            disabled={xDisconnecting === "company"}
+                            className="text-xs text-red-400 hover:text-red-600 transition-colors"
+                          >
+                            {xDisconnecting === "company" ? "..." : "Disconnect"}
+                          </button>
+                        )}
+                      </div>
+                      {xCompanyAccount ? (
+                        <div className="flex items-center gap-3">
+                          <div className="w-9 h-9 rounded-xl bg-violet-700 flex items-center justify-center shrink-0">
+                            <XIcon className="w-4 h-4 text-white" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-semibold text-slate-800">@{xCompanyAccount.username}</p>
+                            {xCompanyAccount.displayName && (
+                              <p className="text-xs text-slate-500">{xCompanyAccount.displayName}</p>
+                            )}
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col items-start gap-2">
+                          <p className="text-xs text-slate-400">Company X account not connected</p>
+                          <a href="/api/x/connect?type=company">
+                            <Button size="sm" className="bg-violet-700 hover:bg-violet-600 text-white rounded-xl text-xs px-4">
+                              Connect Company
+                            </Button>
+                          </a>
+                        </div>
+                      )}
+                    </div>
                   </div>
 
-                  {/* Tabs: Posts | DNA.X */}
-                  <div className="flex items-center gap-1 bg-white rounded-2xl p-1 shadow-sm border border-slate-100 w-fit">
-                    {(["posts", "dna"] as XActiveTab[]).map((tab) => (
+                  {!xIsConnected ? (
+                    /* Neither connected — show prompt */
+                    <div className="bg-white rounded-2xl border border-slate-100 shadow-sm py-10 flex flex-col items-center gap-3 text-center">
+                      <div className="w-14 h-14 rounded-2xl bg-slate-900 flex items-center justify-center shadow-lg">
+                        <XIcon className="w-8 h-8 text-white" />
+                      </div>
+                      <p className="text-sm text-slate-500 max-w-xs">Connect at least one X account above to generate and publish tweets.</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-5">
+                  {/* Tabs: Posts | DNA.X | Company DNA */}
+                  <div className="flex items-center gap-1 bg-white rounded-2xl p-1 shadow-sm border border-slate-100 w-fit flex-wrap">
+                    {(["posts", "dna", "company-dna"] as XActiveTab[]).map((tab) => (
                       <button
                         key={tab}
                         onClick={() => setXActiveTab(tab)}
-                        className={`px-5 py-2 rounded-xl text-sm font-semibold transition-all ${
+                        className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all ${
                           xActiveTab === tab
                             ? "bg-slate-900 text-white shadow-sm"
                             : "text-slate-500 hover:text-slate-700 hover:bg-slate-50"
                         }`}
                       >
-                        {tab === "posts" ? "Posts" : "DNA.X"}
+                        {tab === "posts" ? "Posts" : tab === "dna" ? "DNA.X" : "Company DNA"}
                       </button>
                     ))}
                   </div>
@@ -2521,7 +2636,98 @@ function LinkedInPageContent() {
                       </Button>
                     </div>
                   )}
+
+                  {/* ===== COMPANY DNA TAB ===== */}
+                  {xActiveTab === "company-dna" && (
+                    <div className="bg-white border border-slate-100 rounded-2xl p-6 shadow-sm space-y-5">
+                      <h2 className="text-base font-semibold text-slate-800">Company DNA</h2>
+                      <p className="text-xs text-slate-500">Tell the AI about your company so it can generate tweets in your brand voice.</p>
+
+                      <div>
+                        <label className="block text-sm font-medium text-slate-700 mb-1">
+                          What does your company do?
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="e.g. We build AI tools for B2B sales teams"
+                          value={xCompanyBrief.q1}
+                          onChange={(e) => setXCompanyBrief((b) => ({ ...b, q1: e.target.value }))}
+                          className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-slate-700 mb-1">
+                          What&apos;s your brand voice/tone?
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="e.g. professional, bold, data-driven, friendly"
+                          value={xCompanyBrief.q2}
+                          onChange={(e) => setXCompanyBrief((b) => ({ ...b, q2: e.target.value }))}
+                          className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-slate-700 mb-1">
+                          Who is your target audience?
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="e.g. VP of Sales at Series A-C SaaS companies"
+                          value={xCompanyBrief.q3}
+                          onChange={(e) => setXCompanyBrief((b) => ({ ...b, q3: e.target.value }))}
+                          className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-slate-700 mb-1">
+                          What are your company&apos;s main topics/themes?
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="e.g. AI in sales, pipeline generation, outbound strategies"
+                          value={xCompanyBrief.q4}
+                          onChange={(e) => setXCompanyBrief((b) => ({ ...b, q4: e.target.value }))}
+                          className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-slate-700 mb-1">
+                          What&apos;s your company&apos;s goal on X?
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="e.g. brand awareness, drive signups, establish thought leadership"
+                          value={xCompanyBrief.q5}
+                          onChange={(e) => setXCompanyBrief((b) => ({ ...b, q5: e.target.value }))}
+                          className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
+                        />
+                      </div>
+
+                      <Button
+                        disabled={xSavingCompanyBrief}
+                        onClick={handleXSaveCompanyBrief}
+                        className="bg-violet-600 hover:bg-violet-500 text-white rounded-xl px-6 py-2.5 text-sm font-semibold transition-colors"
+                      >
+                        {xSavingCompanyBrief ? (
+                          <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                        ) : null}
+                        {xCompanyBriefSaved ? (
+                          <span className="flex items-center gap-1.5 text-emerald-100">
+                            <Check className="w-4 h-4 text-emerald-300" />
+                            Saved!
+                          </span>
+                        ) : "Save Company DNA"}
+                      </Button>
+                    </div>
+                  )}
                 </div>
+                  )}
+                </>
               )}
             </div>
           )}

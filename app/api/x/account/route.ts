@@ -12,13 +12,20 @@ export async function GET() {
     }
     const userId = session.user.id
 
-    const [account] = await db
+    const accounts = await db
       .select()
       .from(twitterAccounts)
       .where(eq(twitterAccounts.userId, userId))
-      .limit(1)
 
-    return NextResponse.json({ account: account ?? null })
+    const personalAccount = accounts.find((a) => a.accountType === "personal") ?? null
+    const companyAccount = accounts.find((a) => a.accountType === "company") ?? null
+
+    // Keep backward-compat: return first account as `account`
+    return NextResponse.json({
+      account: personalAccount ?? companyAccount ?? null,
+      personalAccount,
+      companyAccount,
+    })
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error"
     return NextResponse.json({ error: message }, { status: 500 })

@@ -39,7 +39,7 @@ const features = [
   {
     icon: "📅",
     title: "7 posts per week, every week",
-    desc: "One post every day, Monday through Sunday. Consistent presence that brings inbound leads.",
+    desc: "One post every day, Monday through Sunday. Consistent presence on LinkedIn & X that brings inbound leads.",
   },
   {
     icon: "🎯",
@@ -54,7 +54,7 @@ const features = [
   {
     icon: "⚡",
     title: "Fully automated — no thinking, no effort",
-    desc: "Posts go live automatically. No scheduling, no copywriting, no thinking about what to post.",
+    desc: "Posts go live automatically on LinkedIn & X. No scheduling, no copywriting, no thinking about what to post.",
   },
   {
     icon: AI_IMAGE_ICON,
@@ -66,7 +66,7 @@ const features = [
 const steps = [
   {
     num: "01",
-    title: "Connect LinkedIn",
+    title: "Connect LinkedIn & X",
     desc: "Secure OAuth — no passwords.",
   },
   {
@@ -77,14 +77,14 @@ const steps = [
   {
     num: "03",
     title: "We post for you",
-    desc: "Daily posts, fully automated.",
+    desc: "Daily posts on both platforms, fully automated.",
   },
 ]
 
 const faqs = [
   {
     q: "Is it safe?",
-    a: "Yes. We use LinkedIn's official OAuth — no passwords, ever.",
+    a: "Yes. We use LinkedIn's and X's official OAuth — no passwords, ever.",
   },
   {
     q: "Can I edit posts?",
@@ -97,6 +97,10 @@ const faqs = [
   {
     q: "Is this generic AI?",
     a: "No. Posts are written in your voice, based on your profile and niche.",
+  },
+  {
+    q: "Do I need both LinkedIn and X?",
+    a: "No. You can subscribe to LinkedIn only ($29/mo), X only ($29/mo), or both platforms at once ($49/mo).",
   },
 ]
 
@@ -376,17 +380,16 @@ export default function LandingPageB() {
         <div className="absolute top-10 left-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-violet-400/10 rounded-full blur-3xl pointer-events-none" />
         <div className="relative max-w-4xl mx-auto">
           <Badge className="mb-4 sm:mb-6 bg-violet-100 text-violet-700 border-violet-200 text-xs sm:text-sm px-3 sm:px-4 py-1">
-            LinkedIn Automation &#183; $29/month
+            Personal &amp; Company Brand Autopilot
           </Badge>
           <h1 className="text-4xl sm:text-5xl md:text-7xl font-extrabold leading-tight mb-4 sm:mb-6 tracking-tight text-[#1b1916]">
-            Turn your LinkedIn into a
+            Your Brand on LinkedIn &amp; X &#8212;
             <span className="block bg-gradient-to-r from-violet-600 via-pink-500 to-cyan-500 bg-clip-text text-transparent">
-              client acquisition machine
+              Built by AI, Sounds Like You
             </span>
-            &#8212; on autopilot
           </h1>
           <p className="text-base sm:text-xl text-slate-600 max-w-2xl mx-auto mb-8 sm:mb-10 leading-relaxed">
-            We write and publish posts that bring you inbound leads &#8212; in your voice, every day.
+            We write and publish posts on LinkedIn &amp; X that bring you inbound leads &#8212; in your voice, every day.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center">
             <div className="relative w-full sm:w-auto">
@@ -539,7 +542,7 @@ export default function LandingPageB() {
       {/* Social proof strip */}
       <div className="px-6 py-5 bg-gradient-to-r from-violet-600 to-pink-600 text-center">
         <p className="text-white text-base font-medium">
-          Join <span className="font-extrabold">2,400+ professionals</span> growing their LinkedIn presence with ItGrows.ai
+          Join <span className="font-extrabold">2,400+ professionals</span> growing their LinkedIn &amp; X presence with ItGrows.ai
         </p>
       </div>
 
@@ -552,8 +555,8 @@ export default function LandingPageB() {
           </h2>
           <div className="space-y-4 mb-8 text-left max-w-xl mx-auto">
             {[
-              "Your competitors show up daily \u2014 you don\u2019t",
-              "Decision-makers check LinkedIn before buying",
+              "Your competitors show up daily on LinkedIn & X \u2014 you don\u2019t",
+              "Decision-makers check LinkedIn and X before buying",
               "The one who posts \u2192 gets the deal",
             ].map((item, i) => (
               <div key={i} className="flex items-start gap-3">
@@ -575,12 +578,12 @@ export default function LandingPageB() {
         <div className="max-w-3xl mx-auto">
           <div className="text-center mb-10">
             <span className="inline-flex items-center gap-2 mb-4 px-4 py-1.5 rounded-full text-xs font-bold border border-violet-200 text-violet-700 bg-white/70 tracking-[0.12em] uppercase shadow-sm">
-              <span className="text-violet-500">&#9646;</span> Real LinkedIn Data
+              <span className="text-violet-500">&#9646;</span> Real LinkedIn &amp; X Data
             </span>
             <h2 className="text-3xl sm:text-5xl font-black text-[#1b1916] mb-2 tracking-tight">
               From invisible &#8594; to <span className="text-violet-600">inbound</span>
             </h2>
-            <p className="text-slate-500 text-base mt-2">Consistent content. Real visibility. New opportunities.</p>
+            <p className="text-slate-500 text-base mt-2">Consistent content on both platforms. Real visibility. New opportunities.</p>
           </div>
 
           {/* Before / After cards */}
@@ -821,7 +824,7 @@ export default function LandingPageB() {
               What consistent posting gets you:
             </h2>
             <p className="text-slate-400 text-base sm:text-lg max-w-xl mx-auto">
-              LinkedIn rewards consistency &#8212; not effort
+              LinkedIn &amp; X reward consistency &#8212; not effort
             </p>
           </div>
 
@@ -974,11 +977,11 @@ export default function LandingPageB() {
       <section className="px-4 sm:px-6 py-16 sm:py-24 bg-white">
         <div className="max-w-3xl mx-auto text-center">
           <h2 className="text-3xl sm:text-4xl font-extrabold mb-8 text-[#1b1916] leading-tight tracking-tight">
-            LinkedIn rewards consistency &#8212; not effort
+            LinkedIn &amp; X reward consistency &#8212; not effort
           </h2>
           <div className="space-y-4 mb-8 text-left max-w-xl mx-auto">
             {[
-              "Posting daily = algorithm boost",
+              "Posting daily on both platforms = algorithm boost",
               "Visibility \u2192 trust \u2192 clients",
               "People buy from those they see often",
             ].map((item, i) => (
@@ -1259,73 +1262,145 @@ export default function LandingPageB() {
 
       {/* Pricing */}
       <section id="pricing" className="px-4 sm:px-6 py-16 sm:py-24" style={{ backgroundColor: "#ebe9e5" }}>
-        <div className="max-w-2xl mx-auto">
+        <div className="max-w-5xl mx-auto">
           <div className="text-center mb-12">
             <Badge className="mb-4 bg-violet-100 text-violet-700 border-violet-200">Pricing</Badge>
             <h2 className="text-4xl font-bold mb-4 text-[#1b1916]">One client pays for years of this tool</h2>
-            <p className="text-slate-600 text-lg">No upsells. No tiers. Just inbound leads.</p>
+            <p className="text-slate-600 text-lg">Pick your platform. Start free. No card required.</p>
           </div>
 
-          <div className="flex items-center justify-center gap-4 mb-10">
-            <span className={`text-sm font-medium ${!annual ? "text-[#1b1916]" : "text-slate-400"}`}>Monthly</span>
-            <button
-              onClick={() => setAnnual(!annual)}
-              className={`relative w-14 h-7 rounded-full transition-colors duration-200 ${annual ? "bg-violet-600" : "bg-slate-300"}`}
-              aria-label="Toggle annual billing"
-            >
-              <span className={`absolute top-1 left-1 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200 ${annual ? "translate-x-7" : ""}`} />
-            </button>
-            <span className={`text-sm font-medium ${annual ? "text-[#1b1916]" : "text-slate-400"}`}>
-              Annual
-              <span className="ml-2 px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full font-semibold">Save 20%</span>
-            </span>
-          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* LinkedIn */}
+            <Card className="relative border-slate-200 bg-white shadow-lg">
+              <CardHeader className="text-center pb-2 pt-8">
+                <div className="flex justify-center mb-3">
+                  <div className="w-12 h-12 rounded-xl bg-blue-600 flex items-center justify-center">
+                    <svg viewBox="0 0 24 24" fill="white" className="w-7 h-7">
+                      <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+                    </svg>
+                  </div>
+                </div>
+                <CardTitle className="text-[#1b1916] text-xl">LinkedIn Only</CardTitle>
+                <p className="text-slate-500 text-sm mt-1">Daily posts on LinkedIn in your voice</p>
+                <div className="flex items-end gap-1 mt-4 justify-center">
+                  <span className="text-5xl font-extrabold text-[#1b1916]">$29</span>
+                  <span className="text-slate-500 mb-2">/month</span>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4 px-6 pb-8">
+                <Button
+                  onClick={handleStartTrial}
+                  className="w-full bg-blue-600 hover:bg-blue-500 text-white py-5 text-sm rounded-xl mt-2"
+                >
+                  Start Free &#8212; No Card
+                </Button>
+                <ul className="space-y-2 pt-1">
+                  {[
+                    "7 AI-written posts/week",
+                    "Custom AI images",
+                    "Auto-post at peak time",
+                    "Profile-based voice",
+                  ].map((item, i) => (
+                    <li key={i} className="flex items-center gap-2 text-sm text-slate-600">
+                      <span className="text-blue-600 font-bold">&#10003;</span>
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
 
-          <Card className="relative border-violet-500 bg-gradient-to-b from-violet-50 to-white shadow-2xl shadow-violet-200">
-            <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-              <Badge className="bg-violet-600 text-white border-0 px-4 py-1">Most Popular</Badge>
-            </div>
-            <CardHeader className="text-center pb-2 pt-8">
-              <CardTitle className="text-[#1b1916] text-2xl">Client Acquisition Autopilot</CardTitle>
-              <p className="text-slate-500 text-sm mt-1">Everything you need to get inbound leads from LinkedIn</p>
-              <div className="flex items-end gap-1 mt-4 justify-center">
-                <span className="text-6xl font-extrabold text-[#1b1916]">{annual ? "$24" : "$29"}</span>
-                <span className="text-slate-500 mb-2 text-lg">/month</span>
+            {/* Both — Most Popular */}
+            <Card className="relative border-violet-500 bg-gradient-to-b from-violet-50 to-white shadow-2xl shadow-violet-200 scale-105">
+              <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+                <Badge className="bg-violet-600 text-white border-0 px-4 py-1">Best Value</Badge>
               </div>
-              {annual && (
-                <>
-                  <p className="text-sm text-green-600 font-medium mt-1">Billed $288/year &#183; Save $60</p>
-                  <p className="text-xs text-slate-500 mt-1">7-day money-back guarantee &#8212; cancel anytime</p>
-                </>
-              )}
-              {!annual && (
-                <p className="text-sm text-slate-400 mt-1">or <button onClick={() => setAnnual(true)} className="underline text-violet-600">save 20% with annual</button></p>
-              )}
-            </CardHeader>
-            <CardContent className="space-y-5 px-8 pb-8">
-              <Button
-                onClick={annual ? () => handleCheckout("annual") : handleStartTrial}
-                className="w-full bg-violet-600 hover:bg-violet-500 text-white py-6 text-base rounded-xl mt-2"
-              >
-                {annual ? "Start Annual Plan" : "Start Free \u2014 No Card"}
-              </Button>
-              <p className="text-center text-xs text-slate-500">Cancel anytime</p>
-              <ul className="space-y-3 pt-2">
-                {[
-                  "7 AI-written posts per week",
-                  "Custom images",
-                  "Auto-posting at peak time",
-                  "Profile-based personalization",
-                  "Edit anytime",
-                ].map((item, i) => (
-                  <li key={i} className="flex items-center gap-3 text-sm text-slate-600">
-                    <span className="text-violet-600 font-bold text-base">&#10003;</span>
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
-          </Card>
+              <CardHeader className="text-center pb-2 pt-8">
+                <div className="flex justify-center mb-3 gap-2">
+                  <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center">
+                    <svg viewBox="0 0 24 24" fill="white" className="w-6 h-6">
+                      <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+                    </svg>
+                  </div>
+                  <div className="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center">
+                    <svg viewBox="0 0 24 24" fill="white" className="w-5 h-5">
+                      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.748l7.73-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                    </svg>
+                  </div>
+                </div>
+                <CardTitle className="text-[#1b1916] text-xl">LinkedIn + X</CardTitle>
+                <p className="text-slate-500 text-sm mt-1">Dominate both platforms at once</p>
+                <div className="flex items-end gap-1 mt-4 justify-center">
+                  <span className="text-5xl font-extrabold text-[#1b1916]">$49</span>
+                  <span className="text-slate-500 mb-2">/month</span>
+                </div>
+                <p className="text-xs text-green-600 font-semibold mt-1">Save $9/mo vs buying separately</p>
+              </CardHeader>
+              <CardContent className="space-y-4 px-6 pb-8">
+                <Button
+                  onClick={handleStartTrial}
+                  className="w-full bg-violet-600 hover:bg-violet-500 text-white py-5 text-sm rounded-xl mt-2"
+                >
+                  Start Free &#8212; No Card
+                </Button>
+                <ul className="space-y-2 pt-1">
+                  {[
+                    "Everything in LinkedIn plan",
+                    "7 tweets/week on X",
+                    "Personal + Company accounts",
+                    "Cross-platform content DNA",
+                  ].map((item, i) => (
+                    <li key={i} className="flex items-center gap-2 text-sm text-slate-600">
+                      <span className="text-violet-600 font-bold">&#10003;</span>
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
+
+            {/* X Only */}
+            <Card className="relative border-slate-200 bg-white shadow-lg">
+              <CardHeader className="text-center pb-2 pt-8">
+                <div className="flex justify-center mb-3">
+                  <div className="w-12 h-12 rounded-xl bg-slate-900 flex items-center justify-center">
+                    <svg viewBox="0 0 24 24" fill="white" className="w-6 h-6">
+                      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.748l7.73-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                    </svg>
+                  </div>
+                </div>
+                <CardTitle className="text-[#1b1916] text-xl">X (Twitter) Only</CardTitle>
+                <p className="text-slate-500 text-sm mt-1">Daily tweets that build your following</p>
+                <div className="flex items-end gap-1 mt-4 justify-center">
+                  <span className="text-5xl font-extrabold text-[#1b1916]">$29</span>
+                  <span className="text-slate-500 mb-2">/month</span>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4 px-6 pb-8">
+                <Button
+                  onClick={handleStartTrial}
+                  className="w-full bg-slate-900 hover:bg-slate-700 text-white py-5 text-sm rounded-xl mt-2"
+                >
+                  Start Free &#8212; No Card
+                </Button>
+                <ul className="space-y-2 pt-1">
+                  {[
+                    "7 AI-written tweets/week",
+                    "Threads support",
+                    "Auto-post at peak time",
+                    "X-native voice & tone",
+                  ].map((item, i) => (
+                    <li key={i} className="flex items-center gap-2 text-sm text-slate-600">
+                      <span className="text-slate-700 font-bold">&#10003;</span>
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
+          </div>
+
+          <p className="text-center text-xs text-slate-400 mt-8">Cancel anytime &#183; No credit card required to start</p>
         </div>
       </section>
 
@@ -1368,13 +1443,13 @@ export default function LandingPageB() {
       <section className="px-4 sm:px-6 py-16 sm:py-24 text-center" style={{ backgroundColor: "#ebe9e5" }}>
         <div className="max-w-3xl mx-auto">
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-4 sm:mb-6 text-[#1b1916]">
-            Ready to get clients from LinkedIn &#8212;{" "}
+            Ready to get clients from LinkedIn &amp; X &#8212;{" "}
             <span className="bg-gradient-to-r from-violet-600 to-cyan-600 bg-clip-text text-transparent">
               without posting?
             </span>
           </h2>
           <p className="text-slate-600 text-base sm:text-lg mb-8 sm:mb-10">
-            Join professionals who turned visibility into inbound.
+            Join professionals who turned visibility into inbound on both platforms.
           </p>
           <Button
             size="lg"

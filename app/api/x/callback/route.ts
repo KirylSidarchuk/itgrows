@@ -27,6 +27,7 @@ export async function GET(req: NextRequest) {
   const stateRow = stateRows[0]
   const userId = stateRow.userId
   const codeVerifier = stateRow.codeVerifier
+  const accountType = stateRow.accountType ?? "personal"
 
   // Delete the used state row
   await db.delete(oauthState).where(eq(oauthState.id, stateRow.id))
@@ -94,25 +95,22 @@ export async function GET(req: NextRequest) {
     const username = userData.data.username
     const displayName = userData.data.name ?? null
 
-    // Upsert twitterAccounts
+    // Upsert twitterAccounts — keyed by (userId, accountType)
     const existing = await db
       .select({ id: twitterAccounts.id })
       .from(twitterAccounts)
       .where(and(
         eq(twitterAccounts.userId, userId),
-        eq(twitterAccounts.twitterUserId, twitterUserId)
+        eq(twitterAccounts.accountType, accountType)
       ))
       .limit(1)
 
     if (existing.length > 0) {
       await db
         .update(twitterAccounts)
-        .set({ accessToken, refreshToken, expiresAt, username, displayName })
+        .set({ accessToken, refreshToken, expiresAt, username, displayName, twitterUserId })
         .where(eq(twitterAccounts.id, existing[0].id))
     } else {
-      // Also remove any old twitter account for this user (one account per user)
-      await db.delete(twitterAccounts).where(eq(twitterAccounts.userId, userId))
-
       await db.insert(twitterAccounts).values({
         userId,
         twitterUserId,
@@ -121,6 +119,7 @@ export async function GET(req: NextRequest) {
         accessToken,
         refreshToken,
         expiresAt,
+        accountType,
       })
     }
 
