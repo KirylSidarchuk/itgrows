@@ -49,7 +49,8 @@ export async function GET(req: NextRequest) {
     if (!tokenRes.ok) {
       const errText = await tokenRes.text()
       console.error("Twitter token exchange failed:", errText)
-      return NextResponse.redirect(`${process.env.NEXTAUTH_URL}/cabinet?error=token_failed`)
+      const detail = encodeURIComponent(errText.slice(0, 200))
+      return NextResponse.redirect(`${process.env.NEXTAUTH_URL}/cabinet?error=token_failed&detail=${detail}`)
     }
 
     const tokenData = await tokenRes.json() as {
