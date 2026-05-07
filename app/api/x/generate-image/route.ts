@@ -4,8 +4,9 @@ import { db } from "@/lib/db"
 import { twitterPosts } from "@/lib/db/schema"
 import { eq, and } from "drizzle-orm"
 
-const IMAGE_API_URL = "http://34.60.133.229:4000/v1/images/generations"
+const IMAGE_API_URL = "http://34.60.133.229:4000/images/generate"
 const IMAGE_API_KEY = "jtotFgxS1WQorT52LZym2ncyYzboliS6p04RqUwneFI"
+const IMAGE_MODEL = "gemini-3-pro-image-preview"
 
 interface GenerateImageRequest {
   postId: string
@@ -49,10 +50,8 @@ export async function POST(req: NextRequest) {
         Authorization: `Bearer ${IMAGE_API_KEY}`,
       },
       body: JSON.stringify({
-        model: "imagen-3.0-generate-002",
+        model: IMAGE_MODEL,
         prompt: imagePrompt,
-        n: 1,
-        size: "1024x1024",
       }),
     })
 
@@ -62,23 +61,17 @@ export async function POST(req: NextRequest) {
     }
 
     const imgData = await imgRes.json() as {
-      data?: Array<{ url?: string; b64_json?: string }>
+      candidates?: Array<{ content: { parts: Array<{ inlineData?: { data?: string; mimeType?: string } }> } }>
     }
 
-    const imageEntry = imgData.data?.[0]
-    if (!imageEntry) {
+    const parts = imgData?.candidates?.[0]?.content?.parts ?? []
+    const inlineData = parts.find((p) => p?.inlineData)?.inlineData
+    if (!inlineData?.data) {
       throw new Error("No image data returned from API")
     }
 
-    let imageUrl: string
-
-    if (imageEntry.url) {
-      imageUrl = imageEntry.url
-    } else if (imageEntry.b64_json) {
-      imageUrl = `data:image/png;base64,${imageEntry.b64_json}`
-    } else {
-      throw new Error("Image API returned no URL or base64 data")
-    }
+    const mimeType = inlineData.mimeType ?? "image/jpeg"
+    const imageUrl = `data:${mimeType};base64,${inlineData.data}`
 
     // Save imageUrl to twitterPosts
     await db
