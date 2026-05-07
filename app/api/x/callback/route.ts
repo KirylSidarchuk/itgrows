@@ -41,8 +41,7 @@ export async function GET(req: NextRequest) {
       body: new URLSearchParams({
         grant_type: "authorization_code",
         code,
-        redirect_uri: `${process.env.NEXTAUTH_URL}/api/x/callback`,
-        client_id: clientId,
+        redirect_uri: "https://itgrows.ai/api/x/callback",
         code_verifier: codeVerifier,
       }),
     })
