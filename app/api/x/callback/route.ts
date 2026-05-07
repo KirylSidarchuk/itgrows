@@ -29,14 +29,11 @@ export async function GET(req: NextRequest) {
   try {
     // Exchange code for tokens
     const clientId = process.env.TWITTER_CLIENT_ID!
-    const clientSecret = process.env.TWITTER_CLIENT_SECRET!
-    const basicAuth = Buffer.from(`${encodeURIComponent(clientId)}:${encodeURIComponent(clientSecret)}`).toString("base64")
 
     const tokenRes = await fetch("https://api.twitter.com/2/oauth2/token", {
       method: "POST",
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
-        Authorization: `Basic ${basicAuth}`,
       },
       body: new URLSearchParams({
         grant_type: "authorization_code",
