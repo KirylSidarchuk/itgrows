@@ -936,6 +936,14 @@ function LinkedInPageContent() {
     }
   }, [])
 
+  const xConnected = searchParams.get("x_connected")
+
+  useEffect(() => {
+    if (xConnected === "1") {
+      setActivePlatform("x")
+    }
+  }, [xConnected])
+
   useEffect(() => {
     if (connected === "1") {
       setStatusMessage("LinkedIn connected successfully!")
