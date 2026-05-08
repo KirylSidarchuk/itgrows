@@ -345,6 +345,21 @@ Return only the JSON object, no markdown, no extra text.`,
       // Non-fatal: personal account is already saved
     }
 
+    // Fire-and-forget: generate initial posts if user has none yet
+    const cronSecret = process.env.CRON_SECRET
+    if (cronSecret) {
+      fetch(`${process.env.NEXTAUTH_URL}/api/internal/generate-initial-posts`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-internal-secret": cronSecret,
+        },
+        body: JSON.stringify({ userId }),
+      }).catch((err) => {
+        console.error("[linkedin-callback] Failed to trigger initial post generation:", err)
+      })
+    }
+
     return NextResponse.redirect(`${process.env.NEXTAUTH_URL}/cabinet?connected=1`)
   } catch (err) {
     console.error("LinkedIn callback error:", err)

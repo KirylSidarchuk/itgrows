@@ -81,6 +81,20 @@ export async function generateForUser(userId: string): Promise<{ success: boolea
       return { success: false, error: "No LinkedIn account" }
     }
 
+    // Skip if user already has scheduled/draft posts (avoid duplicates)
+    const existingPosts = await db
+      .select({ id: linkedinPosts.id })
+      .from(linkedinPosts)
+      .where(and(
+        eq(linkedinPosts.userId, userId),
+        inArray(linkedinPosts.status, ["scheduled", "draft"])
+      ))
+      .limit(1)
+
+    if (existingPosts.length > 0) {
+      return { success: true }
+    }
+
     // Get brief
     const [dbBrief] = await db
       .select()
