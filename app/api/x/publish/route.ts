@@ -8,6 +8,43 @@ interface PublishRequest {
   postId: string
 }
 
+async function refreshTwitterToken(account: typeof twitterAccounts.$inferSelect): Promise<string | null> {
+  if (!account.refreshToken) return null
+
+  const clientId = process.env.TWITTER_CLIENT_ID!
+  const clientSecret = process.env.TWITTER_CLIENT_SECRET!
+  const basicAuth = Buffer.from(`${clientId}:${clientSecret}`).toString("base64")
+
+  const res = await fetch("https://api.twitter.com/2/oauth2/token", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+      Authorization: `Basic ${basicAuth}`,
+    },
+    body: new URLSearchParams({
+      grant_type: "refresh_token",
+      refresh_token: account.refreshToken,
+      client_id: clientId,
+    }),
+  })
+
+  if (!res.ok) {
+    console.error("[publish-x] Token refresh failed:", await res.text())
+    return null
+  }
+
+  const data = await res.json() as { access_token: string; refresh_token?: string; expires_in?: number }
+
+  // Update token in DB
+  await db.update(twitterAccounts).set({
+    accessToken: data.access_token,
+    refreshToken: data.refresh_token ?? account.refreshToken,
+    expiresAt: data.expires_in ? new Date(Date.now() + data.expires_in * 1000) : null,
+  }).where(eq(twitterAccounts.id, account.id))
+
+  return data.access_token
+}
+
 export async function POST(req: NextRequest) {
   try {
     const session = await auth()
@@ -49,6 +86,22 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: `No Twitter/X ${post.accountType} account connected` }, { status: 400 })
     }
 
+    // Refresh token if expired or expiring within 5 minutes
+    let accessToken = account.accessToken
+
+    if (account.expiresAt && account.expiresAt <= new Date(Date.now() + 5 * 60 * 1000)) {
+      const newToken = await refreshTwitterToken(account)
+      if (newToken) {
+        accessToken = newToken
+      } else {
+        await db
+          .update(twitterPosts)
+          .set({ status: "failed", errorMessage: "Token refresh failed" })
+          .where(and(eq(twitterPosts.id, postId), eq(twitterPosts.userId, userId)))
+        return NextResponse.json({ error: "Token refresh failed" }, { status: 502 })
+      }
+    }
+
     // TODO: Media upload requires OAuth 1.0a (not Bearer token) for Twitter v1.1 media/upload.json
     // Skipping media upload for now — posting text-only even if imageUrl exists
     if (post.imageUrl) {
@@ -63,7 +116,7 @@ export async function POST(req: NextRequest) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${account.accessToken}`,
+        Authorization: `Bearer ${accessToken}`,
       },
       body: JSON.stringify(tweetBody),
     })
