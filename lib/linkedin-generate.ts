@@ -1,12 +1,38 @@
 import { db } from "@/lib/db"
-import { linkedinPosts, linkedinBriefs, linkedinAccounts } from "@/lib/db/schema"
+import { linkedinPosts, linkedinBriefs, linkedinAccounts, users } from "@/lib/db/schema"
 import { eq, and, inArray } from "drizzle-orm"
 import { callLLM } from "@/lib/llm-client"
 import { generatePostImage } from "@/lib/linkedin-image"
+import { sendEmail } from "@/lib/email"
 
 interface PostData {
   content: string
   hook: string
+}
+
+const baseStyle = `
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  max-width: 560px;
+  margin: 0 auto;
+  background: #ffffff;
+`
+
+function linkedinPostsReadyEmail(name: string, firstDate: Date): string {
+  const dateStr = firstDate.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })
+  return `
+    <div style="${baseStyle}">
+      <div style="background: linear-gradient(135deg, #7c3aed, #a855f7); padding: 32px; text-align: center; border-radius: 12px 12px 0 0;">
+        <h1 style="color: white; margin: 0; font-size: 24px;">Your first LinkedIn posts are ready 🚀</h1>
+      </div>
+      <div style="padding: 32px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 12px 12px;">
+        <p style="color: #374151; font-size: 16px;">Hi ${name},</p>
+        <p style="color: #374151;">We generated 7 posts for you, starting <strong>${dateStr}</strong>. Posts will publish automatically at 10am UTC, one per day.</p>
+        <p style="color: #6b7280; font-size: 14px;">Visit your cabinet to preview or edit them before they go live.</p>
+        <a href="https://itgrows.ai/cabinet" style="display: inline-block; background: #7c3aed; color: white; padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; margin-top: 16px;">View Your Posts →</a>
+        <p style="color: #9ca3af; font-size: 12px; margin-top: 32px;">ItGrows.ai · <a href="https://itgrows.ai/cabinet" style="color: #9ca3af;">Manage posts</a></p>
+      </div>
+    </div>
+  `
 }
 
 function stripMarkdown(text: string): string {
@@ -156,6 +182,23 @@ export async function generateForUser(userId: string): Promise<{ success: boolea
         scheduledFor,
         imageUrl: imageUrls[i],
       })
+    }
+
+    // Send "posts ready" notification email — fire-and-forget
+    const firstDate = new Date(now)
+    firstDate.setUTCDate(firstDate.getUTCDate() + 1)
+    firstDate.setUTCHours(10, 0, 0, 0)
+    const [user] = await db
+      .select({ email: users.email, name: users.name })
+      .from(users)
+      .where(eq(users.id, userId))
+      .limit(1)
+    if (user?.email) {
+      sendEmail({
+        to: user.email,
+        subject: "Your first LinkedIn posts are ready 🚀",
+        html: linkedinPostsReadyEmail(user.name ?? "there", firstDate),
+      }).catch(() => {})
     }
 
     return { success: true }

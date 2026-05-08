@@ -4,7 +4,7 @@ import { db } from "@/lib/db"
 import { users } from "@/lib/db/schema"
 import { eq } from "drizzle-orm"
 import { sendEmail } from "@/lib/email"
-import { subscriptionActivatedEmail, paymentFailedEmail } from "@/lib/email-templates"
+import { subscriptionActivatedEmail, paymentFailedEmail, subscriptionCancelledEmail } from "@/lib/email-templates"
 
 function getStripe() {
   const key = process.env.STRIPE_SECRET_KEY
@@ -114,7 +114,7 @@ export async function POST(req: NextRequest) {
         const subscription = event.data.object as Stripe.Subscription
 
         const [user] = await db
-          .select({ id: users.id })
+          .select({ id: users.id, email: users.email, name: users.name })
           .from(users)
           .where(
             eq(users.stripeCustomerId, subscription.customer as string)
@@ -132,6 +132,14 @@ export async function POST(req: NextRequest) {
             cancelAt: null,
           })
           .where(eq(users.id, user.id))
+
+        if (user.email) {
+          await sendEmail({
+            to: user.email,
+            subject: "Your ItGrows.ai subscription has ended",
+            html: subscriptionCancelledEmail(user.name ?? "there"),
+          })
+        }
         break
       }
 

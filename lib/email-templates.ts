@@ -90,6 +90,67 @@ export function linkedinTokenExpiredEmail(name: string): string {
   `
 }
 
+export function xTokenExpiredEmail(name: string): string {
+  return `
+    <div style="${baseStyle}">
+      <div style="background: linear-gradient(135deg, #1a1a2e, #16213e); padding: 24px 32px; border-radius: 12px 12px 0 0;">
+        <h1 style="color: white; margin: 0; font-size: 20px;">🔗 Reconnect Your X Account</h1>
+      </div>
+      <div style="padding: 32px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 12px 12px;">
+        <p style="color: #374151;">Hi ${name},</p>
+        <p style="color: #374151;">Your X (Twitter) connection has expired. To keep your autopilot running, please reconnect your account — it takes 10 seconds.</p>
+        <a href="https://itgrows.ai/cabinet" style="display: inline-block; background: #1a1a2e; color: white; padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; margin-top: 8px;">Reconnect X Account →</a>
+        <p style="color: #9ca3af; font-size: 12px; margin-top: 32px;">ItGrows.ai · This is a one-time reconnect to refresh your access token.</p>
+      </div>
+    </div>
+  `
+}
+
+export function xPostFailedEmail(name: string, postPreview: string, error: string): string {
+  return `
+    <div style="${baseStyle}">
+      <div style="background: linear-gradient(135deg, #dc2626, #ef4444); padding: 24px 32px; border-radius: 12px 12px 0 0;">
+        <h1 style="color: white; margin: 0; font-size: 20px;">⚠️ X Post Failed to Publish</h1>
+      </div>
+      <div style="padding: 32px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 12px 12px;">
+        <p style="color: #374151;">Hi ${name},</p>
+        <p style="color: #374151;">We couldn't publish your X (Twitter) post. Here's what happened:</p>
+        <div style="background: #fef2f2; border-left: 3px solid #ef4444; padding: 16px; border-radius: 4px; color: #374151; font-size: 14px; line-height: 1.6; margin: 16px 0;">
+          ${postPreview.slice(0, 200)}${postPreview.length > 200 ? "..." : ""}
+        </div>
+        <div style="background: #fef2f2; border: 1px solid #fecaca; padding: 12px 16px; border-radius: 8px; color: #991b1b; font-size: 13px; margin: 16px 0;">
+          ${error.slice(0, 300)}
+        </div>
+        <p style="color: #6b7280; font-size: 14px;">Common fixes:</p>
+        <ul style="color: #6b7280; font-size: 14px; line-height: 1.8;">
+          <li>Reconnect your X account in the cabinet (token may have expired)</li>
+          <li>Check if your X account is still active</li>
+          <li>Try publishing manually from the cabinet</li>
+        </ul>
+        <a href="https://itgrows.ai/cabinet" style="display: inline-block; background: #7c3aed; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; margin-top: 8px;">Go to Cabinet →</a>
+        <p style="color: #9ca3af; font-size: 12px; margin-top: 32px;">ItGrows.ai · <a href="https://itgrows.ai/cabinet" style="color: #9ca3af;">Manage posts</a></p>
+      </div>
+    </div>
+  `
+}
+
+export function subscriptionCancelledEmail(name: string): string {
+  return `
+    <div style="${baseStyle}">
+      <div style="background: linear-gradient(135deg, #6b7280, #9ca3af); padding: 24px 32px; border-radius: 12px 12px 0 0;">
+        <h1 style="color: white; margin: 0; font-size: 20px;">Your ItGrows.ai subscription has ended</h1>
+      </div>
+      <div style="padding: 32px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 12px 12px;">
+        <p style="color: #374151;">Hi ${name},</p>
+        <p style="color: #374151;">Your subscription has ended. Your content history is saved and you can resubscribe anytime.</p>
+        <p style="color: #6b7280; font-size: 14px;">We hope to see you back soon. Your posts and brief will be waiting for you.</p>
+        <a href="https://itgrows.ai/#pricing" style="display: inline-block; background: #7c3aed; color: white; padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; margin-top: 16px;">Resubscribe →</a>
+        <p style="color: #9ca3af; font-size: 12px; margin-top: 32px;">ItGrows.ai · <a href="https://itgrows.ai" style="color: #9ca3af;">itgrows.ai</a></p>
+      </div>
+    </div>
+  `
+}
+
 export function paymentFailedEmail(name: string): string {
   return `
     <div style="${baseStyle}">

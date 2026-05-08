@@ -49,14 +49,33 @@ export async function GET(req: NextRequest) {
         .set({ trialEndsAt })
         .where(eq(users.id, user.id))
 
-      // Send welcome email
+      // Send welcome email (styled)
       const userName = user.name || user.email.split("@")[0]
+      const welcomeHtml = `
+        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 560px; margin: 0 auto; background: #ffffff;">
+          <div style="background: linear-gradient(135deg, #7c3aed, #a855f7); padding: 40px 32px; text-align: center; border-radius: 12px 12px 0 0;">
+            <h1 style="color: white; margin: 0 0 8px; font-size: 26px; font-weight: 700;">Welcome to ItGrows.ai</h1>
+            <p style="color: rgba(255,255,255,0.85); margin: 0; font-size: 15px;">Your LinkedIn autopilot is ready to launch</p>
+          </div>
+          <div style="padding: 36px 32px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 12px 12px;">
+            <p style="color: #374151; font-size: 16px; margin: 0 0 16px;">Hi ${userName},</p>
+            <p style="color: #374151; font-size: 15px; line-height: 1.6; margin: 0 0 24px;">Your 7-day free trial has started. Connect your LinkedIn (and X) to start publishing today — no credit card required.</p>
+            <p style="color: #6b7280; font-size: 14px; line-height: 1.8; margin: 0 0 8px;">Here's what to do next:</p>
+            <ul style="color: #6b7280; font-size: 14px; line-height: 1.8; margin: 0 0 28px; padding-left: 20px;">
+              <li>Connect your LinkedIn account</li>
+              <li>Fill your Professional DNA brief (2 minutes)</li>
+              <li>We'll generate 7 posts for your first week</li>
+              <li>Posts publish automatically at 10am UTC daily</li>
+            </ul>
+            <a href="https://itgrows.ai/cabinet" style="display: inline-block; background: linear-gradient(135deg, #7c3aed, #a855f7); color: white; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 15px;">Go to Your Cabinet →</a>
+            <p style="color: #9ca3af; font-size: 12px; margin-top: 36px; border-top: 1px solid #f3f4f6; padding-top: 20px;">ItGrows.ai · <a href="https://itgrows.ai" style="color: #9ca3af; text-decoration: none;">itgrows.ai</a></p>
+          </div>
+        </div>
+      `
       sendEmail({
         to: user.email,
-        subject: "Welcome to ItGrows.ai \u2014 your 7-day trial has started \uD83D\uDE80",
-        html: `<p>Hi ${userName},</p>
-<p>Your 7-day free trial has started. Connect your LinkedIn and we'll start generating posts for you today.</p>
-<p><a href="https://www.itgrows.ai/cabinet">Go to cabinet</a></p>`,
+        subject: "Welcome to ItGrows.ai — your 7-day trial has started 🚀",
+        html: welcomeHtml,
       }).catch(() => {})
 
       // Fire-and-forget: generate initial LinkedIn posts

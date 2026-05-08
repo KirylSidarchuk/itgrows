@@ -3,8 +3,12 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { useEffect, useState } from "react"
+import { useSearchParams } from "next/navigation"
+import { Suspense } from "react"
 
-export default function PersonalWelcomePage() {
+function PersonalWelcomeContent() {
+  const searchParams = useSearchParams()
+  const subscribed = searchParams.get("subscribed") === "1"
   const [linkedinConnected, setLinkedinConnected] = useState<boolean | null>(null)
 
   useEffect(() => {
@@ -28,6 +32,13 @@ export default function PersonalWelcomePage() {
         <Link href="/" className="inline-block mb-10 text-xl font-bold bg-gradient-to-r from-violet-600 to-cyan-600 bg-clip-text text-transparent">
           ItGrows.ai
         </Link>
+
+        {/* Subscription activated banner */}
+        {subscribed && (
+          <div className="mb-6 rounded-xl bg-green-50 border border-green-200 px-6 py-4 text-green-800 text-sm font-medium">
+            Welcome! Your subscription is now active.
+          </div>
+        )}
 
         {/* Icon */}
         <div className="w-20 h-20 rounded-full bg-gradient-to-br from-violet-600 to-pink-600 flex items-center justify-center text-4xl mx-auto mb-8 shadow-lg shadow-violet-200">
@@ -81,5 +92,13 @@ export default function PersonalWelcomePage() {
         )}
       </div>
     </div>
+  )
+}
+
+export default function PersonalWelcomePage() {
+  return (
+    <Suspense>
+      <PersonalWelcomeContent />
+    </Suspense>
   )
 }

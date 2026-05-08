@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db"
 import { twitterAccounts, oauthState } from "@/lib/db/schema"
 import { eq, and } from "drizzle-orm"
+import { generateInitialXPosts } from "@/lib/x-generate"
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
@@ -122,6 +123,9 @@ export async function GET(req: NextRequest) {
         accountType,
       })
     }
+
+    // Fire-and-forget: generate initial X posts if user has none
+    generateInitialXPosts(userId, accountType).catch(() => {})
 
     return NextResponse.redirect(`${process.env.NEXTAUTH_URL}/cabinet?x_connected=1`)
   } catch (err) {

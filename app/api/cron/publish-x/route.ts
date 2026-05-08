@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db"
-import { twitterAccounts, twitterPosts } from "@/lib/db/schema"
+import { twitterAccounts, twitterPosts, users } from "@/lib/db/schema"
 import { eq, and, lte } from "drizzle-orm"
+import { sendEmail } from "@/lib/email"
+import { xTokenExpiredEmail, xPostFailedEmail } from "@/lib/email-templates"
 
 async function refreshTwitterToken(account: typeof twitterAccounts.$inferSelect): Promise<string | null> {
   if (!account.refreshToken) return null
@@ -66,6 +68,13 @@ export async function GET(req: NextRequest) {
     let failed = 0
 
     for (const post of duePosts) {
+      // Get user info for failure emails
+      const [postUser] = await db
+        .select({ email: users.email, name: users.name })
+        .from(users)
+        .where(eq(users.id, post.userId))
+        .limit(1)
+
       // Get Twitter account for this user matching the post's accountType
       const [account] = await db
         .select()
@@ -79,6 +88,13 @@ export async function GET(req: NextRequest) {
           .set({ status: "failed", errorMessage: `No Twitter ${post.accountType} account connected` })
           .where(eq(twitterPosts.id, post.id))
         failed++
+        if (postUser?.email) {
+          await sendEmail({
+            to: postUser.email,
+            subject: "Action required: Reconnect your X account to ItGrows",
+            html: xTokenExpiredEmail(postUser.name ?? "there"),
+          })
+        }
         continue
       }
 
@@ -92,6 +108,13 @@ export async function GET(req: NextRequest) {
         } else {
           await db.update(twitterPosts).set({ status: "failed", errorMessage: "Token refresh failed" }).where(eq(twitterPosts.id, post.id))
           failed++
+          if (postUser?.email) {
+            await sendEmail({
+              to: postUser.email,
+              subject: "Action required: Reconnect your X account to ItGrows",
+              html: xTokenExpiredEmail(postUser.name ?? "there"),
+            })
+          }
           continue
         }
       }
@@ -115,6 +138,13 @@ export async function GET(req: NextRequest) {
             .where(eq(twitterPosts.id, post.id))
           failed++
           console.error(`[publish-x] Failed to publish post ${post.id}:`, errText)
+          if (postUser?.email) {
+            await sendEmail({
+              to: postUser.email,
+              subject: "⚠️ Your X post could not be published",
+              html: xPostFailedEmail(postUser.name ?? "there", post.content, `Twitter API ${tweetRes.status}: ${errText}`),
+            })
+          }
           continue
         }
 
@@ -139,6 +169,13 @@ export async function GET(req: NextRequest) {
           .where(eq(twitterPosts.id, post.id))
         failed++
         console.error(`[publish-x] Exception publishing post ${post.id}:`, errMsg)
+        if (postUser?.email) {
+          await sendEmail({
+            to: postUser.email,
+            subject: "⚠️ Your X post could not be published",
+            html: xPostFailedEmail(postUser.name ?? "there", post.content, errMsg),
+          })
+        }
       }
     }
 

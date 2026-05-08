@@ -1674,8 +1674,8 @@ function LinkedInPageContent() {
   const xActivePosts = xPosts.filter((p) => p.status !== "published").sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
   const xPublishedPosts = xPosts.filter((p) => p.status === "published")
 
-  // Paid Stripe subscription takes priority over trial
-  const hasActiveSubscription = subscriptionStatus === "active" &&
+  // Paid Stripe subscription takes priority over trial (past_due retains access while Stripe retries)
+  const hasActiveSubscription = (subscriptionStatus === "active" || subscriptionStatus === "past_due") &&
     (subscriptionPlan === "personal" || subscriptionPlan === "personal_annual")
 
   // No-card free trial — only active if user hasn't paid yet

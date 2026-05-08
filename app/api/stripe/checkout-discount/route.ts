@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
     payment_method_types: ["card"],
     line_items: [{ price: priceId, quantity: 1 }],
     mode: "subscription",
-    success_url: "https://itgrows.ai/cabinet?subscribed=1",
+    success_url: "https://itgrows.ai/welcome?subscribed=1&session_id={CHECKOUT_SESSION_ID}",
     cancel_url: "https://itgrows.ai/",
     ...(email ? { customer_email: email } : {}),
     allow_promotion_codes: false,

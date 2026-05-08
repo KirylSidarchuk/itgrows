@@ -4,7 +4,7 @@ export function hasAccess(user: {
   trialEndsAt: Date | null
 }): boolean {
   if (
-    user.subscriptionStatus === "active" &&
+    (user.subscriptionStatus === "active" || user.subscriptionStatus === "past_due") &&
     (user.subscriptionPlan === "personal" || user.subscriptionPlan === "personal_annual")
   ) {
     return true
