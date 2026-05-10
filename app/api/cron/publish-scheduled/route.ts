@@ -229,18 +229,16 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  // After processing, check if any user has completed a 15-day cycle → reschedule next batch
+  // After processing, check if any user has no remaining scheduled posts → reschedule next batch
   for (const userId of Object.keys(userPublishedCounts)) {
     try {
-      const allPublished = await db
+      const remainingScheduled = await db
         .select({ id: scheduledPosts.id })
         .from(scheduledPosts)
-        .where(and(eq(scheduledPosts.userId, userId), eq(scheduledPosts.status, "published")))
+        .where(and(eq(scheduledPosts.userId, userId), eq(scheduledPosts.status, "scheduled")))
 
-      const totalPublished = allPublished.length
-
-      // If count is a multiple of 15 → schedule next 15 days
-      if (totalPublished > 0 && totalPublished % 15 === 0) {
+      // If no scheduled posts remain → auto-schedule next batch
+      if (remainingScheduled.length === 0) {
         // Find user's default connected site
         const sites = await db
           .select()
@@ -249,7 +247,7 @@ export async function GET(req: NextRequest) {
 
         const defaultSite = sites.find((s) => s.isDefault) ?? sites[0]
         if (defaultSite) {
-          // Call batch scheduling endpoint
+          // Call batch scheduling endpoint (it has its own guard against duplicate scheduling)
           await fetch(`${baseUrl}/api/schedule/batch`, {
             method: "POST",
             headers: { "Content-Type": "application/json", "x-cron-secret": cronSecret },
