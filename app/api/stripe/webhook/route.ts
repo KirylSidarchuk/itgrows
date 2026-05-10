@@ -92,11 +92,13 @@ export async function POST(req: NextRequest) {
 
         const isAccessible = ["active", "trialing"].includes(subscription.status)
         const priceId = subscription.items.data[0]?.price.id
-        // TODO: update env var names to STRIPE_PRICE_PERSONAL_MONTHLY, STRIPE_PRICE_DUO_MONTHLY, STRIPE_PRICE_ALLIN_MONTHLY
         const plan = (() => {
-          if (priceId === process.env.STRIPE_PRICE_ALLIN_MONTHLY) return "allin"
-          if (priceId === process.env.STRIPE_PRICE_DUO_MONTHLY) return "duo"
-          if (priceId === process.env.STRIPE_PRICE_PERSONAL_MONTHLY) return "personal"
+          const allinId = process.env.STRIPE_PRICE_ALLIN_MONTHLY ?? "price_1TVW9h2Ve258UiqtqaTvpEcz"
+          const duoId = process.env.STRIPE_PRICE_DUO_MONTHLY ?? "price_1TVW9h2Ve258UiqtSRGFgtOS"
+          const personalId = process.env.STRIPE_PRICE_PERSONAL_MONTHLY ?? "price_1TVW9g2Ve258UiqtC8gMDr6y"
+          if (priceId === allinId) return "allin"
+          if (priceId === duoId) return "duo"
+          if (priceId === personalId) return "personal"
           // Legacy fallbacks for existing subscribers
           if (priceId === process.env.STRIPE_PRICE_PERSONAL_ANNUAL) return "personal_annual"
           return subscription.metadata?.plan ?? "personal"

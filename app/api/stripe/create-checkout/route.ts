@@ -23,15 +23,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid plan" }, { status: 400 })
   }
 
-  const PLAN_PRICE_MAP: Record<string, string | undefined> = {
-    personal: process.env.STRIPE_PRICE_PERSONAL_MONTHLY,
-    duo: process.env.STRIPE_PRICE_DUO_MONTHLY,
-    allin: process.env.STRIPE_PRICE_ALLIN_MONTHLY,
+  const PLAN_PRICE_MAP: Record<string, string> = {
+    personal: process.env.STRIPE_PRICE_PERSONAL_MONTHLY ?? "price_1TVW9g2Ve258UiqtC8gMDr6y",
+    duo: process.env.STRIPE_PRICE_DUO_MONTHLY ?? "price_1TVW9h2Ve258UiqtSRGFgtOS",
+    allin: process.env.STRIPE_PRICE_ALLIN_MONTHLY ?? "price_1TVW9h2Ve258UiqtqaTvpEcz",
   }
   const priceId = PLAN_PRICE_MAP[plan]
-  if (!priceId) {
-    return NextResponse.json({ error: `Price ID for plan "${plan}" is not configured` }, { status: 500 })
-  }
 
   const [user] = await db
     .select({

@@ -5,21 +5,16 @@ import { db } from "@/lib/db"
 import { users } from "@/lib/db/schema"
 import { eq } from "drizzle-orm"
 
-// TODO: set these env vars in Vercel:
-// STRIPE_PRICE_PERSONAL_MONTHLY
-// STRIPE_PRICE_DUO_MONTHLY
-// STRIPE_PRICE_ALLIN_MONTHLY
-
 function getStripe() {
   const key = process.env.STRIPE_SECRET_KEY
   if (!key) throw new Error("STRIPE_SECRET_KEY is not set")
   return new Stripe(key)
 }
 
-const PLAN_PRICE_MAP: Record<string, string | undefined> = {
-  personal: process.env.STRIPE_PRICE_PERSONAL_MONTHLY,
-  duo: process.env.STRIPE_PRICE_DUO_MONTHLY,
-  allin: process.env.STRIPE_PRICE_ALLIN_MONTHLY,
+const PLAN_PRICE_MAP: Record<string, string> = {
+  personal: process.env.STRIPE_PRICE_PERSONAL_MONTHLY ?? "price_1TVW9g2Ve258UiqtC8gMDr6y",
+  duo: process.env.STRIPE_PRICE_DUO_MONTHLY ?? "price_1TVW9h2Ve258UiqtSRGFgtOS",
+  allin: process.env.STRIPE_PRICE_ALLIN_MONTHLY ?? "price_1TVW9h2Ve258UiqtqaTvpEcz",
 }
 
 export async function POST(req: NextRequest) {
@@ -34,9 +29,7 @@ export async function POST(req: NextRequest) {
 
   const priceId = PLAN_PRICE_MAP[plan]
   if (!priceId) {
-    return NextResponse.json({
-      error: `Stripe price for plan "${plan}" not configured. Set STRIPE_PRICE_${plan.toUpperCase()}_MONTHLY env var.`
-    }, { status: 500 })
+    return NextResponse.json({ error: `Unknown plan: ${plan}` }, { status: 400 })
   }
 
   const [user] = await db
