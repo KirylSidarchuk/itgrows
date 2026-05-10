@@ -117,6 +117,10 @@ export default function LandingPageB() {
   const [ghostImages, setGhostImages] = useState<(string | null)[]>([])
   const [ghostError, setGhostError] = useState("")
 
+  const [showPlatformModal, setShowPlatformModal] = useState(false)
+  const [pendingPlan, setPendingPlan] = useState<string | null>(null)
+  const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([])
+
   // Feedback form state
   const [feedbackOpen, setFeedbackOpen] = useState(false)
   const [feedbackType, setFeedbackType] = useState("Question")
@@ -224,6 +228,37 @@ export default function LandingPageB() {
     }
   }
 
+  function handleCheckoutWithPlatform(plan: string) {
+    if (plan === "allin") {
+      handleCheckout("allin")
+      return
+    }
+    setPendingPlan(plan)
+    setSelectedPlatforms([])
+    setShowPlatformModal(true)
+  }
+
+  function togglePlatform(platform: string) {
+    if (pendingPlan === "personal") {
+      setSelectedPlatforms([platform])
+    } else {
+      setSelectedPlatforms((prev) =>
+        prev.includes(platform)
+          ? prev.filter((p) => p !== platform)
+          : prev.length < 2
+          ? [...prev, platform]
+          : prev
+      )
+    }
+  }
+
+  function handlePlatformContinue() {
+    if (!pendingPlan) return
+    sessionStorage.setItem("itgrows_selected_platforms", selectedPlatforms.join(","))
+    setShowPlatformModal(false)
+    handleCheckout(pendingPlan as "personal" | "duo" | "allin")
+  }
+
   return (
     <div
       className="min-h-screen text-[#1b1916] scroll-smooth"
@@ -268,7 +303,7 @@ export default function LandingPageB() {
                 <Link href="/login?callbackUrl=/cabinet">
                   <Button variant="ghost" className="text-slate-600 hover:text-[#1b1916] text-sm px-3">Login</Button>
                 </Link>
-                <Button onClick={() => handleCheckout("personal")} className="bg-violet-600 hover:bg-violet-500 text-white text-sm px-4">
+                <Button onClick={() => handleCheckoutWithPlatform("personal")} className="bg-violet-600 hover:bg-violet-500 text-white text-sm px-4">
                   Try Free 14 Days
                 </Button>
               </>
@@ -346,7 +381,7 @@ export default function LandingPageB() {
                     <Button variant="outline" className="w-full text-sm border-black/20">Login</Button>
                   </Link>
                   <Button
-                    onClick={() => { setMobileMenuOpen(false); handleCheckout("personal") }}
+                    onClick={() => { setMobileMenuOpen(false); handleCheckoutWithPlatform("personal") }}
                     className="w-full bg-violet-600 hover:bg-violet-500 text-white text-sm"
                   >
                     Try Free 14 Days
@@ -378,11 +413,11 @@ export default function LandingPageB() {
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center">
             <div className="relative w-full sm:w-auto">
               <span className="absolute inset-0 rounded-xl animate-pulse bg-violet-400/30 pointer-events-none" style={{ margin: "-4px" }} />
-              <Button size="lg" onClick={() => handleCheckout("personal")} className="relative bg-violet-600 hover:bg-violet-500 text-white px-10 py-4 text-base sm:text-lg rounded-xl w-full sm:w-auto font-semibold shadow-lg shadow-violet-600/30">
+              <Button size="lg" onClick={() => handleCheckoutWithPlatform("personal")} className="relative bg-violet-600 hover:bg-violet-500 text-white px-10 py-4 text-base sm:text-lg rounded-xl w-full sm:w-auto font-semibold shadow-lg shadow-violet-600/30">
                 Generate My First Post &#8212; takes 30 sec &#8594;
               </Button>
             </div>
-            <Button size="lg" onClick={() => handleCheckout("personal")} variant="outline" className="border-[#1b1916] text-[#1b1916] hover:bg-[#1b1916] hover:text-[#f3f2f1] px-6 sm:px-8 py-5 sm:py-6 text-base sm:text-lg rounded-xl w-full sm:w-auto">
+            <Button size="lg" onClick={() => handleCheckoutWithPlatform("personal")} variant="outline" className="border-[#1b1916] text-[#1b1916] hover:bg-[#1b1916] hover:text-[#f3f2f1] px-6 sm:px-8 py-5 sm:py-6 text-base sm:text-lg rounded-xl w-full sm:w-auto">
               Start Free Trial
             </Button>
           </div>
@@ -1049,7 +1084,7 @@ export default function LandingPageB() {
 
           <div className="text-center mt-4">
             <button
-              onClick={() => handleCheckout("personal")}
+              onClick={() => handleCheckoutWithPlatform("personal")}
               className="bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-white px-10 py-4 rounded-xl text-base font-semibold transition-all"
             >
               Start Free Trial — 14 Days
@@ -1279,7 +1314,7 @@ export default function LandingPageB() {
               </CardHeader>
               <CardContent className="space-y-4 px-6 pb-8">
                 <Button
-                  onClick={() => handleCheckout("personal")}
+                  onClick={() => handleCheckoutWithPlatform("personal")}
                   className="w-full bg-blue-600 hover:bg-blue-500 text-white py-5 text-sm rounded-xl mt-2"
                 >
                   Start Free Trial
@@ -1328,7 +1363,7 @@ export default function LandingPageB() {
               </CardHeader>
               <CardContent className="space-y-4 px-6 pb-8">
                 <Button
-                  onClick={() => handleCheckout("duo")}
+                  onClick={() => handleCheckoutWithPlatform("duo")}
                   className="w-full bg-violet-600 hover:bg-violet-500 text-white py-5 text-sm rounded-xl mt-2"
                 >
                   Start Free Trial
@@ -1446,7 +1481,7 @@ export default function LandingPageB() {
           </p>
           <Button
             size="lg"
-            onClick={() => handleCheckout("personal")}
+            onClick={() => handleCheckoutWithPlatform("personal")}
             className="bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-white px-8 sm:px-10 py-5 sm:py-6 text-base sm:text-lg rounded-xl w-full sm:w-auto"
           >
             Generate My First Post &#8212; 30 sec &#8594;
@@ -1478,6 +1513,84 @@ export default function LandingPageB() {
         </svg>
         Feedback
       </button>
+
+      {/* Platform Selection Modal */}
+      {showPlatformModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ backgroundColor: "rgba(0,0,0,0.6)" }}>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 p-6">
+            <h2 className="text-xl font-bold text-violet-700 mb-1">Choose your platform</h2>
+            <p className="text-sm text-slate-500 mb-5">
+              {pendingPlan === "personal" ? "Select 1 platform to post on." : "Select any 2 platforms to post on."}
+            </p>
+            <div className="flex flex-col gap-3 mb-6">
+              {[
+                { id: "linkedin", label: "LinkedIn", sub: "Personal account", icon: (
+                  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-7 h-7">
+                    <rect width="24" height="24" rx="4" fill="#0A66C2" />
+                    <path d="M7.5 9.5H5.5V18H7.5V9.5Z" fill="white" />
+                    <circle cx="6.5" cy="7" r="1.25" fill="white" />
+                    <path d="M18.5 18H16.5V13.5C16.5 12.4 15.8 11.75 14.9 11.75C14 11.75 13.5 12.4 13.5 13.5V18H11.5V9.5H13.5V10.6C13.9 9.9 14.8 9.4 15.8 9.4C17.3 9.4 18.5 10.6 18.5 12.5V18Z" fill="white" />
+                  </svg>
+                )},
+                { id: "x_personal", label: "X / Twitter", sub: "Personal account", icon: (
+                  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-7 h-7">
+                    <rect width="24" height="24" rx="4" fill="#000000" />
+                    <path d="M13.6 10.9L18.4 5.5H17.2L13.1 10.1L9.8 5.5H6L11.1 12.7L6 18.5H7.2L11.6 13.6L15.1 18.5H19L13.6 10.9ZM12.2 12.9L11.7 12.2L7.7 6.4H9.2L12.7 11.2L13.2 11.9L17.4 17.9H15.9L12.2 12.9Z" fill="white" />
+                  </svg>
+                )},
+                { id: "x_company", label: "X / Twitter", sub: "Company account", icon: (
+                  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-7 h-7">
+                    <rect width="24" height="24" rx="4" fill="#4c3aa3" />
+                    <path d="M13.6 10.9L18.4 5.5H17.2L13.1 10.1L9.8 5.5H6L11.1 12.7L6 18.5H7.2L11.6 13.6L15.1 18.5H19L13.6 10.9ZM12.2 12.9L11.7 12.2L7.7 6.4H9.2L12.7 11.2L13.2 11.9L17.4 17.9H15.9L12.2 12.9Z" fill="white" />
+                  </svg>
+                )},
+              ].map((opt) => {
+                const isSelected = selectedPlatforms.includes(opt.id)
+                return (
+                  <button
+                    key={opt.id}
+                    onClick={() => togglePlatform(opt.id)}
+                    className="flex items-center gap-4 p-4 rounded-xl border-2 transition-all text-left"
+                    style={{ borderColor: isSelected ? "#7c3aed" : "#e5e7eb", backgroundColor: isSelected ? "#f5f3ff" : "#fff" }}
+                  >
+                    {opt.icon}
+                    <div className="flex-1">
+                      <div className="font-semibold text-sm text-slate-800">{opt.label}</div>
+                      <div className="text-xs text-slate-500">{opt.sub}</div>
+                    </div>
+                    {isSelected && (
+                      <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-violet-600 shrink-0">
+                        <circle cx="10" cy="10" r="10" fill="#7c3aed" />
+                        <path d="M6 10.5L8.5 13L14 7.5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    )}
+                  </button>
+                )
+              })}
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowPlatformModal(false)}
+                className="flex-1 py-3 rounded-xl border border-slate-200 text-sm text-slate-600 hover:bg-slate-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handlePlatformContinue}
+                disabled={pendingPlan === "personal" ? selectedPlatforms.length !== 1 : selectedPlatforms.length !== 2}
+                className="flex-1 py-3 rounded-xl text-sm font-semibold transition-colors"
+                style={{
+                  backgroundColor: (pendingPlan === "personal" ? selectedPlatforms.length === 1 : selectedPlatforms.length === 2) ? "#7c3aed" : "#e5e7eb",
+                  color: (pendingPlan === "personal" ? selectedPlatforms.length === 1 : selectedPlatforms.length === 2) ? "#fff" : "#9ca3af",
+                  cursor: (pendingPlan === "personal" ? selectedPlatforms.length === 1 : selectedPlatforms.length === 2) ? "pointer" : "not-allowed",
+                }}
+              >
+                Continue to Payment
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Feedback Modal */}
       {feedbackOpen && (
