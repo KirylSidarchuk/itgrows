@@ -56,10 +56,15 @@ export async function POST(req: NextRequest) {
       ? {
           metadata: { userId },
           subscription_data: {
+            trial_period_days: 14,
             metadata: { userId, plan: "personal_annual_discount" },
           },
         }
-      : {}),
+      : {
+          subscription_data: {
+            trial_period_days: 14,
+          },
+        }),
   })
 
   return NextResponse.json({ url: checkoutSession.url })

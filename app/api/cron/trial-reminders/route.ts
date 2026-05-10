@@ -19,10 +19,10 @@ function trialOneDayLeftEmail(name: string): string {
       </div>
       <div style="padding: 32px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 12px 12px;">
         <p style="color: #374151; font-size: 16px;">Hey ${name},</p>
-        <p style="color: #374151;">Your 7-day free trial ends <strong>tomorrow</strong>.</p>
+        <p style="color: #374151;">Your 14-day free trial ends <strong>tomorrow</strong>.</p>
         <p style="color: #374151;">Your LinkedIn posts are already scheduled and ready to publish — don't lose access before they go live.</p>
         <p style="color: #374151; font-size: 14px;">Subscribe now to keep them going:</p>
-        <a href="https://itgrows.ai/cabinet" style="display: inline-block; background: #d97706; color: white; padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; margin-top: 8px; font-size: 15px;">Keep My Posts Going → $29/month</a>
+        <a href="https://itgrows.ai/cabinet" style="display: inline-block; background: #d97706; color: white; padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; margin-top: 8px; font-size: 15px;">Keep My Posts Going → from $49/month</a>
         <p style="color: #6b7280; font-size: 14px; margin-top: 24px;">Prefer annual? Get <strong>$203/year</strong> and save 30%. No credit card surprises, cancel anytime.</p>
         <p style="color: #9ca3af; font-size: 12px; margin-top: 32px;">ItGrows.ai · <a href="https://itgrows.ai/cabinet" style="color: #9ca3af;">Manage your account</a></p>
       </div>
@@ -41,7 +41,7 @@ function trialLastDayEmail(name: string): string {
         <p style="color: #374151;">Your trial ends <strong>today</strong>.</p>
         <p style="color: #374151;">Your scheduled posts will stop publishing after today. Subscribe now to keep your LinkedIn presence active.</p>
         <p style="color: #374151; font-size: 14px;">Your posts are ready — don't let them go to waste.</p>
-        <a href="https://itgrows.ai/cabinet" style="display: inline-block; background: #dc2626; color: white; padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; margin-top: 8px; font-size: 15px;">Subscribe Now → $29/month</a>
+        <a href="https://itgrows.ai/cabinet" style="display: inline-block; background: #dc2626; color: white; padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; margin-top: 8px; font-size: 15px;">Subscribe Now → from $49/month</a>
         <p style="color: #9ca3af; font-size: 12px; margin-top: 32px;">ItGrows.ai · <a href="https://itgrows.ai/cabinet" style="color: #9ca3af;">View pricing</a></p>
       </div>
     </div>

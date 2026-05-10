@@ -4,7 +4,7 @@ import { db } from "@/lib/db"
 import { linkedinAccounts, linkedinPosts, linkedinBriefs, users } from "@/lib/db/schema"
 import { eq, and, inArray } from "drizzle-orm"
 import { checkGenerateRateLimit } from "@/lib/rate-limit"
-import { hasAccess } from "@/lib/access"
+import { hasAccess, getPostsPerWeek } from "@/lib/access"
 import { buildLinkedInPrompt } from "@/lib/linkedin-generate"
 import { generatePostImage } from "@/lib/linkedin-image"
 
@@ -47,9 +47,11 @@ export async function POST(req: NextRequest) {
     // Check subscription or trial
     const [user] = await db.select({ subscriptionPlan: users.subscriptionPlan, subscriptionStatus: users.subscriptionStatus, trialEndsAt: users.trialEndsAt })
       .from(users).where(eq(users.id, userId)).limit(1)
-    if (!user || !hasAccess({ subscriptionStatus: user.subscriptionStatus ?? null, subscriptionPlan: user.subscriptionPlan ?? null, trialEndsAt: user.trialEndsAt ?? null })) {
-      return NextResponse.json({ error: "subscription_required", message: "Active Personal subscription or active trial required" }, { status: 403 })
+    const userAccess = { subscriptionStatus: user?.subscriptionStatus ?? null, subscriptionPlan: user?.subscriptionPlan ?? null, trialEndsAt: user?.trialEndsAt ?? null }
+    if (!user || !hasAccess(userAccess)) {
+      return NextResponse.json({ error: "subscription_required", message: "Active subscription or active trial required" }, { status: 403 })
     }
+    const postsCount = getPostsPerWeek(userAccess)
 
     // Check rate limit
     const rateLimit = await checkGenerateRateLimit(userId)
@@ -204,7 +206,7 @@ export async function POST(req: NextRequest) {
 
     // Schedule posts: one per day at 10:00 UTC starting tomorrow
     const now = new Date()
-    const slice = postsData.slice(0, 7)
+    const slice = postsData.slice(0, postsCount)
 
     // Generate all images in parallel
     const imageUrls = await Promise.all(

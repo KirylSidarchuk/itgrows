@@ -99,13 +99,12 @@ const faqs = [
     a: "No. Posts are written in your voice, based on your profile and niche.",
   },
   {
-    q: "Do I need both LinkedIn and X?",
-    a: "No. You can subscribe to LinkedIn only ($29/mo), X only ($29/mo), or both platforms at once ($49/mo).",
+    q: "How do the plans differ?",
+    a: "Personal ($49/mo) gives you 1 account slot — LinkedIn or X. Duo ($99/mo) gives you any 2 accounts. All-in ($199/mo) covers all 3 accounts plus analytics and a strategy session. All plans include a 14-day free trial.",
   },
 ]
 
 export default function LandingPageB() {
-  const [annual, setAnnual] = useState(false)
   const [openFaq, setOpenFaq] = useState<number | null>(null)
   const [sessionUser, setSessionUser] = useState<{ name?: string | null; email?: string | null } | null>(null)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -201,22 +200,7 @@ export default function LandingPageB() {
       .catch(() => {})
   }, [])
 
-  async function handleStartTrial() {
-    const sessionRes = await fetch("/api/auth/session")
-    const sessionData = await sessionRes.json() as { user?: { id: string } }
-    if (!sessionData?.user?.id) {
-      window.location.href = `/signup?source=b&callbackUrl=${encodeURIComponent("/cabinet")}`
-      return
-    }
-    const res = await fetch("/api/trial/start", { method: "POST" })
-    if (res.status === 401) {
-      window.location.href = `/signup?source=b&callbackUrl=${encodeURIComponent("/cabinet")}`
-      return
-    }
-    window.location.href = "/cabinet"
-  }
-
-  async function handleCheckout(planType: "monthly" | "annual") {
+  async function handleCheckout(plan: "personal" | "duo" | "allin") {
     const sessionRes = await fetch("/api/auth/session")
     const sessionData = await sessionRes.json() as { user?: { id: string } }
     if (!sessionData?.user?.id) {
@@ -226,7 +210,7 @@ export default function LandingPageB() {
     const res = await fetch("/api/stripe/checkout", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ planType }),
+      body: JSON.stringify({ plan }),
     })
     if (res.status === 401) {
       window.location.href = `/signup?source=b&callbackUrl=${encodeURIComponent("/cabinet")}`
@@ -284,8 +268,8 @@ export default function LandingPageB() {
                 <Link href="/login?callbackUrl=/cabinet">
                   <Button variant="ghost" className="text-slate-600 hover:text-[#1b1916] text-sm px-3">Login</Button>
                 </Link>
-                <Button onClick={handleStartTrial} className="bg-violet-600 hover:bg-violet-500 text-white text-sm px-4">
-                  Try Free &#8212; No Card
+                <Button onClick={() => handleCheckout("personal")} className="bg-violet-600 hover:bg-violet-500 text-white text-sm px-4">
+                  Try Free 14 Days
                 </Button>
               </>
             )}
@@ -362,10 +346,10 @@ export default function LandingPageB() {
                     <Button variant="outline" className="w-full text-sm border-black/20">Login</Button>
                   </Link>
                   <Button
-                    onClick={() => { setMobileMenuOpen(false); handleStartTrial() }}
+                    onClick={() => { setMobileMenuOpen(false); handleCheckout("personal") }}
                     className="w-full bg-violet-600 hover:bg-violet-500 text-white text-sm"
                   >
-                    Try Free &#8212; No Card
+                    Try Free 14 Days
                   </Button>
                 </>
               )}
@@ -394,15 +378,15 @@ export default function LandingPageB() {
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center">
             <div className="relative w-full sm:w-auto">
               <span className="absolute inset-0 rounded-xl animate-pulse bg-violet-400/30 pointer-events-none" style={{ margin: "-4px" }} />
-              <Button size="lg" onClick={handleStartTrial} className="relative bg-violet-600 hover:bg-violet-500 text-white px-10 py-4 text-base sm:text-lg rounded-xl w-full sm:w-auto font-semibold shadow-lg shadow-violet-600/30">
+              <Button size="lg" onClick={() => handleCheckout("personal")} className="relative bg-violet-600 hover:bg-violet-500 text-white px-10 py-4 text-base sm:text-lg rounded-xl w-full sm:w-auto font-semibold shadow-lg shadow-violet-600/30">
                 Generate My First Post &#8212; takes 30 sec &#8594;
               </Button>
             </div>
-            <Button size="lg" onClick={handleStartTrial} variant="outline" className="border-[#1b1916] text-[#1b1916] hover:bg-[#1b1916] hover:text-[#f3f2f1] px-6 sm:px-8 py-5 sm:py-6 text-base sm:text-lg rounded-xl w-full sm:w-auto">
-              Start Free &#8212; No Card
+            <Button size="lg" onClick={() => handleCheckout("personal")} variant="outline" className="border-[#1b1916] text-[#1b1916] hover:bg-[#1b1916] hover:text-[#f3f2f1] px-6 sm:px-8 py-5 sm:py-6 text-base sm:text-lg rounded-xl w-full sm:w-auto">
+              Start Free Trial
             </Button>
           </div>
-          <p className="mt-3 text-xs sm:text-sm text-slate-500 font-medium">No credit card required &#183; Cancel anytime</p>
+          <p className="mt-3 text-xs sm:text-sm text-slate-500 font-medium">14-day free trial &#183; Card required &#183; Cancel anytime</p>
 
           {/* Ghost Mode — inline in hero */}
           <div className="mt-10 max-w-xl mx-auto text-left">
@@ -1065,10 +1049,10 @@ export default function LandingPageB() {
 
           <div className="text-center mt-4">
             <button
-              onClick={handleStartTrial}
+              onClick={() => handleCheckout("personal")}
               className="bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-white px-10 py-4 rounded-xl text-base font-semibold transition-all"
             >
-              Start Free &#8212; No Credit Card
+              Start Free Trial — 14 Days
             </button>
           </div>
         </div>
@@ -1266,11 +1250,11 @@ export default function LandingPageB() {
           <div className="text-center mb-12">
             <Badge className="mb-4 bg-violet-100 text-violet-700 border-violet-200">Pricing</Badge>
             <h2 className="text-4xl font-bold mb-4 text-[#1b1916]">One client pays for years of this tool</h2>
-            <p className="text-slate-600 text-lg">Pick your platform. Start free. No card required.</p>
+            <p className="text-slate-600 text-lg">14-day free trial on all plans. Cancel anytime.</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* LinkedIn */}
+            {/* Personal */}
             <Card className="relative border-slate-200 bg-white shadow-lg">
               <CardHeader className="text-center pb-2 pt-8">
                 <div className="flex justify-center mb-3">
@@ -1280,26 +1264,26 @@ export default function LandingPageB() {
                     </svg>
                   </div>
                 </div>
-                <CardTitle className="text-[#1b1916] text-xl">LinkedIn Only</CardTitle>
-                <p className="text-slate-500 text-sm mt-1">Daily posts on LinkedIn in your voice</p>
+                <CardTitle className="text-[#1b1916] text-xl">Personal</CardTitle>
+                <p className="text-slate-500 text-sm mt-1">1 platform account · LinkedIn or X</p>
                 <div className="flex items-end gap-1 mt-4 justify-center">
-                  <span className="text-5xl font-extrabold text-[#1b1916]">$29</span>
+                  <span className="text-5xl font-extrabold text-[#1b1916]">$49</span>
                   <span className="text-slate-500 mb-2">/month</span>
                 </div>
               </CardHeader>
               <CardContent className="space-y-4 px-6 pb-8">
                 <Button
-                  onClick={handleStartTrial}
+                  onClick={() => handleCheckout("personal")}
                   className="w-full bg-blue-600 hover:bg-blue-500 text-white py-5 text-sm rounded-xl mt-2"
                 >
-                  Start Free &#8212; No Card
+                  Start Free Trial
                 </Button>
                 <ul className="space-y-2 pt-1">
                   {[
-                    "7 AI-written posts/week",
+                    "1 account: LinkedIn OR X personal OR X company",
+                    "5 AI-written posts/week",
                     "Custom AI images",
                     "Auto-post at peak time",
-                    "Profile-based voice",
                   ].map((item, i) => (
                     <li key={i} className="flex items-center gap-2 text-sm text-slate-600">
                       <span className="text-blue-600 font-bold">&#10003;</span>
@@ -1310,10 +1294,10 @@ export default function LandingPageB() {
               </CardContent>
             </Card>
 
-            {/* Both — Most Popular */}
+            {/* Duo — Most Popular */}
             <Card className="relative border-violet-500 bg-gradient-to-b from-violet-50 to-white shadow-2xl shadow-violet-200 scale-105">
               <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                <Badge className="bg-violet-600 text-white border-0 px-4 py-1">Best Value</Badge>
+                <Badge className="bg-violet-600 text-white border-0 px-4 py-1">Most Popular</Badge>
               </div>
               <CardHeader className="text-center pb-2 pt-8">
                 <div className="flex justify-center mb-3 gap-2">
@@ -1328,26 +1312,25 @@ export default function LandingPageB() {
                     </svg>
                   </div>
                 </div>
-                <CardTitle className="text-[#1b1916] text-xl">LinkedIn + X</CardTitle>
-                <p className="text-slate-500 text-sm mt-1">Dominate both platforms at once</p>
+                <CardTitle className="text-[#1b1916] text-xl">Duo</CardTitle>
+                <p className="text-slate-500 text-sm mt-1">Any 2 accounts · LinkedIn + X</p>
                 <div className="flex items-end gap-1 mt-4 justify-center">
-                  <span className="text-5xl font-extrabold text-[#1b1916]">$49</span>
+                  <span className="text-5xl font-extrabold text-[#1b1916]">$99</span>
                   <span className="text-slate-500 mb-2">/month</span>
                 </div>
-                <p className="text-xs text-green-600 font-semibold mt-1">Save $9/mo vs buying separately</p>
               </CardHeader>
               <CardContent className="space-y-4 px-6 pb-8">
                 <Button
-                  onClick={handleStartTrial}
+                  onClick={() => handleCheckout("duo")}
                   className="w-full bg-violet-600 hover:bg-violet-500 text-white py-5 text-sm rounded-xl mt-2"
                 >
-                  Start Free &#8212; No Card
+                  Start Free Trial
                 </Button>
                 <ul className="space-y-2 pt-1">
                   {[
-                    "Everything in LinkedIn plan",
-                    "7 tweets/week on X",
-                    "Personal + Company accounts",
+                    "Any 2 accounts from LinkedIn, X personal, X company",
+                    "7 AI-written posts/week per account",
+                    "Platform-specific voice & style",
                     "Cross-platform content DNA",
                   ].map((item, i) => (
                     <li key={i} className="flex items-center gap-2 text-sm text-slate-600">
@@ -1359,8 +1342,11 @@ export default function LandingPageB() {
               </CardContent>
             </Card>
 
-            {/* X Only */}
+            {/* All-in */}
             <Card className="relative border-slate-200 bg-white shadow-lg">
+              <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+                <Badge className="bg-amber-500 text-white border-0 px-4 py-1">Best Value</Badge>
+              </div>
               <CardHeader className="text-center pb-2 pt-8">
                 <div className="flex justify-center mb-3">
                   <div className="w-12 h-12 rounded-xl bg-slate-900 flex items-center justify-center">
@@ -1369,26 +1355,26 @@ export default function LandingPageB() {
                     </svg>
                   </div>
                 </div>
-                <CardTitle className="text-[#1b1916] text-xl">X (Twitter) Only</CardTitle>
-                <p className="text-slate-500 text-sm mt-1">Daily tweets that build your following</p>
+                <CardTitle className="text-[#1b1916] text-xl">All-in</CardTitle>
+                <p className="text-slate-500 text-sm mt-1">All 3 accounts · LinkedIn + X personal + X company</p>
                 <div className="flex items-end gap-1 mt-4 justify-center">
-                  <span className="text-5xl font-extrabold text-[#1b1916]">$29</span>
+                  <span className="text-5xl font-extrabold text-[#1b1916]">$199</span>
                   <span className="text-slate-500 mb-2">/month</span>
                 </div>
               </CardHeader>
               <CardContent className="space-y-4 px-6 pb-8">
                 <Button
-                  onClick={handleStartTrial}
+                  onClick={() => handleCheckout("allin")}
                   className="w-full bg-slate-900 hover:bg-slate-700 text-white py-5 text-sm rounded-xl mt-2"
                 >
-                  Start Free &#8212; No Card
+                  Start Free Trial
                 </Button>
                 <ul className="space-y-2 pt-1">
                   {[
-                    "7 AI-written tweets/week",
-                    "Threads support",
-                    "Auto-post at peak time",
-                    "X-native voice & tone",
+                    "All 3 accounts: LinkedIn + X personal + X company",
+                    "7 AI-written posts/week per account",
+                    "Analytics & strategy session",
+                    "Platform-specific voice & style",
                   ].map((item, i) => (
                     <li key={i} className="flex items-center gap-2 text-sm text-slate-600">
                       <span className="text-slate-700 font-bold">&#10003;</span>
@@ -1400,7 +1386,7 @@ export default function LandingPageB() {
             </Card>
           </div>
 
-          <p className="text-center text-xs text-slate-400 mt-8">Cancel anytime &#183; No credit card required to start</p>
+          <p className="text-center text-xs text-slate-400 mt-8">14-day free trial · Cancel anytime</p>
         </div>
       </section>
 
@@ -1453,12 +1439,12 @@ export default function LandingPageB() {
           </p>
           <Button
             size="lg"
-            onClick={handleStartTrial}
+            onClick={() => handleCheckout("personal")}
             className="bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-white px-8 sm:px-10 py-5 sm:py-6 text-base sm:text-lg rounded-xl w-full sm:w-auto"
           >
             Generate My First Post &#8212; 30 sec &#8594;
           </Button>
-          <p className="mt-4 text-xs sm:text-sm text-slate-500">No signup required</p>
+          <p className="mt-4 text-xs sm:text-sm text-slate-500">14-day free trial · From $49/month · Cancel anytime</p>
         </div>
       </section>
 

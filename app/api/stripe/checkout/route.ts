@@ -5,10 +5,21 @@ import { db } from "@/lib/db"
 import { users } from "@/lib/db/schema"
 import { eq } from "drizzle-orm"
 
+// TODO: set these env vars in Vercel:
+// STRIPE_PRICE_PERSONAL_MONTHLY
+// STRIPE_PRICE_DUO_MONTHLY
+// STRIPE_PRICE_ALLIN_MONTHLY
+
 function getStripe() {
   const key = process.env.STRIPE_SECRET_KEY
   if (!key) throw new Error("STRIPE_SECRET_KEY is not set")
   return new Stripe(key)
+}
+
+const PLAN_PRICE_MAP: Record<string, string | undefined> = {
+  personal: process.env.STRIPE_PRICE_PERSONAL_MONTHLY,
+  duo: process.env.STRIPE_PRICE_DUO_MONTHLY,
+  allin: process.env.STRIPE_PRICE_ALLIN_MONTHLY,
 }
 
 export async function POST(req: NextRequest) {
@@ -18,14 +29,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
-  const body = await req.json().catch(() => ({})) as { planType?: string }
-  const isAnnual = body.planType === "annual"
-  const priceId = isAnnual
-    ? process.env.STRIPE_PRICE_PERSONAL_ANNUAL
-    : process.env.STRIPE_PRICE_PERSONAL
+  const body = await req.json().catch(() => ({})) as { plan?: string }
+  const plan = body.plan ?? "personal"
+
+  const priceId = PLAN_PRICE_MAP[plan]
   if (!priceId) {
     return NextResponse.json({
-      error: isAnnual ? "STRIPE_PRICE_PERSONAL_ANNUAL env var not set" : "STRIPE_PRICE_PERSONAL env var not set"
+      error: `Stripe price for plan "${plan}" not configured. Set STRIPE_PRICE_${plan.toUpperCase()}_MONTHLY env var.`
     }, { status: 500 })
   }
 
@@ -68,7 +78,8 @@ export async function POST(req: NextRequest) {
     success_url: `${baseUrl}/welcome?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${baseUrl}/`,
     subscription_data: {
-      metadata: { userId: user.id, plan: isAnnual ? "personal_annual" : "personal" },
+      trial_period_days: 14,
+      metadata: { userId: user.id, plan },
     },
   })
 

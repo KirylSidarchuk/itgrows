@@ -908,13 +908,13 @@ function LinkedInPageContent() {
   const hour = new Date().getHours()
   const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening"
 
-  async function handleUpgrade(planType: "monthly" | "annual" = "monthly") {
+  async function handleUpgrade(plan: "personal" | "duo" | "allin" = "personal") {
     setCheckingOut(true)
     try {
       const res = await fetch("/api/stripe/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ planType }),
+        body: JSON.stringify({ plan }),
       })
       const data = await res.json() as { url?: string; error?: string }
       if (data.url) {
@@ -936,7 +936,7 @@ function LinkedInPageContent() {
       const data = await res.json() as { trialEndsAt?: string; error?: string }
       if (res.ok && data.trialEndsAt) {
         setTrialEndsAt(data.trialEndsAt)
-        setStatusMessage("Your 7-day free trial has started! Generate your first posts now.")
+        setStatusMessage("Your trial has started! Generate your first posts now.")
       } else if (data.error === "trial_already_used") {
         setStatusMessage("You have already used your free trial. Please subscribe to continue.")
       } else if (data.error === "already_subscribed") {
@@ -1674,15 +1674,31 @@ function LinkedInPageContent() {
   const xActivePosts = xPosts.filter((p) => p.status !== "published").sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
   const xPublishedPosts = xPosts.filter((p) => p.status === "published")
 
-  // Paid Stripe subscription takes priority over trial (past_due retains access while Stripe retries)
-  const hasActiveSubscription = (subscriptionStatus === "active" || subscriptionStatus === "past_due") &&
-    (subscriptionPlan === "personal" || subscriptionPlan === "personal_annual")
+  // Paid Stripe subscription (any plan) or Stripe trialing
+  const hasActiveSubscription = (subscriptionStatus === "active" || subscriptionStatus === "past_due" || subscriptionStatus === "trialing") &&
+    !!subscriptionPlan
 
-  // No-card free trial — only active if user hasn't paid yet
+  // Legacy no-card free trial — only active if user hasn't paid yet
   const trialActive = !!(trialEndsAt && new Date(trialEndsAt) > new Date() && !hasActiveSubscription)
   const trialExpired = !!(trialEndsAt && new Date(trialEndsAt) <= new Date() && !hasActiveSubscription)
 
   const hasPersonalPlan = hasActiveSubscription || trialActive
+
+  // Account slots by plan
+  const accountSlots = (() => {
+    if (!hasPersonalPlan) return 0
+    if (subscriptionPlan === "allin") return 3
+    if (subscriptionPlan === "duo") return 2
+    return 1
+  })()
+
+  // Posts per week by plan
+  const postsPerWeek = (subscriptionPlan === "allin" || subscriptionPlan === "duo") ? 7 : 5
+
+  // Count currently connected accounts (LinkedIn counts as 1 regardless of pageType)
+  const connectedAccountCount = (accounts.length > 0 ? 1 : 0) + (xPersonalAccount ? 1 : 0) + (xCompanyAccount ? 1 : 0)
+  const canConnectMore = hasPersonalPlan && connectedAccountCount < accountSlots
+  const upgradeNeeded = hasPersonalPlan && connectedAccountCount >= accountSlots
 
   const trialDaysLeft = (() => {
     if (!trialEndsAt) return null
@@ -1799,7 +1815,7 @@ function LinkedInPageContent() {
                   ? "bg-violet-100 text-violet-600"
                   : "bg-slate-100 text-slate-500"
               }`}>
-                {subscriptionPlan === "personal_annual" ? "Personal Annual" : hasPersonalPlan ? "Personal" : "Free"}
+                {subscriptionPlan === "allin" ? "All-in" : subscriptionPlan === "duo" ? "Duo" : subscriptionPlan === "personal_annual" ? "Personal Annual" : hasPersonalPlan ? "Personal" : "Free"}
               </span>
             </div>
           </div>
@@ -1821,7 +1837,7 @@ function LinkedInPageContent() {
           <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${
             hasPersonalPlan ? "bg-violet-100 text-violet-600" : "bg-slate-100 text-slate-500"
           }`}>
-            {subscriptionPlan === "personal_annual" ? "Annual" : hasPersonalPlan ? "Personal" : "Free"}
+            {subscriptionPlan === "allin" ? "All-in" : subscriptionPlan === "duo" ? "Duo" : subscriptionPlan === "personal_annual" ? "Annual" : hasPersonalPlan ? "Personal" : "Free"}
           </span>
         </div>
       </div>
@@ -1897,7 +1913,7 @@ function LinkedInPageContent() {
             )}
           </div>
 
-          {/* Upgrade banner — no plan, no trial used yet */}
+          {/* Upgrade banner — no plan, no trial */}
           {!hasPersonalPlan && !trialExpired && !loading && (
             <div className="mb-4 sm:mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 rounded-2xl px-4 sm:px-5 py-4 text-white shadow-lg"
               style={{ background: "linear-gradient(135deg, #7c3aed 0%, #a855f7 60%, #ec4899 100%)" }}>
@@ -1906,16 +1922,16 @@ function LinkedInPageContent() {
                   <Zap className="w-4 h-4" />
                 </div>
                 <div>
-                  <p className="text-sm font-bold">Try Free for 7 Days — No Credit Card</p>
-                  <p className="text-xs text-white/75 mt-0.5">7 AI posts/week, custom images, auto-scheduling</p>
+                  <p className="text-sm font-bold">Try Free for 14 Days</p>
+                  <p className="text-xs text-white/75 mt-0.5">AI posts/week, custom images, auto-scheduling · card required</p>
                 </div>
               </div>
               <button
-                onClick={handleStartTrial}
-                disabled={startingTrial}
+                onClick={() => handleUpgrade("personal")}
+                disabled={checkingOut}
                 className="shrink-0 bg-white text-violet-700 font-semibold text-xs rounded-xl px-4 py-2 hover:bg-violet-50 transition-colors disabled:opacity-70 self-start sm:self-auto"
               >
-                {startingTrial ? "Starting..." : "Start Free Trial →"}
+                {checkingOut ? "Loading..." : "Start Free Trial →"}
               </button>
             </div>
           )}
@@ -1960,7 +1976,7 @@ function LinkedInPageContent() {
                 </div>
               </div>
               <button
-                onClick={() => handleUpgrade("monthly")}
+                onClick={() => handleUpgrade("personal")}
                 disabled={checkingOut}
                 className="shrink-0 bg-amber-500 hover:bg-amber-600 text-white font-semibold text-xs rounded-xl px-4 py-2 transition-colors disabled:opacity-70 self-start sm:self-auto"
               >
@@ -2129,11 +2145,11 @@ function LinkedInPageContent() {
                       </a>
                     ) : (
                       <Button
-                        onClick={handleStartTrial}
-                        disabled={startingTrial}
+                        onClick={() => handleUpgrade("personal")}
+                        disabled={checkingOut}
                         className="bg-gradient-to-r from-pink-500 to-orange-400 hover:from-pink-400 hover:to-orange-300 text-white font-semibold px-6 py-2.5 rounded-xl shadow-sm"
                       >
-                        {startingTrial ? "Starting..." : "Start Free Trial — No Card"}
+                        {checkingOut ? "Loading..." : "Start Free Trial"}
                       </Button>
                     )}
                   </div>
@@ -2328,6 +2344,16 @@ function LinkedInPageContent() {
                             )}
                           </div>
                         </div>
+                      ) : upgradeNeeded ? (
+                        <div className="flex flex-col items-start gap-2">
+                          <p className="text-xs text-slate-400">Personal X account not connected</p>
+                          <p className="text-xs text-amber-600 font-medium">Upgrade to Duo/All-in to connect more accounts</p>
+                          <a href="/#pricing">
+                            <Button size="sm" variant="outline" className="rounded-xl text-xs px-4 border-amber-400 text-amber-700">
+                              Upgrade Plan →
+                            </Button>
+                          </a>
+                        </div>
                       ) : (
                         <div className="flex flex-col items-start gap-2">
                           <p className="text-xs text-slate-400">Personal X account not connected</p>
@@ -2365,6 +2391,16 @@ function LinkedInPageContent() {
                               <p className="text-xs text-slate-500">{xCompanyAccount.displayName}</p>
                             )}
                           </div>
+                        </div>
+                      ) : upgradeNeeded ? (
+                        <div className="flex flex-col items-start gap-2">
+                          <p className="text-xs text-slate-400">Company X account not connected</p>
+                          <p className="text-xs text-amber-600 font-medium">Upgrade to Duo/All-in to connect more accounts</p>
+                          <a href="/#pricing">
+                            <Button size="sm" variant="outline" className="rounded-xl text-xs px-4 border-amber-400 text-amber-700">
+                              Upgrade Plan →
+                            </Button>
+                          </a>
                         </div>
                       ) : (
                         <div className="flex flex-col items-start gap-2">
@@ -2439,11 +2475,11 @@ function LinkedInPageContent() {
                           </a>
                         ) : (
                           <Button
-                            onClick={handleStartTrial}
-                            disabled={startingTrial}
+                            onClick={() => handleUpgrade("personal")}
+                            disabled={checkingOut}
                             className="bg-slate-900 hover:bg-slate-700 text-white font-semibold px-6 py-2.5 rounded-xl shadow-sm"
                           >
-                            {startingTrial ? "Starting..." : "Start Free Trial — No Card"}
+                            {checkingOut ? "Loading..." : "Start Free Trial"}
                           </Button>
                         )}
                       </div>
@@ -2871,7 +2907,7 @@ function LinkedInPageContent() {
                           ) : (
                             <>
                               <Zap className="w-4 h-4 mr-2" />
-                              Generate 7 Posts
+                              Generate {postsPerWeek} Posts
                             </>
                           )}
                         </Button>
@@ -2892,18 +2928,18 @@ function LinkedInPageContent() {
                       </a>
                     ) : (
                       <Button
-                        onClick={handleStartTrial}
-                        disabled={startingTrial}
+                        onClick={() => handleUpgrade("personal")}
+                        disabled={checkingOut}
                         className="bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-white font-semibold px-6 py-2.5 rounded-xl shadow-sm"
                       >
-                        {startingTrial ? "Starting..." : "Start Free Trial — No Card"}
+                        {checkingOut ? "Loading..." : "Start Free Trial"}
                       </Button>
                     )}
                   </div>
 
                   {generating && (
                     <div className="px-4 py-3 rounded-xl bg-violet-50 text-violet-700 text-sm border border-violet-100">
-                      Generating your 7 posts and cover images with AI. This typically takes 1–2 minutes — please keep this tab open.
+                      Generating your posts and cover images with AI. This typically takes 1–2 minutes — please keep this tab open.
                     </div>
                   )}
 
@@ -2967,7 +3003,7 @@ function LinkedInPageContent() {
                         <>
                           <div>
                             <p className="text-base font-semibold text-slate-700 mb-1">No posts yet</p>
-                            <p className="text-sm text-slate-400 max-w-xs">Generate 7 AI-written LinkedIn posts, scheduled for the next 7 days.</p>
+                            <p className="text-sm text-slate-400 max-w-xs">Generate AI-written LinkedIn posts, scheduled for the next days.</p>
                           </div>
                           <button
                             onClick={handleGenerate}
@@ -2982,7 +3018,7 @@ function LinkedInPageContent() {
                             ) : (
                               <>
                                 <Zap className="w-4 h-4" />
-                                Generate 7 Posts
+                                Generate {postsPerWeek} Posts
                               </>
                             )}
                           </button>
@@ -2994,7 +3030,7 @@ function LinkedInPageContent() {
                             <p className="text-sm text-slate-400 max-w-xs">Your trial has ended. Subscribe to generate more posts.</p>
                           </div>
                           <button
-                            onClick={() => handleUpgrade("monthly")}
+                            onClick={() => handleUpgrade("personal")}
                             disabled={checkingOut}
                             className="mt-2 bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-500 hover:to-orange-400 text-white font-semibold text-sm px-6 py-2.5 rounded-xl shadow-sm transition-opacity disabled:opacity-70"
                           >
@@ -3005,14 +3041,14 @@ function LinkedInPageContent() {
                         <>
                           <div>
                             <p className="text-base font-semibold text-slate-700 mb-1">No posts yet</p>
-                            <p className="text-sm text-slate-400 max-w-xs">Start your free 7-day trial — no credit card required.</p>
+                            <p className="text-sm text-slate-400 max-w-xs">Start your 14-day free trial to generate posts.</p>
                           </div>
                           <button
-                            onClick={handleStartTrial}
-                            disabled={startingTrial}
+                            onClick={() => handleUpgrade("personal")}
+                            disabled={checkingOut}
                             className="mt-2 bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-white font-semibold text-sm px-6 py-2.5 rounded-xl shadow-sm transition-opacity disabled:opacity-70"
                           >
-                            {startingTrial ? "Starting..." : "Start Free Trial — No Card →"}
+                            {checkingOut ? "Loading..." : "Start Free Trial →"}
                           </button>
                         </>
                       )}
@@ -3444,33 +3480,28 @@ function LinkedInPageContent() {
                         Trial
                       </Badge>
                     </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      <button
-                        onClick={() => handleUpgrade("monthly")}
-                        disabled={checkingOut}
-                        className="flex flex-col items-center gap-1 p-4 rounded-xl border-2 border-violet-200 bg-violet-50 hover:border-violet-400 hover:bg-violet-100 transition-colors cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
-                      >
-                        <span className="text-[10px] font-semibold uppercase tracking-wide text-violet-500 mb-0.5">Monthly</span>
-                        <span className="text-base font-bold text-violet-700">$29</span>
-                        <span className="text-xs text-violet-600 font-medium">/ month</span>
-                        <span className="text-[10px] text-slate-500 mt-1">Billed monthly</span>
-                        <span className="mt-2 w-full text-center text-xs font-semibold text-white bg-violet-600 rounded-lg py-1.5 px-2">
-                          {checkingOut ? "Loading…" : "Subscribe"}
-                        </span>
-                      </button>
-                      <button
-                        onClick={() => handleUpgrade("annual")}
-                        disabled={checkingOut}
-                        className="flex flex-col items-center gap-1 p-4 rounded-xl border-2 border-pink-200 bg-pink-50 hover:border-pink-400 hover:bg-pink-100 transition-colors cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
-                      >
-                        <span className="text-[10px] font-semibold uppercase tracking-wide text-pink-500 mb-0.5">Annual</span>
-                        <span className="text-base font-bold text-pink-700">$16.90</span>
-                        <span className="text-xs text-pink-600 font-medium">/ month</span>
-                        <span className="text-[10px] text-slate-500 mt-1">Billed $203/year · Save 30%</span>
-                        <span className="mt-2 w-full text-center text-xs font-semibold text-white bg-pink-600 rounded-lg py-1.5 px-2">
-                          {checkingOut ? "Loading…" : "Subscribe"}
-                        </span>
-                      </button>
+                    <div className="flex flex-col gap-2">
+                      {(["personal", "duo", "allin"] as const).map((p) => {
+                        const labels: Record<string, { name: string; price: string; desc: string; color: string; bg: string; border: string }> = {
+                          personal: { name: "Personal", price: "$49/mo", desc: "1 account · 5 posts/week", color: "text-violet-700", bg: "bg-violet-50 hover:bg-violet-100", border: "border-violet-200 hover:border-violet-400" },
+                          duo: { name: "Duo", price: "$99/mo", desc: "2 accounts · 7 posts/week each", color: "text-blue-700", bg: "bg-blue-50 hover:bg-blue-100", border: "border-blue-200 hover:border-blue-400" },
+                          allin: { name: "All-in", price: "$199/mo", desc: "3 accounts · 7 posts/week each + analytics", color: "text-pink-700", bg: "bg-pink-50 hover:bg-pink-100", border: "border-pink-200 hover:border-pink-400" },
+                        }
+                        const l = labels[p]
+                        return (
+                          <button key={p} onClick={() => handleUpgrade(p)} disabled={checkingOut}
+                            className={`flex items-center justify-between p-3 rounded-xl border-2 ${l.border} ${l.bg} transition-colors cursor-pointer disabled:opacity-70`}>
+                            <div className="text-left">
+                              <span className={`text-sm font-bold ${l.color}`}>{l.name}</span>
+                              <p className="text-xs text-slate-500">{l.desc}</p>
+                            </div>
+                            <div className="text-right">
+                              <span className={`text-sm font-bold ${l.color}`}>{l.price}</span>
+                              <p className="text-xs text-slate-400 mt-0.5">{checkingOut ? "Loading…" : "Subscribe"}</p>
+                            </div>
+                          </button>
+                        )
+                      })}
                     </div>
                     <p className="text-xs text-slate-400 text-center">Subscribe now to keep access after your trial. Cancel anytime.</p>
                   </div>
@@ -3478,54 +3509,49 @@ function LinkedInPageContent() {
                   <div className="space-y-4">
                     <div className="p-4 rounded-xl bg-red-50 border border-red-100">
                       <p className="text-sm font-semibold text-red-700 mb-1">Trial Ended</p>
-                      <p className="text-xs text-red-600">Your 7-day free trial has ended. Subscribe to continue generating and publishing posts.</p>
+                      <p className="text-xs text-red-600">Your trial has ended. Subscribe to continue generating and publishing posts.</p>
                     </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      <button
-                        onClick={() => handleUpgrade("monthly")}
-                        disabled={checkingOut}
-                        className="flex flex-col items-center gap-1 p-4 rounded-xl border-2 border-violet-200 bg-violet-50 hover:border-violet-400 hover:bg-violet-100 transition-colors cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
-                      >
-                        <span className="text-[10px] font-semibold uppercase tracking-wide text-violet-500 mb-0.5">Monthly</span>
-                        <span className="text-base font-bold text-violet-700">$29</span>
-                        <span className="text-xs text-violet-600 font-medium">/ month</span>
-                        <span className="text-[10px] text-slate-500 mt-1">Billed monthly</span>
-                        <span className="mt-2 w-full text-center text-xs font-semibold text-white bg-violet-600 rounded-lg py-1.5 px-2">
-                          {checkingOut ? "Loading…" : "Subscribe Now"}
-                        </span>
-                      </button>
-                      <button
-                        onClick={() => handleUpgrade("annual")}
-                        disabled={checkingOut}
-                        className="flex flex-col items-center gap-1 p-4 rounded-xl border-2 border-pink-200 bg-pink-50 hover:border-pink-400 hover:bg-pink-100 transition-colors cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
-                      >
-                        <span className="text-[10px] font-semibold uppercase tracking-wide text-pink-500 mb-0.5">Annual</span>
-                        <span className="text-base font-bold text-pink-700">$16.90</span>
-                        <span className="text-xs text-pink-600 font-medium">/ month</span>
-                        <span className="text-[10px] text-slate-500 mt-1">Billed $203/year · Save 30%</span>
-                        <span className="mt-2 w-full text-center text-xs font-semibold text-white bg-pink-600 rounded-lg py-1.5 px-2">
-                          {checkingOut ? "Loading…" : "Subscribe Now"}
-                        </span>
-                      </button>
+                    <div className="flex flex-col gap-2">
+                      {(["personal", "duo", "allin"] as const).map((p) => {
+                        const labels: Record<string, { name: string; price: string; desc: string; color: string; bg: string; border: string }> = {
+                          personal: { name: "Personal", price: "$49/mo", desc: "1 account · 5 posts/week", color: "text-violet-700", bg: "bg-violet-50 hover:bg-violet-100", border: "border-violet-200 hover:border-violet-400" },
+                          duo: { name: "Duo", price: "$99/mo", desc: "2 accounts · 7 posts/week each", color: "text-blue-700", bg: "bg-blue-50 hover:bg-blue-100", border: "border-blue-200 hover:border-blue-400" },
+                          allin: { name: "All-in", price: "$199/mo", desc: "3 accounts · 7 posts/week each + analytics", color: "text-pink-700", bg: "bg-pink-50 hover:bg-pink-100", border: "border-pink-200 hover:border-pink-400" },
+                        }
+                        const l = labels[p]
+                        return (
+                          <button key={p} onClick={() => handleUpgrade(p)} disabled={checkingOut}
+                            className={`flex items-center justify-between p-3 rounded-xl border-2 ${l.border} ${l.bg} transition-colors cursor-pointer disabled:opacity-70`}>
+                            <div className="text-left">
+                              <span className={`text-sm font-bold ${l.color}`}>{l.name}</span>
+                              <p className="text-xs text-slate-500">{l.desc}</p>
+                            </div>
+                            <div className="text-right">
+                              <span className={`text-sm font-bold ${l.color}`}>{l.price}</span>
+                              <p className="text-xs text-slate-400 mt-0.5">{checkingOut ? "Loading…" : "Subscribe Now"}</p>
+                            </div>
+                          </button>
+                        )
+                      })}
                     </div>
                     <p className="text-xs text-slate-400 text-center">Cancel anytime. Secure payment via Stripe.</p>
                   </div>
                 ) : (
                   <div className="space-y-4">
                     <div className="p-4 rounded-xl bg-slate-50 border border-slate-100">
-                      <p className="text-sm font-semibold text-slate-700 mb-1">Free Plan</p>
-                      <p className="text-xs text-slate-500">Start a free 7-day trial — no credit card required. Full access to generate and publish posts.</p>
+                      <p className="text-sm font-semibold text-slate-700 mb-1">No Active Plan</p>
+                      <p className="text-xs text-slate-500">Start a 14-day free trial. Card required, cancel anytime before it ends.</p>
                     </div>
                     <button
-                      onClick={handleStartTrial}
-                      disabled={startingTrial}
+                      onClick={() => handleUpgrade("personal")}
+                      disabled={checkingOut}
                       className="w-full flex items-center justify-center gap-2 p-4 rounded-xl border-2 border-violet-200 bg-violet-50 hover:border-violet-400 hover:bg-violet-100 transition-colors cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
                     >
                       <span className="text-sm font-semibold text-violet-700">
-                        {startingTrial ? "Starting trial..." : "Start 7-Day Free Trial — No Credit Card"}
+                        {checkingOut ? "Loading..." : "Start 14-Day Free Trial →"}
                       </span>
                     </button>
-                    <p className="text-xs text-slate-400 text-center">After 7 days, subscribe to continue. $29/month or $203/year.</p>
+                    <p className="text-xs text-slate-400 text-center">Personal $49/mo · Duo $99/mo · All-in $199/mo</p>
                   </div>
                 )}
               </div>

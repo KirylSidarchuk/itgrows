@@ -3,7 +3,7 @@ import { auth } from "@/auth"
 import { db } from "@/lib/db"
 import { twitterAccounts, twitterPosts, linkedinBriefs, twitterBriefs, twitterCompanyBriefs, users } from "@/lib/db/schema"
 import { eq, and, or, desc } from "drizzle-orm"
-import { hasAccess } from "@/lib/access"
+import { hasAccess, getPostsPerWeek } from "@/lib/access"
 
 export const maxDuration = 300
 
@@ -36,9 +36,11 @@ export async function POST(req: NextRequest) {
       .from(users)
       .where(eq(users.id, userId))
       .limit(1)
-    if (!user || !hasAccess({ subscriptionStatus: user.subscriptionStatus ?? null, subscriptionPlan: user.subscriptionPlan ?? null, trialEndsAt: user.trialEndsAt ?? null })) {
-      return NextResponse.json({ error: "subscription_required", message: "Active Personal subscription or active trial required" }, { status: 403 })
+    const userAccess = { subscriptionStatus: user?.subscriptionStatus ?? null, subscriptionPlan: user?.subscriptionPlan ?? null, trialEndsAt: user?.trialEndsAt ?? null }
+    if (!user || !hasAccess(userAccess)) {
+      return NextResponse.json({ error: "subscription_required", message: "Active subscription or active trial required" }, { status: 403 })
     }
+    const postsCount = getPostsPerWeek(userAccess)
 
     const body = await req.json() as GenerateXRequest
     const accountType = body.accountType === "company" ? "company" : "personal"
@@ -121,7 +123,7 @@ export async function POST(req: NextRequest) {
 You are a Twitter/X thought leadership expert writing in the first person.
 ${promptContext} Current year: ${currentYear}. ${topicHint}
 
-Generate 5 engaging tweets that feel authentic and personal.
+Generate ${postsCount} engaging tweets that feel authentic and personal.
 
 RULES:
 1. Each tweet must be under 280 characters (including hashtags).
@@ -131,7 +133,7 @@ RULES:
 5. Mix formats: insight/tip, personal take, question to audience, mini-story, bold statement.
 6. No generic marketing language or sales pitches.
 
-Return ONLY a valid JSON array with exactly 5 objects. Each object must have:
+Return ONLY a valid JSON array with exactly ${postsCount} objects. Each object must have:
 - "content": string (the full tweet text, max 280 chars, including hashtags)
 
 ${jsonInstruction}`
@@ -241,7 +243,7 @@ ${jsonInstruction}`
 
     // Insert posts as scheduled, 1 day apart at 10:00 UTC
     const insertedPosts = []
-    for (const postData of postsData.slice(0, 5)) {
+    for (const postData of postsData.slice(0, postsCount)) {
       const content = (postData.content ?? "").slice(0, 280)
       const scheduledAt = new Date(nextDate)
       const [inserted] = await db

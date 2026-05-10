@@ -35,7 +35,7 @@ const faqs = [
   },
   {
     q: "Do I need a credit card to start?",
-    a: "No. You get 7 days completely free — no credit card required. Explore the full product, see your posts go live on LinkedIn and X, and only subscribe once you've experienced the results. After 7 days, choose the plan that fits you.",
+    a: "Yes, a card is required to start your 14-day free trial — but you won't be charged until the trial ends. You can cancel anytime before that. We use Stripe for secure payment processing.",
   },
   {
     q: "Can I use this for a company brand, not just a personal profile?",
@@ -44,7 +44,6 @@ const faqs = [
 ]
 
 export default function PersonalPage() {
-  const [annual, setAnnual] = useState(false)
   const [openFaq, setOpenFaq] = useState<number | null>(null)
   const [sessionUser, setSessionUser] = useState<{ name?: string | null; email?: string | null } | null>(null)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -139,26 +138,7 @@ export default function PersonalPage() {
       .catch(() => {})
   }, [])
 
-  async function handleStartTrial() {
-    // Check if logged in first
-    const sessionRes = await fetch("/api/auth/session")
-    const sessionData = await sessionRes.json() as { user?: { id: string } }
-    if (!sessionData?.user?.id) {
-      window.location.href = `/signup?callbackUrl=${encodeURIComponent("/cabinet")}`
-      return
-    }
-    // Start no-card trial
-    const res = await fetch("/api/trial/start", { method: "POST" })
-    if (res.status === 401) {
-      window.location.href = `/signup?callbackUrl=${encodeURIComponent("/cabinet")}`
-      return
-    }
-    // Whether trial started or already used/subscribed, go to cabinet
-    window.location.href = "/cabinet"
-  }
-
-  async function handleCheckout(planType: "monthly" | "annual") {
-    // First check if logged in
+  async function handleCheckout(plan: "personal" | "duo" | "allin") {
     const sessionRes = await fetch("/api/auth/session")
     const sessionData = await sessionRes.json() as { user?: { id: string } }
     if (!sessionData?.user?.id) {
@@ -168,7 +148,7 @@ export default function PersonalPage() {
     const res = await fetch("/api/stripe/checkout", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ planType }),
+      body: JSON.stringify({ plan }),
     })
     if (res.status === 401) {
       window.location.href = `/signup?callbackUrl=${encodeURIComponent("/cabinet")}`
@@ -178,7 +158,6 @@ export default function PersonalPage() {
     if (data.url) {
       window.location.href = data.url
     } else {
-      // Stripe not configured yet — go to cabinet directly
       window.location.href = "/cabinet"
     }
   }
@@ -225,8 +204,8 @@ export default function PersonalPage() {
                 <Link href="/login?callbackUrl=/cabinet">
                   <Button variant="ghost" className="text-slate-600 hover:text-[#1b1916] text-sm px-3">Login</Button>
                 </Link>
-                <Button onClick={handleStartTrial} className="bg-violet-600 hover:bg-violet-500 text-white text-sm px-4">
-                  Try Free — No Card
+                <Button onClick={() => handleCheckout("personal")} className="bg-violet-600 hover:bg-violet-500 text-white text-sm px-4">
+                  Try Free 14 Days
                 </Button>
               </>
             )}
@@ -289,10 +268,10 @@ export default function PersonalPage() {
                     <Button variant="outline" className="w-full text-sm border-black/20">Login</Button>
                   </Link>
                   <Button
-                    onClick={() => { setMobileMenuOpen(false); handleStartTrial() }}
+                    onClick={() => { setMobileMenuOpen(false); handleCheckout("personal") }}
                     className="w-full bg-violet-600 hover:bg-violet-500 text-white text-sm"
                   >
-                    Try Free — No Card
+                    Try Free 14 Days
                   </Button>
                 </>
               )}
@@ -559,7 +538,7 @@ export default function PersonalPage() {
 
               <div className="bg-gradient-to-r from-violet-600 to-pink-600 rounded-2xl p-6 sm:p-8 text-center text-white">
                 <div className="text-2xl font-extrabold mb-2">Want these posted for you every day?</div>
-                <p className="text-white/80 text-sm mb-5">Start your 7-day free trial. No card required.</p>
+                <p className="text-white/80 text-sm mb-5">Start your 14-day free trial. Card required, cancel anytime.</p>
                 <a
                   href="/signup"
                   className="inline-block px-8 py-3 rounded-xl bg-white text-violet-600 font-bold text-sm hover:bg-violet-50 transition-colors"
@@ -736,28 +715,12 @@ export default function PersonalPage() {
           <div className="text-center mb-12">
             <Badge className="mb-4 bg-violet-100 text-violet-700 border-violet-200">Pricing</Badge>
             <h2 className="text-4xl font-bold mb-4 text-[#1b1916]">Simple, Transparent Pricing</h2>
-            <p className="text-slate-600 text-lg">Pick your platform — or go all-in on both.</p>
-          </div>
-
-          {/* Billing toggle */}
-          <div className="flex items-center justify-center gap-4 mb-10">
-            <span className={`text-sm font-medium ${!annual ? "text-[#1b1916]" : "text-slate-400"}`}>Monthly</span>
-            <button
-              onClick={() => setAnnual(!annual)}
-              className={`relative w-14 h-7 rounded-full transition-colors duration-200 ${annual ? "bg-violet-600" : "bg-slate-300"}`}
-              aria-label="Toggle annual billing"
-            >
-              <span className={`absolute top-1 left-1 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200 ${annual ? "translate-x-7" : ""}`} />
-            </button>
-            <span className={`text-sm font-medium ${annual ? "text-[#1b1916]" : "text-slate-400"}`}>
-              Annual
-              <span className="ml-2 px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full font-semibold">Save ~30%</span>
-            </span>
+            <p className="text-slate-600 text-lg">14-day free trial on all plans. Cancel anytime.</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
 
-            {/* LinkedIn Plan */}
+            {/* Personal Plan */}
             <Card className="relative border-black/10 bg-white shadow-sm">
               <CardHeader className="text-center pb-2 pt-8">
                 <div className="flex justify-center mb-3">
@@ -767,24 +730,23 @@ export default function PersonalPage() {
                     </svg>
                   </div>
                 </div>
-                <CardTitle className="text-[#1b1916] text-xl">LinkedIn</CardTitle>
-                <p className="text-slate-500 text-sm mt-1">Professional authority &amp; B2B leads</p>
+                <CardTitle className="text-[#1b1916] text-xl">Personal</CardTitle>
+                <p className="text-slate-500 text-sm mt-1">1 platform account · LinkedIn or X</p>
                 <div className="flex items-end gap-1 mt-4 justify-center">
-                  <span className="text-5xl font-extrabold text-[#1b1916]">{annual ? "$16.90" : "$29"}</span>
+                  <span className="text-5xl font-extrabold text-[#1b1916]">$49</span>
                   <span className="text-slate-500 mb-2">/mo</span>
                 </div>
-                {annual && <p className="text-sm text-green-600 font-medium mt-1">Billed $203/year</p>}
-                {!annual && <p className="text-sm text-slate-400 mt-1">or <button onClick={() => setAnnual(true)} className="underline text-violet-600">save with annual</button></p>}
+                <p className="text-sm text-slate-400 mt-1">14-day free trial · cancel anytime</p>
               </CardHeader>
               <CardContent className="space-y-4 px-6 pb-8">
                 <Button
-                  onClick={annual ? () => handleCheckout("annual") : handleStartTrial}
+                  onClick={() => handleCheckout("personal")}
                   className="w-full bg-blue-600 hover:bg-blue-500 text-white py-5 text-sm rounded-xl mt-2"
                 >
-                  {annual ? "Start Annual Plan" : "Start Free Trial"}
+                  Start Free Trial
                 </Button>
                 <ul className="space-y-2 pt-1">
-                  {["7 AI-written LinkedIn posts/week", "Custom images for every post", "Auto-scheduling at peak time", "Profile DNA analysis", "Review & edit before publishing"].map((item, i) => (
+                  {["1 account: LinkedIn OR X personal OR X company", "5 AI-written posts/week", "Custom images for every post", "Auto-scheduling at peak time", "Profile DNA analysis"].map((item, i) => (
                     <li key={i} className="flex items-center gap-2 text-sm text-slate-600">
                       <span className="text-blue-600 font-bold">✓</span> {item}
                     </li>
@@ -793,7 +755,7 @@ export default function PersonalPage() {
               </CardContent>
             </Card>
 
-            {/* Both Platforms — Most Popular */}
+            {/* Duo — Most Popular */}
             <Card className="relative border-violet-500 bg-gradient-to-b from-violet-50 to-white shadow-2xl shadow-violet-200 md:-mt-4">
               <div className="absolute -top-4 left-1/2 -translate-x-1/2">
                 <Badge className="bg-violet-600 text-white border-0 px-4 py-1">Most Popular</Badge>
@@ -811,26 +773,23 @@ export default function PersonalPage() {
                     </svg>
                   </div>
                 </div>
-                <CardTitle className="text-[#1b1916] text-xl">Both Platforms</CardTitle>
-                <p className="text-slate-500 text-sm mt-1">LinkedIn + X · Personal + company</p>
+                <CardTitle className="text-[#1b1916] text-xl">Duo</CardTitle>
+                <p className="text-slate-500 text-sm mt-1">Any 2 accounts · LinkedIn + X</p>
                 <div className="flex items-end gap-1 mt-4 justify-center">
-                  <span className="text-5xl font-extrabold text-[#1b1916]">{annual ? "$28.58" : "$49"}</span>
+                  <span className="text-5xl font-extrabold text-[#1b1916]">$99</span>
                   <span className="text-slate-500 mb-2">/mo</span>
                 </div>
-                {annual && <p className="text-sm text-green-600 font-medium mt-1">Billed $343/year · Save 30%</p>}
-                {!annual && <p className="text-sm text-slate-400 mt-1">or <button onClick={() => setAnnual(true)} className="underline text-violet-600">save 30% with annual</button></p>}
+                <p className="text-sm text-slate-400 mt-1">14-day free trial · cancel anytime</p>
               </CardHeader>
               <CardContent className="space-y-4 px-6 pb-8">
-                {/* TODO: add Both-platforms Stripe checkout link when prices are confirmed */}
                 <Button
-                  onClick={handleStartTrial}
+                  onClick={() => handleCheckout("duo")}
                   className="w-full bg-violet-600 hover:bg-violet-500 text-white py-5 text-sm rounded-xl mt-2"
                 >
                   Start Free Trial
                 </Button>
-                <p className="text-center text-xs text-slate-500">Twitter plan includes 2 accounts: personal + company</p>
                 <ul className="space-y-2 pt-1">
-                  {["Everything in LinkedIn plan", "7 AI-written tweets/threads per week", "Dual account posting (personal + company)", "Platform-specific voice & style", "Unified dashboard for both platforms"].map((item, i) => (
+                  {["Any 2 accounts from LinkedIn, X personal, X company", "7 AI-written posts/week per account", "Platform-specific voice & style", "Unified dashboard for both platforms", "Custom images for every post"].map((item, i) => (
                     <li key={i} className="flex items-center gap-2 text-sm text-slate-600">
                       <span className="text-violet-600 font-bold">✓</span> {item}
                     </li>
@@ -839,35 +798,46 @@ export default function PersonalPage() {
               </CardContent>
             </Card>
 
-            {/* X (Twitter) Plan */}
+            {/* All-in Plan */}
             <Card className="relative border-black/10 bg-white shadow-sm">
+              <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+                <Badge className="bg-amber-500 text-white border-0 px-4 py-1">Best Value</Badge>
+              </div>
               <CardHeader className="text-center pb-2 pt-8">
-                <div className="flex justify-center mb-3">
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-black">
-                    <svg viewBox="0 0 24 24" fill="white" className="w-4 h-4">
+                <div className="flex justify-center gap-1 mb-3">
+                  <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: "linear-gradient(135deg, #0A66C2, #0077b6)" }}>
+                    <svg viewBox="0 0 24 24" fill="white" className="w-3.5 h-3.5">
+                      <path d="M20.447 20.452H16.89v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a1.977 1.977 0 0 1-1.972-1.98 1.977 1.977 0 0 1 1.972-1.979 1.977 1.977 0 0 1 1.972 1.979 1.977 1.977 0 0 1-1.972 1.98zm1.99 13.019H3.347V9h3.98v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+                    </svg>
+                  </div>
+                  <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-slate-900">
+                    <svg viewBox="0 0 24 24" fill="white" className="w-3.5 h-3.5">
+                      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.253 5.622 5.912-5.622Zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                    </svg>
+                  </div>
+                  <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-violet-700">
+                    <svg viewBox="0 0 24 24" fill="white" className="w-3.5 h-3.5">
                       <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.253 5.622 5.912-5.622Zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
                     </svg>
                   </div>
                 </div>
-                <CardTitle className="text-[#1b1916] text-xl">X (Twitter)</CardTitle>
-                <p className="text-slate-500 text-sm mt-1">Real-time presence &amp; brand awareness</p>
+                <CardTitle className="text-[#1b1916] text-xl">All-in</CardTitle>
+                <p className="text-slate-500 text-sm mt-1">All 3 accounts · LinkedIn + X personal + X company</p>
                 <div className="flex items-end gap-1 mt-4 justify-center">
-                  <span className="text-5xl font-extrabold text-[#1b1916]">{annual ? "$16.90" : "$29"}</span>
+                  <span className="text-5xl font-extrabold text-[#1b1916]">$199</span>
                   <span className="text-slate-500 mb-2">/mo</span>
                 </div>
-                {annual && <p className="text-sm text-green-600 font-medium mt-1">Billed $203/year</p>}
-                {!annual && <p className="text-sm text-slate-400 mt-1">or <button onClick={() => setAnnual(true)} className="underline text-violet-600">save with annual</button></p>}
+                <p className="text-sm text-slate-400 mt-1">14-day free trial · cancel anytime</p>
               </CardHeader>
               <CardContent className="space-y-4 px-6 pb-8">
-                {/* TODO: add X/Twitter Stripe checkout link when prices are confirmed */}
                 <Button
-                  onClick={handleStartTrial}
+                  onClick={() => handleCheckout("allin")}
                   className="w-full bg-slate-900 hover:bg-slate-700 text-white py-5 text-sm rounded-xl mt-2"
                 >
                   Start Free Trial
                 </Button>
                 <ul className="space-y-2 pt-1">
-                  {["7 AI-written tweets/threads per week", "Personal + company account posting", "Trending topic integration", "Brand voice analysis", "Review & edit before publishing"].map((item, i) => (
+                  {["All 3 accounts: LinkedIn + X personal + X company", "7 AI-written posts/week per account", "Analytics & strategic session included", "Platform-specific voice & style", "Unified dashboard for all platforms"].map((item, i) => (
                     <li key={i} className="flex items-center gap-2 text-sm text-slate-600">
                       <span className="text-slate-800 font-bold">✓</span> {item}
                     </li>
@@ -929,12 +899,12 @@ export default function PersonalPage() {
           </p>
           <Button
             size="lg"
-            onClick={handleStartTrial}
+            onClick={() => handleCheckout("personal")}
             className="bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-white px-8 sm:px-10 py-5 sm:py-6 text-base sm:text-lg rounded-xl w-full sm:w-auto"
           >
-            Try Free for 7 Days — No Card Required
+            Try Free for 14 Days
           </Button>
-          <p className="mt-4 text-xs sm:text-sm text-slate-500">No credit card required · From $29/month · Cancel anytime</p>
+          <p className="mt-4 text-xs sm:text-sm text-slate-500">14-day free trial · From $49/month · Cancel anytime</p>
         </div>
       </section>
 

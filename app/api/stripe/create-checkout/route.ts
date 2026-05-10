@@ -19,14 +19,19 @@ export async function POST(req: NextRequest) {
   }
 
   const { plan } = await req.json()
-  if (!plan || !["monthly", "annual"].includes(plan)) {
+  if (!plan || !["personal", "duo", "allin"].includes(plan)) {
     return NextResponse.json({ error: "Invalid plan" }, { status: 400 })
   }
 
-  const priceId =
-    plan === "monthly"
-      ? process.env.STRIPE_PRICE_MONTHLY!
-      : process.env.STRIPE_PRICE_ANNUAL!
+  const PLAN_PRICE_MAP: Record<string, string | undefined> = {
+    personal: process.env.STRIPE_PRICE_PERSONAL_MONTHLY,
+    duo: process.env.STRIPE_PRICE_DUO_MONTHLY,
+    allin: process.env.STRIPE_PRICE_ALLIN_MONTHLY,
+  }
+  const priceId = PLAN_PRICE_MAP[plan]
+  if (!priceId) {
+    return NextResponse.json({ error: `Price ID for plan "${plan}" is not configured` }, { status: 500 })
+  }
 
   const [user] = await db
     .select({
@@ -64,8 +69,12 @@ export async function POST(req: NextRequest) {
     payment_method_types: ["card"],
     line_items: [{ price: priceId, quantity: 1 }],
     mode: "subscription",
-    success_url: `${baseUrl}/dashboard/billing?success=1`,
-    cancel_url: `${baseUrl}/dashboard/billing?cancelled=1`,
+    subscription_data: {
+      trial_period_days: 14,
+      metadata: { userId: user.id, plan },
+    },
+    success_url: `${baseUrl}/cabinet?success=1`,
+    cancel_url: `${baseUrl}/cabinet?cancelled=1`,
     metadata: { userId: user.id, plan },
   })
 

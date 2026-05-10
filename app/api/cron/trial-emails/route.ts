@@ -15,11 +15,11 @@ function trialWelcomeEmail(name: string): string {
   return `
     <div style="${baseStyle}">
       <div style="background: linear-gradient(135deg, #7c3aed, #a855f7); padding: 32px; text-align: center; border-radius: 12px 12px 0 0;">
-        <h1 style="color: white; margin: 0; font-size: 24px;">Welcome to your 7-day trial 🚀</h1>
+        <h1 style="color: white; margin: 0; font-size: 24px;">Welcome to your 14-day trial 🚀</h1>
       </div>
       <div style="padding: 32px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 12px 12px;">
         <p style="color: #374151; font-size: 16px;">Hi ${name},</p>
-        <p style="color: #374151;">Your free trial of ItGrows.ai just started. Here's how to get the most out of your 7 days:</p>
+        <p style="color: #374151;">Your free trial of ItGrows.ai just started. Here's how to get the most out of your 14 days:</p>
         <ul style="color: #374151; font-size: 14px; line-height: 2;">
           <li><strong>Connect your LinkedIn account</strong> — takes 30 seconds</li>
           <li><strong>Fill your Professional DNA</strong> — tell the AI your niche, audience, and goals</li>
@@ -50,7 +50,7 @@ function trialTwoDaysLeftEmail(name: string): string {
           <li>Auto-scheduling and auto-publishing to LinkedIn</li>
           <li>Professional DNA that improves over time</li>
         </ul>
-        <p style="color: #374151; font-size: 14px;">Just <strong>$29/month</strong> — less than a single freelance post.</p>
+        <p style="color: #374151; font-size: 14px;">Plans start at <strong>$49/month</strong> — less than a single freelance post.</p>
         <a href="https://www.itgrows.ai/cabinet" style="display: inline-block; background: #d97706; color: white; padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; margin-top: 16px; font-size: 15px;">Subscribe Now →</a>
         <p style="color: #9ca3af; font-size: 12px; margin-top: 32px;">ItGrows.ai · <a href="https://www.itgrows.ai/cabinet" style="color: #9ca3af;">Manage your account</a></p>
       </div>
@@ -121,10 +121,10 @@ export async function GET(req: NextRequest) {
 
       const displayName = user.name ?? user.email.split("@")[0] ?? "there"
 
-      if (daysUntilTrialEnd === 6) {
+      if (daysUntilTrialEnd === 13) {
         await sendEmail({
           to: user.email,
-          subject: "Welcome — here's how to get the most from your 7-day trial",
+          subject: "Welcome — here's how to get the most from your 14-day trial",
           html: trialWelcomeEmail(displayName),
         })
         sent++

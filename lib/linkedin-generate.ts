@@ -4,6 +4,7 @@ import { eq, and, inArray } from "drizzle-orm"
 import { callLLM } from "@/lib/llm-client"
 import { generatePostImage } from "@/lib/linkedin-image"
 import { sendEmail } from "@/lib/email"
+import { getPostsPerWeek } from "@/lib/access"
 
 interface PostData {
   content: string
@@ -26,7 +27,7 @@ function linkedinPostsReadyEmail(name: string, firstDate: Date): string {
       </div>
       <div style="padding: 32px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 12px 12px;">
         <p style="color: #374151; font-size: 16px;">Hi ${name},</p>
-        <p style="color: #374151;">We generated 7 posts for you, starting <strong>${dateStr}</strong>. Posts will publish automatically at 10am UTC, one per day.</p>
+        <p style="color: #374151;">We generated your first LinkedIn posts, starting <strong>${dateStr}</strong>. Posts will publish automatically at 10am UTC, one per day.</p>
         <p style="color: #6b7280; font-size: 14px;">Visit your cabinet to preview or edit them before they go live.</p>
         <a href="https://itgrows.ai/cabinet" style="display: inline-block; background: #7c3aed; color: white; padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; margin-top: 16px;">View Your Posts →</a>
         <p style="color: #9ca3af; font-size: 12px; margin-top: 32px;">ItGrows.ai · <a href="https://itgrows.ai/cabinet" style="color: #9ca3af;">Manage posts</a></p>
@@ -53,12 +54,22 @@ export function buildLinkedInPrompt(brief: {
   goals?: string | null
   companyName?: string | null
   targetAudience?: string | null
-}): string {
+}, count: number = 7): string {
   const currentYear = new Date().getFullYear()
   const tone = brief.tone ?? "professional"
   const niche = brief.niche ?? "business"
   const goals = brief.goals ?? "build authority and engage audience"
   const audience = brief.targetAudience ? `Target audience: ${brief.targetAudience}. ` : ""
+
+  const angles = [
+    "personal lesson",
+    "industry observation",
+    "contrarian take",
+    '"what I wish I knew"',
+    "a mistake and what it taught me",
+    "a trend I'm watching",
+    "a question I keep asking myself",
+  ].slice(0, count).join(" | ")
 
   return `You are a LinkedIn thought leadership expert writing in the first person for a ${tone} professional in the ${niche} space.
 ${audience}Goals: ${goals}. Current year: ${currentYear}.
@@ -84,14 +95,14 @@ FORMAT for each post:
 - 3–5 relevant hashtags on the last line.
 - Total length: 150–300 words.
 
-Cover 7 different angles across the set:
-personal lesson | industry observation | contrarian take | "what I wish I knew" | a mistake and what it taught me | a trend I'm watching | a question I keep asking myself
+Cover ${count} different angles across the set:
+${angles}
 
-Return ONLY a valid JSON array with exactly 7 objects. Each object must have:
+Return ONLY a valid JSON array with exactly ${count} objects. Each object must have:
 - "content": string (the full post text including hashtags)
 - "hook": string (first sentence only, for preview)
 
-Write the 7 posts now, return only the JSON array:`
+Write the ${count} posts now, return only the JSON array:`
 }
 
 export async function generateForUser(userId: string): Promise<{ success: boolean; error?: string }> {
@@ -130,7 +141,17 @@ export async function generateForUser(userId: string): Promise<{ success: boolea
 
     const brief = dbBrief ?? {}
 
-    const prompt = buildLinkedInPrompt(brief)
+    const [userRecord] = await db
+      .select({ subscriptionPlan: users.subscriptionPlan, subscriptionStatus: users.subscriptionStatus, trialEndsAt: users.trialEndsAt })
+      .from(users)
+      .where(eq(users.id, userId))
+      .limit(1)
+
+    const postsCount = userRecord
+      ? getPostsPerWeek({ subscriptionPlan: userRecord.subscriptionPlan ?? null, subscriptionStatus: userRecord.subscriptionStatus ?? null, trialEndsAt: userRecord.trialEndsAt ?? null })
+      : 5
+
+    const prompt = buildLinkedInPrompt(brief, postsCount)
 
     let rawContent = ""
     try {
@@ -162,7 +183,7 @@ export async function generateForUser(userId: string): Promise<{ success: boolea
     )
 
     const now = new Date()
-    const slice = postsData.slice(0, 7)
+    const slice = postsData.slice(0, postsCount)
 
     const imageUrls = await Promise.all(
       slice.map((postData) => generatePostImage(postData.content, brief.niche ?? "business"))

@@ -6,7 +6,10 @@ const baseStyle = `
 `
 
 export function subscriptionActivatedEmail(name: string, plan: string): string {
-  const planLabel = plan === "personal_annual" ? "Personal Annual ($144/yr)" : "Personal Monthly ($15/mo)"
+  const planLabel = plan === "allin" ? "All-in ($199/mo)"
+    : plan === "duo" ? "Duo ($99/mo)"
+    : plan === "personal_annual" ? "Personal Annual"
+    : "Personal ($49/mo)"
   return `
     <div style="${baseStyle}">
       <div style="background: linear-gradient(135deg, #7c3aed, #a855f7); padding: 32px; text-align: center; border-radius: 12px 12px 0 0;">
@@ -159,7 +162,7 @@ export function paymentFailedEmail(name: string): string {
       </div>
       <div style="padding: 32px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 12px 12px;">
         <p style="color: #374151;">Hi ${name},</p>
-        <p style="color: #374151;">We couldn't process your ItGrows Personal subscription payment. Your access continues for 7 days while we retry.</p>
+        <p style="color: #374151;">We couldn't process your ItGrows subscription payment. Your access continues while we retry.</p>
         <p style="color: #6b7280; font-size: 14px;">To keep your LinkedIn autopilot running, please update your payment method:</p>
         <a href="https://itgrows.ai/cabinet" style="display: inline-block; background: #d97706; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; margin-top: 8px;">Update Payment Method →</a>
         <p style="color: #9ca3af; font-size: 12px; margin-top: 32px;">ItGrows.ai · Stripe will retry automatically in 3 days.</p>
