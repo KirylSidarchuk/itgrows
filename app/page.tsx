@@ -723,10 +723,16 @@ export default function PersonalPage() {
             {/* Personal Plan */}
             <Card className="relative border-black/10 bg-white shadow-sm">
               <CardHeader className="text-center pb-2 pt-8">
-                <div className="flex justify-center mb-3">
+                <div className="flex justify-center items-center gap-2 mb-3">
                   <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: "linear-gradient(135deg, #0A66C2, #0077b6)" }}>
                     <svg viewBox="0 0 24 24" fill="white" className="w-4 h-4">
                       <path d="M20.447 20.452H16.89v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a1.977 1.977 0 0 1-1.972-1.98 1.977 1.977 0 0 1 1.972-1.979 1.977 1.977 0 0 1 1.972 1.979 1.977 1.977 0 0 1-1.972 1.98zm1.99 13.019H3.347V9h3.98v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+                    </svg>
+                  </div>
+                  <span className="text-slate-400 text-xs font-semibold uppercase tracking-widest">or</span>
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-black">
+                    <svg viewBox="0 0 24 24" fill="white" className="w-4 h-4">
+                      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.253 5.622 5.912-5.622Zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
                     </svg>
                   </div>
                 </div>
@@ -761,12 +767,13 @@ export default function PersonalPage() {
                 <Badge className="bg-violet-600 text-white border-0 px-4 py-1">Most Popular</Badge>
               </div>
               <CardHeader className="text-center pb-2 pt-8">
-                <div className="flex justify-center gap-2 mb-3">
+                <div className="flex justify-center items-center gap-2 mb-3">
                   <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: "linear-gradient(135deg, #0A66C2, #0077b6)" }}>
                     <svg viewBox="0 0 24 24" fill="white" className="w-4 h-4">
                       <path d="M20.447 20.452H16.89v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a1.977 1.977 0 0 1-1.972-1.98 1.977 1.977 0 0 1 1.972-1.979 1.977 1.977 0 0 1 1.972 1.979 1.977 1.977 0 0 1-1.972 1.98zm1.99 13.019H3.347V9h3.98v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
                     </svg>
                   </div>
+                  <span className="text-slate-400 text-xs font-semibold uppercase tracking-widest">+</span>
                   <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-black">
                     <svg viewBox="0 0 24 24" fill="white" className="w-4 h-4">
                       <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.253 5.622 5.912-5.622Zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
