@@ -3520,9 +3520,9 @@ function LinkedInPageContent() {
                     <div className="flex flex-col gap-2">
                       {(["personal", "duo", "allin"] as const).map((p) => {
                         const labels: Record<string, { name: string; price: string; desc: string; color: string; bg: string; border: string }> = {
-                          personal: { name: "Personal", price: "$49/mo", desc: "1 account · 5 posts/week", color: "text-violet-700", bg: "bg-violet-50 hover:bg-violet-100", border: "border-violet-200 hover:border-violet-400" },
-                          duo: { name: "Duo", price: "$99/mo", desc: "2 accounts · 7 posts/week each", color: "text-blue-700", bg: "bg-blue-50 hover:bg-blue-100", border: "border-blue-200 hover:border-blue-400" },
-                          allin: { name: "All-in", price: "$199/mo", desc: "3 accounts · 7 posts/week each + analytics", color: "text-pink-700", bg: "bg-pink-50 hover:bg-pink-100", border: "border-pink-200 hover:border-pink-400" },
+                          personal: { name: "Personal", price: "$49/mo", desc: "1 account · 1 post/day", color: "text-violet-700", bg: "bg-violet-50 hover:bg-violet-100", border: "border-violet-200 hover:border-violet-400" },
+                          duo: { name: "Duo", price: "$99/mo", desc: "2 accounts · 1 post/day each", color: "text-blue-700", bg: "bg-blue-50 hover:bg-blue-100", border: "border-blue-200 hover:border-blue-400" },
+                          allin: { name: "All-in", price: "$199/mo", desc: "3 accounts · 1 post/day each", color: "text-pink-700", bg: "bg-pink-50 hover:bg-pink-100", border: "border-pink-200 hover:border-pink-400" },
                         }
                         const l = labels[p]
                         return (
@@ -3551,9 +3551,9 @@ function LinkedInPageContent() {
                     <div className="flex flex-col gap-2">
                       {(["personal", "duo", "allin"] as const).map((p) => {
                         const labels: Record<string, { name: string; price: string; desc: string; color: string; bg: string; border: string }> = {
-                          personal: { name: "Personal", price: "$49/mo", desc: "1 account · 5 posts/week", color: "text-violet-700", bg: "bg-violet-50 hover:bg-violet-100", border: "border-violet-200 hover:border-violet-400" },
-                          duo: { name: "Duo", price: "$99/mo", desc: "2 accounts · 7 posts/week each", color: "text-blue-700", bg: "bg-blue-50 hover:bg-blue-100", border: "border-blue-200 hover:border-blue-400" },
-                          allin: { name: "All-in", price: "$199/mo", desc: "3 accounts · 7 posts/week each + analytics", color: "text-pink-700", bg: "bg-pink-50 hover:bg-pink-100", border: "border-pink-200 hover:border-pink-400" },
+                          personal: { name: "Personal", price: "$49/mo", desc: "1 account · 1 post/day", color: "text-violet-700", bg: "bg-violet-50 hover:bg-violet-100", border: "border-violet-200 hover:border-violet-400" },
+                          duo: { name: "Duo", price: "$99/mo", desc: "2 accounts · 1 post/day each", color: "text-blue-700", bg: "bg-blue-50 hover:bg-blue-100", border: "border-blue-200 hover:border-blue-400" },
+                          allin: { name: "All-in", price: "$199/mo", desc: "3 accounts · 1 post/day each", color: "text-pink-700", bg: "bg-pink-50 hover:bg-pink-100", border: "border-pink-200 hover:border-pink-400" },
                         }
                         const l = labels[p]
                         return (

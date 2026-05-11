@@ -1322,7 +1322,7 @@ export default function LandingPageB() {
                 <ul className="space-y-2 pt-1">
                   {[
                     "1 account: LinkedIn OR X personal OR X company",
-                    "5 AI-written posts/week",
+                    "14 AI-written posts · 1 per day",
                     "Custom AI images",
                     "Auto-post at peak time",
                   ].map((item, i) => (
@@ -1371,7 +1371,7 @@ export default function LandingPageB() {
                 <ul className="space-y-2 pt-1">
                   {[
                     "Any 2 accounts from LinkedIn, X personal, X company",
-                    "7 AI-written posts/week per account",
+                    "14 AI-written posts · 1 per day",
                     "Platform-specific voice & style",
                     "Cross-platform content DNA",
                   ].map((item, i) => (
@@ -1414,7 +1414,7 @@ export default function LandingPageB() {
                 <ul className="space-y-2 pt-1">
                   {[
                     "All 3 accounts: LinkedIn + X personal + X company",
-                    "7 AI-written posts/week per account",
+                    "14 AI-written posts · 1 per day",
                     "Analytics & strategy session",
                     "Platform-specific voice & style",
                   ].map((item, i) => (

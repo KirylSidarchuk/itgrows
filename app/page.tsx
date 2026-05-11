@@ -787,7 +787,7 @@ export default function PersonalPage() {
                   Start Free Trial
                 </Button>
                 <ul className="space-y-2 pt-1">
-                  {["1 account: LinkedIn OR X personal OR X company", "5 AI-written posts/week", "Custom images for every post", "Auto-scheduling at peak time", "Profile DNA analysis"].map((item, i) => (
+                  {["1 account: LinkedIn OR X personal OR X company", "14 AI-written posts · 1 per day", "Custom images for every post", "Auto-scheduling at peak time", "Profile DNA analysis"].map((item, i) => (
                     <li key={i} className="flex items-center gap-2 text-sm text-slate-600">
                       <span className="text-blue-600 font-bold">✓</span> {item}
                     </li>
@@ -831,7 +831,7 @@ export default function PersonalPage() {
                   Start Free Trial
                 </Button>
                 <ul className="space-y-2 pt-1">
-                  {["Any 2 accounts from LinkedIn, X personal, X company", "7 AI-written posts/week per account", "Platform-specific voice & style", "Unified dashboard for both platforms", "Custom images for every post"].map((item, i) => (
+                  {["Any 2 accounts from LinkedIn, X personal, X company", "14 AI-written posts · 1 per day", "Platform-specific voice & style", "Unified dashboard for both platforms", "Custom images for every post"].map((item, i) => (
                     <li key={i} className="flex items-center gap-2 text-sm text-slate-600">
                       <span className="text-violet-600 font-bold">✓</span> {item}
                     </li>
@@ -879,7 +879,7 @@ export default function PersonalPage() {
                   Start Free Trial
                 </Button>
                 <ul className="space-y-2 pt-1">
-                  {["All 3 accounts: LinkedIn + X personal + X company", "7 AI-written posts/week per account", "Analytics & strategic session included", "Platform-specific voice & style", "Unified dashboard for all platforms"].map((item, i) => (
+                  {["All 3 accounts: LinkedIn + X personal + X company", "14 AI-written posts · 1 per day", "Analytics & strategic session included", "Platform-specific voice & style", "Unified dashboard for all platforms"].map((item, i) => (
                     <li key={i} className="flex items-center gap-2 text-sm text-slate-600">
                       <span className="text-slate-800 font-bold">✓</span> {item}
                     </li>
