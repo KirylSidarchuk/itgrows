@@ -3288,6 +3288,7 @@ function LinkedInPageContent() {
               </div>
             </div>
           )}
+          </>)}
 
           {/* ===================== ACCOUNT TAB ===================== */}
           {activeTab === "account" && (
@@ -3679,7 +3680,6 @@ function LinkedInPageContent() {
               </div>
             </div>
           )}
-          </>)}
 
         </div>
       </main>
