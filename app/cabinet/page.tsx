@@ -856,6 +856,7 @@ function LinkedInPageContent() {
   const [publishedCollapsed, setPublishedCollapsed] = useState(false)
   const [deletingAccount, setDeletingAccount] = useState(false)
   const [checkingOut, setCheckingOut] = useState(false)
+  const [showPlanModal, setShowPlanModal] = useState(false)
   const [showOnboarding, setShowOnboarding] = useState(() =>
     typeof window !== "undefined" ? localStorage.getItem("itgrows_onboarding_done") !== "true" : false
   )
@@ -1737,6 +1738,68 @@ function LinkedInPageContent() {
 
   return (
     <div className="flex h-screen overflow-hidden" style={{ background: "linear-gradient(135deg, #f5f3ff 0%, #ede9fe 50%, #f3f2f1 100%)" }}>
+      {/* Plan selection modal */}
+      {showPlanModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-6">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h2 className="text-xl font-bold text-slate-900">Choose your plan</h2>
+                <p className="text-sm text-slate-500 mt-0.5">14-day free trial · card required · cancel anytime</p>
+              </div>
+              <button onClick={() => setShowPlanModal(false)} className="text-slate-400 hover:text-slate-600 text-xl font-semibold leading-none">×</button>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {/* Personal */}
+              <button
+                onClick={() => { setShowPlanModal(false); handleUpgrade("personal") }}
+                disabled={checkingOut}
+                className="flex flex-col items-start p-5 rounded-2xl border-2 border-slate-200 hover:border-violet-400 hover:bg-violet-50 transition-all text-left disabled:opacity-70 group"
+              >
+                <span className="text-xs font-semibold text-violet-600 bg-violet-100 rounded-full px-2.5 py-0.5 mb-3">Personal</span>
+                <span className="text-2xl font-bold text-slate-900 mb-1">$49<span className="text-sm font-normal text-slate-500">/mo</span></span>
+                <p className="text-xs text-slate-500 mb-3">LinkedIn or X · 1 account</p>
+                <ul className="text-xs text-slate-600 space-y-1">
+                  <li>✓ 14 AI posts · 1 per day</li>
+                  <li>✓ Auto-scheduling</li>
+                  <li>✓ Custom images</li>
+                </ul>
+              </button>
+              {/* Duo */}
+              <button
+                onClick={() => { setShowPlanModal(false); handleUpgrade("duo") }}
+                disabled={checkingOut}
+                className="flex flex-col items-start p-5 rounded-2xl border-2 border-violet-400 bg-violet-50 hover:border-violet-600 hover:bg-violet-100 transition-all text-left disabled:opacity-70 relative"
+              >
+                <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 text-[10px] font-bold text-white bg-violet-600 rounded-full px-2.5 py-0.5">POPULAR</span>
+                <span className="text-xs font-semibold text-violet-600 bg-violet-100 rounded-full px-2.5 py-0.5 mb-3">Duo</span>
+                <span className="text-2xl font-bold text-slate-900 mb-1">$99<span className="text-sm font-normal text-slate-500">/mo</span></span>
+                <p className="text-xs text-slate-500 mb-3">LinkedIn + X · 2 accounts</p>
+                <ul className="text-xs text-slate-600 space-y-1">
+                  <li>✓ 14 AI posts per account</li>
+                  <li>✓ Auto-scheduling</li>
+                  <li>✓ Custom images</li>
+                </ul>
+              </button>
+              {/* All-in */}
+              <button
+                onClick={() => { setShowPlanModal(false); handleUpgrade("allin") }}
+                disabled={checkingOut}
+                className="flex flex-col items-start p-5 rounded-2xl border-2 border-slate-200 hover:border-slate-900 hover:bg-slate-50 transition-all text-left disabled:opacity-70"
+              >
+                <span className="text-xs font-semibold text-slate-700 bg-slate-100 rounded-full px-2.5 py-0.5 mb-3">All-in</span>
+                <span className="text-2xl font-bold text-slate-900 mb-1">$199<span className="text-sm font-normal text-slate-500">/mo</span></span>
+                <p className="text-xs text-slate-500 mb-3">LinkedIn + X + Company · 3 accounts</p>
+                <ul className="text-xs text-slate-600 space-y-1">
+                  <li>✓ 14 AI posts per account</li>
+                  <li>✓ Company X account</li>
+                  <li>✓ Analytics</li>
+                </ul>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {/* Left sidebar — hidden on mobile, visible on lg+ */}
       <aside className="hidden lg:flex w-60 shrink-0 flex-col bg-white border-r border-slate-100 shadow-sm z-10">
         {/* Logo */}
@@ -1764,17 +1827,6 @@ function LinkedInPageContent() {
             <LinkedInIcon className="w-4 h-4 shrink-0" />
             <span className="text-sm font-semibold">LinkedIn</span>
           </button>
-          {/* Instagram — coming soon */}
-          <button
-            disabled
-            className="w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl text-slate-400 cursor-not-allowed mb-1"
-          >
-            <div className="flex items-center gap-3">
-              <InstagramIcon className="w-4 h-4 shrink-0 opacity-50" />
-              <span className="text-sm">Instagram</span>
-            </div>
-            <span className="text-[10px] font-semibold bg-slate-100 text-slate-500 rounded-full px-2 py-0.5">Soon</span>
-          </button>
           {/* Twitter/X */}
           <button
             onClick={() => setActivePlatform("x")}
@@ -1786,6 +1838,17 @@ function LinkedInPageContent() {
           >
             <XIcon className="w-4 h-4 shrink-0" />
             <span className="text-sm font-semibold">X (Twitter)</span>
+          </button>
+          {/* Instagram — coming soon */}
+          <button
+            disabled
+            className="w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl text-slate-400 cursor-not-allowed mb-1"
+          >
+            <div className="flex items-center gap-3">
+              <InstagramIcon className="w-4 h-4 shrink-0 opacity-50" />
+              <span className="text-sm">Instagram</span>
+            </div>
+            <span className="text-[10px] font-semibold bg-slate-100 text-slate-500 rounded-full px-2 py-0.5">Soon</span>
           </button>
         </div>
 
@@ -1943,7 +2006,7 @@ function LinkedInPageContent() {
                 </div>
               </div>
               <button
-                onClick={() => handleUpgrade("personal")}
+                onClick={() => setShowPlanModal(true)}
                 disabled={checkingOut}
                 className="shrink-0 bg-white text-violet-700 font-semibold text-xs rounded-xl px-4 py-2 hover:bg-violet-50 transition-colors disabled:opacity-70 self-start sm:self-auto"
               >
@@ -1992,7 +2055,7 @@ function LinkedInPageContent() {
                 </div>
               </div>
               <button
-                onClick={() => handleUpgrade("personal")}
+                onClick={() => setShowPlanModal(true)}
                 disabled={checkingOut}
                 className="shrink-0 bg-amber-500 hover:bg-amber-600 text-white font-semibold text-xs rounded-xl px-4 py-2 transition-colors disabled:opacity-70 self-start sm:self-auto"
               >
@@ -2161,7 +2224,7 @@ function LinkedInPageContent() {
                       </a>
                     ) : (
                       <Button
-                        onClick={() => handleUpgrade("personal")}
+                        onClick={() => setShowPlanModal(true)}
                         disabled={checkingOut}
                         className="bg-gradient-to-r from-pink-500 to-orange-400 hover:from-pink-400 hover:to-orange-300 text-white font-semibold px-6 py-2.5 rounded-xl shadow-sm"
                       >
@@ -2493,7 +2556,7 @@ function LinkedInPageContent() {
                           </a>
                         ) : (
                           <Button
-                            onClick={() => handleUpgrade("personal")}
+                            onClick={() => setShowPlanModal(true)}
                             disabled={checkingOut}
                             className="bg-slate-900 hover:bg-slate-700 text-white font-semibold px-6 py-2.5 rounded-xl shadow-sm"
                           >
@@ -2964,7 +3027,7 @@ function LinkedInPageContent() {
                       </a>
                     ) : (
                       <Button
-                        onClick={() => handleUpgrade("personal")}
+                        onClick={() => setShowPlanModal(true)}
                         disabled={checkingOut}
                         className="bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-white font-semibold px-6 py-2.5 rounded-xl shadow-sm"
                       >
@@ -3066,7 +3129,7 @@ function LinkedInPageContent() {
                             <p className="text-sm text-slate-400 max-w-xs">Your trial has ended. Subscribe to generate more posts.</p>
                           </div>
                           <button
-                            onClick={() => handleUpgrade("personal")}
+                            onClick={() => setShowPlanModal(true)}
                             disabled={checkingOut}
                             className="mt-2 bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-500 hover:to-orange-400 text-white font-semibold text-sm px-6 py-2.5 rounded-xl shadow-sm transition-opacity disabled:opacity-70"
                           >
@@ -3080,7 +3143,7 @@ function LinkedInPageContent() {
                             <p className="text-sm text-slate-400 max-w-xs">Start your 14-day free trial to generate posts.</p>
                           </div>
                           <button
-                            onClick={() => handleUpgrade("personal")}
+                            onClick={() => setShowPlanModal(true)}
                             disabled={checkingOut}
                             className="mt-2 bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-white font-semibold text-sm px-6 py-2.5 rounded-xl shadow-sm transition-opacity disabled:opacity-70"
                           >
@@ -3580,7 +3643,7 @@ function LinkedInPageContent() {
                       <p className="text-xs text-slate-500">Start a 14-day free trial. Card required, cancel anytime before it ends.</p>
                     </div>
                     <button
-                      onClick={() => handleUpgrade("personal")}
+                      onClick={() => setShowPlanModal(true)}
                       disabled={checkingOut}
                       className="w-full flex items-center justify-center gap-2 p-4 rounded-xl border-2 border-violet-200 bg-violet-50 hover:border-violet-400 hover:bg-violet-100 transition-colors cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
                     >
