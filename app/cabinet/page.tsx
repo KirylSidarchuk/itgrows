@@ -99,6 +99,7 @@ interface TwitterPost {
   twitterPostId: string | null
   errorMessage: string | null
   createdAt: string
+  accountType: string
 }
 
 interface TwitterBrief {
@@ -904,6 +905,7 @@ function LinkedInPageContent() {
   const [xCompanyBriefSaved, setXCompanyBriefSaved] = useState(false)
   const [showXOnboarding, setShowXOnboarding] = useState(false)
   const [xOnboardingStep, setXOnboardingStep] = useState(0)
+  const [xPostsAccountType, setXPostsAccountType] = useState<"personal" | "company">("personal")
 
   const hour = new Date().getHours()
   const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening"
@@ -1625,7 +1627,7 @@ function LinkedInPageContent() {
       const res = await fetch("/api/x/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({}),
+        body: JSON.stringify({ accountType: xPersonalAccount && xCompanyAccount ? xPostsAccountType : undefined }),
       })
       if (!res.ok) {
         const data = await res.json().catch(() => ({})) as { error?: string; message?: string }
@@ -1671,8 +1673,10 @@ function LinkedInPageContent() {
   const igActivePosts = igPosts.filter((p) => p.status !== "published").sort((a, b) => new Date(a.scheduledFor ?? 0).getTime() - new Date(b.scheduledFor ?? 0).getTime())
   const igPublishedPosts = igPosts.filter((p) => p.status === "published").sort((a, b) => new Date(a.scheduledFor ?? 0).getTime() - new Date(b.scheduledFor ?? 0).getTime())
   const xIsConnected = xAccount !== null
-  const xActivePosts = xPosts.filter((p) => p.status !== "published").sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
-  const xPublishedPosts = xPosts.filter((p) => p.status === "published")
+  const xBothAccountsConnected = !!(xPersonalAccount && xCompanyAccount)
+  const xFilteredPosts = xBothAccountsConnected ? xPosts.filter((p) => p.accountType === xPostsAccountType) : xPosts
+  const xActivePosts = xFilteredPosts.filter((p) => p.status !== "published").sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+  const xPublishedPosts = xFilteredPosts.filter((p) => p.status === "published")
 
   // Paid Stripe subscription (any plan) or Stripe trialing
   const hasActiveSubscription = (subscriptionStatus === "active" || subscriptionStatus === "past_due" || subscriptionStatus === "trialing") &&
@@ -2483,6 +2487,24 @@ function LinkedInPageContent() {
                           </Button>
                         )}
                       </div>
+
+                      {xBothAccountsConnected && (
+                        <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl w-fit">
+                          {(["personal", "company"] as const).map((type) => (
+                            <button
+                              key={type}
+                              onClick={() => setXPostsAccountType(type)}
+                              className={`px-4 py-1.5 rounded-lg text-sm font-semibold transition-all capitalize ${
+                                xPostsAccountType === type
+                                  ? "bg-slate-900 text-white"
+                                  : "bg-transparent text-slate-500"
+                              }`}
+                            >
+                              {type === "personal" ? "Personal" : "Company"}
+                            </button>
+                          ))}
+                        </div>
+                      )}
 
                       {xGenerateError && (
                         <div className="px-4 py-3 rounded-xl bg-red-50 text-red-600 text-sm border border-red-100">
