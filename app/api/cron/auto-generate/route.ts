@@ -51,7 +51,7 @@ export async function GET(req: NextRequest) {
 
       const scheduledCount = Number(result?.cnt ?? 0)
 
-      if (scheduledCount > 0) {
+      if (scheduledCount >= 7) {
         skipped++
         continue
       }

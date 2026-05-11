@@ -4,7 +4,7 @@ import { db } from "@/lib/db"
 import { linkedinAccounts, linkedinPosts, linkedinBriefs, users } from "@/lib/db/schema"
 import { eq, and, inArray } from "drizzle-orm"
 import { checkGenerateRateLimit } from "@/lib/rate-limit"
-import { hasAccess, getPostsPerWeek } from "@/lib/access"
+import { hasAccess } from "@/lib/access"
 import { buildLinkedInPrompt } from "@/lib/linkedin-generate"
 import { generatePostImage } from "@/lib/linkedin-image"
 
@@ -45,13 +45,17 @@ export async function POST(req: NextRequest) {
     const userId = session.user.id
 
     // Check subscription or trial
-    const [user] = await db.select({ subscriptionPlan: users.subscriptionPlan, subscriptionStatus: users.subscriptionStatus, trialEndsAt: users.trialEndsAt })
+    const [user] = await db.select({ subscriptionPlan: users.subscriptionPlan, subscriptionStatus: users.subscriptionStatus, trialEndsAt: users.trialEndsAt, cancelAtPeriodEnd: users.cancelAtPeriodEnd, subscriptionEndDate: users.subscriptionEndDate })
       .from(users).where(eq(users.id, userId)).limit(1)
     const userAccess = { subscriptionStatus: user?.subscriptionStatus ?? null, subscriptionPlan: user?.subscriptionPlan ?? null, trialEndsAt: user?.trialEndsAt ?? null }
     if (!user || !hasAccess(userAccess)) {
       return NextResponse.json({ error: "subscription_required", message: "Active subscription or active trial required" }, { status: 403 })
     }
-    const postsCount = getPostsPerWeek(userAccess)
+    let maxPosts = 14
+    if (user?.cancelAtPeriodEnd && user?.subscriptionEndDate) {
+      const daysLeft = Math.ceil((user.subscriptionEndDate.getTime() - Date.now()) / 86400000)
+      if (daysLeft < 14) maxPosts = Math.max(daysLeft, 1)
+    }
 
     // Check rate limit
     const rateLimit = await checkGenerateRateLimit(userId)
@@ -103,7 +107,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "brief_required", message: "Please fill your Professional DNA before generating posts." }, { status: 400 })
     }
 
-    const prompt = buildLinkedInPrompt(brief)
+    const prompt = buildLinkedInPrompt(brief, maxPosts)
 
     const FALLBACK_MODELS = [LLM_MODEL, "gemini-2.5-flash", "gemini-2.5-pro"]
     let llmResponse: Response | null = null
@@ -206,7 +210,7 @@ export async function POST(req: NextRequest) {
 
     // Schedule posts: one per day at 10:00 UTC starting tomorrow
     const now = new Date()
-    const slice = postsData.slice(0, postsCount)
+    const slice = postsData.slice(0, maxPosts)
 
     // Generate all images in parallel
     const imageUrls = await Promise.all(

@@ -96,17 +96,26 @@ export async function generateInitialXPosts(userId: string, accountType: string)
       promptContext = `Writing for a ${tone} professional in the ${niche} space. ${audience} Goals: ${goals}.`
     }
 
-    const jsonInstruction = "IMPORTANT: Your response must be ONLY a valid JSON array. No markdown, no code blocks, no explanations. Start with [ and end with ]."
+    const [userRecord] = await db
+      .select({ cancelAtPeriodEnd: users.cancelAtPeriodEnd, subscriptionEndDate: users.subscriptionEndDate })
+      .from(users)
+      .where(eq(users.id, userId))
+      .limit(1)
 
-    // Auto-generate uses 5 posts (Personal/Trial plan count)
-    const autoPostsCount = 5
+    let maxPosts = 14
+    if (userRecord?.cancelAtPeriodEnd && userRecord?.subscriptionEndDate) {
+      const daysLeft = Math.ceil((userRecord.subscriptionEndDate.getTime() - Date.now()) / 86400000)
+      if (daysLeft < 14) maxPosts = Math.max(daysLeft, 1)
+    }
+
+    const jsonInstruction = "IMPORTANT: Your response must be ONLY a valid JSON array. No markdown, no code blocks, no explanations. Start with [ and end with ]."
 
     const prompt = `${jsonInstruction}
 
 You are a Twitter/X thought leadership expert writing in the first person.
 ${promptContext} Current year: ${currentYear}.
 
-Generate ${autoPostsCount} engaging tweets that feel authentic and personal.
+Generate ${maxPosts} engaging tweets that feel authentic and personal.
 
 RULES:
 1. Each tweet must be under 280 characters (including hashtags).
@@ -116,7 +125,7 @@ RULES:
 5. Mix formats: insight/tip, personal take, question to audience, mini-story, bold statement.
 6. No generic marketing language or sales pitches.
 
-Return ONLY a valid JSON array with exactly ${autoPostsCount} objects. Each object must have:
+Return ONLY a valid JSON array with exactly ${maxPosts} objects. Each object must have:
 - "content": string (the full tweet text, max 280 chars, including hashtags)
 
 ${jsonInstruction}`
@@ -187,7 +196,7 @@ ${jsonInstruction}`
 
     const firstPostDate = new Date(nextDate)
 
-    for (const postData of postsData.slice(0, autoPostsCount)) {
+    for (const postData of postsData.slice(0, maxPosts)) {
       const content = (postData.content ?? "").slice(0, 280)
       const scheduledAt = new Date(nextDate)
       await db.insert(twitterPosts).values({

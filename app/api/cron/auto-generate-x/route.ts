@@ -10,7 +10,7 @@ const LLM_BASE_URL = "http://34.60.133.229:4000"
 const LLM_MODEL = "claude-sonnet-4-6"
 const LLM_API_KEY = "jtotFgxS1WQorT52LZym2ncyYzboliS6p04RqUwneFI"
 
-const MIN_SCHEDULED = 3
+const MIN_SCHEDULED = 7
 
 async function generateTweetsForUser(userId: string, accountType: string): Promise<{ success: boolean; error?: string }> {
   try {
@@ -62,6 +62,18 @@ async function generateTweetsForUser(userId: string, accountType: string): Promi
       promptContext = `Writing for a ${tone} professional in the ${niche} space. ${audience} Goals: ${goals}.`
     }
 
+    const [userRecord] = await db
+      .select({ cancelAtPeriodEnd: users.cancelAtPeriodEnd, subscriptionEndDate: users.subscriptionEndDate })
+      .from(users)
+      .where(eq(users.id, userId))
+      .limit(1)
+
+    let maxPosts = 14
+    if (userRecord?.cancelAtPeriodEnd && userRecord?.subscriptionEndDate) {
+      const daysLeft = Math.ceil((userRecord.subscriptionEndDate.getTime() - Date.now()) / 86400000)
+      if (daysLeft < 14) maxPosts = Math.max(daysLeft, 1)
+    }
+
     const jsonInstruction = "IMPORTANT: Your response must be ONLY a valid JSON array. No markdown, no code blocks, no explanations. Start with [ and end with ]."
 
     const prompt = `${jsonInstruction}
@@ -69,7 +81,7 @@ async function generateTweetsForUser(userId: string, accountType: string): Promi
 You are a Twitter/X thought leadership expert writing in the first person.
 ${promptContext} Current year: ${currentYear}.
 
-Generate 5 engaging tweets that feel authentic and personal.
+Generate ${maxPosts} engaging tweets that feel authentic and personal.
 
 RULES:
 1. Each tweet must be under 280 characters (including hashtags).
@@ -79,7 +91,7 @@ RULES:
 5. Mix formats: insight/tip, personal take, question to audience, mini-story, bold statement.
 6. No generic marketing language or sales pitches.
 
-Return ONLY a valid JSON array with exactly 5 objects. Each object must have:
+Return ONLY a valid JSON array with exactly ${maxPosts} objects. Each object must have:
 - "content": string (the full tweet text, max 280 chars, including hashtags)
 
 ${jsonInstruction}`
@@ -152,7 +164,7 @@ ${jsonInstruction}`
       if (dayAfterLast > tomorrow) nextDate = dayAfterLast
     }
 
-    for (const postData of postsData.slice(0, 5)) {
+    for (const postData of postsData.slice(0, maxPosts)) {
       const content = (postData.content ?? "").slice(0, 280)
       const scheduledAt = new Date(nextDate)
       await db.insert(twitterPosts).values({

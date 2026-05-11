@@ -3,7 +3,7 @@ import { auth } from "@/auth"
 import { db } from "@/lib/db"
 import { twitterAccounts, twitterPosts, linkedinBriefs, twitterBriefs, twitterCompanyBriefs, users } from "@/lib/db/schema"
 import { eq, and, or, desc } from "drizzle-orm"
-import { hasAccess, getPostsPerWeek } from "@/lib/access"
+import { hasAccess } from "@/lib/access"
 
 export const maxDuration = 300
 
@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
 
     // Check subscription or trial
     const [user] = await db
-      .select({ subscriptionPlan: users.subscriptionPlan, subscriptionStatus: users.subscriptionStatus, trialEndsAt: users.trialEndsAt })
+      .select({ subscriptionPlan: users.subscriptionPlan, subscriptionStatus: users.subscriptionStatus, trialEndsAt: users.trialEndsAt, cancelAtPeriodEnd: users.cancelAtPeriodEnd, subscriptionEndDate: users.subscriptionEndDate })
       .from(users)
       .where(eq(users.id, userId))
       .limit(1)
@@ -40,7 +40,11 @@ export async function POST(req: NextRequest) {
     if (!user || !hasAccess(userAccess)) {
       return NextResponse.json({ error: "subscription_required", message: "Active subscription or active trial required" }, { status: 403 })
     }
-    const postsCount = getPostsPerWeek(userAccess)
+    let maxPosts = 14
+    if (user?.cancelAtPeriodEnd && user?.subscriptionEndDate) {
+      const daysLeft = Math.ceil((user.subscriptionEndDate.getTime() - Date.now()) / 86400000)
+      if (daysLeft < 14) maxPosts = Math.max(daysLeft, 1)
+    }
 
     const body = await req.json() as GenerateXRequest
     const accountType = body.accountType === "company" ? "company" : "personal"
@@ -123,7 +127,7 @@ export async function POST(req: NextRequest) {
 You are a Twitter/X thought leadership expert writing in the first person.
 ${promptContext} Current year: ${currentYear}. ${topicHint}
 
-Generate ${postsCount} engaging tweets that feel authentic and personal.
+Generate ${maxPosts} engaging tweets that feel authentic and personal.
 
 RULES:
 1. Each tweet must be under 280 characters (including hashtags).
@@ -133,7 +137,7 @@ RULES:
 5. Mix formats: insight/tip, personal take, question to audience, mini-story, bold statement.
 6. No generic marketing language or sales pitches.
 
-Return ONLY a valid JSON array with exactly ${postsCount} objects. Each object must have:
+Return ONLY a valid JSON array with exactly ${maxPosts} objects. Each object must have:
 - "content": string (the full tweet text, max 280 chars, including hashtags)
 
 ${jsonInstruction}`
@@ -243,7 +247,7 @@ ${jsonInstruction}`
 
     // Insert posts as scheduled, 1 day apart at 10:00 UTC
     const insertedPosts = []
-    for (const postData of postsData.slice(0, postsCount)) {
+    for (const postData of postsData.slice(0, maxPosts)) {
       const content = (postData.content ?? "").slice(0, 280)
       const scheduledAt = new Date(nextDate)
       const [inserted] = await db

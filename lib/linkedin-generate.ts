@@ -4,7 +4,6 @@ import { eq, and, inArray } from "drizzle-orm"
 import { callLLM } from "@/lib/llm-client"
 import { generatePostImage } from "@/lib/linkedin-image"
 import { sendEmail } from "@/lib/email"
-import { getPostsPerWeek } from "@/lib/access"
 
 interface PostData {
   content: string
@@ -54,7 +53,7 @@ export function buildLinkedInPrompt(brief: {
   goals?: string | null
   companyName?: string | null
   targetAudience?: string | null
-}, count: number = 7): string {
+}, count: number = 14): string {
   const currentYear = new Date().getFullYear()
   const tone = brief.tone ?? "professional"
   const niche = brief.niche ?? "business"
@@ -69,6 +68,13 @@ export function buildLinkedInPrompt(brief: {
     "a mistake and what it taught me",
     "a trend I'm watching",
     "a question I keep asking myself",
+    "an unpopular opinion",
+    "a success story without fabrication",
+    "a common myth debunked",
+    "a practical tip",
+    "a reflection on failure",
+    "a future prediction",
+    "a gratitude or appreciation moment",
   ].slice(0, count).join(" | ")
 
   return `You are a LinkedIn thought leadership expert writing in the first person for a ${tone} professional in the ${niche} space.
@@ -142,16 +148,18 @@ export async function generateForUser(userId: string): Promise<{ success: boolea
     const brief = dbBrief ?? {}
 
     const [userRecord] = await db
-      .select({ subscriptionPlan: users.subscriptionPlan, subscriptionStatus: users.subscriptionStatus, trialEndsAt: users.trialEndsAt })
+      .select({ subscriptionPlan: users.subscriptionPlan, subscriptionStatus: users.subscriptionStatus, trialEndsAt: users.trialEndsAt, cancelAtPeriodEnd: users.cancelAtPeriodEnd, subscriptionEndDate: users.subscriptionEndDate })
       .from(users)
       .where(eq(users.id, userId))
       .limit(1)
 
-    const postsCount = userRecord
-      ? getPostsPerWeek({ subscriptionPlan: userRecord.subscriptionPlan ?? null, subscriptionStatus: userRecord.subscriptionStatus ?? null, trialEndsAt: userRecord.trialEndsAt ?? null })
-      : 5
+    let maxPosts = 14
+    if (userRecord?.cancelAtPeriodEnd && userRecord?.subscriptionEndDate) {
+      const daysLeft = Math.ceil((userRecord.subscriptionEndDate.getTime() - Date.now()) / 86400000)
+      if (daysLeft < 14) maxPosts = Math.max(daysLeft, 1)
+    }
 
-    const prompt = buildLinkedInPrompt(brief, postsCount)
+    const prompt = buildLinkedInPrompt(brief, maxPosts)
 
     let rawContent = ""
     try {
@@ -183,7 +191,7 @@ export async function generateForUser(userId: string): Promise<{ success: boolea
     )
 
     const now = new Date()
-    const slice = postsData.slice(0, postsCount)
+    const slice = postsData.slice(0, maxPosts)
 
     const imageUrls = await Promise.all(
       slice.map((postData) => generatePostImage(postData.content, brief.niche ?? "business"))
