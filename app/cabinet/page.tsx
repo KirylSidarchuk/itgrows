@@ -2429,21 +2429,23 @@ function LinkedInPageContent() {
                     </div>
                   ) : (
                     <div className="space-y-5">
-                  {/* Tabs: Posts | DNA.X | Company DNA */}
-                  <div className="flex items-center gap-1 bg-white rounded-2xl p-1 shadow-sm border border-slate-100 w-fit flex-wrap">
-                    {(["posts", "dna", "company-dna"] as XActiveTab[]).map((tab) => (
-                      <button
-                        key={tab}
-                        onClick={() => setXActiveTab(tab)}
-                        className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all ${
-                          xActiveTab === tab
-                            ? "bg-slate-900 text-white shadow-sm"
-                            : "text-slate-500 hover:text-slate-700 hover:bg-slate-50"
-                        }`}
-                      >
-                        {tab === "posts" ? "Posts" : tab === "dna" ? "DNA.X" : "Company DNA"}
-                      </button>
-                    ))}
+                  {/* Tabs: Posts | Personal DNA.X | Company DNA.X */}
+                  <div className="flex justify-center">
+                    <div className="flex items-center gap-1 bg-white rounded-2xl p-1 shadow-sm border border-slate-100">
+                      {(["posts", "dna", "company-dna"] as XActiveTab[]).map((tab) => (
+                        <button
+                          key={tab}
+                          onClick={() => setXActiveTab(tab)}
+                          className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all ${
+                            xActiveTab === tab
+                              ? "bg-slate-900 text-white shadow-sm"
+                              : "text-slate-500 hover:text-slate-700 hover:bg-slate-50"
+                          }`}
+                        >
+                          {tab === "posts" ? "Posts" : tab === "dna" ? "Personal DNA.X" : "Company DNA.X"}
+                        </button>
+                      ))}
+                    </div>
                   </div>
 
                   {/* ===== POSTS TAB ===== */}
