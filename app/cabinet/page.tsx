@@ -656,11 +656,15 @@ function XPostCard({
             <Badge variant="outline" className={`text-xs px-2 py-0.5 capitalize ${STATUS_COLORS[post.status] ?? STATUS_COLORS.draft}`}>
               {post.status}
             </Badge>
-            {post.publishedAt && (
+            {post.publishedAt ? (
               <span className="text-xs text-slate-400">
                 {new Date(post.publishedAt).toLocaleDateString()}
               </span>
-            )}
+            ) : post.scheduledAt && post.status === "scheduled" ? (
+              <span className="text-xs text-slate-400">
+                {new Date(post.scheduledAt).toLocaleDateString(undefined, { month: "short", day: "numeric" })} · {new Date(post.scheduledAt).toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" })}
+              </span>
+            ) : null}
           </div>
           <XIcon className="w-3.5 h-3.5 text-slate-400" />
         </div>
