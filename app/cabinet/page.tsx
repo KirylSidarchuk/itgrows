@@ -1658,6 +1658,14 @@ function LinkedInPageContent() {
         )
       )
       setXPublishedCollapsed(false)
+    } else if (res.status === 400 && data.error === "Post already published") {
+      // Post was published by cron while page was open — just update local state
+      setXPosts((prev) =>
+        prev.map((p) =>
+          p.id === postId ? { ...p, status: "published", errorMessage: null } : p
+        )
+      )
+      setXPublishedCollapsed(false)
     } else {
       setXPosts((prev) =>
         prev.map((p) =>
