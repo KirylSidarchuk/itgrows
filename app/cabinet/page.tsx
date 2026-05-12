@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Suspense } from "react"
-import { Loader2, RefreshCw, Send, Calendar, Check, Settings, LogOut, Zap, Lock, MessageCircle } from "lucide-react"
+import { Loader2, RefreshCw, Send, Calendar, Check, Settings, LogOut, Zap, Lock, MessageCircle, BarChart2 } from "lucide-react"
 import { signOut, useSession } from "next-auth/react"
 
 interface InstagramAccount {
@@ -426,7 +426,7 @@ function PostCard({
   )
 }
 
-type ActiveTab = "posts" | "dna" | "account" | "support"
+type ActiveTab = "posts" | "dna" | "account" | "support" | "analytics"
 type ActivePlatform = "linkedin" | "instagram" | "x"
 type XActiveTab = "posts" | "dna" | "company-dna"
 
@@ -870,6 +870,52 @@ function LinkedInPageContent() {
   const [supportSending, setSupportSending] = useState(false)
   const [supportSent, setSupportSent] = useState(false)
   const [supportError, setSupportError] = useState<string | null>(null)
+
+  // Analytics state
+  interface AnalyticsData {
+    hasSubscription: boolean
+    totalPosts: number
+    totalImpressions: number
+    avgEngagement: number
+    streak: number
+    weeklyImpressions: Array<{ week: string; impressions: number }>
+    topPosts: Array<{ content: string; impressions: number; likes: number; platform: string }>
+  }
+  const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(null)
+  const [analyticsLoading, setAnalyticsLoading] = useState(false)
+  const [analyticsSyncing, setAnalyticsSyncing] = useState(false)
+  const [analyticsSyncMsg, setAnalyticsSyncMsg] = useState<string | null>(null)
+
+  const fetchAnalytics = useCallback(async () => {
+    setAnalyticsLoading(true)
+    try {
+      const res = await fetch("/api/analytics")
+      if (res.ok) {
+        const data = await res.json() as AnalyticsData
+        setAnalyticsData(data)
+      }
+    } finally {
+      setAnalyticsLoading(false)
+    }
+  }, [])
+
+  const handleSyncAnalytics = async () => {
+    setAnalyticsSyncing(true)
+    setAnalyticsSyncMsg(null)
+    try {
+      const res = await fetch("/api/analytics/sync", { method: "POST" })
+      const data = await res.json() as { linkedinSynced?: number; twitterSynced?: number; error?: string }
+      if (res.ok) {
+        setAnalyticsSyncMsg(`Synced: ${data.linkedinSynced ?? 0} LinkedIn, ${data.twitterSynced ?? 0} Twitter posts`)
+        await fetchAnalytics()
+      } else {
+        setAnalyticsSyncMsg(data.error ?? "Sync failed")
+      }
+    } finally {
+      setAnalyticsSyncing(false)
+    }
+  }
+
   const [cancelingSubscription, setCancelingSubscription] = useState(false)
   const [cancelMessage, setCancelMessage] = useState<string | null>(null)
   const [cancelConfirming, setCancelConfirming] = useState(false)
@@ -1140,6 +1186,14 @@ function LinkedInPageContent() {
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activePlatform])
+
+  // Fetch analytics when Analytics tab is active
+  useEffect(() => {
+    if (activeTab === "analytics" && !analyticsData && !analyticsLoading) {
+      fetchAnalytics()
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab])
 
   // Auto-dismiss onboarding when all 3 steps complete
   useEffect(() => {
@@ -2130,6 +2184,17 @@ function LinkedInPageContent() {
             <span className="text-sm">How it works</span>
           </button>
           <button
+            onClick={() => setActiveTab("analytics")}
+            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors mb-1 ${
+              activeTab === "analytics"
+                ? "bg-violet-600 text-white"
+                : "text-slate-600 hover:bg-slate-50 hover:text-violet-700"
+            }`}
+          >
+            <BarChart2 className="w-4 h-4 shrink-0" />
+            <span className="text-sm">Analytics</span>
+          </button>
+          <button
             onClick={() => setActiveTab("account")}
             className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 hover:text-violet-700 transition-colors mb-1"
           >
@@ -2197,16 +2262,18 @@ function LinkedInPageContent() {
 
       {/* Mobile bottom nav — visible only on mobile (< lg) */}
       <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-20 bg-white border-t border-slate-100 shadow-lg flex items-stretch" style={{ paddingBottom: "env(safe-area-inset-bottom)" }}>
-        {(["posts", "dna", "account", "support"] as ActiveTab[]).map((tab) => {
+        {(["posts", "dna", "analytics", "account", "support"] as ActiveTab[]).map((tab) => {
           const icons: Record<ActiveTab, React.ReactNode> = {
             posts: <Send className="w-5 h-5" />,
             dna: <Zap className="w-5 h-5" />,
+            analytics: <BarChart2 className="w-5 h-5" />,
             account: <Settings className="w-5 h-5" />,
             support: <MessageCircle className="w-5 h-5" />,
           }
           const labels: Record<ActiveTab, string> = {
             posts: "Posts",
             dna: "DNA",
+            analytics: "Stats",
             account: "Account",
             support: "Support",
           }
@@ -3145,7 +3212,7 @@ function LinkedInPageContent() {
           {activePlatform === "linkedin" && (<>
           {/* Tabs — hidden on mobile (bottom nav used instead), visible on lg+ */}
           <div className="hidden lg:flex items-center gap-1 mb-6 bg-white rounded-2xl p-1 shadow-sm border border-slate-100 w-fit">
-            {(["posts", "dna", "account", "support"] as ActiveTab[]).map((tab) => (
+            {(["posts", "dna", "analytics", "account", "support"] as ActiveTab[]).map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
@@ -3155,14 +3222,14 @@ function LinkedInPageContent() {
                     : "text-slate-500 hover:text-slate-700 hover:bg-slate-50"
                 }`}
               >
-                {tab === "posts" ? "Posts" : tab === "dna" ? "Professional DNA" : tab === "account" ? "Account" : "Support"}
+                {tab === "posts" ? "Posts" : tab === "dna" ? "Professional DNA" : tab === "analytics" ? "Analytics" : tab === "account" ? "Account" : "Support"}
               </button>
             ))}
           </div>
           {/* Mobile tab title */}
           <div className="lg:hidden mb-4">
             <h2 className="text-base font-bold text-slate-700 capitalize">
-              {activeTab === "dna" ? "Professional DNA" : activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
+              {activeTab === "dna" ? "Professional DNA" : activeTab === "analytics" ? "Analytics" : activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
             </h2>
           </div>
 
@@ -3970,6 +4037,158 @@ function LinkedInPageContent() {
                   {deletingAccount ? "Deleting..." : "Delete My Account"}
                 </button>
               </div>
+            </div>
+          )}
+
+          {/* ===================== ANALYTICS TAB ===================== */}
+          {activeTab === "analytics" && (
+            <div className="space-y-5">
+              {analyticsLoading ? (
+                <div className="flex justify-center py-16">
+                  <Loader2 className="w-6 h-6 animate-spin text-violet-400" />
+                </div>
+              ) : analyticsData && !analyticsData.hasSubscription ? (
+                /* Locked overlay for non-subscribers */
+                <div className="relative rounded-2xl overflow-hidden border border-slate-100 shadow-sm bg-white">
+                  <div className="p-8 blur-sm select-none pointer-events-none">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+                      {[["Posts Published", "—"], ["Total Impressions", "—"], ["Avg Engagement", "—"], ["Streak", "—"]].map(([label, val]) => (
+                        <div key={label} className="bg-slate-50 rounded-xl p-4 border border-slate-100">
+                          <p className="text-xs text-slate-500 mb-1">{label}</p>
+                          <p className="text-2xl font-bold text-slate-700">{val}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-white/70 backdrop-blur-sm rounded-2xl">
+                    <div className="w-12 h-12 rounded-full bg-violet-100 flex items-center justify-center">
+                      <Lock className="w-6 h-6 text-violet-500" />
+                    </div>
+                    <p className="text-base font-semibold text-slate-700">Analytics require an active subscription</p>
+                    <a
+                      href="/#pricing"
+                      className="bg-violet-600 hover:bg-violet-500 text-white text-sm font-semibold px-6 py-2.5 rounded-xl transition-colors"
+                    >
+                      Upgrade to unlock →
+                    </a>
+                  </div>
+                </div>
+              ) : analyticsData ? (
+                <>
+                  {/* Stat cards */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                    <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-4">
+                      <p className="text-xs text-slate-500 mb-1">Posts Published</p>
+                      <p className="text-2xl font-bold text-slate-800">{analyticsData.totalPosts}</p>
+                    </div>
+                    <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-4">
+                      <p className="text-xs text-slate-500 mb-1">Total Impressions</p>
+                      <p className="text-2xl font-bold text-slate-800">
+                        {analyticsData.totalImpressions >= 1000
+                          ? `${(analyticsData.totalImpressions / 1000).toFixed(1)}k`
+                          : analyticsData.totalImpressions}
+                      </p>
+                    </div>
+                    <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-4">
+                      <p className="text-xs text-slate-500 mb-1">Avg Engagement</p>
+                      <p className="text-2xl font-bold text-slate-800">{analyticsData.avgEngagement}%</p>
+                    </div>
+                    <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-4">
+                      <p className="text-xs text-slate-500 mb-1">Publishing Streak</p>
+                      <p className="text-2xl font-bold text-slate-800">{analyticsData.streak} <span className="text-sm font-normal text-slate-500">days</span></p>
+                    </div>
+                  </div>
+
+                  {/* Weekly Impressions chart */}
+                  <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
+                    <h3 className="text-sm font-semibold text-slate-700 mb-4">Weekly Impressions (last 4 weeks)</h3>
+                    {analyticsData.weeklyImpressions.every((w) => w.impressions === 0) ? (
+                      <p className="text-sm text-slate-400 text-center py-6">No impression data yet. Sync metrics to populate.</p>
+                    ) : (
+                      <div className="space-y-3">
+                        {(() => {
+                          const maxImp = Math.max(...analyticsData.weeklyImpressions.map((w) => w.impressions), 1)
+                          return analyticsData.weeklyImpressions.map((w) => (
+                            <div key={w.week} className="flex items-center gap-3">
+                              <span className="text-xs text-slate-500 w-14 shrink-0">{w.week}</span>
+                              <div className="flex-1 bg-slate-100 rounded-full h-4 overflow-hidden">
+                                <div
+                                  className="h-full bg-gradient-to-r from-violet-500 to-pink-400 rounded-full transition-all duration-500"
+                                  style={{ width: `${Math.round((w.impressions / maxImp) * 100)}%` }}
+                                />
+                              </div>
+                              <span className="text-xs font-semibold text-slate-600 w-12 text-right shrink-0">
+                                {w.impressions >= 1000 ? `${(w.impressions / 1000).toFixed(1)}k` : w.impressions}
+                              </span>
+                            </div>
+                          ))
+                        })()}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Top Posts */}
+                  <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
+                    <h3 className="text-sm font-semibold text-slate-700 mb-4">Top Posts by Impressions</h3>
+                    {analyticsData.topPosts.length === 0 ? (
+                      <p className="text-sm text-slate-400 text-center py-6">No post metrics yet. Click "Sync now" below.</p>
+                    ) : (
+                      <div className="space-y-3">
+                        {analyticsData.topPosts.map((post, i) => (
+                          <div key={i} className="flex items-start gap-3 p-3 rounded-xl bg-slate-50 border border-slate-100">
+                            <span className="text-xs font-bold text-slate-400 w-5 shrink-0 mt-0.5">#{i + 1}</span>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm text-slate-700 line-clamp-2">{post.content}</p>
+                              <div className="flex items-center gap-3 mt-1.5">
+                                <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+                                  post.platform === "linkedin"
+                                    ? "bg-blue-100 text-blue-700"
+                                    : "bg-slate-900 text-white"
+                                }`}>
+                                  {post.platform === "linkedin" ? "LinkedIn" : "X"}
+                                </span>
+                                <span className="text-xs text-slate-500">{post.impressions.toLocaleString()} impressions</span>
+                                <span className="text-xs text-slate-500">{post.likes} likes</span>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Sync button */}
+                  <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 flex items-center justify-between gap-4">
+                    <div>
+                      <p className="text-sm font-semibold text-slate-700">Sync Metrics</p>
+                      <p className="text-xs text-slate-400 mt-0.5">Fetch latest impressions, likes, and engagement from LinkedIn & X</p>
+                      {analyticsSyncMsg && (
+                        <p className="text-xs mt-1.5 text-violet-600">{analyticsSyncMsg}</p>
+                      )}
+                    </div>
+                    <Button
+                      onClick={handleSyncAnalytics}
+                      disabled={analyticsSyncing}
+                      variant="outline"
+                      className="shrink-0 border-violet-200 text-violet-600 hover:bg-violet-50"
+                    >
+                      {analyticsSyncing ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <>
+                          <RefreshCw className="w-4 h-4 mr-1.5" />
+                          Sync now
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </>
+              ) : (
+                <div className="flex flex-col items-center py-16 gap-4">
+                  <p className="text-sm text-slate-500">Could not load analytics.</p>
+                  <Button variant="outline" onClick={fetchAnalytics}>Retry</Button>
+                </div>
+              )}
             </div>
           )}
 

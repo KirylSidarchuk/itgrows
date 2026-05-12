@@ -265,3 +265,19 @@ export const twitterCompanyBriefs = pgTable("twitter_company_briefs", {
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 })
+
+export const postMetrics = pgTable("post_metrics", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  postId: uuid("post_id"),
+  twitterPostIdLocal: uuid("twitter_post_id_local"),
+  platform: text("platform").notNull(),
+  impressions: integer("impressions").notNull().default(0),
+  likes: integer("likes").notNull().default(0),
+  comments: integer("comments").notNull().default(0),
+  shares: integer("shares").notNull().default(0),
+  fetchedAt: timestamp("fetched_at").notNull().defaultNow(),
+}, (t) => [
+  index("post_metrics_post_id_idx").on(t.postId),
+  index("post_metrics_twitter_post_id_idx").on(t.twitterPostIdLocal),
+  index("post_metrics_platform_idx").on(t.platform),
+])
