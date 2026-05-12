@@ -59,6 +59,7 @@ export default function PersonalPage() {
   const [showPlatformModal, setShowPlatformModal] = useState(false)
   const [pendingPlan, setPendingPlan] = useState<string | null>(null)
   const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([])
+  const [billingCycle, setBillingCycle] = useState<"monthly" | "annual">("monthly")
 
   // Feedback form state
   const [feedbackOpen, setFeedbackOpen] = useState(false)
@@ -142,7 +143,7 @@ export default function PersonalPage() {
       .catch(() => {})
   }, [])
 
-  async function handleCheckout(plan: "personal" | "duo" | "allin") {
+  async function handleCheckout(plan: "personal" | "duo" | "allin" | "personal_annual" | "duo_annual" | "allin_annual") {
     const sessionRes = await fetch("/api/auth/session")
     const sessionData = await sessionRes.json() as { user?: { id: string } }
     if (!sessionData?.user?.id) {
@@ -167,11 +168,14 @@ export default function PersonalPage() {
   }
 
   function handleCheckoutWithPlatform(plan: string) {
+    const actualPlan = billingCycle === "annual"
+      ? (plan === "personal" ? "personal_annual" : plan === "duo" ? "duo_annual" : "allin_annual")
+      : plan
     if (plan === "allin") {
-      handleCheckout("allin")
+      handleCheckout(actualPlan as "allin" | "allin_annual")
       return
     }
-    setPendingPlan(plan)
+    setPendingPlan(actualPlan)
     setSelectedPlatforms([])
     setShowPlatformModal(true)
   }
@@ -751,6 +755,20 @@ export default function PersonalPage() {
             <Badge className="mb-4 bg-violet-100 text-violet-700 border-violet-200">Pricing</Badge>
             <h2 className="text-4xl font-bold mb-4 text-[#1b1916]">Simple, Transparent Pricing</h2>
             <p className="text-slate-600 text-lg">14-day free trial on all plans. Cancel anytime.</p>
+            {/* Billing toggle */}
+            <div className="flex items-center justify-center gap-2 mt-6">
+              <button
+                onClick={() => setBillingCycle("monthly")}
+                className={`px-5 py-2 rounded-full text-sm font-semibold transition-colors ${billingCycle === "monthly" ? "bg-[#1b1916] text-white" : "text-slate-500 hover:text-slate-800"}`}
+              >Monthly</button>
+              <button
+                onClick={() => setBillingCycle("annual")}
+                className={`flex items-center gap-2 px-5 py-2 rounded-full text-sm font-semibold transition-colors ${billingCycle === "annual" ? "bg-[#1b1916] text-white" : "text-slate-500 hover:text-slate-800"}`}
+              >
+                Annual
+                <span className={`text-[10px] font-black rounded-full px-2 py-0.5 ${billingCycle === "annual" ? "bg-green-400 text-slate-900" : "bg-green-100 text-green-700"}`}>−30%</span>
+              </button>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
@@ -774,9 +792,10 @@ export default function PersonalPage() {
                 <CardTitle className="text-[#1b1916] text-xl">Personal</CardTitle>
                 <p className="text-slate-500 text-sm mt-1">1 platform account · LinkedIn or X</p>
                 <div className="flex items-end gap-1 mt-4 justify-center">
-                  <span className="text-5xl font-extrabold text-[#1b1916]">$49</span>
+                  <span className="text-5xl font-extrabold text-[#1b1916]">{billingCycle === "annual" ? "$34" : "$49"}</span>
                   <span className="text-slate-500 mb-2">/mo</span>
                 </div>
+                {billingCycle === "annual" && <p className="text-xs text-green-600 font-semibold mt-0.5">$411 billed annually · save $177</p>}
                 <p className="text-sm text-slate-400 mt-1">14-day free trial · cancel anytime</p>
               </CardHeader>
               <CardContent className="space-y-4 px-6 pb-8">
@@ -818,9 +837,10 @@ export default function PersonalPage() {
                 <CardTitle className="text-[#1b1916] text-xl">Duo</CardTitle>
                 <p className="text-slate-500 text-sm mt-1">Any 2 accounts · LinkedIn + X</p>
                 <div className="flex items-end gap-1 mt-4 justify-center">
-                  <span className="text-5xl font-extrabold text-[#1b1916]">$99</span>
+                  <span className="text-5xl font-extrabold text-[#1b1916]">{billingCycle === "annual" ? "$69" : "$99"}</span>
                   <span className="text-slate-500 mb-2">/mo</span>
                 </div>
+                {billingCycle === "annual" && <p className="text-xs text-green-600 font-semibold mt-0.5">$831 billed annually · save $357</p>}
                 <p className="text-sm text-slate-400 mt-1">14-day free trial · cancel anytime</p>
               </CardHeader>
               <CardContent className="space-y-4 px-6 pb-8">
@@ -866,9 +886,10 @@ export default function PersonalPage() {
                 <CardTitle className="text-[#1b1916] text-xl">All-in</CardTitle>
                 <p className="text-slate-500 text-sm mt-1">All 3 accounts · LinkedIn + X personal + X company</p>
                 <div className="flex items-end gap-1 mt-4 justify-center">
-                  <span className="text-5xl font-extrabold text-[#1b1916]">$199</span>
+                  <span className="text-5xl font-extrabold text-[#1b1916]">{billingCycle === "annual" ? "$139" : "$199"}</span>
                   <span className="text-slate-500 mb-2">/mo</span>
                 </div>
+                {billingCycle === "annual" && <p className="text-xs text-green-600 font-semibold mt-0.5">$1,671 billed annually · save $717</p>}
                 <p className="text-sm text-slate-400 mt-1">14-day free trial · cancel anytime</p>
               </CardHeader>
               <CardContent className="space-y-4 px-6 pb-8">
