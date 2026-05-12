@@ -861,6 +861,10 @@ function LinkedInPageContent() {
   const [showOnboarding, setShowOnboarding] = useState(() =>
     typeof window !== "undefined" ? localStorage.getItem("itgrows_onboarding_done") !== "true" : false
   )
+  const [showGuide, setShowGuide] = useState(() =>
+    typeof window !== "undefined" ? localStorage.getItem("itgrows_guide_seen") !== "true" : false
+  )
+  const [guideStep, setGuideStep] = useState(0)
   const [supportMessage, setSupportMessage] = useState("")
   const [supportTopic, setSupportTopic] = useState("")
   const [supportSending, setSupportSending] = useState(false)
@@ -1896,6 +1900,173 @@ function LinkedInPageContent() {
           </div>
         </div>
       )}
+
+      {/* Onboarding guide modal */}
+      {showGuide && (() => {
+        const steps = [
+          {
+            icon: "👋",
+            title: "Welcome to ItGrows.ai",
+            subtitle: "Your LinkedIn & X — on autopilot",
+            body: "ItGrows writes, schedules, and publishes posts for you every day — in your voice, on your topics. You set it up once, and it runs.",
+            visual: (
+              <div className="flex justify-center gap-3 mt-4">
+                <div className="flex flex-col items-center gap-1">
+                  <div className="w-12 h-12 rounded-2xl bg-blue-600 flex items-center justify-center shadow-md">
+                    <svg viewBox="0 0 24 24" fill="white" className="w-6 h-6"><path d="M20.447 20.452H16.89v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a1.977 1.977 0 0 1-1.972-1.98 1.977 1.977 0 0 1 1.972-1.979 1.977 1.977 0 0 1 1.972 1.979 1.977 1.977 0 0 1-1.972 1.98zm1.99 13.019H3.347V9h3.98v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+                  </div>
+                  <span className="text-xs text-slate-500">LinkedIn</span>
+                </div>
+                <div className="flex flex-col items-center gap-1">
+                  <div className="w-12 h-12 rounded-2xl bg-slate-900 flex items-center justify-center shadow-md">
+                    <svg viewBox="0 0 24 24" fill="white" className="w-5 h-5"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.253 5.622 5.912-5.622Zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                  </div>
+                  <span className="text-xs text-slate-500">X (Twitter)</span>
+                </div>
+              </div>
+            ),
+          },
+          {
+            icon: "🧬",
+            title: "Step 1: Fill your DNA",
+            subtitle: "Tell us who you are",
+            body: "Your Professional DNA is the foundation. Describe your niche, tone, goals, and audience. AI uses this to write posts that sound exactly like you — not generic.",
+            visual: (
+              <div className="mt-4 bg-slate-50 rounded-xl p-4 text-left space-y-2">
+                {[
+                  { label: "Niche", value: "SaaS founder, B2B sales" },
+                  { label: "Tone", value: "Direct, no fluff" },
+                  { label: "Goals", value: "Build personal brand, attract investors" },
+                ].map((row) => (
+                  <div key={row.label} className="flex gap-2 text-sm">
+                    <span className="text-slate-400 w-16 shrink-0">{row.label}</span>
+                    <span className="text-slate-700 font-medium">{row.value}</span>
+                  </div>
+                ))}
+              </div>
+            ),
+          },
+          {
+            icon: "⚡",
+            title: "Step 2: Generate posts",
+            subtitle: "14 posts in one click",
+            body: "Hit Generate and AI writes 14 posts — one for each day of your trial. Each post is unique, on-brand, and ready to publish. You can edit any post before it goes live.",
+            visual: (
+              <div className="mt-4 flex flex-col gap-2">
+                {["Day 1 · Thought leadership post", "Day 2 · Personal story", "Day 3 · Industry insight"].map((label, i) => (
+                  <div key={i} className="flex items-center gap-3 bg-slate-50 rounded-xl px-4 py-2.5">
+                    <span className="w-6 h-6 rounded-full bg-violet-100 text-violet-700 text-xs font-bold flex items-center justify-center shrink-0">{i + 1}</span>
+                    <span className="text-sm text-slate-600">{label}</span>
+                    <span className="ml-auto text-[10px] bg-green-100 text-green-700 font-semibold rounded-full px-2 py-0.5">Ready</span>
+                  </div>
+                ))}
+              </div>
+            ),
+          },
+          {
+            icon: "📅",
+            title: "Step 3: Publish on autopilot",
+            subtitle: "1 post per day, automatically",
+            body: "Your posts are scheduled and published automatically — 1 per day, every day. No manual work. Your LinkedIn and X stay active while you focus on what matters.",
+            visual: (
+              <div className="mt-4 bg-slate-50 rounded-xl p-4">
+                <div className="grid grid-cols-7 gap-1 text-center">
+                  {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((d) => (
+                    <div key={d} className="text-[10px] text-slate-400 font-semibold mb-1">{d}</div>
+                  ))}
+                  {[true, true, true, false, true, false, false, true, true, false, true, true, false, false].map((posted, i) => (
+                    <div key={i} className={`aspect-square rounded-lg flex items-center justify-center text-xs font-bold ${posted ? "bg-violet-600 text-white" : "bg-white border border-slate-200 text-slate-300"}`}>
+                      {posted ? "✓" : "·"}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ),
+          },
+          {
+            icon: "🚀",
+            title: "You're ready to grow",
+            subtitle: "Start your 14-day free trial",
+            body: "Connect your account, fill your DNA, and generate your first posts. Your audience is waiting.",
+            visual: (
+              <div className="mt-4 flex flex-col gap-3">
+                {[
+                  { num: "1", text: "Connect LinkedIn or X", done: false },
+                  { num: "2", text: "Fill Professional DNA", done: false },
+                  { num: "3", text: "Generate 14 posts", done: false },
+                ].map((item) => (
+                  <div key={item.num} className="flex items-center gap-3 bg-slate-50 rounded-xl px-4 py-3">
+                    <span className="w-7 h-7 rounded-full bg-violet-600 text-white text-sm font-bold flex items-center justify-center shrink-0">{item.num}</span>
+                    <span className="text-sm font-medium text-slate-700">{item.text}</span>
+                  </div>
+                ))}
+              </div>
+            ),
+          },
+        ]
+        const step = steps[guideStep]
+        const isLast = guideStep === steps.length - 1
+        const dismissGuide = () => {
+          localStorage.setItem("itgrows_guide_seen", "true")
+          setShowGuide(false)
+        }
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+            <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden">
+              {/* Progress bar */}
+              <div className="h-1 bg-slate-100">
+                <div
+                  className="h-1 bg-gradient-to-r from-violet-500 to-pink-500 transition-all duration-300"
+                  style={{ width: `${((guideStep + 1) / steps.length) * 100}%` }}
+                />
+              </div>
+
+              <div className="p-8">
+                {/* Step counter */}
+                <div className="flex items-center justify-between mb-6">
+                  <span className="text-xs text-slate-400 font-semibold">{guideStep + 1} / {steps.length}</span>
+                  <button onClick={dismissGuide} className="text-xs text-slate-400 hover:text-slate-600 transition-colors">Skip tour</button>
+                </div>
+
+                {/* Icon + title */}
+                <div className="text-center">
+                  <div className="text-5xl mb-3">{step.icon}</div>
+                  <h2 className="text-2xl font-black text-slate-900 mb-1">{step.title}</h2>
+                  <p className="text-sm font-semibold text-violet-600 mb-4">{step.subtitle}</p>
+                  <p className="text-sm text-slate-500 leading-relaxed">{step.body}</p>
+                </div>
+
+                {/* Visual */}
+                {step.visual}
+
+                {/* Navigation */}
+                <div className="flex items-center justify-between mt-8">
+                  <button
+                    onClick={() => setGuideStep((s) => Math.max(0, s - 1))}
+                    className={`text-sm text-slate-400 hover:text-slate-600 transition-colors ${guideStep === 0 ? "invisible" : ""}`}
+                  >← Back</button>
+                  <div className="flex gap-1">
+                    {steps.map((_, i) => (
+                      <div key={i} className={`w-1.5 h-1.5 rounded-full transition-colors ${i === guideStep ? "bg-violet-600" : "bg-slate-200"}`} />
+                    ))}
+                  </div>
+                  {isLast ? (
+                    <button
+                      onClick={dismissGuide}
+                      className="bg-violet-600 hover:bg-violet-500 text-white text-sm font-bold px-5 py-2 rounded-xl transition-colors"
+                    >Let&apos;s go →</button>
+                  ) : (
+                    <button
+                      onClick={() => setGuideStep((s) => s + 1)}
+                      className="bg-violet-600 hover:bg-violet-500 text-white text-sm font-bold px-5 py-2 rounded-xl transition-colors"
+                    >Next →</button>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )
+      })()}
       {/* Left sidebar — hidden on mobile, visible on lg+ */}
       <aside className="hidden lg:flex w-60 shrink-0 flex-col bg-white border-r border-slate-100 shadow-sm z-10">
         {/* Logo */}
@@ -1951,6 +2122,13 @@ function LinkedInPageContent() {
         {/* Account section */}
         <div className="px-4 pt-5 pb-2">
           <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider px-2 mb-2">Account</p>
+          <button
+            onClick={() => { setGuideStep(0); setShowGuide(true) }}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-violet-50 hover:text-violet-700 transition-colors mb-1"
+          >
+            <span className="text-base leading-none">✨</span>
+            <span className="text-sm">How it works</span>
+          </button>
           <button
             onClick={() => setActiveTab("account")}
             className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 hover:text-violet-700 transition-colors mb-1"
