@@ -857,6 +857,7 @@ function LinkedInPageContent() {
   const [deletingAccount, setDeletingAccount] = useState(false)
   const [checkingOut, setCheckingOut] = useState(false)
   const [showPlanModal, setShowPlanModal] = useState(false)
+  const [billingCycle, setBillingCycle] = useState<"monthly" | "annual">("monthly")
   const [showOnboarding, setShowOnboarding] = useState(() =>
     typeof window !== "undefined" ? localStorage.getItem("itgrows_onboarding_done") !== "true" : false
   )
@@ -1750,6 +1751,20 @@ function LinkedInPageContent() {
               </div>
               <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-2">Start growing on autopilot</h2>
               <p className="text-slate-500 text-sm">AI writes and schedules your posts every day. Cancel anytime.</p>
+              {/* Billing toggle */}
+              <div className="flex items-center justify-center gap-3 mt-5">
+                <button
+                  onClick={() => setBillingCycle("monthly")}
+                  className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-colors ${billingCycle === "monthly" ? "bg-slate-900 text-white" : "text-slate-500 hover:text-slate-800"}`}
+                >Monthly</button>
+                <button
+                  onClick={() => setBillingCycle("annual")}
+                  className={`flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-semibold transition-colors ${billingCycle === "annual" ? "bg-slate-900 text-white" : "text-slate-500 hover:text-slate-800"}`}
+                >
+                  Annual
+                  <span className={`text-[10px] font-black rounded-full px-2 py-0.5 ${billingCycle === "annual" ? "bg-green-400 text-slate-900" : "bg-green-100 text-green-700"}`}>-30%</span>
+                </button>
+              </div>
             </div>
 
             {/* Value props */}
@@ -1772,14 +1787,24 @@ function LinkedInPageContent() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-6">
               {/* Personal */}
               <button
-                onClick={() => { setShowPlanModal(false); handleUpgrade("personal") }}
+                onClick={() => { setShowPlanModal(false); handleUpgrade(billingCycle === "annual" ? "personal_annual" : "personal") }}
                 disabled={checkingOut}
                 className="flex flex-col items-start p-6 rounded-2xl border-2 border-slate-200 hover:border-violet-400 hover:shadow-md transition-all text-left disabled:opacity-70"
               >
                 <span className="text-xs font-bold text-violet-600 bg-violet-100 rounded-full px-3 py-1 mb-4">Personal</span>
                 <div className="mb-1">
-                  <span className="text-4xl font-black text-slate-900">$49</span>
-                  <span className="text-slate-500 text-sm font-normal">/month</span>
+                  {billingCycle === "annual" ? (
+                    <>
+                      <span className="text-4xl font-black text-slate-900">$34</span>
+                      <span className="text-slate-500 text-sm font-normal">/mo</span>
+                      <span className="ml-2 text-xs text-green-600 font-semibold">$411/yr</span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="text-4xl font-black text-slate-900">$49</span>
+                      <span className="text-slate-500 text-sm font-normal">/month</span>
+                    </>
+                  )}
                 </div>
                 <p className="text-xs text-slate-400 mb-4">after free trial</p>
                 <p className="text-sm font-semibold text-slate-700 mb-3">1 platform of your choice</p>
@@ -1796,7 +1821,7 @@ function LinkedInPageContent() {
 
               {/* Duo */}
               <button
-                onClick={() => { setShowPlanModal(false); handleUpgrade("duo") }}
+                onClick={() => { setShowPlanModal(false); handleUpgrade(billingCycle === "annual" ? "duo_annual" : "duo") }}
                 disabled={checkingOut}
                 className="flex flex-col items-start p-6 rounded-2xl border-2 border-violet-500 shadow-lg shadow-violet-100 hover:shadow-violet-200 transition-all text-left disabled:opacity-70 relative"
                 style={{ background: "linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%)" }}
@@ -1804,8 +1829,18 @@ function LinkedInPageContent() {
                 <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-gradient-to-r from-violet-600 to-pink-500 text-white text-[11px] font-black rounded-full px-4 py-1 whitespace-nowrap">MOST POPULAR</div>
                 <span className="text-xs font-bold text-violet-700 bg-violet-200 rounded-full px-3 py-1 mb-4">Duo</span>
                 <div className="mb-1">
-                  <span className="text-4xl font-black text-slate-900">$99</span>
-                  <span className="text-slate-500 text-sm font-normal">/month</span>
+                  {billingCycle === "annual" ? (
+                    <>
+                      <span className="text-4xl font-black text-slate-900">$69</span>
+                      <span className="text-slate-500 text-sm font-normal">/mo</span>
+                      <span className="ml-2 text-xs text-green-600 font-semibold">$831/yr</span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="text-4xl font-black text-slate-900">$99</span>
+                      <span className="text-slate-500 text-sm font-normal">/month</span>
+                    </>
+                  )}
                 </div>
                 <p className="text-xs text-slate-400 mb-4">after free trial</p>
                 <p className="text-sm font-semibold text-slate-700 mb-3">LinkedIn + X together</p>
@@ -1822,15 +1857,25 @@ function LinkedInPageContent() {
 
               {/* All-in */}
               <button
-                onClick={() => { setShowPlanModal(false); handleUpgrade("allin") }}
+                onClick={() => { setShowPlanModal(false); handleUpgrade(billingCycle === "annual" ? "allin_annual" : "allin") }}
                 disabled={checkingOut}
                 className="flex flex-col items-start p-6 rounded-2xl border-2 border-slate-800 hover:border-black hover:shadow-md transition-all text-left disabled:opacity-70"
                 style={{ background: "linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%)" }}
               >
                 <span className="text-xs font-bold text-amber-400 bg-amber-400/20 rounded-full px-3 py-1 mb-4">All-in</span>
                 <div className="mb-1">
-                  <span className="text-4xl font-black text-white">$199</span>
-                  <span className="text-slate-400 text-sm font-normal">/month</span>
+                  {billingCycle === "annual" ? (
+                    <>
+                      <span className="text-4xl font-black text-white">$139</span>
+                      <span className="text-slate-400 text-sm font-normal">/mo</span>
+                      <span className="ml-2 text-xs text-amber-400 font-semibold">$1,671/yr</span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="text-4xl font-black text-white">$199</span>
+                      <span className="text-slate-400 text-sm font-normal">/month</span>
+                    </>
+                  )}
                 </div>
                 <p className="text-xs text-slate-400 mb-4">after free trial</p>
                 <p className="text-sm font-semibold text-slate-300 mb-3">Personal + Company growth</p>

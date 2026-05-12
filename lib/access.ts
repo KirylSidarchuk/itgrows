@@ -1,4 +1,4 @@
-export type PlanName = "personal" | "duo" | "allin" | "personal_annual" | "personal_annual_discount"
+export type PlanName = "personal" | "duo" | "allin" | "personal_annual" | "personal_annual_discount" | "duo_annual" | "allin_annual"
 
 export function hasAccess(user: {
   subscriptionStatus: string | null
@@ -22,8 +22,8 @@ export function getAccountSlots(user: {
 }): number {
   const active = user.subscriptionStatus === "active" || user.subscriptionStatus === "past_due" || user.subscriptionStatus === "trialing"
   if (active) {
-    if (user.subscriptionPlan === "allin") return 3
-    if (user.subscriptionPlan === "duo") return 2
+    if (user.subscriptionPlan === "allin" || user.subscriptionPlan === "allin_annual") return 3
+    if (user.subscriptionPlan === "duo" || user.subscriptionPlan === "duo_annual") return 2
     if (user.subscriptionPlan === "personal" || user.subscriptionPlan === "personal_annual" || user.subscriptionPlan === "personal_annual_discount") return 1
   }
   if (user.trialEndsAt && user.trialEndsAt > new Date()) {
@@ -39,7 +39,7 @@ export function getPostsPerWeek(user: {
 }): number {
   const active = user.subscriptionStatus === "active" || user.subscriptionStatus === "past_due" || user.subscriptionStatus === "trialing"
   if (active) {
-    if (user.subscriptionPlan === "allin" || user.subscriptionPlan === "duo") return 7
+    if (user.subscriptionPlan === "allin" || user.subscriptionPlan === "duo" || user.subscriptionPlan === "allin_annual" || user.subscriptionPlan === "duo_annual") return 7
   }
   return 5
 }
