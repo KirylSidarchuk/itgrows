@@ -1740,63 +1740,114 @@ function LinkedInPageContent() {
     <div className="flex h-screen overflow-hidden" style={{ background: "linear-gradient(135deg, #f5f3ff 0%, #ede9fe 50%, #f3f2f1 100%)" }}>
       {/* Plan selection modal */}
       {showPlanModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-6">
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h2 className="text-xl font-bold text-slate-900">Choose your plan</h2>
-                <p className="text-sm text-slate-500 mt-0.5">14-day free trial · card required · cancel anytime</p>
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-6 bg-black/60 backdrop-blur-sm">
+          <div className="bg-white w-full sm:rounded-3xl shadow-2xl overflow-y-auto" style={{ maxHeight: "95vh", maxWidth: "900px" }}>
+            {/* Header */}
+            <div className="relative px-6 pt-8 pb-6 text-center border-b border-slate-100">
+              <button onClick={() => setShowPlanModal(false)} className="absolute top-5 right-5 w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-700 text-lg font-semibold transition-colors">×</button>
+              <div className="inline-flex items-center gap-2 bg-violet-100 text-violet-700 text-xs font-bold rounded-full px-3 py-1 mb-3">
+                🎉 14-DAY FREE TRIAL
               </div>
-              <button onClick={() => setShowPlanModal(false)} className="text-slate-400 hover:text-slate-600 text-xl font-semibold leading-none">×</button>
+              <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-2">Start growing on autopilot</h2>
+              <p className="text-slate-500 text-sm">AI writes and schedules your posts every day. Cancel anytime.</p>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+
+            {/* Value props */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 px-6 py-5 bg-slate-50 border-b border-slate-100">
+              {[
+                { icon: "✍️", label: "AI writes posts", desc: "Personalized to your voice" },
+                { icon: "📅", label: "Auto-scheduled", desc: "1 post published per day" },
+                { icon: "🖼️", label: "Custom images", desc: "AI-generated visuals" },
+                { icon: "🔗", label: "LinkedIn + X", desc: "Grow on both platforms" },
+              ].map((item) => (
+                <div key={item.label} className="flex flex-col items-center text-center p-3 rounded-2xl bg-white border border-slate-100">
+                  <span className="text-2xl mb-1">{item.icon}</span>
+                  <span className="text-xs font-semibold text-slate-800">{item.label}</span>
+                  <span className="text-[11px] text-slate-500 mt-0.5">{item.desc}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Plans */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-6">
               {/* Personal */}
               <button
                 onClick={() => { setShowPlanModal(false); handleUpgrade("personal") }}
                 disabled={checkingOut}
-                className="flex flex-col items-start p-5 rounded-2xl border-2 border-slate-200 hover:border-violet-400 hover:bg-violet-50 transition-all text-left disabled:opacity-70 group"
+                className="flex flex-col items-start p-6 rounded-2xl border-2 border-slate-200 hover:border-violet-400 hover:shadow-md transition-all text-left disabled:opacity-70"
               >
-                <span className="text-xs font-semibold text-violet-600 bg-violet-100 rounded-full px-2.5 py-0.5 mb-3">Personal</span>
-                <span className="text-2xl font-bold text-slate-900 mb-1">$49<span className="text-sm font-normal text-slate-500">/mo</span></span>
-                <p className="text-xs text-slate-500 mb-3">LinkedIn or X · 1 account</p>
-                <ul className="text-xs text-slate-600 space-y-1">
-                  <li>✓ 14 AI posts · 1 per day</li>
-                  <li>✓ Auto-scheduling</li>
-                  <li>✓ Custom images</li>
+                <span className="text-xs font-bold text-violet-600 bg-violet-100 rounded-full px-3 py-1 mb-4">Personal</span>
+                <div className="mb-1">
+                  <span className="text-4xl font-black text-slate-900">$49</span>
+                  <span className="text-slate-500 text-sm font-normal">/month</span>
+                </div>
+                <p className="text-xs text-slate-400 mb-4">after free trial</p>
+                <p className="text-sm font-semibold text-slate-700 mb-3">1 platform of your choice</p>
+                <ul className="text-sm text-slate-600 space-y-2 mb-6 flex-1">
+                  <li className="flex items-center gap-2"><span className="text-green-500 font-bold">✓</span> LinkedIn or X</li>
+                  <li className="flex items-center gap-2"><span className="text-green-500 font-bold">✓</span> 14 AI posts · 1 per day</li>
+                  <li className="flex items-center gap-2"><span className="text-green-500 font-bold">✓</span> Auto-scheduling</li>
+                  <li className="flex items-center gap-2"><span className="text-green-500 font-bold">✓</span> AI-generated images</li>
                 </ul>
+                <div className="w-full bg-violet-600 hover:bg-violet-500 text-white text-sm font-bold py-3 rounded-xl text-center transition-colors">
+                  {checkingOut ? "Loading..." : "Start Free Trial →"}
+                </div>
               </button>
+
               {/* Duo */}
               <button
                 onClick={() => { setShowPlanModal(false); handleUpgrade("duo") }}
                 disabled={checkingOut}
-                className="flex flex-col items-start p-5 rounded-2xl border-2 border-violet-400 bg-violet-50 hover:border-violet-600 hover:bg-violet-100 transition-all text-left disabled:opacity-70 relative"
+                className="flex flex-col items-start p-6 rounded-2xl border-2 border-violet-500 shadow-lg shadow-violet-100 hover:shadow-violet-200 transition-all text-left disabled:opacity-70 relative"
+                style={{ background: "linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%)" }}
               >
-                <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 text-[10px] font-bold text-white bg-violet-600 rounded-full px-2.5 py-0.5">POPULAR</span>
-                <span className="text-xs font-semibold text-violet-600 bg-violet-100 rounded-full px-2.5 py-0.5 mb-3">Duo</span>
-                <span className="text-2xl font-bold text-slate-900 mb-1">$99<span className="text-sm font-normal text-slate-500">/mo</span></span>
-                <p className="text-xs text-slate-500 mb-3">LinkedIn + X · 2 accounts</p>
-                <ul className="text-xs text-slate-600 space-y-1">
-                  <li>✓ 14 AI posts per account</li>
-                  <li>✓ Auto-scheduling</li>
-                  <li>✓ Custom images</li>
+                <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-gradient-to-r from-violet-600 to-pink-500 text-white text-[11px] font-black rounded-full px-4 py-1 whitespace-nowrap">MOST POPULAR</div>
+                <span className="text-xs font-bold text-violet-700 bg-violet-200 rounded-full px-3 py-1 mb-4">Duo</span>
+                <div className="mb-1">
+                  <span className="text-4xl font-black text-slate-900">$99</span>
+                  <span className="text-slate-500 text-sm font-normal">/month</span>
+                </div>
+                <p className="text-xs text-slate-400 mb-4">after free trial</p>
+                <p className="text-sm font-semibold text-slate-700 mb-3">LinkedIn + X together</p>
+                <ul className="text-sm text-slate-600 space-y-2 mb-6 flex-1">
+                  <li className="flex items-center gap-2"><span className="text-green-500 font-bold">✓</span> LinkedIn <span className="font-bold text-violet-600">+</span> X — both</li>
+                  <li className="flex items-center gap-2"><span className="text-green-500 font-bold">✓</span> 14 AI posts per platform</li>
+                  <li className="flex items-center gap-2"><span className="text-green-500 font-bold">✓</span> Auto-scheduling</li>
+                  <li className="flex items-center gap-2"><span className="text-green-500 font-bold">✓</span> AI-generated images</li>
                 </ul>
+                <div className="w-full bg-gradient-to-r from-violet-600 to-pink-500 hover:from-violet-500 hover:to-pink-400 text-white text-sm font-bold py-3 rounded-xl text-center transition-colors">
+                  {checkingOut ? "Loading..." : "Start Free Trial →"}
+                </div>
               </button>
+
               {/* All-in */}
               <button
                 onClick={() => { setShowPlanModal(false); handleUpgrade("allin") }}
                 disabled={checkingOut}
-                className="flex flex-col items-start p-5 rounded-2xl border-2 border-slate-200 hover:border-slate-900 hover:bg-slate-50 transition-all text-left disabled:opacity-70"
+                className="flex flex-col items-start p-6 rounded-2xl border-2 border-slate-800 hover:border-black hover:shadow-md transition-all text-left disabled:opacity-70"
+                style={{ background: "linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%)" }}
               >
-                <span className="text-xs font-semibold text-slate-700 bg-slate-100 rounded-full px-2.5 py-0.5 mb-3">All-in</span>
-                <span className="text-2xl font-bold text-slate-900 mb-1">$199<span className="text-sm font-normal text-slate-500">/mo</span></span>
-                <p className="text-xs text-slate-500 mb-3">LinkedIn + X + Company · 3 accounts</p>
-                <ul className="text-xs text-slate-600 space-y-1">
-                  <li>✓ 14 AI posts per account</li>
-                  <li>✓ Company X account</li>
-                  <li>✓ Analytics</li>
+                <span className="text-xs font-bold text-amber-400 bg-amber-400/20 rounded-full px-3 py-1 mb-4">All-in</span>
+                <div className="mb-1">
+                  <span className="text-4xl font-black text-white">$199</span>
+                  <span className="text-slate-400 text-sm font-normal">/month</span>
+                </div>
+                <p className="text-xs text-slate-400 mb-4">after free trial</p>
+                <p className="text-sm font-semibold text-slate-300 mb-3">Personal + Company growth</p>
+                <ul className="text-sm text-slate-300 space-y-2 mb-6 flex-1">
+                  <li className="flex items-center gap-2"><span className="text-amber-400 font-bold">✓</span> LinkedIn + X + Company X</li>
+                  <li className="flex items-center gap-2"><span className="text-amber-400 font-bold">✓</span> 14 AI posts per account</li>
+                  <li className="flex items-center gap-2"><span className="text-amber-400 font-bold">✓</span> Auto-scheduling</li>
+                  <li className="flex items-center gap-2"><span className="text-amber-400 font-bold">✓</span> AI-generated images</li>
                 </ul>
+                <div className="w-full bg-amber-400 hover:bg-amber-300 text-slate-900 text-sm font-bold py-3 rounded-xl text-center transition-colors">
+                  {checkingOut ? "Loading..." : "Start Free Trial →"}
+                </div>
               </button>
             </div>
+
+            {/* Footer */}
+            <p className="text-center text-xs text-slate-400 pb-6">No charge for 14 days · Cancel anytime · Secure checkout via Stripe</p>
           </div>
         </div>
       )}
