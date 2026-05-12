@@ -916,7 +916,7 @@ function LinkedInPageContent() {
   const hour = new Date().getHours()
   const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening"
 
-  async function handleUpgrade(plan: "personal" | "duo" | "allin" = "personal") {
+  async function handleUpgrade(plan: "personal" | "duo" | "allin" | "personal_annual" | "duo_annual" | "allin_annual" = "personal") {
     setCheckingOut(true)
     try {
       const res = await fetch("/api/stripe/checkout", {
