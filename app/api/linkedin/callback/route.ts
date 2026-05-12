@@ -5,7 +5,7 @@ import { eq, and } from "drizzle-orm"
 
 const LLM_BASE_URL = "http://34.60.133.229:4000"
 const LLM_MODEL = "gemini-2.5-flash-lite"
-const LLM_API_KEY = "jtotFgxS1WQorT52LZym2ncyYzboliS6p04RqUwneFI"
+const LLM_API_KEY = process.env.LLM_API_KEY ?? ""
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)

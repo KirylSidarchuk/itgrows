@@ -1,7 +1,7 @@
 import { callLLM } from "@/lib/llm-client"
 
 const PROXY_URL = "http://34.60.133.229:4000"
-const LLM_API_KEY = "jtotFgxS1WQorT52LZym2ncyYzboliS6p04RqUwneFI"
+const LLM_API_KEY = process.env.LLM_API_KEY ?? ""
 
 const IMAGE_MODELS = [
   "gemini-3-pro-image-preview",
