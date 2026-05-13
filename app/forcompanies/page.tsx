@@ -59,6 +59,7 @@ const steps = [
 
 export default function ForCompaniesPage() {
   const [sessionUser, setSessionUser] = useState<{ id: string } | null>(null)
+  const [billingCycle, setBillingCycle] = useState<"monthly" | "annual">("monthly")
 
   useEffect(() => {
     fetch("/api/auth/session")
@@ -69,7 +70,7 @@ export default function ForCompaniesPage() {
       .catch(() => {})
   }, [])
 
-  async function handleCheckout(plan: "personal" | "duo" | "allin") {
+  async function handleCheckout(plan: "personal" | "duo" | "allin" | "personal_annual" | "duo_annual" | "allin_annual" | "company" | "company_annual") {
     const sessionRes = await fetch("/api/auth/session")
     const sessionData = (await sessionRes.json()) as { user?: { id: string } }
     if (!sessionData?.user?.id) {
@@ -144,7 +145,7 @@ export default function ForCompaniesPage() {
             </span>
           </h1>
           <p className="text-xl text-slate-600 max-w-2xl mx-auto mb-10 leading-relaxed">
-            One plan covers everything: personal LinkedIn, personal X, and your company X. AI manages all accounts so your team builds presence while they focus on the business.
+            AI manages your company X account and your team&apos;s social presence so everyone builds influence while focusing on the business.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button
@@ -152,7 +153,7 @@ export default function ForCompaniesPage() {
               onClick={() => handleCheckout("allin")}
               className="bg-violet-600 hover:bg-violet-500 text-white px-8 py-6 text-lg rounded-xl"
             >
-              Start Free Trial — All-in $199/mo
+              Start Free Trial
             </Button>
             <a href="#how-it-works">
               <Button
@@ -164,7 +165,7 @@ export default function ForCompaniesPage() {
               </Button>
             </a>
           </div>
-          <p className="mt-5 text-sm text-slate-500">14-day free trial · No credit card required · Cancel anytime</p>
+          <p className="mt-5 text-sm text-slate-500">14-day free trial · Cancel anytime</p>
         </div>
       </section>
 
@@ -234,48 +235,122 @@ export default function ForCompaniesPage() {
 
       {/* Pricing */}
       <section id="pricing" className="px-6 py-24" style={{ backgroundColor: "#ebe9e5" }}>
-        <div className="max-w-xl mx-auto">
+        <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12">
             <Badge className="mb-4 bg-violet-100 text-violet-700 border-violet-200">Pricing</Badge>
-            <h2 className="text-4xl font-bold mb-4 text-[#1b1916]">One Plan. Everything Included.</h2>
-            <p className="text-slate-600 text-lg">No tiers, no upsells. All accounts, all channels, all features.</p>
-          </div>
-          <Card className="relative border-2 border-violet-500 bg-gradient-to-b from-violet-50 to-white shadow-2xl shadow-violet-200">
-            <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-              <Badge className="bg-violet-600 text-white border-0 px-4 py-1">For Companies</Badge>
-            </div>
-            <CardHeader className="pb-2 pt-8">
-              <CardTitle className="text-[#1b1916] text-3xl font-extrabold text-center">All-in</CardTitle>
-              <div className="flex items-end gap-1 mt-3 justify-center">
-                <span className="text-6xl font-extrabold text-[#1b1916]">$199</span>
-                <span className="text-slate-500 mb-2 text-lg">/month</span>
-              </div>
-              <p className="text-slate-500 text-sm text-center mt-1">14-day free trial · cancel anytime</p>
-            </CardHeader>
-            <CardContent className="space-y-4 px-8 pb-8">
-              <Button
-                onClick={() => handleCheckout("allin")}
-                className="w-full bg-violet-600 hover:bg-violet-500 text-white py-6 text-base rounded-xl mt-4"
+            <h2 className="text-4xl font-bold mb-4 text-[#1b1916]">Choose Your Plan</h2>
+            <p className="text-slate-600 text-lg">Start with Company X, or go all-in with every channel.</p>
+
+            {/* Billing toggle */}
+            <div className="flex items-center justify-center gap-3 mt-8">
+              <span className={`text-sm font-medium ${billingCycle === "monthly" ? "text-[#1b1916]" : "text-slate-400"}`}>
+                Monthly
+              </span>
+              <button
+                onClick={() => setBillingCycle(billingCycle === "monthly" ? "annual" : "monthly")}
+                className={`relative w-12 h-6 rounded-full transition-colors duration-200 focus:outline-none ${
+                  billingCycle === "annual" ? "bg-violet-600" : "bg-slate-300"
+                }`}
               >
-                Start Free Trial — All-in $199/mo
-              </Button>
-              <ul className="space-y-3 pt-4">
-                {[
-                  "Personal LinkedIn — AI posts, comments & outreach",
-                  "Personal X (Twitter) — thought leadership on autopilot",
-                  "Company X account — brand content & engagement",
-                  "Growth analytics across all accounts",
-                  "Custom brand voice & audience targeting",
-                  "Dedicated onboarding & priority support",
-                ].map((feat, i) => (
-                  <li key={i} className="flex items-start gap-3 text-sm text-slate-700">
-                    <span className="text-violet-600 font-bold mt-0.5">✓</span>
-                    {feat}
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
-          </Card>
+                <span
+                  className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200 ${
+                    billingCycle === "annual" ? "translate-x-6" : "translate-x-0"
+                  }`}
+                />
+              </button>
+              <span className={`text-sm font-medium ${billingCycle === "annual" ? "text-[#1b1916]" : "text-slate-400"}`}>
+                Annual
+              </span>
+              <span className="text-xs font-semibold bg-green-100 text-green-700 border border-green-200 px-2 py-0.5 rounded-full">
+                -30%
+              </span>
+            </div>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-6">
+            {/* Company plan */}
+            <Card className="relative border-2 border-slate-200 bg-white shadow-lg">
+              <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+                <Badge className="bg-slate-800 text-white border-0 px-4 py-1">X Company</Badge>
+              </div>
+              <CardHeader className="pb-2 pt-8">
+                <CardTitle className="text-[#1b1916] text-2xl font-extrabold text-center">Company</CardTitle>
+                <div className="flex items-end gap-1 mt-3 justify-center">
+                  <span className="text-5xl font-extrabold text-[#1b1916]">
+                    {billingCycle === "annual" ? "$104" : "$149"}
+                  </span>
+                  <span className="text-slate-500 mb-2">/mo</span>
+                </div>
+                {billingCycle === "annual" && (
+                  <p className="text-slate-500 text-sm text-center mt-1">billed $1,251.60/yr</p>
+                )}
+              </CardHeader>
+              <CardContent className="space-y-4 px-8 pb-8">
+                <Button
+                  onClick={() => handleCheckout(billingCycle === "annual" ? "company_annual" : "company")}
+                  className="w-full bg-slate-800 hover:bg-slate-700 text-white py-6 text-base rounded-xl mt-4"
+                >
+                  Start Free Trial
+                </Button>
+                <ul className="space-y-3 pt-4">
+                  {[
+                    "1 X company account — fully automated",
+                    "AI-written on-brand posts, daily",
+                    "Custom company voice & tone",
+                    "Autopublish to X",
+                    "14-day free trial",
+                  ].map((feat, i) => (
+                    <li key={i} className="flex items-start gap-3 text-sm text-slate-700">
+                      <span className="text-slate-600 font-bold mt-0.5">✓</span>
+                      {feat}
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
+
+            {/* All-in plan */}
+            <Card className="relative border-2 border-violet-500 bg-gradient-to-b from-violet-50 to-white shadow-2xl shadow-violet-200">
+              <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+                <Badge className="bg-violet-600 text-white border-0 px-4 py-1">Most Popular</Badge>
+              </div>
+              <CardHeader className="pb-2 pt-8">
+                <CardTitle className="text-[#1b1916] text-2xl font-extrabold text-center">All-in</CardTitle>
+                <div className="flex items-end gap-1 mt-3 justify-center">
+                  <span className="text-5xl font-extrabold text-[#1b1916]">
+                    {billingCycle === "annual" ? "$139" : "$199"}
+                  </span>
+                  <span className="text-slate-500 mb-2">/mo</span>
+                </div>
+                {billingCycle === "annual" && (
+                  <p className="text-slate-500 text-sm text-center mt-1">billed $1,671.60/yr</p>
+                )}
+              </CardHeader>
+              <CardContent className="space-y-4 px-8 pb-8">
+                <Button
+                  onClick={() => handleCheckout(billingCycle === "annual" ? "allin_annual" : "allin")}
+                  className="w-full bg-violet-600 hover:bg-violet-500 text-white py-6 text-base rounded-xl mt-4"
+                >
+                  Start Free Trial
+                </Button>
+                <ul className="space-y-3 pt-4">
+                  {[
+                    "Personal LinkedIn — AI posts & outreach",
+                    "Personal X (Twitter) — thought leadership",
+                    "Company X account — brand content",
+                    "Growth analytics across all accounts",
+                    "Custom brand voice & audience targeting",
+                    "Priority support",
+                  ].map((feat, i) => (
+                    <li key={i} className="flex items-start gap-3 text-sm text-slate-700">
+                      <span className="text-violet-600 font-bold mt-0.5">✓</span>
+                      {feat}
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </section>
 
@@ -296,9 +371,9 @@ export default function ForCompaniesPage() {
             onClick={() => handleCheckout("allin")}
             className="bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-white px-10 py-6 text-lg rounded-xl"
           >
-            Start Free Trial — All-in $199/mo
+            Start Free Trial
           </Button>
-          <p className="mt-4 text-sm text-slate-500">14-day free trial · No credit card required · Cancel anytime</p>
+          <p className="mt-4 text-sm text-slate-500">14-day free trial · Cancel anytime</p>
         </div>
       </section>
 
