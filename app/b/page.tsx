@@ -1285,7 +1285,7 @@ export default function LandingPageB() {
 
       {/* Pricing */}
       <section id="pricing" className="px-4 sm:px-6 py-16 sm:py-24" style={{ backgroundColor: "#ebe9e5" }}>
-        <div className="max-w-5xl mx-auto">
+        <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
             <Badge className="mb-4 bg-violet-100 text-violet-700 border-violet-200">Pricing</Badge>
             <h2 className="text-4xl font-bold mb-4 text-[#1b1916]">One client pays for years of this tool</h2>
@@ -1305,7 +1305,7 @@ export default function LandingPageB() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
             {/* Personal */}
             <Card className="relative border-slate-200 bg-white shadow-lg">
               <CardHeader className="text-center pb-2 pt-8">
@@ -1354,7 +1354,7 @@ export default function LandingPageB() {
             </Card>
 
             {/* Duo — Most Popular */}
-            <Card className="relative border-violet-500 bg-gradient-to-b from-violet-50 to-white shadow-2xl shadow-violet-200 scale-105">
+            <Card className="relative border-violet-500 bg-gradient-to-b from-violet-50 to-white shadow-2xl shadow-violet-200">
               <div className="absolute -top-4 left-1/2 -translate-x-1/2">
                 <Badge className="bg-violet-600 text-white border-0 px-4 py-1">Most Popular</Badge>
               </div>
