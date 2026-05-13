@@ -6,6 +6,16 @@ import { eq, lte, and } from "drizzle-orm"
 export const runtime = "nodejs"
 export const maxDuration = 300
 
+async function notifyTelegram(message: string) {
+  try {
+    await fetch(`https://api.telegram.org/bot8213146538:AAH9ceXiIQ62-ICZJlUFx0psyd2nYq1gN7g/sendMessage`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ chat_id: "462860854", text: message }),
+    })
+  } catch { /* non-fatal */ }
+}
+
 export async function GET(req: NextRequest) {
   // Verify authorization — CRON_SECRET must be set and header must match
   const cronSecret = process.env.CRON_SECRET
@@ -20,15 +30,33 @@ export async function GET(req: NextRequest) {
   const baseUrl = process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"
   const today = new Date().toISOString().split("T")[0]
 
+  const processed: Array<{ id: string; keyword: string; status: string; error?: string }> = []
+  const errors: Array<{ id: string; keyword: string; error: string }> = []
+
+  // Reset recently failed posts that haven't exceeded max attempts
+  const failedPosts = await db
+    .select()
+    .from(scheduledPosts)
+    .where(and(
+      eq(scheduledPosts.status, "failed"),
+      lte(scheduledPosts.scheduledDate, today),
+    ))
+
+  for (const fp of failedPosts) {
+    if ((fp.publishAttempts ?? 0) < 3) {
+      await db.update(scheduledPosts)
+        .set({ status: "scheduled", publishError: null })
+        .where(eq(scheduledPosts.id, fp.id))
+    }
+  }
+
   // Get all scheduled posts where scheduledDate <= today and status = 'scheduled'
   // We need to query across all users, so no userId filter here
+  // Query after reset so just-reset posts are included
   const duePosts = await db
     .select()
     .from(scheduledPosts)
     .where(and(lte(scheduledPosts.scheduledDate, today), eq(scheduledPosts.status, "scheduled")))
-
-  const processed: Array<{ id: string; keyword: string; status: string; error?: string }> = []
-  const errors: Array<{ id: string; keyword: string; error: string }> = []
 
   // Track which users had posts published this run (to check if we need to re-schedule)
   const userPublishedCounts: Record<string, number> = {}
@@ -258,6 +286,11 @@ export async function GET(req: NextRequest) {
     } catch {
       // Non-fatal: don't block the response if auto-reschedule fails
     }
+  }
+
+  if (errors.length > 0) {
+    const errorList = errors.map(e => `• ${e.keyword}: ${e.error?.slice(0, 100)}`).join("\n")
+    await notifyTelegram(`⚠️ SEO Blog publish-scheduled failed (${today}):\n${errorList}\n\nPublished: ${processed.length - errors.length}, Failed: ${errors.length}`)
   }
 
   return NextResponse.json({
