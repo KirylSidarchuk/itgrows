@@ -90,6 +90,7 @@ RULES:
 4. Include 2-3 relevant hashtags per tweet.
 5. Mix formats: insight/tip, personal take, question to audience, mini-story, bold statement.
 6. No generic marketing language or sales pitches.
+7. NEVER include any website URLs or domain names in the tweet text.
 
 Return ONLY a valid JSON array with exactly ${maxPosts} objects. Each object must have:
 - "content": string (the full tweet text, max 280 chars, including hashtags)
