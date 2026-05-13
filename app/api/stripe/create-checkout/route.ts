@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
   }
 
   const { plan } = await req.json()
-  if (!plan || !["personal", "duo", "allin", "personal_annual", "duo_annual", "allin_annual"].includes(plan)) {
+  if (!plan || !["personal", "duo", "allin", "personal_annual", "duo_annual", "allin_annual", "company", "company_annual"].includes(plan)) {
     return NextResponse.json({ error: "Invalid plan" }, { status: 400 })
   }
 
@@ -30,6 +30,8 @@ export async function POST(req: NextRequest) {
     personal_annual: process.env.STRIPE_PRICE_PERSONAL_ANNUAL_NEW ?? "price_1TWByX2Ve258Uiqt7bJsbxcl",
     duo_annual: process.env.STRIPE_PRICE_DUO_ANNUAL ?? "price_1TWByY2Ve258Uiqtc5ewdi5u",
     allin_annual: process.env.STRIPE_PRICE_ALLIN_ANNUAL ?? "price_1TWBya2Ve258UiqtpFIzdgAL",
+    company: process.env.STRIPE_PRICE_COMPANY_MONTHLY ?? "price_1TWaK32Ve258UiqtmfxyHfnW",
+    company_annual: process.env.STRIPE_PRICE_COMPANY_ANNUAL ?? "price_1TWaK62Ve258Uiqt3sU7ZFeU",
   }
   const priceId = PLAN_PRICE_MAP[plan]
 

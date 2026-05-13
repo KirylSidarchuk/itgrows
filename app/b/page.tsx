@@ -205,7 +205,7 @@ export default function LandingPageB() {
       .catch(() => {})
   }, [])
 
-  async function handleCheckout(plan: "personal" | "duo" | "allin" | "personal_annual" | "duo_annual" | "allin_annual") {
+  async function handleCheckout(plan: "personal" | "duo" | "allin" | "personal_annual" | "duo_annual" | "allin_annual" | "company" | "company_annual") {
     const sessionRes = await fetch("/api/auth/session")
     const sessionData = await sessionRes.json() as { user?: { id: string } }
     if (!sessionData?.user?.id) {
@@ -1437,6 +1437,47 @@ export default function LandingPageB() {
                     "14 AI-written posts · 1 per day",
                     "Analytics & strategy session",
                     "Platform-specific voice & style",
+                  ].map((item, i) => (
+                    <li key={i} className="flex items-center gap-2 text-sm text-slate-600">
+                      <span className="text-slate-700 font-bold">&#10003;</span>
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
+
+            {/* Company Plan */}
+            <Card className="relative border-slate-200 bg-white shadow-sm">
+              <CardHeader className="text-center pb-2 pt-8">
+                <div className="flex justify-center mb-3">
+                  <div className="w-12 h-12 rounded-xl bg-slate-900 flex items-center justify-center">
+                    <svg viewBox="0 0 24 24" fill="white" className="w-6 h-6">
+                      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.748l7.73-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                    </svg>
+                  </div>
+                </div>
+                <CardTitle className="text-[#1b1916] text-xl">Company</CardTitle>
+                <p className="text-slate-500 text-sm mt-1">1 X/Twitter company account</p>
+                <div className="flex items-end gap-1 mt-4 justify-center">
+                  <span className="text-5xl font-extrabold text-[#1b1916]">{billingCycle === "annual" ? "$104" : "$149"}</span>
+                  <span className="text-slate-500 mb-2">/mo</span>
+                </div>
+                {billingCycle === "annual" && <p className="text-xs text-green-600 font-semibold mt-0.5">$1,251.60 billed annually</p>}
+              </CardHeader>
+              <CardContent className="space-y-4 px-6 pb-8">
+                <Button
+                  onClick={() => handleCheckout(billingCycle === "annual" ? "company_annual" : "company")}
+                  className="w-full bg-slate-900 hover:bg-slate-700 text-white py-5 text-sm rounded-xl mt-2"
+                >
+                  Start Free Trial
+                </Button>
+                <ul className="space-y-2 pt-1">
+                  {[
+                    "1 X/Twitter company account",
+                    "AI-written posts · 1 per day",
+                    "Company voice & tone",
+                    "Autopublish",
                   ].map((item, i) => (
                     <li key={i} className="flex items-center gap-2 text-sm text-slate-600">
                       <span className="text-slate-700 font-bold">&#10003;</span>

@@ -966,7 +966,7 @@ function LinkedInPageContent() {
   const hour = new Date().getHours()
   const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening"
 
-  async function handleUpgrade(plan: "personal" | "duo" | "allin" | "personal_annual" | "duo_annual" | "allin_annual" = "personal") {
+  async function handleUpgrade(plan: "personal" | "duo" | "allin" | "personal_annual" | "duo_annual" | "allin_annual" | "company" | "company_annual" = "personal") {
     setCheckingOut(true)
     try {
       const res = await fetch("/api/stripe/checkout", {
@@ -1944,6 +1944,40 @@ function LinkedInPageContent() {
                   <li className="flex items-center gap-2"><span className="text-amber-400 font-bold">✓</span> AI-generated images</li>
                 </ul>
                 <div className="w-full bg-amber-400 hover:bg-amber-300 text-slate-900 text-sm font-bold py-3 rounded-xl text-center transition-colors">
+                  {checkingOut ? "Loading..." : "Start Free Trial →"}
+                </div>
+              </button>
+
+              {/* Company */}
+              <button
+                onClick={() => { setShowPlanModal(false); handleUpgrade(billingCycle === "annual" ? "company_annual" : "company") }}
+                disabled={checkingOut}
+                className="flex flex-col items-start p-6 rounded-2xl border-2 border-slate-200 hover:border-slate-400 hover:shadow-md transition-all text-left disabled:opacity-70 bg-white"
+              >
+                <span className="text-xs font-bold text-slate-700 bg-slate-100 rounded-full px-3 py-1 mb-4">Company</span>
+                <div className="mb-1">
+                  {billingCycle === "annual" ? (
+                    <>
+                      <span className="text-4xl font-black text-slate-900">$104</span>
+                      <span className="text-slate-400 text-sm font-normal">/mo</span>
+                      <span className="ml-2 text-xs text-green-600 font-semibold">$1,251.60/yr</span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="text-4xl font-black text-slate-900">$149</span>
+                      <span className="text-slate-400 text-sm font-normal">/month</span>
+                    </>
+                  )}
+                </div>
+                <p className="text-xs text-slate-400 mb-4">after free trial</p>
+                <p className="text-sm font-semibold text-slate-700 mb-3">X company account only</p>
+                <ul className="text-sm text-slate-600 space-y-2 mb-6 flex-1">
+                  <li className="flex items-center gap-2"><span className="text-slate-800 font-bold">✓</span> 1 X/Twitter company account</li>
+                  <li className="flex items-center gap-2"><span className="text-slate-800 font-bold">✓</span> AI-written posts · 1 per day</li>
+                  <li className="flex items-center gap-2"><span className="text-slate-800 font-bold">✓</span> Company voice &amp; tone</li>
+                  <li className="flex items-center gap-2"><span className="text-slate-800 font-bold">✓</span> Autopublish</li>
+                </ul>
+                <div className="w-full bg-slate-900 hover:bg-slate-700 text-white text-sm font-bold py-3 rounded-xl text-center transition-colors">
                   {checkingOut ? "Loading..." : "Start Free Trial →"}
                 </div>
               </button>

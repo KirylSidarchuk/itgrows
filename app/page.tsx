@@ -143,7 +143,7 @@ export default function PersonalPage() {
       .catch(() => {})
   }, [])
 
-  async function handleCheckout(plan: "personal" | "duo" | "allin" | "personal_annual" | "duo_annual" | "allin_annual") {
+  async function handleCheckout(plan: "personal" | "duo" | "allin" | "personal_annual" | "duo_annual" | "allin_annual" | "company" | "company_annual") {
     const sessionRes = await fetch("/api/auth/session")
     const sessionData = await sessionRes.json() as { user?: { id: string } }
     if (!sessionData?.user?.id) {
@@ -901,6 +901,42 @@ export default function PersonalPage() {
                 </Button>
                 <ul className="space-y-2 pt-1">
                   {["All 3 accounts: LinkedIn + X personal + X company", "14 AI-written posts · 1 per day", "Analytics & strategic session included", "Platform-specific voice & style", "Unified dashboard for all platforms"].map((item, i) => (
+                    <li key={i} className="flex items-center gap-2 text-sm text-slate-600">
+                      <span className="text-slate-800 font-bold">✓</span> {item}
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
+
+            {/* Company Plan */}
+            <Card className="relative border-black/10 bg-white shadow-sm">
+              <CardHeader className="text-center pb-2 pt-8">
+                <div className="flex justify-center mb-3">
+                  <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-slate-900">
+                    <svg viewBox="0 0 24 24" fill="white" className="w-3.5 h-3.5">
+                      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.253 5.622 5.912-5.622Zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                    </svg>
+                  </div>
+                </div>
+                <CardTitle className="text-[#1b1916] text-xl">Company</CardTitle>
+                <p className="text-slate-500 text-sm mt-1">1 X/Twitter company account</p>
+                <div className="flex items-end gap-1 mt-4 justify-center">
+                  <span className="text-5xl font-extrabold text-[#1b1916]">{billingCycle === "annual" ? "$104" : "$149"}</span>
+                  <span className="text-slate-500 mb-2">/mo</span>
+                </div>
+                {billingCycle === "annual" && <p className="text-xs text-green-600 font-semibold mt-0.5">$1,251.60 billed annually</p>}
+                <p className="text-sm text-slate-400 mt-1">14-day free trial · cancel anytime</p>
+              </CardHeader>
+              <CardContent className="space-y-4 px-6 pb-8">
+                <Button
+                  onClick={() => handleCheckout(billingCycle === "annual" ? "company_annual" : "company")}
+                  className="w-full bg-slate-900 hover:bg-slate-700 text-white py-5 text-sm rounded-xl mt-2"
+                >
+                  Start Free Trial
+                </Button>
+                <ul className="space-y-2 pt-1">
+                  {["1 X/Twitter company account", "AI-written posts · 1 per day", "Company voice & tone", "Autopublish"].map((item, i) => (
                     <li key={i} className="flex items-center gap-2 text-sm text-slate-600">
                       <span className="text-slate-800 font-bold">✓</span> {item}
                     </li>
