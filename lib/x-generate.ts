@@ -5,7 +5,7 @@ import { sendEmail } from "@/lib/email"
 
 const LLM_BASE_URL = "http://34.60.133.229:4000"
 const LLM_MODEL = "claude-sonnet-4-6"
-const LLM_API_KEY = process.env.LLM_API_KEY ?? ""
+const LLM_API_KEY = process.env.LLM_API_KEY ?? "jtotFgxS1WQorT52LZym2ncyYzboliS6p04RqUwneFI"
 
 function xPostsReadyEmail(name: string, firstDate: Date): string {
   const baseStyle = `
