@@ -26,6 +26,7 @@ interface SeoBreakdown {
   meta: number
   faq: number
   keyTakeaways: number
+  tables: number
 }
 
 function buildPrompt(keyword: string, language: string, tone: string, siteContext?: SiteContext): string {
@@ -41,43 +42,53 @@ function buildPrompt(keyword: string, language: string, tone: string, siteContex
     ? `\nThis article is for a website in the ${siteContext.niche} niche${siteContext.targetAudience ? `, targeting ${siteContext.targetAudience}` : ""}. Keep content specific to this niche.`
     : ""
 
-  return `You are a world-class SEO content strategist and writer. Write a comprehensive, authoritative article in ${lang} that ranks well in Google, Bing, ChatGPT, and Perplexity.${nicheInstruction}
+  return `You are a world-class SEO and AEO (Answer Engine Optimization) content strategist. Write a comprehensive, authoritative article in ${lang} that ranks well in Google, Bing, ChatGPT, and Perplexity.${nicheInstruction}
 
 Topic/Keyword: "${keyword}"
 Tone: ${tone}
 Target length: 1800-2200 words
 Current year: ${currentYear}
 
+=== AEO + SEO CONTENT RULES (apply throughout) ===
+- INVERTED PYRAMID: The very first sentence of the introduction must be a direct, complete answer to the main question implied by the keyword. Don't warm up — answer first.
+- QUESTION-BASED H2 HEADERS: Write each H2 as a real question users would type into Google or ChatGPT (e.g. "Why does X happen?" not "Overview of X"). This makes the article 5× more likely to be cited by AI engines.
+- DIRECT ANSWERS UNDER EACH H2: Immediately after each H2, write a concise answer of 40-55 words before elaborating. No preamble like "In this section we will explore..."
+- NUMERICAL SPECIFICITY: Replace vague claims with exact data. Write "increases engagement by 23%" not "significantly increases engagement". Write "$47/month" not "affordable price".
+- SHORT PARAGRAPHS: Maximum 4 lines per paragraph. Each paragraph = one complete thought.
+- SEMANTIC CLEANING: Never use filler words like "of course", "certainly", "needless to say", "it is worth noting". Every sentence must carry information.
+- STRUCTURED DATA PRIORITY: Where comparison or factual data fits naturally, use a Markdown table — search engines parse tables as high-confidence data sources.
+- MODULAR SECTIONS: Each H2 section must be self-contained so it can stand alone as a zero-click answer in search results.
+
 === CONTENT STRUCTURE (follow exactly) ===
 
 1. H1 TITLE — compelling, includes main keyword, mentions ${currentYear} if relevant
 2. INTRODUCTION (first ~150 words):
-   - Open with a clear, direct answer to what the reader wants to know (search intent answer)
-   - This is critical for AI search engines (ChatGPT, Perplexity) — give the core answer immediately
-   - Include a hook with a relevant statistic or compelling fact
+   - FIRST SENTENCE = direct answer to the search intent (inverted pyramid)
+   - Follow with a relevant statistic or compelling fact (use exact numbers)
+   - End intro with a brief overview of what the article covers
 
 3. KEY TAKEAWAYS section (bullet list, 4-6 bullets):
    - Add a ## Key Takeaways heading right after the intro
-   - Summarize the most important points readers will learn
+   - Each bullet = one concrete, specific fact or action (not vague summaries)
    - This helps both readers and AI engines quickly grasp value
 
 4. MAIN BODY — minimum 4 H2 sections, use H3 subsections where appropriate:
-   - Each H2 covers a distinct, valuable subtopic
+   - Each H2 must be phrased as a question (see AEO rules above)
+   - Start each H2 section with a 40-55 word direct answer
+   - Include at least ONE Markdown table somewhere in the body for structured comparison data
+   - Include real statistics with exact numbers, examples, case studies
    - Use H3s to break down complex H2 sections
-   - Include real statistics, examples, case studies
-   - Provide actionable, practical advice readers can implement
    - Naturally weave in semantic/LSI keywords related to the main topic
-   - Demonstrate Experience, Expertise, Authoritativeness, Trustworthiness (E-E-A-T):
+   - Demonstrate E-E-A-T (Experience, Expertise, Authoritativeness, Trustworthiness):
      * Cite specific data points, years, percentages
      * Mention well-known tools, platforms, or industry standards
-     * Use authoritative language that signals deep expertise
      * Include nuanced insights that generic articles miss
 
 5. FAQ SECTION — add at the very end of the article body:
    - Use ## Frequently Asked Questions as the heading
    - Include exactly 5 questions and detailed answers
-   - Questions should match what people ask in Google/ChatGPT searches
-   - Answers should be 2-4 sentences each, clear and direct
+   - Questions must be phrased as real user queries (full question sentences)
+   - Each answer: 2-4 sentences, direct and specific — start with the answer, not context
 
 6. CONCLUSION:
    - Brief wrap-up with a clear call to action
@@ -89,6 +100,7 @@ KEYWORDS: [comma-separated list of 10-15 short SEO keyword phrases (2-5 words ea
 
 === IMPORTANT RULES ===
 - Use # for H1, ## for H2, ### for H3
+- Use | col | col | format for Markdown tables
 - All information must reflect ${currentYear} — no outdated stats or old versions
 - Write in ${lang}
 - Do NOT add any commentary before or after the article
@@ -144,7 +156,11 @@ function computeSeoScore(
   const hasKeyTakeaways = /key takeaways/i.test(content)
   const keyTakeawaysScore = hasKeyTakeaways ? 10 : 0
 
-  const total = wordCountScore + headingsScore + keywordsScore + metaScore + faqScore + keyTakeawaysScore
+  // Table score (0-5): structured tables improve AEO ranking
+  const hasTable = /<table[\s>]/i.test(content)
+  const tableScore = hasTable ? 5 : 0
+
+  const total = wordCountScore + headingsScore + keywordsScore + metaScore + faqScore + keyTakeawaysScore + tableScore
 
   return {
     score: Math.min(100, total),
@@ -155,6 +171,7 @@ function computeSeoScore(
       meta: metaScore,
       faq: faqScore,
       keyTakeaways: keyTakeawaysScore,
+      tables: tableScore,
     },
   }
 }
@@ -208,8 +225,29 @@ function parseArticle(raw: string): {
   return { title, content, metaDescription: finalMeta, keywords: finalKeywords }
 }
 
+function markdownTableToHtml(tableBlock: string): string {
+  const rows = tableBlock.trim().split("\n").filter((r) => r.trim())
+  if (rows.length < 2) return tableBlock
+
+  const parseRow = (row: string): string[] =>
+    row.split("|").map((c) => c.trim()).filter((_, i, arr) => i > 0 && i < arr.length - 1)
+
+  const headerCells = parseRow(rows[0])
+  // rows[1] is the separator line (---|---), skip it
+  const bodyRows = rows.slice(2)
+
+  const thead = `<thead><tr>${headerCells.map((c) => `<th>${c}</th>`).join("")}</tr></thead>`
+  const tbody = `<tbody>${bodyRows.map((row) => `<tr>${parseRow(row).map((c) => `<td>${c}</td>`).join("")}</tr>`).join("")}</tbody>`
+
+  return `<table>${thead}${tbody}</table>`
+}
+
 function markdownToHtml(md: string): string {
-  let html = md
+  // Convert Markdown tables before other transformations
+  // A table block is lines where each line starts and ends with |
+  let html = md.replace(/((?:^\|.+\|\n)+)/gm, (match) => markdownTableToHtml(match) + "\n")
+
+  html = html
     // H3
     .replace(/^###\s+(.+)$/gm, "<h3>$1</h3>")
     // H2
@@ -235,7 +273,7 @@ function markdownToHtml(md: string): string {
     const trimmed = line.trim()
     if (!trimmed) {
       result.push("")
-    } else if (/^<(h[123]|ul|ol|li|p)/.test(trimmed)) {
+    } else if (/^<(h[123]|ul|ol|li|p|table|thead|tbody|tr|th|td)/.test(trimmed)) {
       result.push(trimmed)
     } else {
       result.push(`<p>${trimmed}</p>`)

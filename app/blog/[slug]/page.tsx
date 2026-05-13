@@ -89,12 +89,52 @@ export default async function BlogPostPage({
       : {}),
   }
 
+  // Extract FAQ items from the article for FAQPage structured data
+  const faqItems: Array<{ question: string; answer: string }> = []
+  const faqRegex = /<h3[^>]*>(.*?)<\/h3>\s*<p[^>]*>([\s\S]*?)<\/p>/gi
+  const faqSectionMatch = post.content.match(/<h2[^>]*>[^<]*(?:frequently asked questions|faq)[^<]*<\/h2>([\s\S]*)/i)
+  if (faqSectionMatch) {
+    let faqMatch
+    while ((faqMatch = faqRegex.exec(faqSectionMatch[1])) !== null && faqItems.length < 5) {
+      const question = faqMatch[1].replace(/<[^>]+>/g, "").trim()
+      const answer = faqMatch[2].replace(/<[^>]+>/g, "").trim()
+      if (question && answer) {
+        faqItems.push({ question, answer })
+      }
+    }
+  }
+
+  const faqSchema = faqItems.length > 0
+    ? {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        mainEntity: faqItems.map((item) => ({
+          "@type": "Question",
+          name: item.question,
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: item.answer,
+          },
+        })),
+      }
+    : null
+
+  // Reading time estimate
+  const wordCount = post.content.replace(/<[^>]+>/g, " ").split(/\s+/).filter(Boolean).length
+  const readingTimeMin = Math.max(1, Math.round(wordCount / 200))
+
   return (
     <div className="min-h-screen bg-[#f3f2f1] text-[#1b1916]">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }}
       />
+      {faqSchema && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+        />
+      )}
 
       {/* Header */}
       <header className="border-b border-black/10 px-6 py-4 bg-[#f3f2f1]">
@@ -130,13 +170,20 @@ export default async function BlogPostPage({
             {post.title}
           </h1>
 
-          {/* Date */}
-          <p className="text-[#1b1916]/60 text-sm mb-10">{formatDate(post.publishedAt)}</p>
+          {/* Date + Reading time */}
+          <p className="text-[#1b1916]/60 text-sm mb-10">
+            {formatDate(post.publishedAt)}
+            <span className="mx-2 opacity-40">·</span>
+            {readingTimeMin} min read
+          </p>
 
           {/* Content */}
           <div
             className="article-content"
-            dangerouslySetInnerHTML={{ __html: sanitizeHtml(post.content, { allowedTags: sanitizeHtml.defaults.allowedTags.concat(["img", "h1", "h2", "h3"]), allowedAttributes: { ...sanitizeHtml.defaults.allowedAttributes, img: ["src", "alt", "class"], "*": ["class"] } }) }}
+            dangerouslySetInnerHTML={{ __html: sanitizeHtml(post.content, {
+              allowedTags: sanitizeHtml.defaults.allowedTags.concat(["img", "h1", "h2", "h3", "table", "thead", "tbody", "tr", "th", "td"]),
+              allowedAttributes: { ...sanitizeHtml.defaults.allowedAttributes, img: ["src", "alt", "class"], "*": ["class"] }
+            }) }}
           />
 
           {/* Back link */}

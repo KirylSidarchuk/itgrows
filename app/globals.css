@@ -229,3 +229,30 @@
   border-top: 2px solid #ebe9e5 !important;
   margin: 2rem 0 !important;
 }
+.article-content table {
+  width: 100% !important;
+  border-collapse: collapse !important;
+  margin: 1.75rem 0 !important;
+  font-size: 0.95rem !important;
+  overflow-x: auto !important;
+  display: block !important;
+}
+.article-content thead {
+  background: #ebe9e5 !important;
+}
+.article-content th {
+  font-weight: 700 !important;
+  color: #1b1916 !important;
+  padding: 0.6rem 0.9rem !important;
+  text-align: left !important;
+  border: 1px solid #d4d0ca !important;
+}
+.article-content td {
+  padding: 0.55rem 0.9rem !important;
+  border: 1px solid #d4d0ca !important;
+  color: #374151 !important;
+  vertical-align: top !important;
+}
+.article-content tbody tr:nth-child(even) {
+  background: #f8f7f5 !important;
+}
