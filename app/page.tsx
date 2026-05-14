@@ -219,6 +219,7 @@ export default function PersonalPage() {
           <div className="hidden md:flex items-center gap-7">
             <a href="#how-it-works" className="text-sm text-slate-600 hover:text-[#1b1916] transition-colors font-medium">How It Works</a>
             <a href="#pricing" className="text-sm text-slate-600 hover:text-[#1b1916] transition-colors font-medium">Pricing</a>
+            <Link href="/case-studies" className="text-sm text-slate-600 hover:text-[#1b1916] transition-colors font-medium">Case Studies</Link>
             <Link href="/blog" className="text-sm text-slate-600 hover:text-[#1b1916] transition-colors font-medium">Blog</Link>
           </div>
 
@@ -279,6 +280,13 @@ export default function PersonalPage() {
             >
               Pricing
             </a>
+            <Link
+              href="/case-studies"
+              className="px-3 py-2.5 text-sm font-medium text-slate-600 hover:text-[#1b1916] hover:bg-black/5 rounded-lg transition-colors"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Case Studies
+            </Link>
             <Link
               href="/blog"
               className="px-3 py-2.5 text-sm font-medium text-slate-600 hover:text-[#1b1916] hover:bg-black/5 rounded-lg transition-colors"

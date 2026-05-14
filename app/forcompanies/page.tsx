@@ -107,6 +107,7 @@ export default function ForCompaniesPage() {
             <a href="#features" className="hover:text-[#1b1916] transition-colors">Features</a>
             <a href="#how-it-works" className="hover:text-[#1b1916] transition-colors">How it works</a>
             <a href="#pricing" className="hover:text-[#1b1916] transition-colors">Pricing</a>
+            <Link href="/case-studies" className="hover:text-[#1b1916] transition-colors">Case Studies</Link>
           </div>
           <div className="flex items-center gap-3">
             {sessionUser ? (

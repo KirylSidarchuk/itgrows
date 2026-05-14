@@ -283,6 +283,7 @@ export default function LandingPageB() {
             <a href="#results" className="text-sm text-slate-600 hover:text-[#1b1916] transition-colors font-medium">Results</a>
             <a href="#features" className="text-sm text-slate-600 hover:text-[#1b1916] transition-colors font-medium">Features</a>
             <a href="#pricing" className="text-sm text-slate-600 hover:text-[#1b1916] transition-colors font-medium">Pricing</a>
+            <Link href="/case-studies" className="text-sm text-slate-600 hover:text-[#1b1916] transition-colors font-medium">Case Studies</Link>
             <a href="#faq" className="text-sm text-slate-600 hover:text-[#1b1916] transition-colors font-medium">FAQ</a>
           </div>
 
@@ -364,6 +365,13 @@ export default function LandingPageB() {
             >
               FAQ
             </a>
+            <Link
+              href="/case-studies"
+              className="px-3 py-2.5 text-sm font-medium text-slate-600 hover:text-[#1b1916] hover:bg-black/5 rounded-lg transition-colors"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Case Studies
+            </Link>
             <div className="border-t border-black/10 mt-2 pt-3 flex flex-col gap-2">
               {sessionUser ? (
                 <>
