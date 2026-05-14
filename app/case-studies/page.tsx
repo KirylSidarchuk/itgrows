@@ -106,7 +106,7 @@ const caseStudies: CaseStudy[] = [
 
   // All-in Plan
   {
-    name: "TechForge Solutions",
+    name: "B2B SaaS Startup",
     role: "15-person SaaS Startup",
     plan: "All-in",
     metric: "3",
@@ -120,7 +120,7 @@ const caseStudies: CaseStudy[] = [
     isCompany: true,
   },
   {
-    name: "Meridian Consulting Group",
+    name: "Management Consulting Firm",
     role: "Management Consulting Firm",
     plan: "All-in",
     metric: "60%",
@@ -134,7 +134,7 @@ const caseStudies: CaseStudy[] = [
     isCompany: true,
   },
   {
-    name: "Apex Digital Agency",
+    name: "Digital Marketing Agency",
     role: "Digital Marketing Agency",
     plan: "All-in",
     metric: "3x",
@@ -150,7 +150,7 @@ const caseStudies: CaseStudy[] = [
 
   // Company Plan
   {
-    name: "NovaPay Fintech",
+    name: "Fintech Company",
     role: "B2B Payments Startup",
     plan: "Company",
     metric: "18,000",
@@ -164,7 +164,7 @@ const caseStudies: CaseStudy[] = [
     isCompany: true,
   },
   {
-    name: "GreenLogic Logistics",
+    name: "Logistics Company",
     role: "Sustainable Supply Chain",
     plan: "Company",
     metric: "$180K",
@@ -178,7 +178,7 @@ const caseStudies: CaseStudy[] = [
     isCompany: true,
   },
   {
-    name: "Bolt Analytics",
+    name: "Data Analytics Startup",
     role: "Data Analytics Platform",
     plan: "Company",
     metric: "$37K",
