@@ -62,6 +62,7 @@ export default function PersonalPage() {
   const [billingCycle, setBillingCycle] = useState<"monthly" | "annual">("monthly")
 
   // Feedback form state
+  const [showCaseStudies, setShowCaseStudies] = useState(false)
   const [feedbackOpen, setFeedbackOpen] = useState(false)
   const [feedbackType, setFeedbackType] = useState("Question")
   const [feedbackEmail, setFeedbackEmail] = useState("")
@@ -360,11 +361,6 @@ export default function PersonalPage() {
           <p className="mt-4 text-xs sm:text-sm text-slate-500 font-medium">No credit card required · Trusted by 2,400+ professionals</p>
         </div>
       </section>
-
-      {/* Social Proof Strip */}
-      <div className="px-4 sm:px-6 py-4 text-center text-sm text-white font-medium" style={{ backgroundColor: "#1b1916" }}>
-        &ldquo;In 3 months on LinkedIn &amp; X: 38,500 impressions, 23 inbound DMs, +890% profile views.&rdquo; — K.S., Startup Founder
-      </div>
 
       {/* How it works */}
       <section id="how-it-works" className="px-4 sm:px-6 py-16 sm:py-24" style={{ backgroundColor: "#f3f2f1" }}>
@@ -753,6 +749,57 @@ export default function PersonalPage() {
             </div>
 
           </div>
+        </div>
+      </section>
+
+      {/* Case Studies Expandable */}
+      <section className="px-4 sm:px-6 py-10 sm:py-14" style={{ backgroundColor: "#f3f2f1" }}>
+        <div className="max-w-5xl mx-auto">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <p className="text-base sm:text-lg font-semibold text-[#1b1916]">Trusted by professionals in 50+ countries</p>
+            <button
+              onClick={() => setShowCaseStudies(!showCaseStudies)}
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-violet-300 bg-white text-violet-700 font-semibold text-sm hover:bg-violet-50 transition-colors shadow-sm"
+            >
+              {showCaseStudies ? "Hide Case Studies ↑" : "See Case Studies ↓"}
+            </button>
+          </div>
+
+          {showCaseStudies && (
+            <div className="mt-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                {/* Card 1 */}
+                <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
+                  <span className="inline-block mb-3 px-3 py-1 rounded-full text-xs font-semibold bg-violet-100 text-violet-700">Personal Plan</span>
+                  <p className="text-2xl font-bold text-[#1b1916] mb-1">8,200 LinkedIn followers in 6 months · 3× inbound leads</p>
+                  <p className="text-sm text-slate-500 mt-2">Sarah Chen — Marketing Consultant</p>
+                </div>
+                {/* Card 2 */}
+                <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
+                  <span className="inline-block mb-3 px-3 py-1 rounded-full text-xs font-semibold bg-violet-100 text-violet-700">Duo Plan</span>
+                  <p className="text-2xl font-bold text-[#1b1916] mb-1">12K LinkedIn + 7K X followers · raised $500K</p>
+                  <p className="text-sm text-slate-500 mt-2">Alex Rodriguez — Startup Founder</p>
+                </div>
+                {/* Card 3 */}
+                <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
+                  <span className="inline-block mb-3 px-3 py-1 rounded-full text-xs font-semibold bg-violet-100 text-violet-700">All-in Plan</span>
+                  <p className="text-2xl font-bold text-[#1b1916] mb-1">Replaced $4,800/mo content agency · 60% cost reduction</p>
+                  <p className="text-sm text-slate-500 mt-2">Management Consulting Firm</p>
+                </div>
+                {/* Card 4 */}
+                <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
+                  <span className="inline-block mb-3 px-3 py-1 rounded-full text-xs font-semibold bg-violet-100 text-violet-700">Company Plan</span>
+                  <p className="text-2xl font-bold text-[#1b1916] mb-1">200 → 18,000 X followers in 5 months</p>
+                  <p className="text-sm text-slate-500 mt-2">Fintech Company</p>
+                </div>
+              </div>
+              <div className="mt-6 text-center">
+                <a href="/case-studies" className="inline-flex items-center gap-1 text-violet-700 font-semibold text-sm hover:text-violet-500 transition-colors">
+                  View all 12 case studies →
+                </a>
+              </div>
+            </div>
+          )}
         </div>
       </section>
 

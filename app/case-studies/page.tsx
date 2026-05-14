@@ -422,7 +422,7 @@ export default function CaseStudiesPage() {
               <Button
                 size="lg"
                 variant="outline"
-                className="border-white/20 text-white hover:bg-white/10 px-8 py-4 text-base sm:text-lg rounded-xl w-full sm:w-auto"
+                className="border-white text-[#1b1916] bg-white hover:bg-white/90 px-8 py-4 text-base sm:text-lg rounded-xl w-full sm:w-auto"
               >
                 View Pricing
               </Button>
