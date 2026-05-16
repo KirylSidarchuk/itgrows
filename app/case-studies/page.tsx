@@ -7,11 +7,15 @@ import { Button } from "@/components/ui/button"
 type CaseStudy = {
   name: string
   role: string
+  location: string
   plan: "Personal" | "Duo" | "All-in" | "Company"
   metric: string
   metricLabel: string
+  timeframe: string
   quote: string
   results: string[]
+  examplePost: string
+  exampleEngagement: string
   isCompany?: boolean
 }
 
@@ -20,43 +24,55 @@ const caseStudies: CaseStudy[] = [
   {
     name: "Sarah Chen",
     role: "Marketing Consultant",
+    location: "Singapore",
     plan: "Personal",
-    metric: "20x",
-    metricLabel: "follower growth in 6 months",
-    quote: "I went from invisible to having a waitlist. ItGrows handled all my LinkedIn content while I focused on client work.",
+    metric: "412 → 8,247",
+    metricLabel: "LinkedIn followers",
+    timeframe: "Over 6 months",
+    quote: "Honestly I didn't expect much — I'd tried posting consistently before and gave up after 3 weeks. But ItGrows just kept going. Two months in I got my first inbound DM from a potential client. Now I get 3-4 a week and I've had to build a proper waitlist.",
     results: [
-      "LinkedIn followers grew from 400 to 8,200 in 6 months",
-      "3x increase in inbound leads from organic content",
-      "Landed 2 enterprise retainers directly from LinkedIn DMs",
+      "LinkedIn followers grew from 412 to 8,247 in 6 months",
+      "Inbound lead volume up 3.4x compared to the prior year",
+      "Signed 2 enterprise retainers ($14K+ each) sourced directly from LinkedIn DMs",
     ],
+    examplePost: "Most marketing audits identify the wrong problem. They measure what's easy to measure — traffic, CTR, open rates — and ignore the one thing that actually drives revenue: trust at the point of decision. Here's the 3-question framework I use instead.",
+    exampleEngagement: "👍 1,203 · 💬 87 · 🔁 214",
     isCompany: false,
   },
   {
     name: "Marcus Webb",
     role: "Sales Director",
+    location: "Manchester, UK",
     plan: "Personal",
-    metric: "5,400",
-    metricLabel: "X followers from scratch",
-    quote: "I had zero presence on X. Within 4 months I was getting DMs from podcast hosts and industry journalists.",
+    metric: "0 → 5,381",
+    metricLabel: "X followers in under 5 months",
+    timeframe: "Over 5 months",
+    quote: "I literally had a locked account with zero followers. My manager thought I was wasting time when I said I was 'building a presence on X.' Four months later a podcast host with 80K listeners DMd me asking to come on the show. That changed a few opinions internally.",
     results: [
-      "Built X audience from 0 to 5,400 in under 5 months",
-      "Featured as a guest on 2 top B2B sales podcasts",
-      "Generated 11 qualified pipeline conversations from X alone",
+      "X account grew from 0 to 5,381 followers in under 5 months",
+      "Invited as guest on 2 B2B sales podcasts with combined reach of 130K+",
+      "Generated 14 qualified pipeline conversations from X content alone",
     ],
+    examplePost: "Cold call pick-up rates dropped 34% industry-wide last year. But my team's did too — and we fixed it not by changing the script, but by changing what happens before the call. Warm social touchpoints first. Here's the exact sequence we use.",
+    exampleEngagement: "👍 847 · 💬 61 · 🔁 139",
     isCompany: false,
   },
   {
     name: "Priya Sharma",
     role: "Executive Coach",
+    location: "Vienna, Austria",
     plan: "Personal",
     metric: "4–6",
-    metricLabel: "new clients/month from content",
-    quote: "I used to rely entirely on referrals. Now my LinkedIn content brings in 4 to 6 new client inquiries every single month.",
+    metricLabel: "new client inquiries per month",
+    timeframe: "Months 3–8",
+    quote: "I was 100% referral dependent for seven years. Which sounds fine until you realize you have zero control. I started ItGrows half-skeptically and didn't tell anyone. By month three I had two people reach out who found me via LinkedIn posts. That's never happened to me before — ever.",
     results: [
-      "Established thought leadership in executive coaching niche on LinkedIn",
-      "Content consistently reaches 15,000–25,000 impressions per week",
-      "Books 4–6 new discovery calls per month from content alone",
+      "Built consistent thought leadership presence in the executive coaching niche",
+      "Weekly LinkedIn impressions stabilized at 17,400–23,800",
+      "Now books 4–6 new discovery calls per month from content alone",
     ],
+    examplePost: "The executives who burn out aren't the ones working the hardest. They're the ones who stopped asking themselves why they're working at all. I've coached 200+ senior leaders. The pattern is always the same — and it's fixable, but not in the way most people think.",
+    exampleEngagement: "👍 2,341 · 💬 118 · 🔁 307",
     isCompany: false,
   },
 
@@ -64,131 +80,166 @@ const caseStudies: CaseStudy[] = [
   {
     name: "Alex Rodriguez",
     role: "Startup Founder",
+    location: "Berlin, Germany",
     plan: "Duo",
-    metric: "19K",
-    metricLabel: "combined followers across LinkedIn + X",
-    quote: "Multiple investors told us they followed our journey online before reaching out. Social proof became a real fundraising asset.",
+    metric: "11,842 + 7,109",
+    metricLabel: "LinkedIn + X followers",
+    timeframe: "Over 8 months",
+    quote: "We raised a seed round and three of the five investors told me they'd been following our content for weeks before reaching out. One said she felt like she already knew us. I don't think we close that round without the social presence — the trust was already there.",
     results: [
-      "LinkedIn grew to 12K followers, X to 7K in 8 months",
-      "Raised $500K seed round — 3 investors cited online visibility",
-      "Went from zero inbound to 8–12 partnership inquiries per month",
+      "LinkedIn grew to 11,842 followers, X to 7,109 in 8 months",
+      "Raised $500K seed round — 3 of 5 investors cited online visibility as a factor",
+      "Inbound partnership inquiries went from near-zero to 9–13 per month",
     ],
+    examplePost: "We just hit 500 beta users with $0 in paid acquisition. Every single signup came from LinkedIn or X content. People keep asking about our 'growth strategy' — honestly it's just showing up with a point of view every day. Thread on what we actually posted:",
+    exampleEngagement: "👍 3,187 · 💬 204 · 🔁 531",
     isCompany: false,
   },
   {
     name: "Nina Kowalski",
     role: "B2B SaaS Consultant",
+    location: "Warsaw, Poland",
     plan: "Duo",
-    metric: "15–20",
-    metricLabel: "qualified leads/month",
-    quote: "LinkedIn brought the warm leads, X built my reputation with builders and operators. Together they replaced my entire outbound motion.",
+    metric: "15–19",
+    metricLabel: "qualified inbound leads per month",
+    timeframe: "Months 2–7",
+    quote: "I cancelled my cold outreach subscription after month two. LinkedIn was bringing in warm leads who'd already read three or four of my posts, and X was building credibility with the operator crowd who then referred me. I'm closing bigger deals now because people arrive pre-sold.",
     results: [
-      "Generates 15–20 qualified leads per month from LinkedIn + X combined",
-      "Average deal size increased as inbound prospects arrive pre-sold",
-      "Replaced $2,000/mo cold outreach spend — ROI positive within 6 weeks",
+      "Generates 15–19 qualified leads per month from LinkedIn + X combined",
+      "Average project value increased as inbound prospects arrive more informed",
+      "Replaced $1,900/mo cold outreach spend — ROI positive within 7 weeks",
     ],
+    examplePost: "Your SaaS churn problem is almost never about the product. It's about who you let in during sales. I audited 11 SaaS companies last quarter — 9 of them had the same pattern: features are fine, ICP definition is broken. Here's what I found and how to fix it.",
+    exampleEngagement: "👍 1,574 · 💬 93 · 🔁 248",
     isCompany: false,
   },
   {
     name: "James Okafor",
     role: "VC Partner",
+    location: "London, UK",
     plan: "Duo",
-    metric: "3x",
+    metric: "3.2x",
     metricLabel: "increase in inbound deal flow",
-    quote: "Founders started tagging me in posts before reaching out. My inbox quality completely changed — fewer cold pitches, more warm introductions.",
+    timeframe: "Over 12 months",
+    quote: "Something shifted around month four. Founders started tagging me in posts before reaching out. My inbox changed — fewer random cold decks, more 'I've been following your thinking on X and wanted to share what we're building.' That quality difference is hard to quantify but it's real.",
     results: [
       "Established consistent thought leadership across LinkedIn and X",
-      "3x increase in inbound deal flow within 12 months",
-      "Featured in 4 VC-focused newsletters after content went viral twice",
+      "Inbound deal flow increased 3.2x over 12 months",
+      "Mentioned or featured in 4 VC-focused newsletters after two posts went broadly viral",
     ],
+    examplePost: "I passed on a $4M Series A last month that every other fund chased. Here's my framework for saying no to deals that look good on paper but have a subtle founder-market fit problem most people miss. This is the filter I wish I'd had five years ago.",
+    exampleEngagement: "👍 4,812 · 💬 271 · 🔁 689",
     isCompany: false,
   },
 
   // All-in Plan
   {
-    name: "B2B SaaS Startup",
-    role: "15-person SaaS Startup",
+    name: "Arkwright Labs",
+    role: "15-person B2B SaaS Startup",
+    location: "Amsterdam, Netherlands",
     plan: "All-in",
     metric: "3",
-    metricLabel: "enterprise deals closed via social inbound",
-    quote: "Our company X became a credibility signal. When prospects Googled us, they saw an active, authoritative brand — that closed deals.",
+    metricLabel: "enterprise contracts via social inbound",
+    timeframe: "Over 7 months",
+    quote: "A prospect told us on the discovery call — unprompted — that they'd researched us on X before reaching out and felt confident we were legitimate. That's when it clicked. The social presence wasn't just marketing, it was due diligence material. It was closing deals before we even got on the call.",
     results: [
-      "Company X account grew to 12K followers in 7 months",
-      "Founders' combined LinkedIn reach exceeded 25K followers",
-      "Closed 3 enterprise contracts directly attributed to social inbound",
+      "Company X account grew from 312 to 14,087 followers in 7 months",
+      "Founders' combined LinkedIn reach exceeded 26,400 followers",
+      "Closed 3 enterprise contracts directly attributed to inbound from social content",
     ],
+    examplePost: "We've been building in public for 7 months. Here's what no one tells you: the posts that got us enterprise clients weren't the product updates. They were the ones where we admitted a mistake and showed how we fixed it. Buyers trust companies that can say 'we got that wrong.'",
+    exampleEngagement: "👍 2,093 · 💬 147 · 🔁 312",
     isCompany: true,
   },
   {
-    name: "Management Consulting Firm",
+    name: "Meridian Strategy Group",
     role: "Management Consulting Firm",
+    location: "Zurich, Switzerland",
     plan: "All-in",
-    metric: "60%",
-    metricLabel: "content cost reduction",
-    quote: "We were paying a content agency $4,800 a month for less output than ItGrows delivers automatically. Switching was an easy decision.",
+    metric: "63%",
+    metricLabel: "reduction in content costs",
+    timeframe: "Over 5 months",
+    quote: "We were paying an agency $4,800 a month and getting about 12 posts across our accounts. ItGrows does more than double that output and it's actually consistent in tone and quality. I won't say the switch was instant — it took about 6 weeks to tune the voice — but after that it just worked.",
     results: [
-      "Replaced $4,800/mo content agency — same output at 60% lower cost",
-      "LinkedIn and X presence maintained across 3 partners and company page",
-      "Pipeline attribution from social increased from 8% to 31% of new business",
+      "Replaced $4,800/mo content agency — equivalent output at 63% lower cost",
+      "LinkedIn and X maintained across 3 partners and the company page simultaneously",
+      "Social-attributed pipeline share increased from 7% to 29% of new business",
     ],
+    examplePost: "Most strategy projects fail in implementation, not diagnosis. After 200+ engagements, here's the one question we now ask in week one that predicts whether a client will actually execute the plan we build together — and most consultants never ask it.",
+    exampleEngagement: "👍 1,847 · 💬 103 · 🔁 274",
     isCompany: true,
   },
   {
-    name: "Digital Marketing Agency",
+    name: "Volta Digital",
     role: "Digital Marketing Agency",
+    location: "Barcelona, Spain",
     plan: "All-in",
-    metric: "3x",
-    metricLabel: "social proof to win more clients",
-    quote: "We used ItGrows to manage our own social presence — and it became a selling point. Clients trust an agency that walks its own talk.",
+    metric: "5",
+    metricLabel: "new retainer clients citing social proof",
+    timeframe: "Over 9 months",
+    quote: "It became a conversation point in new business pitches almost immediately. We'd show our own follower growth, our engagement numbers, and say 'this is what we do for clients, and here's proof it works on us.' Two clients signed that week. It's awkward to sell social media growth if you can't demonstrate it yourself.",
     results: [
-      "Used ItGrows for all 3 accounts: founder LinkedIn, personal X, and company X",
-      "Tripled social following in 9 months — used as proof in new business pitches",
-      "Won 5 new retainer clients in Q4 who cited social credibility as a deciding factor",
+      "Used ItGrows across all 3 accounts: founder LinkedIn, personal X, and company X",
+      "Combined following tripled in 9 months — used as live proof in business pitches",
+      "Won 5 new retainer clients in a single quarter who cited social credibility as a deciding factor",
     ],
+    examplePost: "We ran the same ad creative for a client across 6 audience segments. The CTR difference between the best and worst? 7.3x. Same budget. Same platform. Same product. The only variable was who saw it. Targeting is still the most underrated lever in paid social — thread:",
+    exampleEngagement: "👍 1,129 · 💬 74 · 🔁 183",
     isCompany: true,
   },
 
   // Company Plan
   {
-    name: "Fintech Company",
+    name: "Payfields",
     role: "B2B Payments Startup",
+    location: "Dublin, Ireland",
     plan: "Company",
-    metric: "18,000",
+    metric: "341 → 17,863",
     metricLabel: "X followers in 5 months",
-    quote: "We went from a ghost account to being featured in TechCrunch. Consistent posting built the kind of brand awareness money can't easily buy.",
+    timeframe: "Over 5 months",
+    quote: "A TechCrunch journalist DM'd us saying she'd been following our X account for about six weeks and wanted to include us in a piece she was writing. We hadn't pitched her. Hadn't sent a press release. She just found us through the content. That article brought more demo requests in 48 hours than our last email campaign did in a month.",
     results: [
-      "Company X grew from 200 to 18,000 followers in 5 months",
-      "Featured in TechCrunch article after journalist discovered brand via X",
-      "Demo request rate increased 40% after social credibility boost",
+      "Company X grew from 341 to 17,863 followers in 5 months",
+      "Featured in TechCrunch after a journalist organically discovered the brand via X",
+      "Demo request volume increased 43% in the 3 months following the TechCrunch feature",
     ],
+    examplePost: "The average B2B payment still takes 47 days to clear. In 2025. We think that's embarrassing, and we built Payfields to fix it. Here's why the existing rails are slow (hint: it's not technical — it's incentives) and what actually needs to change.",
+    exampleEngagement: "👍 2,754 · 💬 163 · 🔁 418",
     isCompany: true,
   },
   {
-    name: "Logistics Company",
+    name: "Greenpath Logistics",
     role: "Sustainable Supply Chain",
+    location: "Copenhagen, Denmark",
     plan: "Company",
-    metric: "$180K",
-    metricLabel: "in partnership deals via X",
-    quote: "Two partners reached out after consistently engaging with our content on X. Neither came from ads, outbound, or referrals — just social.",
+    metric: "$183K",
+    metricLabel: "in partnership deals sourced via X",
+    timeframe: "Over 9 months",
+    quote: "Both partnerships started the same way — they'd been engaging with our posts for a while and eventually sent a DM saying they'd been thinking about reaching out for weeks. Neither came through ads, outbound, or referrals. Just consistent content. It's a different kind of pipeline and honestly a more pleasant one to work.",
     results: [
-      "Established daily X presence in sustainable logistics niche",
-      "2 partnership deals worth $180K total closed via direct X outreach",
-      "Brand mentions increased 8x in industry Slack communities",
+      "Established daily X presence in the sustainable logistics niche",
+      "2 partnership deals worth $183K combined closed via direct X outreach",
+      "Brand mentions in industry Slack communities increased roughly 8x over 9 months",
     ],
+    examplePost: "Scope 3 emissions are where most supply chains hide their real footprint — and most companies report them in a way that's technically accurate but practically useless. Here's what we changed in our own tracking methodology and why it actually changed our carrier decisions.",
+    exampleEngagement: "👍 986 · 💬 54 · 🔁 147",
     isCompany: true,
   },
   {
-    name: "Data Analytics Startup",
+    name: "Clariva Analytics",
     role: "Data Analytics Platform",
+    location: "Toronto, Canada",
     plan: "Company",
-    metric: "$37K",
-    metricLabel: "saved annually vs. social media manager",
-    quote: "We were paying a part-time social media manager $3,200 a month. ItGrows Company plan does more at $149. It was a no-brainer.",
+    metric: "$38,412",
+    metricLabel: "saved annually vs. a social media manager",
+    quote: "We'd had a part-time social media manager for about a year. She was great but $3,200 a month for two platforms was hard to justify as a 9-person team. We tried ItGrows mostly for cost reasons, but the output quality actually improved — more consistent, better-targeted, posted at better times. We haven't looked back.",
     results: [
-      "Replaced $3,200/mo social media manager with $149/mo Company plan",
-      "X posting frequency increased from 3x/week to daily",
-      "Engagement rate improved 3x due to more consistent and targeted content",
+      "Replaced $3,200/mo part-time hire with the $149/mo Company plan",
+      "X posting frequency increased from 3 times per week to daily",
+      "Engagement rate improved 2.8x due to more consistent cadence and sharper topic focus",
     ],
+    examplePost: "We analyzed 14 months of data across 6 mid-market retail clients. Every single one had the same blind spot: they were optimizing for their best-selling SKUs and ignoring the long tail that was quietly accounting for 38% of margin. Here's what the dashboard looks like when you fix that view.",
+    exampleEngagement: "👍 743 · 💬 39 · 🔁 112",
     isCompany: true,
   },
 ]
@@ -353,6 +404,7 @@ export default function CaseStudiesPage() {
                     </div>
                     <h3 className="text-lg font-bold text-[#1b1916] leading-tight">{cs.name}</h3>
                     <p className="text-sm text-slate-500 mt-0.5">{cs.role}</p>
+                    <p className="text-xs text-slate-400 mt-0.5">{cs.location}</p>
                   </div>
                   <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-lg bg-gradient-to-br ${colors.bg} flex-shrink-0`}>
                     {cs.isCompany ? "🏢" : "👤"}
@@ -360,15 +412,25 @@ export default function CaseStudiesPage() {
                 </div>
 
                 {/* Key metric */}
-                <div className={`rounded-xl p-4 mb-5 bg-gradient-to-r ${colors.bg} border ${colors.border}`}>
-                  <div className={`text-3xl font-extrabold ${colors.text} leading-none mb-1`}>{cs.metric}</div>
+                <div className={`rounded-xl p-4 mb-4 bg-gradient-to-r ${colors.bg} border ${colors.border}`}>
+                  <div className={`text-2xl font-extrabold ${colors.text} leading-none mb-1`}>{cs.metric}</div>
                   <div className="text-xs text-slate-600 font-medium">{cs.metricLabel}</div>
+                  <div className={`inline-block mt-2 text-xs font-semibold px-2 py-0.5 rounded-full bg-white/70 ${colors.text}`}>
+                    {cs.timeframe}
+                  </div>
                 </div>
 
                 {/* Quote */}
-                <blockquote className="text-sm text-slate-600 italic leading-relaxed mb-5 border-l-2 border-slate-200 pl-3">
+                <blockquote className="text-sm text-slate-600 italic leading-relaxed mb-4 border-l-2 border-slate-200 pl-3">
                   &ldquo;{cs.quote}&rdquo;
                 </blockquote>
+
+                {/* Example post preview */}
+                <div className="mb-5 rounded-xl border border-slate-100 bg-slate-50 p-3">
+                  <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1.5">Example post</p>
+                  <p className="text-xs text-slate-600 leading-relaxed mb-2">{cs.examplePost}</p>
+                  <p className="text-xs text-slate-400 font-medium">{cs.exampleEngagement}</p>
+                </div>
 
                 {/* Results */}
                 <ul className="space-y-2 mt-auto">

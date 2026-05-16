@@ -334,16 +334,16 @@ export default function PersonalPage() {
         <div className="absolute top-10 left-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-violet-400/10 rounded-full blur-3xl pointer-events-none" />
         <div className="relative max-w-4xl mx-auto">
           <div className="inline-block mb-4 px-4 py-1.5 rounded-full text-xs font-bold border border-violet-300 text-violet-600 bg-violet-50 tracking-[0.12em] uppercase">
-            Personal &amp; Company Brand Autopilot
+            X (Twitter) &amp; LinkedIn Autopilot
           </div>
           <h1 className="text-4xl sm:text-5xl md:text-7xl font-extrabold leading-tight mb-4 sm:mb-6 tracking-tight text-[#1b1916]">
-            Your Brand on LinkedIn &amp; X —
+            Your X Account on Autopilot —
             <span className="block bg-gradient-to-r from-violet-600 via-pink-500 to-cyan-500 bg-clip-text text-transparent">
-              Built by AI, Sounds Like You
+              AI Posts Daily, You Just Grow
             </span>
           </h1>
           <p className="text-base sm:text-xl text-slate-600 max-w-xl mx-auto mb-8 sm:mb-10 leading-relaxed">
-            We publish daily content on LinkedIn and X in your voice. You stay visible, build authority, and attract clients — without spending hours on content.
+            ItGrows writes and auto-publishes X posts every day — in your voice. No more blank screens, no more missed days. Also works for LinkedIn.
           </p>
           <div className="flex justify-center items-center">
             <div className="relative w-full sm:w-auto">
