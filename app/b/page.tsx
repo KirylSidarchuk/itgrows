@@ -1567,7 +1567,6 @@ export default function LandingPageB() {
           {" "}&#183;{" "}
           <Link href="/terms" className="hover:text-[#1b1916] transition-colors">Terms of Service</Link>
         </p>
-        <p className="mt-2 text-xs text-slate-400">Magiscan Inc. &#183; 919 North Market Street, Wilmington, DE 19801, USA</p>
       </footer>
 
       {/* Floating Feedback Button */}
