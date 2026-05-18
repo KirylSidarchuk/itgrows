@@ -337,13 +337,13 @@ export default function PersonalPage() {
             X (Twitter) &amp; LinkedIn Autopilot
           </div>
           <h1 className="text-4xl sm:text-5xl md:text-7xl font-extrabold leading-tight mb-4 sm:mb-6 tracking-tight text-[#1b1916]">
-            Your X Account on Autopilot —
+            Get Clients From X & LinkedIn —
             <span className="block bg-gradient-to-r from-violet-600 via-pink-500 to-cyan-500 bg-clip-text text-transparent">
-              AI Posts Daily, You Just Grow
+              Without Writing a Single Post
             </span>
           </h1>
           <p className="text-base sm:text-xl text-slate-600 max-w-xl mx-auto mb-8 sm:mb-10 leading-relaxed">
-            ItGrows writes and auto-publishes X posts every day — in your voice. No more blank screens, no more missed days. Also works for LinkedIn.
+            ItGrows generates and auto-publishes daily posts in your voice. Try it below — see real posts about YOU in 30 seconds, no signup needed.
           </p>
           <div className="flex justify-center items-center">
             <div className="relative w-full sm:w-auto">
@@ -358,93 +358,7 @@ export default function PersonalPage() {
               </Button>
             </div>
           </div>
-          <p className="mt-4 text-xs sm:text-sm text-slate-500 font-medium">No credit card required · Trusted by 2,400+ professionals</p>
-        </div>
-      </section>
-
-      {/* How it works */}
-      <section id="how-it-works" className="px-4 sm:px-6 py-16 sm:py-24" style={{ backgroundColor: "#f3f2f1" }}>
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-10 sm:mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold mb-4 text-[#1b1916]">Up and running in 3 steps</h2>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {steps.map((s, i) => (
-              <div key={i} className="relative text-center">
-                {i < steps.length - 1 && (
-                  <div className="hidden md:block absolute top-8 left-[calc(50%+2.5rem)] right-[-50%] h-px bg-gradient-to-r from-violet-300 to-transparent" />
-                )}
-                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-600 to-pink-600 flex items-center justify-center text-2xl font-black mx-auto mb-6 text-white">
-                  {s.num}
-                </div>
-                <h3 className="text-xl font-semibold mb-3 text-[#1b1916]">{s.title}</h3>
-                <p className="text-slate-600 text-sm leading-relaxed">{s.desc}</p>
-              </div>
-            ))}
-          </div>
-          {/* Result callout */}
-          <div className="mt-12 text-center">
-            <div className="inline-flex items-center gap-3 bg-gradient-to-r from-violet-50 to-pink-50 border border-violet-200 rounded-2xl px-8 py-4">
-              <span className="text-2xl">🎯</span>
-              <span className="text-[#1b1916] font-semibold text-lg">Result: Opportunities come to you</span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Platforms Section */}
-      <section className="px-4 sm:px-6 py-16 sm:py-20" style={{ backgroundColor: "#ebe9e5" }}>
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-10">
-            <h2 className="text-3xl sm:text-4xl font-bold mb-3 text-[#1b1916]">Two platforms. One brand. Zero effort.</h2>
-            <p className="text-slate-600 text-base sm:text-lg max-w-xl mx-auto">We handle your presence on both LinkedIn and X — so you show up everywhere your audience is.</p>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-            {/* LinkedIn card */}
-            <div className="bg-white rounded-2xl border border-black/10 p-6 sm:p-8 flex flex-col gap-4">
-              <div className="flex items-center gap-3">
-                <div className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0" style={{ background: "linear-gradient(135deg, #0A66C2, #0077b6)" }}>
-                  <svg viewBox="0 0 24 24" fill="white" className="w-5 h-5">
-                    <path d="M20.447 20.452H16.89v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a1.977 1.977 0 0 1-1.972-1.98 1.977 1.977 0 0 1 1.972-1.979 1.977 1.977 0 0 1 1.972 1.979 1.977 1.977 0 0 1-1.972 1.98zm1.99 13.019H3.347V9h3.98v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
-                  </svg>
-                </div>
-                <div>
-                  <div className="font-bold text-[#1b1916] text-base">LinkedIn</div>
-                  <div className="text-xs text-slate-500 font-medium uppercase tracking-wide">Professional Authority</div>
-                </div>
-              </div>
-              <p className="text-slate-600 text-sm leading-relaxed">Thought leadership posts, career positioning, and B2B lead generation — published daily in your professional voice.</p>
-              <ul className="space-y-2">
-                {["Thought leadership & expertise", "Career growth & job opportunities", "B2B leads & client outreach"].map((item) => (
-                  <li key={item} className="flex items-center gap-2 text-sm text-slate-600">
-                    <span className="text-blue-600 font-bold">✓</span> {item}
-                  </li>
-                ))}
-              </ul>
-            </div>
-            {/* X (Twitter) card */}
-            <div className="bg-white rounded-2xl border border-black/10 p-6 sm:p-8 flex flex-col gap-4">
-              <div className="flex items-center gap-3">
-                <div className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 bg-black">
-                  <svg viewBox="0 0 24 24" fill="white" className="w-5 h-5">
-                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.253 5.622 5.912-5.622Zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-                  </svg>
-                </div>
-                <div>
-                  <div className="font-bold text-[#1b1916] text-base">X (Twitter)</div>
-                  <div className="text-xs text-slate-500 font-medium uppercase tracking-wide">Real-Time Presence</div>
-                </div>
-              </div>
-              <p className="text-slate-600 text-sm leading-relaxed">Daily tweets and threads that keep you in trending conversations, grow followers, and build brand awareness in real time.</p>
-              <ul className="space-y-2">
-                {["Daily engagement & trending topics", "Brand awareness & follower growth", "Real-time presence in your niche"].map((item) => (
-                  <li key={item} className="flex items-center gap-2 text-sm text-slate-600">
-                    <span className="text-slate-800 font-bold">✓</span> {item}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
+          <p className="mt-4 text-xs sm:text-sm text-slate-500 font-medium">Credit card required to start trial · Cancel anytime · Trusted by 2,400+ professionals</p>
         </div>
       </section>
 
@@ -591,6 +505,92 @@ export default function PersonalPage() {
               </div>
             </div>
           )}
+        </div>
+      </section>
+
+      {/* How it works */}
+      <section id="how-it-works" className="px-4 sm:px-6 py-16 sm:py-24" style={{ backgroundColor: "#f3f2f1" }}>
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-10 sm:mb-16">
+            <h2 className="text-3xl sm:text-4xl font-bold mb-4 text-[#1b1916]">Up and running in 3 steps</h2>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {steps.map((s, i) => (
+              <div key={i} className="relative text-center">
+                {i < steps.length - 1 && (
+                  <div className="hidden md:block absolute top-8 left-[calc(50%+2.5rem)] right-[-50%] h-px bg-gradient-to-r from-violet-300 to-transparent" />
+                )}
+                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-600 to-pink-600 flex items-center justify-center text-2xl font-black mx-auto mb-6 text-white">
+                  {s.num}
+                </div>
+                <h3 className="text-xl font-semibold mb-3 text-[#1b1916]">{s.title}</h3>
+                <p className="text-slate-600 text-sm leading-relaxed">{s.desc}</p>
+              </div>
+            ))}
+          </div>
+          {/* Result callout */}
+          <div className="mt-12 text-center">
+            <div className="inline-flex items-center gap-3 bg-gradient-to-r from-violet-50 to-pink-50 border border-violet-200 rounded-2xl px-8 py-4">
+              <span className="text-2xl">🎯</span>
+              <span className="text-[#1b1916] font-semibold text-lg">Result: Opportunities come to you</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Platforms Section */}
+      <section className="px-4 sm:px-6 py-16 sm:py-20" style={{ backgroundColor: "#ebe9e5" }}>
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-10">
+            <h2 className="text-3xl sm:text-4xl font-bold mb-3 text-[#1b1916]">Two platforms. One brand. Zero effort.</h2>
+            <p className="text-slate-600 text-base sm:text-lg max-w-xl mx-auto">We handle your presence on both LinkedIn and X — so you show up everywhere your audience is.</p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            {/* LinkedIn card */}
+            <div className="bg-white rounded-2xl border border-black/10 p-6 sm:p-8 flex flex-col gap-4">
+              <div className="flex items-center gap-3">
+                <div className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0" style={{ background: "linear-gradient(135deg, #0A66C2, #0077b6)" }}>
+                  <svg viewBox="0 0 24 24" fill="white" className="w-5 h-5">
+                    <path d="M20.447 20.452H16.89v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a1.977 1.977 0 0 1-1.972-1.98 1.977 1.977 0 0 1 1.972-1.979 1.977 1.977 0 0 1 1.972 1.979 1.977 1.977 0 0 1-1.972 1.98zm1.99 13.019H3.347V9h3.98v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+                  </svg>
+                </div>
+                <div>
+                  <div className="font-bold text-[#1b1916] text-base">LinkedIn</div>
+                  <div className="text-xs text-slate-500 font-medium uppercase tracking-wide">Professional Authority</div>
+                </div>
+              </div>
+              <p className="text-slate-600 text-sm leading-relaxed">Thought leadership posts, career positioning, and B2B lead generation — published daily in your professional voice.</p>
+              <ul className="space-y-2">
+                {["Thought leadership & expertise", "Career growth & job opportunities", "B2B leads & client outreach"].map((item) => (
+                  <li key={item} className="flex items-center gap-2 text-sm text-slate-600">
+                    <span className="text-blue-600 font-bold">✓</span> {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            {/* X (Twitter) card */}
+            <div className="bg-white rounded-2xl border border-black/10 p-6 sm:p-8 flex flex-col gap-4">
+              <div className="flex items-center gap-3">
+                <div className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 bg-black">
+                  <svg viewBox="0 0 24 24" fill="white" className="w-5 h-5">
+                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.253 5.622 5.912-5.622Zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                  </svg>
+                </div>
+                <div>
+                  <div className="font-bold text-[#1b1916] text-base">X (Twitter)</div>
+                  <div className="text-xs text-slate-500 font-medium uppercase tracking-wide">Real-Time Presence</div>
+                </div>
+              </div>
+              <p className="text-slate-600 text-sm leading-relaxed">Daily tweets and threads that keep you in trending conversations, grow followers, and build brand awareness in real time.</p>
+              <ul className="space-y-2">
+                {["Daily engagement & trending topics", "Brand awareness & follower growth", "Real-time presence in your niche"].map((item) => (
+                  <li key={item} className="flex items-center gap-2 text-sm text-slate-600">
+                    <span className="text-slate-800 font-bold">✓</span> {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -861,7 +861,7 @@ export default function PersonalPage() {
                   Start Free Trial
                 </Button>
                 <ul className="space-y-2 pt-1">
-                  {["1 account: LinkedIn OR X personal OR X company", "14 AI-written posts · 1 per day", "Custom images for every post", "Auto-scheduling at peak time", "Profile DNA analysis"].map((item, i) => (
+                  {["1 account: LinkedIn OR X personal OR X company", "Daily posts in your voice", "Custom images for every post", "Auto-scheduling at peak time", "Profile DNA analysis"].map((item, i) => (
                     <li key={i} className="flex items-center gap-2 text-sm text-slate-600">
                       <span className="text-blue-600 font-bold">✓</span> {item}
                     </li>
@@ -906,7 +906,7 @@ export default function PersonalPage() {
                   Start Free Trial
                 </Button>
                 <ul className="space-y-2 pt-1">
-                  {["Any 2 accounts from LinkedIn, X personal, X company", "14 AI-written posts · 1 per day", "Platform-specific voice & style", "Unified dashboard for both platforms", "Custom images for every post"].map((item, i) => (
+                  {["Any 2 accounts from LinkedIn, X personal, X company", "Daily posts in your voice", "Platform-specific voice & style", "Unified dashboard for both platforms", "Custom images for every post"].map((item, i) => (
                     <li key={i} className="flex items-center gap-2 text-sm text-slate-600">
                       <span className="text-violet-600 font-bold">✓</span> {item}
                     </li>
@@ -991,7 +991,7 @@ export default function PersonalPage() {
                   Start Free Trial
                 </Button>
                 <ul className="space-y-2 pt-1">
-                  {["All 3 accounts: LinkedIn + X personal + X company", "14 AI-written posts · 1 per day", "Analytics & strategic session included", "Platform-specific voice & style", "Unified dashboard for all platforms"].map((item, i) => (
+                  {["All 3 accounts: LinkedIn + X personal + X company", "Daily posts in your voice", "Analytics & strategic session included", "Platform-specific voice & style", "Unified dashboard for all platforms"].map((item, i) => (
                     <li key={i} className="flex items-center gap-2 text-sm text-slate-600">
                       <span className="text-slate-800 font-bold">✓</span> {item}
                     </li>
