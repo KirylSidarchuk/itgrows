@@ -974,12 +974,6 @@ export default function PersonalPage() {
                     <path d="M13.6 10.9L18.4 5.5H17.2L13.1 10.1L9.8 5.5H6L11.1 12.7L6 18.5H7.2L11.6 13.6L15.1 18.5H19L13.6 10.9ZM12.2 12.9L11.7 12.2L7.7 6.4H9.2L12.7 11.2L13.2 11.9L17.4 17.9H15.9L12.2 12.9Z" fill="white" />
                   </svg>
                 )},
-                { id: "x_company", label: "X / Twitter", sub: "Company account", icon: (
-                  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-7 h-7">
-                    <rect width="24" height="24" rx="4" fill="#4c3aa3" />
-                    <path d="M13.6 10.9L18.4 5.5H17.2L13.1 10.1L9.8 5.5H6L11.1 12.7L6 18.5H7.2L11.6 13.6L15.1 18.5H19L13.6 10.9ZM12.2 12.9L11.7 12.2L7.7 6.4H9.2L12.7 11.2L13.2 11.9L17.4 17.9H15.9L12.2 12.9Z" fill="white" />
-                  </svg>
-                )},
               ].map((opt) => {
                 const isSelected = selectedPlatforms.includes(opt.id)
                 return (
