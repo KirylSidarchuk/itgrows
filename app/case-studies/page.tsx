@@ -238,6 +238,7 @@ const caseStudies: CaseStudy[] = [
       "X posting frequency increased from 3 times per week to daily",
       "Engagement rate improved 2.8x due to more consistent cadence and sharper topic focus",
     ],
+    timeframe: "Over 7 months",
     examplePost: "We analyzed 14 months of data across 6 mid-market retail clients. Every single one had the same blind spot: they were optimizing for their best-selling SKUs and ignoring the long tail that was quietly accounting for 38% of margin. Here's what the dashboard looks like when you fix that view.",
     exampleEngagement: "👍 743 · 💬 39 · 🔁 112",
     isCompany: true,
