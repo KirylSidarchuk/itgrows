@@ -359,6 +359,19 @@ export default function PersonalPage() {
             </div>
           </div>
           <p className="mt-4 text-xs sm:text-sm text-slate-500 font-medium">14-day free trial · Cancel anytime · You won&apos;t be charged today</p>
+          {/* Hero video */}
+          <div className="mt-10 sm:mt-14 relative max-w-3xl mx-auto rounded-2xl overflow-hidden shadow-2xl shadow-violet-200 border border-violet-100">
+            <video
+              autoPlay
+              loop
+              muted
+              playsInline
+              className="w-full h-auto"
+              poster="/og-image.png"
+            >
+              <source src="/hero-video.mp4" type="video/mp4" />
+            </video>
+          </div>
         </div>
       </section>
 
