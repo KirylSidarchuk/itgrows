@@ -5,6 +5,7 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { track } from "@vercel/analytics"
 
 const steps = [
   {
@@ -107,6 +108,7 @@ export default function PersonalPage() {
     if (ghostWhatYouDo.trim().length < 5) return
     const goalStr = ghostGoals.length > 0 ? ghostGoals.join(", ") : "Build personal brand"
     const thoughts = `${ghostWhatYouDo}. Audience: ${ghostAudience || "general professionals"}. Tone: ${ghostTone}. Goal: ${goalStr}.`
+    track("generate_preview_clicked", { tone: ghostTone, goal: goalStr })
     setGhostLoading(true)
     setGhostError("")
     setGhostPosts([])
@@ -121,6 +123,7 @@ export default function PersonalPage() {
       if (data.posts && data.posts.length > 0) {
         setGhostPosts(data.posts)
         setGhostImages(data.images ?? [])
+        track("preview_posts_shown")
       } else if (res.status === 429) {
         setGhostError("You've used your 2 free previews. Sign up to generate unlimited posts →")
       } else if (data.error) {
@@ -145,6 +148,7 @@ export default function PersonalPage() {
   }, [])
 
   async function handleCheckout(plan: "personal" | "duo" | "allin" | "personal_annual" | "duo_annual" | "allin_annual" | "company" | "company_annual") {
+    track("start_trial_clicked", { plan })
     const sessionRes = await fetch("/api/auth/session")
     const sessionData = await sessionRes.json() as { user?: { id: string } }
     if (!sessionData?.user?.id) {
