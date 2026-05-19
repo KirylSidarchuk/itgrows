@@ -245,8 +245,8 @@ export default function PersonalPage() {
                 <Link href="/login?callbackUrl=/cabinet">
                   <Button variant="ghost" className="text-slate-600 hover:text-[#1b1916] text-sm px-3">Login</Button>
                 </Link>
-                <Button onClick={() => handleCheckoutWithPlatform("personal")} className="bg-violet-600 hover:bg-violet-500 text-white text-sm px-4">
-                  Try Free 14 Days
+                <Button onClick={() => { document.getElementById("ghost-mode")?.scrollIntoView({ behavior: "smooth" }) }} className="bg-violet-600 hover:bg-violet-500 text-white text-sm px-4">
+                  Try Free — See Your Posts
                 </Button>
               </>
             )}
@@ -316,10 +316,10 @@ export default function PersonalPage() {
                     <Button variant="outline" className="w-full text-sm border-black/20">Login</Button>
                   </Link>
                   <Button
-                    onClick={() => { setMobileMenuOpen(false); handleCheckoutWithPlatform("personal") }}
+                    onClick={() => { setMobileMenuOpen(false); document.getElementById("ghost-mode")?.scrollIntoView({ behavior: "smooth" }) }}
                     className="w-full bg-violet-600 hover:bg-violet-500 text-white text-sm"
                   >
-                    Try Free 14 Days
+                    Try Free — See Your Posts
                   </Button>
                 </>
               )}
@@ -329,7 +329,7 @@ export default function PersonalPage() {
       </nav>
 
       {/* Hero */}
-      <section className="relative px-4 sm:px-6 pt-16 sm:pt-24 pb-20 sm:pb-32 text-center overflow-hidden">
+      <section id="ghost-mode" className="relative px-4 sm:px-6 pt-16 sm:pt-24 pb-20 sm:pb-32 text-center overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-violet-100/60 to-transparent pointer-events-none" />
         <div className="absolute top-10 left-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-violet-400/10 rounded-full blur-3xl pointer-events-none" />
         <div className="relative max-w-4xl mx-auto">
@@ -359,6 +359,140 @@ export default function PersonalPage() {
             </div>
           </div>
           <p className="mt-4 text-xs sm:text-sm text-slate-500 font-medium">14-day free trial · Cancel anytime · You won&apos;t be charged today</p>
+
+          {/* Generator form — embedded in hero */}
+          <div className="mt-10 max-w-3xl mx-auto text-left">
+            <div className="bg-[#f8f7f6] border border-black/10 rounded-2xl p-5 sm:p-6">
+              <p className="text-sm font-semibold text-[#1b1916] mb-4">Tell us about yourself</p>
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wide">What do you do? <span className="text-violet-500">*</span></label>
+                  <input
+                    type="text"
+                    value={ghostWhatYouDo}
+                    onChange={(e) => setGhostWhatYouDo(e.target.value)}
+                    placeholder="e.g. I'm a sales consultant helping B2B startups close more deals"
+                    className="w-full rounded-xl border border-black/15 bg-white px-4 py-2.5 text-sm text-[#1b1916] placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-400"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wide">Who is your audience?</label>
+                  <input
+                    type="text"
+                    value={ghostAudience}
+                    onChange={(e) => setGhostAudience(e.target.value)}
+                    placeholder="e.g. Founders, sales managers at SaaS companies"
+                    className="w-full rounded-xl border border-black/15 bg-white px-4 py-2.5 text-sm text-[#1b1916] placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-400"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wide">Your tone</label>
+                    <select
+                      value={ghostTone}
+                      onChange={(e) => setGhostTone(e.target.value)}
+                      className="w-full rounded-xl border border-black/15 bg-white px-3 py-2.5 text-sm text-[#1b1916] focus:outline-none focus:ring-2 focus:ring-violet-400"
+                    >
+                      <option>Professional</option>
+                      <option>Bold &amp; Contrarian</option>
+                      <option>Inspiring</option>
+                      <option>Conversational</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wide">Your goal</label>
+                    <div className="flex flex-wrap gap-2">
+                      {["Get clients", "Build personal brand", "Network", "Share expertise"].map((goal) => {
+                        const selected = ghostGoals.includes(goal)
+                        return (
+                          <button
+                            key={goal}
+                            type="button"
+                            onClick={() => setGhostGoals(selected ? ghostGoals.filter((g) => g !== goal) : [...ghostGoals, goal])}
+                            className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${selected ? "bg-violet-600 border-violet-600 text-white" : "bg-white border-black/15 text-slate-600 hover:border-violet-400 hover:text-violet-600"}`}
+                          >
+                            {goal}
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center justify-between mt-4 gap-3">
+                <button
+                  onClick={handleGhostGenerate}
+                  disabled={ghostLoading || ghostWhatYouDo.trim().length < 5}
+                  className="ml-auto px-6 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold transition-colors flex items-center gap-2"
+                >
+                  {ghostLoading ? (
+                    <>
+                      <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      Generating posts & images...
+                    </>
+                  ) : (
+                    "Generate My Posts →"
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {ghostError && (
+              <p className="mt-4 text-sm text-red-500">{ghostError}</p>
+            )}
+
+            {ghostPosts.length > 0 && (
+              <div className="mt-8 space-y-4">
+                {ghostPosts.map((post, i) => (
+                  <div key={i} className="bg-white border border-black/10 rounded-2xl overflow-hidden shadow-sm">
+                    {ghostImages[i] && (
+                      <img src={ghostImages[i]!} alt="Post cover" className="w-full h-48 object-cover" />
+                    )}
+                    <div className="p-5 sm:p-6">
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-500 to-pink-500 flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
+                          Y
+                        </div>
+                        <div>
+                          <div className="font-semibold text-sm text-[#1b1916]">You</div>
+                          <div className="text-xs text-slate-400">LinkedIn · Just now</div>
+                        </div>
+                      </div>
+                      <p className="text-sm text-[#1b1916] whitespace-pre-wrap leading-relaxed">{post}</p>
+                      <div className="mt-4 pt-4 border-t border-black/5 flex items-center justify-between">
+                        <div className="flex gap-4 text-xs text-slate-400">
+                          <span>👍 Like</span>
+                          <span>💬 Comment</span>
+                          <span>🔁 Repost</span>
+                        </div>
+                        <a
+                          href="/signup"
+                          className="inline-block px-4 py-2 rounded-lg text-sm font-semibold text-white transition-colors"
+                          style={{ backgroundColor: "#7C3AED" }}
+                          onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#6d28d9")}
+                          onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#7C3AED")}
+                        >
+                          Automate This Post →
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+
+                <div className="bg-gradient-to-r from-violet-600 to-pink-600 rounded-2xl p-6 sm:p-8 text-center text-white">
+                  <div className="text-2xl font-extrabold mb-2">Want these posted for you every day?</div>
+                  <p className="text-white/80 text-sm mb-5">Start your 14-day free trial. Card required, cancel anytime.</p>
+                  <a
+                    href="/signup"
+                    className="inline-block px-8 py-3 rounded-xl bg-white text-violet-600 font-bold text-sm hover:bg-violet-50 transition-colors"
+                  >
+                    Start Free Trial →
+                  </a>
+                </div>
+              </div>
+            )}
+          </div>
+
           {/* Hero video */}
           <div className="mt-10 sm:mt-14 relative max-w-3xl mx-auto rounded-2xl overflow-hidden shadow-2xl shadow-violet-200 border border-violet-100">
             <video
@@ -372,152 +506,6 @@ export default function PersonalPage() {
               <source src="/hero-video.mp4" type="video/mp4" />
             </video>
           </div>
-        </div>
-      </section>
-
-      {/* Ghost Mode — try without signup */}
-      <section id="ghost-mode" className="px-4 sm:px-6 py-16 sm:py-24 bg-white">
-        <div className="max-w-3xl mx-auto text-center">
-          <span className="inline-block mb-4 px-4 py-1 rounded-full text-xs font-bold border border-violet-300 text-violet-600 bg-violet-50 tracking-[0.15em] uppercase">
-            No signup required
-          </span>
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-4 text-[#1b1916] leading-tight tracking-tight">
-            See your posts in{" "}
-            <span className="bg-gradient-to-r from-violet-600 to-pink-500 bg-clip-text text-transparent">30 seconds</span>
-          </h2>
-          <p className="text-slate-500 text-base sm:text-lg mb-8 max-w-xl mx-auto">
-            Fill in a quick brief. We&apos;ll generate 3 real posts — no account needed.
-          </p>
-
-          <div className="bg-[#f8f7f6] border border-black/10 rounded-2xl p-5 sm:p-6 text-left">
-            <p className="text-sm font-semibold text-[#1b1916] mb-4">Tell us about yourself</p>
-            <div className="space-y-3">
-              <div>
-                <label className="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wide">What do you do? <span className="text-violet-500">*</span></label>
-                <input
-                  type="text"
-                  value={ghostWhatYouDo}
-                  onChange={(e) => setGhostWhatYouDo(e.target.value)}
-                  placeholder="e.g. I'm a sales consultant helping B2B startups close more deals"
-                  className="w-full rounded-xl border border-black/15 bg-white px-4 py-2.5 text-sm text-[#1b1916] placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-400"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wide">Who is your audience?</label>
-                <input
-                  type="text"
-                  value={ghostAudience}
-                  onChange={(e) => setGhostAudience(e.target.value)}
-                  placeholder="e.g. Founders, sales managers at SaaS companies"
-                  className="w-full rounded-xl border border-black/15 bg-white px-4 py-2.5 text-sm text-[#1b1916] placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-400"
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wide">Your tone</label>
-                  <select
-                    value={ghostTone}
-                    onChange={(e) => setGhostTone(e.target.value)}
-                    className="w-full rounded-xl border border-black/15 bg-white px-3 py-2.5 text-sm text-[#1b1916] focus:outline-none focus:ring-2 focus:ring-violet-400"
-                  >
-                    <option>Professional</option>
-                    <option>Bold &amp; Contrarian</option>
-                    <option>Inspiring</option>
-                    <option>Conversational</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wide">Your goal</label>
-                  <div className="flex flex-wrap gap-2">
-                    {["Get clients", "Build personal brand", "Network", "Share expertise"].map((goal) => {
-                      const selected = ghostGoals.includes(goal)
-                      return (
-                        <button
-                          key={goal}
-                          type="button"
-                          onClick={() => setGhostGoals(selected ? ghostGoals.filter((g) => g !== goal) : [...ghostGoals, goal])}
-                          className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${selected ? "bg-violet-600 border-violet-600 text-white" : "bg-white border-black/15 text-slate-600 hover:border-violet-400 hover:text-violet-600"}`}
-                        >
-                          {goal}
-                        </button>
-                      )
-                    })}
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="flex items-center justify-between mt-4 gap-3">
-              <button
-                onClick={handleGhostGenerate}
-                disabled={ghostLoading || ghostWhatYouDo.trim().length < 5}
-                className="ml-auto px-6 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold transition-colors flex items-center gap-2"
-              >
-                {ghostLoading ? (
-                  <>
-                    <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    Generating posts & images...
-                  </>
-                ) : (
-                  "Generate My Posts →"
-                )}
-              </button>
-            </div>
-          </div>
-
-          {ghostError && (
-            <p className="mt-4 text-sm text-red-500">{ghostError}</p>
-          )}
-
-          {ghostPosts.length > 0 && (
-            <div className="mt-8 space-y-4 text-left">
-              {ghostPosts.map((post, i) => (
-                <div key={i} className="bg-white border border-black/10 rounded-2xl overflow-hidden shadow-sm">
-                  {ghostImages[i] && (
-                    <img src={ghostImages[i]!} alt="Post cover" className="w-full h-48 object-cover" />
-                  )}
-                  <div className="p-5 sm:p-6">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-500 to-pink-500 flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
-                      Y
-                    </div>
-                    <div>
-                      <div className="font-semibold text-sm text-[#1b1916]">You</div>
-                      <div className="text-xs text-slate-400">LinkedIn · Just now</div>
-                    </div>
-                  </div>
-                  <p className="text-sm text-[#1b1916] whitespace-pre-wrap leading-relaxed">{post}</p>
-                  <div className="mt-4 pt-4 border-t border-black/5 flex items-center justify-between">
-                    <div className="flex gap-4 text-xs text-slate-400">
-                      <span>👍 Like</span>
-                      <span>💬 Comment</span>
-                      <span>🔁 Repost</span>
-                    </div>
-                    <a
-                      href="/signup"
-                      className="inline-block px-4 py-2 rounded-lg text-sm font-semibold text-white transition-colors"
-                      style={{ backgroundColor: "#7C3AED" }}
-                      onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#6d28d9")}
-                      onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#7C3AED")}
-                    >
-                      Automate This Post →
-                    </a>
-                  </div>
-                  </div>
-                </div>
-              ))}
-
-              <div className="bg-gradient-to-r from-violet-600 to-pink-600 rounded-2xl p-6 sm:p-8 text-center text-white">
-                <div className="text-2xl font-extrabold mb-2">Want these posted for you every day?</div>
-                <p className="text-white/80 text-sm mb-5">Start your 14-day free trial. Card required, cancel anytime.</p>
-                <a
-                  href="/signup"
-                  className="inline-block px-8 py-3 rounded-xl bg-white text-violet-600 font-bold text-sm hover:bg-violet-50 transition-colors"
-                >
-                  Start Free Trial →
-                </a>
-              </div>
-            </div>
-          )}
         </div>
       </section>
 
@@ -577,92 +565,47 @@ export default function PersonalPage() {
         </div>
       </section>
 
-      {/* How it works */}
-      <section id="how-it-works" className="px-4 sm:px-6 py-16 sm:py-24" style={{ backgroundColor: "#f3f2f1" }}>
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-10 sm:mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold mb-4 text-[#1b1916]">Up and running in 3 steps</h2>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {steps.map((s, i) => (
-              <div key={i} className="relative text-center">
-                {i < steps.length - 1 && (
-                  <div className="hidden md:block absolute top-8 left-[calc(50%+2.5rem)] right-[-50%] h-px bg-gradient-to-r from-violet-300 to-transparent" />
-                )}
-                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-600 to-pink-600 flex items-center justify-center text-2xl font-black mx-auto mb-6 text-white">
-                  {s.num}
-                </div>
-                <h3 className="text-xl font-semibold mb-3 text-[#1b1916]">{s.title}</h3>
-                <p className="text-slate-600 text-sm leading-relaxed">{s.desc}</p>
-              </div>
-            ))}
-          </div>
-          {/* Result callout */}
-          <div className="mt-12 text-center">
-            <div className="inline-flex items-center gap-3 bg-gradient-to-r from-violet-50 to-pink-50 border border-violet-200 rounded-2xl px-8 py-4">
-              <span className="text-2xl">🎯</span>
-              <span className="text-[#1b1916] font-semibold text-lg">Result: Opportunities come to you</span>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* Results / Outcomes */}
       <section id="results" className="px-4 sm:px-6 py-16 sm:py-28" style={{ background: "linear-gradient(135deg, #1e0a3c 0%, #0f0f23 50%, #0d1117 100%)" }}>
         <div className="max-w-6xl mx-auto">
           {/* Section header */}
-<div className="text-center mb-12 sm:mb-16">
-  <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-4 text-white leading-tight tracking-tight">
-    Real results from real users
-  </h2>
-  <p className="text-slate-400 text-base sm:text-lg max-w-xl mx-auto">
-    These are actual numbers from people using ItGrows — not industry averages.
-  </p>
-</div>
+          <div className="text-center mb-10 sm:mb-14">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-4 text-white leading-tight tracking-tight">
+              Here&apos;s what happened when I used my own product
+            </h2>
+            <p className="text-slate-400 text-base sm:text-lg max-w-xl mx-auto">
+              I built ItGrows for myself first. This is my real data from LinkedIn &amp; X.
+            </p>
+          </div>
 
-{/* 3 real case study cards */}
-<div className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-6">
-
-  {/* Card 1 */}
-  <div className="rounded-2xl border border-white/10 p-6 sm:p-8 flex flex-col gap-4" style={{ background: "rgba(255,255,255,0.04)" }}>
-    <div className="text-4xl sm:text-5xl font-black" style={{ background: "linear-gradient(90deg, #a78bfa, #818cf8)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
-      8,247
-    </div>
-    <div className="text-white font-semibold text-base">LinkedIn followers in 6 months</div>
-    <p className="text-slate-400 text-sm leading-relaxed">Started at 412. Consistent daily posts, no extra effort from her side.</p>
-    <div className="mt-auto pt-4 border-t border-white/10">
-      <p className="text-slate-300 text-sm font-medium">Sarah Chen</p>
-      <p className="text-slate-500 text-xs">Marketing Consultant · Singapore</p>
-    </div>
-  </div>
-
-  {/* Card 2 */}
-  <div className="rounded-2xl border border-white/10 p-6 sm:p-8 flex flex-col gap-4" style={{ background: "rgba(255,255,255,0.04)" }}>
-    <div className="text-4xl sm:text-5xl font-black" style={{ background: "linear-gradient(90deg, #f472b6, #ec4899)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
-      $183K
-    </div>
-    <div className="text-white font-semibold text-base">in partnership deals via X</div>
-    <p className="text-slate-400 text-sm leading-relaxed">Two inbound partners found them through their company X account. No ads, no outreach.</p>
-    <div className="mt-auto pt-4 border-t border-white/10">
-      <p className="text-slate-300 text-sm font-medium">Greenpath Logistics</p>
-      <p className="text-slate-500 text-xs">Sustainable Supply Chain · Copenhagen</p>
-    </div>
-  </div>
-
-  {/* Card 3 */}
-  <div className="rounded-2xl border border-white/10 p-6 sm:p-8 flex flex-col gap-4" style={{ background: "rgba(255,255,255,0.04)" }}>
-    <div className="text-4xl sm:text-5xl font-black" style={{ background: "linear-gradient(90deg, #67e8f9, #22d3ee)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
-      3.2×
-    </div>
-    <div className="text-white font-semibold text-base">increase in inbound deal flow</div>
-    <p className="text-slate-400 text-sm leading-relaxed">Founders started tagging him before reaching out. Inbox quality changed completely.</p>
-    <div className="mt-auto pt-4 border-t border-white/10">
-      <p className="text-slate-300 text-sm font-medium">James Okafor</p>
-      <p className="text-slate-500 text-xs">VC Partner · London, UK</p>
-    </div>
-  </div>
-
-</div>
+          <div className="max-w-2xl mx-auto">
+            <div className="rounded-2xl border border-white/10 p-8 sm:p-10 flex flex-col gap-6 text-center" style={{ background: "rgba(255,255,255,0.06)" }}>
+              <div className="flex justify-center gap-8">
+                <div>
+                  <div className="text-5xl sm:text-6xl font-black" style={{ background: "linear-gradient(90deg, #a78bfa, #818cf8)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>38,500</div>
+                  <div className="text-slate-300 text-sm mt-1">impressions</div>
+                </div>
+                <div>
+                  <div className="text-5xl sm:text-6xl font-black" style={{ background: "linear-gradient(90deg, #f472b6, #ec4899)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>23</div>
+                  <div className="text-slate-300 text-sm mt-1">inbound DMs</div>
+                </div>
+                <div>
+                  <div className="text-5xl sm:text-6xl font-black" style={{ background: "linear-gradient(90deg, #67e8f9, #22d3ee)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>3</div>
+                  <div className="text-slate-300 text-sm mt-1">months</div>
+                </div>
+              </div>
+              <p className="text-slate-300 text-lg italic leading-relaxed">
+                &ldquo;I was posting manually maybe once a week. With ItGrows I went daily — and in 3 months hit 38,500 impressions on LinkedIn and X. 23 people reached out to me inbound. The tool literally pays for itself in one client.&rdquo;
+              </p>
+              <div className="flex items-center justify-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-violet-600 flex items-center justify-center text-white font-bold text-sm">K</div>
+                <div className="text-left">
+                  <p className="text-white font-semibold text-sm">Kiryl S.</p>
+                  <p className="text-slate-400 text-xs">Founder, ItGrows.ai</p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
