@@ -72,7 +72,6 @@ export async function POST(req: NextRequest) {
     line_items: [{ price: priceId, quantity: 1 }],
     mode: "subscription",
     subscription_data: {
-      trial_period_days: 14,
       metadata: { userId: user.id, plan },
     },
     success_url: `${baseUrl}/cabinet?success=1`,

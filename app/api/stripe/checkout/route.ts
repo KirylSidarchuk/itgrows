@@ -18,6 +18,8 @@ const PLAN_PRICE_MAP: Record<string, string> = {
   personal_annual: process.env.STRIPE_PRICE_PERSONAL_ANNUAL_NEW ?? "price_1TWByX2Ve258Uiqt7bJsbxcl",
   duo_annual: process.env.STRIPE_PRICE_DUO_ANNUAL ?? "price_1TWByY2Ve258Uiqtc5ewdi5u",
   allin_annual: process.env.STRIPE_PRICE_ALLIN_ANNUAL ?? "price_1TWBya2Ve258UiqtpFIzdgAL",
+  company: process.env.STRIPE_PRICE_COMPANY_MONTHLY ?? "price_1TWaK32Ve258UiqtmfxyHfnW",
+  company_annual: process.env.STRIPE_PRICE_COMPANY_ANNUAL ?? "price_1TWaK62Ve258Uiqt3sU7ZFeU",
 }
 
 export async function POST(req: NextRequest) {
@@ -74,7 +76,6 @@ export async function POST(req: NextRequest) {
     success_url: `${baseUrl}/welcome?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${baseUrl}/`,
     subscription_data: {
-      trial_period_days: 14,
       metadata: { userId: user.id, plan },
     },
   })

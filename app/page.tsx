@@ -27,6 +27,16 @@ const steps = [
 
 const faqs = [
   {
+    q: "Will my followers know my posts are AI-generated?",
+    a: "Only if you tell them. ItGrows writes in your voice based on your profile, niche, and communication style — not generic AI copy. Most followers can't tell the difference. That said, many of our users choose to disclose AI assistance. The FTC recommends transparency about AI-assisted content, which we support.",
+    defaultOpen: true,
+  },
+  {
+    q: "Can I edit posts before they go live?",
+    a: "Yes, always. Every post sits in your approval queue before publishing. You can edit the text, change the image, reschedule, or delete it. You can also enable full autopilot once you're comfortable with the output quality — but you're always in control.",
+    defaultOpen: true,
+  },
+  {
     q: "Is it safe to connect my LinkedIn and X accounts?",
     a: "Absolutely. We use LinkedIn's official OAuth and X's official API — the same secure standards used by tools like Salesforce, HubSpot, and Buffer. You log in directly on each platform's website, not on ours. We never see or store your passwords. You can revoke access at any time.",
   },
@@ -35,17 +45,21 @@ const faqs = [
     a: "No. Before writing anything, we analyze your profile, your niche, and your professional goals. Every post is written specifically for you — in your voice, for your audience. LinkedIn posts and X tweets have different styles and we tailor both accordingly.",
   },
   {
-    q: "Do I need a credit card to start?",
-    a: "Yes, a card is required to start your 14-day free trial — but you won't be charged until the trial ends. You can cancel anytime before that. We use Stripe for secure payment processing.",
+    q: "Is this against LinkedIn's or X's Terms of Service?",
+    a: "No. We use official, approved APIs from both platforms. Posting via third-party tools is explicitly allowed by both LinkedIn and X. Thousands of businesses use tools like Buffer, Hootsuite, and Sprout Social — ItGrows operates the same way.",
   },
   {
-    q: "Can I use this for a company brand, not just a personal profile?",
-    a: "Yes. The platform works for both personal accounts (founders, executives, consultants) and company profiles. Just tell us your brand's voice and goals during the brief setup.",
+    q: "Do I need a credit card to start?",
+    a: "No. Your 7-day free trial starts the moment you sign up — no card required. After 7 days, you can choose a plan to keep publishing. We use Stripe for secure payment processing.",
+  },
+  {
+    q: "What happens to my content if I cancel?",
+    a: "Your account and all your posts remain accessible. You can export your content at any time. If you cancel, we stop publishing new posts, but nothing is deleted. You can reactivate your subscription whenever you want.",
   },
 ]
 
 export default function PersonalPage() {
-  const [openFaq, setOpenFaq] = useState<number | null>(null)
+  const [openFaq, setOpenFaq] = useState<number | null>(0)
   const [sessionUser, setSessionUser] = useState<{ name?: string | null; email?: string | null } | null>(null)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [ghostWhatYouDo, setGhostWhatYouDo] = useState("")
@@ -152,24 +166,11 @@ export default function PersonalPage() {
     const sessionRes = await fetch("/api/auth/session")
     const sessionData = await sessionRes.json() as { user?: { id: string } }
     if (!sessionData?.user?.id) {
-      window.location.href = `/signup?callbackUrl=${encodeURIComponent("/cabinet")}`
+      window.location.href = "/signup"
       return
     }
-    const res = await fetch("/api/stripe/checkout", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ plan }),
-    })
-    if (res.status === 401) {
-      window.location.href = `/signup?callbackUrl=${encodeURIComponent("/cabinet")}`
-      return
-    }
-    const data = await res.json() as { url?: string; error?: string }
-    if (data.url) {
-      window.location.href = data.url
-    } else {
-      window.location.href = "/cabinet"
-    }
+    // Already logged in → go to cabinet to start trial
+    window.location.href = "/cabinet"
   }
 
   function handleCheckoutWithPlatform(plan: string) {
@@ -341,13 +342,13 @@ export default function PersonalPage() {
             X (Twitter) &amp; LinkedIn Autopilot
           </div>
           <h1 className="text-4xl sm:text-5xl md:text-7xl font-extrabold leading-tight mb-4 sm:mb-6 tracking-tight text-[#1b1916]">
-            Get Clients From X & LinkedIn —
+            Build Your Brand on X & LinkedIn —
             <span className="block bg-gradient-to-r from-violet-600 via-pink-500 to-cyan-500 bg-clip-text text-transparent">
-              Without Writing a Single Post
+              AI Drafts, You Approve in 30 Seconds
             </span>
           </h1>
           <p className="text-base sm:text-xl text-slate-600 max-w-xl mx-auto mb-8 sm:mb-10 leading-relaxed">
-            ItGrows generates and auto-publishes daily posts in your voice. Try it below — see real posts about YOU in 30 seconds, no signup needed.
+            Every day, ItGrows drafts posts in your voice. Review in 30 seconds, publish with one tap — or set to full autopilot once you trust it. Try it below, no signup needed.
           </p>
           <div className="flex justify-center items-center">
             <div className="relative w-full sm:w-auto">
@@ -362,7 +363,7 @@ export default function PersonalPage() {
               </Button>
             </div>
           </div>
-          <p className="mt-4 text-xs sm:text-sm text-slate-500 font-medium">14-day free trial · Cancel anytime · You won&apos;t be charged today</p>
+          <p className="mt-4 text-xs sm:text-sm text-slate-500 font-medium">7-day free trial · No card required · Cancel anytime</p>
 
           {/* Generator form — embedded in hero */}
           <div className="mt-10 max-w-3xl mx-auto text-left">
@@ -485,13 +486,14 @@ export default function PersonalPage() {
 
                 <div className="bg-gradient-to-r from-violet-600 to-pink-600 rounded-2xl p-6 sm:p-8 text-center text-white">
                   <div className="text-2xl font-extrabold mb-2">Want these posted for you every day?</div>
-                  <p className="text-white/80 text-sm mb-5">Start your 14-day free trial. Card required, cancel anytime.</p>
+                  <p className="text-white/80 text-sm mb-5">Start your 7-day free trial — no card required.</p>
                   <a
                     href="/signup"
                     className="inline-block px-8 py-3 rounded-xl bg-white text-violet-600 font-bold text-sm hover:bg-violet-50 transition-colors"
                   >
-                    Start Free Trial →
+                    Get 7 Days Free →
                   </a>
+                  <p className="mt-3 text-white/60 text-xs">🔒 OAuth secure · No password stored · Cancel anytime</p>
                 </div>
               </div>
             )}
@@ -517,7 +519,7 @@ export default function PersonalPage() {
       <section className="px-4 sm:px-6 py-16 sm:py-20" style={{ backgroundColor: "#ebe9e5" }}>
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-10">
-            <h2 className="text-3xl sm:text-4xl font-bold mb-3 text-[#1b1916]">Two platforms. One brand. Zero effort.</h2>
+            <h2 className="text-3xl sm:text-4xl font-bold mb-3 text-[#1b1916]">Two platforms. One brand. 5 minutes a day.</h2>
             <p className="text-slate-600 text-base sm:text-lg max-w-xl mx-auto">We handle your presence on both LinkedIn and X — so you show up everywhere your audience is.</p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
@@ -605,7 +607,7 @@ export default function PersonalPage() {
                 <div className="w-10 h-10 rounded-full bg-violet-600 flex items-center justify-center text-white font-bold text-sm">K</div>
                 <div className="text-left">
                   <p className="text-white font-semibold text-sm">Kiryl S.</p>
-                  <p className="text-slate-400 text-xs">Founder, ItGrows.ai</p>
+                  <p className="text-slate-400 text-xs">B2B Consultant</p>
                 </div>
               </div>
             </div>
@@ -617,7 +619,7 @@ export default function PersonalPage() {
       <section className="px-4 sm:px-6 py-10 sm:py-14" style={{ backgroundColor: "#f3f2f1" }}>
         <div className="max-w-5xl mx-auto">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-            <p className="text-base sm:text-lg font-semibold text-[#1b1916]">Trusted by professionals in 50+ countries</p>
+            <p className="text-base sm:text-lg font-semibold text-[#1b1916]">Built by a founder who uses it every day</p>
             <button
               onClick={() => setShowCaseStudies(!showCaseStudies)}
               className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-violet-300 bg-white text-violet-700 font-semibold text-sm hover:bg-violet-50 transition-colors shadow-sm"
@@ -627,38 +629,11 @@ export default function PersonalPage() {
           </div>
 
           {showCaseStudies && (
-            <div className="mt-8">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                {/* Card 1 */}
-                <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
-                  <span className="inline-block mb-3 px-3 py-1 rounded-full text-xs font-semibold bg-violet-100 text-violet-700">Personal Plan</span>
-                  <p className="text-2xl font-bold text-[#1b1916] mb-1">8,200 LinkedIn followers in 6 months · 3× inbound leads</p>
-                  <p className="text-sm text-slate-500 mt-2">Sarah Chen — Marketing Consultant</p>
-                </div>
-                {/* Card 2 */}
-                <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
-                  <span className="inline-block mb-3 px-3 py-1 rounded-full text-xs font-semibold bg-violet-100 text-violet-700">Duo Plan</span>
-                  <p className="text-2xl font-bold text-[#1b1916] mb-1">12K LinkedIn + 7K X followers · raised $500K</p>
-                  <p className="text-sm text-slate-500 mt-2">Alex Rodriguez — Startup Founder</p>
-                </div>
-                {/* Card 3 */}
-                <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
-                  <span className="inline-block mb-3 px-3 py-1 rounded-full text-xs font-semibold bg-violet-100 text-violet-700">All-in Plan</span>
-                  <p className="text-2xl font-bold text-[#1b1916] mb-1">Replaced $4,800/mo content agency · 60% cost reduction</p>
-                  <p className="text-sm text-slate-500 mt-2">Management Consulting Firm</p>
-                </div>
-                {/* Card 4 */}
-                <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
-                  <span className="inline-block mb-3 px-3 py-1 rounded-full text-xs font-semibold bg-violet-100 text-violet-700">Company Plan</span>
-                  <p className="text-2xl font-bold text-[#1b1916] mb-1">200 → 18,000 X followers in 5 months</p>
-                  <p className="text-sm text-slate-500 mt-2">Fintech Company</p>
-                </div>
-              </div>
-              <div className="mt-6 text-center">
-                <a href="/case-studies" className="inline-flex items-center gap-1 text-violet-700 font-semibold text-sm hover:text-violet-500 transition-colors">
-                  View all 12 case studies →
-                </a>
-              </div>
+            <div className="mt-8 text-center">
+              <p className="text-slate-500 text-sm mb-4">Real results from our early users — documented and growing.</p>
+              <a href="/case-studies" className="inline-flex items-center gap-1 text-violet-700 font-semibold text-sm hover:text-violet-500 transition-colors">
+                View case studies →
+              </a>
             </div>
           )}
         </div>
@@ -670,7 +645,10 @@ export default function PersonalPage() {
           <div className="text-center mb-12">
             <Badge className="mb-4 bg-violet-100 text-violet-700 border-violet-200">Pricing</Badge>
             <h2 className="text-4xl font-bold mb-4 text-[#1b1916]">Simple, Transparent Pricing</h2>
-            <p className="text-slate-600 text-lg">14-day free trial on all plans. Cancel anytime.</p>
+            <p className="text-slate-600 text-lg">7-day free trial, no card required. Cancel anytime.</p>
+            {/* Pricing anchor */}
+            <p className="text-slate-500 text-sm mt-4 max-w-md mx-auto">A social media manager costs $2,000+/month. A copywriter costs $500+/month. ItGrows: from $49/month — and it never calls in sick.</p>
+
             {/* Billing toggle */}
             <div className="flex items-center justify-center gap-2 mt-6">
               <button
@@ -712,15 +690,16 @@ export default function PersonalPage() {
                   <span className="text-slate-500 mb-2">/mo</span>
                 </div>
                 {billingCycle === "annual" && <p className="text-xs text-green-600 font-semibold mt-0.5">$411 billed annually · save $177</p>}
-                <p className="text-sm text-slate-400 mt-1">14-day free trial · cancel anytime</p>
+                <p className="text-sm text-slate-400 mt-1">7-day free trial · no card required</p>
               </CardHeader>
               <CardContent className="space-y-4 px-6 pb-8">
                 <Button
                   onClick={() => handleCheckoutWithPlatform("personal")}
                   className="w-full bg-blue-600 hover:bg-blue-500 text-white py-5 text-sm rounded-xl mt-2"
                 >
-                  Start Free Trial
+                  Get 7 Days Free →
                 </Button>
+                <p className="text-center text-xs text-slate-400">🔒 OAuth secure · No card required · Cancel anytime</p>
                 <ul className="space-y-2 pt-1">
                   {["1 account: LinkedIn OR X personal OR X company", "Daily posts in your voice", "Custom images for every post", "Auto-scheduling at peak time", "Profile DNA analysis"].map((item, i) => (
                     <li key={i} className="flex items-center gap-2 text-sm text-slate-600">
@@ -757,15 +736,16 @@ export default function PersonalPage() {
                   <span className="text-slate-500 mb-2">/mo</span>
                 </div>
                 {billingCycle === "annual" && <p className="text-xs text-green-600 font-semibold mt-0.5">$831 billed annually · save $357</p>}
-                <p className="text-sm text-slate-400 mt-1">14-day free trial · cancel anytime</p>
+                <p className="text-sm text-slate-400 mt-1">7-day free trial · no card required</p>
               </CardHeader>
               <CardContent className="space-y-4 px-6 pb-8">
                 <Button
                   onClick={() => handleCheckoutWithPlatform("duo")}
                   className="w-full bg-violet-600 hover:bg-violet-500 text-white py-5 text-sm rounded-xl mt-2"
                 >
-                  Start Free Trial
+                  Get 7 Days Free →
                 </Button>
+                <p className="text-center text-xs text-slate-400">🔒 OAuth secure · No card required · Cancel anytime</p>
                 <ul className="space-y-2 pt-1">
                   {["Any 2 accounts from LinkedIn, X personal, X company", "Daily posts in your voice", "Platform-specific voice & style", "Unified dashboard for both platforms", "Custom images for every post"].map((item, i) => (
                     <li key={i} className="flex items-center gap-2 text-sm text-slate-600">
@@ -806,15 +786,16 @@ export default function PersonalPage() {
                   <span className="text-slate-500 mb-2">/mo</span>
                 </div>
                 {billingCycle === "annual" && <p className="text-xs text-green-600 font-semibold mt-0.5">$1,671 billed annually · save $717</p>}
-                <p className="text-sm text-slate-400 mt-1">14-day free trial · cancel anytime</p>
+                <p className="text-sm text-slate-400 mt-1">7-day free trial · no card required</p>
               </CardHeader>
               <CardContent className="space-y-4 px-6 pb-8">
                 <Button
                   onClick={() => handleCheckout("allin")}
                   className="w-full bg-slate-900 hover:bg-slate-700 text-white py-5 text-sm rounded-xl mt-2"
                 >
-                  Start Free Trial
+                  Get 7 Days Free →
                 </Button>
+                <p className="text-center text-xs text-slate-400">🔒 OAuth secure · No card required · Cancel anytime</p>
                 <ul className="space-y-2 pt-1">
                   {["All 3 accounts: LinkedIn + X personal + X company", "Daily posts in your voice", "Analytics & strategic session included", "Platform-specific voice & style", "Unified dashboard for all platforms"].map((item, i) => (
                     <li key={i} className="flex items-center gap-2 text-sm text-slate-600">
@@ -881,9 +862,10 @@ export default function PersonalPage() {
             onClick={() => handleCheckoutWithPlatform("personal")}
             className="bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-white px-8 sm:px-10 py-5 sm:py-6 text-base sm:text-lg rounded-xl w-full sm:w-auto"
           >
-            Try Free for 14 Days
+            Get 7 Days Free — No Card Required
           </Button>
-          <p className="mt-4 text-xs sm:text-sm text-slate-500">14-day free trial · From $49/month · Cancel anytime</p>
+          <p className="mt-4 text-xs sm:text-sm text-slate-500">7-day free trial · No card required · From $49/month · Cancel anytime</p>
+          <p className="mt-2 text-xs text-slate-400">🔒 OAuth secure · No password stored</p>
         </div>
       </section>
 
@@ -975,7 +957,7 @@ export default function PersonalPage() {
                   cursor: (pendingPlan === "personal" ? selectedPlatforms.length === 1 : selectedPlatforms.length === 2) ? "pointer" : "not-allowed",
                 }}
               >
-                Continue to Payment
+                Continue →
               </button>
             </div>
           </div>

@@ -35,11 +35,11 @@ export const metadata: Metadata = {
       { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
     ],
   },
-  title: "ItGrows.ai — LinkedIn & X Autopilot",
-  description: "AI writes and auto-publishes LinkedIn and X posts for you. Start your 14-day free trial.",
+  title: "ItGrows.ai — AI Drafts Your LinkedIn & X Posts",
+  description: "AI drafts LinkedIn and X posts in your voice. You review and publish. Start your free trial — no card required.",
   openGraph: {
-    title: "ItGrows.ai — LinkedIn & X Autopilot",
-    description: "AI writes and auto-publishes LinkedIn and X posts for you. Start your 14-day free trial.",
+    title: "ItGrows.ai — AI Drafts Your LinkedIn & X Posts",
+    description: "AI drafts LinkedIn and X posts in your voice. You review and publish. Start your free trial — no card required.",
     url: "https://www.itgrows.ai",
     siteName: "ItGrows.ai",
     images: [{ url: "https://www.itgrows.ai/og-image.png", width: 1200, height: 630 }],
@@ -47,8 +47,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "ItGrows.ai — LinkedIn & X Autopilot",
-    description: "AI writes and auto-publishes LinkedIn and X posts for you. Start your 14-day free trial.",
+    title: "ItGrows.ai — AI Drafts Your LinkedIn & X Posts",
+    description: "AI drafts LinkedIn and X posts in your voice. You review and publish. Start your free trial — no card required.",
     images: ["https://itgrows.ai/og-image.png"],
   },
 };

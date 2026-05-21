@@ -5,11 +5,26 @@ import { Button } from "@/components/ui/button"
 import { useEffect, useState } from "react"
 import { useSearchParams } from "next/navigation"
 import { Suspense } from "react"
+import { track } from "@vercel/analytics"
+
+declare global {
+  interface Window {
+    gtag?: (...args: unknown[]) => void
+  }
+}
 
 function PersonalWelcomeContent() {
   const searchParams = useSearchParams()
   const subscribed = searchParams.get("subscribed") === "1"
   const [linkedinConnected, setLinkedinConnected] = useState<boolean | null>(null)
+
+  useEffect(() => {
+    // Fire conversion events on page load (only real paying customers reach this page)
+    if (typeof window !== "undefined" && window.gtag) {
+      window.gtag("event", "conversion", { send_to: "AW-18160234884/purchase" })
+    }
+    track("purchase_completed")
+  }, [])
 
   useEffect(() => {
     fetch("/api/linkedin/pages")
