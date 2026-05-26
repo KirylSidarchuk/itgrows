@@ -1713,6 +1713,8 @@ function LinkedInPageContent() {
     if (!hasPersonalPlan) return 0
     if (subscriptionPlan === "allin") return 3
     if (subscriptionPlan === "duo") return 2
+    // Trial with no paid plan: allow 2 slots so users can try both LinkedIn and X
+    if (trialActive && !subscriptionPlan) return 2
     return 1
   })()
 
