@@ -197,10 +197,16 @@ export async function generateForUser(userId: string): Promise<{ success: boolea
       slice.map((postData) => generatePostImage(postData.content, brief.niche ?? "business"))
     )
 
+    // Users with custom posting frequency (every N days)
+    const POSTING_FREQUENCY: Record<string, number> = {
+      "7cd0011c-fadd-4ff5-bd1e-6445fea70b22": 3, // kiryl@itgrows.ai — every 3 days
+    }
+    const freqDays = POSTING_FREQUENCY[userId] ?? 1
+
     for (let i = 0; i < slice.length; i++) {
       const postData = slice[i]
       const scheduledFor = new Date(now)
-      scheduledFor.setUTCDate(scheduledFor.getUTCDate() + i + 1)
+      scheduledFor.setUTCDate(scheduledFor.getUTCDate() + (i + 1) * freqDays)
       scheduledFor.setUTCHours(10, 0, 0, 0)
 
       await db.insert(linkedinPosts).values({
