@@ -53,5 +53,5 @@ export async function GET(req: NextRequest) {
     code_challenge_method: "S256",
   })
 
-  return NextResponse.redirect(`https://twitter.com/i/oauth2/authorize?${params}`)
+  return NextResponse.redirect(`https://x.com/i/oauth2/authorize?${params}`)
 }
