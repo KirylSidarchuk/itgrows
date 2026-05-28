@@ -1718,8 +1718,8 @@ function LinkedInPageContent() {
     return 1
   })()
 
-  // Posts per week by plan
-  const postsPerWeek = (subscriptionPlan === "allin" || subscriptionPlan === "duo") ? 7 : 5
+  // Posts per batch for generate button
+  const postsPerWeek = 14
 
   // Count currently connected accounts (LinkedIn counts as 1 regardless of pageType)
   const connectedAccountCount = (accounts.length > 0 ? 1 : 0) + (xPersonalAccount ? 1 : 0) + (xCompanyAccount ? 1 : 0)
