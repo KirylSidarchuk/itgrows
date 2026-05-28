@@ -72,6 +72,7 @@ export default function PersonalPage() {
   const [ghostError, setGhostError] = useState("")
 
   const [showPlatformModal, setShowPlatformModal] = useState(false)
+  const [showLandingPlanModal, setShowLandingPlanModal] = useState(false)
   const [pendingPlan, setPendingPlan] = useState<string | null>(null)
   const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([])
   const [billingCycle, setBillingCycle] = useState<"monthly" | "annual">("monthly")
@@ -166,7 +167,7 @@ export default function PersonalPage() {
     const sessionRes = await fetch("/api/auth/session")
     const sessionData = await sessionRes.json() as { user?: { id: string } }
     if (!sessionData?.user?.id) {
-      window.location.href = "/signup"
+      window.location.href = `/signup?plan=${plan}`
       return
     }
     // Already logged in → go to cabinet to start trial
@@ -470,15 +471,15 @@ export default function PersonalPage() {
                           <span>💬 Comment</span>
                           <span>🔁 Repost</span>
                         </div>
-                        <a
-                          href="/signup"
+                        <button
+                          onClick={() => setShowLandingPlanModal(true)}
                           className="inline-block px-4 py-2 rounded-lg text-sm font-semibold text-white transition-colors"
                           style={{ backgroundColor: "#7C3AED" }}
                           onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#6d28d9")}
                           onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#7C3AED")}
                         >
                           Automate This Post →
-                        </a>
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -487,12 +488,12 @@ export default function PersonalPage() {
                 <div className="bg-gradient-to-r from-violet-600 to-pink-600 rounded-2xl p-6 sm:p-8 text-center text-white">
                   <div className="text-2xl font-extrabold mb-2">Want these posted for you every day?</div>
                   <p className="text-white/80 text-sm mb-5">Start your 14-day free trial. Card required.</p>
-                  <a
-                    href="/signup"
+                  <button
+                    onClick={() => setShowLandingPlanModal(true)}
                     className="inline-block px-8 py-3 rounded-xl bg-white text-violet-600 font-bold text-sm hover:bg-violet-50 transition-colors"
                   >
                     Get 14 Days Free →
-                  </a>
+                  </button>
                   <p className="mt-3 text-white/60 text-xs">🔒 OAuth secure · No password stored · Cancel anytime</p>
                 </div>
               </div>
@@ -986,6 +987,51 @@ export default function PersonalPage() {
               >
                 Continue →
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Landing Plan Picker Modal */}
+      {showLandingPlanModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+          onClick={(e) => { if (e.target === e.currentTarget) setShowLandingPlanModal(false) }}
+        >
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-6 relative">
+            <button
+              onClick={() => setShowLandingPlanModal(false)}
+              className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors text-gray-400 hover:text-gray-700"
+              aria-label="Close"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="w-4 h-4">
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </button>
+            <h2 className="text-xl font-bold text-[#1b1916] mb-1">Choose your plan</h2>
+            <p className="text-slate-500 text-sm mb-5">14-day free trial on all plans. Card required.</p>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="border border-black/10 rounded-xl p-5 flex flex-col gap-3 hover:border-violet-400 transition-colors cursor-pointer" onClick={() => { setShowLandingPlanModal(false); handleCheckoutWithPlatform("personal") }}>
+                <div className="font-bold text-[#1b1916]">Personal</div>
+                <div className="text-2xl font-extrabold text-violet-600">$49<span className="text-sm font-normal text-slate-400">/mo</span></div>
+                <div className="text-sm text-slate-600">1 platform · 1 account</div>
+                <button className="mt-auto w-full py-2 rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-sm font-semibold transition-colors">Start Free Trial</button>
+              </div>
+              <div className="border-2 border-violet-500 rounded-xl p-5 flex flex-col gap-3 cursor-pointer relative" onClick={() => { setShowLandingPlanModal(false); handleCheckoutWithPlatform("duo") }}>
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-violet-600 text-white text-xs font-bold px-3 py-1 rounded-full">Most Popular</div>
+                <div className="font-bold text-[#1b1916]">Duo</div>
+                <div className="text-2xl font-extrabold text-violet-600">$99<span className="text-sm font-normal text-slate-400">/mo</span></div>
+                <div className="text-sm text-slate-600">2 platforms · 2 accounts</div>
+                <button className="mt-auto w-full py-2 rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-sm font-semibold transition-colors">Start Free Trial</button>
+              </div>
+              <div className="border border-black/10 rounded-xl p-5 flex flex-col gap-3 hover:border-violet-400 transition-colors cursor-pointer" onClick={() => { setShowLandingPlanModal(false); handleCheckoutWithPlatform("allin") }}>
+                <div className="font-bold text-[#1b1916]">All-in</div>
+                <div className="text-2xl font-extrabold text-violet-600">$199<span className="text-sm font-normal text-slate-400">/mo</span></div>
+                <div className="text-sm text-slate-600">All platforms · Unlimited</div>
+                <button className="mt-auto w-full py-2 rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-sm font-semibold transition-colors">Start Free Trial</button>
+              </div>
             </div>
           </div>
         </div>

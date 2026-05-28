@@ -8,6 +8,7 @@ function SignupForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const source = searchParams.get("source") || "main"
+  const plan = searchParams.get("plan")
   const [name, setName] = useState("")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
@@ -37,6 +38,7 @@ function SignupForm() {
       }
       // Show check-email message instead of auto-login
       setDone(true)
+      if (plan) sessionStorage.setItem("itgrows_pending_plan", plan)
       setLoading(false)
     } catch {
       setError("Something went wrong")
