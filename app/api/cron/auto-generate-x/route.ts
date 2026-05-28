@@ -10,7 +10,7 @@ const LLM_BASE_URL = process.env.LLM_BASE_URL ?? "http://34.60.133.229:4000"
 const LLM_MODEL = "claude-sonnet-4-6"
 const LLM_API_KEY = process.env.LLM_API_KEY ?? "jtotFgxS1WQorT52LZym2ncyYzboliS6p04RqUwneFI"
 
-const MIN_SCHEDULED = 7
+const MIN_SCHEDULED = 5
 
 async function generateTweetsForUser(userId: string, accountType: string): Promise<{ success: boolean; error?: string }> {
   try {
@@ -68,10 +68,10 @@ async function generateTweetsForUser(userId: string, accountType: string): Promi
       .where(eq(users.id, userId))
       .limit(1)
 
-    let maxPosts = 14
+    let maxPosts = 7
     if (userRecord?.cancelAtPeriodEnd && userRecord?.subscriptionEndDate) {
       const daysLeft = Math.ceil((userRecord.subscriptionEndDate.getTime() - Date.now()) / 86400000)
-      if (daysLeft < 14) maxPosts = Math.max(daysLeft, 1)
+      if (daysLeft < 7) maxPosts = Math.max(daysLeft, 1)
     }
 
     const jsonInstruction = "IMPORTANT: Your response must be ONLY a valid JSON array. No markdown, no code blocks, no explanations. Start with [ and end with ]."

@@ -66,6 +66,13 @@ export async function GET(req: NextRequest) {
 
     let published = 0
     let failed = 0
+    let skipped = 0
+
+    // Track accounts that hit rate limits or are suspended this run — skip remaining posts
+    const rateLimitedAccounts = new Set<string>() // accountId
+    const suspendedAccounts = new Set<string>()   // accountId
+    // Limit to 1 post per account per cron run to avoid burst publishing
+    const publishedThisRun = new Set<string>()    // accountId
 
     for (const post of duePosts) {
       // Get user info for failure emails
@@ -95,6 +102,18 @@ export async function GET(req: NextRequest) {
             html: xTokenExpiredEmail(postUser.name ?? "there"),
           })
         }
+        continue
+      }
+
+      // Skip accounts that already hit rate limit or are suspended this run
+      if (rateLimitedAccounts.has(account.id) || suspendedAccounts.has(account.id)) {
+        skipped++
+        continue
+      }
+
+      // Only 1 post per account per cron run — skip any extras
+      if (publishedThisRun.has(account.id)) {
+        skipped++
         continue
       }
 
@@ -132,9 +151,34 @@ export async function GET(req: NextRequest) {
 
         if (!tweetRes.ok) {
           const errText = await tweetRes.text()
+          const status = tweetRes.status
+
+          if (status === 429) {
+            // Rate limited — stop publishing for this account today
+            rateLimitedAccounts.add(account.id)
+            console.warn(`[publish-x] Rate limited (429) for account ${account.id}, skipping remaining posts`)
+            skipped++
+            continue
+          }
+
+          if (status === 403) {
+            // Account suspended or forbidden — stop publishing, notify user
+            suspendedAccounts.add(account.id)
+            console.error(`[publish-x] Account suspended (403) for account ${account.id}: ${errText}`)
+            if (postUser?.email) {
+              await sendEmail({
+                to: postUser.email,
+                subject: "⚠️ Your X account may be suspended",
+                html: xTokenExpiredEmail(postUser.name ?? "there"),
+              })
+            }
+            skipped++
+            continue
+          }
+
           await db
             .update(twitterPosts)
-            .set({ status: "failed", errorMessage: `Twitter API ${tweetRes.status}: ${errText}` })
+            .set({ status: "failed", errorMessage: `Twitter API ${status}: ${errText}` })
             .where(eq(twitterPosts.id, post.id))
           failed++
           console.error(`[publish-x] Failed to publish post ${post.id}:`, errText)
@@ -142,7 +186,7 @@ export async function GET(req: NextRequest) {
             await sendEmail({
               to: postUser.email,
               subject: "⚠️ Your X post could not be published",
-              html: xPostFailedEmail(postUser.name ?? "there", post.content, `Twitter API ${tweetRes.status}: ${errText}`),
+              html: xPostFailedEmail(postUser.name ?? "there", post.content, `Twitter API ${status}: ${errText}`),
             })
           }
           continue
@@ -161,6 +205,7 @@ export async function GET(req: NextRequest) {
           })
           .where(eq(twitterPosts.id, post.id))
         published++
+        publishedThisRun.add(account.id)
       } catch (postErr) {
         const errMsg = postErr instanceof Error ? postErr.message : "Unknown error"
         await db
@@ -179,7 +224,7 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    return NextResponse.json({ published, failed, total: duePosts.length })
+    return NextResponse.json({ published, failed, skipped, total: duePosts.length })
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error"
     console.error("[publish-x] cron error:", message)
