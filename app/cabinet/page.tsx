@@ -1722,10 +1722,17 @@ function LinkedInPageContent() {
   // Account slots by plan
   const accountSlots = (() => {
     if (!hasPersonalPlan) return 0
-    if (subscriptionPlan === "allin") return 3
-    if (subscriptionPlan === "duo") return 2
-    // Trial with no paid plan: allow 2 slots so users can try both LinkedIn and X
-    if (trialActive && !subscriptionPlan) return 2
+    // All-in: LinkedIn + X personal + X company
+    if (subscriptionPlan === "allin" || subscriptionPlan === "allin_annual") return 3
+    // Duo: any 2 accounts
+    if (subscriptionPlan === "duo" || subscriptionPlan === "duo_annual") return 2
+    // Stripe trialing — give slots based on the plan they signed up for
+    if (subscriptionStatus === "trialing") {
+      if (subscriptionPlan === "allin" || subscriptionPlan === "allin_annual") return 3
+      if (subscriptionPlan === "duo" || subscriptionPlan === "duo_annual") return 2
+      return 1
+    }
+    // Personal / company / annual variants
     return 1
   })()
 
