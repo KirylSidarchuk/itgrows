@@ -491,7 +491,7 @@ export default function PersonalPage() {
                     href="/signup"
                     className="inline-block px-8 py-3 rounded-xl bg-white text-violet-600 font-bold text-sm hover:bg-violet-50 transition-colors"
                   >
-                    Get 7 Days Free →
+                    Get 14 Days Free →
                   </a>
                   <p className="mt-3 text-white/60 text-xs">🔒 OAuth secure · No password stored · Cancel anytime</p>
                 </div>
@@ -724,7 +724,7 @@ export default function PersonalPage() {
                   onClick={() => handleCheckoutWithPlatform("personal")}
                   className="w-full bg-blue-600 hover:bg-blue-500 text-white py-5 text-sm rounded-xl mt-2"
                 >
-                  Get 7 Days Free →
+                  Get 14 Days Free →
                 </Button>
                 <p className="text-center text-xs text-slate-400">🔒 OAuth secure · Card required · Cancel anytime</p>
                 <ul className="space-y-2 pt-1">
@@ -770,7 +770,7 @@ export default function PersonalPage() {
                   onClick={() => handleCheckoutWithPlatform("duo")}
                   className="w-full bg-violet-600 hover:bg-violet-500 text-white py-5 text-sm rounded-xl mt-2"
                 >
-                  Get 7 Days Free →
+                  Get 14 Days Free →
                 </Button>
                 <p className="text-center text-xs text-slate-400">🔒 OAuth secure · Card required · Cancel anytime</p>
                 <ul className="space-y-2 pt-1">
@@ -820,7 +820,7 @@ export default function PersonalPage() {
                   onClick={() => handleCheckout("allin")}
                   className="w-full bg-slate-900 hover:bg-slate-700 text-white py-5 text-sm rounded-xl mt-2"
                 >
-                  Get 7 Days Free →
+                  Get 14 Days Free →
                 </Button>
                 <p className="text-center text-xs text-slate-400">🔒 OAuth secure · Card required · Cancel anytime</p>
                 <ul className="space-y-2 pt-1">
@@ -889,7 +889,7 @@ export default function PersonalPage() {
             onClick={() => handleCheckoutWithPlatform("personal")}
             className="bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-white px-8 sm:px-10 py-5 sm:py-6 text-base sm:text-lg rounded-xl w-full sm:w-auto"
           >
-            Start Building Your Executive Presence — Free for 7 Days
+            Start Building Your Executive Presence — Free for 14 Days
           </Button>
           <p className="mt-4 text-xs sm:text-sm text-slate-500">14-day free trial · Card required · From $49/month · Cancel anytime</p>
           <p className="mt-2 text-xs text-slate-400">🔒 OAuth secure · No password stored</p>
