@@ -1158,16 +1158,6 @@ function LinkedInPageContent() {
     }
   }, [accounts.length, brief.niche, brief.goals, brief.targetAudience, posts.length, showOnboarding])
 
-  // Auto-trigger checkout for plan stored before signup (e.g. from landing page CTA)
-  useEffect(() => {
-    if (loading) return
-    const pendingPlan = typeof window !== "undefined" ? sessionStorage.getItem("itgrows_pending_plan") : null
-    if (pendingPlan && !hasPersonalPlan && !trialExpired) {
-      sessionStorage.removeItem("itgrows_pending_plan")
-      handleUpgrade(pendingPlan as "personal" | "duo" | "allin" | "personal_annual" | "duo_annual" | "allin_annual")
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loading, hasPersonalPlan])
 
   function fetchBrief() {
     fetch("/api/linkedin/brief")

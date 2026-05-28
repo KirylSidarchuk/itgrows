@@ -167,7 +167,7 @@ export default function PersonalPage() {
     const sessionRes = await fetch("/api/auth/session")
     const sessionData = await sessionRes.json() as { user?: { id: string } }
     if (!sessionData?.user?.id) {
-      window.location.href = `/signup?plan=${plan}`
+      window.location.href = "/signup"
       return
     }
     // Already logged in → go to cabinet to start trial
