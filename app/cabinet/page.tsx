@@ -1639,7 +1639,7 @@ function LinkedInPageContent() {
       const res = await fetch("/api/x/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ accountType: xPersonalAccount && xCompanyAccount ? xPostsAccountType : undefined }),
+        body: JSON.stringify({}),
       })
       if (!res.ok) {
         const data = await res.json().catch(() => ({})) as { error?: string; message?: string }
