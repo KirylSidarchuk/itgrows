@@ -3833,7 +3833,7 @@ function LinkedInPageContent() {
                             {subscriptionPlan === "personal_annual" ? "Personal Annual" : "Personal"}
                           </p>
                           <p className="text-xs text-slate-500">
-                            {subscriptionPlan === "personal_annual" ? "$203/year · billed annually" : "$29/month"}
+                            {subscriptionPlan === "personal_annual" ? "$203/year · billed annually" : "$49/month"}
                           </p>
                         </div>
                       </div>
