@@ -2024,7 +2024,7 @@ function LinkedInPageContent() {
           {
             icon: "🚀",
             title: "You're ready to grow",
-            subtitle: "Start your 7-day free trial",
+            subtitle: "Start your 14-day free trial",
             body: "Connect your account, fill your DNA, and generate your first posts. Your audience is waiting.",
             visual: (
               <div className="mt-4 flex flex-col gap-3">
@@ -2313,16 +2313,16 @@ function LinkedInPageContent() {
                   <Zap className="w-4 h-4" />
                 </div>
                 <div>
-                  <p className="text-sm font-bold">Try Free for 7 Days — No Card Required</p>
+                  <p className="text-sm font-bold">Try Free for 14 Days</p>
                   <p className="text-xs text-white/75 mt-0.5">AI posts, custom images, auto-scheduling · connect LinkedIn or X to start</p>
                 </div>
               </div>
               <button
-                onClick={handleStartTrial}
-                disabled={startingTrial}
+                onClick={() => handleUpgrade("personal")}
+                disabled={checkingOut}
                 className="shrink-0 bg-white text-violet-700 font-semibold text-xs rounded-xl px-4 py-2 hover:bg-violet-50 transition-colors disabled:opacity-70 self-start sm:self-auto"
               >
-                {startingTrial ? "Starting..." : "Start Free Trial →"}
+                {checkingOut ? "Loading..." : "Start Free Trial →"}
               </button>
             </div>
           )}
@@ -2854,7 +2854,7 @@ function LinkedInPageContent() {
                             ) : (
                               <>
                                 <Zap className="w-4 h-4 mr-2" />
-                                Generate 5 Tweets
+                                Generate 14 Tweets
                               </>
                             )}
                           </Button>
@@ -2929,7 +2929,7 @@ function LinkedInPageContent() {
                               ) : (
                                 <>
                                   <Zap className="w-4 h-4" />
-                                  Generate 5 Tweets
+                                  Generate 14 Tweets
                                 </>
                               )}
                             </button>
@@ -3452,14 +3452,14 @@ function LinkedInPageContent() {
                         <>
                           <div>
                             <p className="text-base font-semibold text-slate-700 mb-1">No posts yet</p>
-                            <p className="text-sm text-slate-400 max-w-xs">Start your 7-day free trial to generate posts — no card required.</p>
+                            <p className="text-sm text-slate-400 max-w-xs">Start your 14-day free trial to generate posts. Card required.</p>
                           </div>
                           <button
-                            onClick={handleStartTrial}
-                            disabled={startingTrial}
+                            onClick={() => handleUpgrade("personal")}
+                            disabled={checkingOut}
                             className="mt-2 bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-white font-semibold text-sm px-6 py-2.5 rounded-xl shadow-sm transition-opacity disabled:opacity-70"
                           >
-                            {startingTrial ? "Starting..." : "Start Free Trial →"}
+                            {checkingOut ? "Loading..." : "Start Free Trial →"}
                           </button>
                         </>
                       )}
@@ -3952,15 +3952,15 @@ function LinkedInPageContent() {
                   <div className="space-y-4">
                     <div className="p-4 rounded-xl bg-slate-50 border border-slate-100">
                       <p className="text-sm font-semibold text-slate-700 mb-1">No Active Plan</p>
-                      <p className="text-xs text-slate-500">7-day free trial — no card required. Subscribe after to keep publishing.</p>
+                      <p className="text-xs text-slate-500">14-day free trial · Card required · Cancel anytime.</p>
                     </div>
                     <button
-                      onClick={handleStartTrial}
-                      disabled={startingTrial}
+                      onClick={() => handleUpgrade("personal")}
+                      disabled={checkingOut}
                       className="w-full flex items-center justify-center gap-2 p-4 rounded-xl border-2 border-violet-200 bg-violet-50 hover:border-violet-400 hover:bg-violet-100 transition-colors cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
                     >
                       <span className="text-sm font-semibold text-violet-700">
-                        {startingTrial ? "Starting..." : "Start Free Trial — 7 Days, No Card →"}
+                        {checkingOut ? "Loading..." : "Start Free Trial — 14 Days →"}
                       </span>
                     </button>
                     <p className="text-xs text-slate-400 text-center">Personal $49/mo · Duo $99/mo · All-in $199/mo · after trial</p>

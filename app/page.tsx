@@ -50,7 +50,7 @@ const faqs = [
   },
   {
     q: "Do I need a credit card to start?",
-    a: "No. Your 7-day free trial starts the moment you sign up — no card required. After 7 days, you can choose a plan to keep publishing. We use Stripe for secure payment processing.",
+    a: "Yes, a card is required to start your 14-day free trial. You won't be charged until the trial ends. After 14 days, you can choose a plan to keep publishing or cancel anytime. We use Stripe for secure payment processing.",
   },
   {
     q: "What happens to my content if I cancel?",
@@ -363,7 +363,7 @@ export default function PersonalPage() {
               </Button>
             </div>
           </div>
-          <p className="mt-4 text-xs sm:text-sm text-slate-500 font-medium">7-day free trial · No card required · Cancel anytime</p>
+          <p className="mt-4 text-xs sm:text-sm text-slate-500 font-medium">14-day free trial · Card required · Cancel anytime</p>
 
           {/* Generator form — embedded in hero */}
           <div className="mt-10 max-w-3xl mx-auto text-left">
@@ -486,7 +486,7 @@ export default function PersonalPage() {
 
                 <div className="bg-gradient-to-r from-violet-600 to-pink-600 rounded-2xl p-6 sm:p-8 text-center text-white">
                   <div className="text-2xl font-extrabold mb-2">Want these posted for you every day?</div>
-                  <p className="text-white/80 text-sm mb-5">Start your 7-day free trial — no card required.</p>
+                  <p className="text-white/80 text-sm mb-5">Start your 14-day free trial. Card required.</p>
                   <a
                     href="/signup"
                     className="inline-block px-8 py-3 rounded-xl bg-white text-violet-600 font-bold text-sm hover:bg-violet-50 transition-colors"
@@ -672,7 +672,7 @@ export default function PersonalPage() {
           <div className="text-center mb-12">
             <Badge className="mb-4 bg-violet-100 text-violet-700 border-violet-200">Pricing</Badge>
             <h2 className="text-4xl font-bold mb-4 text-[#1b1916]">Simple, Transparent Pricing</h2>
-            <p className="text-slate-600 text-lg">7-day free trial, no card required. Cancel anytime.</p>
+            <p className="text-slate-600 text-lg">14-day free trial. Cancel anytime.</p>
             {/* Pricing anchor */}
             <p className="text-slate-500 text-sm mt-4 max-w-md mx-auto">A social media manager costs $2,000+/month. A copywriter costs $500+/month. ItGrows: from $49/month — and it never calls in sick.</p>
 
@@ -717,7 +717,7 @@ export default function PersonalPage() {
                   <span className="text-slate-500 mb-2">/mo</span>
                 </div>
                 {billingCycle === "annual" && <p className="text-xs text-green-600 font-semibold mt-0.5">$411 billed annually · save $177</p>}
-                <p className="text-sm text-slate-400 mt-1">7-day free trial · no card required</p>
+                <p className="text-sm text-slate-400 mt-1">14-day free trial · card required</p>
               </CardHeader>
               <CardContent className="space-y-4 px-6 pb-8">
                 <Button
@@ -726,7 +726,7 @@ export default function PersonalPage() {
                 >
                   Get 7 Days Free →
                 </Button>
-                <p className="text-center text-xs text-slate-400">🔒 OAuth secure · No card required · Cancel anytime</p>
+                <p className="text-center text-xs text-slate-400">🔒 OAuth secure · Card required · Cancel anytime</p>
                 <ul className="space-y-2 pt-1">
                   {["1 account: LinkedIn OR X personal OR X company", "Daily posts in your voice", "Custom images for every post", "Auto-scheduling at peak time", "Profile DNA analysis"].map((item, i) => (
                     <li key={i} className="flex items-center gap-2 text-sm text-slate-600">
@@ -763,7 +763,7 @@ export default function PersonalPage() {
                   <span className="text-slate-500 mb-2">/mo</span>
                 </div>
                 {billingCycle === "annual" && <p className="text-xs text-green-600 font-semibold mt-0.5">$831 billed annually · save $357</p>}
-                <p className="text-sm text-slate-400 mt-1">7-day free trial · no card required</p>
+                <p className="text-sm text-slate-400 mt-1">14-day free trial · card required</p>
               </CardHeader>
               <CardContent className="space-y-4 px-6 pb-8">
                 <Button
@@ -772,7 +772,7 @@ export default function PersonalPage() {
                 >
                   Get 7 Days Free →
                 </Button>
-                <p className="text-center text-xs text-slate-400">🔒 OAuth secure · No card required · Cancel anytime</p>
+                <p className="text-center text-xs text-slate-400">🔒 OAuth secure · Card required · Cancel anytime</p>
                 <ul className="space-y-2 pt-1">
                   {["Any 2 accounts from LinkedIn, X personal, X company", "Daily posts in your voice", "Platform-specific voice & style", "Unified dashboard for both platforms", "Custom images for every post"].map((item, i) => (
                     <li key={i} className="flex items-center gap-2 text-sm text-slate-600">
@@ -813,7 +813,7 @@ export default function PersonalPage() {
                   <span className="text-slate-500 mb-2">/mo</span>
                 </div>
                 {billingCycle === "annual" && <p className="text-xs text-green-600 font-semibold mt-0.5">$1,671 billed annually · save $717</p>}
-                <p className="text-sm text-slate-400 mt-1">7-day free trial · no card required</p>
+                <p className="text-sm text-slate-400 mt-1">14-day free trial · card required</p>
               </CardHeader>
               <CardContent className="space-y-4 px-6 pb-8">
                 <Button
@@ -822,7 +822,7 @@ export default function PersonalPage() {
                 >
                   Get 7 Days Free →
                 </Button>
-                <p className="text-center text-xs text-slate-400">🔒 OAuth secure · No card required · Cancel anytime</p>
+                <p className="text-center text-xs text-slate-400">🔒 OAuth secure · Card required · Cancel anytime</p>
                 <ul className="space-y-2 pt-1">
                   {["All 3 accounts: LinkedIn + X personal + X company", "Daily posts in your voice", "Analytics & strategic session included", "Platform-specific voice & style", "Unified dashboard for all platforms"].map((item, i) => (
                     <li key={i} className="flex items-center gap-2 text-sm text-slate-600">
@@ -891,7 +891,7 @@ export default function PersonalPage() {
           >
             Start Building Your Executive Presence — Free for 7 Days
           </Button>
-          <p className="mt-4 text-xs sm:text-sm text-slate-500">7-day free trial · No card required · From $49/month · Cancel anytime</p>
+          <p className="mt-4 text-xs sm:text-sm text-slate-500">14-day free trial · Card required · From $49/month · Cancel anytime</p>
           <p className="mt-2 text-xs text-slate-400">🔒 OAuth secure · No password stored</p>
         </div>
       </section>

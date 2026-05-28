@@ -556,7 +556,7 @@ export default function LandingPageB() {
 
                 <div className="bg-gradient-to-r from-violet-600 to-pink-600 rounded-2xl p-6 text-center text-white">
                   <div className="text-xl font-extrabold mb-2">Want these posted for you every day?</div>
-                  <p className="text-white/80 text-sm mb-4">Start free. No card required.</p>
+                  <p className="text-white/80 text-sm mb-4">14-day free trial. Card required.</p>
                   <a
                     href="/signup?source=b"
                     className="inline-block px-8 py-3 rounded-xl bg-white text-violet-600 font-bold text-sm hover:bg-violet-50 transition-colors"

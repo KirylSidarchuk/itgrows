@@ -77,6 +77,7 @@ export async function POST(req: NextRequest) {
     cancel_url: `${baseUrl}/`,
     subscription_data: {
       metadata: { userId: user.id, plan },
+      trial_period_days: 14,
     },
   })
 

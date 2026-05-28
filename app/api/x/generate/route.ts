@@ -11,7 +11,7 @@ const LLM_BASE_URL = "http://34.60.133.229:4000"
 const LLM_MODEL = "claude-sonnet-4-6"
 const LLM_API_KEY = process.env.LLM_API_KEY ?? "jtotFgxS1WQorT52LZym2ncyYzboliS6p04RqUwneFI"
 
-const MAX_POSTS = 5
+const MAX_POSTS = 14
 
 function stripMarkdown(text: string): string {
   return text
@@ -127,7 +127,7 @@ ${jsonInstruction}`
         { role: "system", content: "You are a JSON API. Always respond with valid JSON only. Never use markdown code blocks." },
         { role: "user", content: prompt },
       ],
-      max_tokens: 2048,
+      max_tokens: 4096,
       temperature: 0.8,
     }),
   })

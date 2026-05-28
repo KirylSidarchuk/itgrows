@@ -42,7 +42,7 @@ export async function POST() {
     return NextResponse.json({ error: "trial_already_used" }, { status: 400 })
   }
 
-  const trialEndsAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+  const trialEndsAt = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000)
 
   await db
     .update(users)
@@ -53,9 +53,9 @@ export async function POST() {
   const userName = user.name || user.email.split("@")[0]
   sendEmail({
     to: user.email,
-    subject: "Welcome to ItGrows.ai — your 7-day trial has started 🚀",
+    subject: "Welcome to ItGrows.ai — your 14-day trial has started 🚀",
     html: `<p>Hi ${userName},</p>
-<p>Your 7-day free trial has started. Connect your LinkedIn and we'll start generating posts for you today.</p>
+<p>Your 14-day free trial has started. Connect your LinkedIn and we'll start generating posts for you today.</p>
 <p><a href="https://www.itgrows.ai/cabinet">Go to cabinet</a></p>`,
   }).catch(() => {})
 

@@ -491,7 +491,7 @@ export default function CaseStudiesPage() {
               </Button>
             </Link>
           </div>
-          <p className="mt-5 text-sm text-slate-500">No credit card required to start · Cancel anytime</p>
+          <p className="mt-5 text-sm text-slate-500">14-day free trial · Card required · Cancel anytime</p>
         </div>
       </section>
 
