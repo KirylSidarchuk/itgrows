@@ -12,6 +12,18 @@ const LLM_API_KEY = process.env.LLM_API_KEY ?? "jtotFgxS1WQorT52LZym2ncyYzboliS6
 
 const MIN_SCHEDULED = 5
 
+function stripMarkdown(text: string): string {
+  return text
+    .replace(/\*\*(.*?)\*\*/g, "$1")
+    .replace(/\*(.*?)\*/g, "$1")
+    .replace(/__(.*?)__/g, "$1")
+    .replace(/_(.*?)_/g, "$1")
+    .replace(/`{1,3}[^`]*`{1,3}/g, "")
+    .replace(/^#{1,6}\s+/gm, "")
+    .replace(/^\s*[-*+]\s+/gm, "")
+    .trim()
+}
+
 async function generateTweetsForUser(userId: string, accountType: string): Promise<{ success: boolean; error?: string }> {
   try {
     // Get brief based on accountType
@@ -166,7 +178,7 @@ ${jsonInstruction}`
     }
 
     for (const postData of postsData.slice(0, maxPosts)) {
-      const content = (postData.content ?? "").slice(0, 280)
+      const content = stripMarkdown(postData.content ?? "").slice(0, 280)
       const scheduledAt = new Date(nextDate)
       await db.insert(twitterPosts).values({
         userId,
