@@ -2336,7 +2336,7 @@ function LinkedInPageContent() {
                 </div>
               </div>
               <button
-                onClick={() => handleUpgrade("personal")}
+                onClick={() => setShowPlanModal(true)}
                 disabled={checkingOut}
                 className="shrink-0 bg-white text-violet-700 font-semibold text-xs rounded-xl px-4 py-2 hover:bg-violet-50 transition-colors disabled:opacity-70 self-start sm:self-auto"
               >
@@ -3473,7 +3473,7 @@ function LinkedInPageContent() {
                             <p className="text-sm text-slate-400 max-w-xs">Start your 14-day free trial to generate posts. Card required.</p>
                           </div>
                           <button
-                            onClick={() => handleUpgrade("personal")}
+                            onClick={() => setShowPlanModal(true)}
                             disabled={checkingOut}
                             className="mt-2 bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-white font-semibold text-sm px-6 py-2.5 rounded-xl shadow-sm transition-opacity disabled:opacity-70"
                           >
@@ -3973,7 +3973,7 @@ function LinkedInPageContent() {
                       <p className="text-xs text-slate-500">14-day free trial · Card required · Cancel anytime.</p>
                     </div>
                     <button
-                      onClick={() => handleUpgrade("personal")}
+                      onClick={() => setShowPlanModal(true)}
                       disabled={checkingOut}
                       className="w-full flex items-center justify-center gap-2 p-4 rounded-xl border-2 border-violet-200 bg-violet-50 hover:border-violet-400 hover:bg-violet-100 transition-colors cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
                     >
