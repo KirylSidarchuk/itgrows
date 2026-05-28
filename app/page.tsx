@@ -342,13 +342,13 @@ export default function PersonalPage() {
             X (Twitter) &amp; LinkedIn Autopilot
           </div>
           <h1 className="text-4xl sm:text-5xl md:text-7xl font-extrabold leading-tight mb-4 sm:mb-6 tracking-tight text-[#1b1916]">
-            Build Your Brand on X & LinkedIn —
+            Turn Your Expertise Into Thought Leadership —
             <span className="block bg-gradient-to-r from-violet-600 via-pink-500 to-cyan-500 bg-clip-text text-transparent">
               AI Drafts, You Approve in 30 Seconds
             </span>
           </h1>
           <p className="text-base sm:text-xl text-slate-600 max-w-xl mx-auto mb-8 sm:mb-10 leading-relaxed">
-            Every day, ItGrows drafts posts in your voice. Review in 30 seconds, publish with one tap — or set to full autopilot once you trust it. Try it below, no signup needed.
+            Every day, ItGrows drafts LinkedIn and X posts in your voice. Review in 30 seconds, publish with one tap — or set to full autopilot once you trust it. Try it below, no signup needed.
           </p>
           <div className="flex justify-center items-center">
             <div className="relative w-full sm:w-auto">
@@ -376,7 +376,7 @@ export default function PersonalPage() {
                     type="text"
                     value={ghostWhatYouDo}
                     onChange={(e) => setGhostWhatYouDo(e.target.value)}
-                    placeholder="e.g. I'm a sales consultant helping B2B startups close more deals"
+                    placeholder="e.g. I'm an organizational transformation consultant helping Fortune 500 companies navigate change"
                     className="w-full rounded-xl border border-black/15 bg-white px-4 py-2.5 text-sm text-[#1b1916] placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-400"
                   />
                 </div>
@@ -580,7 +580,7 @@ export default function PersonalPage() {
               Here&apos;s what happened when I used my own product
             </h2>
             <p className="text-slate-400 text-base sm:text-lg max-w-xl mx-auto">
-              I built ItGrows for myself first. This is my real data from LinkedIn &amp; X.
+              I built ItGrows for myself first. This is my real data from LinkedIn &amp; X — used by executives, consultants, and advisors building influence.
             </p>
           </div>
 
@@ -601,15 +601,42 @@ export default function PersonalPage() {
                 </div>
               </div>
               <p className="text-slate-300 text-lg italic leading-relaxed">
-                &ldquo;I was posting manually maybe once a week. With ItGrows I went daily — and in 3 months hit 38,500 impressions on LinkedIn and X. 23 people reached out to me inbound. The tool literally pays for itself in one client.&rdquo;
+                &ldquo;I was posting manually maybe once a week. With ItGrows I went daily — and in 3 months hit 38,500 impressions on LinkedIn and X. 23 people reached out to me inbound. 3 turned into advisory conversations. The tool pays for itself in one client.&rdquo;
               </p>
               <div className="flex items-center justify-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-violet-600 flex items-center justify-center text-white font-bold text-sm">K</div>
                 <div className="text-left">
                   <p className="text-white font-semibold text-sm">Kiryl S.</p>
-                  <p className="text-slate-400 text-xs">B2B Consultant</p>
+                  <p className="text-slate-400 text-xs">B2B Consultant &amp; Founder</p>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Who it's for */}
+      <section className="px-4 sm:px-6 py-14 sm:py-20" style={{ backgroundColor: "#f3f2f1" }}>
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-10">
+            <h2 className="text-2xl sm:text-3xl font-bold text-[#1b1916] mb-3">Built for people who have expertise worth sharing</h2>
+            <p className="text-slate-500 text-base max-w-lg mx-auto">Used by executives, consultants, and founders building influence on LinkedIn and X.</p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="bg-white rounded-2xl border border-black/10 p-6">
+              <div className="text-2xl mb-3">🏛️</div>
+              <h3 className="font-bold text-[#1b1916] mb-2">Executives</h3>
+              <p className="text-sm text-slate-500 leading-relaxed">VPs, C-suite, and Managing Directors building thought leadership to attract board, advisory, and speaking opportunities.</p>
+            </div>
+            <div className="bg-white rounded-2xl border border-black/10 p-6">
+              <div className="text-2xl mb-3">💼</div>
+              <h3 className="font-bold text-[#1b1916] mb-2">Consultants &amp; Advisors</h3>
+              <p className="text-sm text-slate-500 leading-relaxed">Independent consultants growing their inbound pipeline by publishing expertise — without hiring a content team.</p>
+            </div>
+            <div className="bg-white rounded-2xl border border-black/10 p-6">
+              <div className="text-2xl mb-3">🚀</div>
+              <h3 className="font-bold text-[#1b1916] mb-2">Founders</h3>
+              <p className="text-sm text-slate-500 leading-relaxed">Early-stage founders establishing credibility and attracting investors, customers, and talent through consistent personal brand.</p>
             </div>
           </div>
         </div>
@@ -862,7 +889,7 @@ export default function PersonalPage() {
             onClick={() => handleCheckoutWithPlatform("personal")}
             className="bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-white px-8 sm:px-10 py-5 sm:py-6 text-base sm:text-lg rounded-xl w-full sm:w-auto"
           >
-            Get 7 Days Free — No Card Required
+            Start Building Your Executive Presence — Free for 7 Days
           </Button>
           <p className="mt-4 text-xs sm:text-sm text-slate-500">7-day free trial · No card required · From $49/month · Cancel anytime</p>
           <p className="mt-2 text-xs text-slate-400">🔒 OAuth secure · No password stored</p>
