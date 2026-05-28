@@ -68,6 +68,16 @@ export async function POST(req: NextRequest) {
               html: subscriptionActivatedEmail(updatedUser.name ?? "there", plan ?? "personal"),
             })
           }
+
+          // Notify owner in Telegram
+          fetch("https://api.telegram.org/bot8213146538:AAH9ceXiIQ62-ICZJlUFx0psyd2nYq1gN7g/sendMessage", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              chat_id: 372194458,
+              text: `💳 Новая подписка!\n👤 ${updatedUser?.name ?? ""} ${updatedUser?.email ?? ""}\n📦 План: ${plan ?? "personal"}\n`,
+            }),
+          }).catch(() => {})
           } // end if (userId)
         } // end if (session.subscription)
         break
