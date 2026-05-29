@@ -250,6 +250,15 @@ export const twitterPosts = pgTable("twitter_posts", {
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
 }, (t) => [index("twitter_posts_user_id_idx").on(t.userId), index("twitter_posts_status_idx").on(t.status)])
 
+export const emailPins = pgTable("email_pins", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  email: text("email").notNull(),
+  pin: text("pin").notNull(),
+  expiresAt: timestamp("expires_at").notNull(),
+  used: boolean("used").notNull().default(false),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (t) => [index("email_pins_email_idx").on(t.email)])
+
 export const twitterBriefs = pgTable("twitter_briefs", {
   id: uuid("id").defaultRandom().primaryKey(),
   userId: text("user_id").notNull().unique(),

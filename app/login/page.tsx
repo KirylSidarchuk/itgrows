@@ -8,30 +8,31 @@ import Link from "next/link"
 function LoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const verified = searchParams.get("verified")
-  const resetDone = searchParams.get("reset")
-  const errorParam = searchParams.get("error")
   const callbackUrl = searchParams.get("callbackUrl") ?? "/cabinet"
+
   const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
+  const [pin, setPin] = useState("")
+  const [step, setStep] = useState<"email" | "pin">("email")
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSendPin = async (e: React.FormEvent) => {
     e.preventDefault()
     setError("")
     setLoading(true)
     try {
-      const res = await signIn("credentials", {
-        email,
-        password,
-        redirect: false,
+      const res = await fetch("/api/auth/send-pin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
       })
-      if (res?.error) {
-        setError("Invalid email or password")
-      } else {
-        router.push(callbackUrl)
+      const data = await res.json()
+      if (!res.ok) {
+        setError(data.error ?? "Failed to send PIN")
+        setLoading(false)
+        return
       }
+      setStep("pin")
     } catch {
       setError("Something went wrong")
     } finally {
@@ -39,31 +40,80 @@ function LoginForm() {
     }
   }
 
+  const handleVerifyPin = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError("")
+    setLoading(true)
+    try {
+      const res = await signIn("pin", {
+        email,
+        pin,
+        redirect: false,
+      })
+      if (res?.error) {
+        setError("Invalid or expired PIN. Please try again.")
+        setLoading(false)
+        return
+      }
+      router.push(callbackUrl)
+    } catch {
+      setError("Something went wrong")
+      setLoading(false)
+    }
+  }
+
+  if (step === "pin") {
+    return (
+      <div className="bg-white border border-black/10 rounded-2xl p-8">
+        <div className="text-center mb-6">
+          <div className="text-4xl mb-3">📧</div>
+          <p className="text-[#1b1916] font-medium text-sm">Code sent to</p>
+          <p className="text-violet-600 font-semibold text-sm">{email}</p>
+        </div>
+        <form onSubmit={handleVerifyPin} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-[#1b1916] mb-1.5">
+              Enter 6-digit code
+            </label>
+            <input
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]{6}"
+              maxLength={6}
+              value={pin}
+              onChange={e => setPin(e.target.value.replace(/[^0-9]/g, ""))}
+              required
+              autoFocus
+              className="w-full px-4 py-3 rounded-xl border border-black/10 bg-[#f3f2f1] text-[#1b1916] text-2xl font-mono text-center tracking-widest focus:outline-none focus:ring-2 focus:ring-violet-500"
+              placeholder="000000"
+            />
+          </div>
+          {error && <p className="text-red-500 text-sm">{error}</p>}
+          <button
+            type="submit"
+            disabled={loading || pin.length !== 6}
+            className="w-full py-3 bg-violet-600 hover:bg-violet-500 text-white rounded-xl text-sm font-semibold transition-colors disabled:opacity-50"
+          >
+            {loading ? "Verifying..." : "Sign in"}
+          </button>
+        </form>
+        <p className="text-center text-sm text-slate-500 mt-6">
+          Didn&apos;t get the code?{" "}
+          <button
+            type="button"
+            onClick={() => { setStep("email"); setPin(""); setError("") }}
+            className="text-violet-600 hover:underline font-medium"
+          >
+            Try again
+          </button>
+        </p>
+      </div>
+    )
+  }
+
   return (
     <div className="bg-white border border-black/10 rounded-2xl p-8">
-      {verified && (
-        <div className="mb-4 p-3 rounded-xl bg-green-50 border border-green-200 text-green-700 text-sm text-center">
-          Email confirmed! You can now sign in.
-        </div>
-      )}
-      {resetDone === "1" && (
-        <div className="mb-4 p-3 rounded-xl bg-green-50 border border-green-200 text-green-700 text-sm text-center">
-          Password updated! You can now sign in.
-        </div>
-      )}
-      {errorParam === "token-expired" && (
-        <div className="mb-4 p-3 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm text-center">
-          Verification link expired. Please sign up again.
-          <p className="text-red-400 text-xs mt-1">Didn&apos;t receive the email? Check your spam folder.</p>
-        </div>
-      )}
-      {errorParam === "invalid-token" && (
-        <div className="mb-4 p-3 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm text-center">
-          Invalid verification link. Please check your email or sign up again.
-          <p className="text-red-400 text-xs mt-1">Didn&apos;t receive the email? Check your spam folder.</p>
-        </div>
-      )}
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSendPin} className="space-y-4">
         <div>
           <label className="block text-sm font-medium text-[#1b1916] mb-1.5">Email</label>
           <input
@@ -71,23 +121,10 @@ function LoginForm() {
             value={email}
             onChange={e => setEmail(e.target.value)}
             required
+            autoFocus
             className="w-full px-4 py-2.5 rounded-xl border border-black/10 bg-[#f3f2f1] text-[#1b1916] text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
             placeholder="you@example.com"
           />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-[#1b1916] mb-1.5">Password</label>
-          <input
-            type="password"
-            value={password}
-            onChange={e => setPassword(e.target.value)}
-            required
-            className="w-full px-4 py-2.5 rounded-xl border border-black/10 bg-[#f3f2f1] text-[#1b1916] text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
-            placeholder="••••••••"
-          />
-        </div>
-        <div className="text-right">
-          <Link href="/forgot-password" className="text-xs text-violet-600 hover:underline">Forgot password?</Link>
         </div>
         {error && <p className="text-red-500 text-sm">{error}</p>}
         <button
@@ -95,7 +132,7 @@ function LoginForm() {
           disabled={loading}
           className="w-full py-3 bg-violet-600 hover:bg-violet-500 text-white rounded-xl text-sm font-semibold transition-colors disabled:opacity-50"
         >
-          {loading ? "Signing in..." : "Sign in"}
+          {loading ? "Sending code..." : "Continue with email"}
         </button>
       </form>
       <p className="text-center text-sm text-slate-500 mt-6">
