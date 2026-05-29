@@ -572,6 +572,76 @@ export default function PersonalPage() {
         </div>
       </section>
 
+      {/* How It Works */}
+      <section id="how-it-works" className="px-4 sm:px-6 py-16 sm:py-24" style={{ backgroundColor: "#f3f2f1" }}>
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-12 sm:mb-16">
+            <span className="inline-block text-xs font-semibold tracking-widest text-violet-600 uppercase mb-3">How It Works</span>
+            <h2 className="text-3xl sm:text-4xl font-bold text-[#1b1916] leading-tight">From zero to consistent presence<br className="hidden sm:block" /> in under 5 minutes</h2>
+            <p className="text-slate-500 mt-4 text-base sm:text-lg max-w-xl mx-auto">No copywriter. No content calendar. No staring at a blank screen every Sunday night.</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
+            {/* Step 1 */}
+            <div className="relative bg-white rounded-2xl p-7 border border-black/8 shadow-sm">
+              <div className="w-10 h-10 rounded-xl bg-violet-100 flex items-center justify-center mb-5">
+                <span className="text-violet-600 font-bold text-lg">1</span>
+              </div>
+              <h3 className="font-bold text-[#1b1916] text-lg mb-2">Tell us who you are</h3>
+              <p className="text-slate-500 text-sm leading-relaxed">Share your expertise, audience, and goals. Takes 2 minutes. ItGrows builds your unique voice profile — not generic AI, but <em>your</em> style.</p>
+              <div className="mt-5 flex items-center gap-2 text-xs text-violet-600 font-medium">
+                <span className="w-1.5 h-1.5 rounded-full bg-violet-500 inline-block" />
+                One-time setup
+              </div>
+            </div>
+
+            {/* Step 2 */}
+            <div className="relative bg-white rounded-2xl p-7 border border-black/8 shadow-sm">
+              <div className="w-10 h-10 rounded-xl bg-pink-100 flex items-center justify-center mb-5">
+                <span className="text-pink-600 font-bold text-lg">2</span>
+              </div>
+              <h3 className="font-bold text-[#1b1916] text-lg mb-2">AI writes 14 posts for you</h3>
+              <p className="text-slate-500 text-sm leading-relaxed">LinkedIn and X posts crafted in your voice — insightful, on-brand, engagement-ready. Review them in 30 seconds or let autopilot handle everything.</p>
+              <div className="mt-5 flex items-center gap-2 text-xs text-pink-600 font-medium">
+                <span className="w-1.5 h-1.5 rounded-full bg-pink-500 inline-block" />
+                Works while you sleep
+              </div>
+            </div>
+
+            {/* Step 3 */}
+            <div className="relative bg-white rounded-2xl p-7 border border-black/8 shadow-sm">
+              <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center mb-5">
+                <span className="text-emerald-600 font-bold text-lg">3</span>
+              </div>
+              <h3 className="font-bold text-[#1b1916] text-lg mb-2">Watch your authority grow</h3>
+              <p className="text-slate-500 text-sm leading-relaxed">Posts publish automatically on your schedule. Clients start recognising your name. Inbound leads, speaking invites, partnership requests — consistency compounds.</p>
+              <div className="mt-5 flex items-center gap-2 text-xs text-emerald-600 font-medium">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block" />
+                Results in 30 days
+              </div>
+            </div>
+          </div>
+
+          {/* Social proof strip */}
+          <div className="mt-10 bg-white border border-black/8 rounded-2xl px-6 py-5 flex flex-col sm:flex-row items-center gap-4 sm:gap-8">
+            <div className="flex -space-x-3">
+              {["E","W","A","M"].map((l, i) => (
+                <div key={i} className="w-9 h-9 rounded-full border-2 border-white flex items-center justify-center text-sm font-bold text-white" style={{ background: ["#7c3aed","#ec4899","#0ea5e9","#10b981"][i] }}>{l}</div>
+              ))}
+            </div>
+            <div className="text-center sm:text-left">
+              <p className="text-sm font-semibold text-[#1b1916]">Consultants, coaches &amp; founders use ItGrows daily</p>
+              <p className="text-xs text-slate-500 mt-0.5">Building their personal brand on LinkedIn &amp; X — on autopilot</p>
+            </div>
+            <div className="sm:ml-auto">
+              <button onClick={() => document.getElementById("ghost-form")?.scrollIntoView({ behavior: "smooth", block: "center" })} className="bg-violet-600 hover:bg-violet-500 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors">
+                Try it free →
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Results / Outcomes */}
       <section id="results" className="px-4 sm:px-6 py-16 sm:py-28" style={{ background: "linear-gradient(135deg, #1e0a3c 0%, #0f0f23 50%, #0d1117 100%)" }}>
         <div className="max-w-6xl mx-auto">
