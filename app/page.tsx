@@ -573,57 +573,60 @@ export default function PersonalPage() {
       </section>
 
       {/* How It Works */}
-      <section id="how-it-works" className="px-4 sm:px-6 py-16 sm:py-24" style={{ backgroundColor: "#f3f2f1" }}>
+      <section id="how-it-works" className="px-4 sm:px-6 py-16 sm:py-24 bg-white">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-12 sm:mb-16">
-            <span className="inline-block text-xs font-semibold tracking-widest text-violet-600 uppercase mb-3">How It Works</span>
-            <h2 className="text-3xl sm:text-4xl font-bold text-[#1b1916] leading-tight">From zero to consistent presence<br className="hidden sm:block" /> in under 5 minutes</h2>
-            <p className="text-slate-500 mt-4 text-base sm:text-lg max-w-xl mx-auto">No copywriter. No content calendar. No staring at a blank screen every Sunday night.</p>
+            <span className="inline-block text-xs font-semibold tracking-widest text-violet-500 uppercase bg-violet-50 px-4 py-1.5 rounded-full mb-5">How It Works</span>
+            <h2 className="text-3xl sm:text-4xl font-bold text-[#1b1916] leading-tight">
+              From zero to consistent presence<br className="hidden sm:block" /> in under{" "}
+              <span className="text-violet-600 underline decoration-violet-400 underline-offset-4">5 minutes</span>
+            </h2>
+            <p className="text-slate-400 mt-4 text-base sm:text-lg max-w-xl mx-auto">No copywriter. No content calendar.<br className="hidden sm:block" /> No staring at a blank screen every Sunday night.</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-6">
             {/* Step 1 */}
-            <div className="relative bg-white rounded-2xl p-7 border border-black/8 shadow-sm">
-              <div className="w-10 h-10 rounded-xl bg-violet-100 flex items-center justify-center mb-5">
+            <div className="bg-white rounded-2xl p-7 border border-slate-100 shadow-sm">
+              <div className="w-11 h-11 rounded-full bg-violet-100 flex items-center justify-center mb-6">
                 <span className="text-violet-600 font-bold text-lg">1</span>
               </div>
-              <h3 className="font-bold text-[#1b1916] text-lg mb-2">Tell us who you are</h3>
+              <h3 className="font-bold text-[#1b1916] text-lg mb-3">Tell us who you are</h3>
               <p className="text-slate-500 text-sm leading-relaxed">Share your expertise, audience, and goals. Takes 2 minutes. ItGrows builds your unique voice profile — not generic AI, but <em>your</em> style.</p>
-              <div className="mt-5 flex items-center gap-2 text-xs text-violet-600 font-medium">
-                <span className="w-1.5 h-1.5 rounded-full bg-violet-500 inline-block" />
+              <div className="mt-6 flex items-center gap-2 text-xs text-violet-600 font-medium">
+                <svg className="w-4 h-4 flex-shrink-0" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7.5" stroke="#7c3aed" strokeWidth="1"/><path d="M5 8l2 2 4-4" stroke="#7c3aed" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
                 One-time setup
               </div>
             </div>
 
             {/* Step 2 */}
-            <div className="relative bg-white rounded-2xl p-7 border border-black/8 shadow-sm">
-              <div className="w-10 h-10 rounded-xl bg-pink-100 flex items-center justify-center mb-5">
-                <span className="text-pink-600 font-bold text-lg">2</span>
+            <div className="bg-white rounded-2xl p-7 border border-slate-100 shadow-sm">
+              <div className="w-11 h-11 rounded-full bg-pink-100 flex items-center justify-center mb-6">
+                <span className="text-pink-500 font-bold text-lg">2</span>
               </div>
-              <h3 className="font-bold text-[#1b1916] text-lg mb-2">AI writes 14 posts for you</h3>
+              <h3 className="font-bold text-[#1b1916] text-lg mb-3">AI writes 14 posts for you</h3>
               <p className="text-slate-500 text-sm leading-relaxed">LinkedIn and X posts crafted in your voice — insightful, on-brand, engagement-ready. Review them in 30 seconds or let autopilot handle everything.</p>
-              <div className="mt-5 flex items-center gap-2 text-xs text-pink-600 font-medium">
-                <span className="w-1.5 h-1.5 rounded-full bg-pink-500 inline-block" />
+              <div className="mt-6 flex items-center gap-2 text-xs text-pink-500 font-medium">
+                <svg className="w-4 h-4 flex-shrink-0" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7.5" stroke="#ec4899" strokeWidth="1"/><path d="M5 8l2 2 4-4" stroke="#ec4899" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
                 Works while you sleep
               </div>
             </div>
 
             {/* Step 3 */}
-            <div className="relative bg-white rounded-2xl p-7 border border-black/8 shadow-sm">
-              <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center mb-5">
+            <div className="bg-white rounded-2xl p-7 border border-slate-100 shadow-sm">
+              <div className="w-11 h-11 rounded-full bg-emerald-100 flex items-center justify-center mb-6">
                 <span className="text-emerald-600 font-bold text-lg">3</span>
               </div>
-              <h3 className="font-bold text-[#1b1916] text-lg mb-2">Watch your authority grow</h3>
+              <h3 className="font-bold text-[#1b1916] text-lg mb-3">Watch your authority grow</h3>
               <p className="text-slate-500 text-sm leading-relaxed">Posts publish automatically on your schedule. Clients start recognising your name. Inbound leads, speaking invites, partnership requests — consistency compounds.</p>
-              <div className="mt-5 flex items-center gap-2 text-xs text-emerald-600 font-medium">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block" />
+              <div className="mt-6 flex items-center gap-2 text-xs text-emerald-600 font-medium">
+                <svg className="w-4 h-4 flex-shrink-0" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7.5" stroke="#10b981" strokeWidth="1"/><path d="M5 8l2 2 4-4" stroke="#10b981" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
                 Results in 30 days
               </div>
             </div>
           </div>
 
           {/* Social proof strip */}
-          <div className="mt-10 bg-white border border-black/8 rounded-2xl px-6 py-5 flex flex-col sm:flex-row items-center gap-4 sm:gap-8">
+          <div className="mt-8 bg-white border border-slate-100 rounded-2xl px-6 py-5 flex flex-col sm:flex-row items-center gap-4 sm:gap-8 shadow-sm">
             <div className="flex -space-x-3">
               {["E","W","A","M"].map((l, i) => (
                 <div key={i} className="w-9 h-9 rounded-full border-2 border-white flex items-center justify-center text-sm font-bold text-white" style={{ background: ["#7c3aed","#ec4899","#0ea5e9","#10b981"][i] }}>{l}</div>
@@ -631,10 +634,10 @@ export default function PersonalPage() {
             </div>
             <div className="text-center sm:text-left">
               <p className="text-sm font-semibold text-[#1b1916]">Consultants, coaches &amp; founders use ItGrows daily</p>
-              <p className="text-xs text-slate-500 mt-0.5">Building their personal brand on LinkedIn &amp; X — on autopilot</p>
+              <p className="text-xs text-slate-400 mt-0.5">Building their personal brand on LinkedIn &amp; X — on autopilot</p>
             </div>
             <div className="sm:ml-auto">
-              <button onClick={() => document.getElementById("ghost-form")?.scrollIntoView({ behavior: "smooth", block: "center" })} className="bg-violet-600 hover:bg-violet-500 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors">
+              <button onClick={() => document.getElementById("ghost-form")?.scrollIntoView({ behavior: "smooth", block: "center" })} className="bg-violet-600 hover:bg-violet-500 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors whitespace-nowrap">
                 Try it free →
               </button>
             </div>
