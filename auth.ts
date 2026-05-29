@@ -82,7 +82,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             .insert(users)
             .values({
               email,
-              name: email.split("@")[0],
+              name: pinRecord.name ?? email.split("@")[0],
               emailVerified: new Date(),
               plan: "starter",
             })

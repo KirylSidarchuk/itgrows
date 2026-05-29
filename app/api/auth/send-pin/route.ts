@@ -12,7 +12,7 @@ function generatePin(): string {
 
 export async function POST(req: NextRequest) {
   try {
-    const { email } = await req.json()
+    const { email, name } = await req.json()
 
     if (!email || !email.includes("@")) {
       return NextResponse.json({ error: "Valid email required" }, { status: 400 })
@@ -48,6 +48,7 @@ export async function POST(req: NextRequest) {
       email: normalizedEmail,
       pin,
       expiresAt,
+      name: name ? String(name).trim().slice(0, 100) : null,
     })
 
     await resend.emails.send({

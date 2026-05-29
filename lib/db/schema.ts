@@ -254,6 +254,7 @@ export const emailPins = pgTable("email_pins", {
   id: uuid("id").primaryKey().defaultRandom(),
   email: text("email").notNull(),
   pin: text("pin").notNull(),
+  name: text("name"),
   expiresAt: timestamp("expires_at").notNull(),
   used: boolean("used").notNull().default(false),
   createdAt: timestamp("created_at").notNull().defaultNow(),

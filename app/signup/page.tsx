@@ -10,6 +10,7 @@ function SignupForm() {
   const searchParams = useSearchParams()
   const callbackUrl = searchParams.get("callbackUrl") ?? "/cabinet"
 
+  const [name, setName] = useState("")
   const [email, setEmail] = useState("")
   const [pin, setPin] = useState("")
   const [step, setStep] = useState<"email" | "pin">("email")
@@ -24,7 +25,7 @@ function SignupForm() {
       const res = await fetch("/api/auth/send-pin", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email, name }),
       })
       const data = await res.json()
       if (!res.ok) {
@@ -136,13 +137,24 @@ function SignupForm() {
         <div className="bg-white border border-black/10 rounded-2xl p-8">
           <form onSubmit={handleSendPin} className="space-y-4">
             <div>
+              <label className="block text-sm font-medium text-[#1b1916] mb-1.5">Name</label>
+              <input
+                type="text"
+                value={name}
+                onChange={e => setName(e.target.value)}
+                required
+                autoFocus
+                className="w-full px-4 py-2.5 rounded-xl border border-black/10 bg-[#f3f2f1] text-[#1b1916] text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
+                placeholder="Your name"
+              />
+            </div>
+            <div>
               <label className="block text-sm font-medium text-[#1b1916] mb-1.5">Email</label>
               <input
                 type="email"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 required
-                autoFocus
                 className="w-full px-4 py-2.5 rounded-xl border border-black/10 bg-[#f3f2f1] text-[#1b1916] text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
                 placeholder="you@example.com"
               />
