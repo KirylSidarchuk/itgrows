@@ -251,7 +251,7 @@ export default function PersonalPage() {
                 <Link href="/login?callbackUrl=/cabinet">
                   <Button variant="ghost" className="text-slate-600 hover:text-[#1b1916] text-sm px-3">Login</Button>
                 </Link>
-                <Button onClick={() => { document.getElementById("ghost-mode")?.scrollIntoView({ behavior: "smooth" }) }} className="bg-violet-600 hover:bg-violet-500 text-white text-sm px-4">
+                <Button onClick={() => { document.getElementById("ghost-form")?.scrollIntoView({ behavior: "smooth", block: "center" }) }} className="bg-violet-600 hover:bg-violet-500 text-white text-sm px-4">
                   Try Free — See Your Posts
                 </Button>
               </>
@@ -322,7 +322,7 @@ export default function PersonalPage() {
                     <Button variant="outline" className="w-full text-sm border-black/20">Login</Button>
                   </Link>
                   <Button
-                    onClick={() => { setMobileMenuOpen(false); document.getElementById("ghost-mode")?.scrollIntoView({ behavior: "smooth" }) }}
+                    onClick={() => { setMobileMenuOpen(false); document.getElementById("ghost-form")?.scrollIntoView({ behavior: "smooth", block: "center" }) }}
                     className="w-full bg-violet-600 hover:bg-violet-500 text-white text-sm"
                   >
                     Try Free — See Your Posts
@@ -357,7 +357,7 @@ export default function PersonalPage() {
               <span className="absolute inset-0 rounded-xl animate-pulse bg-violet-400/30 pointer-events-none" style={{ margin: "-4px" }} />
               <Button
                 size="lg"
-                onClick={() => { document.getElementById("ghost-mode")?.scrollIntoView({ behavior: "smooth" }) }}
+                onClick={() => { document.getElementById("ghost-form")?.scrollIntoView({ behavior: "smooth", block: "center" }) }}
                 className="relative bg-violet-600 hover:bg-violet-500 text-white px-10 py-4 text-base sm:text-lg rounded-xl w-full sm:w-auto font-semibold shadow-lg shadow-violet-600/30"
               >
                 See Your Posts in 30 Seconds — No Signup
@@ -367,7 +367,7 @@ export default function PersonalPage() {
           <p className="mt-4 text-xs sm:text-sm text-slate-500 font-medium">14-day free trial · Card required · Cancel anytime</p>
 
           {/* Generator form — embedded in hero */}
-          <div className="mt-10 max-w-3xl mx-auto text-left">
+          <div id="ghost-form" className="mt-10 max-w-3xl mx-auto text-left">
             <div className="bg-[#f8f7f6] border border-black/10 rounded-2xl p-5 sm:p-6">
               <p className="text-sm font-semibold text-[#1b1916] mb-4">Tell us about yourself</p>
               <div className="space-y-3">
