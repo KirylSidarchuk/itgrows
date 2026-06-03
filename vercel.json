@@ -47,6 +47,10 @@
     {
       "path": "/api/analytics/sync",
       "schedule": "0 7 * * *"
+    },
+    {
+      "path": "/api/cron/onboarding-nudge",
+      "schedule": "0 10 * * *"
     }
   ]
 }
