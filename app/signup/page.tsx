@@ -153,13 +153,40 @@ function SignupForm() {
               </div>
             </div>
 
-            {/* Icon */}
+            {/* Icon — 3D volumetric envelope */}
             <div className="flex justify-center mb-4">
               <div className="relative">
-                <div className="w-16 h-16 rounded-2xl bg-violet-100 flex items-center justify-center">
-                  <svg className="w-8 h-8 text-violet-600" fill="none" viewBox="0 0 24 24"><path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                <div className="w-20 h-20 rounded-2xl flex items-center justify-center" style={{ background: "linear-gradient(145deg, #ede9fe, #ddd6fe)" }}>
+                  <svg width="44" height="44" viewBox="0 0 44 44" fill="none">
+                    {/* Envelope body */}
+                    <rect x="4" y="12" width="36" height="26" rx="3" fill="url(#env_body)" />
+                    {/* Envelope flap shadow */}
+                    <path d="M4 15l18 13 18-13" fill="url(#env_flap_shadow)" opacity="0.18"/>
+                    {/* Envelope flap */}
+                    <path d="M4 12l18 13L40 12" stroke="url(#env_stroke)" strokeWidth="1.5" strokeLinejoin="round" fill="none"/>
+                    {/* Shine */}
+                    <rect x="4" y="12" width="36" height="10" rx="3" fill="url(#env_shine)" opacity="0.25"/>
+                    <defs>
+                      <linearGradient id="env_body" x1="4" y1="12" x2="40" y2="38" gradientUnits="userSpaceOnUse">
+                        <stop stopColor="#a78bfa"/>
+                        <stop offset="1" stopColor="#7c3aed"/>
+                      </linearGradient>
+                      <linearGradient id="env_flap_shadow" x1="4" y1="12" x2="40" y2="25" gradientUnits="userSpaceOnUse">
+                        <stop stopColor="#1e0a3c"/>
+                        <stop offset="1" stopColor="#1e0a3c" stopOpacity="0"/>
+                      </linearGradient>
+                      <linearGradient id="env_stroke" x1="4" y1="12" x2="40" y2="25" gradientUnits="userSpaceOnUse">
+                        <stop stopColor="#c4b5fd"/>
+                        <stop offset="1" stopColor="#ede9fe"/>
+                      </linearGradient>
+                      <linearGradient id="env_shine" x1="4" y1="12" x2="40" y2="22" gradientUnits="userSpaceOnUse">
+                        <stop stopColor="white"/>
+                        <stop offset="1" stopColor="white" stopOpacity="0"/>
+                      </linearGradient>
+                    </defs>
+                  </svg>
                 </div>
-                <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full border-2 border-white" />
+                <div className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 rounded-full border-2 border-white shadow-sm" />
               </div>
             </div>
 
@@ -218,16 +245,16 @@ function SignupForm() {
                 className="flex items-center gap-1 text-xs font-semibold text-violet-600 hover:text-violet-500 disabled:opacity-50"
               >
                 {resending ? "Sending..." : "Resend code"}
-                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 16 16"><path d="M13.5 8A5.5 5.5 0 112.5 8" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/><path d="M13.5 5v3h-3" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 16 16"><path d="M2.5 8a5.5 5.5 0 1010.5 1.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/><polyline points="10.5,6 13.5,6 13.5,3" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>
               </button>
             </div>
 
             {/* Can't find box */}
-            <div className="mt-5 flex items-start gap-3 bg-slate-50 rounded-xl p-4">
-              <svg className="w-5 h-5 text-slate-400 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24"><path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+            <div className="mt-5 flex items-start gap-3 bg-violet-50 border border-violet-100 rounded-xl p-4">
+              <svg className="w-5 h-5 text-violet-500 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24"><path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
               <div>
-                <p className="text-sm font-medium text-[#1b1916]">Can&apos;t find the email?</p>
-                <p className="text-xs text-slate-500 mt-0.5">Check your spam or promotions folder.</p>
+                <p className="text-sm font-semibold text-violet-700">Can&apos;t find the email?</p>
+                <p className="text-xs text-violet-500 mt-0.5">Check your spam or promotions folder.</p>
               </div>
             </div>
           </div>
