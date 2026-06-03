@@ -75,9 +75,15 @@ export async function POST(req: NextRequest) {
     mode: "subscription",
     success_url: `${baseUrl}/welcome?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${baseUrl}/`,
+    payment_method_collection: "if_required",
     subscription_data: {
       metadata: { userId: user.id, plan },
       trial_period_days: 14,
+      trial_settings: {
+        end_behavior: {
+          missing_payment_method: "cancel",
+        },
+      },
     },
   })
 

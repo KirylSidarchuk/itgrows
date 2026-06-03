@@ -470,7 +470,7 @@ export default function CaseStudiesPage() {
             </span>
           </h2>
           <p className="text-slate-400 text-base sm:text-lg mb-8 max-w-xl mx-auto leading-relaxed">
-            Join 2,400+ professionals who grow their social presence on autopilot. 14-day free trial, card required.
+            Join 2,400+ professionals who grow their social presence on autopilot. 14-day free trial, no card required.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/signup">
@@ -491,7 +491,7 @@ export default function CaseStudiesPage() {
               </Button>
             </Link>
           </div>
-          <p className="mt-5 text-sm text-slate-500">14-day free trial · Card required · Cancel anytime</p>
+          <p className="mt-5 text-sm text-slate-500">14-day free trial · No card required · Cancel anytime</p>
         </div>
       </section>
 

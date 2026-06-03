@@ -3460,7 +3460,7 @@ function LinkedInPageContent() {
                         <>
                           <div>
                             <p className="text-base font-semibold text-slate-700 mb-1">No posts yet</p>
-                            <p className="text-sm text-slate-400 max-w-xs">Start your 14-day free trial to generate posts. Card required.</p>
+                            <p className="text-sm text-slate-400 max-w-xs">Start your 14-day free trial to generate posts. No card required.</p>
                           </div>
                           <button
                             onClick={() => setShowPlanModal(true)}
@@ -3960,7 +3960,7 @@ function LinkedInPageContent() {
                   <div className="space-y-4">
                     <div className="p-4 rounded-xl bg-slate-50 border border-slate-100">
                       <p className="text-sm font-semibold text-slate-700 mb-1">No Active Plan</p>
-                      <p className="text-xs text-slate-500">14-day free trial · Card required · Cancel anytime.</p>
+                      <p className="text-xs text-slate-500">14-day free trial · No card required · Cancel anytime.</p>
                     </div>
                     <button
                       onClick={() => setShowPlanModal(true)}

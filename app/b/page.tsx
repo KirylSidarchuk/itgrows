@@ -433,7 +433,7 @@ export default function LandingPageB() {
               Start Free Trial
             </Button>
           </div>
-          <p className="mt-3 text-xs sm:text-sm text-slate-500 font-medium">14-day free trial &#183; Card required &#183; Cancel anytime</p>
+          <p className="mt-3 text-xs sm:text-sm text-slate-500 font-medium">14-day free trial &#183; No card required &#183; Cancel anytime</p>
 
           {/* Ghost Mode — inline in hero */}
           <div className="mt-10 max-w-xl mx-auto text-left">
@@ -556,7 +556,7 @@ export default function LandingPageB() {
 
                 <div className="bg-gradient-to-r from-violet-600 to-pink-600 rounded-2xl p-6 text-center text-white">
                   <div className="text-xl font-extrabold mb-2">Want these posted for you every day?</div>
-                  <p className="text-white/80 text-sm mb-4">14-day free trial. Card required.</p>
+                  <p className="text-white/80 text-sm mb-4">14-day free trial. No card required.</p>
                   <a
                     href="/signup?source=b"
                     className="inline-block px-8 py-3 rounded-xl bg-white text-violet-600 font-bold text-sm hover:bg-violet-50 transition-colors"

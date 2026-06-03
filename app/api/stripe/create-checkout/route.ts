@@ -71,9 +71,15 @@ export async function POST(req: NextRequest) {
     payment_method_types: ["card"],
     line_items: [{ price: priceId, quantity: 1 }],
     mode: "subscription",
+    payment_method_collection: "if_required",
     subscription_data: {
       metadata: { userId: user.id, plan },
       trial_period_days: 14,
+      trial_settings: {
+        end_behavior: {
+          missing_payment_method: "cancel",
+        },
+      },
     },
     success_url: `${baseUrl}/cabinet?success=1`,
     cancel_url: `${baseUrl}/cabinet?cancelled=1`,

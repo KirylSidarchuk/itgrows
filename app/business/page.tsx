@@ -167,7 +167,7 @@ export default async function HomePage() {
               </Button>
             </a>
           </div>
-          <p className="mt-5 text-sm text-slate-500">14-day free trial • Card required • Cancel anytime</p>
+          <p className="mt-5 text-sm text-slate-500">14-day free trial • No card required • Cancel anytime</p>
         </div>
       </section>
 
