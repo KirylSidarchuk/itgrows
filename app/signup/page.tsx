@@ -67,22 +67,44 @@ function SignupForm() {
     return (
       <div className="min-h-screen bg-[#f3f2f1] flex items-center justify-center px-4">
         <div className="w-full max-w-md">
-          <div className="text-center mb-8">
+          <div className="text-center mb-6">
             <Link href="/">
               <span className="text-2xl font-bold bg-gradient-to-r from-violet-600 to-pink-500 bg-clip-text text-transparent">
                 ItGrows.ai
               </span>
             </Link>
-            <h1 className="text-2xl font-bold text-[#1b1916] mt-4">Check your email</h1>
-            <p className="text-slate-500 text-sm mt-1">
-              We sent a 6-digit code to <strong>{email}</strong>
-            </p>
           </div>
           <div className="bg-white border border-black/10 rounded-2xl p-8">
+            {/* Step indicator */}
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-7 h-7 rounded-full bg-violet-100 flex items-center justify-center text-xs font-bold text-violet-600">✓</div>
+              <div className="flex-1 h-0.5 bg-violet-200" />
+              <div className="w-7 h-7 rounded-full bg-violet-600 flex items-center justify-center text-xs font-bold text-white">2</div>
+              <div className="flex-1 h-0.5 bg-slate-200" />
+              <div className="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center text-xs font-bold text-slate-400">3</div>
+            </div>
+
+            <div className="text-4xl mb-3 text-center">📬</div>
+            <h1 className="text-xl font-bold text-[#1b1916] text-center mb-1">Check your inbox</h1>
+            <p className="text-slate-500 text-sm text-center mb-5">
+              We just sent a 6-digit code to<br />
+              <strong className="text-[#1b1916]">{email}</strong>
+            </p>
+
+            {/* Instruction box */}
+            <div className="bg-violet-50 border border-violet-100 rounded-xl p-4 mb-5 text-sm text-slate-600 space-y-1.5">
+              <p className="font-semibold text-[#1b1916] mb-2">How to sign in:</p>
+              <p>1️⃣ Open your email app (Gmail, Outlook, etc.)</p>
+              <p>2️⃣ Find the email from <strong>noreply@itgrows.ai</strong></p>
+              <p>3️⃣ Copy the 6-digit code from the email</p>
+              <p>4️⃣ Paste it below and click Continue</p>
+              <p className="text-slate-400 text-xs pt-1">⚠️ Don&apos;t see it? Check your <strong>Spam</strong> or <strong>Promotions</strong> folder</p>
+            </div>
+
             <form onSubmit={handleVerifyPin} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-[#1b1916] mb-1.5">
-                  Enter 6-digit code
+                  6-digit code from email
                 </label>
                 <input
                   type="text"
@@ -103,19 +125,20 @@ function SignupForm() {
                 disabled={loading || pin.length !== 6}
                 className="w-full py-3 bg-violet-600 hover:bg-violet-500 text-white rounded-xl text-sm font-semibold transition-colors disabled:opacity-50"
               >
-                {loading ? "Verifying..." : "Continue"}
+                {loading ? "Verifying..." : "Continue →"}
               </button>
             </form>
-            <p className="text-center text-sm text-slate-500 mt-6">
-              Didn&apos;t get the code?{" "}
+
+            <div className="mt-5 pt-5 border-t border-black/5 text-center">
+              <p className="text-xs text-slate-400 mb-2">Code expires in 15 minutes</p>
               <button
                 type="button"
                 onClick={() => { setStep("email"); setPin(""); setError("") }}
-                className="text-violet-600 hover:underline font-medium"
+                className="text-sm text-violet-600 hover:underline font-medium"
               >
-                Try again
+                ← Use a different email
               </button>
-            </p>
+            </div>
           </div>
         </div>
       </div>
