@@ -175,7 +175,7 @@ function SignupForm() {
             <form onSubmit={handleVerifyPin}>
               <label className="block text-sm font-medium text-[#1b1916] mb-3">Enter 6-digit code</label>
               {/* OTP boxes */}
-              <div className="flex gap-2 mb-5" onPaste={handleDigitPaste}>
+              <div className="grid grid-cols-6 gap-2 mb-5" onPaste={handleDigitPaste}>
                 {digits.map((d, i) => (
                   <input
                     key={i}
@@ -187,7 +187,7 @@ function SignupForm() {
                     onChange={e => handleDigitChange(i, e.target.value)}
                     onKeyDown={e => handleDigitKeyDown(i, e)}
                     autoFocus={i === 0}
-                    className="flex-1 h-14 rounded-xl border-2 text-center text-xl font-bold text-[#1b1916] transition-colors focus:outline-none focus:border-violet-500"
+                    className="w-full aspect-square rounded-xl border-2 text-center text-xl font-bold text-[#1b1916] transition-colors focus:outline-none focus:border-violet-500"
                     style={{ borderColor: d ? "#7c3aed" : "#e2e8f0", background: d ? "#f5f3ff" : "#f8fafc" }}
                   />
                 ))}
