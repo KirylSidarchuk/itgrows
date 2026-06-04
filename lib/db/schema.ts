@@ -151,6 +151,7 @@ export const linkedinBriefs = pgTable("linkedin_briefs", {
   targetAudience: text("target_audience"),
   isAutoFilled: boolean("is_auto_filled").default(false),
   profileUrl: text("profile_url"),
+  postingFrequency: text("posting_frequency").notNull().default("daily"),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
 })
 

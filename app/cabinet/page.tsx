@@ -68,6 +68,7 @@ interface LinkedInBrief {
   targetAudience: string
   profileUrl?: string
   isAutoFilled?: boolean
+  postingFrequency: string
 }
 
 interface TwitterAccount {
@@ -840,6 +841,7 @@ function LinkedInPageContent() {
     goals: "",
     companyName: "",
     targetAudience: "",
+    postingFrequency: "daily",
   })
   const [briefIsAutoFilled, setBriefIsAutoFilled] = useState(false)
   const [profileUrl, setProfileUrl] = useState("")
@@ -1170,6 +1172,7 @@ function LinkedInPageContent() {
             goals: data.brief.goals ?? "",
             companyName: data.brief.companyName ?? "",
             targetAudience: data.brief.targetAudience ?? "",
+            postingFrequency: data.brief.postingFrequency ?? "daily",
           })
           setBriefIsAutoFilled(data.brief.isAutoFilled === true)
           if (data.brief.profileUrl) {
@@ -1424,6 +1427,7 @@ function LinkedInPageContent() {
           goals: b.goals ?? "",
           companyName: b.companyName ?? "",
           targetAudience: b.targetAudience ?? "",
+          postingFrequency: b.postingFrequency ?? "daily",
         })
         if (b.profileUrl) setProfileUrl(b.profileUrl)
         setBriefIsAutoFilled(true)
@@ -3689,6 +3693,27 @@ function LinkedInPageContent() {
                         }`}
                       >
                         {tone}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Posting frequency */}
+                <div>
+                  <label className="block text-xs font-semibold text-slate-600 mb-2 uppercase tracking-wide">Posting Frequency</label>
+                  <div className="flex gap-2">
+                    {([["daily", "Daily"], ["every_other_day", "Every other day"]] as const).map(([value, label]) => (
+                      <button
+                        key={value}
+                        type="button"
+                        onClick={() => setBrief((b) => ({ ...b, postingFrequency: value }))}
+                        className={`px-4 py-2 rounded-xl text-sm font-medium transition-all border ${
+                          brief.postingFrequency === value
+                            ? "bg-violet-600 text-white border-violet-600 shadow-sm"
+                            : "bg-slate-50 text-slate-600 border-slate-200 hover:border-violet-300 hover:text-violet-600"
+                        }`}
+                      >
+                        {label}
                       </button>
                     ))}
                   </div>

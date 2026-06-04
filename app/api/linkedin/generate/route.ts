@@ -89,6 +89,7 @@ export async function POST(req: NextRequest) {
       goals?: string | null
       companyName?: string | null
       targetAudience?: string | null
+      postingFrequency?: string | null
     } = {}
 
     if (body.brief) {
@@ -208,7 +209,8 @@ export async function POST(req: NextRequest) {
       )
     )
 
-    // Schedule posts: one per day at 10:00 UTC starting tomorrow
+    // Schedule posts at 10:00 UTC, gap depends on postingFrequency
+    const gap = brief.postingFrequency === "every_other_day" ? 2 : 1
     const now = new Date()
     const slice = postsData.slice(0, maxPosts)
 
@@ -222,7 +224,7 @@ export async function POST(req: NextRequest) {
     for (let i = 0; i < slice.length; i++) {
       const postData = slice[i]
       const scheduledFor = new Date(now)
-      scheduledFor.setUTCDate(scheduledFor.getUTCDate() + i + 1)
+      scheduledFor.setUTCDate(scheduledFor.getUTCDate() + (i + 1) * gap)
       scheduledFor.setUTCHours(10, 0, 0, 0)
 
       const [inserted] = await db

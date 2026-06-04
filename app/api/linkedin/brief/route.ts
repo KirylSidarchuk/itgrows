@@ -40,6 +40,7 @@ interface BriefRequest {
   companyName?: string
   targetAudience?: string
   profileUrl?: string
+  postingFrequency?: string
 }
 
 export async function POST(req: NextRequest) {
@@ -51,7 +52,8 @@ export async function POST(req: NextRequest) {
     const userId = session.user.id
 
     const body = await req.json() as BriefRequest
-    const { niche, tone, goals, companyName, targetAudience, profileUrl } = body
+    const { niche, tone, goals, companyName, targetAudience, profileUrl, postingFrequency } = body
+    const validFrequency = postingFrequency === "every_other_day" ? "every_other_day" : "daily"
 
     const [brief] = await db
       .insert(linkedinBriefs)
@@ -64,6 +66,7 @@ export async function POST(req: NextRequest) {
         targetAudience: targetAudience ?? null,
         profileUrl: profileUrl ?? null,
         isAutoFilled: false,
+        postingFrequency: validFrequency,
         updatedAt: new Date(),
       })
       .onConflictDoUpdate({
@@ -76,6 +79,7 @@ export async function POST(req: NextRequest) {
           targetAudience: targetAudience ?? null,
           profileUrl: profileUrl ?? null,
           isAutoFilled: false,
+          postingFrequency: validFrequency,
           updatedAt: new Date(),
         },
       })
