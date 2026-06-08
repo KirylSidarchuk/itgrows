@@ -152,6 +152,8 @@ export const linkedinBriefs = pgTable("linkedin_briefs", {
   isAutoFilled: boolean("is_auto_filled").default(false),
   profileUrl: text("profile_url"),
   postingFrequency: text("posting_frequency").notNull().default("daily"),
+  avoidTopics: text("avoid_topics"),
+  imageStyle: text("image_style").default("ai_art"),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
 })
 
@@ -266,6 +268,7 @@ export const twitterBriefs = pgTable("twitter_briefs", {
   id: uuid("id").defaultRandom().primaryKey(),
   userId: text("user_id").notNull().unique(),
   content: text("content").notNull(),
+  avoidTopics: text("avoid_topics"),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
 })

@@ -33,6 +33,8 @@ interface GenerateLinkedInRequest {
     goals?: string
     companyName?: string
     targetAudience?: string
+    avoidTopics?: string
+    imageStyle?: string
   }
 }
 
@@ -90,6 +92,8 @@ export async function POST(req: NextRequest) {
       companyName?: string | null
       targetAudience?: string | null
       postingFrequency?: string | null
+      avoidTopics?: string | null
+      imageStyle?: string | null
     } = {}
 
     if (body.brief) {
@@ -216,7 +220,7 @@ export async function POST(req: NextRequest) {
 
     // Generate all images in parallel
     const imageUrls = await Promise.all(
-      slice.map((postData) => generatePostImage(postData.content, brief.niche ?? "business"))
+      slice.map((postData) => generatePostImage(postData.content, brief.niche ?? "business", brief.imageStyle))
     )
 
     // Insert all posts (sequential DB writes are fine — fast)

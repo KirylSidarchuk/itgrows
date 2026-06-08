@@ -41,6 +41,8 @@ interface BriefRequest {
   targetAudience?: string
   profileUrl?: string
   postingFrequency?: string
+  avoidTopics?: string
+  imageStyle?: string
 }
 
 export async function POST(req: NextRequest) {
@@ -52,8 +54,9 @@ export async function POST(req: NextRequest) {
     const userId = session.user.id
 
     const body = await req.json() as BriefRequest
-    const { niche, tone, goals, companyName, targetAudience, profileUrl, postingFrequency } = body
+    const { niche, tone, goals, companyName, targetAudience, profileUrl, postingFrequency, avoidTopics, imageStyle } = body
     const validFrequency = postingFrequency === "every_other_day" ? "every_other_day" : "daily"
+    const validImageStyle = ["ai_art", "minimalist", "photorealistic", "infographic", "no_image"].includes(imageStyle ?? "") ? imageStyle! : "ai_art"
 
     const [brief] = await db
       .insert(linkedinBriefs)
@@ -67,6 +70,8 @@ export async function POST(req: NextRequest) {
         profileUrl: profileUrl ?? null,
         isAutoFilled: false,
         postingFrequency: validFrequency,
+        avoidTopics: avoidTopics ?? null,
+        imageStyle: validImageStyle,
         updatedAt: new Date(),
       })
       .onConflictDoUpdate({
@@ -80,6 +85,8 @@ export async function POST(req: NextRequest) {
           profileUrl: profileUrl ?? null,
           isAutoFilled: false,
           postingFrequency: validFrequency,
+          avoidTopics: avoidTopics ?? null,
+          imageStyle: validImageStyle,
           updatedAt: new Date(),
         },
       })

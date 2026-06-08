@@ -69,6 +69,8 @@ interface LinkedInBrief {
   profileUrl?: string
   isAutoFilled?: boolean
   postingFrequency: string
+  avoidTopics?: string
+  imageStyle?: string
 }
 
 interface TwitterAccount {
@@ -109,6 +111,7 @@ interface TwitterBrief {
   q3: string
   q4: string
   q5: string
+  avoidTopics?: string
 }
 
 const STATUS_COLORS: Record<string, string> = {
@@ -842,6 +845,8 @@ function LinkedInPageContent() {
     companyName: "",
     targetAudience: "",
     postingFrequency: "daily",
+    avoidTopics: "",
+    imageStyle: "ai_art",
   })
   const [briefIsAutoFilled, setBriefIsAutoFilled] = useState(false)
   const [profileUrl, setProfileUrl] = useState("")
@@ -908,7 +913,7 @@ function LinkedInPageContent() {
   const [xDisconnecting, setXDisconnecting] = useState<string | null>(null)
   const [xPublishedCollapsed, setXPublishedCollapsed] = useState(false)
   const [xActiveTab, setXActiveTab] = useState<XActiveTab>("posts")
-  const [xBrief, setXBrief] = useState<TwitterBrief>({ q1: "", q2: "", q3: "", q4: "", q5: "" })
+  const [xBrief, setXBrief] = useState<TwitterBrief>({ q1: "", q2: "", q3: "", q4: "", q5: "", avoidTopics: "" })
   const [xBriefLoaded, setXBriefLoaded] = useState(false)
   const [xSavingBrief, setXSavingBrief] = useState(false)
   const [xBriefSaved, setXBriefSaved] = useState(false)
@@ -1173,6 +1178,8 @@ function LinkedInPageContent() {
             companyName: data.brief.companyName ?? "",
             targetAudience: data.brief.targetAudience ?? "",
             postingFrequency: data.brief.postingFrequency ?? "daily",
+            avoidTopics: data.brief.avoidTopics ?? "",
+            imageStyle: data.brief.imageStyle ?? "ai_art",
           })
           setBriefIsAutoFilled(data.brief.isAutoFilled === true)
           if (data.brief.profileUrl) {
@@ -1272,15 +1279,15 @@ function LinkedInPageContent() {
   const fetchXBrief = useCallback(() => {
     fetch("/api/x/brief")
       .then((r) => r.json())
-      .then((data: { brief?: { content?: string } | null }) => {
+      .then((data: { brief?: { content?: string; avoidTopics?: string | null } | null }) => {
         if (data.brief?.content) {
           // Parse content back into individual answers
           const lines = data.brief.content.split("\n\n")
-          const answers: TwitterBrief = { q1: "", q2: "", q3: "", q4: "", q5: "" }
+          const answers: TwitterBrief = { q1: "", q2: "", q3: "", q4: "", q5: "", avoidTopics: data.brief.avoidTopics ?? "" }
           lines.forEach((block, i) => {
             const parts = block.split("\n")
             if (parts.length >= 2) {
-              const key = `q${i + 1}` as keyof TwitterBrief
+              const key = `q${i + 1}` as "q1" | "q2" | "q3" | "q4" | "q5"
               answers[key] = parts.slice(1).join("\n").replace(/^\(not provided\)$/, "")
             }
           })
@@ -1326,7 +1333,7 @@ function LinkedInPageContent() {
       await fetch("/api/x/brief", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ answers: xBrief }),
+        body: JSON.stringify({ answers: xBrief, avoidTopics: xBrief.avoidTopics ?? "" }),
       })
       setXBriefSaved(true)
       setTimeout(() => setXBriefSaved(false), 2000)
@@ -1421,14 +1428,16 @@ function LinkedInPageContent() {
       }
       if (data.success && data.brief) {
         const b = data.brief
-        setBrief({
+        setBrief((prev) => ({
           niche: b.niche ?? "",
           tone: b.tone ?? "professional",
           goals: b.goals ?? "",
           companyName: b.companyName ?? "",
           targetAudience: b.targetAudience ?? "",
           postingFrequency: b.postingFrequency ?? "daily",
-        })
+          avoidTopics: prev.avoidTopics ?? "",
+          imageStyle: prev.imageStyle ?? "ai_art",
+        }))
         if (b.profileUrl) setProfileUrl(b.profileUrl)
         setBriefIsAutoFilled(true)
         setRefreshSuccess(true)
@@ -3078,6 +3087,20 @@ function LinkedInPageContent() {
                         />
                       </div>
 
+                      {/* Avoid topics / Additional instructions */}
+                      <div>
+                        <label className="block text-sm font-medium text-slate-700 mb-1">
+                          Avoid topics / Additional instructions <span className="font-normal text-slate-400">(optional)</span>
+                        </label>
+                        <textarea
+                          rows={3}
+                          placeholder="e.g. Don't mention competitors, avoid multi-sig as standalone solution"
+                          value={xBrief.avoidTopics ?? ""}
+                          onChange={(e) => setXBrief((b) => ({ ...b, avoidTopics: e.target.value }))}
+                          className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500 resize-none"
+                        />
+                      </div>
+
                       <Button
                         disabled={xSavingBrief}
                         onClick={handleXSaveBrief}
@@ -3371,6 +3394,40 @@ function LinkedInPageContent() {
                       {generateError}
                     </div>
                   )}
+
+                  {/* Image style selector */}
+                  <div className="bg-white rounded-2xl border border-slate-100 shadow-sm px-4 py-3">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide shrink-0">Image style:</span>
+                      {([
+                        ["ai_art", "AI Art"],
+                        ["minimalist", "Minimalist"],
+                        ["photorealistic", "Photo"],
+                        ["infographic", "Infographic"],
+                        ["no_image", "No Images"],
+                      ] as const).map(([value, label]) => (
+                        <button
+                          key={value}
+                          type="button"
+                          onClick={async () => {
+                            setBrief((b) => ({ ...b, imageStyle: value }))
+                            await fetch("/api/linkedin/brief", {
+                              method: "POST",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({ ...brief, imageStyle: value, profileUrl: profileUrl || undefined }),
+                            })
+                          }}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all border ${
+                            (brief.imageStyle ?? "ai_art") === value
+                              ? "bg-violet-600 text-white border-violet-600 shadow-sm"
+                              : "bg-slate-50 text-slate-600 border-slate-200 hover:border-violet-300 hover:text-violet-600"
+                          }`}
+                        >
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
 
                   {/* Posts grid */}
                   {postsLoading ? (
@@ -3717,6 +3774,20 @@ function LinkedInPageContent() {
                       </button>
                     ))}
                   </div>
+                </div>
+
+                {/* Avoid topics / Additional instructions */}
+                <div>
+                  <label className="block text-xs font-semibold text-slate-600 mb-1.5 uppercase tracking-wide">
+                    Avoid topics / Additional instructions <span className="normal-case font-normal text-slate-400">(optional)</span>
+                  </label>
+                  <textarea
+                    rows={3}
+                    placeholder="e.g. Don't mention competitors, avoid multi-sig as standalone solution"
+                    value={brief.avoidTopics ?? ""}
+                    onChange={(e) => setBrief((b) => ({ ...b, avoidTopics: e.target.value }))}
+                    className="w-full px-3 py-2.5 text-sm rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-violet-300 resize-none transition-colors"
+                  />
                 </div>
 
                 <Button

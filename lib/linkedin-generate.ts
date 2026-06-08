@@ -53,6 +53,7 @@ export function buildLinkedInPrompt(brief: {
   goals?: string | null
   companyName?: string | null
   targetAudience?: string | null
+  avoidTopics?: string | null
 }, count: number = 14): string {
   const currentYear = new Date().getFullYear()
   const tone = brief.tone ?? "professional"
@@ -77,8 +78,12 @@ export function buildLinkedInPrompt(brief: {
     "a gratitude or appreciation moment",
   ].slice(0, count).join(" | ")
 
+  const avoidTopicsLine = brief.avoidTopics?.trim()
+    ? `\nIMPORTANT: Do NOT mention or promote the following topics: ${brief.avoidTopics.trim()}`
+    : ""
+
   return `You are a LinkedIn thought leadership expert writing in the first person for a ${tone} professional in the ${niche} space.
-${audience}Goals: ${goals}. Current year: ${currentYear}.
+${audience}Goals: ${goals}. Current year: ${currentYear}.${avoidTopicsLine}
 
 STRICT RULES — violations make the post unusable:
 1. NEVER invent case studies, e.g. "Company X increased sales by Y%" — these are fabricated and damage credibility.

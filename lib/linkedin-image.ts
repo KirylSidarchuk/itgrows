@@ -55,28 +55,44 @@ async function tryGenerateImage(model: string, imagePrompt: string): Promise<str
   return null
 }
 
+const IMAGE_STYLE_SUFFIX: Record<string, string | null> = {
+  ai_art: "",
+  minimalist: "minimalist flat design, clean geometric shapes, professional, no photorealism",
+  photorealistic: "professional photography style, realistic, high quality photo",
+  infographic: "clean infographic style, data visualization, professional business graphic",
+  no_image: null,
+}
+
 /**
  * Generates a LinkedIn post cover image as a base64 data URL.
  * Tries 3 models × 2 attempts each = 6 total attempts.
- * Returns null if all attempts fail.
+ * Returns null if all attempts fail or imageStyle is "no_image".
  */
-export async function generatePostImage(postContent: string, niche: string): Promise<string | null> {
+export async function generatePostImage(postContent: string, niche: string, imageStyle?: string | null): Promise<string | null> {
+  const style = imageStyle ?? "ai_art"
+  const styleSuffix = IMAGE_STYLE_SUFFIX[style]
+
+  // Skip image generation for "no_image" style
+  if (styleSuffix === null) return null
+
   let imagePrompt = `Professional LinkedIn post cover for ${niche}`
   try {
+    const styleHint = styleSuffix ? ` Style: ${styleSuffix}.` : " The image should be: professional, photorealistic, suitable for a LinkedIn post (1200x627px), no text in image."
     imagePrompt = await callLLM(
       [{
         role: "user",
         content: `Create a concise image generation prompt (max 50 words) for a LinkedIn post cover image.
 Post niche: "${niche}"
-Post content preview: "${postContent.slice(0, 200)}"
-The image should be: professional, photorealistic, suitable for a LinkedIn post (1200x627px), no text in image.
+Post content preview: "${postContent.slice(0, 200)}"${styleHint}
 Return ONLY the image prompt, nothing else.`,
       }],
       { caller: "linkedin-image/prompt", temperature: 0.7 }
     )
     imagePrompt = imagePrompt.trim() || `Professional LinkedIn post cover for ${niche}`
+    if (styleSuffix) imagePrompt = `${imagePrompt}, ${styleSuffix}`
   } catch {
     // Fall back to default prompt
+    if (styleSuffix) imagePrompt = `${imagePrompt}, ${styleSuffix}`
   }
 
   for (const model of IMAGE_MODELS) {

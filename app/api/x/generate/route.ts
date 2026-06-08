@@ -43,6 +43,7 @@ async function generateForAccount(
 ): Promise<{ posts: typeof twitterPosts.$inferSelect[]; error?: string }> {
   // Get brief
   let briefContent: string | null = null
+  let avoidTopicsExtra: string | null = null
   let structuredBrief: {
     niche?: string | null
     tone?: string | null
@@ -67,6 +68,7 @@ async function generateForAccount(
       .limit(1)
     if (twitterBrief) {
       briefContent = twitterBrief.content
+      avoidTopicsExtra = twitterBrief.avoidTopics ?? null
     } else {
       const [dbBrief] = await db
         .select()
@@ -92,12 +94,16 @@ async function generateForAccount(
     promptContext = `Writing for a ${tone} professional in the ${niche} space. ${audience} Goals: ${goals}.`
   }
 
+  const avoidLine = avoidTopicsExtra?.trim()
+    ? `\nIMPORTANT: Do NOT mention or promote the following topics: ${avoidTopicsExtra.trim()}`
+    : ""
+
   const jsonInstruction = "IMPORTANT: Your response must be ONLY a valid JSON array. No markdown, no code blocks, no explanations. Start with [ and end with ]."
 
   const prompt = `${jsonInstruction}
 
 You are a Twitter/X thought leadership expert writing in the first person.
-${promptContext} Current year: ${currentYear}. ${topicHint}
+${promptContext} Current year: ${currentYear}. ${topicHint}${avoidLine}
 
 Generate ${MAX_POSTS} engaging tweets that feel authentic and personal.
 

@@ -45,8 +45,8 @@ export async function POST(req: NextRequest) {
     }
     const userId = session.user.id
 
-    const body = await req.json() as { answers: Record<string, string> }
-    const { answers } = body
+    const body = await req.json() as { answers: Record<string, string>; avoidTopics?: string }
+    const { answers, avoidTopics } = body
 
     if (!answers || typeof answers !== "object") {
       return NextResponse.json({ error: "answers is required" }, { status: 400 })
@@ -62,10 +62,10 @@ export async function POST(req: NextRequest) {
 
     await db
       .insert(twitterBriefs)
-      .values({ userId, content })
+      .values({ userId, content, avoidTopics: avoidTopics ?? null })
       .onConflictDoUpdate({
         target: twitterBriefs.userId,
-        set: { content, updatedAt: new Date() },
+        set: { content, avoidTopics: avoidTopics ?? null, updatedAt: new Date() },
       })
 
     return NextResponse.json({ success: true })
