@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Suspense } from "react"
-import { Loader2, RefreshCw, Send, Calendar, Check, Settings, LogOut, Zap, Lock, MessageCircle, BarChart2 } from "lucide-react"
+import { Loader2, RefreshCw, Send, Calendar, Check, Settings, LogOut, Zap, Lock, MessageCircle, BarChart2, ImageIcon } from "lucide-react"
 import { signOut, useSession } from "next-auth/react"
 
 interface InstagramAccount {
@@ -207,6 +207,14 @@ function XIcon({ className }: { className?: string }) {
   )
 }
 
+const IMAGE_STYLE_OPTIONS: Array<[string, string]> = [
+  ["ai_art", "AI Art"],
+  ["minimalist", "Minimalist"],
+  ["photorealistic", "Photo"],
+  ["infographic", "Infographic"],
+  ["no_image", "No Image"],
+]
+
 function PostCard({
   post,
   onUpdate,
@@ -231,6 +239,33 @@ function PostCard({
   const [deleting, setDeleting] = useState(false)
   const [saved, setSaved] = useState(false)
   const [expanded, setExpanded] = useState(false)
+  const [imageUrl, setImageUrl] = useState(post.imageUrl)
+  const [showStylePicker, setShowStylePicker] = useState(false)
+  const [regenerating, setRegenerating] = useState(false)
+  const [regenError, setRegenError] = useState<string | null>(null)
+
+  async function handleRegenerateImage(style: string) {
+    setShowStylePicker(false)
+    setRegenerating(true)
+    setRegenError(null)
+    try {
+      const res = await fetch("/api/linkedin/regenerate-image", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ postId: post.id, imageStyle: style }),
+      })
+      const data = await res.json() as { imageUrl?: string | null; error?: string }
+      if (!res.ok) {
+        setRegenError(data.error ?? "Failed to regenerate image")
+      } else {
+        setImageUrl(data.imageUrl ?? null)
+      }
+    } catch {
+      setRegenError("Failed to regenerate image")
+    } finally {
+      setRegenerating(false)
+    }
+  }
 
   const isDirty = content !== post.content || scheduledFor !== (post.scheduledFor ? new Date(post.scheduledFor).toISOString().slice(0, 16) : "")
 
@@ -283,11 +318,58 @@ function PostCard({
           </a>
         </div>
       )}
-      {post.imageUrl && (
-        <div className="h-36 overflow-hidden bg-slate-100">
-          <img src={post.imageUrl} alt="Post cover" className="w-full h-full object-cover" />
-        </div>
-      )}
+      <div className="relative group">
+        {imageUrl ? (
+          <div className="h-36 overflow-hidden bg-slate-100">
+            <img src={imageUrl} alt="Post cover" className="w-full h-full object-cover" />
+          </div>
+        ) : (
+          <div className="h-10 bg-slate-50 border-b border-slate-100" />
+        )}
+        {post.status !== "published" && (
+          <div className="absolute top-2 right-2">
+            {showStylePicker ? (
+              <div className="bg-white rounded-xl shadow-lg border border-slate-100 p-2 flex flex-col gap-1 min-w-[120px]">
+                <div className="flex items-center justify-between mb-1 px-1">
+                  <span className="text-xs font-semibold text-slate-500">Image style</span>
+                  <button
+                    onClick={() => setShowStylePicker(false)}
+                    className="text-slate-300 hover:text-slate-500 text-xs leading-none"
+                  >
+                    ✕
+                  </button>
+                </div>
+                {IMAGE_STYLE_OPTIONS.map(([value, label]) => (
+                  <button
+                    key={value}
+                    onClick={() => handleRegenerateImage(value)}
+                    className="text-left text-xs px-2 py-1.5 rounded-lg hover:bg-violet-50 hover:text-violet-700 text-slate-600 transition-colors"
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <button
+                onClick={() => setShowStylePicker(true)}
+                disabled={regenerating}
+                title="Regenerate image"
+                className="flex items-center gap-1 px-2 py-1 rounded-lg bg-white/90 hover:bg-white border border-slate-200 shadow-sm text-xs text-slate-600 hover:text-violet-600 transition-all opacity-0 group-hover:opacity-100"
+              >
+                {regenerating ? (
+                  <Loader2 className="w-3 h-3 animate-spin" />
+                ) : (
+                  <ImageIcon className="w-3 h-3" />
+                )}
+                {regenerating ? "Generating…" : "Restyle"}
+              </button>
+            )}
+          </div>
+        )}
+        {regenError && (
+          <p className="text-xs text-red-500 bg-red-50 px-3 py-1 border-t border-red-100">{regenError}</p>
+        )}
+      </div>
       <div className="p-4 space-y-3">
         {/* Status row */}
         <div className="flex items-center justify-between">
