@@ -10,6 +10,8 @@ export const maxDuration = 300
 interface SiteContext {
   niche: string
   targetAudience?: string
+  productName?: string
+  brandMentions?: string
 }
 
 interface GenerateRequest {
@@ -39,7 +41,7 @@ function buildPrompt(keyword: string, language: string, tone: string, siteContex
   const currentYear = new Date().getFullYear()
 
   const nicheInstruction = siteContext?.niche
-    ? `\nThis article is for a website in the ${siteContext.niche} niche${siteContext.targetAudience ? `, targeting ${siteContext.targetAudience}` : ""}. Keep content specific to this niche.`
+    ? `\nThis article is for a website in the ${siteContext.niche} niche${siteContext.targetAudience ? `, targeting ${siteContext.targetAudience}` : ""}. Keep content specific to this niche.${siteContext.productName ? `\nPRODUCT: "${siteContext.productName}". ${siteContext.brandMentions ?? `Naturally mention ${siteContext.productName} as a relevant tool or solution at least 2-3 times throughout the article where it fits contextually. Include a brief call-to-action mentioning ${siteContext.productName} in the conclusion.`}` : ""}`
     : ""
 
   return `You are a world-class SEO and AEO (Answer Engine Optimization) content strategist. Write a comprehensive, authoritative article in ${lang} that ranks well in Google, Bing, ChatGPT, and Perplexity.${nicheInstruction}

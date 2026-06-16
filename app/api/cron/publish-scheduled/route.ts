@@ -63,7 +63,7 @@ export async function GET(req: NextRequest) {
 
   // Cache site data per userId to avoid repeated DB queries
   const siteCache: Record<string, typeof connectedSites.$inferSelect | null> = {}
-  const siteProfileCache: Record<string, { niche?: string; targetAudience?: string } | null> = {}
+  const siteProfileCache: Record<string, { niche?: string; targetAudience?: string; productName?: string; brandMentions?: string } | null> = {}
 
   function generateSlug(t: string): string {
     return t.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") + "-" + Math.random().toString(36).slice(2, 8)
@@ -97,14 +97,14 @@ export async function GET(req: NextRequest) {
           .where(eq(connectedSites.userId, post.userId))
         const defaultSite = userSites.find((s) => s.isDefault) ?? userSites[0] ?? null
         siteCache[post.userId] = defaultSite
-        const rawProfile = defaultSite?.siteProfile as { niche?: string; targetAudience?: string } | null | undefined
+        const rawProfile = defaultSite?.siteProfile as { niche?: string; targetAudience?: string; productName?: string; brandMentions?: string } | null | undefined
         siteProfileCache[post.userId] = rawProfile ?? null
       }
 
       const site = siteCache[post.userId]
       const siteProfile = siteProfileCache[post.userId]
       const siteContext = siteProfile?.niche
-        ? { niche: siteProfile.niche, targetAudience: siteProfile.targetAudience }
+        ? { niche: siteProfile.niche, targetAudience: siteProfile.targetAudience, productName: siteProfile.productName, brandMentions: siteProfile.brandMentions }
         : undefined
 
       // Skip if site integration has not been verified
