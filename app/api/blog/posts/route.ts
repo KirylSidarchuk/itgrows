@@ -4,6 +4,28 @@ import { db } from "@/lib/db"
 import { blogPosts } from "@/lib/db/schema"
 import { eq, desc } from "drizzle-orm"
 
+const VM_UPLOAD_URL = "http://136.114.136.34:4001/upload"
+
+async function uploadBase64Image(dataUrl: string, slug: string): Promise<string | null> {
+  try {
+    const [header, base64] = dataUrl.split(",")
+    if (!base64) return null
+    const mimeType = header.split(":")[1]?.split(";")[0] ?? "image/jpeg"
+    const ext = mimeType.includes("png") ? ".png" : ".jpg"
+    const filename = slug.slice(0, 100) + ext
+    const res = await fetch(VM_UPLOAD_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ base64, mimeType, filename }),
+    })
+    if (!res.ok) return null
+    const data = await res.json() as { url?: string }
+    return data.url ?? null
+  } catch {
+    return null
+  }
+}
+
 export interface BlogPost {
   id: string
   slug: string
@@ -86,6 +108,14 @@ export async function POST(req: NextRequest) {
 
     const slug = slugify(body.title)
 
+    // If coverImageUrl is a base64 data URL, upload it to the VM image service
+    // so the blog HTML references a real public URL instead of an inline blob
+    let coverImageUrl = body.coverImageUrl ?? null
+    if (coverImageUrl?.startsWith("data:")) {
+      const uploaded = await uploadBase64Image(coverImageUrl, slug)
+      if (uploaded) coverImageUrl = uploaded
+    }
+
     const [inserted] = await db
       .insert(blogPosts)
       .values({
@@ -98,7 +128,7 @@ export async function POST(req: NextRequest) {
         keywords: body.keywords ?? [],
         siteId: body.siteId ?? null,
         siteSlug: body.siteSlug ?? null,
-        coverImageUrl: body.coverImageUrl ?? null,
+        coverImageUrl,
       })
       .returning()
 
