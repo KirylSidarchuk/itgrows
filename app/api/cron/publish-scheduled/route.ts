@@ -206,21 +206,30 @@ export async function GET(req: NextRequest) {
         }
 
         if (externalPublishError) {
-          await db
-            .update(scheduledPosts)
-            .set({
-              status: "failed",
-              publishError: externalPublishError,
-              publishAttempts: (post.publishAttempts ?? 0) + 1,
-              articleData: article,
-              ...(article.coverImageUrl ? { coverImageUrl: article.coverImageUrl } : {}),
-            })
-            .where(eq(scheduledPosts.id, post.id))
+          // Special case: article was written to the server but the blog index (blog.html) update failed
+          // due to a file permission issue. The article IS published and accessible via its direct URL.
+          // Treat this as a partial success — mark as published so we don't keep regenerating.
+          const isPartialSuccess = externalPublishError.includes("Article written but blog.html update failed")
+          if (isPartialSuccess) {
+            console.warn(`[SEO Autopilot] Partial success for post ${post.id}: article written, blog.html permission denied`)
+            // Fall through to the published update below (externalPublishError is cleared)
+          } else {
+            await db
+              .update(scheduledPosts)
+              .set({
+                status: "failed",
+                publishError: externalPublishError,
+                publishAttempts: (post.publishAttempts ?? 0) + 1,
+                articleData: article,
+                ...(article.coverImageUrl ? { coverImageUrl: article.coverImageUrl } : {}),
+              })
+              .where(eq(scheduledPosts.id, post.id))
 
-          console.error(`[SEO Autopilot] External publish failed for post ${post.id}: ${externalPublishError}`)
-          errors.push({ id: post.id, keyword: post.keyword, error: externalPublishError })
-          processed.push({ id: post.id, keyword: post.keyword, status: "failed", error: externalPublishError })
-          continue
+            console.error(`[SEO Autopilot] External publish failed for post ${post.id}: ${externalPublishError}`)
+            errors.push({ id: post.id, keyword: post.keyword, error: externalPublishError })
+            processed.push({ id: post.id, keyword: post.keyword, status: "failed", error: externalPublishError })
+            continue
+          }
         }
 
         if (publishedUrl) {
