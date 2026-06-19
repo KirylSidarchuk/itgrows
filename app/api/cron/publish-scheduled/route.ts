@@ -235,6 +235,29 @@ export async function GET(req: NextRequest) {
         if (publishedUrl) {
           console.log(`[SEO Autopilot] Published: ${publishedUrl}`)
         }
+
+        // Also insert into blog_posts so the /blog/ listing (blog-service) can serve this article.
+        // Uses ON CONFLICT DO NOTHING in case the slug already exists (e.g. from a partial retry).
+        try {
+          const blogSlug = generateSlug(article.title)
+          await db.insert(blogPosts).values({
+            userId: post.userId,
+            siteSlug: site.siteSlug ?? null,
+            siteId: site.id,
+            slug: blogSlug,
+            title: article.title,
+            content: article.content,
+            metaDescription: article.metaDescription ?? "",
+            keyword: post.keyword,
+            keywords: article.keywords ?? [],
+            coverImageUrl: article.coverImageUrl ?? null,
+            publishedAt: new Date(),
+          }).onConflictDoNothing()
+          console.log(`[SEO Autopilot] Mirrored to blog_posts: ${blogSlug}`)
+        } catch (blogInsertErr) {
+          // Non-fatal: the article is already on the external site; just log the error.
+          console.error(`[SEO Autopilot] Failed to mirror to blog_posts: ${blogInsertErr instanceof Error ? blogInsertErr.message : String(blogInsertErr)}`)
+        }
       }
 
       // Save articleData and mark as published
