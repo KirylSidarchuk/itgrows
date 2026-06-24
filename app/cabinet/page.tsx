@@ -2491,7 +2491,7 @@ function LinkedInPageContent() {
           )}
 
           {/* ===================== INSTAGRAM PANEL ===================== */}
-          {activePlatform === "instagram" && (
+          {activePlatform === "instagram" && activeTab !== "account" && activeTab !== "support" && (
             <div className="space-y-5">
               {/* Coming soon overlay */}
               <div className="bg-white rounded-2xl border border-slate-100 shadow-sm py-16 flex flex-col items-center gap-5 text-center">
@@ -2802,7 +2802,7 @@ function LinkedInPageContent() {
           )}
 
           {/* ===================== X (TWITTER) PANEL ===================== */}
-          {activePlatform === "x" && (
+          {activePlatform === "x" && activeTab !== "account" && activeTab !== "support" && (
             <div className="space-y-5">
               {xAccountLoading ? (
                 <div className="flex justify-center py-16">
@@ -3886,6 +3886,15 @@ function LinkedInPageContent() {
             </div>
           )}
           </>)}
+
+          {/* Mobile title for Account/Support when not on LinkedIn platform */}
+          {(activeTab === "account" || activeTab === "support") && activePlatform !== "linkedin" && (
+            <div className="lg:hidden mb-4">
+              <h2 className="text-base font-bold text-slate-700 capitalize">
+                {activeTab === "account" ? "Account" : "Support"}
+              </h2>
+            </div>
+          )}
 
           {/* ===================== ACCOUNT TAB ===================== */}
           {activeTab === "account" && (
