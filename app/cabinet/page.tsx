@@ -1679,6 +1679,7 @@ function LinkedInPageContent() {
     setGenerateError(null)
     setGenerateErrorKind(null)
     setGenerateRetryCountdown(null)
+    setPosts([]) // clear immediately so we don't show stale posts from another account
     try {
       const res = await fetch("/api/linkedin/generate", {
         method: "POST",
