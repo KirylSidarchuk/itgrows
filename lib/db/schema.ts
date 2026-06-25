@@ -124,6 +124,9 @@ export const linkedinAccounts = pgTable("linkedin_accounts", {
   pageType: text("page_type").notNull().default("personal"),
   pageName: text("page_name"),
   pageHandle: text("page_handle"),
+  isActive: boolean("is_active").notNull().default(false),
+  stripeSubscriptionId: text("stripe_subscription_id"),
+  subscriptionStatus: text("subscription_status"),
   createdAt: timestamp("created_at").defaultNow(),
 }, (t) => [index("linkedin_accounts_user_id_idx").on(t.userId)])
 

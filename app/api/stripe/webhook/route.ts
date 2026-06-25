@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import Stripe from "stripe"
 import { db } from "@/lib/db"
-import { users } from "@/lib/db/schema"
+import { users, linkedinAccounts } from "@/lib/db/schema"
 import { eq } from "drizzle-orm"
 import { sendEmail } from "@/lib/email"
 import { subscriptionActivatedEmail, paymentFailedEmail, subscriptionCancelledEmail } from "@/lib/email-templates"
@@ -45,6 +45,34 @@ export async function POST(req: NextRequest) {
           )
           const userId = subscription.metadata?.userId ?? session.metadata?.userId
           const plan = subscription.metadata?.plan ?? session.metadata?.plan
+          const organizationId = subscription.metadata?.organizationId ?? session.metadata?.organizationId
+
+          // Handle LinkedIn Company Page subscription activation
+          if (plan === "company_page" && organizationId) {
+            await db
+              .update(linkedinAccounts)
+              .set({
+                isActive: true,
+                stripeSubscriptionId: subscription.id,
+                subscriptionStatus: subscription.status,
+              })
+              .where(eq(linkedinAccounts.id, organizationId))
+
+            if (userId) {
+              const [orgUser] = await db.select({ email: users.email, name: users.name })
+                .from(users).where(eq(users.id, userId)).limit(1)
+              const orgName = subscription.metadata?.orgName ?? "Company page"
+              fetch("https://api.telegram.org/bot8213146538:AAH9ceXiIQ62-ICZJlUFx0psyd2nYq1gN7g/sendMessage", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  chat_id: 372194458,
+                  text: `💳 Новая подписка Company Page!\n👤 ${orgUser?.name ?? ""} ${orgUser?.email ?? ""}\n📦 Страница: ${orgName}\n💰 $99/мес`,
+                }),
+              }).catch(() => {})
+            }
+            break
+          }
 
           if (userId) {
           const isTrialing = subscription.status === "trialing"
@@ -85,6 +113,16 @@ export async function POST(req: NextRequest) {
 
       case "customer.subscription.updated": {
         const subscription = event.data.object as Stripe.Subscription
+
+        // Handle LinkedIn Company Page subscription update
+        if (subscription.metadata?.plan === "company_page" && subscription.metadata?.organizationId) {
+          await db
+            .update(linkedinAccounts)
+            .set({ subscriptionStatus: subscription.status })
+            .where(eq(linkedinAccounts.id, subscription.metadata.organizationId))
+          break
+        }
+
         const customer = await stripe.customers.retrieve(
           subscription.customer as string
         )
@@ -142,6 +180,15 @@ export async function POST(req: NextRequest) {
 
       case "customer.subscription.deleted": {
         const subscription = event.data.object as Stripe.Subscription
+
+        // Handle LinkedIn Company Page subscription deletion
+        if (subscription.metadata?.plan === "company_page" && subscription.metadata?.organizationId) {
+          await db
+            .update(linkedinAccounts)
+            .set({ isActive: false, subscriptionStatus: "inactive", stripeSubscriptionId: null })
+            .where(eq(linkedinAccounts.id, subscription.metadata.organizationId))
+          break
+        }
 
         const [user] = await db
           .select({ id: users.id, email: users.email, name: users.name })

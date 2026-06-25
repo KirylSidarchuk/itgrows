@@ -44,6 +44,9 @@ interface LinkedInAccount {
   pageHandle: string | null
   linkedinPersonUrn: string | null
   linkedinOrgUrn: string | null
+  isActive?: boolean
+  stripeSubscriptionId?: string | null
+  subscriptionStatus?: string | null
   expiresAt: string | null
   createdAt: string | null
 }
@@ -512,9 +515,10 @@ function PostCard({
   )
 }
 
-type ActiveTab = "posts" | "dna" | "account" | "support"
+type ActiveTab = "posts" | "dna" | "account" | "support" | "companies"
 type ActivePlatform = "linkedin" | "instagram" | "x"
 type XActiveTab = "posts" | "dna" | "company-dna"
+type LinkedInActiveTab = "personal" | "companies"
 
 function InstagramPostCard({
   post,
@@ -967,6 +971,12 @@ function LinkedInPageContent() {
   const [cancelAt, setCancelAt] = useState<string | null>(null)
   const [renewingSubscription, setRenewingSubscription] = useState(false)
 
+  // LinkedIn account switcher state
+  const [linkedInActiveTab, setLinkedInActiveTab] = useState<LinkedInActiveTab>("personal")
+  const [orgsActivating, setOrgsActivating] = useState<Record<string, boolean>>({})
+  const [orgsDeactivating, setOrgsDeactivating] = useState<Record<string, boolean>>({})
+  const [orgsMessage, setOrgsMessage] = useState<string | null>(null)
+
   // Instagram state
   const [activePlatform, setActivePlatform] = useState<ActivePlatform>("linkedin")
   const [igAccounts, setIgAccounts] = useState<InstagramAccount[]>([])
@@ -1104,6 +1114,8 @@ function LinkedInPageContent() {
 
   const connected = searchParams.get("connected")
   const error = searchParams.get("error")
+  const orgActivated = searchParams.get("org_activated")
+  const tabParam = searchParams.get("tab")
 
   const userName = session?.user?.name ?? session?.user?.email?.split("@")[0] ?? "there"
 
@@ -1118,6 +1130,19 @@ function LinkedInPageContent() {
   }, [])
 
   const xConnected = searchParams.get("x_connected")
+
+  useEffect(() => {
+    if (tabParam === "companies" || orgActivated) {
+      setActivePlatform("linkedin")
+      setLinkedInActiveTab("companies")
+    }
+    if (orgActivated) {
+      setOrgsMessage("Company page activated successfully!")
+      // Update the org in accounts list
+      setAccounts((prev) => prev.map((a) => a.id === orgActivated ? { ...a, isActive: true, subscriptionStatus: "active" } : a))
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tabParam, orgActivated])
 
   useEffect(() => {
     if (xConnected === "1") {
@@ -1432,6 +1457,52 @@ function LinkedInPageContent() {
     await fetch(url, { method: "DELETE" })
     setAccounts((prev) => (id ? prev.filter((a) => a.id !== id) : []))
     setDisconnecting(null)
+  }
+
+  async function handleActivateOrg(orgId: string) {
+    setOrgsActivating((prev) => ({ ...prev, [orgId]: true }))
+    setOrgsMessage(null)
+    try {
+      const res = await fetch("/api/linkedin/organizations/activate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ organizationId: orgId }),
+      })
+      const data = await res.json() as { url?: string; error?: string }
+      if (data.url) {
+        window.location.href = data.url
+      } else {
+        setOrgsMessage(data.error ?? "Something went wrong. Please try again.")
+        setOrgsActivating((prev) => ({ ...prev, [orgId]: false }))
+      }
+    } catch {
+      setOrgsMessage("Something went wrong. Please try again.")
+      setOrgsActivating((prev) => ({ ...prev, [orgId]: false }))
+    }
+  }
+
+  async function handleDeactivateOrg(orgId: string) {
+    if (!confirm("Cancel this company page subscription? You'll lose access at the end of the billing period.")) return
+    setOrgsDeactivating((prev) => ({ ...prev, [orgId]: true }))
+    setOrgsMessage(null)
+    try {
+      const res = await fetch("/api/linkedin/organizations/deactivate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ organizationId: orgId }),
+      })
+      const data = await res.json() as { success?: boolean; message?: string; error?: string }
+      if (res.ok && data.success) {
+        setOrgsMessage(data.message ?? "Subscription will be cancelled at end of billing period.")
+        setAccounts((prev) => prev.map((a) => a.id === orgId ? { ...a, subscriptionStatus: "canceling" } : a))
+      } else {
+        setOrgsMessage(data.error ?? "Something went wrong. Please try again.")
+      }
+    } catch {
+      setOrgsMessage("Something went wrong. Please try again.")
+    } finally {
+      setOrgsDeactivating((prev) => ({ ...prev, [orgId]: false }))
+    }
   }
 
   async function handleDeleteAccount() {
@@ -2225,15 +2296,32 @@ function LinkedInPageContent() {
           <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider px-2 mb-2">Social Media</p>
           {/* LinkedIn */}
           <button
-            onClick={() => setActivePlatform("linkedin")}
+            onClick={() => { setActivePlatform("linkedin"); setLinkedInActiveTab("personal") }}
             className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl mb-1 transition-colors ${
-              activePlatform === "linkedin"
+              activePlatform === "linkedin" && linkedInActiveTab === "personal"
                 ? "bg-violet-600 text-white"
                 : "text-slate-600 hover:bg-slate-50 hover:text-violet-700"
             }`}
           >
             <LinkedInIcon className="w-4 h-4 shrink-0" />
             <span className="text-sm font-semibold">LinkedIn</span>
+          </button>
+          {/* LinkedIn — Company Pages sub-item */}
+          <button
+            onClick={() => { setActivePlatform("linkedin"); setLinkedInActiveTab("companies") }}
+            className={`w-full flex items-center gap-3 pl-8 pr-3 py-2 rounded-xl mb-1 transition-colors ${
+              activePlatform === "linkedin" && linkedInActiveTab === "companies"
+                ? "bg-blue-50 text-[#0077B5] font-semibold"
+                : "text-slate-500 hover:bg-slate-50 hover:text-[#0077B5]"
+            }`}
+          >
+            <svg viewBox="0 0 24 24" fill="currentColor" className="w-3.5 h-3.5 shrink-0"><path d="M3 9h14V7H3v2zm0 4h14v-2H3v2zm0 4h8v-2H3v2zm16-7.74L23.59 13 19 17.74V14h-2v-2h2V8.26z"/></svg>
+            <span className="text-xs">Company Pages</span>
+            {accounts.filter((a) => a.pageType === "organization").length > 0 && (
+              <span className="ml-auto text-[10px] font-bold bg-[#0077B5]/10 text-[#0077B5] rounded-full px-1.5 py-0.5">
+                {accounts.filter((a) => a.pageType === "organization").length}
+              </span>
+            )}
           </button>
           {/* Twitter/X */}
           <button
@@ -2344,12 +2432,14 @@ function LinkedInPageContent() {
             dna: <Zap className="w-5 h-5" />,
             account: <Settings className="w-5 h-5" />,
             support: <MessageCircle className="w-5 h-5" />,
+            companies: <LinkedInIcon className="w-5 h-5" />,
           }
           const labels: Record<ActiveTab, string> = {
             posts: "Posts",
             dna: "DNA",
             account: "Account",
             support: "Support",
+            companies: "Companies",
           }
           return (
             <button
@@ -2487,6 +2577,107 @@ function LinkedInPageContent() {
                 : "bg-red-50 text-red-700 border border-red-200"
             }`}>
               {statusMessage}
+            </div>
+          )}
+
+          {/* ===================== COMPANY PAGES PANEL ===================== */}
+          {activePlatform === "linkedin" && linkedInActiveTab === "companies" && activeTab !== "account" && activeTab !== "support" && (
+            <div className="space-y-4">
+              <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 rounded-xl bg-[#0077B5] flex items-center justify-center shrink-0">
+                    <LinkedInIcon className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-base font-semibold text-slate-800">Company Pages</p>
+                    <p className="text-xs text-slate-400">Manage LinkedIn company pages — $99/month per page</p>
+                  </div>
+                </div>
+
+                {orgsMessage && (
+                  <div className="mb-4 px-4 py-3 rounded-xl text-sm font-medium bg-blue-50 text-blue-700 border border-blue-200">
+                    {orgsMessage}
+                  </div>
+                )}
+
+                {accountsLoading ? (
+                  <div className="flex justify-center py-10">
+                    <Loader2 className="w-6 h-6 animate-spin text-[#0077B5]" />
+                  </div>
+                ) : accounts.filter((a) => a.pageType === "organization").length === 0 ? (
+                  <div className="text-center py-10">
+                    <p className="text-sm text-slate-500 mb-2">No company pages found.</p>
+                    <p className="text-xs text-slate-400 mb-4">Connect your LinkedIn account — company pages are loaded automatically.</p>
+                    {accounts.length === 0 && (
+                      <a
+                        href={`/api/linkedin/connect?userId=${session?.user?.id}&type=personal`}
+                        className="inline-flex items-center gap-2 bg-[#0077B5] hover:bg-[#005f8e] text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors"
+                      >
+                        <LinkedInIcon className="w-4 h-4" />
+                        Connect LinkedIn
+                      </a>
+                    )}
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {accounts.filter((a) => a.pageType === "organization").map((org) => (
+                      <div key={org.id} className="flex items-center justify-between gap-3 p-4 rounded-xl border border-slate-100 bg-slate-50 hover:bg-white transition-colors">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className="w-9 h-9 rounded-lg bg-[#0077B5]/10 flex items-center justify-center shrink-0">
+                            <LinkedInIcon className="w-4 h-4 text-[#0077B5]" />
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-sm font-semibold text-slate-800 truncate">{org.pageName ?? org.pageHandle ?? org.linkedinOrgUrn ?? "Company"}</p>
+                            {org.pageHandle && (
+                              <p className="text-xs text-slate-400">linkedin.com/company/{org.pageHandle}</p>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0">
+                          {org.isActive ? (
+                            <>
+                              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-green-100 text-green-700">
+                                {org.subscriptionStatus === "canceling" ? "Canceling" : "Active"}
+                              </span>
+                              {org.subscriptionStatus !== "canceling" && (
+                                <button
+                                  onClick={() => handleDeactivateOrg(org.id)}
+                                  disabled={orgsDeactivating[org.id]}
+                                  className="text-xs text-slate-400 hover:text-red-500 transition-colors px-2 py-1 rounded-lg hover:bg-red-50"
+                                >
+                                  {orgsDeactivating[org.id] ? <Loader2 className="w-3 h-3 animate-spin" /> : "Cancel"}
+                                </button>
+                              )}
+                            </>
+                          ) : (
+                            <button
+                              onClick={() => handleActivateOrg(org.id)}
+                              disabled={orgsActivating[org.id]}
+                              className="flex items-center gap-1.5 text-xs font-semibold bg-[#0077B5] hover:bg-[#005f8e] text-white px-3 py-1.5 rounded-xl transition-colors disabled:opacity-70"
+                            >
+                              {orgsActivating[org.id] ? (
+                                <Loader2 className="w-3 h-3 animate-spin" />
+                              ) : (
+                                <>Activate — $99/mo</>
+                              )}
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+
+                    <div className="mt-4 p-4 rounded-xl bg-blue-50 border border-blue-100">
+                      <p className="text-xs text-blue-700 font-medium mb-1">How it works</p>
+                      <ul className="text-xs text-blue-600 space-y-1">
+                        <li>• Each company page is $99/month with a separate subscription</li>
+                        <li>• Activate a page to start AI content generation for it</li>
+                        <li>• AI generates and schedules posts in your company&apos;s voice</li>
+                        <li>• Cancel anytime — access continues until end of billing period</li>
+                      </ul>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           )}
 
@@ -3297,7 +3488,7 @@ function LinkedInPageContent() {
           )}
 
           {/* ===================== LINKEDIN CONTENT ===================== */}
-          {activePlatform === "linkedin" && (<>
+          {activePlatform === "linkedin" && linkedInActiveTab === "personal" && (<>
           {/* Tabs — hidden on mobile (bottom nav used instead), visible on lg+ */}
           <div className="hidden lg:flex items-center gap-1 mb-6 bg-white rounded-2xl p-1 shadow-sm border border-slate-100 w-fit">
             {(["posts", "dna", "account", "support"] as ActiveTab[]).map((tab) => (
