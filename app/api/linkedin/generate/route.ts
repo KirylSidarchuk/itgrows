@@ -244,6 +244,20 @@ export async function POST(req: NextRequest) {
       slice.map((postData) => generatePostImage(postData.content, brief.niche ?? "business", brief.imageStyle))
     )
 
+    // Generate fallback hashtags from niche if needed
+    const nicheHashtags = (brief.niche ?? "business")
+      .split(/[\s,]+/)
+      .filter(Boolean)
+      .slice(0, 3)
+      .map(w => `#${w.charAt(0).toUpperCase() + w.slice(1).replace(/\s/g, "")}`)
+      .join(" ")
+
+    function ensureHashtags(content: string): string {
+      const hasHashtag = /#\w+/.test(content)
+      if (hasHashtag) return content
+      return content + "\n\n" + nicheHashtags
+    }
+
     // Insert all posts (sequential DB writes are fine — fast)
     const insertedPosts = []
     for (let i = 0; i < slice.length; i++) {
@@ -257,7 +271,7 @@ export async function POST(req: NextRequest) {
         .values({
           userId,
           linkedinAccountId: account.id,
-          content: stripMarkdown(postData.content),
+          content: ensureHashtags(stripMarkdown(postData.content)),
           status: "scheduled",
           scheduledFor,
           imageUrl: imageUrls[i],
