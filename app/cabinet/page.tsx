@@ -3910,7 +3910,7 @@ function LinkedInPageContent() {
                       </Button>
                     </a>
                   ) : accounts.some((a) => a.pageType === "personal") && !accounts.some((a) => a.pageType === "organization") ? (
-                    <a href="/api/linkedin/connect">
+                    <a href="/api/linkedin/connect?type=company">
                       <Button size="sm" variant="outline" className="border-[#0077B5] text-[#0077B5] hover:bg-blue-50 text-xs rounded-xl">
                         + Connect Company Page
                       </Button>
