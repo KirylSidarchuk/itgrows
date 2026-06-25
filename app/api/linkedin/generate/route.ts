@@ -27,6 +27,7 @@ function stripMarkdown(text: string): string {
 }
 
 interface GenerateLinkedInRequest {
+  linkedinAccountId?: string
   brief?: {
     niche?: string
     tone?: string
@@ -72,13 +73,23 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json() as GenerateLinkedInRequest
+    const { linkedinAccountId } = body
 
-    // Get user's LinkedIn account
-    const [account] = await db
-      .select()
-      .from(linkedinAccounts)
-      .where(eq(linkedinAccounts.userId, userId))
-      .limit(1)
+    // Get user's LinkedIn account (specific or first personal)
+    let account
+    if (linkedinAccountId) {
+      ;[account] = await db
+        .select()
+        .from(linkedinAccounts)
+        .where(and(eq(linkedinAccounts.userId, userId), eq(linkedinAccounts.id, linkedinAccountId)))
+        .limit(1)
+    } else {
+      ;[account] = await db
+        .select()
+        .from(linkedinAccounts)
+        .where(eq(linkedinAccounts.userId, userId))
+        .limit(1)
+    }
 
     if (!account) {
       return NextResponse.json({ error: "No LinkedIn account connected" }, { status: 400 })
@@ -102,7 +113,9 @@ export async function POST(req: NextRequest) {
       const [dbBrief] = await db
         .select()
         .from(linkedinBriefs)
-        .where(eq(linkedinBriefs.userId, userId))
+        .where(linkedinAccountId
+          ? and(eq(linkedinBriefs.userId, userId), eq(linkedinBriefs.linkedinAccountId, linkedinAccountId))
+          : eq(linkedinBriefs.userId, userId))
         .limit(1)
       if (dbBrief) brief = dbBrief
     }

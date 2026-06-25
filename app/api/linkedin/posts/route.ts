@@ -4,19 +4,30 @@ import { db } from "@/lib/db"
 import { linkedinPosts } from "@/lib/db/schema"
 import { eq, and, desc } from "drizzle-orm"
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
     const session = await auth()
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
     const userId = session.user.id
+    const { searchParams } = new URL(req.url)
+    const linkedinAccountId = searchParams.get("linkedinAccountId")
 
-    const posts = await db
-      .select()
-      .from(linkedinPosts)
-      .where(eq(linkedinPosts.userId, userId))
-      .orderBy(desc(linkedinPosts.scheduledFor))
+    let posts
+    if (linkedinAccountId) {
+      posts = await db
+        .select()
+        .from(linkedinPosts)
+        .where(and(eq(linkedinPosts.userId, userId), eq(linkedinPosts.linkedinAccountId, linkedinAccountId)))
+        .orderBy(desc(linkedinPosts.scheduledFor))
+    } else {
+      posts = await db
+        .select()
+        .from(linkedinPosts)
+        .where(eq(linkedinPosts.userId, userId))
+        .orderBy(desc(linkedinPosts.scheduledFor))
+    }
 
     return NextResponse.json({ posts })
   } catch (err) {

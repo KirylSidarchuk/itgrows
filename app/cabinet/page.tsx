@@ -973,6 +973,8 @@ function LinkedInPageContent() {
 
   // LinkedIn account switcher state
   const [linkedInActiveTab, setLinkedInActiveTab] = useState<LinkedInActiveTab>("personal")
+  // selectedLinkedInAccountId: null = personal, UUID = specific company account
+  const [selectedLinkedInAccountId, setSelectedLinkedInAccountId] = useState<string | null>(null)
   const [orgsActivating, setOrgsActivating] = useState<Record<string, boolean>>({})
   const [orgsDeactivating, setOrgsDeactivating] = useState<Record<string, boolean>>({})
   const [orgsMessage, setOrgsMessage] = useState<string | null>(null)
@@ -1192,11 +1194,11 @@ function LinkedInPageContent() {
 
   useEffect(() => {
     if (accounts.length > 0) {
-      fetchBrief()
-      fetchPosts()
+      fetchBrief(selectedLinkedInAccountId)
+      fetchPosts(selectedLinkedInAccountId)
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [accounts.length])
+  }, [accounts.length, selectedLinkedInAccountId])
 
   useEffect(() => {
     const personalAccount = accounts.find((a) => a.pageType === "personal" && a.pageHandle)
@@ -1273,8 +1275,9 @@ function LinkedInPageContent() {
   }, [accounts.length, brief.niche, brief.goals, brief.targetAudience, posts.length, showOnboarding])
 
 
-  function fetchBrief() {
-    fetch("/api/linkedin/brief")
+  function fetchBrief(accountId?: string | null) {
+    const url = accountId ? `/api/linkedin/brief?linkedinAccountId=${accountId}` : "/api/linkedin/brief"
+    fetch(url)
       .then((r) => r.json())
       .then((data) => {
         if (data.brief) {
@@ -1299,7 +1302,18 @@ function LinkedInPageContent() {
             }
           }
         } else {
-          // No brief yet — still auto-fill profile URL from connected account
+          // No brief yet — reset brief to empty state and auto-fill profile URL from connected account
+          setBrief({
+            niche: "",
+            tone: "professional",
+            goals: "",
+            companyName: "",
+            targetAudience: "",
+            postingFrequency: "daily",
+            avoidTopics: "",
+            imageStyle: "ai_art",
+          })
+          setBriefIsAutoFilled(false)
           const personalAccount = accounts.find((a) => a.pageType === "personal" && a.pageHandle)
           if (personalAccount?.pageHandle) {
             setProfileUrl(`https://linkedin.com/in/${personalAccount.pageHandle}`)
@@ -1309,9 +1323,10 @@ function LinkedInPageContent() {
       .catch(() => {})
   }
 
-  const fetchPosts = useCallback(() => {
+  const fetchPosts = useCallback((accountId?: string | null) => {
     setPostsLoading(true)
-    fetch("/api/linkedin/posts")
+    const url = accountId ? `/api/linkedin/posts?linkedinAccountId=${accountId}` : "/api/linkedin/posts"
+    fetch(url)
       .then((r) => r.json())
       .then((data) => {
         setPosts(data.posts ?? [])
@@ -1552,7 +1567,11 @@ function LinkedInPageContent() {
     await fetch("/api/linkedin/brief", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...brief, profileUrl: profileUrl || undefined }),
+      body: JSON.stringify({
+        ...brief,
+        profileUrl: profileUrl || undefined,
+        ...(selectedLinkedInAccountId ? { linkedinAccountId: selectedLinkedInAccountId } : {}),
+      }),
     })
     setSavingBrief(false)
     setBriefSaved(true)
@@ -1614,7 +1633,10 @@ function LinkedInPageContent() {
       const res = await fetch("/api/linkedin/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ brief }),
+        body: JSON.stringify({
+          brief,
+          ...(selectedLinkedInAccountId ? { linkedinAccountId: selectedLinkedInAccountId } : {}),
+        }),
       })
       if (res.status === 429) {
         const data = await res.json() as { message?: string }
@@ -1631,7 +1653,7 @@ function LinkedInPageContent() {
         return
       }
       const data = await res.json() as { posts?: LinkedInPost[] }
-      fetchPosts()
+      fetchPosts(selectedLinkedInAccountId)
       void data
     } catch (err) {
       setGenerateError(err instanceof Error ? err.message : "Network error — request may have timed out")
@@ -2294,9 +2316,13 @@ function LinkedInPageContent() {
         {/* Social Media section */}
         <div className="px-4 pt-5 pb-2">
           <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider px-2 mb-2">Social Media</p>
-          {/* LinkedIn */}
+          {/* LinkedIn — Personal */}
           <button
-            onClick={() => { setActivePlatform("linkedin"); setLinkedInActiveTab("personal") }}
+            onClick={() => {
+              setActivePlatform("linkedin")
+              setLinkedInActiveTab("personal")
+              setSelectedLinkedInAccountId(null)
+            }}
             className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl mb-1 transition-colors ${
               activePlatform === "linkedin" && linkedInActiveTab === "personal"
                 ? "bg-violet-600 text-white"
@@ -2306,7 +2332,27 @@ function LinkedInPageContent() {
             <LinkedInIcon className="w-4 h-4 shrink-0" />
             <span className="text-sm font-semibold">LinkedIn</span>
           </button>
-          {/* LinkedIn — Company Pages sub-item */}
+          {/* LinkedIn — Company Pages: show each active org as a sub-item + management link */}
+          {accounts.filter((a) => a.pageType === "organization").map((org) => (
+            <button
+              key={org.id}
+              onClick={() => {
+                setActivePlatform("linkedin")
+                setLinkedInActiveTab("personal")
+                setSelectedLinkedInAccountId(org.id)
+                setActiveTab("posts")
+              }}
+              className={`w-full flex items-center gap-3 pl-8 pr-3 py-2 rounded-xl mb-1 transition-colors ${
+                activePlatform === "linkedin" && linkedInActiveTab === "personal" && selectedLinkedInAccountId === org.id
+                  ? "bg-blue-50 text-[#0077B5] font-semibold"
+                  : "text-slate-500 hover:bg-slate-50 hover:text-[#0077B5]"
+              }`}
+            >
+              <LinkedInIcon className="w-3.5 h-3.5 shrink-0" />
+              <span className="text-xs truncate">{org.pageName ?? org.pageHandle ?? "Company"}</span>
+            </button>
+          ))}
+          {/* LinkedIn — Company Pages management */}
           <button
             onClick={() => { setActivePlatform("linkedin"); setLinkedInActiveTab("companies") }}
             className={`w-full flex items-center gap-3 pl-8 pr-3 py-2 rounded-xl mb-1 transition-colors ${
@@ -2316,12 +2362,7 @@ function LinkedInPageContent() {
             }`}
           >
             <svg viewBox="0 0 24 24" fill="currentColor" className="w-3.5 h-3.5 shrink-0"><path d="M3 9h14V7H3v2zm0 4h14v-2H3v2zm0 4h8v-2H3v2zm16-7.74L23.59 13 19 17.74V14h-2v-2h2V8.26z"/></svg>
-            <span className="text-xs">Company Pages</span>
-            {accounts.filter((a) => a.pageType === "organization").length > 0 && (
-              <span className="ml-auto text-[10px] font-bold bg-[#0077B5]/10 text-[#0077B5] rounded-full px-1.5 py-0.5">
-                {accounts.filter((a) => a.pageType === "organization").length}
-              </span>
-            )}
+            <span className="text-xs">Manage Pages</span>
           </button>
           {/* Twitter/X */}
           <button
@@ -3489,6 +3530,31 @@ function LinkedInPageContent() {
 
           {/* ===================== LINKEDIN CONTENT ===================== */}
           {activePlatform === "linkedin" && linkedInActiveTab === "personal" && (<>
+          {/* Account context banner when a company account is selected */}
+          {selectedLinkedInAccountId && (() => {
+            const selectedOrg = accounts.find((a) => a.id === selectedLinkedInAccountId)
+            return selectedOrg ? (
+              <div className="flex items-center gap-3 mb-4 px-4 py-3 rounded-xl bg-[#0077B5]/5 border border-[#0077B5]/20">
+                <div className="w-8 h-8 rounded-lg bg-[#0077B5] flex items-center justify-center shrink-0">
+                  <LinkedInIcon className="w-4 h-4 text-white" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-slate-800 truncate">{selectedOrg.pageName ?? selectedOrg.pageHandle ?? "Company"}</p>
+                  <p className="text-xs text-slate-400">Company Page</p>
+                </div>
+                <button
+                  onClick={() => {
+                    setSelectedLinkedInAccountId(null)
+                    fetchBrief(null)
+                    fetchPosts(null)
+                  }}
+                  className="text-xs text-slate-400 hover:text-slate-600 transition-colors shrink-0"
+                >
+                  ← Personal
+                </button>
+              </div>
+            ) : null
+          })()}
           {/* Tabs — hidden on mobile (bottom nav used instead), visible on lg+ */}
           <div className="hidden lg:flex items-center gap-1 mb-6 bg-white rounded-2xl p-1 shadow-sm border border-slate-100 w-fit">
             {(["posts", "dna", "account", "support"] as ActiveTab[]).map((tab) => (
@@ -3687,7 +3753,12 @@ function LinkedInPageContent() {
                             await fetch("/api/linkedin/brief", {
                               method: "POST",
                               headers: { "Content-Type": "application/json" },
-                              body: JSON.stringify({ ...brief, imageStyle: value, profileUrl: profileUrl || undefined }),
+                              body: JSON.stringify({
+                                ...brief,
+                                imageStyle: value,
+                                profileUrl: profileUrl || undefined,
+                                ...(selectedLinkedInAccountId ? { linkedinAccountId: selectedLinkedInAccountId } : {}),
+                              }),
                             })
                           }}
                           className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all border ${

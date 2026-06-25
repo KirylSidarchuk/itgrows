@@ -147,6 +147,7 @@ export const linkedinPosts = pgTable("linkedin_posts", {
 export const linkedinBriefs = pgTable("linkedin_briefs", {
   id: uuid("id").defaultRandom().primaryKey(),
   userId: text("user_id").notNull().unique(),
+  linkedinAccountId: uuid("linkedin_account_id").references(() => linkedinAccounts.id, { onDelete: "cascade" }),
   niche: text("niche"),
   tone: text("tone").default("professional"),
   goals: text("goals"),
