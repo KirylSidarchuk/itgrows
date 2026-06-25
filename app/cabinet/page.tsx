@@ -1200,6 +1200,9 @@ function LinkedInPageContent() {
 
   useEffect(() => {
     if (accounts.length > 0) {
+      // Reset state immediately before loading new account data
+      setPosts([])
+      setBrief({ niche: "", tone: "professional", goals: "", companyName: "", targetAudience: "", avoidTopics: "", postingFrequency: "daily", imageStyle: "ai_art" })
       fetchBrief(selectedLinkedInAccountId)
       fetchPosts(selectedLinkedInAccountId)
     }
