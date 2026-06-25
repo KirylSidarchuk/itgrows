@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/auth"
 import { db } from "@/lib/db"
 import { linkedinPosts } from "@/lib/db/schema"
-import { eq, and, desc } from "drizzle-orm"
+import { eq, and, desc, isNull } from "drizzle-orm"
 
 export async function GET(req: NextRequest) {
   try {
@@ -25,7 +25,7 @@ export async function GET(req: NextRequest) {
       posts = await db
         .select()
         .from(linkedinPosts)
-        .where(eq(linkedinPosts.userId, userId))
+        .where(and(eq(linkedinPosts.userId, userId), isNull(linkedinPosts.linkedinAccountId)))
         .orderBy(desc(linkedinPosts.scheduledFor))
     }
 

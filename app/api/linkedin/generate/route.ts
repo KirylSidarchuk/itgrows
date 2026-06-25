@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/auth"
 import { db } from "@/lib/db"
 import { linkedinAccounts, linkedinPosts, linkedinBriefs, users } from "@/lib/db/schema"
-import { eq, and, inArray } from "drizzle-orm"
+import { eq, and, inArray, isNull } from "drizzle-orm"
 import { checkGenerateRateLimit } from "@/lib/rate-limit"
 import { hasAccess } from "@/lib/access"
 import { buildLinkedInPrompt } from "@/lib/linkedin-generate"
@@ -219,12 +219,19 @@ export async function POST(req: NextRequest) {
       throw new Error("Invalid posts data from LLM")
     }
 
-    // Delete existing draft/scheduled posts before generating new ones
+    // Delete existing draft/scheduled posts before generating new ones (scoped to specific account)
     await db.delete(linkedinPosts).where(
-      and(
-        eq(linkedinPosts.userId, userId),
-        inArray(linkedinPosts.status, ["draft", "scheduled"])
-      )
+      linkedinAccountId
+        ? and(
+            eq(linkedinPosts.userId, userId),
+            eq(linkedinPosts.linkedinAccountId, linkedinAccountId),
+            inArray(linkedinPosts.status, ["draft", "scheduled"])
+          )
+        : and(
+            eq(linkedinPosts.userId, userId),
+            isNull(linkedinPosts.linkedinAccountId),
+            inArray(linkedinPosts.status, ["draft", "scheduled"])
+          )
     )
 
     // Schedule posts at 10:00 UTC, gap depends on postingFrequency
