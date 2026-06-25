@@ -123,27 +123,18 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ brief })
     }
 
-    // Personal brief — upsert by userId (original behavior)
-    const [brief] = await db
-      .insert(linkedinBriefs)
-      .values({
-        userId,
-        linkedinAccountId: null,
-        niche: niche ?? null,
-        tone: tone ?? "professional",
-        goals: goals ?? null,
-        companyName: companyName ?? null,
-        targetAudience: targetAudience ?? null,
-        profileUrl: profileUrl ?? null,
-        isAutoFilled: false,
-        postingFrequency: validFrequency,
-        avoidTopics: avoidTopics ?? null,
-        imageStyle: validImageStyle,
-        updatedAt: new Date(),
-      })
-      .onConflictDoUpdate({
-        target: linkedinBriefs.userId,
-        set: {
+    // Personal brief — upsert by userId (no linkedinAccountId)
+    const [existingPersonal] = await db
+      .select({ id: linkedinBriefs.id })
+      .from(linkedinBriefs)
+      .where(and(eq(linkedinBriefs.userId, userId), isNull(linkedinBriefs.linkedinAccountId)))
+      .limit(1)
+
+    let brief
+    if (existingPersonal) {
+      ;[brief] = await db
+        .update(linkedinBriefs)
+        .set({
           niche: niche ?? null,
           tone: tone ?? "professional",
           goals: goals ?? null,
@@ -155,9 +146,29 @@ export async function POST(req: NextRequest) {
           avoidTopics: avoidTopics ?? null,
           imageStyle: validImageStyle,
           updatedAt: new Date(),
-        },
-      })
-      .returning()
+        })
+        .where(eq(linkedinBriefs.id, existingPersonal.id))
+        .returning()
+    } else {
+      ;[brief] = await db
+        .insert(linkedinBriefs)
+        .values({
+          userId,
+          linkedinAccountId: null,
+          niche: niche ?? null,
+          tone: tone ?? "professional",
+          goals: goals ?? null,
+          companyName: companyName ?? null,
+          targetAudience: targetAudience ?? null,
+          profileUrl: profileUrl ?? null,
+          isAutoFilled: false,
+          postingFrequency: validFrequency,
+          avoidTopics: avoidTopics ?? null,
+          imageStyle: validImageStyle,
+          updatedAt: new Date(),
+        })
+        .returning()
+    }
 
     return NextResponse.json({ brief })
   } catch (err) {
