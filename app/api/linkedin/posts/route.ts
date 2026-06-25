@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/auth"
 import { db } from "@/lib/db"
-import { linkedinPosts } from "@/lib/db/schema"
-import { eq, and, desc, isNull } from "drizzle-orm"
+import { linkedinPosts, linkedinAccounts } from "@/lib/db/schema"
+import { eq, and, desc } from "drizzle-orm"
 
 export async function GET(req: NextRequest) {
   try {
@@ -14,18 +14,29 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url)
     const linkedinAccountId = searchParams.get("linkedinAccountId")
 
+    let accountId = linkedinAccountId
+    if (!accountId) {
+      // Find the personal account
+      const [personalAccount] = await db
+        .select({ id: linkedinAccounts.id })
+        .from(linkedinAccounts)
+        .where(and(eq(linkedinAccounts.userId, userId), eq(linkedinAccounts.pageType, "personal")))
+        .limit(1)
+      if (personalAccount) accountId = personalAccount.id
+    }
+
     let posts
-    if (linkedinAccountId) {
+    if (accountId) {
       posts = await db
         .select()
         .from(linkedinPosts)
-        .where(and(eq(linkedinPosts.userId, userId), eq(linkedinPosts.linkedinAccountId, linkedinAccountId)))
+        .where(and(eq(linkedinPosts.userId, userId), eq(linkedinPosts.linkedinAccountId, accountId)))
         .orderBy(desc(linkedinPosts.scheduledFor))
     } else {
       posts = await db
         .select()
         .from(linkedinPosts)
-        .where(and(eq(linkedinPosts.userId, userId), isNull(linkedinPosts.linkedinAccountId)))
+        .where(eq(linkedinPosts.userId, userId))
         .orderBy(desc(linkedinPosts.scheduledFor))
     }
 
