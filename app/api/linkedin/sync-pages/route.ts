@@ -12,19 +12,22 @@ export async function POST() {
     }
     const userId = session.user.id
 
-    // Get personal account token
-    const [personal] = await db
+    // Get any org account token (has org scopes), fall back to personal
+    const allAccounts = await db
       .select()
       .from(linkedinAccounts)
-      .where(and(eq(linkedinAccounts.userId, userId), eq(linkedinAccounts.pageType, "personal")))
-      .limit(1)
+      .where(eq(linkedinAccounts.userId, userId))
 
-    if (!personal) {
+    if (allAccounts.length === 0) {
       return NextResponse.json({ error: "No LinkedIn account connected" }, { status: 400 })
     }
 
-    const accessToken = personal.accessToken
-    const expiresAt = personal.expiresAt
+    // Prefer org account token (has rw_organization_admin scope)
+    const orgAccount = allAccounts.find(a => a.pageType === "organization")
+    const tokenAccount = orgAccount ?? allAccounts[0]
+
+    const accessToken = tokenAccount.accessToken
+    const expiresAt = tokenAccount.expiresAt
 
     // Fetch all org pages where user is admin
     const orgsRes = await fetch(
