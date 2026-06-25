@@ -2433,6 +2433,21 @@ function LinkedInPageContent() {
             <svg viewBox="0 0 24 24" fill="currentColor" className="w-3.5 h-3.5 shrink-0"><path d="M3 9h14V7H3v2zm0 4h14v-2H3v2zm0 4h8v-2H3v2zm16-7.74L23.59 13 19 17.74V14h-2v-2h2V8.26z"/></svg>
             <span className="text-xs">Manage Pages</span>
           </button>
+          <button
+            onClick={async () => {
+              try {
+                const res = await fetch("/api/linkedin/sync-pages", { method: "POST" })
+                const data = await res.json() as { added?: number; updated?: number; error?: string }
+                if (data.error) { alert("Sync failed: " + data.error); return }
+                alert(`Sync complete: ${data.added ?? 0} new page(s) added, ${data.updated ?? 0} updated. Refresh the page to see changes.`)
+                window.location.reload()
+              } catch { alert("Sync failed") }
+            }}
+            className="w-full flex items-center gap-3 px-3 py-2 rounded-xl mb-1 transition-colors text-slate-500 hover:bg-slate-50 hover:text-[#0077B5]"
+          >
+            <svg viewBox="0 0 24 24" fill="currentColor" className="w-3.5 h-3.5 shrink-0"><path d="M17.65 6.35A7.958 7.958 0 0 0 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0 1 12 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+            <span className="text-xs">Sync New Pages</span>
+          </button>
           {/* Twitter/X */}
           <button
             onClick={() => setActivePlatform("x")}
