@@ -945,6 +945,8 @@ function LinkedInPageContent() {
   const [postsLoading, setPostsLoading] = useState(false)
   const [generating, setGenerating] = useState(false)
   const [generateError, setGenerateError] = useState<string | null>(null)
+  const [generateErrorKind, setGenerateErrorKind] = useState<"ai_busy" | "other" | null>(null)
+  const [generateRetryCountdown, setGenerateRetryCountdown] = useState<number | null>(null)
   const [generateTimer, setGenerateTimer] = useState(180)
   const [publishedCollapsed, setPublishedCollapsed] = useState(false)
   const [deletingAccount, setDeletingAccount] = useState(false)
@@ -991,6 +993,8 @@ function LinkedInPageContent() {
   const [igPostsLoading, setIgPostsLoading] = useState(false)
   const [igGenerating, setIgGenerating] = useState(false)
   const [igGenerateError, setIgGenerateError] = useState<string | null>(null)
+  const [igGenerateErrorKind, setIgGenerateErrorKind] = useState<"ai_busy" | "other" | null>(null)
+  const [igGenerateRetryCountdown, setIgGenerateRetryCountdown] = useState<number | null>(null)
   const [igGenerateTimer, setIgGenerateTimer] = useState(180)
   const [igPublishedCollapsed, setIgPublishedCollapsed] = useState(false)
 
@@ -1003,6 +1007,8 @@ function LinkedInPageContent() {
   const [xPostsLoading, setXPostsLoading] = useState(false)
   const [xGenerating, setXGenerating] = useState(false)
   const [xGenerateError, setXGenerateError] = useState<string | null>(null)
+  const [xGenerateErrorKind, setXGenerateErrorKind] = useState<"ai_busy" | "other" | null>(null)
+  const [xGenerateRetryCountdown, setXGenerateRetryCountdown] = useState<number | null>(null)
   const [xGenerateTimer, setXGenerateTimer] = useState(120)
   const [xDisconnecting, setXDisconnecting] = useState<string | null>(null)
   const [xPublishedCollapsed, setXPublishedCollapsed] = useState(false)
@@ -1239,6 +1245,45 @@ function LinkedInPageContent() {
     }, 1000)
     return () => clearInterval(interval)
   }, [xGenerating])
+
+  // Auto-retry countdown for LinkedIn ai_busy error
+  useEffect(() => {
+    if (generateRetryCountdown === null) return
+    if (generateRetryCountdown <= 0) {
+      setGenerateRetryCountdown(null)
+      void handleGenerate()
+      return
+    }
+    const t = setTimeout(() => setGenerateRetryCountdown((c) => (c !== null ? c - 1 : null)), 1000)
+    return () => clearTimeout(t)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [generateRetryCountdown])
+
+  // Auto-retry countdown for Instagram ai_busy error
+  useEffect(() => {
+    if (igGenerateRetryCountdown === null) return
+    if (igGenerateRetryCountdown <= 0) {
+      setIgGenerateRetryCountdown(null)
+      void handleIgGenerate()
+      return
+    }
+    const t = setTimeout(() => setIgGenerateRetryCountdown((c) => (c !== null ? c - 1 : null)), 1000)
+    return () => clearTimeout(t)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [igGenerateRetryCountdown])
+
+  // Auto-retry countdown for X ai_busy error
+  useEffect(() => {
+    if (xGenerateRetryCountdown === null) return
+    if (xGenerateRetryCountdown <= 0) {
+      setXGenerateRetryCountdown(null)
+      void handleXGenerate()
+      return
+    }
+    const t = setTimeout(() => setXGenerateRetryCountdown((c) => (c !== null ? c - 1 : null)), 1000)
+    return () => clearTimeout(t)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [xGenerateRetryCountdown])
 
   useEffect(() => {
     if (activePlatform === "instagram") {
@@ -1629,6 +1674,8 @@ function LinkedInPageContent() {
   async function handleGenerate() {
     setGenerating(true)
     setGenerateError(null)
+    setGenerateErrorKind(null)
+    setGenerateRetryCountdown(null)
     try {
       const res = await fetch("/api/linkedin/generate", {
         method: "POST",
@@ -1640,14 +1687,18 @@ function LinkedInPageContent() {
       })
       if (res.status === 429) {
         const data = await res.json() as { message?: string }
+        setGenerateErrorKind("other")
         setGenerateError(data.message ?? "Too many requests. Please wait before generating again.")
         return
       }
       if (!res.ok) {
-        const data = await res.json().catch(() => ({})) as { error?: string; message?: string }
+        const data = await res.json().catch(() => ({})) as { error?: string; message?: string; retryAfter?: number }
         if (data.error === "ai_busy") {
-          setGenerateError("Our AI is busy right now. Please try again in a few minutes.")
+          setGenerateErrorKind("ai_busy")
+          setGenerateError(null)
+          setGenerateRetryCountdown(data.retryAfter ?? 30)
         } else {
+          setGenerateErrorKind("other")
           setGenerateError(data.message ?? data.error ?? "Generation failed. Please try again.")
         }
         return
@@ -1656,6 +1707,7 @@ function LinkedInPageContent() {
       fetchPosts(selectedLinkedInAccountId)
       void data
     } catch (err) {
+      setGenerateErrorKind("other")
       setGenerateError(err instanceof Error ? err.message : "Network error — request may have timed out")
     } finally {
       setGenerating(false)
@@ -1751,6 +1803,8 @@ function LinkedInPageContent() {
   async function handleIgGenerate() {
     setIgGenerating(true)
     setIgGenerateError(null)
+    setIgGenerateErrorKind(null)
+    setIgGenerateRetryCountdown(null)
     try {
       const res = await fetch("/api/instagram/generate", {
         method: "POST",
@@ -1759,20 +1813,25 @@ function LinkedInPageContent() {
       })
       if (res.status === 429) {
         const data = await res.json() as { message?: string }
+        setIgGenerateErrorKind("other")
         setIgGenerateError(data.message ?? "Too many requests. Please wait before generating again.")
         return
       }
       if (!res.ok) {
-        const data = await res.json().catch(() => ({})) as { error?: string; message?: string }
+        const data = await res.json().catch(() => ({})) as { error?: string; message?: string; retryAfter?: number }
         if (data.error === "ai_busy") {
-          setIgGenerateError("Our AI is busy right now. Please try again in a few minutes.")
+          setIgGenerateErrorKind("ai_busy")
+          setIgGenerateError(null)
+          setIgGenerateRetryCountdown(data.retryAfter ?? 30)
         } else {
+          setIgGenerateErrorKind("other")
           setIgGenerateError(data.message ?? data.error ?? "Generation failed. Please try again.")
         }
         return
       }
       fetchIgPosts()
     } catch (err) {
+      setIgGenerateErrorKind("other")
       setIgGenerateError(err instanceof Error ? err.message : "Network error — request may have timed out")
     } finally {
       setIgGenerating(false)
@@ -1824,6 +1883,8 @@ function LinkedInPageContent() {
   async function handleXGenerate() {
     setXGenerating(true)
     setXGenerateError(null)
+    setXGenerateErrorKind(null)
+    setXGenerateRetryCountdown(null)
     try {
       const res = await fetch("/api/x/generate", {
         method: "POST",
@@ -1831,12 +1892,20 @@ function LinkedInPageContent() {
         body: JSON.stringify({}),
       })
       if (!res.ok) {
-        const data = await res.json().catch(() => ({})) as { error?: string; message?: string }
-        setXGenerateError(data.message ?? data.error ?? "Generation failed. Please try again.")
+        const data = await res.json().catch(() => ({})) as { error?: string; message?: string; retryAfter?: number }
+        if (data.error === "ai_busy") {
+          setXGenerateErrorKind("ai_busy")
+          setXGenerateError(null)
+          setXGenerateRetryCountdown(data.retryAfter ?? 30)
+        } else {
+          setXGenerateErrorKind("other")
+          setXGenerateError(data.message ?? data.error ?? "Generation failed. Please try again.")
+        }
         return
       }
       fetchXPosts()
     } catch (err) {
+      setXGenerateErrorKind("other")
       setXGenerateError(err instanceof Error ? err.message : "Network error")
     } finally {
       setXGenerating(false)
@@ -2880,9 +2949,29 @@ function LinkedInPageContent() {
                     )}
                   </div>
 
-                  {igGenerateError && (
-                    <div className="px-4 py-3 rounded-xl bg-red-50 text-red-600 text-sm border border-red-100">
-                      {igGenerateError}
+                  {igGenerateErrorKind === "ai_busy" && igGenerateRetryCountdown !== null && (
+                    <div className="rounded-xl border border-amber-200 bg-amber-50 p-5 flex items-start gap-4">
+                      <div className="text-2xl">⏳</div>
+                      <div className="flex-1">
+                        <p className="font-semibold text-amber-800">AI is in high demand right now</p>
+                        <p className="text-sm text-amber-700 mt-1">Our AI servers are handling a lot of requests. Retrying automatically...</p>
+                        <p className="text-sm text-amber-600 mt-1">Retrying in {igGenerateRetryCountdown} seconds...</p>
+                        <button
+                          onClick={() => { setIgGenerateRetryCountdown(null); void handleIgGenerate() }}
+                          className="mt-3 px-4 py-2 bg-amber-600 text-white rounded-lg text-sm font-medium hover:bg-amber-700 transition-colors"
+                        >
+                          Try again now
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                  {igGenerateErrorKind === "other" && igGenerateError && (
+                    <div className="rounded-xl border border-red-100 bg-red-50 p-5 flex items-start gap-4">
+                      <div className="text-2xl">😔</div>
+                      <div>
+                        <p className="font-semibold text-red-800">Something went wrong</p>
+                        <p className="text-sm text-red-700 mt-1">Please try again or contact support if the issue persists.</p>
+                      </div>
                     </div>
                   )}
 
@@ -3230,9 +3319,29 @@ function LinkedInPageContent() {
                         </div>
                       )}
 
-                      {xGenerateError && (
-                        <div className="px-4 py-3 rounded-xl bg-red-50 text-red-600 text-sm border border-red-100">
-                          {xGenerateError}
+                      {xGenerateErrorKind === "ai_busy" && xGenerateRetryCountdown !== null && (
+                        <div className="rounded-xl border border-amber-200 bg-amber-50 p-5 flex items-start gap-4">
+                          <div className="text-2xl">⏳</div>
+                          <div className="flex-1">
+                            <p className="font-semibold text-amber-800">AI is in high demand right now</p>
+                            <p className="text-sm text-amber-700 mt-1">Our AI servers are handling a lot of requests. Retrying automatically...</p>
+                            <p className="text-sm text-amber-600 mt-1">Retrying in {xGenerateRetryCountdown} seconds...</p>
+                            <button
+                              onClick={() => { setXGenerateRetryCountdown(null); void handleXGenerate() }}
+                              className="mt-3 px-4 py-2 bg-amber-600 text-white rounded-lg text-sm font-medium hover:bg-amber-700 transition-colors"
+                            >
+                              Try again now
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                      {xGenerateErrorKind === "other" && xGenerateError && (
+                        <div className="rounded-xl border border-red-100 bg-red-50 p-5 flex items-start gap-4">
+                          <div className="text-2xl">😔</div>
+                          <div>
+                            <p className="font-semibold text-red-800">Something went wrong</p>
+                            <p className="text-sm text-red-700 mt-1">Please try again or contact support if the issue persists.</p>
+                          </div>
                         </div>
                       )}
 
@@ -3728,9 +3837,29 @@ function LinkedInPageContent() {
                     </div>
                   )}
 
-                  {generateError && (
-                    <div className="px-4 py-3 rounded-xl bg-red-50 text-red-600 text-sm border border-red-100">
-                      {generateError}
+                  {generateErrorKind === "ai_busy" && generateRetryCountdown !== null && (
+                    <div className="rounded-xl border border-amber-200 bg-amber-50 p-5 flex items-start gap-4">
+                      <div className="text-2xl">⏳</div>
+                      <div className="flex-1">
+                        <p className="font-semibold text-amber-800">AI is in high demand right now</p>
+                        <p className="text-sm text-amber-700 mt-1">Our AI servers are handling a lot of requests. Retrying automatically...</p>
+                        <p className="text-sm text-amber-600 mt-1">Retrying in {generateRetryCountdown} seconds...</p>
+                        <button
+                          onClick={() => { setGenerateRetryCountdown(null); void handleGenerate() }}
+                          className="mt-3 px-4 py-2 bg-amber-600 text-white rounded-lg text-sm font-medium hover:bg-amber-700 transition-colors"
+                        >
+                          Try again now
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                  {generateErrorKind === "other" && generateError && (
+                    <div className="rounded-xl border border-red-100 bg-red-50 p-5 flex items-start gap-4">
+                      <div className="text-2xl">😔</div>
+                      <div>
+                        <p className="font-semibold text-red-800">Something went wrong</p>
+                        <p className="text-sm text-red-700 mt-1">Please try again or contact support if the issue persists.</p>
+                      </div>
                     </div>
                   )}
 

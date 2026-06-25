@@ -121,26 +121,47 @@ Return ONLY a valid JSON array with exactly ${MAX_POSTS} objects. Each object mu
 
 ${jsonInstruction}`
 
-  const llmRes = await fetch(`${LLM_BASE_URL}/v1/chat/completions`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${LLM_API_KEY}`,
-    },
-    body: JSON.stringify({
-      model: LLM_MODEL,
-      messages: [
-        { role: "system", content: "You are a JSON API. Always respond with valid JSON only. Never use markdown code blocks." },
-        { role: "user", content: prompt },
-      ],
-      max_tokens: 4096,
-      temperature: 0.8,
-    }),
-  })
+  const FALLBACK_MODELS = [LLM_MODEL, "gemini-2.5-flash", "gemini-2.5-pro"]
+  let llmRes: Response | null = null
+  let lastStatus = 0
 
-  if (!llmRes.ok) {
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const modelToUse = FALLBACK_MODELS[Math.min(attempt, FALLBACK_MODELS.length - 1)]
+    llmRes = await fetch(`${LLM_BASE_URL}/v1/chat/completions`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${LLM_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: modelToUse,
+        messages: [
+          { role: "system", content: "You are a JSON API. Always respond with valid JSON only. Never use markdown code blocks." },
+          { role: "user", content: prompt },
+        ],
+        max_tokens: 4096,
+        temperature: 0.8,
+      }),
+    })
+
+    if (llmRes.ok) break
+
+    lastStatus = llmRes.status
+    if (lastStatus === 429 || lastStatus === 503) {
+      if (attempt < 2) {
+        await new Promise((resolve) => setTimeout(resolve, 5000))
+        continue
+      }
+      return { posts: [], error: "ai_busy" }
+    }
+
     const errText = await llmRes.text()
-    return { posts: [], error: `LLM API error ${llmRes.status}: ${errText}` }
+    return { posts: [], error: `LLM API error ${lastStatus}: ${errText}` }
+  }
+
+  if (!llmRes || !llmRes.ok) {
+    const errText = await llmRes?.text() ?? ""
+    return { posts: [], error: `LLM API error ${lastStatus}: ${errText}` }
   }
 
   const llmData = await llmRes.json() as { choices: Array<{ message: { content: string } }> }
@@ -253,6 +274,12 @@ export async function POST(req: NextRequest) {
       const accountType = account.accountType as "personal" | "company"
       const result = await generateForAccount(userId, accountType, body.topic, body.brief)
       if (result.error) {
+        if (result.error === "ai_busy") {
+          return NextResponse.json(
+            { error: "ai_busy", message: "Our AI is busy right now. Please try again in a few minutes.", retryAfter: 30 },
+            { status: 503 }
+          )
+        }
         return NextResponse.json({ error: result.error }, { status: 500 })
       }
       allPosts.push(...result.posts)

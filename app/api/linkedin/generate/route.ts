@@ -150,19 +150,19 @@ export async function POST(req: NextRequest) {
       if (llmResponse.ok) break
 
       lastStatus = llmResponse.status
-      if (lastStatus === 429) {
+      if (lastStatus === 429 || lastStatus === 503) {
         if (attempt < 2) {
-          await new Promise((resolve) => setTimeout(resolve, 3000))
+          await new Promise((resolve) => setTimeout(resolve, 5000))
           continue
         }
         // All retries exhausted — return friendly error
         return NextResponse.json(
-          { error: "ai_busy", message: "Our AI is busy right now. Please try again in a few minutes." },
+          { error: "ai_busy", message: "Our AI is busy right now. Please try again in a few minutes.", retryAfter: 30 },
           { status: 503 }
         )
       }
 
-      // Non-429 error — fail immediately
+      // Non-429/503 error — fail immediately
       const errText = await llmResponse.text()
       throw new Error(`LLM API error ${lastStatus}: ${errText}`)
     }

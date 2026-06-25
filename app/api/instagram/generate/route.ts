@@ -166,13 +166,13 @@ export async function POST(req: NextRequest) {
       if (llmResponse.ok) break
 
       lastStatus = llmResponse.status
-      if (lastStatus === 429) {
+      if (lastStatus === 429 || lastStatus === 503) {
         if (attempt < 2) {
-          await new Promise((resolve) => setTimeout(resolve, 3000))
+          await new Promise((resolve) => setTimeout(resolve, 5000))
           continue
         }
         return NextResponse.json(
-          { error: "ai_busy", message: "Our AI is busy right now. Please try again in a few minutes." },
+          { error: "ai_busy", message: "Our AI is busy right now. Please try again in a few minutes.", retryAfter: 30 },
           { status: 503 }
         )
       }
