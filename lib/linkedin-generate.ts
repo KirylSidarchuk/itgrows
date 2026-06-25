@@ -127,14 +127,14 @@ FORMAT for each post:
 - Hook in the first line: a bold statement or genuine question that stops the scroll.
 - 3–5 short paragraphs (each 2–4 sentences).
 - Final line: an open question to the reader (e.g. "What's your experience with this?").
-- 3–5 relevant hashtags on the last line.
+- MANDATORY: End every post with exactly 3–5 relevant hashtags on the very last line (e.g. #Innovation #AITechnology #BusinessGrowth). This is required — posts without hashtags are rejected.
 - Total length: 150–300 words.
 
 Cover ${count} different angles across the set:
 ${angles}
 
 Return ONLY a valid JSON array with exactly ${count} objects. Each object must have:
-- "content": string (the full post text including hashtags)
+- "content": string (the full post text, must end with hashtags)
 - "hook": string (first sentence only, for preview)
 
 Write the ${count} posts now, return only the JSON array:`
@@ -161,14 +161,14 @@ FORMAT for each post:
 - Hook in the first line: a bold statement or genuine question that stops the scroll.
 - 3–5 short paragraphs (each 2–4 sentences).
 - Final line: an open question to the reader (e.g. "What's your experience with this?").
-- 3–5 relevant hashtags on the last line.
+- MANDATORY: End every post with exactly 3–5 relevant hashtags on the very last line (e.g. #Innovation #Leadership #GrowthMindset). This is required — posts without hashtags are rejected.
 - Total length: 150–300 words.
 
 Cover ${count} different angles across the set:
 ${angles}
 
 Return ONLY a valid JSON array with exactly ${count} objects. Each object must have:
-- "content": string (the full post text including hashtags)
+- "content": string (the full post text, must end with hashtags)
 - "hook": string (first sentence only, for preview)
 
 Write the ${count} posts now, return only the JSON array:`
