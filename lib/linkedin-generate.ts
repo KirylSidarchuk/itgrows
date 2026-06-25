@@ -54,14 +54,31 @@ export function buildLinkedInPrompt(brief: {
   companyName?: string | null
   targetAudience?: string | null
   avoidTopics?: string | null
-}, count: number = 14): string {
+}, count: number = 14, isCompany: boolean = false): string {
   const currentYear = new Date().getFullYear()
   const tone = brief.tone ?? "professional"
   const niche = brief.niche ?? "business"
   const goals = brief.goals ?? "build authority and engage audience"
   const audience = brief.targetAudience ? `Target audience: ${brief.targetAudience}. ` : ""
 
-  const angles = [
+  const companyAngles = [
+    "industry observation",
+    "contrarian take",
+    "a trend we're watching",
+    "a lesson we learned",
+    "a common myth debunked",
+    "a practical tip for our audience",
+    "a future prediction",
+    "a team achievement or milestone",
+    "a behind-the-scenes company insight",
+    "a question we keep asking ourselves",
+    "an unpopular industry opinion",
+    "a reflection on a challenge we overcame",
+    "a success story from our experience",
+    "a gratitude or appreciation moment",
+  ]
+
+  const personalAngles = [
     "personal lesson",
     "industry observation",
     "contrarian take",
@@ -76,11 +93,52 @@ export function buildLinkedInPrompt(brief: {
     "a reflection on failure",
     "a future prediction",
     "a gratitude or appreciation moment",
-  ].slice(0, count).join(" | ")
+  ]
+
+  const angles = (isCompany ? companyAngles : personalAngles).slice(0, count).join(" | ")
 
   const avoidTopicsLine = brief.avoidTopics?.trim()
     ? `\nIMPORTANT: Do NOT mention or promote the following topics: ${brief.avoidTopics.trim()}`
     : ""
+
+  if (isCompany) {
+    return `You are a LinkedIn content expert writing for a company page in the ${niche} space. The voice represents the company, not an individual.
+${audience}Goals: ${goals}. Current year: ${currentYear}.${avoidTopicsLine}
+
+VOICE RULE — this is a company page:
+- ALWAYS write in first person plural: "We", "Our", "Us", "We've", "We're".
+- NEVER use "I", "My", "I've", "I'm" — the author is the company, not an individual.
+
+STRICT RULES — violations make the post unusable:
+1. NEVER invent case studies, e.g. "Company X increased sales by Y%" — these are fabricated and damage credibility.
+2. NEVER make up statistics, percentages, or numeric claims you cannot know to be true.
+3. NEVER fabricate client names, testimonials, or quotes.
+4. NEVER use "Contact us today" or any hard sales-pitch language.
+5. NEVER write generic marketing copy — every post must feel like a genuine company reflection.
+6. NEVER use "I" or "My" — always "We" or "Our".
+
+WHAT EACH POST MUST DO:
+- Share a company perspective: "We've noticed…", "In our experience…", "What we've learned…"
+- Offer an industry observation, trend, or lesson from real professional experience.
+- Represent the company's voice authentically without fabricating names, numbers, or outcomes.
+- End with a thought-provoking question or call to reflection that invites the reader to share their view.
+
+FORMAT for each post:
+- Hook in the first line: a bold statement or genuine question that stops the scroll.
+- 3–5 short paragraphs (each 2–4 sentences).
+- Final line: an open question to the reader (e.g. "What's your experience with this?").
+- 3–5 relevant hashtags on the last line.
+- Total length: 150–300 words.
+
+Cover ${count} different angles across the set:
+${angles}
+
+Return ONLY a valid JSON array with exactly ${count} objects. Each object must have:
+- "content": string (the full post text including hashtags)
+- "hook": string (first sentence only, for preview)
+
+Write the ${count} posts now, return only the JSON array:`
+  }
 
   return `You are a LinkedIn thought leadership expert writing in the first person for a ${tone} professional in the ${niche} space.
 ${audience}Goals: ${goals}. Current year: ${currentYear}.${avoidTopicsLine}
