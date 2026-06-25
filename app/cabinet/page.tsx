@@ -2401,8 +2401,8 @@ function LinkedInPageContent() {
             <LinkedInIcon className="w-4 h-4 shrink-0" />
             <span className="text-sm font-semibold">LinkedIn</span>
           </button>
-          {/* LinkedIn — Company Pages: show each active org as a sub-item + management link */}
-          {accounts.filter((a) => a.pageType === "organization").map((org) => (
+          {/* LinkedIn — Company Pages: show only activated orgs as sub-items */}
+          {accounts.filter((a) => a.pageType === "organization" && a.isActive).map((org) => (
             <button
               key={org.id}
               onClick={() => {
