@@ -125,7 +125,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "brief_required", message: "Please fill your Professional DNA before generating posts." }, { status: 400 })
     }
 
-    const isCompany = account.pageType === "company"
+    const isCompany = account.pageType === "company" || account.pageType === "organization"
     const prompt = buildLinkedInPrompt(brief, maxPosts, isCompany)
 
     const FALLBACK_MODELS = [LLM_MODEL, "gemini-2.5-flash", "gemini-2.5-pro"]

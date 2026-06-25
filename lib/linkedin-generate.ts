@@ -222,7 +222,8 @@ export async function generateForUser(userId: string): Promise<{ success: boolea
       if (daysLeft < 14) maxPosts = Math.max(daysLeft, 1)
     }
 
-    const prompt = buildLinkedInPrompt(brief, maxPosts)
+    const isCompany = account.pageType === "company" || account.pageType === "organization"
+    const prompt = buildLinkedInPrompt(brief, maxPosts, isCompany)
 
     let rawContent = ""
     try {
