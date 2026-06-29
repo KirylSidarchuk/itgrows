@@ -8,7 +8,7 @@ export const maxDuration = 120
 
 // Lifetime limit: max 2 requests per IP address (persisted in DB)
 
-const LLM_KEY = "jtotFgxS1WQorT52LZym2ncyYzboliS6p04RqUwneFI"
+const LLM_KEY = process.env.LLM_API_KEY ?? "jtotFgxS1WQorT52LZym2ncyYzboliS6p04RqUwneFI"
 const LLM_BASE = "http://34.60.133.229:4000"
 
 const IMAGE_MODELS = [

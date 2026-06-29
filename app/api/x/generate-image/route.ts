@@ -5,7 +5,7 @@ import { twitterPosts } from "@/lib/db/schema"
 import { eq, and } from "drizzle-orm"
 
 const IMAGE_API_URL = "http://34.60.133.229:4000/images/generate"
-const IMAGE_API_KEY = "jtotFgxS1WQorT52LZym2ncyYzboliS6p04RqUwneFI"
+const IMAGE_API_KEY = process.env.LLM_API_KEY ?? "jtotFgxS1WQorT52LZym2ncyYzboliS6p04RqUwneFI"
 const IMAGE_MODEL = "gemini-3-pro-image-preview"
 
 interface GenerateImageRequest {
