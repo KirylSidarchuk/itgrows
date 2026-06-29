@@ -98,6 +98,11 @@ export default function CompanyPage() {
             <svg className="w-6 h-6 text-violet-600 flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" strokeLinecap="round" strokeLinejoin="round"/><path d="M9 12l2 2 4-4" strokeLinecap="round" strokeLinejoin="round"/></svg>
             <p className="text-sm text-violet-900 leading-relaxed"><span className="font-semibold">Approved by LinkedIn to auto-publish to Company Pages.</span> That access is vetted and takes weeks to get — most AI content tools don&apos;t have it. We do.</p>
           </div>
+
+          {/* Product visual */}
+          <div className="mt-12 max-w-4xl mx-auto">
+            <img src="/company-hero.jpg" alt="ItGrows keeps your company's social accounts active automatically" className="w-full rounded-3xl border border-black/10 shadow-2xl shadow-violet-300/40" />
+          </div>
         </div>
       </section>
 
@@ -164,12 +169,13 @@ export default function CompanyPage() {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {[
-              { t: "A fraction of an agency", d: "A social agency runs $2,000+/mo. ItGrows keeps every account active for less than a single day of that." },
-              { t: "Official & safe", d: "Approved LinkedIn & X APIs. No password sharing, no automation hacks that get accounts flagged." },
-              { t: "Always on-brand", d: "A dedicated brand voice profile keeps the company tone consistent — separate from each person's voice." },
-              { t: "Your people amplify", d: "Company Page plus your founders and execs posting together — the reach that single accounts can't match." },
+              { icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5"><circle cx="8" cy="8" r="6"/><path d="M18.09 10.37A6 6 0 1 1 10.34 18.6M7 6h1v4M16.71 13.88l.7.7-2.83 2.83" strokeLinecap="round" strokeLinejoin="round"/></svg>, t: "A fraction of an agency", d: "A social agency runs $2,000+/mo. ItGrows keeps every account active for less than a single day of that." },
+              { icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" strokeLinecap="round" strokeLinejoin="round"/><path d="M9 12l2 2 4-4" strokeLinecap="round" strokeLinejoin="round"/></svg>, t: "Official & safe", d: "Approved LinkedIn & X APIs. No password sharing, no automation hacks that get accounts flagged." },
+              { icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5"><path d="M12 3l2.1 4.9L19 9l-4.9 2.1L12 16l-2.1-4.9L5 9l4.9-1.1z" strokeLinecap="round" strokeLinejoin="round"/></svg>, t: "Always on-brand", d: "A dedicated brand voice profile keeps the company tone consistent — separate from each person's voice." },
+              { icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" strokeLinecap="round" strokeLinejoin="round"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" strokeLinecap="round" strokeLinejoin="round"/></svg>, t: "Your people amplify", d: "Company Page plus your founders and execs posting together — the reach that single accounts can't match." },
             ].map((b) => (
-              <div key={b.t} className="bg-white rounded-2xl border border-black/10 p-6">
+              <div key={b.t} className="bg-white rounded-2xl border border-black/10 p-6 hover:border-violet-300 hover:shadow-md transition-all">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-600 to-pink-500 flex items-center justify-center mb-4 text-white">{b.icon}</div>
                 <h3 className="font-bold mb-2">{b.t}</h3>
                 <p className="text-sm text-slate-500 leading-relaxed">{b.d}</p>
               </div>
