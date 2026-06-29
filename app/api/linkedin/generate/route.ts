@@ -5,7 +5,7 @@ import { linkedinAccounts, linkedinPosts, linkedinBriefs, users } from "@/lib/db
 import { eq, and, inArray, isNull } from "drizzle-orm"
 import { checkGenerateRateLimit } from "@/lib/rate-limit"
 import { hasAccess } from "@/lib/access"
-import { buildLinkedInPrompt } from "@/lib/linkedin-generate"
+import { buildLinkedInPrompt, buildPostHashtags } from "@/lib/linkedin-generate"
 import { generatePostImage } from "@/lib/linkedin-image"
 
 export const maxDuration = 300
@@ -244,17 +244,6 @@ export async function POST(req: NextRequest) {
       slice.map((postData) => generatePostImage(postData.content, brief.niche ?? "business", brief.imageStyle))
     )
 
-    // Generate fallback hashtags from niche if needed.
-    // Split on whitespace/commas/slashes/pipes and strip non-alphanumerics so
-    // separators like "/" in "3d scanning / AR / VR" never become junk tags (e.g. "#/").
-    const nicheHashtags = (brief.niche ?? "business")
-      .split(/[\s,/|]+/)
-      .map(w => w.replace(/[^a-zA-Z0-9]/g, ""))
-      .filter(Boolean)
-      .slice(0, 3)
-      .map(w => `#${w.charAt(0).toUpperCase() + w.slice(1)}`)
-      .join(" ")
-
     function ensureHashtags(content: string): string {
       // Drop malformed hashtags like "#/" or a lone "#" (a "#" not followed by an alphanumeric).
       const cleaned = content
@@ -262,7 +251,8 @@ export async function POST(req: NextRequest) {
         .replace(/[ \t]{2,}/g, " ")
         .trimEnd()
       if (/#\w+/.test(cleaned)) return cleaned
-      return cleaned + "\n\n" + nicheHashtags
+      // Fallback: derive post-specific tags from THIS post's content (varies per post).
+      return cleaned + "\n\n" + buildPostHashtags(cleaned, brief.niche)
     }
 
     // Insert all posts (sequential DB writes are fine — fast)

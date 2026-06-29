@@ -49,6 +49,29 @@ function stripMarkdown(text: string): string {
     .trim()
 }
 
+// Fallback hashtags derived from a SPECIFIC post's content (so they vary per post),
+// topped up from the niche. Only used when the model omitted hashtags.
+const HASHTAG_STOPWORDS = new Set(
+  "the a an and or but for with your you our we is are be been being this that these those it as at by from into about over after before how why what when who which while their there here have has had will would can could should more most just like also only".split(/\s+/)
+)
+export function buildPostHashtags(content: string, niche?: string | null): string {
+  const seen = new Set<string>()
+  const tags: string[] = []
+  const push = (raw: string) => {
+    if (tags.length >= 3) return
+    const c = raw.replace(/[^A-Za-z0-9]/g, "")
+    if (c.length < 3) return
+    const lw = c.toLowerCase()
+    if (HASHTAG_STOPWORDS.has(lw) || seen.has(lw)) return
+    seen.add(lw)
+    tags.push(`#${c.charAt(0).toUpperCase() + c.slice(1)}`)
+  }
+  for (const w of content.replace(/[#*_`]/g, " ").match(/[A-Za-z][A-Za-z0-9]{3,19}/g) ?? []) push(w)
+  for (const w of (niche ?? "").split(/[\s,/|]+/)) push(w)
+  if (tags.length === 0) tags.push("#Business")
+  return tags.slice(0, 3).join(" ")
+}
+
 export function buildLinkedInPrompt(brief: {
   niche?: string | null
   tone?: string | null
@@ -129,7 +152,7 @@ FORMAT for each post:
 - Hook in the first line: a bold statement or genuine question that stops the scroll.
 - 3–5 short paragraphs (each 2–4 sentences).
 - Final line: an open question to the reader (e.g. "What's your experience with this?").
-- MANDATORY: End every post with exactly 3–5 relevant hashtags on the very last line (e.g. #Innovation #AITechnology #BusinessGrowth). This is required — posts without hashtags are rejected.
+- MANDATORY: End every post with 3–5 hashtags on the very last line, SPECIFIC to that individual post's topic. Each post in the set MUST use a different mix of hashtags — never repeat the same hashtag set across posts. Combine one or two broad tags with post-specific ones (e.g. #Innovation #AITechnology #BusinessGrowth). Posts without hashtags are rejected.
 - Total length: 150–300 words.
 
 Cover ${count} different angles across the set:
@@ -163,7 +186,7 @@ FORMAT for each post:
 - Hook in the first line: a bold statement or genuine question that stops the scroll.
 - 3–5 short paragraphs (each 2–4 sentences).
 - Final line: an open question to the reader (e.g. "What's your experience with this?").
-- MANDATORY: End every post with exactly 3–5 relevant hashtags on the very last line (e.g. #Innovation #Leadership #GrowthMindset). This is required — posts without hashtags are rejected.
+- MANDATORY: End every post with 3–5 hashtags on the very last line, SPECIFIC to that individual post's topic. Each post in the set MUST use a different mix of hashtags — never repeat the same hashtag set across posts. Combine one or two broad tags with post-specific ones (e.g. #Innovation #Leadership #GrowthMindset). Posts without hashtags are rejected.
 - Total length: 150–300 words.
 
 Cover ${count} different angles across the set:
@@ -275,10 +298,13 @@ export async function generateForUser(userId: string): Promise<{ success: boolea
       scheduledFor.setUTCDate(scheduledFor.getUTCDate() + (i + 1) * freqDays)
       scheduledFor.setUTCHours(10, 0, 0, 0)
 
+      const body = stripMarkdown(postData.content)
+      const withHashtags = /#\w+/.test(body) ? body : `${body}\n\n${buildPostHashtags(body, brief.niche)}`
+
       await db.insert(linkedinPosts).values({
         userId,
         linkedinAccountId: account.id,
-        content: stripMarkdown(postData.content),
+        content: withHashtags,
         status: "scheduled",
         scheduledFor,
         imageUrl: imageUrls[i],
