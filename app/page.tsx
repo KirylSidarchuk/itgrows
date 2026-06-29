@@ -78,7 +78,6 @@ export default function PersonalPage() {
   const [billingCycle, setBillingCycle] = useState<"monthly" | "annual">("monthly")
 
   // Feedback form state
-  const [audience, setAudience] = useState<"me" | "co">("me")
   const [feedbackOpen, setFeedbackOpen] = useState(false)
   const [feedbackType, setFeedbackType] = useState("Question")
   const [feedbackEmail, setFeedbackEmail] = useState("")
@@ -331,8 +330,9 @@ export default function PersonalPage() {
         <div className="absolute inset-0 bg-gradient-to-b from-violet-100/60 to-transparent pointer-events-none" />
         <div className="absolute top-10 left-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-violet-400/10 rounded-full blur-3xl pointer-events-none" />
         <div className="relative max-w-4xl mx-auto">
-          <div className="inline-block mb-4 px-4 py-1.5 rounded-full text-xs font-bold border border-violet-300 text-violet-600 bg-violet-50 tracking-[0.12em] uppercase">
-            AI Ghostwriter for Founders &amp; Executives
+          <div className="inline-flex items-center gap-1 mb-6 p-1 rounded-full border border-violet-200 bg-white shadow-sm">
+            <span className="px-4 py-1.5 rounded-full text-sm font-semibold bg-violet-600 text-white">For me — Personal</span>
+            <Link href="/company" className="px-4 py-1.5 rounded-full text-sm font-semibold text-slate-600 hover:text-[#1b1916] transition-colors">For my company</Link>
           </div>
           <h1 className="text-4xl sm:text-5xl md:text-7xl font-extrabold leading-tight mb-4 sm:mb-6 tracking-tight text-[#1b1916]">
             Build Your Authority on LinkedIn &amp; X —
@@ -515,15 +515,8 @@ export default function PersonalPage() {
             <h2 className="text-3xl sm:text-4xl font-bold mb-3 text-[#1b1916]">Your voice on LinkedIn &amp; X — personal and company</h2>
             <p className="text-slate-600 text-base sm:text-lg max-w-xl mx-auto">See everything ItGrows can run for you, then pick what fits — your own brand, your company&apos;s, or both.</p>
           </div>
-          <div className="flex flex-col items-center mb-8">
-            <div className="inline-flex gap-1.5 bg-white border border-black/10 p-1.5 rounded-2xl">
-              <button onClick={() => setAudience("me")} className={`px-4 sm:px-5 py-2.5 rounded-xl text-sm font-semibold transition-colors ${audience === "me" ? "bg-violet-600 text-white" : "text-slate-600 hover:text-[#1b1916]"}`}>Grow my personal brand</button>
-              <button onClick={() => setAudience("co")} className={`px-4 sm:px-5 py-2.5 rounded-xl text-sm font-semibold transition-colors ${audience === "co" ? "bg-violet-600 text-white" : "text-slate-600 hover:text-[#1b1916]"}`}>Grow my company&apos;s brand</button>
-            </div>
-            <p className="text-sm text-slate-500 mt-3 text-center max-w-md">{audience === "me" ? "Daily posts in your voice → inbound from clients, investors and talent." : "Run your company’s LinkedIn Page + X — on official, approved API."}</p>
-          </div>
           <p className="text-xs font-semibold tracking-widest text-slate-400 uppercase mb-3 text-center">For you — personal accounts</p>
-          <div className={`grid grid-cols-1 sm:grid-cols-2 gap-5 rounded-3xl transition-all ${audience === "me" ? "ring-2 ring-violet-300 ring-offset-4 ring-offset-[#ebe9e5]" : ""}`}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             {/* LinkedIn card */}
             <div className="bg-white rounded-2xl border border-black/10 p-6 sm:p-8 flex flex-col gap-4">
               <div className="flex items-center gap-3">
@@ -570,8 +563,8 @@ export default function PersonalPage() {
             </div>
           </div>
 
-          <p className="text-xs font-semibold tracking-widest text-slate-400 uppercase mt-10 mb-3 text-center">For your company — company accounts</p>
-          <div className={`grid grid-cols-1 sm:grid-cols-2 gap-5 rounded-3xl transition-all ${audience === "co" ? "ring-2 ring-violet-300 ring-offset-4 ring-offset-[#ebe9e5]" : ""}`}>
+          <p className="text-xs font-semibold tracking-widest text-slate-400 uppercase mt-10 mb-3 text-center">For your company — company accounts <Link href="/company" className="text-violet-600 normal-case tracking-normal font-semibold hover:text-violet-500">· see the company plan →</Link></p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             {/* LinkedIn Company card */}
             <div className="relative bg-white rounded-2xl border border-black/10 p-6 sm:p-8 flex flex-col gap-4">
               <span className="absolute top-4 right-4 inline-flex items-center gap-1 text-[11px] font-semibold text-violet-700 bg-violet-100 border border-violet-200 px-2.5 py-1 rounded-full">
