@@ -770,7 +770,35 @@ export default function PersonalPage() {
             <h2 className="text-4xl font-bold mb-4 text-[#1b1916]">Simple, Transparent Pricing</h2>
             <p className="text-slate-600 text-lg">14-day free trial. Cancel anytime.</p>
             {/* Pricing anchor */}
-            <p className="text-slate-500 text-sm mt-4 max-w-md mx-auto">A social media manager costs $2,000+/month. A copywriter costs $500+/month. ItGrows: from $49/month — and it never calls in sick.</p>
+            {/* Cost comparison: hiring humans vs ItGrows */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-3xl mx-auto mt-8 text-left">
+              <div className="bg-white rounded-2xl border border-black/10 p-6">
+                <div className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-4">Hiring it out</div>
+                <ul className="space-y-2.5 text-sm text-slate-600">
+                  <li className="flex justify-between"><span>Social media manager</span><span className="font-semibold text-slate-700">$2,000+/mo</span></li>
+                  <li className="flex justify-between"><span>Copywriter</span><span className="font-semibold text-slate-700">$500+/mo</span></li>
+                  <li className="flex items-center gap-2 text-slate-500 pt-1"><span className="text-red-400 font-bold">✕</span> Calls in sick, takes vacation</li>
+                  <li className="flex items-center gap-2 text-slate-500"><span className="text-red-400 font-bold">✕</span> Slow to ramp, inconsistent</li>
+                </ul>
+                <div className="mt-5 pt-3 border-t border-black/10 flex justify-between items-end">
+                  <span className="text-sm text-slate-500">Total</span>
+                  <span className="text-3xl font-extrabold text-slate-700">$2,500+<span className="text-base font-medium text-slate-400">/mo</span></span>
+                </div>
+              </div>
+              <div className="bg-white rounded-2xl border-2 border-violet-400 p-6 relative shadow-sm">
+                <div className="text-xs font-semibold uppercase tracking-widest text-violet-600 mb-4">With ItGrows</div>
+                <ul className="space-y-2.5 text-sm text-slate-600">
+                  <li className="flex items-center gap-2"><span className="text-violet-600 font-bold">✓</span> Daily posts in your voice, on autopilot</li>
+                  <li className="flex items-center gap-2"><span className="text-violet-600 font-bold">✓</span> Never sick, never off — every single day</li>
+                  <li className="flex items-center gap-2"><span className="text-violet-600 font-bold">✓</span> You approve · official LinkedIn &amp; X API</li>
+                  <li className="flex items-center gap-2"><span className="text-violet-600 font-bold">✓</span> Cancel anytime · no card to start</li>
+                </ul>
+                <div className="mt-5 pt-3 border-t border-violet-100 flex justify-between items-end">
+                  <span className="text-sm text-slate-500">From</span>
+                  <span className="text-3xl font-extrabold text-violet-700">$49<span className="text-base font-medium text-slate-400">/mo</span></span>
+                </div>
+              </div>
+            </div>
 
             {/* Billing toggle */}
             <div className="flex items-center justify-center gap-2 mt-6">
