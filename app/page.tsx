@@ -511,7 +511,6 @@ export default function PersonalPage() {
       {/* Platforms Section */}
       <section className="px-4 sm:px-6 py-16 sm:py-20" style={{ backgroundColor: "#ebe9e5" }}>
         <div className="max-w-4xl mx-auto">
-          <img src="/home-hero.jpg" alt="ItGrows grows your presence on LinkedIn and X — on autopilot" className="w-full rounded-3xl border border-black/10 shadow-xl shadow-violet-200/40 mb-12" />
           <div className="text-center mb-8">
             <h2 className="text-3xl sm:text-4xl font-bold mb-3 text-[#1b1916]">Your voice on LinkedIn &amp; X — <span className="bg-gradient-to-r from-violet-600 via-pink-500 to-cyan-500 bg-clip-text text-transparent">personal and company</span></h2>
             <p className="text-slate-600 text-base sm:text-lg max-w-xl mx-auto">See everything ItGrows can run for you, then pick what fits — your own brand, your company&apos;s, or both.</p>
