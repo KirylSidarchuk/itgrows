@@ -85,7 +85,7 @@ export default function CompanyPage() {
             <span className="block bg-gradient-to-r from-violet-600 via-pink-500 to-cyan-500 bg-clip-text text-transparent">on autopilot</span>
           </h1>
           <p className="text-base sm:text-xl text-slate-600 max-w-2xl mx-auto mb-8 leading-relaxed">
-            ItGrows writes and publishes on-brand posts to your company&apos;s LinkedIn Page and X account — daily, in your brand voice. Your team&apos;s personal accounts too. You approve, or go full autopilot.
+            ItGrows writes and publishes on-brand posts to your <span className="text-violet-600 font-semibold">company&apos;s LinkedIn Page</span> and X account — daily, in <span className="text-violet-600 font-semibold">your brand voice</span>. Your team&apos;s personal accounts too. <span className="text-violet-600 font-semibold">You approve</span>, or go full autopilot.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
             <Link href="/signup"><Button size="lg" className="bg-violet-600 hover:bg-violet-500 text-white px-9 py-4 text-base sm:text-lg rounded-xl font-semibold shadow-lg shadow-violet-600/30">Start 14-day free trial</Button></Link>
@@ -110,7 +110,7 @@ export default function CompanyPage() {
       <section className="px-4 sm:px-6 py-14 sm:py-20" style={{ backgroundColor: "#ebe9e5" }}>
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-10">
-            <h2 className="text-3xl sm:text-4xl font-bold mb-3">Your whole brand presence, managed in one place</h2>
+            <h2 className="text-3xl sm:text-4xl font-bold mb-3">Your whole brand presence, <span className="bg-gradient-to-r from-violet-600 via-pink-500 to-cyan-500 bg-clip-text text-transparent">managed in one place</span></h2>
             <p className="text-slate-600 text-base sm:text-lg max-w-xl mx-auto">The company&apos;s accounts and your team&apos;s personal accounts — all on autopilot, each in its own voice.</p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
@@ -142,7 +142,7 @@ export default function CompanyPage() {
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-12">
             <span className="inline-block text-xs font-semibold tracking-widest text-violet-500 uppercase bg-violet-50 px-4 py-1.5 rounded-full mb-4">How It Works</span>
-            <h2 className="text-3xl sm:text-4xl font-bold">Live in under 10 minutes</h2>
+            <h2 className="text-3xl sm:text-4xl font-bold">Live in under <span className="bg-gradient-to-r from-violet-600 via-pink-500 to-cyan-500 bg-clip-text text-transparent">10 minutes</span></h2>
             <p className="text-slate-400 mt-3 text-base sm:text-lg max-w-xl mx-auto">No agency retainer. No content calendar. No blank screen on Monday morning.</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
@@ -165,7 +165,7 @@ export default function CompanyPage() {
       <section className="px-4 sm:px-6 py-14 sm:py-20" style={{ backgroundColor: "#f3f2f1" }}>
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-10">
-            <h2 className="text-3xl sm:text-4xl font-bold mb-3">Why companies choose ItGrows</h2>
+            <h2 className="text-3xl sm:text-4xl font-bold mb-3">Why companies <span className="bg-gradient-to-r from-violet-600 via-pink-500 to-cyan-500 bg-clip-text text-transparent">choose ItGrows</span></h2>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {[
@@ -187,7 +187,7 @@ export default function CompanyPage() {
       {/* Pricing callout */}
       <section id="pricing" className="px-4 sm:px-6 py-16 sm:py-20" style={{ backgroundColor: "#ebe9e5" }}>
         <div className="max-w-2xl mx-auto text-center">
-          <h2 className="text-3xl sm:text-4xl font-bold mb-4">One plan for the whole brand</h2>
+          <h2 className="text-3xl sm:text-4xl font-bold mb-4">One plan for the <span className="bg-gradient-to-r from-violet-600 via-pink-500 to-cyan-500 bg-clip-text text-transparent">whole brand</span></h2>
           <div className="bg-white rounded-3xl border border-violet-200 p-8 shadow-sm">
             <div className="text-sm font-semibold text-violet-600 uppercase tracking-wide mb-2">All-in</div>
             <div className="flex items-end justify-center gap-1 mb-2"><span className="text-5xl font-extrabold">$199</span><span className="text-slate-500 mb-1">/mo</span></div>
@@ -220,7 +220,7 @@ export default function CompanyPage() {
       {/* Final CTA */}
       <section className="px-4 sm:px-6 py-16 sm:py-20 text-center" style={{ backgroundColor: "#ebe9e5" }}>
         <div className="max-w-2xl mx-auto">
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-4">Your company should be posting. Today.</h2>
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-4">Your company should be posting. <span className="bg-gradient-to-r from-violet-600 via-pink-500 to-cyan-500 bg-clip-text text-transparent">Today.</span></h2>
           <p className="text-slate-600 text-base sm:text-lg mb-8">Set up your brand voice once. ItGrows keeps every account active — on autopilot.</p>
           <Link href="/signup"><Button size="lg" className="bg-violet-600 hover:bg-violet-500 text-white px-10 py-4 text-lg rounded-xl font-semibold shadow-lg shadow-violet-600/30">Start 14-day free trial — no card</Button></Link>
         </div>

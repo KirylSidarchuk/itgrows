@@ -341,7 +341,7 @@ export default function PersonalPage() {
             </span>
           </h1>
           <p className="text-base sm:text-xl text-slate-600 max-w-xl mx-auto mb-8 sm:mb-10 leading-relaxed">
-            Every day, ItGrows drafts LinkedIn and X posts in your voice — for you and for your company page — and publishes them. Review in 30 seconds, or set full autopilot once you trust it. Try it below, no signup needed.
+            Every day, ItGrows drafts LinkedIn and X posts <span className="text-violet-600 font-semibold">in your voice</span> — for you and for your <span className="text-violet-600 font-semibold">company page</span> — and publishes them. Review in 30 seconds, or set <span className="text-violet-600 font-semibold">full autopilot</span> once you trust it. Try it below, no signup needed.
           </p>
           <div className="flex justify-center items-center">
             <div className="relative w-full sm:w-auto">
@@ -512,7 +512,7 @@ export default function PersonalPage() {
       <section className="px-4 sm:px-6 py-16 sm:py-20" style={{ backgroundColor: "#ebe9e5" }}>
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-8">
-            <h2 className="text-3xl sm:text-4xl font-bold mb-3 text-[#1b1916]">Your voice on LinkedIn &amp; X — personal and company</h2>
+            <h2 className="text-3xl sm:text-4xl font-bold mb-3 text-[#1b1916]">Your voice on LinkedIn &amp; X — <span className="bg-gradient-to-r from-violet-600 via-pink-500 to-cyan-500 bg-clip-text text-transparent">personal and company</span></h2>
             <p className="text-slate-600 text-base sm:text-lg max-w-xl mx-auto">See everything ItGrows can run for you, then pick what fits — your own brand, your company&apos;s, or both.</p>
           </div>
           <p className="text-xs font-semibold tracking-widest text-slate-400 uppercase mb-3 text-center">For you — personal accounts</p>
@@ -739,8 +739,8 @@ export default function PersonalPage() {
       <section className="px-4 sm:px-6 py-14 sm:py-20" style={{ backgroundColor: "#f3f2f1" }}>
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-10">
-            <h2 className="text-2xl sm:text-3xl font-bold text-[#1b1916] mb-3">Built for people who have expertise worth sharing</h2>
-            <p className="text-slate-500 text-base max-w-lg mx-auto">Used by executives, consultants, and founders building influence on LinkedIn and X.</p>
+            <h2 className="text-2xl sm:text-3xl font-bold text-[#1b1916] mb-3">Built for people who have <span className="bg-gradient-to-r from-violet-600 via-pink-500 to-cyan-500 bg-clip-text text-transparent">expertise worth sharing</span></h2>
+            <p className="text-slate-500 text-base max-w-lg mx-auto">Used by <span className="text-violet-600 font-semibold">executives, consultants, and founders</span> building influence on LinkedIn and X.</p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="bg-white rounded-2xl border border-black/10 p-6">
@@ -767,7 +767,7 @@ export default function PersonalPage() {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
             <Badge className="mb-4 bg-violet-100 text-violet-700 border-violet-200">Pricing</Badge>
-            <h2 className="text-4xl font-bold mb-4 text-[#1b1916]">Simple, Transparent Pricing</h2>
+            <h2 className="text-4xl font-bold mb-4 text-[#1b1916]">Simple, <span className="bg-gradient-to-r from-violet-600 via-pink-500 to-cyan-500 bg-clip-text text-transparent">Transparent</span> Pricing</h2>
             <p className="text-slate-600 text-lg">14-day free trial. Cancel anytime.</p>
             {/* Pricing anchor */}
             {/* Cost comparison: hiring humans vs ItGrows */}
@@ -1011,7 +1011,7 @@ export default function PersonalPage() {
             </span>
           </h2>
           <p className="text-slate-600 text-base sm:text-lg mb-8 sm:mb-10">
-            Join professionals who attract clients, partners and opportunities on LinkedIn and X — on autopilot.
+            Join professionals who attract <span className="text-violet-600 font-semibold">clients, partners and opportunities</span> on LinkedIn and X — on autopilot.
           </p>
           <Button
             size="lg"
