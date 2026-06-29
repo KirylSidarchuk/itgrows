@@ -78,7 +78,7 @@ export default function PersonalPage() {
   const [billingCycle, setBillingCycle] = useState<"monthly" | "annual">("monthly")
 
   // Feedback form state
-  const [showCaseStudies, setShowCaseStudies] = useState(false)
+  const [audience, setAudience] = useState<"me" | "co">("me")
   const [feedbackOpen, setFeedbackOpen] = useState(false)
   const [feedbackType, setFeedbackType] = useState("Question")
   const [feedbackEmail, setFeedbackEmail] = useState("")
@@ -226,7 +226,6 @@ export default function PersonalPage() {
           <div className="hidden md:flex items-center gap-7">
             <a href="#how-it-works" className="text-sm text-slate-600 hover:text-[#1b1916] transition-colors font-medium">How It Works</a>
             <a href="#pricing" className="text-sm text-slate-600 hover:text-[#1b1916] transition-colors font-medium">Pricing</a>
-            <Link href="/case-studies" className="text-sm text-slate-600 hover:text-[#1b1916] transition-colors font-medium">Case Studies</Link>
             <Link href="/blog" className="text-sm text-slate-600 hover:text-[#1b1916] transition-colors font-medium">Blog</Link>
           </div>
 
@@ -288,13 +287,6 @@ export default function PersonalPage() {
               Pricing
             </a>
             <Link
-              href="/case-studies"
-              className="px-3 py-2.5 text-sm font-medium text-slate-600 hover:text-[#1b1916] hover:bg-black/5 rounded-lg transition-colors"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Case Studies
-            </Link>
-            <Link
               href="/blog"
               className="px-3 py-2.5 text-sm font-medium text-slate-600 hover:text-[#1b1916] hover:bg-black/5 rounded-lg transition-colors"
               onClick={() => setMobileMenuOpen(false)}
@@ -340,16 +332,16 @@ export default function PersonalPage() {
         <div className="absolute top-10 left-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-violet-400/10 rounded-full blur-3xl pointer-events-none" />
         <div className="relative max-w-4xl mx-auto">
           <div className="inline-block mb-4 px-4 py-1.5 rounded-full text-xs font-bold border border-violet-300 text-violet-600 bg-violet-50 tracking-[0.12em] uppercase">
-            X (Twitter) &amp; LinkedIn Autopilot
+            AI Ghostwriter for Founders &amp; Executives
           </div>
           <h1 className="text-4xl sm:text-5xl md:text-7xl font-extrabold leading-tight mb-4 sm:mb-6 tracking-tight text-[#1b1916]">
-            Turn Your Expertise Into Thought Leadership —
+            Build Your Authority on LinkedIn &amp; X —
             <span className="block bg-gradient-to-r from-violet-600 via-pink-500 to-cyan-500 bg-clip-text text-transparent">
-              AI Drafts, You Approve in 30 Seconds
+              Without Writing a Word
             </span>
           </h1>
           <p className="text-base sm:text-xl text-slate-600 max-w-xl mx-auto mb-8 sm:mb-10 leading-relaxed">
-            Every day, ItGrows drafts LinkedIn and X posts in your voice. Review in 30 seconds, publish with one tap — or set to full autopilot once you trust it. Try it below, no signup needed.
+            Every day, ItGrows drafts LinkedIn and X posts in your voice — for you and for your company page — and publishes them. Review in 30 seconds, or set full autopilot once you trust it. Try it below, no signup needed.
           </p>
           <div className="flex justify-center items-center">
             <div className="relative w-full sm:w-auto">
@@ -364,7 +356,7 @@ export default function PersonalPage() {
               </Button>
             </div>
           </div>
-          <p className="mt-4 text-xs sm:text-sm text-slate-500 font-medium">14-day free trial · No card required · Cancel anytime</p>
+          <p className="mt-4 text-xs sm:text-sm text-slate-500 font-medium">14-day free trial · No card required · Official LinkedIn &amp; X API · You approve every post</p>
 
           {/* Generator form — embedded in hero */}
           <div id="ghost-form" className="mt-10 max-w-3xl mx-auto text-left">
@@ -519,11 +511,19 @@ export default function PersonalPage() {
       {/* Platforms Section */}
       <section className="px-4 sm:px-6 py-16 sm:py-20" style={{ backgroundColor: "#ebe9e5" }}>
         <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-10">
-            <h2 className="text-3xl sm:text-4xl font-bold mb-3 text-[#1b1916]">Two platforms. One brand. 5 minutes a day.</h2>
-            <p className="text-slate-600 text-base sm:text-lg max-w-xl mx-auto">We handle your presence on both LinkedIn and X — so you show up everywhere your audience is.</p>
+          <div className="text-center mb-8">
+            <h2 className="text-3xl sm:text-4xl font-bold mb-3 text-[#1b1916]">Your voice on LinkedIn &amp; X — personal and company</h2>
+            <p className="text-slate-600 text-base sm:text-lg max-w-xl mx-auto">See everything ItGrows can run for you, then pick what fits — your own brand, your company&apos;s, or both.</p>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+          <div className="flex flex-col items-center mb-8">
+            <div className="inline-flex gap-1.5 bg-white border border-black/10 p-1.5 rounded-2xl">
+              <button onClick={() => setAudience("me")} className={`px-4 sm:px-5 py-2.5 rounded-xl text-sm font-semibold transition-colors ${audience === "me" ? "bg-violet-600 text-white" : "text-slate-600 hover:text-[#1b1916]"}`}>Grow my personal brand</button>
+              <button onClick={() => setAudience("co")} className={`px-4 sm:px-5 py-2.5 rounded-xl text-sm font-semibold transition-colors ${audience === "co" ? "bg-violet-600 text-white" : "text-slate-600 hover:text-[#1b1916]"}`}>Grow my company&apos;s brand</button>
+            </div>
+            <p className="text-sm text-slate-500 mt-3 text-center max-w-md">{audience === "me" ? "Daily posts in your voice → inbound from clients, investors and talent." : "Run your company’s LinkedIn Page + X — on official, approved API."}</p>
+          </div>
+          <p className="text-xs font-semibold tracking-widest text-slate-400 uppercase mb-3 text-center">For you — personal accounts</p>
+          <div className={`grid grid-cols-1 sm:grid-cols-2 gap-5 rounded-3xl transition-all ${audience === "me" ? "ring-2 ring-violet-300 ring-offset-4 ring-offset-[#ebe9e5]" : ""}`}>
             {/* LinkedIn card */}
             <div className="bg-white rounded-2xl border border-black/10 p-6 sm:p-8 flex flex-col gap-4">
               <div className="flex items-center gap-3">
@@ -568,6 +568,59 @@ export default function PersonalPage() {
                 ))}
               </ul>
             </div>
+          </div>
+
+          <p className="text-xs font-semibold tracking-widest text-slate-400 uppercase mt-10 mb-3 text-center">For your company — company accounts</p>
+          <div className={`grid grid-cols-1 sm:grid-cols-2 gap-5 rounded-3xl transition-all ${audience === "co" ? "ring-2 ring-violet-300 ring-offset-4 ring-offset-[#ebe9e5]" : ""}`}>
+            {/* LinkedIn Company card */}
+            <div className="relative bg-white rounded-2xl border border-black/10 p-6 sm:p-8 flex flex-col gap-4">
+              <span className="absolute top-4 right-4 inline-flex items-center gap-1 text-[11px] font-semibold text-violet-700 bg-violet-100 border border-violet-200 px-2.5 py-1 rounded-full">
+                <svg viewBox="0 0 16 16" fill="none" className="w-3 h-3"><circle cx="8" cy="8" r="7.5" stroke="currentColor" strokeWidth="1.2"/><path d="M5 8l2 2 4-4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                LinkedIn-approved
+              </span>
+              <div className="flex items-center gap-3">
+                <div className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0" style={{ background: "linear-gradient(135deg, #0A66C2, #0077b6)" }}>
+                  <svg viewBox="0 0 24 24" fill="white" className="w-5 h-5"><path d="M20.447 20.452H16.89v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a1.977 1.977 0 0 1-1.972-1.98 1.977 1.977 0 0 1 1.972-1.979 1.977 1.977 0 0 1 1.972 1.979 1.977 1.977 0 0 1-1.972 1.98zm1.99 13.019H3.347V9h3.98v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" /></svg>
+                </div>
+                <div>
+                  <div className="font-bold text-[#1b1916] text-base">LinkedIn — Company Page</div>
+                  <div className="text-xs text-slate-500 font-medium uppercase tracking-wide">Official, approved API</div>
+                </div>
+              </div>
+              <p className="text-slate-600 text-sm leading-relaxed">Publish to your company&apos;s LinkedIn Page on autopilot — via LinkedIn&apos;s approved Community Management API, something most AI content tools can&apos;t do.</p>
+              <ul className="space-y-2">
+                {["Approved by LinkedIn (60-day vetted access)", "Company voice, separate from your personal", "We/Our brand tone, not I/My"].map((item) => (
+                  <li key={item} className="flex items-center gap-2 text-sm text-slate-600">
+                    <span className="text-blue-600 font-bold">✓</span> {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            {/* X Company card */}
+            <div className="bg-white rounded-2xl border border-black/10 p-6 sm:p-8 flex flex-col gap-4">
+              <div className="flex items-center gap-3">
+                <div className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 bg-black">
+                  <svg viewBox="0 0 24 24" fill="white" className="w-5 h-5"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.253 5.622 5.912-5.622Zm-1.161 17.52h1.833L7.084 4.126H5.117z" /></svg>
+                </div>
+                <div>
+                  <div className="font-bold text-[#1b1916] text-base">X — Company</div>
+                  <div className="text-xs text-slate-500 font-medium uppercase tracking-wide">Your brand account</div>
+                </div>
+              </div>
+              <p className="text-slate-600 text-sm leading-relaxed">Keep your company&apos;s X account active with daily on-brand posts — managed alongside everything else.</p>
+              <ul className="space-y-2">
+                {["Daily brand presence on autopilot", "Consistent company voice", "Managed in one place with the rest"].map((item) => (
+                  <li key={item} className="flex items-center gap-2 text-sm text-slate-600">
+                    <span className="text-slate-800 font-bold">✓</span> {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+          <div className="mt-8 flex items-start gap-3 bg-violet-50 border border-violet-200 rounded-2xl px-5 py-4">
+            <svg className="w-5 h-5 text-violet-600 flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" strokeLinecap="round" strokeLinejoin="round"/><path d="M9 12l2 2 4-4" strokeLinecap="round" strokeLinejoin="round"/></svg>
+            <p className="text-sm text-violet-900 leading-relaxed"><span className="font-semibold">Approved by LinkedIn to auto-publish to Company Pages</span> — something most AI content tools can&apos;t do. Not a workaround; official, vetted access.</p>
           </div>
         </div>
       </section>
@@ -654,28 +707,28 @@ export default function PersonalPage() {
               Here&apos;s what happened when I used my own product
             </h2>
             <p className="text-slate-400 text-base sm:text-lg max-w-xl mx-auto">
-              I built ItGrows for myself first. This is my real data from LinkedIn &amp; X — used by executives, consultants, and advisors building influence.
+              I built ItGrows for myself first — to grow my own LinkedIn &amp; X. Here&apos;s how it plays out for executives, consultants, and founders building influence.
             </p>
           </div>
 
           <div className="max-w-2xl mx-auto">
             <div className="rounded-2xl border border-white/10 p-8 sm:p-10 flex flex-col gap-6 text-center" style={{ background: "rgba(255,255,255,0.06)" }}>
-              <div className="flex justify-center gap-8">
+              <div className="flex justify-center gap-8 sm:gap-12">
                 <div>
-                  <div className="text-5xl sm:text-6xl font-black" style={{ background: "linear-gradient(90deg, #a78bfa, #818cf8)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>38,500</div>
-                  <div className="text-slate-300 text-sm mt-1">impressions</div>
+                  <div className="text-3xl sm:text-4xl font-black" style={{ background: "linear-gradient(90deg, #a78bfa, #818cf8)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>Daily</div>
+                  <div className="text-slate-300 text-sm mt-1">posts, in my voice</div>
                 </div>
                 <div>
-                  <div className="text-5xl sm:text-6xl font-black" style={{ background: "linear-gradient(90deg, #f472b6, #ec4899)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>23</div>
-                  <div className="text-slate-300 text-sm mt-1">inbound DMs</div>
+                  <div className="text-3xl sm:text-4xl font-black" style={{ background: "linear-gradient(90deg, #f472b6, #ec4899)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>Inbound</div>
+                  <div className="text-slate-300 text-sm mt-1">conversations started</div>
                 </div>
                 <div>
-                  <div className="text-5xl sm:text-6xl font-black" style={{ background: "linear-gradient(90deg, #67e8f9, #22d3ee)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>3</div>
-                  <div className="text-slate-300 text-sm mt-1">months</div>
+                  <div className="text-3xl sm:text-4xl font-black" style={{ background: "linear-gradient(90deg, #67e8f9, #22d3ee)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>Advisory</div>
+                  <div className="text-slate-300 text-sm mt-1">clients won</div>
                 </div>
               </div>
               <p className="text-slate-300 text-lg italic leading-relaxed">
-                &ldquo;I was posting manually maybe once a week. With ItGrows I went daily — and in 3 months hit 38,500 impressions on LinkedIn and X. 23 people reached out to me inbound. 3 turned into advisory conversations. The tool pays for itself in one client.&rdquo;
+                &ldquo;I went from posting maybe once a week to every single day — in my own voice. Within a few months it was driving real inbound conversations, and a few turned into advisory clients. It pays for itself with one.&rdquo;
               </p>
               <div className="flex items-center justify-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-violet-600 flex items-center justify-center text-white font-bold text-sm">K</div>
@@ -713,30 +766,6 @@ export default function PersonalPage() {
               <p className="text-sm text-slate-500 leading-relaxed">Early-stage founders establishing credibility and attracting investors, customers, and talent through consistent personal brand.</p>
             </div>
           </div>
-        </div>
-      </section>
-
-      {/* Case Studies Expandable */}
-      <section className="px-4 sm:px-6 py-10 sm:py-14" style={{ backgroundColor: "#f3f2f1" }}>
-        <div className="max-w-5xl mx-auto">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-            <p className="text-base sm:text-lg font-semibold text-[#1b1916]">Built by a founder who uses it every day</p>
-            <button
-              onClick={() => setShowCaseStudies(!showCaseStudies)}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-violet-300 bg-white text-violet-700 font-semibold text-sm hover:bg-violet-50 transition-colors shadow-sm"
-            >
-              {showCaseStudies ? "Hide Case Studies ↑" : "See Case Studies ↓"}
-            </button>
-          </div>
-
-          {showCaseStudies && (
-            <div className="mt-8 text-center">
-              <p className="text-slate-500 text-sm mb-4">Real results from our early users — documented and growing.</p>
-              <a href="/case-studies" className="inline-flex items-center gap-1 text-violet-700 font-semibold text-sm hover:text-violet-500 transition-colors">
-                View case studies →
-              </a>
-            </div>
-          )}
         </div>
       </section>
 
