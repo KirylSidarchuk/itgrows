@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Organization not found" }, { status: 404 })
   }
 
-  if (org.isActive && org.stripeSubscriptionId) {
+  if (org.isActive) {
     return NextResponse.json({ error: "Organization already active" }, { status: 400 })
   }
 
@@ -48,13 +48,36 @@ export async function POST(req: NextRequest) {
 
   // Get or create Stripe customer
   const [user] = await db
-    .select({ id: users.id, email: users.email, name: users.name, stripeCustomerId: users.stripeCustomerId })
+    .select({ id: users.id, email: users.email, name: users.name, stripeCustomerId: users.stripeCustomerId, subscriptionPlan: users.subscriptionPlan, subscriptionStatus: users.subscriptionStatus })
     .from(users)
     .where(eq(users.id, session.user.id))
     .limit(1)
 
   if (!user) {
     return NextResponse.json({ error: "User not found" }, { status: 404 })
+  }
+
+  // All-in includes 1 LinkedIn Company Page for free. If the user is on All-in and has no
+  // currently-active company page, activate this one WITHOUT the $99/mo subscription.
+  const planActive = user.subscriptionStatus === "active" || user.subscriptionStatus === "trialing" || user.subscriptionStatus === "past_due"
+  const isAllIn = planActive && (user.subscriptionPlan === "allin" || user.subscriptionPlan === "allin_annual")
+  if (isAllIn) {
+    const activePages = await db
+      .select({ id: linkedinAccounts.id })
+      .from(linkedinAccounts)
+      .where(and(
+        eq(linkedinAccounts.userId, session.user.id),
+        eq(linkedinAccounts.pageType, "organization"),
+        eq(linkedinAccounts.isActive, true),
+      ))
+    if (activePages.length === 0) {
+      await db
+        .update(linkedinAccounts)
+        .set({ isActive: true, subscriptionStatus: "included" })
+        .where(eq(linkedinAccounts.id, organizationId))
+      const base = process.env.NEXTAUTH_URL ?? "https://itgrows.ai"
+      return NextResponse.json({ url: `${base}/cabinet?tab=companies&org_activated=${organizationId}`, included: true })
+    }
   }
 
   let customerId = user.stripeCustomerId

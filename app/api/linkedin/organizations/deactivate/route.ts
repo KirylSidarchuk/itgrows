@@ -38,8 +38,17 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Organization not found" }, { status: 404 })
   }
 
-  if (!org.isActive || !org.stripeSubscriptionId) {
+  if (!org.isActive) {
     return NextResponse.json({ error: "Organization is not active" }, { status: 400 })
+  }
+
+  // Free "included" page (All-in) has no Stripe subscription — deactivate it locally.
+  if (!org.stripeSubscriptionId) {
+    await db
+      .update(linkedinAccounts)
+      .set({ isActive: false, subscriptionStatus: "inactive" })
+      .where(eq(linkedinAccounts.id, organizationId))
+    return NextResponse.json({ success: true, message: "Company page deactivated" })
   }
 
   const stripe = getStripe()
