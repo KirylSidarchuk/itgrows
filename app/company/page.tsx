@@ -39,6 +39,7 @@ const companyFaqs = [
 export default function CompanyPage() {
   const [sessionUser, setSessionUser] = useState<{ name?: string | null; email?: string | null } | null>(null)
   const [openFaq, setOpenFaq] = useState<number | null>(0)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   useEffect(() => {
     fetch("/api/auth/session")
@@ -48,28 +49,61 @@ export default function CompanyPage() {
   }, [])
 
   return (
-    <div className="min-h-screen bg-[#f8f7f6] text-[#1b1916]">
+    <div className="min-h-screen text-[#1b1916] scroll-smooth" style={{ backgroundColor: "#f3f2f1", fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" }}>
       {/* Nav */}
-      <header className="sticky top-0 z-40 bg-[#f8f7f6]/90 backdrop-blur border-b border-black/5">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2 font-extrabold text-lg tracking-tight">ItGrows.ai</Link>
+      <nav className="border-b border-black/10 px-4 sm:px-6 py-4 sticky top-0 z-50" style={{ backgroundColor: "#f3f2f1" }}>
+        <div className="max-w-6xl mx-auto flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-2 text-xl font-bold bg-gradient-to-r from-violet-600 to-cyan-600 bg-clip-text text-transparent shrink-0">
+            <img src="/logo.jpg" className="h-8 w-8 rounded-lg" alt="ItGrows" />
+            <span>ItGrows.ai</span>
+          </Link>
           <div className="hidden md:flex items-center gap-7">
             <a href="#how" className="text-sm text-slate-600 hover:text-[#1b1916] transition-colors font-medium">How It Works</a>
             <a href="#pricing" className="text-sm text-slate-600 hover:text-[#1b1916] transition-colors font-medium">Pricing</a>
             <Link href="/blog" className="text-sm text-slate-600 hover:text-[#1b1916] transition-colors font-medium">Blog</Link>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="hidden md:flex items-center gap-2">
             {sessionUser ? (
-              <Link href="/cabinet"><Button className="bg-violet-600 hover:bg-violet-500 text-white text-sm px-4">Cabinet →</Button></Link>
+              <>
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-full bg-violet-600 flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
+                    {(sessionUser.name || sessionUser.email || "U").charAt(0).toUpperCase()}
+                  </div>
+                  <span className="text-sm text-slate-600 max-w-[140px] truncate">{sessionUser.name || sessionUser.email}</span>
+                </div>
+                <Link href="/cabinet"><Button className="bg-violet-600 hover:bg-violet-500 text-white text-sm px-4">Cabinet →</Button></Link>
+              </>
             ) : (
               <>
-                <Link href="/login?callbackUrl=/cabinet" className="hidden sm:block"><Button variant="ghost" className="text-slate-600 hover:text-[#1b1916] text-sm px-3">Login</Button></Link>
+                <Link href="/login?callbackUrl=/cabinet"><Button variant="ghost" className="text-slate-600 hover:text-[#1b1916] text-sm px-3">Login</Button></Link>
                 <Link href="/signup"><Button className="bg-violet-600 hover:bg-violet-500 text-white text-sm px-4">Try Free</Button></Link>
               </>
             )}
           </div>
+          <button className="md:hidden flex flex-col justify-center items-center w-9 h-9 gap-1.5 rounded-lg hover:bg-black/5 transition-colors" onClick={() => setMobileMenuOpen(!mobileMenuOpen)} aria-label="Toggle menu">
+            <span className={`block w-5 h-0.5 bg-[#1b1916] transition-all duration-200 ${mobileMenuOpen ? "rotate-45 translate-y-2" : ""}`} />
+            <span className={`block w-5 h-0.5 bg-[#1b1916] transition-all duration-200 ${mobileMenuOpen ? "opacity-0" : ""}`} />
+            <span className={`block w-5 h-0.5 bg-[#1b1916] transition-all duration-200 ${mobileMenuOpen ? "-rotate-45 -translate-y-2" : ""}`} />
+          </button>
         </div>
-      </header>
+        {mobileMenuOpen && (
+          <div className="md:hidden border-t border-black/10 mt-4 pt-4 pb-2 flex flex-col gap-1">
+            <a href="#how" className="px-3 py-2.5 text-sm font-medium text-slate-600 hover:text-[#1b1916] hover:bg-black/5 rounded-lg transition-colors" onClick={() => setMobileMenuOpen(false)}>How It Works</a>
+            <a href="#pricing" className="px-3 py-2.5 text-sm font-medium text-slate-600 hover:text-[#1b1916] hover:bg-black/5 rounded-lg transition-colors" onClick={() => setMobileMenuOpen(false)}>Pricing</a>
+            <Link href="/blog" className="px-3 py-2.5 text-sm font-medium text-slate-600 hover:text-[#1b1916] hover:bg-black/5 rounded-lg transition-colors" onClick={() => setMobileMenuOpen(false)}>Blog</Link>
+            <div className="border-t border-black/10 mt-2 pt-3 flex flex-col gap-2">
+              {sessionUser ? (
+                <Link href="/cabinet" onClick={() => setMobileMenuOpen(false)}><Button className="w-full bg-violet-600 hover:bg-violet-500 text-white text-sm">Cabinet →</Button></Link>
+              ) : (
+                <>
+                  <Link href="/login?callbackUrl=/cabinet" onClick={() => setMobileMenuOpen(false)}><Button variant="outline" className="w-full text-sm border-black/20">Login</Button></Link>
+                  <Link href="/signup" onClick={() => setMobileMenuOpen(false)}><Button className="w-full bg-violet-600 hover:bg-violet-500 text-white text-sm">Try Free</Button></Link>
+                </>
+              )}
+            </div>
+          </div>
+        )}
+      </nav>
 
       {/* Hero */}
       <section className="relative px-4 sm:px-6 pt-14 sm:pt-20 pb-14 text-center overflow-hidden">
@@ -186,16 +220,31 @@ export default function CompanyPage() {
 
       {/* Pricing callout */}
       <section id="pricing" className="px-4 sm:px-6 py-16 sm:py-20" style={{ backgroundColor: "#ebe9e5" }}>
-        <div className="max-w-2xl mx-auto text-center">
-          <h2 className="text-3xl sm:text-4xl font-bold mb-4">One plan for the <span className="bg-gradient-to-r from-violet-600 via-pink-500 to-cyan-500 bg-clip-text text-transparent">whole brand</span></h2>
-          <div className="bg-white rounded-3xl border border-violet-200 p-8 shadow-sm">
-            <div className="text-sm font-semibold text-violet-600 uppercase tracking-wide mb-2">All-in</div>
-            <div className="flex items-end justify-center gap-1 mb-2"><span className="text-5xl font-extrabold">$199</span><span className="text-slate-500 mb-1">/mo</span></div>
-            <p className="text-slate-600 text-sm mb-6">Your company&apos;s LinkedIn Page &amp; X, plus your team&apos;s personal accounts — all managed together, with analytics.</p>
-            <Link href="/signup"><Button size="lg" className="bg-violet-600 hover:bg-violet-500 text-white w-full py-4 text-base rounded-xl font-semibold">Start 14-day free trial</Button></Link>
-            <p className="text-xs text-slate-500 mt-3">No card required · Cancel anytime</p>
+        <div className="max-w-5xl mx-auto text-center">
+          <h2 className="text-3xl sm:text-4xl font-bold mb-3">Pricing for your <span className="bg-gradient-to-r from-violet-600 via-pink-500 to-cyan-500 bg-clip-text text-transparent">company pages</span></h2>
+          <p className="text-slate-600 text-base mb-10">Run your LinkedIn Company Pages on autopilot — pick how many.</p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 text-left items-stretch">
+            <div className="bg-white rounded-2xl border border-black/10 p-6 flex flex-col">
+              <div className="text-sm font-semibold text-violet-600 uppercase tracking-wide mb-1">Single</div>
+              <div className="flex items-end gap-1 mb-2"><span className="text-4xl font-extrabold">$99</span><span className="text-slate-500 mb-1">/mo</span></div>
+              <p className="text-slate-600 text-sm mb-6 flex-1">One LinkedIn Company Page, fully automated.</p>
+              <Link href="/signup"><Button className="w-full bg-white border border-violet-300 text-violet-700 hover:bg-violet-50 py-3 rounded-xl font-semibold">Start free trial</Button></Link>
+            </div>
+            <div className="relative bg-white rounded-2xl border-2 border-violet-400 p-6 flex flex-col shadow-sm">
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-violet-600 text-white text-xs font-semibold px-3 py-1 rounded-full">Best value</div>
+              <div className="text-sm font-semibold text-violet-600 uppercase tracking-wide mb-1">Two pages</div>
+              <div className="flex items-end gap-1 mb-2"><span className="text-4xl font-extrabold">$149</span><span className="text-slate-500 mb-1">/mo</span></div>
+              <p className="text-slate-600 text-sm mb-6 flex-1">Two Company Pages — less than two singles.</p>
+              <Link href="/signup"><Button className="w-full bg-violet-600 hover:bg-violet-500 text-white py-3 rounded-xl font-semibold">Start free trial</Button></Link>
+            </div>
+            <div className="bg-white rounded-2xl border border-black/10 p-6 flex flex-col">
+              <div className="text-sm font-semibold text-violet-600 uppercase tracking-wide mb-1">Unlimited</div>
+              <div className="flex items-end gap-1 mb-2"><span className="text-4xl font-extrabold">$299</span><span className="text-slate-500 mb-1">/mo</span></div>
+              <p className="text-slate-600 text-sm mb-6 flex-1">Any number of Company Pages, one flat price.</p>
+              <Link href="/signup"><Button className="w-full bg-white border border-violet-300 text-violet-700 hover:bg-violet-50 py-3 rounded-xl font-semibold">Start free trial</Button></Link>
+            </div>
           </div>
-          <p className="text-sm text-slate-500 mt-5">Just need your own personal accounts? <Link href="/#pricing" className="text-violet-600 font-semibold hover:text-violet-500">See personal plans from $49 →</Link></p>
+          <p className="text-sm text-slate-500 mt-8">No card required · Cancel anytime · Want your team&apos;s personal accounts too? <Link href="/#pricing" className="text-violet-600 font-semibold hover:text-violet-500">See All-in &amp; personal plans →</Link></p>
         </div>
       </section>
 
