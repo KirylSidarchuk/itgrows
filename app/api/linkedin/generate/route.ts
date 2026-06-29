@@ -244,18 +244,25 @@ export async function POST(req: NextRequest) {
       slice.map((postData) => generatePostImage(postData.content, brief.niche ?? "business", brief.imageStyle))
     )
 
-    // Generate fallback hashtags from niche if needed
+    // Generate fallback hashtags from niche if needed.
+    // Split on whitespace/commas/slashes/pipes and strip non-alphanumerics so
+    // separators like "/" in "3d scanning / AR / VR" never become junk tags (e.g. "#/").
     const nicheHashtags = (brief.niche ?? "business")
-      .split(/[\s,]+/)
+      .split(/[\s,/|]+/)
+      .map(w => w.replace(/[^a-zA-Z0-9]/g, ""))
       .filter(Boolean)
       .slice(0, 3)
-      .map(w => `#${w.charAt(0).toUpperCase() + w.slice(1).replace(/\s/g, "")}`)
+      .map(w => `#${w.charAt(0).toUpperCase() + w.slice(1)}`)
       .join(" ")
 
     function ensureHashtags(content: string): string {
-      const hasHashtag = /#\w+/.test(content)
-      if (hasHashtag) return content
-      return content + "\n\n" + nicheHashtags
+      // Drop malformed hashtags like "#/" or a lone "#" (a "#" not followed by an alphanumeric).
+      const cleaned = content
+        .replace(/(^|\s)#(?![A-Za-z0-9])\S*/g, "$1")
+        .replace(/[ \t]{2,}/g, " ")
+        .trimEnd()
+      if (/#\w+/.test(cleaned)) return cleaned
+      return cleaned + "\n\n" + nicheHashtags
     }
 
     // Insert all posts (sequential DB writes are fine — fast)

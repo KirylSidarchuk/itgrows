@@ -44,6 +44,8 @@ function stripMarkdown(text: string): string {
     .replace(/`{1,3}[^`]*`{1,3}/g, "") // code
     .replace(/^#{1,6}\s+/gm, "")       // headings
     .replace(/^\s*[-*+]\s+/gm, "")     // bullet points
+    .replace(/(^|\s)#(?![A-Za-z0-9])\S*/g, "$1") // drop malformed hashtags like "#/" (from niches with slashes)
+    .replace(/[ \t]{2,}/g, " ")
     .trim()
 }
 
