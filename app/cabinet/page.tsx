@@ -8,35 +8,6 @@ import { Suspense } from "react"
 import { Loader2, RefreshCw, Send, Calendar, Check, Settings, LogOut, Zap, Lock, MessageCircle, BarChart2, ImageIcon } from "lucide-react"
 import { signOut, useSession } from "next-auth/react"
 
-interface InstagramAccount {
-  id: string
-  username: string | null
-  name: string | null
-  profilePicture: string | null
-  instagramUserId: string | null
-  tokenExpiresAt: string | null
-  createdAt: string | null
-}
-
-interface InstagramPost {
-  id: string
-  content: string
-  status: string
-  scheduledFor: string | null
-  publishedAt: string | null
-  instagramPostId: string | null
-  publishError: string | null
-  imageUrl: string | null
-  createdAt: string
-}
-
-interface InstagramBrief {
-  niche: string
-  tone: string
-  goals: string
-  targetAudience: string
-}
-
 interface LinkedInAccount {
   id: string
   pageType: "personal" | "organization"
@@ -204,14 +175,6 @@ function LinkedInIcon({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" fill="currentColor" className={className}>
       <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
-    </svg>
-  )
-}
-
-function InstagramIcon({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="currentColor" className={className}>
-      <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z" />
     </svg>
   )
 }
@@ -530,126 +493,9 @@ function PostCard({
 }
 
 type ActiveTab = "posts" | "dna" | "account" | "support" | "companies"
-type ActivePlatform = "linkedin" | "instagram" | "x"
+type ActivePlatform = "linkedin" | "x"
 type XActiveTab = "posts" | "dna" | "company-dna"
 type LinkedInActiveTab = "personal" | "companies"
-
-function InstagramPostCard({
-  post,
-  onDelete,
-  hasSubscription,
-  trialExpired,
-}: {
-  post: InstagramPost
-  onDelete: (postId: string) => Promise<void>
-  hasSubscription: boolean
-  trialExpired?: boolean
-}) {
-  const [expanded, setExpanded] = useState(false)
-  const [deleting, setDeleting] = useState(false)
-
-  async function handleDelete() {
-    if (!confirm("Delete this post?")) return
-    setDeleting(true)
-    await onDelete(post.id)
-  }
-
-  const scheduledDate = post.scheduledFor
-    ? new Date(post.scheduledFor).toLocaleString(undefined, {
-        month: "short",
-        day: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-        timeZoneName: "short",
-        timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-      })
-    : null
-
-  const previewText = post.content.length > 140 ? post.content.slice(0, 140) + "…" : post.content
-
-  return (
-    <div className="relative bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden hover:shadow-md transition-shadow">
-      {trialExpired && !hasSubscription && (
-        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 rounded-2xl"
-          style={{ background: "rgba(255,255,255,0.82)", backdropFilter: "blur(2px)" }}>
-          <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center">
-            <Lock className="w-5 h-5 text-slate-500" />
-          </div>
-          <a
-            href="/#pricing"
-            className="bg-gradient-to-r from-pink-500 to-orange-400 hover:from-pink-400 hover:to-orange-300 text-white text-xs font-semibold px-4 py-2 rounded-xl transition-colors"
-          >
-            Subscribe to publish
-          </a>
-        </div>
-      )}
-      {post.imageUrl && (
-        <div className="h-36 overflow-hidden bg-slate-100">
-          <img src={post.imageUrl} alt="Post cover" className="w-full h-full object-cover" />
-        </div>
-      )}
-      <div className="p-4 space-y-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className={`w-2 h-2 rounded-full ${STATUS_DOT[post.status] ?? STATUS_DOT.draft}`} />
-            <Badge variant="outline" className={`text-xs px-2 py-0.5 capitalize ${STATUS_COLORS[post.status] ?? STATUS_COLORS.draft}`}>
-              {post.status}
-            </Badge>
-            {scheduledDate && post.status === "scheduled" && (
-              <span className="text-xs text-slate-400 flex items-center gap-1">
-                <Calendar className="w-3 h-3" />
-                {scheduledDate}
-              </span>
-            )}
-            {post.publishedAt && (
-              <span className="text-xs text-slate-400">
-                {new Date(post.publishedAt).toLocaleDateString()}
-              </span>
-            )}
-          </div>
-          <button
-            onClick={handleDelete}
-            disabled={deleting}
-            className="text-xs text-slate-300 hover:text-red-400 transition-colors"
-          >
-            {deleting ? "..." : "✕"}
-          </button>
-        </div>
-
-        {post.publishError && (
-          <p className="text-xs text-red-500 bg-red-50 rounded-lg px-3 py-2 border border-red-100">{post.publishError}</p>
-        )}
-
-        {!expanded ? (
-          <div>
-            <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-line">{previewText}</p>
-            <div className="flex items-center justify-between mt-1">
-              {post.content.length > 140 ? (
-                <button onClick={() => setExpanded(true)} className="text-xs text-pink-500 hover:underline">
-                  Show more
-                </button>
-              ) : <span />}
-            </div>
-          </div>
-        ) : (
-          <>
-            <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-line">{post.content}</p>
-            <button onClick={() => setExpanded(false)} className="text-xs text-slate-400 hover:text-pink-500 hover:underline">
-              Collapse
-            </button>
-          </>
-        )}
-
-        {post.status === "published" && post.instagramPostId && (
-          <p className="text-xs text-green-600 flex items-center gap-1">
-            <Check className="w-3 h-3" />
-            Published to Instagram
-          </p>
-        )}
-      </div>
-    </div>
-  )
-}
 
 function XPostCard({
   post,
@@ -995,22 +841,7 @@ function LinkedInPageContent() {
   const [orgsDeactivating, setOrgsDeactivating] = useState<Record<string, boolean>>({})
   const [orgsMessage, setOrgsMessage] = useState<string | null>(null)
 
-  // Instagram state
   const [activePlatform, setActivePlatform] = useState<ActivePlatform>("linkedin")
-  const [igAccounts, setIgAccounts] = useState<InstagramAccount[]>([])
-  const [igAccountsLoading, setIgAccountsLoading] = useState(false)
-  const [igBrief, setIgBrief] = useState<InstagramBrief>({ niche: "", tone: "casual", goals: "", targetAudience: "" })
-  const [igBriefLoaded, setIgBriefLoaded] = useState(false)
-  const [igSavingBrief, setIgSavingBrief] = useState(false)
-  const [igBriefSaved, setIgBriefSaved] = useState(false)
-  const [igPosts, setIgPosts] = useState<InstagramPost[]>([])
-  const [igPostsLoading, setIgPostsLoading] = useState(false)
-  const [igGenerating, setIgGenerating] = useState(false)
-  const [igGenerateError, setIgGenerateError] = useState<string | null>(null)
-  const [igGenerateErrorKind, setIgGenerateErrorKind] = useState<"ai_busy" | "other" | null>(null)
-  const [igGenerateRetryCountdown, setIgGenerateRetryCountdown] = useState<number | null>(null)
-  const [igGenerateTimer, setIgGenerateTimer] = useState(180)
-  const [igPublishedCollapsed, setIgPublishedCollapsed] = useState(false)
 
   // X (Twitter) state
   const [xAccount, setXAccount] = useState<TwitterAccount | null>(null)
@@ -1232,17 +1063,6 @@ function LinkedInPageContent() {
   }, [generating])
 
   useEffect(() => {
-    if (!igGenerating) {
-      setIgGenerateTimer(180)
-      return
-    }
-    const interval = setInterval(() => {
-      setIgGenerateTimer((t) => Math.max(0, t - 1))
-    }, 1000)
-    return () => clearInterval(interval)
-  }, [igGenerating])
-
-  useEffect(() => {
     if (!xGenerating) {
       setXGenerateTimer(120)
       return
@@ -1266,19 +1086,6 @@ function LinkedInPageContent() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [generateRetryCountdown])
 
-  // Auto-retry countdown for Instagram ai_busy error
-  useEffect(() => {
-    if (igGenerateRetryCountdown === null) return
-    if (igGenerateRetryCountdown <= 0) {
-      setIgGenerateRetryCountdown(null)
-      void handleIgGenerate()
-      return
-    }
-    const t = setTimeout(() => setIgGenerateRetryCountdown((c) => (c !== null ? c - 1 : null)), 1000)
-    return () => clearTimeout(t)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [igGenerateRetryCountdown])
-
   // Auto-retry countdown for X ai_busy error
   useEffect(() => {
     if (xGenerateRetryCountdown === null) return
@@ -1293,11 +1100,6 @@ function LinkedInPageContent() {
   }, [xGenerateRetryCountdown])
 
   useEffect(() => {
-    if (activePlatform === "instagram") {
-      fetchIgAccounts()
-      fetchIgBrief()
-      fetchIgPosts()
-    }
     if (activePlatform === "x") {
       fetchXAccount()
       fetchXPosts()
@@ -1385,45 +1187,6 @@ function LinkedInPageContent() {
         setPostsLoading(false)
       })
       .catch(() => setPostsLoading(false))
-  }, [])
-
-  const fetchIgAccounts = useCallback(() => {
-    setIgAccountsLoading(true)
-    fetch("/api/instagram/accounts")
-      .then((r) => r.json())
-      .then((data: { accounts?: InstagramAccount[] }) => {
-        setIgAccounts(data.accounts ?? [])
-        setIgAccountsLoading(false)
-      })
-      .catch(() => setIgAccountsLoading(false))
-  }, [])
-
-  const fetchIgBrief = useCallback(() => {
-    fetch("/api/instagram/brief")
-      .then((r) => r.json())
-      .then((data: { brief?: InstagramBrief | null }) => {
-        if (data.brief) {
-          setIgBrief({
-            niche: data.brief.niche ?? "",
-            tone: data.brief.tone ?? "casual",
-            goals: data.brief.goals ?? "",
-            targetAudience: data.brief.targetAudience ?? "",
-          })
-        }
-        setIgBriefLoaded(true)
-      })
-      .catch(() => setIgBriefLoaded(true))
-  }, [])
-
-  const fetchIgPosts = useCallback(() => {
-    setIgPostsLoading(true)
-    fetch("/api/instagram/posts")
-      .then((r) => r.json())
-      .then((data: { posts?: InstagramPost[] }) => {
-        setIgPosts(data.posts ?? [])
-        setIgPostsLoading(false)
-      })
-      .catch(() => setIgPostsLoading(false))
   }, [])
 
   const fetchXAccount = useCallback(() => {
@@ -1796,62 +1559,6 @@ function LinkedInPageContent() {
     setPosts((prev) => prev.filter((p) => p.id !== postId))
   }
 
-  async function handleIgSaveBrief() {
-    setIgSavingBrief(true)
-    await fetch("/api/instagram/brief", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(igBrief),
-    })
-    setIgSavingBrief(false)
-    setIgBriefSaved(true)
-    setTimeout(() => setIgBriefSaved(false), 2500)
-  }
-
-  async function handleIgGenerate() {
-    setIgGenerating(true)
-    setIgGenerateError(null)
-    setIgGenerateErrorKind(null)
-    setIgGenerateRetryCountdown(null)
-    try {
-      const res = await fetch("/api/instagram/generate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ brief: igBrief }),
-      })
-      if (res.status === 429) {
-        const data = await res.json() as { message?: string }
-        setIgGenerateErrorKind("other")
-        setIgGenerateError(data.message ?? "Too many requests. Please wait before generating again.")
-        return
-      }
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({})) as { error?: string; message?: string; retryAfter?: number }
-        if (data.error === "ai_busy") {
-          setIgGenerateErrorKind("ai_busy")
-          setIgGenerateError(null)
-          setIgGenerateRetryCountdown(data.retryAfter ?? 30)
-        } else {
-          setIgGenerateErrorKind("other")
-          setIgGenerateError(data.message ?? data.error ?? "Generation failed. Please try again.")
-        }
-        return
-      }
-      fetchIgPosts()
-    } catch (err) {
-      setIgGenerateErrorKind("other")
-      setIgGenerateError(err instanceof Error ? err.message : "Network error — request may have timed out")
-    } finally {
-      setIgGenerating(false)
-    }
-  }
-
-  async function handleIgDeletePost(postId: string) {
-    const res = await fetch(`/api/instagram/posts?id=${postId}`, { method: "DELETE" })
-    if (!res.ok) return
-    setIgPosts((prev) => prev.filter((p) => p.id !== postId))
-  }
-
   async function handleXDisconnect(type?: "personal" | "company") {
     const key = type ?? "all"
     setXDisconnecting(key)
@@ -1954,10 +1661,6 @@ function LinkedInPageContent() {
   }
 
   const isConnected = accounts.length > 0
-  const igIsConnected = igAccounts.length > 0
-  const igBriefFilled = !!(igBrief.niche?.trim() || igBrief.goals?.trim() || igBrief.targetAudience?.trim())
-  const igActivePosts = igPosts.filter((p) => p.status !== "published").sort((a, b) => new Date(a.scheduledFor ?? 0).getTime() - new Date(b.scheduledFor ?? 0).getTime())
-  const igPublishedPosts = igPosts.filter((p) => p.status === "published").sort((a, b) => new Date(a.scheduledFor ?? 0).getTime() - new Date(b.scheduledFor ?? 0).getTime())
   const xIsConnected = xAccount !== null
   const xBothAccountsConnected = !!(xPersonalAccount && xCompanyAccount)
   const xFilteredPosts = xBothAccountsConnected ? xPosts.filter((p) => p.accountType === xPostsAccountType) : xPosts
@@ -2468,17 +2171,6 @@ function LinkedInPageContent() {
             <XIcon className="w-4 h-4 shrink-0" />
             <span className="text-sm font-semibold">X (Twitter)</span>
           </button>
-          {/* Instagram — coming soon */}
-          <button
-            disabled
-            className="w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl text-slate-400 cursor-not-allowed mb-1"
-          >
-            <div className="flex items-center gap-3">
-              <InstagramIcon className="w-4 h-4 shrink-0 opacity-50" />
-              <span className="text-sm">Instagram</span>
-            </div>
-            <span className="text-[10px] font-semibold bg-slate-100 text-slate-500 rounded-full px-2 py-0.5">Soon</span>
-          </button>
         </div>
 
         {/* Account section */}
@@ -2605,15 +2297,7 @@ function LinkedInPageContent() {
             <h1 className="text-xl sm:text-2xl font-bold text-[#1b1916] mb-1">
               {greeting}, {userName} 👋
             </h1>
-            {activePlatform === "instagram" ? (
-              igIsConnected ? (
-                <p className="text-sm font-semibold bg-gradient-to-r from-pink-500 to-orange-400 bg-clip-text text-transparent">
-                  ✦ Your Instagram is on autopilot
-                </p>
-              ) : (
-                <p className="text-slate-500 text-sm">Connect Instagram to get started</p>
-              )
-            ) : activePlatform === "x" ? (
+            {activePlatform === "x" ? (
               xIsConnected ? (
                 <p className="text-sm font-semibold text-slate-700">
                   {xPersonalAccount ? `✦ @${xPersonalAccount.username}` : ""}{xPersonalAccount && xCompanyAccount ? " · " : ""}{xCompanyAccount ? `@${xCompanyAccount.username} (co.)` : ""}
@@ -2811,337 +2495,6 @@ function LinkedInPageContent() {
                   </div>
                 )}
               </div>
-            </div>
-          )}
-
-          {/* ===================== INSTAGRAM PANEL ===================== */}
-          {activePlatform === "instagram" && activeTab !== "account" && activeTab !== "support" && (
-            <div className="space-y-5">
-              {/* Coming soon overlay */}
-              <div className="bg-white rounded-2xl border border-slate-100 shadow-sm py-16 flex flex-col items-center gap-5 text-center">
-                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-pink-500 to-orange-400 flex items-center justify-center shadow-lg opacity-60">
-                  <InstagramIcon className="w-9 h-9 text-white" />
-                </div>
-                <div>
-                  <span className="inline-block mb-3 px-3 py-1 rounded-full text-xs font-bold bg-orange-100 text-orange-600 border border-orange-200">Coming Soon</span>
-                  <p className="text-base font-semibold text-slate-700 mb-1">Instagram is on its way</p>
-                  <p className="text-sm text-slate-400 max-w-xs">
-                    We're putting the finishing touches on Instagram integration. You'll be notified when it's ready.
-                  </p>
-                </div>
-              </div>
-              {false && !igAccountsLoading ? (
-                <div className="flex justify-center py-16">
-                  <Loader2 className="w-6 h-6 animate-spin text-pink-400" />
-                </div>
-              ) : !igIsConnected && false ? (
-                /* Not connected */
-                <div className="bg-white rounded-2xl border border-slate-100 shadow-sm py-16 flex flex-col items-center gap-5 text-center">
-                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-pink-500 to-orange-400 flex items-center justify-center shadow-lg">
-                    <InstagramIcon className="w-9 h-9 text-white" />
-                  </div>
-                  <div>
-                    <p className="text-base font-semibold text-slate-700 mb-1">Connect Instagram</p>
-                    <p className="text-sm text-slate-400 max-w-xs">
-                      Link your Instagram account to generate and schedule posts automatically.
-                    </p>
-                  </div>
-                  <a href="/api/instagram/connect">
-                    <Button className="bg-gradient-to-r from-pink-500 to-orange-400 hover:from-pink-400 hover:to-orange-300 text-white rounded-xl px-6">
-                      Connect Instagram
-                    </Button>
-                  </a>
-                </div>
-              ) : !igBriefLoaded ? (
-                <div className="flex justify-center py-16">
-                  <Loader2 className="w-6 h-6 animate-spin text-pink-400" />
-                </div>
-              ) : !igBriefFilled ? (
-                /* Connected but no brief */
-                <div className="space-y-5">
-                  <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
-                    <div className="flex items-center gap-3 mb-5">
-                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-pink-500 to-orange-400 flex items-center justify-center shrink-0">
-                        <InstagramIcon className="w-5 h-5 text-white" />
-                      </div>
-                      <div>
-                        <p className="text-base font-semibold text-slate-800">Instagram Brief</p>
-                        <p className="text-xs text-slate-400">Tell us about your Instagram presence</p>
-                      </div>
-                    </div>
-                    <div className="space-y-4">
-                      <div>
-                        <label className="block text-xs font-semibold text-slate-600 mb-1.5 uppercase tracking-wide">Niche / Topic</label>
-                        <input
-                          type="text"
-                          placeholder="e.g. fitness, tech, travel, cooking"
-                          value={igBrief.niche}
-                          onChange={(e) => setIgBrief((b) => ({ ...b, niche: e.target.value }))}
-                          className="w-full px-3 py-2.5 text-sm rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-pink-300"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-semibold text-slate-600 mb-1.5 uppercase tracking-wide">Target Audience</label>
-                        <input
-                          type="text"
-                          placeholder="e.g. young entrepreneurs, fitness enthusiasts"
-                          value={igBrief.targetAudience}
-                          onChange={(e) => setIgBrief((b) => ({ ...b, targetAudience: e.target.value }))}
-                          className="w-full px-3 py-2.5 text-sm rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-pink-300"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-semibold text-slate-600 mb-1.5 uppercase tracking-wide">Goals</label>
-                        <input
-                          type="text"
-                          placeholder="e.g. grow followers, drive sales, build community"
-                          value={igBrief.goals}
-                          onChange={(e) => setIgBrief((b) => ({ ...b, goals: e.target.value }))}
-                          className="w-full px-3 py-2.5 text-sm rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-pink-300"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-semibold text-slate-600 mb-2 uppercase tracking-wide">Tone of Voice</label>
-                        <div className="flex gap-2">
-                          {(["casual", "inspirational", "professional"] as const).map((tone) => (
-                            <button
-                              key={tone}
-                              type="button"
-                              onClick={() => setIgBrief((b) => ({ ...b, tone }))}
-                              className={`px-4 py-2 rounded-xl text-sm font-medium capitalize transition-all border ${
-                                igBrief.tone === tone
-                                  ? "bg-gradient-to-r from-pink-500 to-orange-400 text-white border-transparent shadow-sm"
-                                  : "bg-slate-50 text-slate-600 border-slate-200 hover:border-pink-300 hover:text-pink-600"
-                              }`}
-                            >
-                              {tone}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                      <Button
-                        disabled={igSavingBrief}
-                        onClick={handleIgSaveBrief}
-                        className="bg-gradient-to-r from-pink-500 to-orange-400 hover:from-pink-400 hover:to-orange-300 text-white rounded-xl px-6"
-                      >
-                        {igSavingBrief ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-                        {igBriefSaved ? "Saved!" : "Save Brief"}
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                /* Connected + brief filled — show posts + generate */
-                <div className="space-y-5">
-                  {/* Action bar */}
-                  <div className="flex items-center gap-3 flex-wrap">
-                    {hasPersonalPlan ? (
-                      <Button
-                        disabled={igGenerating}
-                        onClick={handleIgGenerate}
-                        className="bg-gradient-to-r from-pink-500 to-orange-400 hover:from-pink-400 hover:to-orange-300 text-white font-semibold px-6 py-2.5 rounded-xl shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        {igGenerating ? (
-                          <>
-                            <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                            {igGenerateTimer > 0 ? `Generating... (${igGenerateTimer}s left)` : "Almost done..."}
-                          </>
-                        ) : (
-                          <>
-                            <Zap className="w-4 h-4 mr-2" />
-                            Generate 7 Posts
-                          </>
-                        )}
-                      </Button>
-                    ) : trialExpired ? (
-                      <a
-                        href="/#pricing"
-                        className="inline-flex items-center gap-2 bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-500 hover:to-orange-400 text-white font-semibold px-6 py-2.5 rounded-xl shadow-sm text-sm transition-opacity"
-                      >
-                        <Lock className="w-4 h-4" />
-                        Subscribe to Generate
-                      </a>
-                    ) : (
-                      <Button
-                        onClick={() => setShowPlanModal(true)}
-                        disabled={checkingOut}
-                        className="bg-gradient-to-r from-pink-500 to-orange-400 hover:from-pink-400 hover:to-orange-300 text-white font-semibold px-6 py-2.5 rounded-xl shadow-sm"
-                      >
-                        {checkingOut ? "Loading..." : "Start Free Trial"}
-                      </Button>
-                    )}
-                  </div>
-
-                  {igGenerateErrorKind === "ai_busy" && igGenerateRetryCountdown !== null && (
-                    <div className="rounded-xl border border-amber-200 bg-amber-50 p-5 flex items-start gap-4">
-                      <div className="text-2xl">⏳</div>
-                      <div className="flex-1">
-                        <p className="font-semibold text-amber-800">AI is in high demand right now</p>
-                        <p className="text-sm text-amber-700 mt-1">Our AI servers are handling a lot of requests. Retrying automatically...</p>
-                        <p className="text-sm text-amber-600 mt-1">Retrying in {igGenerateRetryCountdown} seconds...</p>
-                        <button
-                          onClick={() => { setIgGenerateRetryCountdown(null); void handleIgGenerate() }}
-                          className="mt-3 px-4 py-2 bg-amber-600 text-white rounded-lg text-sm font-medium hover:bg-amber-700 transition-colors"
-                        >
-                          Try again now
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                  {igGenerateErrorKind === "other" && igGenerateError && (
-                    <div className="rounded-xl border border-red-100 bg-red-50 p-5 flex items-start gap-4">
-                      <div className="text-2xl">😔</div>
-                      <div>
-                        <p className="font-semibold text-red-800">Something went wrong</p>
-                        <p className="text-sm text-red-700 mt-1">Please try again or contact support if the issue persists.</p>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Posts */}
-                  {igPostsLoading ? (
-                    <div className="flex justify-center py-16">
-                      <Loader2 className="w-7 h-7 animate-spin text-pink-400" />
-                    </div>
-                  ) : igActivePosts.length === 0 && igPublishedPosts.length === 0 ? (
-                    <div className="bg-white rounded-2xl border border-slate-100 shadow-sm py-14 flex flex-col items-center gap-5 text-center px-6">
-                      <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-pink-500 to-orange-400 flex items-center justify-center">
-                        <InstagramIcon className="w-8 h-8 text-white" />
-                      </div>
-                      <div>
-                        <p className="text-base font-semibold text-slate-700 mb-1">No posts yet</p>
-                        <p className="text-sm text-slate-400 max-w-xs">Generate 7 Instagram captions with images, scheduled for the next 7 days.</p>
-                      </div>
-                      {hasPersonalPlan && (
-                        <button
-                          onClick={handleIgGenerate}
-                          disabled={igGenerating}
-                          className="bg-gradient-to-r from-pink-500 to-orange-400 hover:from-pink-400 hover:to-orange-300 text-white font-semibold text-sm px-6 py-2.5 rounded-xl shadow-sm transition-opacity disabled:opacity-70 flex items-center gap-2"
-                        >
-                          {igGenerating ? (
-                            <>
-                              <Loader2 className="w-4 h-4 animate-spin" />
-                              Generating...
-                            </>
-                          ) : (
-                            <>
-                              <Zap className="w-4 h-4" />
-                              Generate 7 Posts
-                            </>
-                          )}
-                        </button>
-                      )}
-                    </div>
-                  ) : (
-                    <>
-                      {igActivePosts.length > 0 && (
-                        <>
-                          <div className="flex items-center justify-between">
-                            <h2 className="text-sm font-semibold text-slate-700">
-                              Upcoming · {igActivePosts.length} post{igActivePosts.length !== 1 ? "s" : ""}
-                            </h2>
-                          </div>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {igActivePosts.map((post) => (
-                              <InstagramPostCard
-                                key={post.id}
-                                post={post}
-                                onDelete={handleIgDeletePost}
-                                hasSubscription={hasPersonalPlan}
-                                trialExpired={trialExpired}
-                              />
-                            ))}
-                          </div>
-                        </>
-                      )}
-                      {igPublishedPosts.length > 0 && (
-                        <div className="mt-4">
-                          <button
-                            onClick={() => setIgPublishedCollapsed((c) => !c)}
-                            className="flex items-center gap-2 text-sm font-semibold text-slate-500 hover:text-slate-700 transition-colors mb-3"
-                          >
-                            <span>{igPublishedCollapsed ? "▶" : "▼"}</span>
-                            Published · {igPublishedPosts.length} post{igPublishedPosts.length !== 1 ? "s" : ""}
-                          </button>
-                          {!igPublishedCollapsed && (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                              {igPublishedPosts.map((post) => (
-                                <InstagramPostCard
-                                  key={post.id}
-                                  post={post}
-                                  onDelete={handleIgDeletePost}
-                                  hasSubscription={hasPersonalPlan}
-                                  trialExpired={trialExpired}
-                                />
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </>
-                  )}
-
-                  {/* Edit brief inline */}
-                  <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
-                    <p className="text-sm font-semibold text-slate-700 mb-4">Edit Instagram Brief</p>
-                    <div className="space-y-3">
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div>
-                          <label className="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wide">Niche</label>
-                          <input
-                            type="text"
-                            value={igBrief.niche}
-                            onChange={(e) => setIgBrief((b) => ({ ...b, niche: e.target.value }))}
-                            className="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-pink-300"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wide">Target Audience</label>
-                          <input
-                            type="text"
-                            value={igBrief.targetAudience}
-                            onChange={(e) => setIgBrief((b) => ({ ...b, targetAudience: e.target.value }))}
-                            className="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-pink-300"
-                          />
-                        </div>
-                      </div>
-                      <div>
-                        <label className="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wide">Goals</label>
-                        <input
-                          type="text"
-                          value={igBrief.goals}
-                          onChange={(e) => setIgBrief((b) => ({ ...b, goals: e.target.value }))}
-                          className="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-pink-300"
-                        />
-                      </div>
-                      <div className="flex gap-2">
-                        {(["casual", "inspirational", "professional"] as const).map((tone) => (
-                          <button
-                            key={tone}
-                            type="button"
-                            onClick={() => setIgBrief((b) => ({ ...b, tone }))}
-                            className={`px-3 py-1.5 rounded-lg text-xs font-medium capitalize transition-all border ${
-                              igBrief.tone === tone
-                                ? "bg-gradient-to-r from-pink-500 to-orange-400 text-white border-transparent"
-                                : "bg-slate-50 text-slate-600 border-slate-200 hover:border-pink-300"
-                            }`}
-                          >
-                            {tone}
-                          </button>
-                        ))}
-                      </div>
-                      <Button
-                        size="sm"
-                        disabled={igSavingBrief}
-                        onClick={handleIgSaveBrief}
-                        className="bg-gradient-to-r from-pink-500 to-orange-400 hover:from-pink-400 hover:to-orange-300 text-white rounded-xl text-xs"
-                      >
-                        {igBriefSaved ? "Saved!" : "Save Brief"}
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              )}
             </div>
           )}
 
