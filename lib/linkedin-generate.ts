@@ -49,25 +49,36 @@ function stripMarkdown(text: string): string {
     .trim()
 }
 
-// Fallback hashtags derived from a SPECIFIC post's content (so they vary per post),
-// topped up from the niche. Only used when the model omitted hashtags.
+// Fallback hashtags derived from a SPECIFIC post's content (so they vary per post):
+// pick the most frequent meaningful keywords (= the topic), topped up from the niche.
+// Only used when the model omitted hashtags.
 const HASHTAG_STOPWORDS = new Set(
-  "the a an and or but for with your you our we is are be been being this that these those it as at by from into about over after before how why what when who which while their there here have has had will would can could should more most just like also only".split(/\s+/)
+  "the a an and or but for with your you our we is are be been being this that these those it as at by from into about over after before how why what when who which while their there here have has had will would can could should more most just like also only what they them then than some much many very really thing things make made making take takes does done yours ours still even ever never always often sometimes today years year people world work working time".split(/\s+/)
 )
 export function buildPostHashtags(content: string, niche?: string | null): string {
+  const counts = new Map<string, { n: number; disp: string }>()
+  for (const w of content.replace(/[#*_`]/g, " ").match(/[A-Za-z][A-Za-z0-9]{3,19}/g) ?? []) {
+    const lw = w.toLowerCase()
+    if (HASHTAG_STOPWORDS.has(lw)) continue
+    const e = counts.get(lw)
+    if (e) e.n++
+    else counts.set(lw, { n: 1, disp: w })
+  }
   const seen = new Set<string>()
   const tags: string[] = []
-  const push = (raw: string) => {
-    if (tags.length >= 3) return
-    const c = raw.replace(/[^A-Za-z0-9]/g, "")
-    if (c.length < 3) return
+  for (const [lw, o] of [...counts.entries()].sort((a, b) => b[1].n - a[1].n || b[1].disp.length - a[1].disp.length)) {
+    if (tags.length >= 3) break
+    seen.add(lw)
+    tags.push(`#${o.disp.charAt(0).toUpperCase() + o.disp.slice(1)}`)
+  }
+  for (const w of (niche ?? "").split(/[\s,/|]+/)) {
+    if (tags.length >= 3) break
+    const c = w.replace(/[^A-Za-z0-9]/g, "")
     const lw = c.toLowerCase()
-    if (HASHTAG_STOPWORDS.has(lw) || seen.has(lw)) return
+    if (c.length < 3 || HASHTAG_STOPWORDS.has(lw) || seen.has(lw)) continue
     seen.add(lw)
     tags.push(`#${c.charAt(0).toUpperCase() + c.slice(1)}`)
   }
-  for (const w of content.replace(/[#*_`]/g, " ").match(/[A-Za-z][A-Za-z0-9]{3,19}/g) ?? []) push(w)
-  for (const w of (niche ?? "").split(/[\s,/|]+/)) push(w)
   if (tags.length === 0) tags.push("#Business")
   return tags.slice(0, 3).join(" ")
 }
