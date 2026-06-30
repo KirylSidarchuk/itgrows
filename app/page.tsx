@@ -769,31 +769,37 @@ export default function PersonalPage() {
             <p className="text-slate-600 text-lg">14-day free trial. Cancel anytime.</p>
             {/* Pricing anchor */}
             {/* Cost comparison: hiring humans vs ItGrows */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-3xl mx-auto mt-8 text-left">
-              <div className="bg-white rounded-2xl border border-black/10 p-6">
-                <div className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-4">Hiring it out</div>
-                <ul className="space-y-2.5 text-sm text-slate-600">
-                  <li className="flex justify-between"><span>Social media manager</span><span className="font-semibold text-slate-700">$2,000+/mo</span></li>
-                  <li className="flex justify-between"><span>Copywriter</span><span className="font-semibold text-slate-700">$500+/mo</span></li>
-                  <li className="flex items-center gap-2 text-slate-500 pt-1"><span className="text-red-400 font-bold">✕</span> Calls in sick, takes vacation</li>
-                  <li className="flex items-center gap-2 text-slate-500"><span className="text-red-400 font-bold">✕</span> Slow to ramp, inconsistent</li>
-                </ul>
-                <div className="mt-5 pt-3 border-t border-black/10 flex justify-between items-end">
-                  <span className="text-sm text-slate-500">Total</span>
-                  <span className="text-3xl font-extrabold text-slate-700">$2,500+<span className="text-base font-medium text-slate-400">/mo</span></span>
+            <div className="max-w-4xl mx-auto mt-12">
+              <p className="text-center text-sm font-semibold uppercase tracking-widest text-violet-600 mb-2">The math is simple</p>
+              <h3 className="text-center text-2xl sm:text-3xl font-bold text-[#1b1916] mb-8">Replace a $2,500/mo team with <span className="bg-gradient-to-r from-violet-600 via-pink-500 to-cyan-500 bg-clip-text text-transparent">$49/mo</span></h3>
+              <div className="relative grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 text-left">
+                <div className="hidden sm:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full bg-[#1b1916] text-white items-center justify-center font-extrabold text-sm shadow-lg">VS</div>
+                <div className="bg-slate-50 rounded-2xl border border-black/10 p-6 sm:p-7">
+                  <div className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-4">Hiring it out</div>
+                  <ul className="space-y-2.5 text-sm text-slate-500">
+                    <li className="flex justify-between"><span>Social media manager</span><span className="font-semibold text-slate-600">$2,000+/mo</span></li>
+                    <li className="flex justify-between"><span>Copywriter</span><span className="font-semibold text-slate-600">$500+/mo</span></li>
+                    <li className="flex items-center gap-2 pt-1"><span className="text-red-400 font-bold">✕</span> Calls in sick, takes vacation</li>
+                    <li className="flex items-center gap-2"><span className="text-red-400 font-bold">✕</span> Slow to ramp, inconsistent</li>
+                  </ul>
+                  <div className="mt-5 pt-3 border-t border-black/10 flex justify-between items-end">
+                    <span className="text-sm text-slate-500">Total</span>
+                    <span className="text-3xl font-extrabold text-slate-400 line-through decoration-red-400/70 decoration-2">$2,500+<span className="text-base font-medium">/mo</span></span>
+                  </div>
                 </div>
-              </div>
-              <div className="bg-white rounded-2xl border-2 border-violet-400 p-6 relative shadow-sm">
-                <div className="text-xs font-semibold uppercase tracking-widest text-violet-600 mb-4">With ItGrows</div>
-                <ul className="space-y-2.5 text-sm text-slate-600">
-                  <li className="flex items-center gap-2"><span className="text-violet-600 font-bold">✓</span> Daily posts in your voice, on autopilot</li>
-                  <li className="flex items-center gap-2"><span className="text-violet-600 font-bold">✓</span> Never sick, never off — every single day</li>
-                  <li className="flex items-center gap-2"><span className="text-violet-600 font-bold">✓</span> You approve · official LinkedIn &amp; X API</li>
-                  <li className="flex items-center gap-2"><span className="text-violet-600 font-bold">✓</span> Cancel anytime · no card to start</li>
-                </ul>
-                <div className="mt-5 pt-3 border-t border-violet-100 flex justify-between items-end">
-                  <span className="text-sm text-slate-500">From</span>
-                  <span className="text-3xl font-extrabold text-violet-700">$49<span className="text-base font-medium text-slate-400">/mo</span></span>
+                <div className="bg-white rounded-2xl border-2 border-violet-500 p-6 sm:p-7 relative shadow-xl shadow-violet-300/40">
+                  <div className="absolute -top-3 right-5 bg-green-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-sm">Save $2,400+/mo</div>
+                  <div className="text-xs font-semibold uppercase tracking-widest text-violet-600 mb-4">With ItGrows</div>
+                  <ul className="space-y-2.5 text-sm text-slate-700">
+                    <li className="flex items-center gap-2"><span className="text-violet-600 font-bold">✓</span> Daily posts in your voice, on autopilot</li>
+                    <li className="flex items-center gap-2"><span className="text-violet-600 font-bold">✓</span> Never sick, never off — every single day</li>
+                    <li className="flex items-center gap-2"><span className="text-violet-600 font-bold">✓</span> You approve · official LinkedIn &amp; X API</li>
+                    <li className="flex items-center gap-2"><span className="text-violet-600 font-bold">✓</span> Cancel anytime · no card to start</li>
+                  </ul>
+                  <div className="mt-5 pt-3 border-t border-violet-100 flex justify-between items-end">
+                    <span className="text-sm text-slate-500">From</span>
+                    <span className="text-4xl font-extrabold bg-gradient-to-r from-violet-600 to-pink-600 bg-clip-text text-transparent">$49<span className="text-base font-medium text-slate-400">/mo</span></span>
+                  </div>
                 </div>
               </div>
             </div>
