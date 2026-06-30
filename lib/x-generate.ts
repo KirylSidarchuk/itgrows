@@ -2,10 +2,9 @@ import { db } from "@/lib/db"
 import { twitterPosts, twitterBriefs, twitterCompanyBriefs, linkedinBriefs, users } from "@/lib/db/schema"
 import { eq, and, or, desc } from "drizzle-orm"
 import { sendEmail } from "@/lib/email"
+import { callLLM } from "@/lib/llm-client"
 
-const LLM_BASE_URL = "http://34.60.133.229:4000"
 const LLM_MODEL = "claude-sonnet-4-6"
-const LLM_API_KEY = process.env.LLM_API_KEY ?? "jtotFgxS1WQorT52LZym2ncyYzboliS6p04RqUwneFI"
 
 function xPostsReadyEmail(name: string, firstDate: Date): string {
   const baseStyle = `
@@ -130,27 +129,18 @@ Return ONLY a valid JSON array with exactly ${maxPosts} objects. Each object mus
 
 ${jsonInstruction}`
 
-    const llmRes = await fetch(`${LLM_BASE_URL}/v1/chat/completions`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${LLM_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: LLM_MODEL,
-        messages: [
+    let rawContent = ""
+    try {
+      rawContent = await callLLM(
+        [
           { role: "system", content: "You are a JSON API. Always respond with valid JSON only. Never use markdown code blocks." },
           { role: "user", content: prompt },
         ],
-        max_tokens: 2048,
-        temperature: 0.8,
-      }),
-    })
-
-    if (!llmRes.ok) return
-
-    const llmData = await llmRes.json() as { choices: Array<{ message: { content: string } }> }
-    const rawContent = llmData.choices?.[0]?.message?.content ?? ""
+        { caller: "x-generate", max_tokens: 2048, temperature: 0.8, models: [LLM_MODEL, "gemini-2.5-flash"] }
+      )
+    } catch {
+      return
+    }
     if (!rawContent) return
 
     const cleaned = rawContent.replace(/```json\s*/gi, "").replace(/```\s*/g, "").trim()

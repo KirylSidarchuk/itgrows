@@ -3,6 +3,7 @@ import { auth } from "@/auth"
 import { db } from "@/lib/db"
 import { twitterPosts } from "@/lib/db/schema"
 import { eq, and } from "drizzle-orm"
+import { openaiGenerateImage } from "@/lib/llm-client"
 
 const IMAGE_API_URL = "http://34.60.133.229:4000/images/generate"
 const IMAGE_API_KEY = process.env.LLM_API_KEY ?? "jtotFgxS1WQorT52LZym2ncyYzboliS6p04RqUwneFI"
@@ -42,36 +43,37 @@ export async function POST(req: NextRequest) {
     const tweetText = post.content.replace(/#\w+/g, "").trim()
     const imagePrompt = `Create a clean, professional social media image for this tweet: "${tweetText}". Visual style: modern, minimal, eye-catching. No text overlays. Suitable for Twitter/X post.`
 
-    // Call image generation API
-    const imgRes = await fetch(IMAGE_API_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${IMAGE_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: IMAGE_MODEL,
-        prompt: imagePrompt,
-      }),
-    })
-
-    if (!imgRes.ok) {
-      const errText = await imgRes.text()
-      throw new Error(`Image API error ${imgRes.status}: ${errText}`)
+    // Try the gateway image API; fall back to OpenAI on any failure.
+    let imageUrl: string | null = null
+    try {
+      const imgRes = await fetch(IMAGE_API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${IMAGE_API_KEY}`,
+        },
+        body: JSON.stringify({ model: IMAGE_MODEL, prompt: imagePrompt }),
+      })
+      if (imgRes.ok) {
+        const imgData = await imgRes.json() as {
+          candidates?: Array<{ content: { parts: Array<{ inlineData?: { data?: string; mimeType?: string } }> } }>
+        }
+        const parts = imgData?.candidates?.[0]?.content?.parts ?? []
+        const inlineData = parts.find((p) => p?.inlineData)?.inlineData
+        if (inlineData?.data) {
+          imageUrl = `data:${inlineData.mimeType ?? "image/jpeg"};base64,${inlineData.data}`
+        }
+      }
+    } catch {
+      // gateway failed — fall through to OpenAI fallback
     }
 
-    const imgData = await imgRes.json() as {
-      candidates?: Array<{ content: { parts: Array<{ inlineData?: { data?: string; mimeType?: string } }> } }>
+    if (!imageUrl) {
+      imageUrl = await openaiGenerateImage(imagePrompt)
     }
-
-    const parts = imgData?.candidates?.[0]?.content?.parts ?? []
-    const inlineData = parts.find((p) => p?.inlineData)?.inlineData
-    if (!inlineData?.data) {
-      throw new Error("No image data returned from API")
+    if (!imageUrl) {
+      throw new Error("Image generation failed (gateway + OpenAI)")
     }
-
-    const mimeType = inlineData.mimeType ?? "image/jpeg"
-    const imageUrl = `data:${mimeType};base64,${inlineData.data}`
 
     // Save imageUrl to twitterPosts
     await db

@@ -17,14 +17,16 @@ interface LLMOptions {
   max_tokens?: number
   temperature?: number
   caller?: string // which route is calling (for logging)
+  models?: string[] // override primary gateway models (defaults to LLM_MODELS); OpenAI is always the final fallback
 }
 
 export async function callLLM(messages: LLMMessage[], options: LLMOptions = {}): Promise<string> {
-  const { caller = "unknown", ...params } = options
+  const { caller = "unknown", models, ...params } = options
+  const modelList = models ?? LLM_MODELS
 
   let lastError = ""
-  for (let attempt = 0; attempt < LLM_MODELS.length; attempt++) {
-    const model = LLM_MODELS[attempt]
+  for (let attempt = 0; attempt < modelList.length; attempt++) {
+    const model = modelList[attempt]
     if (attempt > 0) await new Promise(r => setTimeout(r, 3000))
 
     const start = Date.now()
@@ -80,7 +82,7 @@ export async function callLLM(messages: LLMMessage[], options: LLMOptions = {}):
     }
   }
 
-  throw new Error(`LLM unavailable after ${LLM_MODELS.length} attempts: ${lastError}`)
+  throw new Error(`LLM unavailable after ${modelList.length} attempts: ${lastError}`)
 }
 
 // --- OpenAI fallback helpers ---
