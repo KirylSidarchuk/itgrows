@@ -2231,9 +2231,10 @@ function LinkedInPageContent() {
               setActivePlatform("linkedin")
               setLinkedInActiveTab("personal")
               setSelectedLinkedInAccountId(null)
+              setActiveTab("posts")
             }}
             className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl mb-1 transition-colors ${
-              activePlatform === "linkedin" && linkedInActiveTab === "personal" && !selectedLinkedInAccountId
+              activePlatform === "linkedin" && linkedInActiveTab === "personal" && !selectedLinkedInAccountId && activeTab !== "account" && activeTab !== "support"
                 ? "bg-violet-600 text-white"
                 : "text-slate-600 hover:bg-slate-50 hover:text-violet-700"
             }`}
@@ -2273,7 +2274,7 @@ function LinkedInPageContent() {
                   setActiveTab("posts")
                 }}
                 className={`w-full flex items-center gap-2.5 pl-4 pr-3 py-2 rounded-xl mb-0.5 transition-colors ${
-                  activePlatform === "linkedin" && linkedInActiveTab === "personal" && selectedLinkedInAccountId === org.id
+                  activePlatform === "linkedin" && linkedInActiveTab === "personal" && selectedLinkedInAccountId === org.id && activeTab !== "account" && activeTab !== "support"
                     ? "bg-blue-50 text-[#0077B5] font-semibold"
                     : "text-slate-600 hover:bg-slate-50 hover:text-[#0077B5]"
                 }`}
@@ -2283,9 +2284,9 @@ function LinkedInPageContent() {
               </button>
             ))}
             <button
-              onClick={() => { setActivePlatform("linkedin"); setLinkedInActiveTab("companies") }}
+              onClick={() => { setActivePlatform("linkedin"); setLinkedInActiveTab("companies"); setActiveTab("posts") }}
               className={`w-full flex items-center gap-2.5 pl-4 pr-3 py-2 rounded-xl mb-1 transition-colors ${
-                activePlatform === "linkedin" && linkedInActiveTab === "companies"
+                activePlatform === "linkedin" && linkedInActiveTab === "companies" && activeTab !== "account" && activeTab !== "support"
                   ? "bg-blue-50 text-[#0077B5] font-semibold"
                   : "text-slate-600 hover:bg-slate-50 hover:text-[#0077B5]"
               }`}
@@ -2297,9 +2298,9 @@ function LinkedInPageContent() {
 
           {/* Twitter/X */}
           <button
-            onClick={() => setActivePlatform("x")}
+            onClick={() => { setActivePlatform("x"); setActiveTab("posts") }}
             className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl mb-1 transition-colors ${
-              activePlatform === "x"
+              activePlatform === "x" && activeTab !== "account" && activeTab !== "support"
                 ? "bg-slate-900 text-white"
                 : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
             }`}
@@ -2321,14 +2322,14 @@ function LinkedInPageContent() {
           </button>
           <button
             onClick={() => setActiveTab("account")}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 hover:text-violet-700 transition-colors mb-1"
+            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors mb-1 ${activeTab === "account" ? "bg-violet-600 text-white" : "text-slate-600 hover:bg-slate-50 hover:text-violet-700"}`}
           >
             <Settings className="w-4 h-4 shrink-0" />
             <span className="text-sm">Settings</span>
           </button>
           <button
             onClick={() => setActiveTab("support")}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 hover:text-violet-700 transition-colors mb-1"
+            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors mb-1 ${activeTab === "support" ? "bg-violet-600 text-white" : "text-slate-600 hover:bg-slate-50 hover:text-violet-700"}`}
           >
             <MessageCircle className="w-4 h-4 shrink-0" />
             <span className="text-sm">Support</span>
@@ -2391,19 +2392,19 @@ function LinkedInPageContent() {
         <div className="px-3 pb-2 flex items-center gap-1.5 overflow-x-auto">
           <button
             onClick={() => { setActivePlatform("linkedin"); setLinkedInActiveTab("personal"); setSelectedLinkedInAccountId(null); setActiveTab("posts") }}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-colors ${activePlatform === "linkedin" && linkedInActiveTab === "personal" && !selectedLinkedInAccountId ? "bg-violet-600 text-white" : "bg-slate-100 text-slate-600"}`}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-colors ${activePlatform === "linkedin" && linkedInActiveTab === "personal" && !selectedLinkedInAccountId && activeTab !== "account" && activeTab !== "support" ? "bg-violet-600 text-white" : "bg-slate-100 text-slate-600"}`}
           >
             <LinkedInIcon className="w-3.5 h-3.5" /> LinkedIn
           </button>
           <button
-            onClick={() => { setActivePlatform("linkedin"); setLinkedInActiveTab("companies") }}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-colors ${activePlatform === "linkedin" && linkedInActiveTab === "companies" ? "bg-[#0077B5] text-white" : "bg-slate-100 text-slate-600"}`}
+            onClick={() => { setActivePlatform("linkedin"); setLinkedInActiveTab("companies"); setActiveTab("posts") }}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-colors ${activePlatform === "linkedin" && linkedInActiveTab === "companies" && activeTab !== "account" && activeTab !== "support" ? "bg-[#0077B5] text-white" : "bg-slate-100 text-slate-600"}`}
           >
             Company Pages
           </button>
           <button
-            onClick={() => setActivePlatform("x")}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-colors ${activePlatform === "x" ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600"}`}
+            onClick={() => { setActivePlatform("x"); setActiveTab("posts") }}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-colors ${activePlatform === "x" && activeTab !== "account" && activeTab !== "support" ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600"}`}
           >
             <XIcon className="w-3.5 h-3.5" /> X
           </button>
