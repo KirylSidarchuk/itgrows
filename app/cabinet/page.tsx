@@ -131,6 +131,20 @@ const STATUS_DOT: Record<string, string> = {
   failed: "bg-red-500",
 }
 
+const PLAN_DISPLAY: Record<string, { name: string; price: string }> = {
+  personal: { name: "Personal", price: "$49/month" },
+  personal_annual: { name: "Personal Annual", price: "$411/year · billed annually" },
+  personal_annual_discount: { name: "Personal Annual", price: "Annual · billed yearly" },
+  duo: { name: "Duo", price: "$99/month" },
+  duo_annual: { name: "Duo Annual", price: "$831/year · billed annually" },
+  allin: { name: "All-in", price: "$199/month" },
+  allin_annual: { name: "All-in Annual", price: "$1,671/year · billed annually" },
+  company: { name: "Company", price: "$149/month" },
+  company_annual: { name: "Company Annual", price: "$1,251/year · billed annually" },
+}
+function planName(p: string | null | undefined): string { return (p && PLAN_DISPLAY[p]?.name) || "Subscription" }
+function planPrice(p: string | null | undefined): string { return (p && PLAN_DISPLAY[p]?.price) || "" }
+
 function calcDnaScore(brief: LinkedInBrief, profileUrl: string): number {
   let score = 0
   if (profileUrl.trim()) score += 15
@@ -4393,7 +4407,7 @@ function LinkedInPageContent() {
                         </div>
                         <div>
                           <p className="text-sm font-semibold text-slate-800">
-                            {subscriptionPlan === "personal_annual" ? "Personal Annual" : "Personal"}
+                            {planName(subscriptionPlan)}
                           </p>
                           <p className="text-xs text-slate-500">
                             {cancelAt
@@ -4431,10 +4445,10 @@ function LinkedInPageContent() {
                         </div>
                         <div>
                           <p className="text-sm font-semibold text-slate-800">
-                            {subscriptionPlan === "personal_annual" ? "Personal Annual" : "Personal"}
+                            {planName(subscriptionPlan)}
                           </p>
                           <p className="text-xs text-slate-500">
-                            {subscriptionPlan === "personal_annual" ? "$203/year · billed annually" : "$49/month"}
+                            {planPrice(subscriptionPlan)}
                           </p>
                         </div>
                       </div>
