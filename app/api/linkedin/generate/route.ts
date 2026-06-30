@@ -6,6 +6,7 @@ import { eq, and, inArray, isNull } from "drizzle-orm"
 import { checkGenerateRateLimit } from "@/lib/rate-limit"
 import { hasAccess } from "@/lib/access"
 import { buildLinkedInPrompt, buildPostHashtags } from "@/lib/linkedin-generate"
+import { openaiChat } from "@/lib/llm-client"
 import { generatePostImage } from "@/lib/linkedin-image"
 
 export const maxDuration = 300
@@ -129,52 +130,45 @@ export async function POST(req: NextRequest) {
     const prompt = buildLinkedInPrompt(brief, maxPosts, isCompany)
 
     const FALLBACK_MODELS = [LLM_MODEL, "gemini-2.5-flash", "gemini-2.5-pro"]
-    let llmResponse: Response | null = null
-    let lastStatus = 0
+    let rawContent = ""
 
     for (let attempt = 0; attempt < 3; attempt++) {
       const modelToUse = FALLBACK_MODELS[Math.min(attempt, FALLBACK_MODELS.length - 1)]
-      llmResponse = await fetch(`${LLM_BASE_URL}/v1/chat/completions`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${LLM_API_KEY}`,
-        },
-        body: JSON.stringify({
-          model: modelToUse,
-          messages: [{ role: "user", content: prompt }],
-          max_tokens: 4096,
-          temperature: 0.8,
-        }),
-      })
-
-      if (llmResponse.ok) break
-
-      lastStatus = llmResponse.status
-      if (lastStatus === 429 || lastStatus === 503) {
-        if (attempt < 2) {
+      try {
+        const llmResponse = await fetch(`${LLM_BASE_URL}/v1/chat/completions`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${LLM_API_KEY}`,
+          },
+          body: JSON.stringify({
+            model: modelToUse,
+            messages: [{ role: "user", content: prompt }],
+            max_tokens: 4096,
+            temperature: 0.8,
+          }),
+        })
+        if (llmResponse.ok) {
+          const llmData = await llmResponse.json() as { choices: Array<{ message: { content: string } }> }
+          rawContent = llmData.choices?.[0]?.message?.content ?? ""
+          if (rawContent) break
+        } else if ((llmResponse.status === 429 || llmResponse.status === 503) && attempt < 2) {
           await new Promise((resolve) => setTimeout(resolve, 5000))
           continue
         }
-        // All retries exhausted — return friendly error
-        return NextResponse.json(
-          { error: "ai_busy", message: "Our AI is busy right now. Please try again in a few minutes.", retryAfter: 30 },
-          { status: 503 }
-        )
+      } catch {
+        // try next model / fall through to OpenAI
       }
-
-      // Non-429/503 error — fail immediately
-      const errText = await llmResponse.text()
-      throw new Error(`LLM API error ${lastStatus}: ${errText}`)
     }
 
-    if (!llmResponse || !llmResponse.ok) {
-      const errText = await llmResponse?.text() ?? ""
-      throw new Error(`LLM API error ${lastStatus}: ${errText}`)
+    // Gateway exhausted → OpenAI fallback.
+    if (!rawContent) {
+      try {
+        rawContent = await openaiChat([{ role: "user" as const, content: prompt }], { max_tokens: 4096 })
+      } catch {
+        rawContent = ""
+      }
     }
-
-    const llmData = await llmResponse.json() as { choices: Array<{ message: { content: string } }> }
-    const rawContent = llmData.choices?.[0]?.message?.content ?? ""
 
     if (!rawContent) {
       throw new Error("LLM returned empty response")

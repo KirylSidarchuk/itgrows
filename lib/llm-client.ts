@@ -87,7 +87,7 @@ export async function callLLM(messages: LLMMessage[], options: LLMOptions = {}):
 
 // --- OpenAI fallback helpers ---
 
-async function openaiChat(messages: LLMMessage[], params: { max_tokens?: number; temperature?: number }): Promise<string> {
+export async function openaiChat(messages: LLMMessage[], params: { max_tokens?: number; temperature?: number } = {}): Promise<string> {
   if (!OPENAI_API_KEY) throw new Error("OPENAI_API_KEY not set")
   const res = await fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",

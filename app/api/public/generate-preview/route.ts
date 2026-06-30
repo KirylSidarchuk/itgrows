@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db"
 import { ghostModeLogs } from "@/lib/db/schema"
 import { getClientIP, checkGhostGlobalDailyCap } from "@/lib/rate-limit"
+import { openaiChat, openaiGenerateImage } from "@/lib/llm-client"
 import { eq, sql } from "drizzle-orm"
 
 export const maxDuration = 120
@@ -70,6 +71,11 @@ async function generateImageForPost(postContent: string): Promise<string | null>
       }
     } catch { /* try next model */ }
   }
+
+  // Gateway image models failed → cheap OpenAI fallback (low quality for anonymous traffic).
+  const openaiImg = await openaiGenerateImage(imagePrompt, "low")
+  if (openaiImg) return openaiImg
+
   return null
 }
 
@@ -124,33 +130,43 @@ Return ONLY a valid JSON array of exactly 3 strings. No markdown, no code blocks
 ["post1 here","post2 here","post3 here"]`
 
   try {
-    // Generate posts text
-    const res = await fetch(`${LLM_BASE}/v1/chat/completions`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${LLM_KEY}` },
-      body: JSON.stringify({
-        model: "gemini-2.5-flash",
-        messages: [{ role: "user", content: prompt }],
-        temperature: 0.85,
-        max_tokens: 4096,
-      }),
-    })
-
-    if (res.status === 429) {
-      db.insert(ghostModeLogs).values({ success: false, error: "rate_limited", durationMs: Date.now() - startTime, ip: clientIP }).catch(() => {})
-      return NextResponse.json({ error: "AI is busy right now. Try again in a moment." }, { status: 429 })
+    // Generate posts text (gateway → OpenAI fallback)
+    let text = ""
+    try {
+      const res = await fetch(`${LLM_BASE}/v1/chat/completions`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${LLM_KEY}` },
+        body: JSON.stringify({
+          model: "gemini-2.5-flash",
+          messages: [{ role: "user", content: prompt }],
+          temperature: 0.85,
+          max_tokens: 4096,
+        }),
+      })
+      if (res.ok) {
+        // Read as text first so we can fix invalid JSON escape sequences (\') before parsing.
+        const rawText = await res.text()
+        // \' is not valid JSON but Gemini sometimes emits it; fix by replacing with plain '
+        const sanitized = rawText.replace(/\\'/g, "'")
+        const data = JSON.parse(sanitized) as { choices?: Array<{ message?: { content?: string } }> }
+        text = data.choices?.[0]?.message?.content ?? ""
+      }
+    } catch {
+      // gateway failed — fall through to OpenAI
     }
-    if (!res.ok) {
+
+    if (!text) {
+      try {
+        text = await openaiChat([{ role: "user" as const, content: prompt }], { max_tokens: 4096 })
+      } catch {
+        text = ""
+      }
+    }
+
+    if (!text) {
       db.insert(ghostModeLogs).values({ success: false, error: "llm_error", durationMs: Date.now() - startTime, ip: clientIP }).catch(() => {})
       return NextResponse.json({ error: "Generation failed" }, { status: 500 })
     }
-
-    // Read as text first so we can fix invalid JSON escape sequences (\') before parsing
-    const rawText = await res.text()
-    // \' is not valid JSON but Gemini sometimes emits it; fix by replacing with plain '
-    const sanitized = rawText.replace(/\\'/g, "'")
-    const data = JSON.parse(sanitized) as { choices?: Array<{ message?: { content?: string } }> }
-    const text = data.choices?.[0]?.message?.content ?? ""
 
     const cleaned = text.replace(/```json\s*/gi, "").replace(/```\s*/g, "").trim()
     const match = cleaned.match(/\[[\s\S]*\]/)

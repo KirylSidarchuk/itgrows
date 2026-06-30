@@ -5,6 +5,7 @@ import { twitterAccounts, twitterPosts, linkedinBriefs, twitterBriefs, twitterCo
 import { eq, and, or, desc } from "drizzle-orm"
 import { hasAccess } from "@/lib/access"
 import { checkXGenerateRateLimit } from "@/lib/rate-limit"
+import { openaiChat } from "@/lib/llm-client"
 
 export const maxDuration = 300
 
@@ -123,51 +124,56 @@ Return ONLY a valid JSON array with exactly ${MAX_POSTS} objects. Each object mu
 ${jsonInstruction}`
 
   const FALLBACK_MODELS = [LLM_MODEL, "gemini-2.5-flash", "gemini-2.5-pro"]
-  let llmRes: Response | null = null
-  let lastStatus = 0
+  let rawContent = ""
 
   for (let attempt = 0; attempt < 3; attempt++) {
     const modelToUse = FALLBACK_MODELS[Math.min(attempt, FALLBACK_MODELS.length - 1)]
-    llmRes = await fetch(`${LLM_BASE_URL}/v1/chat/completions`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${LLM_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: modelToUse,
-        messages: [
-          { role: "system", content: "You are a JSON API. Always respond with valid JSON only. Never use markdown code blocks." },
-          { role: "user", content: prompt },
-        ],
-        max_tokens: 4096,
-        temperature: 0.8,
-      }),
-    })
-
-    if (llmRes.ok) break
-
-    lastStatus = llmRes.status
-    if (lastStatus === 429 || lastStatus === 503) {
-      if (attempt < 2) {
+    try {
+      const llmRes = await fetch(`${LLM_BASE_URL}/v1/chat/completions`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${LLM_API_KEY}`,
+        },
+        body: JSON.stringify({
+          model: modelToUse,
+          messages: [
+            { role: "system", content: "You are a JSON API. Always respond with valid JSON only. Never use markdown code blocks." },
+            { role: "user", content: prompt },
+          ],
+          max_tokens: 4096,
+          temperature: 0.8,
+        }),
+      })
+      if (llmRes.ok) {
+        const llmData = await llmRes.json() as { choices: Array<{ message: { content: string } }> }
+        rawContent = llmData.choices?.[0]?.message?.content ?? ""
+        if (rawContent) break
+      } else if ((llmRes.status === 429 || llmRes.status === 503) && attempt < 2) {
         await new Promise((resolve) => setTimeout(resolve, 5000))
         continue
       }
-      return { posts: [], error: "ai_busy" }
+    } catch {
+      // try next model / fall through to OpenAI
     }
-
-    const errText = await llmRes.text()
-    return { posts: [], error: `LLM API error ${lastStatus}: ${errText}` }
   }
 
-  if (!llmRes || !llmRes.ok) {
-    const errText = await llmRes?.text() ?? ""
-    return { posts: [], error: `LLM API error ${lastStatus}: ${errText}` }
+  // Gateway exhausted → OpenAI fallback.
+  if (!rawContent) {
+    try {
+      rawContent = await openaiChat(
+        [
+          { role: "system" as const, content: "You are a JSON API. Always respond with valid JSON only. Never use markdown code blocks." },
+          { role: "user" as const, content: prompt },
+        ],
+        { max_tokens: 4096 }
+      )
+    } catch {
+      rawContent = ""
+    }
   }
 
-  const llmData = await llmRes.json() as { choices: Array<{ message: { content: string } }> }
-  const rawContent = llmData.choices?.[0]?.message?.content ?? ""
-  if (!rawContent) return { posts: [], error: "LLM returned empty response" }
+  if (!rawContent) return { posts: [], error: "ai_busy" }
 
   const cleaned = rawContent.replace(/```json\s*/gi, "").replace(/```\s*/g, "").trim()
   let postsData: Array<{ content: string }> | null = null
