@@ -1524,7 +1524,7 @@ function LinkedInPageContent() {
 
   async function handleActivateOrg(orgId: string) {
     setOrgsActivating((prev) => ({ ...prev, [orgId]: true }))
-    setOrgsMessage(null)
+    setOrgsMessage("Opening secure checkout — one moment…")
     try {
       const res = await fetch("/api/linkedin/organizations/activate", {
         method: "POST",
@@ -2785,7 +2785,7 @@ function LinkedInPageContent() {
                               className="flex items-center gap-1.5 text-xs font-semibold bg-[#0077B5] hover:bg-[#005f8e] text-white px-3 py-1.5 rounded-xl transition-colors disabled:opacity-70"
                             >
                               {orgsActivating[org.id] ? (
-                                <Loader2 className="w-3 h-3 animate-spin" />
+                                <><Loader2 className="w-3 h-3 animate-spin" /> Opening…</>
                               ) : (
                                 <>Activate page</>
                               )}
