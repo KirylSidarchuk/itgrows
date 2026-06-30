@@ -832,6 +832,7 @@ function LinkedInPageContent() {
   const [cancelAtPeriodEnd, setCancelAtPeriodEnd] = useState(false)
   const [cancelAt, setCancelAt] = useState<string | null>(null)
   const [renewingSubscription, setRenewingSubscription] = useState(false)
+  const [portalLoading, setPortalLoading] = useState(false)
 
   // LinkedIn account switcher state
   const [linkedInActiveTab, setLinkedInActiveTab] = useState<LinkedInActiveTab>("personal")
@@ -962,6 +963,23 @@ function LinkedInPageContent() {
       setCancelMessage("Something went wrong. Please try again.")
     } finally {
       setRenewingSubscription(false)
+    }
+  }
+
+  async function handleManageBilling() {
+    setPortalLoading(true)
+    try {
+      const res = await fetch("/api/stripe/portal", { method: "POST" })
+      const data = await res.json() as { url?: string; error?: string }
+      if (data.url) {
+        window.location.href = data.url
+      } else {
+        setCancelMessage(data.error ?? "Could not open billing. Please try again.")
+        setPortalLoading(false)
+      }
+    } catch {
+      setCancelMessage("Could not open billing. Please try again.")
+      setPortalLoading(false)
     }
   }
 
@@ -3812,6 +3830,13 @@ function LinkedInPageContent() {
                     <p className="text-sm text-slate-600 px-1">
                       You have full access to generate posts, publish, and auto-scheduling.
                     </p>
+                    <button
+                      onClick={handleManageBilling}
+                      disabled={portalLoading}
+                      className="w-full flex items-center justify-center gap-2 mt-1 px-4 py-2.5 rounded-xl border border-violet-200 bg-violet-50 hover:bg-violet-100 text-sm font-semibold text-violet-700 transition-colors disabled:opacity-60"
+                    >
+                      {portalLoading ? "Opening…" : "Change plan · update card · invoices"}
+                    </button>
                     {cancelMessage ? (
                       <p className="text-xs text-slate-500 px-1 pt-1">{cancelMessage}</p>
                     ) : cancelConfirming ? (
