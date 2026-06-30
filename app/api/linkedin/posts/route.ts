@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/auth"
 import { db } from "@/lib/db"
 import { linkedinPosts, linkedinAccounts } from "@/lib/db/schema"
-import { eq, and, desc } from "drizzle-orm"
+import { eq, and, desc, sql } from "drizzle-orm"
 
 export async function GET(req: NextRequest) {
   try {
@@ -25,20 +25,41 @@ export async function GET(req: NextRequest) {
       if (personalAccount) accountId = personalAccount.id
     }
 
-    let posts
+    // Select everything EXCEPT the heavy base64 image_url (avg ~1MB/post). The list
+    // returns a lightweight image URL; the image streams lazily from /api/linkedin/post-image.
+    const cols = {
+      id: linkedinPosts.id,
+      userId: linkedinPosts.userId,
+      linkedinAccountId: linkedinPosts.linkedinAccountId,
+      content: linkedinPosts.content,
+      status: linkedinPosts.status,
+      scheduledFor: linkedinPosts.scheduledFor,
+      publishedAt: linkedinPosts.publishedAt,
+      linkedinPostId: linkedinPosts.linkedinPostId,
+      publishError: linkedinPosts.publishError,
+      createdAt: linkedinPosts.createdAt,
+      hasImage: sql<boolean>`(${linkedinPosts.imageUrl} is not null)`,
+    }
+
+    let rows
     if (accountId) {
-      posts = await db
-        .select()
+      rows = await db
+        .select(cols)
         .from(linkedinPosts)
         .where(and(eq(linkedinPosts.userId, userId), eq(linkedinPosts.linkedinAccountId, accountId)))
         .orderBy(desc(linkedinPosts.scheduledFor))
     } else {
-      posts = await db
-        .select()
+      rows = await db
+        .select(cols)
         .from(linkedinPosts)
         .where(eq(linkedinPosts.userId, userId))
         .orderBy(desc(linkedinPosts.scheduledFor))
     }
+
+    const posts = rows.map(({ hasImage, ...p }) => ({
+      ...p,
+      imageUrl: hasImage ? `/api/linkedin/post-image/${p.id}` : null,
+    }))
 
     return NextResponse.json({ posts })
   } catch (err) {
