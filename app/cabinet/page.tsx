@@ -2284,22 +2284,45 @@ function LinkedInPageContent() {
       </aside>
 
       {/* Mobile top header — visible only on mobile (< lg) */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 z-20 bg-white border-b border-slate-100 shadow-sm px-4 py-3 flex items-center justify-between" style={{ paddingTop: "max(12px, env(safe-area-inset-top))" }}>
-        <a href="/" className="flex items-center gap-2">
-          <img src="/logo.jpg" className="h-7 w-7 rounded-lg" alt="ItGrows" />
-          <span className="text-base font-bold bg-gradient-to-r from-violet-600 to-pink-500 bg-clip-text text-transparent">
-            ItGrows.ai
-          </span>
-        </a>
-        <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-full bg-gradient-to-br from-violet-400 to-pink-400 flex items-center justify-center text-white text-xs font-bold">
-            {userName.charAt(0).toUpperCase()}
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-20 bg-white border-b border-slate-100 shadow-sm" style={{ paddingTop: "max(12px, env(safe-area-inset-top))" }}>
+        <div className="px-4 py-2 flex items-center justify-between">
+          <a href="/" className="flex items-center gap-2">
+            <img src="/logo.jpg" className="h-7 w-7 rounded-lg" alt="ItGrows" />
+            <span className="text-base font-bold bg-gradient-to-r from-violet-600 to-pink-500 bg-clip-text text-transparent">
+              ItGrows.ai
+            </span>
+          </a>
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-full bg-gradient-to-br from-violet-400 to-pink-400 flex items-center justify-center text-white text-xs font-bold">
+              {userName.charAt(0).toUpperCase()}
+            </div>
+            <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${
+              hasPersonalPlan ? "bg-violet-100 text-violet-600" : "bg-slate-100 text-slate-500"
+            }`}>
+              {subscriptionPlan === "allin" ? "All-in" : subscriptionPlan === "duo" ? "Duo" : subscriptionPlan === "personal_annual" ? "Annual" : hasPersonalPlan ? "Personal" : "Free"}
+            </span>
           </div>
-          <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${
-            hasPersonalPlan ? "bg-violet-100 text-violet-600" : "bg-slate-100 text-slate-500"
-          }`}>
-            {subscriptionPlan === "allin" ? "All-in" : subscriptionPlan === "duo" ? "Duo" : subscriptionPlan === "personal_annual" ? "Annual" : hasPersonalPlan ? "Personal" : "Free"}
-          </span>
+        </div>
+        {/* Mobile platform switcher */}
+        <div className="px-3 pb-2 flex items-center gap-1.5 overflow-x-auto">
+          <button
+            onClick={() => { setActivePlatform("linkedin"); setLinkedInActiveTab("personal"); setSelectedLinkedInAccountId(null); setActiveTab("posts") }}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-colors ${activePlatform === "linkedin" && linkedInActiveTab === "personal" && !selectedLinkedInAccountId ? "bg-violet-600 text-white" : "bg-slate-100 text-slate-600"}`}
+          >
+            <LinkedInIcon className="w-3.5 h-3.5" /> LinkedIn
+          </button>
+          <button
+            onClick={() => { setActivePlatform("linkedin"); setLinkedInActiveTab("companies") }}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-colors ${activePlatform === "linkedin" && linkedInActiveTab === "companies" ? "bg-[#0077B5] text-white" : "bg-slate-100 text-slate-600"}`}
+          >
+            Company Pages
+          </button>
+          <button
+            onClick={() => setActivePlatform("x")}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-colors ${activePlatform === "x" ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600"}`}
+          >
+            <XIcon className="w-3.5 h-3.5" /> X
+          </button>
         </div>
       </div>
 
@@ -2344,7 +2367,7 @@ function LinkedInPageContent() {
 
       {/* Main content */}
       <main className="flex-1 overflow-auto">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-20 lg:pt-8 pb-28 lg:pb-8" style={{ paddingBottom: "calc(7rem + env(safe-area-inset-bottom))" } as React.CSSProperties}>
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-28 lg:pt-8 pb-28 lg:pb-8" style={{ paddingBottom: "calc(7rem + env(safe-area-inset-bottom))" } as React.CSSProperties}>
 
           {/* Greeting */}
           <div className="mb-4 sm:mb-6">
