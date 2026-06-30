@@ -760,6 +760,36 @@ export default function PersonalPage() {
         </div>
       </section>
 
+      {/* FOMO / outcome */}
+      <section className="px-4 sm:px-6 py-16 sm:py-24" style={{ background: "linear-gradient(135deg, #7c3aed 0%, #db2777 100%)" }}>
+        <div className="max-w-4xl mx-auto text-center text-white">
+          <p className="text-sm font-semibold uppercase tracking-widest text-white/70 mb-3">While you stay silent</p>
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-5 leading-tight">Every day you don&apos;t post, a competitor earns the trust that could&apos;ve been yours</h2>
+          <p className="text-lg text-white/85 max-w-2xl mx-auto mb-10">Your next client, investor, or hire is scrolling LinkedIn and X right now. The people who show up — consistently — are the ones they remember and reach out to.</p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10 text-left">
+            <div className="rounded-2xl p-5 bg-white/10 border border-white/15">
+              <div className="text-2xl mb-2">🎯</div>
+              <h3 className="font-bold mb-1">Inbound, not outreach</h3>
+              <p className="text-sm text-white/75">Clients and partners come to you — no cold chasing.</p>
+            </div>
+            <div className="rounded-2xl p-5 bg-white/10 border border-white/15">
+              <div className="text-2xl mb-2">📈</div>
+              <h3 className="font-bold mb-1">Authority that compounds</h3>
+              <p className="text-sm text-white/75">Board seats, advisory, speaking, investor attention.</p>
+            </div>
+            <div className="rounded-2xl p-5 bg-white/10 border border-white/15">
+              <div className="text-2xl mb-2">⚡</div>
+              <h3 className="font-bold mb-1">Top of mind</h3>
+              <p className="text-sm text-white/75">When opportunity strikes, they think of you first.</p>
+            </div>
+          </div>
+          <Button size="lg" onClick={() => document.getElementById("ghost-form")?.scrollIntoView({ behavior: "smooth", block: "center" })} className="bg-white text-violet-700 hover:bg-white/90 px-9 py-4 text-base sm:text-lg rounded-xl font-bold shadow-lg">
+            Be the one they remember — start free
+          </Button>
+          <p className="text-sm text-white/70 mt-4">Consistency compounds. The best time to start was a year ago — the next best is today.</p>
+        </div>
+      </section>
+
       {/* Pricing */}
       <section id="pricing" className="px-4 sm:px-6 py-16 sm:py-24" style={{ backgroundColor: "#ebe9e5" }}>
         <div className="max-w-6xl mx-auto">

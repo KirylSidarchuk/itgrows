@@ -236,6 +236,34 @@ export default function CompanyPage() {
         </div>
       </section>
 
+      {/* FOMO / outcome */}
+      <section className="px-4 sm:px-6 py-16 sm:py-24" style={{ background: "linear-gradient(135deg, #7c3aed 0%, #db2777 100%)" }}>
+        <div className="max-w-4xl mx-auto text-center text-white">
+          <p className="text-sm font-semibold uppercase tracking-widest text-white/70 mb-3">While you wait</p>
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-5 leading-tight">Your competitors&apos; brands post every day. Does yours?</h2>
+          <p className="text-lg text-white/85 max-w-2xl mx-auto mb-10">Buyers, partners, and talent size up a company by how alive it looks online. Silence reads as &ldquo;stalled&rdquo; — and the deal goes to the brand that showed up.</p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10 text-left">
+            <div className="rounded-2xl p-5 bg-white/10 border border-white/15">
+              <div className="text-2xl mb-2">🟢</div>
+              <h3 className="font-bold mb-1">Always-on presence</h3>
+              <p className="text-sm text-white/75">Your brand looks alive and active — every single day.</p>
+            </div>
+            <div className="rounded-2xl p-5 bg-white/10 border border-white/15">
+              <div className="text-2xl mb-2">📣</div>
+              <h3 className="font-bold mb-1">Your whole team amplifies</h3>
+              <p className="text-sm text-white/75">Founders + execs + Company Page = reach rivals can&apos;t match.</p>
+            </div>
+            <div className="rounded-2xl p-5 bg-white/10 border border-white/15">
+              <div className="text-2xl mb-2">🤝</div>
+              <h3 className="font-bold mb-1">Credibility that converts</h3>
+              <p className="text-sm text-white/75">Show up where deals and hires are decided.</p>
+            </div>
+          </div>
+          <Link href="/signup"><Button size="lg" className="bg-white text-violet-700 hover:bg-white/90 px-9 py-4 text-base sm:text-lg rounded-xl font-bold shadow-lg">Put your brand on autopilot — start free</Button></Link>
+          <p className="text-sm text-white/70 mt-4">Every silent week is momentum handed to a competitor. Start today.</p>
+        </div>
+      </section>
+
       {/* Pricing callout */}
       <section id="pricing" className="px-4 sm:px-6 py-16 sm:py-20" style={{ backgroundColor: "#ebe9e5" }}>
         <div className="max-w-5xl mx-auto text-center">
