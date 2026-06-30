@@ -2719,7 +2719,7 @@ function LinkedInPageContent() {
                   </div>
                   <div>
                     <p className="text-base font-semibold text-slate-800">Company Pages</p>
-                    <p className="text-xs text-slate-400">Manage LinkedIn company pages — $99/month per page</p>
+                    <p className="text-xs text-slate-400">Manage LinkedIn company pages</p>
                   </div>
                 </div>
 
@@ -2787,7 +2787,7 @@ function LinkedInPageContent() {
                               {orgsActivating[org.id] ? (
                                 <Loader2 className="w-3 h-3 animate-spin" />
                               ) : (
-                                <>Activate — $99/mo</>
+                                <>Activate page</>
                               )}
                             </button>
                           )}
@@ -2798,7 +2798,7 @@ function LinkedInPageContent() {
                     <div className="mt-4 p-4 rounded-xl bg-blue-50 border border-blue-100">
                       <p className="text-xs text-blue-700 font-medium mb-1">How it works</p>
                       <ul className="text-xs text-blue-600 space-y-1">
-                        <li>• Each company page is $99/month with a separate subscription</li>
+                        <li>• Included with your plan — or $99/month per extra page</li>
                         <li>• Activate a page to start AI content generation for it</li>
                         <li>• AI generates and schedules posts in your company&apos;s voice</li>
                         <li>• Cancel anytime — access continues until end of billing period</li>
