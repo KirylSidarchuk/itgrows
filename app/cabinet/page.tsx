@@ -2821,7 +2821,7 @@ function LinkedInPageContent() {
                           </div>
                           <div>
                             <p className="text-base font-semibold text-slate-700 mb-1">No tweets yet</p>
-                            <p className="text-sm text-slate-400 max-w-xs">Generate 5 tweets in your voice, ready to publish.</p>
+                            <p className="text-sm text-slate-400 max-w-xs">Generate 14 tweets in your voice, ready to publish.</p>
                           </div>
                           {hasPersonalPlan && (
                             <button
@@ -3140,7 +3140,7 @@ function LinkedInPageContent() {
                     : "text-slate-500 hover:text-slate-700 hover:bg-slate-50"
                 }`}
               >
-                {tab === "posts" ? "Posts" : tab === "dna" ? "Professional DNA" : tab === "account" ? "Account" : "Support"}
+                {tab === "posts" ? "Posts" : tab === "dna" ? "Professional DNA" : tab === "account" ? "Settings" : "Support"}
               </button>
             ))}
           </div>
@@ -3408,8 +3408,8 @@ function LinkedInPageContent() {
                                 2
                               </div>
                               <div className="flex-1 min-w-0">
-                                <p className="text-sm font-semibold text-slate-400">Generate 7 posts</p>
-                                <p className="text-xs text-slate-400 mt-0.5">AI-written, scheduled for the next 7 days</p>
+                                <p className="text-sm font-semibold text-slate-400">Generate 14 posts</p>
+                                <p className="text-xs text-slate-400 mt-0.5">AI-written, scheduled for the next two weeks</p>
                               </div>
                               <Lock className="w-4 h-4 text-slate-300 shrink-0" />
                             </div>
@@ -3746,7 +3746,7 @@ function LinkedInPageContent() {
           {(activeTab === "account" || activeTab === "support") && activePlatform !== "linkedin" && (
             <div className="lg:hidden mb-4">
               <h2 className="text-base font-bold text-slate-700 capitalize">
-                {activeTab === "account" ? "Account" : "Support"}
+                {activeTab === "account" ? "Settings" : "Support"}
               </h2>
             </div>
           )}
