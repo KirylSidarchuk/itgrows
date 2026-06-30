@@ -880,6 +880,40 @@ function LinkedInPageContent() {
   const hour = new Date().getHours()
   const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening"
 
+  async function handleChangePlan(plan: string) {
+    setCheckingOut(true)
+    setCancelMessage(null)
+    try {
+      const res = await fetch("/api/stripe/change-plan", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ plan }),
+      })
+      const data = await res.json() as { success?: boolean; plan?: string; error?: string }
+      if (res.ok && data.success) {
+        setSubscriptionPlan(data.plan ?? plan)
+        setCancelMessage("Plan changed — the price difference is prorated on your next invoice.")
+      } else {
+        setCancelMessage(data.error ?? "Could not change plan. Please try again.")
+      }
+    } catch {
+      setCancelMessage("Could not change plan. Please try again.")
+    } finally {
+      setCheckingOut(false)
+    }
+  }
+
+  function handlePlanSelect(plan: "personal" | "duo" | "allin" | "personal_annual" | "duo_annual" | "allin_annual") {
+    setShowPlanModal(false)
+    if (hasActiveSubscription) {
+      if (confirm(`Switch to ${planName(plan)}? The price difference is prorated on your next invoice.`)) {
+        handleChangePlan(plan)
+      }
+    } else {
+      handleUpgrade(plan)
+    }
+  }
+
   async function handleUpgrade(plan: "personal" | "duo" | "allin" | "personal_annual" | "duo_annual" | "allin_annual" | "company" | "company_annual" = "personal") {
     setCheckingOut(true)
     try {
@@ -1818,7 +1852,7 @@ function LinkedInPageContent() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-6">
               {/* Personal */}
               <button
-                onClick={() => { setShowPlanModal(false); handleUpgrade(billingCycle === "annual" ? "personal_annual" : "personal") }}
+                onClick={() => handlePlanSelect(billingCycle === "annual" ? "personal_annual" : "personal")}
                 disabled={checkingOut}
                 className="flex flex-col items-start p-6 rounded-2xl border-2 border-slate-200 hover:border-violet-400 hover:shadow-md transition-all text-left disabled:opacity-70"
               >
@@ -1852,7 +1886,7 @@ function LinkedInPageContent() {
 
               {/* Duo */}
               <button
-                onClick={() => { setShowPlanModal(false); handleUpgrade(billingCycle === "annual" ? "duo_annual" : "duo") }}
+                onClick={() => handlePlanSelect(billingCycle === "annual" ? "duo_annual" : "duo")}
                 disabled={checkingOut}
                 className="flex flex-col items-start p-6 rounded-2xl border-2 border-violet-500 shadow-lg shadow-violet-100 hover:shadow-violet-200 transition-all text-left disabled:opacity-70 relative"
                 style={{ background: "linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%)" }}
@@ -1888,7 +1922,7 @@ function LinkedInPageContent() {
 
               {/* All-in */}
               <button
-                onClick={() => { setShowPlanModal(false); handleUpgrade(billingCycle === "annual" ? "allin_annual" : "allin") }}
+                onClick={() => handlePlanSelect(billingCycle === "annual" ? "allin_annual" : "allin")}
                 disabled={checkingOut}
                 className="flex flex-col items-start p-6 rounded-2xl border-2 border-slate-800 hover:border-black hover:shadow-md transition-all text-left disabled:opacity-70"
                 style={{ background: "linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%)" }}
@@ -3910,7 +3944,7 @@ function LinkedInPageContent() {
                       disabled={portalLoading}
                       className="w-full flex items-center justify-center gap-2 mt-1 px-4 py-2.5 rounded-xl border border-violet-200 bg-violet-50 hover:bg-violet-100 text-sm font-semibold text-violet-700 transition-colors disabled:opacity-60"
                     >
-                      {portalLoading ? "Opening…" : "Manage billing · update card · invoices"}
+                      {portalLoading ? "Opening…" : "Payment method · invoices"}
                     </button>
                   </div>
                 ) : hasActiveSubscription ? (
@@ -3937,11 +3971,18 @@ function LinkedInPageContent() {
                       You have full access to generate posts, publish, and auto-scheduling.
                     </p>
                     <button
+                      onClick={() => setShowPlanModal(true)}
+                      disabled={checkingOut}
+                      className="w-full flex items-center justify-center gap-2 mt-1 px-4 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-500 text-sm font-semibold text-white transition-colors disabled:opacity-60"
+                    >
+                      {checkingOut ? "Updating…" : "Change plan"}
+                    </button>
+                    <button
                       onClick={handleManageBilling}
                       disabled={portalLoading}
-                      className="w-full flex items-center justify-center gap-2 mt-1 px-4 py-2.5 rounded-xl border border-violet-200 bg-violet-50 hover:bg-violet-100 text-sm font-semibold text-violet-700 transition-colors disabled:opacity-60"
+                      className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-violet-200 bg-violet-50 hover:bg-violet-100 text-sm font-semibold text-violet-700 transition-colors disabled:opacity-60"
                     >
-                      {portalLoading ? "Opening…" : "Change plan · update card · invoices"}
+                      {portalLoading ? "Opening…" : "Payment method · invoices · cancel"}
                     </button>
                     {cancelMessage ? (
                       <p className="text-xs text-slate-600 px-1 pt-1">{cancelMessage}</p>
