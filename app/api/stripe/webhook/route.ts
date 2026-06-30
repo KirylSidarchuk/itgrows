@@ -74,6 +74,15 @@ export async function POST(req: NextRequest) {
             break
           }
 
+          // Handle Company Page PLAN subscription (Single/Two/Unlimited) — set the user's quota plan
+          if (plan === "company_page_plan" && userId) {
+            await db
+              .update(users)
+              .set({ companyPagePlan: subscription.metadata?.tier ?? null })
+              .where(eq(users.id, userId))
+            break
+          }
+
           if (userId) {
           const isTrialing = subscription.status === "trialing"
           const endTs = (subscription as unknown as { current_period_end?: number }).current_period_end
@@ -120,6 +129,19 @@ export async function POST(req: NextRequest) {
             .update(linkedinAccounts)
             .set({ subscriptionStatus: subscription.status })
             .where(eq(linkedinAccounts.id, subscription.metadata.organizationId))
+          break
+        }
+
+        // Handle Company Page PLAN subscription update — keep the user's quota plan in sync
+        if (subscription.metadata?.plan === "company_page_plan") {
+          const uid = subscription.metadata?.userId
+          if (uid) {
+            const accessible = ["active", "trialing"].includes(subscription.status)
+            await db
+              .update(users)
+              .set({ companyPagePlan: accessible ? (subscription.metadata?.tier ?? null) : null })
+              .where(eq(users.id, uid))
+          }
           break
         }
 
@@ -187,6 +209,13 @@ export async function POST(req: NextRequest) {
             .update(linkedinAccounts)
             .set({ isActive: false, subscriptionStatus: "inactive", stripeSubscriptionId: null })
             .where(eq(linkedinAccounts.id, subscription.metadata.organizationId))
+          break
+        }
+
+        // Handle Company Page PLAN subscription deletion — clear the user's quota plan
+        if (subscription.metadata?.plan === "company_page_plan") {
+          const uid = subscription.metadata?.userId
+          if (uid) await db.update(users).set({ companyPagePlan: null }).where(eq(users.id, uid))
           break
         }
 

@@ -4,6 +4,7 @@ import { auth } from "@/auth"
 import { db } from "@/lib/db"
 import { linkedinAccounts, users } from "@/lib/db/schema"
 import { eq, and } from "drizzle-orm"
+import { totalCompanyPageQuota } from "@/lib/company-plans"
 
 function getStripe() {
   const key = process.env.STRIPE_SECRET_KEY
@@ -48,7 +49,7 @@ export async function POST(req: NextRequest) {
 
   // Get or create Stripe customer
   const [user] = await db
-    .select({ id: users.id, email: users.email, name: users.name, stripeCustomerId: users.stripeCustomerId, subscriptionPlan: users.subscriptionPlan, subscriptionStatus: users.subscriptionStatus })
+    .select({ id: users.id, email: users.email, name: users.name, stripeCustomerId: users.stripeCustomerId, subscriptionPlan: users.subscriptionPlan, subscriptionStatus: users.subscriptionStatus, companyPagePlan: users.companyPagePlan })
     .from(users)
     .where(eq(users.id, session.user.id))
     .limit(1)
@@ -57,27 +58,24 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "User not found" }, { status: 404 })
   }
 
-  // All-in includes 1 LinkedIn Company Page for free. If the user is on All-in and has no
-  // currently-active company page, activate this one WITHOUT the $99/mo subscription.
-  const planActive = user.subscriptionStatus === "active" || user.subscriptionStatus === "trialing" || user.subscriptionStatus === "past_due"
-  const isAllIn = planActive && (user.subscriptionPlan === "allin" || user.subscriptionPlan === "allin_annual")
-  if (isAllIn) {
-    const activePages = await db
-      .select({ id: linkedinAccounts.id })
-      .from(linkedinAccounts)
-      .where(and(
-        eq(linkedinAccounts.userId, session.user.id),
-        eq(linkedinAccounts.pageType, "organization"),
-        eq(linkedinAccounts.isActive, true),
-      ))
-    if (activePages.length === 0) {
-      await db
-        .update(linkedinAccounts)
-        .set({ isActive: true, subscriptionStatus: "included" })
-        .where(eq(linkedinAccounts.id, organizationId))
-      const base = process.env.NEXTAUTH_URL ?? "https://itgrows.ai"
-      return NextResponse.json({ url: `${base}/cabinet?tab=companies&org_activated=${organizationId}`, included: true })
-    }
+  // Company Pages are free within the user's quota: All-in's 1 free page + their company-page
+  // plan (Single=1, Two=2, Unlimited=∞). Only pages BEYOND the quota fall back to the $99/mo page subscription.
+  const quota = totalCompanyPageQuota(user)
+  const activeCount = (await db
+    .select({ id: linkedinAccounts.id })
+    .from(linkedinAccounts)
+    .where(and(
+      eq(linkedinAccounts.userId, session.user.id),
+      eq(linkedinAccounts.pageType, "organization"),
+      eq(linkedinAccounts.isActive, true),
+    ))).length
+  if (activeCount < quota) {
+    await db
+      .update(linkedinAccounts)
+      .set({ isActive: true, subscriptionStatus: "included" })
+      .where(eq(linkedinAccounts.id, organizationId))
+    const base = process.env.NEXTAUTH_URL ?? "https://itgrows.ai"
+    return NextResponse.json({ url: `${base}/cabinet?tab=companies&org_activated=${organizationId}`, included: true })
   }
 
   let customerId = user.stripeCustomerId

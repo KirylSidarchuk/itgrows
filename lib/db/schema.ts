@@ -12,6 +12,7 @@ export const users = pgTable("users", {
   stripeCustomerId: text("stripe_customer_id"),
   subscriptionStatus: text("subscription_status").default("inactive"),
   subscriptionPlan: text("subscription_plan"),
+  companyPagePlan: text("company_page_plan"), // null | single | two | unlimited — LinkedIn Company Page quota plan
   subscriptionEndDate: timestamp("subscription_end_date"),
   cancelAtPeriodEnd: boolean("cancel_at_period_end").default(false),
   cancelAt: timestamp("cancel_at"),

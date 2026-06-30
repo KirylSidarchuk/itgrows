@@ -48,6 +48,24 @@ export default function CompanyPage() {
       .catch(() => {})
   }, [])
 
+  async function handleCompanyPlan(tier: "single" | "two" | "unlimited") {
+    try {
+      const sres = await fetch("/api/auth/session")
+      const sdata = await sres.json() as { user?: { id: string } }
+      if (!sdata?.user?.id) { window.location.href = "/signup"; return }
+      const r = await fetch("/api/stripe/company-plan", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tier }),
+      })
+      const j = await r.json() as { url?: string; error?: string }
+      if (j.url) window.location.href = j.url
+      else window.location.href = "/cabinet"
+    } catch {
+      window.location.href = "/signup"
+    }
+  }
+
   return (
     <div className="min-h-screen text-[#1b1916] scroll-smooth" style={{ backgroundColor: "#f3f2f1", fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" }}>
       {/* Nav */}
@@ -228,20 +246,20 @@ export default function CompanyPage() {
               <div className="text-sm font-semibold text-violet-600 uppercase tracking-wide mb-1">Single</div>
               <div className="flex items-end gap-1 mb-2"><span className="text-4xl font-extrabold">$99</span><span className="text-slate-500 mb-1">/mo</span></div>
               <p className="text-slate-600 text-sm mb-6 flex-1">One LinkedIn Company Page, fully automated.</p>
-              <Link href="/signup"><Button className="w-full bg-white border border-violet-300 text-violet-700 hover:bg-violet-50 py-3 rounded-xl font-semibold">Start free trial</Button></Link>
+              <Button onClick={() => handleCompanyPlan("single")} className="w-full bg-white border border-violet-300 text-violet-700 hover:bg-violet-50 py-3 rounded-xl font-semibold">Start free trial</Button>
             </div>
             <div className="relative bg-white rounded-2xl border-2 border-violet-400 p-6 flex flex-col shadow-sm">
               <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-violet-600 text-white text-xs font-semibold px-3 py-1 rounded-full">Best value</div>
               <div className="text-sm font-semibold text-violet-600 uppercase tracking-wide mb-1">Two pages</div>
               <div className="flex items-end gap-1 mb-2"><span className="text-4xl font-extrabold">$149</span><span className="text-slate-500 mb-1">/mo</span></div>
               <p className="text-slate-600 text-sm mb-6 flex-1">Two Company Pages — less than two singles.</p>
-              <Link href="/signup"><Button className="w-full bg-violet-600 hover:bg-violet-500 text-white py-3 rounded-xl font-semibold">Start free trial</Button></Link>
+              <Button onClick={() => handleCompanyPlan("two")} className="w-full bg-violet-600 hover:bg-violet-500 text-white py-3 rounded-xl font-semibold">Start free trial</Button>
             </div>
             <div className="bg-white rounded-2xl border border-black/10 p-6 flex flex-col">
               <div className="text-sm font-semibold text-violet-600 uppercase tracking-wide mb-1">Unlimited</div>
               <div className="flex items-end gap-1 mb-2"><span className="text-4xl font-extrabold">$299</span><span className="text-slate-500 mb-1">/mo</span></div>
               <p className="text-slate-600 text-sm mb-6 flex-1">Any number of Company Pages, one flat price.</p>
-              <Link href="/signup"><Button className="w-full bg-white border border-violet-300 text-violet-700 hover:bg-violet-50 py-3 rounded-xl font-semibold">Start free trial</Button></Link>
+              <Button onClick={() => handleCompanyPlan("unlimited")} className="w-full bg-white border border-violet-300 text-violet-700 hover:bg-violet-50 py-3 rounded-xl font-semibold">Start free trial</Button>
             </div>
           </div>
           <p className="text-sm text-slate-500 mt-8">No card required · Cancel anytime · Want your team&apos;s personal accounts too? <Link href="/#pricing" className="text-violet-600 font-semibold hover:text-violet-500">See All-in &amp; personal plans →</Link></p>
