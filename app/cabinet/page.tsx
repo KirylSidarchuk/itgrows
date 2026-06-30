@@ -819,6 +819,7 @@ function LinkedInPageContent() {
   const [checkingOut, setCheckingOut] = useState(false)
   const [showPlanModal, setShowPlanModal] = useState(false)
   const [billingCycle, setBillingCycle] = useState<"monthly" | "annual">("monthly")
+  const [planModalTab, setPlanModalTab] = useState<"personal" | "company">("personal")
   const [showOnboarding, setShowOnboarding] = useState(() =>
     typeof window !== "undefined" ? localStorage.getItem("itgrows_onboarding_done") !== "true" : false
   )
@@ -1816,20 +1817,33 @@ function LinkedInPageContent() {
               </div>
               <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-2">Start growing on autopilot</h2>
               <p className="text-slate-600 text-sm">AI writes and schedules your posts every day. Cancel anytime.</p>
-              {/* Billing toggle */}
-              <div className="flex items-center justify-center gap-3 mt-5">
+              {/* Personal / Company toggle */}
+              <div className="inline-flex items-center gap-1 mt-5 p-1 rounded-2xl bg-slate-100">
                 <button
-                  onClick={() => setBillingCycle("monthly")}
-                  className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-colors ${billingCycle === "monthly" ? "bg-slate-900 text-white" : "text-slate-600 hover:text-slate-800"}`}
-                >Monthly</button>
+                  onClick={() => setPlanModalTab("personal")}
+                  className={`px-4 py-2 rounded-xl text-sm font-semibold transition-colors ${planModalTab === "personal" ? "bg-violet-600 text-white shadow-sm" : "text-slate-600 hover:text-slate-800"}`}
+                >Personal plans</button>
                 <button
-                  onClick={() => setBillingCycle("annual")}
-                  className={`flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-semibold transition-colors ${billingCycle === "annual" ? "bg-slate-900 text-white" : "text-slate-600 hover:text-slate-800"}`}
-                >
-                  Annual
-                  <span className={`text-[10px] font-black rounded-full px-2 py-0.5 ${billingCycle === "annual" ? "bg-green-400 text-slate-900" : "bg-green-100 text-green-700"}`}>-30%</span>
-                </button>
+                  onClick={() => setPlanModalTab("company")}
+                  className={`px-4 py-2 rounded-xl text-sm font-semibold transition-colors ${planModalTab === "company" ? "bg-[#0077B5] text-white shadow-sm" : "text-slate-600 hover:text-slate-800"}`}
+                >Company pages</button>
               </div>
+              {/* Billing toggle — personal plans only */}
+              {planModalTab === "personal" && (
+                <div className="flex items-center justify-center gap-3 mt-4">
+                  <button
+                    onClick={() => setBillingCycle("monthly")}
+                    className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-colors ${billingCycle === "monthly" ? "bg-slate-900 text-white" : "text-slate-600 hover:text-slate-800"}`}
+                  >Monthly</button>
+                  <button
+                    onClick={() => setBillingCycle("annual")}
+                    className={`flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-semibold transition-colors ${billingCycle === "annual" ? "bg-slate-900 text-white" : "text-slate-600 hover:text-slate-800"}`}
+                  >
+                    Annual
+                    <span className={`text-[10px] font-black rounded-full px-2 py-0.5 ${billingCycle === "annual" ? "bg-green-400 text-slate-900" : "bg-green-100 text-green-700"}`}>-30%</span>
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* Value props */}
@@ -1850,6 +1864,8 @@ function LinkedInPageContent() {
 
             {/* Plans */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-6">
+              {planModalTab === "personal" ? (
+              <>
               {/* Personal */}
               <button
                 onClick={() => handlePlanSelect(billingCycle === "annual" ? "personal_annual" : "personal")}
@@ -1954,39 +1970,72 @@ function LinkedInPageContent() {
                 </div>
               </button>
 
-              {/* Company */}
+              </>
+              ) : (
+              <>
+              {/* Company pages — Single */}
               <button
-                onClick={() => { setShowPlanModal(false); handleUpgrade(billingCycle === "annual" ? "company_annual" : "company") }}
-                disabled={checkingOut}
-                className="flex flex-col items-start p-6 rounded-2xl border-2 border-slate-200 hover:border-slate-400 hover:shadow-md transition-all text-left disabled:opacity-70 bg-white"
+                onClick={() => { setShowPlanModal(false); handleBuyCompanyPlan("single") }}
+                disabled={buyingCompanyPlan}
+                className="flex flex-col items-start p-6 rounded-2xl border-2 border-slate-200 hover:border-[#0077B5] hover:shadow-md transition-all text-left disabled:opacity-70 bg-white"
               >
-                <span className="text-xs font-bold text-slate-700 bg-slate-100 rounded-full px-3 py-1 mb-4">Company</span>
-                <div className="mb-1">
-                  {billingCycle === "annual" ? (
-                    <>
-                      <span className="text-4xl font-black text-slate-900">$104</span>
-                      <span className="text-slate-600 text-sm font-normal">/mo</span>
-                      <span className="ml-2 text-xs text-green-600 font-semibold">$1,251.60/yr</span>
-                    </>
-                  ) : (
-                    <>
-                      <span className="text-4xl font-black text-slate-900">$149</span>
-                      <span className="text-slate-600 text-sm font-normal">/month</span>
-                    </>
-                  )}
-                </div>
+                <span className="text-xs font-bold text-[#0077B5] bg-blue-50 rounded-full px-3 py-1 mb-4">Single</span>
+                <div className="mb-1"><span className="text-4xl font-black text-slate-900">$99</span><span className="text-slate-600 text-sm font-normal">/month</span></div>
                 <p className="text-xs text-slate-600 mb-4">billed monthly</p>
-                <p className="text-sm font-semibold text-slate-700 mb-3">X company account only</p>
+                <p className="text-sm font-semibold text-slate-700 mb-3">1 LinkedIn Company Page</p>
                 <ul className="text-sm text-slate-600 space-y-2 mb-6 flex-1">
-                  <li className="flex items-center gap-2"><span className="text-slate-800 font-bold">✓</span> 1 X/Twitter company account</li>
-                  <li className="flex items-center gap-2"><span className="text-slate-800 font-bold">✓</span> AI-written posts · 1 per day</li>
-                  <li className="flex items-center gap-2"><span className="text-slate-800 font-bold">✓</span> Company voice &amp; tone</li>
-                  <li className="flex items-center gap-2"><span className="text-slate-800 font-bold">✓</span> Autopublish</li>
+                  <li className="flex items-center gap-2"><span className="text-[#0077B5] font-bold">✓</span> 1 Company Page, automated</li>
+                  <li className="flex items-center gap-2"><span className="text-[#0077B5] font-bold">✓</span> Approved by LinkedIn API</li>
+                  <li className="flex items-center gap-2"><span className="text-[#0077B5] font-bold">✓</span> Company voice &amp; tone</li>
+                  <li className="flex items-center gap-2"><span className="text-[#0077B5] font-bold">✓</span> Autopublish</li>
                 </ul>
-                <div className="w-full bg-slate-900 hover:bg-slate-700 text-white text-sm font-bold py-3 rounded-xl text-center transition-colors">
-                  {checkingOut ? "Loading..." : "Subscribe →"}
+                <div className="w-full bg-[#0077B5] hover:bg-[#005f8e] text-white text-sm font-bold py-3 rounded-xl text-center transition-colors">
+                  {buyingCompanyPlan ? "Loading..." : "Subscribe →"}
                 </div>
               </button>
+              {/* Company pages — Two */}
+              <button
+                onClick={() => { setShowPlanModal(false); handleBuyCompanyPlan("two") }}
+                disabled={buyingCompanyPlan}
+                className="flex flex-col items-start p-6 rounded-2xl border-2 border-[#0077B5] shadow-lg shadow-blue-100 hover:shadow-blue-200 transition-all text-left disabled:opacity-70 relative bg-white"
+              >
+                <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-[#0077B5] text-white text-[11px] font-black rounded-full px-4 py-1 whitespace-nowrap">BEST VALUE</div>
+                <span className="text-xs font-bold text-[#0077B5] bg-blue-50 rounded-full px-3 py-1 mb-4">Two pages</span>
+                <div className="mb-1"><span className="text-4xl font-black text-slate-900">$149</span><span className="text-slate-600 text-sm font-normal">/month</span></div>
+                <p className="text-xs text-slate-600 mb-4">billed monthly</p>
+                <p className="text-sm font-semibold text-slate-700 mb-3">2 LinkedIn Company Pages</p>
+                <ul className="text-sm text-slate-600 space-y-2 mb-6 flex-1">
+                  <li className="flex items-center gap-2"><span className="text-[#0077B5] font-bold">✓</span> 2 Company Pages — saves vs 2× Single</li>
+                  <li className="flex items-center gap-2"><span className="text-[#0077B5] font-bold">✓</span> Approved by LinkedIn API</li>
+                  <li className="flex items-center gap-2"><span className="text-[#0077B5] font-bold">✓</span> Company voice &amp; tone</li>
+                  <li className="flex items-center gap-2"><span className="text-[#0077B5] font-bold">✓</span> Autopublish</li>
+                </ul>
+                <div className="w-full bg-[#0077B5] hover:bg-[#005f8e] text-white text-sm font-bold py-3 rounded-xl text-center transition-colors">
+                  {buyingCompanyPlan ? "Loading..." : "Subscribe →"}
+                </div>
+              </button>
+              {/* Company pages — Unlimited */}
+              <button
+                onClick={() => { setShowPlanModal(false); handleBuyCompanyPlan("unlimited") }}
+                disabled={buyingCompanyPlan}
+                className="flex flex-col items-start p-6 rounded-2xl border-2 border-slate-200 hover:border-[#0077B5] hover:shadow-md transition-all text-left disabled:opacity-70 bg-white"
+              >
+                <span className="text-xs font-bold text-[#0077B5] bg-blue-50 rounded-full px-3 py-1 mb-4">Unlimited</span>
+                <div className="mb-1"><span className="text-4xl font-black text-slate-900">$299</span><span className="text-slate-600 text-sm font-normal">/month</span></div>
+                <p className="text-xs text-slate-600 mb-4">billed monthly</p>
+                <p className="text-sm font-semibold text-slate-700 mb-3">Unlimited Company Pages</p>
+                <ul className="text-sm text-slate-600 space-y-2 mb-6 flex-1">
+                  <li className="flex items-center gap-2"><span className="text-[#0077B5] font-bold">✓</span> Any number of Company Pages</li>
+                  <li className="flex items-center gap-2"><span className="text-[#0077B5] font-bold">✓</span> Approved by LinkedIn API</li>
+                  <li className="flex items-center gap-2"><span className="text-[#0077B5] font-bold">✓</span> Company voice &amp; tone</li>
+                  <li className="flex items-center gap-2"><span className="text-[#0077B5] font-bold">✓</span> Autopublish</li>
+                </ul>
+                <div className="w-full bg-[#0077B5] hover:bg-[#005f8e] text-white text-sm font-bold py-3 rounded-xl text-center transition-colors">
+                  {buyingCompanyPlan ? "Loading..." : "Subscribe →"}
+                </div>
+              </button>
+              </>
+              )}
             </div>
 
             {/* Footer */}
