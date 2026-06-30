@@ -3899,6 +3899,13 @@ function LinkedInPageContent() {
                     >
                       {renewingSubscription ? "Renewing…" : "Renew subscription"}
                     </button>
+                    <button
+                      onClick={handleManageBilling}
+                      disabled={portalLoading}
+                      className="w-full flex items-center justify-center gap-2 mt-1 px-4 py-2.5 rounded-xl border border-violet-200 bg-violet-50 hover:bg-violet-100 text-sm font-semibold text-violet-700 transition-colors disabled:opacity-60"
+                    >
+                      {portalLoading ? "Opening…" : "Manage billing · update card · invoices"}
+                    </button>
                   </div>
                 ) : hasActiveSubscription ? (
                   <div className="space-y-3">
