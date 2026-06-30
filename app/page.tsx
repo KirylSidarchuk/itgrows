@@ -140,10 +140,8 @@ export default function PersonalPage() {
         track("preview_posts_shown")
       } else if (res.status === 429) {
         setGhostError("You've used your 2 free previews. Sign up to generate unlimited posts →")
-      } else if (data.error) {
-        setGhostError(data.error)
       } else {
-        setGhostError("Something went wrong. Try again.")
+        setGhostError("Our AI is busy right now — please try again in a moment.")
       }
     } catch {
       setGhostError("Something went wrong. Try again.")
