@@ -52,19 +52,16 @@ export async function POST(req: NextRequest) {
     cancel_url: "https://itgrows.ai/",
     ...(email ? { customer_email: email } : {}),
     allow_promotion_codes: false,
+    // Win-back: no second trial — the discounted price charges immediately so the
+    // offer converts to a paying subscription right away.
     ...(userId
       ? {
           metadata: { userId },
           subscription_data: {
-            trial_period_days: 14,
             metadata: { userId, plan: "personal_annual_discount" },
           },
         }
-      : {
-          subscription_data: {
-            trial_period_days: 14,
-          },
-        }),
+      : {}),
   })
 
   return NextResponse.json({ url: checkoutSession.url })
