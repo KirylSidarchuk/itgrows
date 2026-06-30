@@ -2271,6 +2271,7 @@ function LinkedInPageContent() {
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-sm font-medium text-slate-700 truncate">{userName}</p>
+              <p className="text-[11px] text-slate-500 truncate mb-1">{session?.user?.email}</p>
               <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${
                 hasPersonalPlan
                   ? "bg-violet-100 text-violet-600"
@@ -2292,11 +2293,12 @@ function LinkedInPageContent() {
               ItGrows.ai
             </span>
           </a>
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-full bg-gradient-to-br from-violet-400 to-pink-400 flex items-center justify-center text-white text-xs font-bold">
+          <div className="flex items-center gap-2 min-w-0">
+            <p className="text-[11px] font-medium text-slate-700 truncate max-w-[110px]">{session?.user?.email}</p>
+            <div className="w-7 h-7 rounded-full bg-gradient-to-br from-violet-400 to-pink-400 flex items-center justify-center text-white text-xs font-bold shrink-0">
               {userName.charAt(0).toUpperCase()}
             </div>
-            <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${
+            <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full shrink-0 ${
               hasPersonalPlan ? "bg-violet-100 text-violet-600" : "bg-slate-100 text-slate-600"
             }`}>
               {subscriptionPlan === "allin" ? "All-in" : subscriptionPlan === "duo" ? "Duo" : subscriptionPlan === "personal_annual" ? "Annual" : hasPersonalPlan ? "Personal" : "Free"}
