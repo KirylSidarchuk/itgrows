@@ -213,7 +213,7 @@ export default function PersonalPage() {
       style={{ backgroundColor: "#f3f2f1", fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" }}
     >
       {/* Nav */}
-      <nav className="border-b border-black/10 px-4 sm:px-6 py-4 sticky top-0 z-50" style={{ backgroundColor: "#f3f2f1" }}>
+      <nav className="border-b border-black/10 px-4 sm:px-6 py-4 sticky top-0 z-[60]" style={{ backgroundColor: "#f3f2f1" }}>
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 text-xl font-bold bg-gradient-to-r from-violet-600 to-cyan-600 bg-clip-text text-transparent shrink-0">
@@ -258,8 +258,9 @@ export default function PersonalPage() {
 
           {/* Mobile: hamburger */}
           <button
-            className="md:hidden flex flex-col justify-center items-center w-9 h-9 gap-1.5 rounded-lg hover:bg-black/5 transition-colors"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            type="button"
+            className="md:hidden relative z-[70] flex flex-col justify-center items-center w-10 h-10 gap-1.5 rounded-lg hover:bg-black/5 active:bg-black/10 transition-colors"
+            onClick={() => setMobileMenuOpen((v) => !v)}
             aria-label="Toggle menu"
           >
             <span className={`block w-5 h-0.5 bg-[#1b1916] transition-all duration-200 ${mobileMenuOpen ? "rotate-45 translate-y-2" : ""}`} />
@@ -1050,9 +1051,9 @@ export default function PersonalPage() {
           <Button
             size="lg"
             onClick={() => handleCheckoutWithPlatform("personal")}
-            className="bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-white px-8 sm:px-10 py-5 sm:py-6 text-base sm:text-lg rounded-xl w-full sm:w-auto"
+            className="bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-white px-6 sm:px-10 py-4 sm:py-6 text-base sm:text-lg rounded-xl w-full sm:w-auto whitespace-normal text-center leading-snug h-auto"
           >
-            Start Building Your Executive Presence — Free for 14 Days
+            Start your 14-day free trial — no card
           </Button>
           <p className="mt-4 text-xs sm:text-sm text-slate-500">14-day free trial · No card required · From $49/month · Cancel anytime</p>
           <p className="mt-2 text-xs text-slate-400">🔒 OAuth secure · No password stored</p>
