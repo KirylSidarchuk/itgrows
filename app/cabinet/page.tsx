@@ -1026,7 +1026,7 @@ function LinkedInPageContent() {
 
   async function handleBuyCompanyPlan(tier: "single" | "two" | "unlimited") {
     setBuyingCompanyPlan(true)
-    setOrgsMessage(null)
+    setOrgsMessage("Opening secure checkout — one moment…")
     try {
       const res = await fetch("/api/stripe/company-plan", {
         method: "POST",
@@ -2612,7 +2612,7 @@ function LinkedInPageContent() {
                           >
                             <span className="text-sm font-bold text-slate-900">{name}</span>
                             <span className="text-lg text-violet-700 font-extrabold leading-tight">{price}<span className="text-xs font-semibold text-slate-600">/mo</span></span>
-                            <span className="text-xs font-semibold text-slate-600">{companyPagePlan === tier ? "✓ Current" : sub}</span>
+                            <span className="text-xs font-semibold text-slate-600">{buyingCompanyPlan ? "Opening…" : companyPagePlan === tier ? "✓ Current" : sub}</span>
                           </button>
                         ))}
                       </div>
@@ -2686,13 +2686,13 @@ function LinkedInPageContent() {
                       </div>
                     ))}
 
-                    <div className="mt-4 p-4 rounded-xl bg-blue-50 border border-blue-100">
-                      <p className="text-xs text-blue-700 font-medium mb-1">How it works</p>
-                      <ul className="text-xs text-blue-600 space-y-1">
-                        <li>• Included with your plan — or $99/month per extra page</li>
-                        <li>• Activate a page to start AI content generation for it</li>
-                        <li>• AI generates and schedules posts in your company&apos;s voice</li>
-                        <li>• Cancel anytime — access continues until end of billing period</li>
+                    <div className="mt-6 p-6 rounded-2xl bg-blue-50 border border-blue-100">
+                      <p className="text-lg font-bold text-blue-800 mb-3">How it works</p>
+                      <ul className="text-sm text-blue-800 space-y-2.5">
+                        <li className="flex items-start gap-2"><span className="text-blue-500 font-bold mt-0.5">•</span><span>Included with your plan — or <strong>$99/month</strong> per extra page</span></li>
+                        <li className="flex items-start gap-2"><span className="text-blue-500 font-bold mt-0.5">•</span><span>Activate a page to start AI content generation for it</span></li>
+                        <li className="flex items-start gap-2"><span className="text-blue-500 font-bold mt-0.5">•</span><span>AI generates and schedules posts in your company&apos;s voice</span></li>
+                        <li className="flex items-start gap-2"><span className="text-blue-500 font-bold mt-0.5">•</span><span>Cancel anytime — access continues until end of billing period</span></li>
                       </ul>
                     </div>
                   </div>
