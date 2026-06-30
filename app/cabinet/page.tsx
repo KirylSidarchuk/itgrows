@@ -2050,8 +2050,8 @@ function LinkedInPageContent() {
           {
             icon: "👋",
             title: "Welcome to ItGrows.ai",
-            subtitle: "Your LinkedIn & X — on autopilot",
-            body: "ItGrows writes, schedules, and publishes posts for you every day — in your voice, on your topics. You set it up once, and it runs.",
+            subtitle: "Your LinkedIn & X — personal and company, on autopilot",
+            body: "ItGrows writes, schedules, and publishes posts for you every day — in your voice, on your topics. Run your personal profiles and your company pages from one place. Set it up once, and it runs.",
             visual: (
               <div className="flex justify-center gap-3 mt-4">
                 <div className="flex flex-col items-center gap-1">
@@ -2070,10 +2070,34 @@ function LinkedInPageContent() {
             ),
           },
           {
+            icon: "🗂️",
+            title: "One workspace, every channel",
+            subtitle: "Personal + company, LinkedIn + X",
+            body: "Manage all your channels side by side — each with its own voice. Your personal brand and your company's presence stay fully separated, never mixed. Company pages are managed under \"Company Pages\"; your X personal and company accounts each have their own setup.",
+            visual: (
+              <div className="mt-4 grid grid-cols-2 gap-2 text-left">
+                {[
+                  { tag: "LinkedIn", sub: "Personal profile", color: "bg-blue-600" },
+                  { tag: "LinkedIn", sub: "Company Pages", color: "bg-[#0077B5]" },
+                  { tag: "X (Twitter)", sub: "Personal account", color: "bg-slate-900" },
+                  { tag: "X (Twitter)", sub: "Company account", color: "bg-slate-500" },
+                ].map((c) => (
+                  <div key={c.tag + c.sub} className="flex items-center gap-2.5 bg-slate-50 rounded-xl px-3 py-2.5">
+                    <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${c.color}`} />
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-slate-800 leading-tight truncate">{c.tag}</p>
+                      <p className="text-xs text-slate-600 leading-tight truncate">{c.sub}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ),
+          },
+          {
             icon: "🧬",
             title: "Step 1: Fill your DNA",
             subtitle: "Tell us who you are",
-            body: "Your Professional DNA is the foundation. Describe your niche, tone, goals, and audience. AI uses this to write posts that sound exactly like you — not generic.",
+            body: "Your Professional DNA is the foundation. Describe your niche, tone, goals, and audience. Each channel gets its own DNA — a personal voice for you, a brand voice for every company page and account — so nothing sounds generic or mixed up.",
             visual: (
               <div className="mt-4 bg-slate-50 rounded-xl p-4 text-left space-y-2">
                 {[
@@ -2110,7 +2134,7 @@ function LinkedInPageContent() {
             icon: "📅",
             title: "Step 3: Publish on autopilot",
             subtitle: "1 post per day, automatically",
-            body: "Your posts are scheduled and published automatically — 1 per day, every day. No manual work. Your LinkedIn and X stay active while you focus on what matters.",
+            body: "Your posts are scheduled and published automatically — 1 per day per channel, every day. No manual work. Your profiles and company pages stay active while you focus on what matters.",
             visual: (
               <div className="mt-4 bg-slate-50 rounded-xl p-4">
                 <div className="grid grid-cols-7 gap-1 text-center">
@@ -2134,9 +2158,9 @@ function LinkedInPageContent() {
             visual: (
               <div className="mt-4 flex flex-col gap-3">
                 {[
-                  { num: "1", text: "Connect LinkedIn or X", done: false },
-                  { num: "2", text: "Fill Professional DNA", done: false },
-                  { num: "3", text: "Generate 14 posts", done: false },
+                  { num: "1", text: "Connect a personal profile or company page", done: false },
+                  { num: "2", text: "Fill the DNA for each channel", done: false },
+                  { num: "3", text: "Generate posts & let it publish", done: false },
                 ].map((item) => (
                   <div key={item.num} className="flex items-center gap-3 bg-slate-50 rounded-xl px-4 py-3">
                     <span className="w-7 h-7 rounded-full bg-violet-600 text-white text-sm font-bold flex items-center justify-center shrink-0">{item.num}</span>
