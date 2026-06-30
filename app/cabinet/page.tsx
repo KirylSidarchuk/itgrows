@@ -1924,33 +1924,32 @@ function LinkedInPageContent() {
               <button
                 onClick={() => handlePlanSelect(billingCycle === "annual" ? "allin_annual" : "allin")}
                 disabled={checkingOut}
-                className="flex flex-col items-start p-6 rounded-2xl border-2 border-slate-800 hover:border-black hover:shadow-md transition-all text-left disabled:opacity-70"
-                style={{ background: "linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%)" }}
+                className="flex flex-col items-start p-6 rounded-2xl border-2 border-slate-200 hover:border-violet-400 hover:shadow-md transition-all text-left disabled:opacity-70 bg-white"
               >
-                <span className="text-xs font-bold text-amber-400 bg-amber-400/20 rounded-full px-3 py-1 mb-4">All-in</span>
+                <span className="text-xs font-bold text-violet-700 bg-violet-100 rounded-full px-3 py-1 mb-4">All-in</span>
                 <div className="mb-1">
                   {billingCycle === "annual" ? (
                     <>
-                      <span className="text-4xl font-black text-white">$139</span>
+                      <span className="text-4xl font-black text-slate-900">$139</span>
                       <span className="text-slate-600 text-sm font-normal">/mo</span>
-                      <span className="ml-2 text-xs text-amber-400 font-semibold">$1,671/yr</span>
+                      <span className="ml-2 text-xs text-green-600 font-semibold">$1,671/yr</span>
                     </>
                   ) : (
                     <>
-                      <span className="text-4xl font-black text-white">$199</span>
+                      <span className="text-4xl font-black text-slate-900">$199</span>
                       <span className="text-slate-600 text-sm font-normal">/month</span>
                     </>
                   )}
                 </div>
                 <p className="text-xs text-slate-600 mb-4">billed monthly</p>
-                <p className="text-sm font-semibold text-slate-600 mb-3">Personal + Company growth</p>
+                <p className="text-sm font-semibold text-slate-700 mb-3">Personal + Company growth</p>
                 <ul className="text-sm text-slate-600 space-y-2 mb-6 flex-1">
-                  <li className="flex items-center gap-2"><span className="text-amber-400 font-bold">✓</span> LinkedIn + X + Company X</li>
-                  <li className="flex items-center gap-2"><span className="text-amber-400 font-bold">✓</span> 14 AI posts per account</li>
-                  <li className="flex items-center gap-2"><span className="text-amber-400 font-bold">✓</span> Auto-scheduling</li>
-                  <li className="flex items-center gap-2"><span className="text-amber-400 font-bold">✓</span> AI-generated images</li>
+                  <li className="flex items-center gap-2"><span className="text-green-500 font-bold">✓</span> LinkedIn + X + Company X</li>
+                  <li className="flex items-center gap-2"><span className="text-green-500 font-bold">✓</span> 14 AI posts per account</li>
+                  <li className="flex items-center gap-2"><span className="text-green-500 font-bold">✓</span> Auto-scheduling</li>
+                  <li className="flex items-center gap-2"><span className="text-green-500 font-bold">✓</span> AI-generated images</li>
                 </ul>
-                <div className="w-full bg-amber-400 hover:bg-amber-300 text-slate-900 text-sm font-bold py-3 rounded-xl text-center transition-colors">
+                <div className="w-full bg-violet-600 hover:bg-violet-500 text-white text-sm font-bold py-3 rounded-xl text-center transition-colors">
                   {checkingOut ? "Loading..." : "Subscribe →"}
                 </div>
               </button>
