@@ -202,6 +202,7 @@ function PostCard({
   onDelete,
   hasSubscription,
   trialExpired,
+  onUpgrade,
 }: {
   post: LinkedInPost
   onUpdate: (postId: string, content: string, scheduledFor: string) => Promise<void>
@@ -209,6 +210,7 @@ function PostCard({
   onDelete: (postId: string) => Promise<void>
   hasSubscription: boolean
   trialExpired?: boolean
+  onUpgrade?: () => void
 }) {
   const [content, setContent] = useState(post.content)
   const [scheduledFor, setScheduledFor] = useState(
@@ -290,12 +292,12 @@ function PostCard({
           <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center">
             <Lock className="w-5 h-5 text-slate-500" />
           </div>
-          <a
-            href="/#pricing"
+          <button
+            onClick={onUpgrade}
             className="bg-violet-600 hover:bg-violet-500 text-white text-xs font-semibold px-4 py-2 rounded-xl transition-colors"
           >
             Subscribe to publish →
-          </a>
+          </button>
         </div>
       )}
       <div className="relative group">
@@ -504,6 +506,7 @@ function XPostCard({
   onContentUpdate,
   hasSubscription,
   trialExpired,
+  onUpgrade,
 }: {
   post: TwitterPost
   onPublish: (postId: string) => Promise<void>
@@ -511,6 +514,7 @@ function XPostCard({
   onContentUpdate: (postId: string, content: string) => void
   hasSubscription: boolean
   trialExpired?: boolean
+  onUpgrade?: () => void
 }) {
   const [publishing, setPublishing] = useState(false)
   const [expanded, setExpanded] = useState(false)
@@ -591,12 +595,12 @@ function XPostCard({
           <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center">
             <Lock className="w-5 h-5 text-slate-500" />
           </div>
-          <a
-            href="/#pricing"
+          <button
+            onClick={onUpgrade}
             className="bg-slate-900 hover:bg-slate-700 text-white text-xs font-semibold px-4 py-2 rounded-xl transition-colors"
           >
             Subscribe to publish
-          </a>
+          </button>
         </div>
       )}
       <div className="p-4 space-y-3">
@@ -1571,7 +1575,7 @@ function LinkedInPageContent() {
       setPosts((prev) =>
         prev.map((p) =>
           p.id === postId
-            ? { ...p, status: "failed", publishError: "Upgrade to Personal to publish posts. See /#pricing" }
+            ? { ...p, status: "failed", publishError: "Subscribe to publish — open Settings to choose a plan." }
             : p
         )
       )
@@ -2399,12 +2403,12 @@ function LinkedInPageContent() {
                   <p className="text-xs text-red-600 mt-0.5">Your posts are preserved — subscribe to generate and publish again</p>
                 </div>
               </div>
-              <a
-                href="/#pricing"
+              <button
+                onClick={() => setShowPlanModal(true)}
                 className="shrink-0 bg-red-600 hover:bg-red-700 text-white font-semibold text-xs rounded-xl px-4 py-2 transition-colors self-start sm:self-auto"
               >
                 Subscribe Now →
-              </a>
+              </button>
             </div>
           )}
 
@@ -2627,11 +2631,9 @@ function LinkedInPageContent() {
                         <div className="flex flex-col items-start gap-2">
                           <p className="text-xs text-slate-400">Personal X account not connected</p>
                           <p className="text-xs text-amber-600 font-medium">Upgrade to Duo/All-in to connect more accounts</p>
-                          <a href="/#pricing">
-                            <Button size="sm" variant="outline" className="rounded-xl text-xs px-4 border-amber-400 text-amber-700">
-                              Upgrade Plan →
-                            </Button>
-                          </a>
+                          <Button onClick={() => setShowPlanModal(true)} size="sm" variant="outline" className="rounded-xl text-xs px-4 border-amber-400 text-amber-700">
+                            Upgrade Plan →
+                          </Button>
                         </div>
                       ) : (
                         <div className="flex flex-col items-start gap-2">
@@ -2675,11 +2677,9 @@ function LinkedInPageContent() {
                         <div className="flex flex-col items-start gap-2">
                           <p className="text-xs text-slate-400">Company X account not connected</p>
                           <p className="text-xs text-amber-600 font-medium">Upgrade to Duo/All-in to connect more accounts</p>
-                          <a href="/#pricing">
-                            <Button size="sm" variant="outline" className="rounded-xl text-xs px-4 border-amber-400 text-amber-700">
-                              Upgrade Plan →
-                            </Button>
-                          </a>
+                          <Button onClick={() => setShowPlanModal(true)} size="sm" variant="outline" className="rounded-xl text-xs px-4 border-amber-400 text-amber-700">
+                            Upgrade Plan →
+                          </Button>
                         </div>
                       ) : (
                         <div className="flex flex-col items-start gap-2">
@@ -2747,13 +2747,13 @@ function LinkedInPageContent() {
                             )}
                           </Button>
                         ) : trialExpired ? (
-                          <a
-                            href="/#pricing"
+                          <button
+                            onClick={() => setShowPlanModal(true)}
                             className="inline-flex items-center gap-2 bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-500 hover:to-orange-400 text-white font-semibold px-6 py-2.5 rounded-xl shadow-sm text-sm transition-opacity"
                           >
                             <Lock className="w-4 h-4" />
                             Subscribe to Generate
-                          </a>
+                          </button>
                         ) : (
                           <Button
                             onClick={() => setShowPlanModal(true)}
@@ -2861,7 +2861,7 @@ function LinkedInPageContent() {
                                     onImageUpdate={handleXImageUpdate}
                                     onContentUpdate={handleXContentUpdate}
                                     hasSubscription={hasPersonalPlan}
-                                    trialExpired={trialExpired}
+                                    trialExpired={trialExpired} onUpgrade={() => setShowPlanModal(true)}
                                   />
                                 ))}
                               </div>
@@ -2886,7 +2886,7 @@ function LinkedInPageContent() {
                                       onImageUpdate={handleXImageUpdate}
                                       onContentUpdate={handleXContentUpdate}
                                       hasSubscription={hasPersonalPlan}
-                                      trialExpired={trialExpired}
+                                      trialExpired={trialExpired} onUpgrade={() => setShowPlanModal(true)}
                                     />
                                   ))}
                                 </div>
@@ -3277,13 +3277,13 @@ function LinkedInPageContent() {
                         )}
                       </div>
                     ) : trialExpired ? (
-                      <a
-                        href="/#pricing"
+                      <button
+                        onClick={() => setShowPlanModal(true)}
                         className="inline-flex items-center gap-2 bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-500 hover:to-orange-400 text-white font-semibold px-6 py-2.5 rounded-xl shadow-sm text-sm transition-opacity"
                       >
                         <Lock className="w-4 h-4" />
                         Subscribe to Generate →
-                      </a>
+                      </button>
                     ) : (
                       <Button
                         onClick={() => setShowPlanModal(true)}
@@ -3488,7 +3488,7 @@ function LinkedInPageContent() {
                                 onPublish={handlePublishPost}
                                 onDelete={handleDeletePost}
                                 hasSubscription={hasPersonalPlan}
-                                trialExpired={trialExpired}
+                                trialExpired={trialExpired} onUpgrade={() => setShowPlanModal(true)}
                               />
                             ))}
                           </div>
@@ -3515,7 +3515,7 @@ function LinkedInPageContent() {
                                   onPublish={handlePublishPost}
                                   onDelete={handleDeletePost}
                                   hasSubscription={hasPersonalPlan}
-                                  trialExpired={trialExpired}
+                                  trialExpired={trialExpired} onUpgrade={() => setShowPlanModal(true)}
                                 />
                               ))}
                             </div>
