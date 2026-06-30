@@ -157,7 +157,7 @@ function DnaScoreBar({ score }: { score: number }) {
           style={{ width: `${score}%` }}
         />
       </div>
-      <p className="text-xs text-slate-500 mt-1.5">ItGrows understands {score}% of your professional DNA</p>
+      <p className="text-xs text-slate-600 mt-1.5">ItGrows understands {score}% of your professional DNA</p>
     </div>
   )
 }
@@ -316,7 +316,7 @@ function PostCard({
                   <span className="text-xs font-semibold text-slate-600">Image style</span>
                   <button
                     onClick={() => setShowStylePicker(false)}
-                    className="text-slate-400 hover:text-slate-600 text-xs leading-none"
+                    className="text-slate-600 hover:text-slate-600 text-xs leading-none"
                   >
                     ✕
                   </button>
@@ -361,13 +361,13 @@ function PostCard({
               {post.status}
             </Badge>
             {scheduledDate && post.status === "scheduled" && (
-              <span className="text-xs text-slate-500 flex items-center gap-1">
+              <span className="text-xs text-slate-600 flex items-center gap-1">
                 <Calendar className="w-3 h-3" />
                 {scheduledDate}
               </span>
             )}
             {post.publishedAt && (
-              <span className="text-xs text-slate-500">
+              <span className="text-xs text-slate-600">
                 {new Date(post.publishedAt).toLocaleDateString()}
               </span>
             )}
@@ -375,7 +375,7 @@ function PostCard({
           <button
             onClick={handleDelete}
             disabled={deleting}
-            className="text-xs text-slate-400 hover:text-red-400 transition-colors"
+            className="text-xs text-slate-600 hover:text-red-400 transition-colors"
           >
             {deleting ? "..." : "✕"}
           </button>
@@ -403,7 +403,7 @@ function PostCard({
                   )}
                   <button
                     onClick={() => setExpanded(true)}
-                    className="flex items-center gap-1 text-xs text-slate-500 hover:text-violet-500 transition-colors"
+                    className="flex items-center gap-1 text-xs text-slate-600 hover:text-violet-500 transition-colors"
                   >
                     ✏️ Edit
                   </button>
@@ -418,7 +418,7 @@ function PostCard({
               />
             )}
             {expanded && (
-              <button onClick={() => setExpanded(false)} className="text-xs text-slate-500 hover:text-violet-500 hover:underline">
+              <button onClick={() => setExpanded(false)} className="text-xs text-slate-600 hover:text-violet-500 hover:underline">
                 Collapse
               </button>
             )}
@@ -468,7 +468,7 @@ function PostCard({
                 size="sm"
                 disabled
                 title="Upgrade to publish"
-                className="text-xs bg-slate-100 text-slate-500 shrink-0 cursor-not-allowed"
+                className="text-xs bg-slate-100 text-slate-600 shrink-0 cursor-not-allowed"
               >
                 <Lock className="w-3 h-3 mr-1" />
                 Publish
@@ -611,16 +611,16 @@ function XPostCard({
               {post.status}
             </Badge>
             {post.publishedAt ? (
-              <span className="text-xs text-slate-500">
+              <span className="text-xs text-slate-600">
                 {new Date(post.publishedAt).toLocaleDateString()}
               </span>
             ) : post.scheduledAt && post.status === "scheduled" ? (
-              <span className="text-xs text-slate-500">
+              <span className="text-xs text-slate-600">
                 {new Date(post.scheduledAt).toLocaleDateString(undefined, { month: "short", day: "numeric" })} · {new Date(post.scheduledAt).toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" })}
               </span>
             ) : null}
           </div>
-          <XIcon className="w-3.5 h-3.5 text-slate-500" />
+          <XIcon className="w-3.5 h-3.5 text-slate-600" />
         </div>
 
         {post.errorMessage && (
@@ -635,7 +635,7 @@ function XPostCard({
               rows={5}
               className="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 bg-slate-50 text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-500 resize-none"
             />
-            <div className={`text-xs ${editContent.length > 280 ? "text-red-500 font-semibold" : "text-slate-500"}`}>
+            <div className={`text-xs ${editContent.length > 280 ? "text-red-500 font-semibold" : "text-slate-600"}`}>
               {editContent.length}/280 chars
             </div>
             <div className="flex items-center gap-2">
@@ -661,7 +661,7 @@ function XPostCard({
               <div>
                 <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-line">{previewText}</p>
                 {post.content.length > 140 && (
-                  <button onClick={() => setExpanded(true)} className="text-xs text-slate-500 hover:text-slate-700 hover:underline mt-1">
+                  <button onClick={() => setExpanded(true)} className="text-xs text-slate-600 hover:text-slate-700 hover:underline mt-1">
                     Show more
                   </button>
                 )}
@@ -669,12 +669,12 @@ function XPostCard({
             ) : (
               <>
                 <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-line">{post.content}</p>
-                <button onClick={() => setExpanded(false)} className="text-xs text-slate-500 hover:underline">
+                <button onClick={() => setExpanded(false)} className="text-xs text-slate-600 hover:underline">
                   Collapse
                 </button>
               </>
             )}
-            <div className="text-xs text-slate-500">
+            <div className="text-xs text-slate-600">
               {post.content.length}/280 chars
             </div>
           </>
@@ -690,7 +690,7 @@ function XPostCard({
             />
             <button
               onClick={handleRemoveImage}
-              className="text-xs text-slate-500 hover:text-red-500 transition-colors"
+              className="text-xs text-slate-600 hover:text-red-500 transition-colors"
             >
               Remove image
             </button>
@@ -742,7 +742,7 @@ function XPostCard({
                 size="sm"
                 disabled
                 title="Upgrade to publish"
-                className="text-xs bg-slate-100 text-slate-500 shrink-0 cursor-not-allowed"
+                className="text-xs bg-slate-100 text-slate-600 shrink-0 cursor-not-allowed"
               >
                 <Lock className="w-3 h-3 mr-1" />
                 Publish
@@ -1871,7 +1871,7 @@ function LinkedInPageContent() {
                     </>
                   )}
                 </div>
-                <p className="text-xs text-slate-500 mb-4">billed monthly</p>
+                <p className="text-xs text-slate-600 mb-4">billed monthly</p>
                 <p className="text-sm font-semibold text-slate-700 mb-3">1 platform of your choice</p>
                 <ul className="text-sm text-slate-600 space-y-2 mb-6 flex-1">
                   <li className="flex items-center gap-2"><span className="text-green-500 font-bold">✓</span> LinkedIn or X</li>
@@ -1907,7 +1907,7 @@ function LinkedInPageContent() {
                     </>
                   )}
                 </div>
-                <p className="text-xs text-slate-500 mb-4">billed monthly</p>
+                <p className="text-xs text-slate-600 mb-4">billed monthly</p>
                 <p className="text-sm font-semibold text-slate-700 mb-3">LinkedIn + X together</p>
                 <ul className="text-sm text-slate-600 space-y-2 mb-6 flex-1">
                   <li className="flex items-center gap-2"><span className="text-green-500 font-bold">✓</span> LinkedIn <span className="font-bold text-violet-600">+</span> X — both</li>
@@ -1932,19 +1932,19 @@ function LinkedInPageContent() {
                   {billingCycle === "annual" ? (
                     <>
                       <span className="text-4xl font-black text-white">$139</span>
-                      <span className="text-slate-500 text-sm font-normal">/mo</span>
+                      <span className="text-slate-600 text-sm font-normal">/mo</span>
                       <span className="ml-2 text-xs text-amber-400 font-semibold">$1,671/yr</span>
                     </>
                   ) : (
                     <>
                       <span className="text-4xl font-black text-white">$199</span>
-                      <span className="text-slate-500 text-sm font-normal">/month</span>
+                      <span className="text-slate-600 text-sm font-normal">/month</span>
                     </>
                   )}
                 </div>
-                <p className="text-xs text-slate-500 mb-4">billed monthly</p>
-                <p className="text-sm font-semibold text-slate-400 mb-3">Personal + Company growth</p>
-                <ul className="text-sm text-slate-400 space-y-2 mb-6 flex-1">
+                <p className="text-xs text-slate-600 mb-4">billed monthly</p>
+                <p className="text-sm font-semibold text-slate-600 mb-3">Personal + Company growth</p>
+                <ul className="text-sm text-slate-600 space-y-2 mb-6 flex-1">
                   <li className="flex items-center gap-2"><span className="text-amber-400 font-bold">✓</span> LinkedIn + X + Company X</li>
                   <li className="flex items-center gap-2"><span className="text-amber-400 font-bold">✓</span> 14 AI posts per account</li>
                   <li className="flex items-center gap-2"><span className="text-amber-400 font-bold">✓</span> Auto-scheduling</li>
@@ -1966,17 +1966,17 @@ function LinkedInPageContent() {
                   {billingCycle === "annual" ? (
                     <>
                       <span className="text-4xl font-black text-slate-900">$104</span>
-                      <span className="text-slate-500 text-sm font-normal">/mo</span>
+                      <span className="text-slate-600 text-sm font-normal">/mo</span>
                       <span className="ml-2 text-xs text-green-600 font-semibold">$1,251.60/yr</span>
                     </>
                   ) : (
                     <>
                       <span className="text-4xl font-black text-slate-900">$149</span>
-                      <span className="text-slate-500 text-sm font-normal">/month</span>
+                      <span className="text-slate-600 text-sm font-normal">/month</span>
                     </>
                   )}
                 </div>
-                <p className="text-xs text-slate-500 mb-4">billed monthly</p>
+                <p className="text-xs text-slate-600 mb-4">billed monthly</p>
                 <p className="text-sm font-semibold text-slate-700 mb-3">X company account only</p>
                 <ul className="text-sm text-slate-600 space-y-2 mb-6 flex-1">
                   <li className="flex items-center gap-2"><span className="text-slate-800 font-bold">✓</span> 1 X/Twitter company account</li>
@@ -1991,7 +1991,7 @@ function LinkedInPageContent() {
             </div>
 
             {/* Footer */}
-            <p className="text-center text-xs text-slate-500 pb-6">Subscribe to continue after your free trial · Cancel anytime · Secure checkout via Stripe</p>
+            <p className="text-center text-xs text-slate-600 pb-6">Subscribe to continue after your free trial · Cancel anytime · Secure checkout via Stripe</p>
           </div>
         </div>
       )}
@@ -2034,7 +2034,7 @@ function LinkedInPageContent() {
                   { label: "Goals", value: "Build personal brand, attract investors" },
                 ].map((row) => (
                   <div key={row.label} className="flex gap-2 text-sm">
-                    <span className="text-slate-500 w-16 shrink-0">{row.label}</span>
+                    <span className="text-slate-600 w-16 shrink-0">{row.label}</span>
                     <span className="text-slate-700 font-medium">{row.value}</span>
                   </div>
                 ))}
@@ -2067,10 +2067,10 @@ function LinkedInPageContent() {
               <div className="mt-4 bg-slate-50 rounded-xl p-4">
                 <div className="grid grid-cols-7 gap-1 text-center">
                   {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((d) => (
-                    <div key={d} className="text-[10px] text-slate-500 font-semibold mb-1">{d}</div>
+                    <div key={d} className="text-[10px] text-slate-600 font-semibold mb-1">{d}</div>
                   ))}
                   {[true, true, true, false, true, false, false, true, true, false, true, true, false, false].map((posted, i) => (
-                    <div key={i} className={`aspect-square rounded-lg flex items-center justify-center text-xs font-bold ${posted ? "bg-violet-600 text-white" : "bg-white border border-slate-200 text-slate-400"}`}>
+                    <div key={i} className={`aspect-square rounded-lg flex items-center justify-center text-xs font-bold ${posted ? "bg-violet-600 text-white" : "bg-white border border-slate-200 text-slate-600"}`}>
                       {posted ? "✓" : "·"}
                     </div>
                   ))}
@@ -2119,8 +2119,8 @@ function LinkedInPageContent() {
               <div className="p-8">
                 {/* Step counter */}
                 <div className="flex items-center justify-between mb-6">
-                  <span className="text-xs text-slate-500 font-semibold">{guideStep + 1} / {steps.length}</span>
-                  <button onClick={dismissGuide} className="text-xs text-slate-500 hover:text-slate-600 transition-colors">Skip tour</button>
+                  <span className="text-xs text-slate-600 font-semibold">{guideStep + 1} / {steps.length}</span>
+                  <button onClick={dismissGuide} className="text-xs text-slate-600 hover:text-slate-600 transition-colors">Skip tour</button>
                 </div>
 
                 {/* Icon + title */}
@@ -2138,7 +2138,7 @@ function LinkedInPageContent() {
                 <div className="flex items-center justify-between mt-8">
                   <button
                     onClick={() => setGuideStep((s) => Math.max(0, s - 1))}
-                    className={`text-sm text-slate-500 hover:text-slate-600 transition-colors ${guideStep === 0 ? "invisible" : ""}`}
+                    className={`text-sm text-slate-600 hover:text-slate-600 transition-colors ${guideStep === 0 ? "invisible" : ""}`}
                   >← Back</button>
                   <div className="flex gap-1">
                     {steps.map((_, i) => (
@@ -2197,7 +2197,7 @@ function LinkedInPageContent() {
           {/* LinkedIn — Company Pages (clearly separated from personal) */}
           <div className="mt-3 mb-1">
             <div className="flex items-center justify-between pl-3 pr-2 mb-1">
-              <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Company Pages</p>
+              <p className="text-[11px] font-semibold text-slate-600 uppercase tracking-wider">Company Pages</p>
               <button
                 onClick={async () => {
                   try {
@@ -2210,7 +2210,7 @@ function LinkedInPageContent() {
                 }}
                 title="Sync new pages from LinkedIn"
                 aria-label="Sync new pages from LinkedIn"
-                className="text-slate-500 hover:text-[#0077B5] p-1 rounded-lg hover:bg-slate-50 transition-colors"
+                className="text-slate-600 hover:text-[#0077B5] p-1 rounded-lg hover:bg-slate-50 transition-colors"
               >
                 <svg viewBox="0 0 24 24" fill="currentColor" className="w-3.5 h-3.5"><path d="M17.65 6.35A7.958 7.958 0 0 0 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0 1 12 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
               </button>
@@ -2305,7 +2305,7 @@ function LinkedInPageContent() {
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-sm font-medium text-slate-700 truncate">{userName}</p>
-              <p className="text-[11px] text-slate-500 truncate mb-1">{session?.user?.email}</p>
+              <p className="text-[11px] text-slate-600 truncate mb-1">{session?.user?.email}</p>
               <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${
                 hasPersonalPlan
                   ? "bg-violet-100 text-violet-600"
@@ -2384,7 +2384,7 @@ function LinkedInPageContent() {
               key={tab}
               onClick={() => setActiveTab(tab)}
               className={`flex-1 flex flex-col items-center justify-center gap-1 py-2 text-[10px] font-semibold transition-colors ${
-                activeTab === tab ? "text-violet-600" : "text-slate-500"
+                activeTab === tab ? "text-violet-600" : "text-slate-600"
               }`}
             >
               {icons[tab]}
@@ -2394,7 +2394,7 @@ function LinkedInPageContent() {
         })}
         <button
           onClick={() => signOut({ callbackUrl: "/login" })}
-          className="flex-1 flex flex-col items-center justify-center gap-1 py-2 text-[10px] font-semibold text-slate-500"
+          className="flex-1 flex flex-col items-center justify-center gap-1 py-2 text-[10px] font-semibold text-slate-600"
         >
           <LogOut className="w-5 h-5" />
           Logout
@@ -2520,7 +2520,7 @@ function LinkedInPageContent() {
                   </div>
                   <div>
                     <p className="text-base font-semibold text-slate-800">Company Pages</p>
-                    <p className="text-xs text-slate-500">Manage LinkedIn company pages</p>
+                    <p className="text-xs text-slate-600">Manage LinkedIn company pages</p>
                   </div>
                 </div>
 
@@ -2553,7 +2553,7 @@ function LinkedInPageContent() {
                             ? `${usedPages} active · ${totalQuota} included with your plan, ${overage} billed at $99/mo`
                             : `${usedPages} of ${totalQuota} included ${totalQuota === 1 ? "page" : "pages"} active`}
                       </p>
-                      <p className="text-xs text-slate-500 mt-1 mb-4">Pick a plan below, then activate the pages you want in the list — activation is free within your plan.</p>
+                      <p className="text-xs text-slate-600 mt-1 mb-4">Pick a plan below, then activate the pages you want in the list — activation is free within your plan.</p>
                       <div className="grid grid-cols-3 gap-2.5">
                         {([["single", "Single", "$99", "1 page"], ["two", "Two", "$149", "2 pages"], ["unlimited", "Unlimited", "$299", "Unlimited"]] as const).map(([tier, name, price, sub]) => (
                           <button
@@ -2563,7 +2563,7 @@ function LinkedInPageContent() {
                             className={`flex flex-col items-center gap-0.5 py-3 px-2 rounded-xl border-2 text-center transition-colors disabled:cursor-default ${companyPagePlan === tier ? "border-violet-500 bg-violet-50" : "border-slate-200 bg-white hover:border-violet-400 hover:bg-violet-50"}`}
                           >
                             <span className="text-sm font-bold text-slate-900">{name}</span>
-                            <span className="text-lg text-violet-700 font-extrabold leading-tight">{price}<span className="text-xs font-semibold text-slate-500">/mo</span></span>
+                            <span className="text-lg text-violet-700 font-extrabold leading-tight">{price}<span className="text-xs font-semibold text-slate-600">/mo</span></span>
                             <span className="text-xs font-semibold text-slate-600">{companyPagePlan === tier ? "✓ Current" : sub}</span>
                           </button>
                         ))}
@@ -2579,7 +2579,7 @@ function LinkedInPageContent() {
                 ) : accounts.filter((a) => a.pageType === "organization").length === 0 ? (
                   <div className="text-center py-10">
                     <p className="text-sm text-slate-600 mb-2">No company pages found.</p>
-                    <p className="text-xs text-slate-500 mb-4">Connect your LinkedIn account — company pages are loaded automatically.</p>
+                    <p className="text-xs text-slate-600 mb-4">Connect your LinkedIn account — company pages are loaded automatically.</p>
                     {accounts.length === 0 && (
                       <a
                         href={`/api/linkedin/connect?userId=${session?.user?.id}&type=personal`}
@@ -2601,7 +2601,7 @@ function LinkedInPageContent() {
                           <div className="min-w-0">
                             <p className="text-sm font-semibold text-slate-800 truncate">{org.pageName ?? org.pageHandle ?? org.linkedinOrgUrn ?? "Company"}</p>
                             {org.pageHandle && (
-                              <p className="text-xs text-slate-500">linkedin.com/company/{org.pageHandle}</p>
+                              <p className="text-xs text-slate-600">linkedin.com/company/{org.pageHandle}</p>
                             )}
                           </div>
                         </div>
@@ -2615,7 +2615,7 @@ function LinkedInPageContent() {
                                 <button
                                   onClick={() => handleDeactivateOrg(org.id)}
                                   disabled={orgsDeactivating[org.id]}
-                                  className="text-xs text-slate-500 hover:text-red-500 transition-colors px-2 py-1 rounded-lg hover:bg-red-50"
+                                  className="text-xs text-slate-600 hover:text-red-500 transition-colors px-2 py-1 rounded-lg hover:bg-red-50"
                                 >
                                   {orgsDeactivating[org.id] ? <Loader2 className="w-3 h-3 animate-spin" /> : "Cancel"}
                                 </button>
@@ -2658,7 +2658,7 @@ function LinkedInPageContent() {
             <div className="space-y-5">
               {xAccountLoading ? (
                 <div className="flex justify-center py-16">
-                  <Loader2 className="w-6 h-6 animate-spin text-slate-500" />
+                  <Loader2 className="w-6 h-6 animate-spin text-slate-600" />
                 </div>
               ) : (
                 <>
@@ -2692,7 +2692,7 @@ function LinkedInPageContent() {
                         </div>
                       ) : upgradeNeeded ? (
                         <div className="flex flex-col items-start gap-2">
-                          <p className="text-xs text-slate-500">Personal X account not connected</p>
+                          <p className="text-xs text-slate-600">Personal X account not connected</p>
                           <p className="text-xs text-amber-600 font-medium">Upgrade to Duo/All-in to connect more accounts</p>
                           <Button onClick={() => setShowPlanModal(true)} size="sm" variant="outline" className="rounded-xl text-xs px-4 border-amber-400 text-amber-700">
                             Upgrade Plan →
@@ -2700,7 +2700,7 @@ function LinkedInPageContent() {
                         </div>
                       ) : (
                         <div className="flex flex-col items-start gap-2">
-                          <p className="text-xs text-slate-500">Personal X account not connected</p>
+                          <p className="text-xs text-slate-600">Personal X account not connected</p>
                           <a href="/api/x/connect?type=personal">
                             <Button size="sm" className="bg-slate-900 hover:bg-slate-700 text-white rounded-xl text-xs px-4">
                               Connect Personal
@@ -2738,7 +2738,7 @@ function LinkedInPageContent() {
                         </div>
                       ) : upgradeNeeded ? (
                         <div className="flex flex-col items-start gap-2">
-                          <p className="text-xs text-slate-500">Company X account not connected</p>
+                          <p className="text-xs text-slate-600">Company X account not connected</p>
                           <p className="text-xs text-amber-600 font-medium">Upgrade to Duo/All-in to connect more accounts</p>
                           <Button onClick={() => setShowPlanModal(true)} size="sm" variant="outline" className="rounded-xl text-xs px-4 border-amber-400 text-amber-700">
                             Upgrade Plan →
@@ -2746,7 +2746,7 @@ function LinkedInPageContent() {
                         </div>
                       ) : (
                         <div className="flex flex-col items-start gap-2">
-                          <p className="text-xs text-slate-500">Company X account not connected</p>
+                          <p className="text-xs text-slate-600">Company X account not connected</p>
                           <a href="/api/x/connect?type=company">
                             <Button size="sm" className="bg-violet-700 hover:bg-violet-600 text-white rounded-xl text-xs px-4">
                               Connect Company
@@ -2875,7 +2875,7 @@ function LinkedInPageContent() {
                       {/* Posts */}
                       {xPostsLoading ? (
                         <div className="flex justify-center py-16">
-                          <Loader2 className="w-7 h-7 animate-spin text-slate-500" />
+                          <Loader2 className="w-7 h-7 animate-spin text-slate-600" />
                         </div>
                       ) : xActivePosts.length === 0 && xPublishedPosts.length === 0 ? (
                         <div className="bg-white rounded-2xl border border-slate-100 shadow-sm py-14 flex flex-col items-center gap-5 text-center px-6">
@@ -2884,7 +2884,7 @@ function LinkedInPageContent() {
                           </div>
                           <div>
                             <p className="text-base font-semibold text-slate-700 mb-1">No tweets yet</p>
-                            <p className="text-sm text-slate-500 max-w-xs">Generate 14 tweets in your voice, ready to publish.</p>
+                            <p className="text-sm text-slate-600 max-w-xs">Generate 14 tweets in your voice, ready to publish.</p>
                           </div>
                           {hasPersonalPlan && (
                             <button
@@ -3040,7 +3040,7 @@ function LinkedInPageContent() {
                       {/* Avoid topics / Additional instructions */}
                       <div>
                         <label className="block text-sm font-medium text-slate-700 mb-1">
-                          Avoid topics / Additional instructions <span className="font-normal text-slate-500">(optional)</span>
+                          Avoid topics / Additional instructions <span className="font-normal text-slate-600">(optional)</span>
                         </label>
                         <textarea
                           rows={3}
@@ -3176,7 +3176,7 @@ function LinkedInPageContent() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-slate-800 truncate">{selectedOrg.pageName ?? selectedOrg.pageHandle ?? "Company"}</p>
-                  <p className="text-xs text-slate-500">Company Page</p>
+                  <p className="text-xs text-slate-600">Company Page</p>
                 </div>
                 <button
                   onClick={() => {
@@ -3184,7 +3184,7 @@ function LinkedInPageContent() {
                     fetchBrief(null)
                     fetchPosts(null)
                   }}
-                  className="text-xs text-slate-500 hover:text-slate-600 transition-colors shrink-0"
+                  className="text-xs text-slate-600 hover:text-slate-600 transition-colors shrink-0"
                 >
                   ← Personal
                 </button>
@@ -3245,7 +3245,7 @@ function LinkedInPageContent() {
                               ) : (
                                 <span className="w-5 h-5 rounded-full border-2 border-slate-300 shrink-0" />
                               )}
-                              <span className={`text-sm ${s1 ? "line-through text-slate-500" : "font-semibold text-slate-700"}`}>
+                              <span className={`text-sm ${s1 ? "line-through text-slate-600" : "font-semibold text-slate-700"}`}>
                                 Connect LinkedIn
                               </span>
                             </div>
@@ -3268,7 +3268,7 @@ function LinkedInPageContent() {
                               ) : (
                                 <span className="w-5 h-5 rounded-full border-2 border-slate-300 shrink-0" />
                               )}
-                              <span className={`text-sm ${s2 ? "line-through text-slate-500" : "font-semibold text-slate-700"}`}>
+                              <span className={`text-sm ${s2 ? "line-through text-slate-600" : "font-semibold text-slate-700"}`}>
                                 Fill Professional DNA
                               </span>
                             </div>
@@ -3291,7 +3291,7 @@ function LinkedInPageContent() {
                               ) : (
                                 <span className="w-5 h-5 rounded-full border-2 border-slate-300 shrink-0" />
                               )}
-                              <span className={`text-sm ${s3 ? "line-through text-slate-500" : "font-semibold text-slate-700"}`}>
+                              <span className={`text-sm ${s3 ? "line-through text-slate-600" : "font-semibold text-slate-700"}`}>
                                 Generate your first posts
                               </span>
                             </div>
@@ -3444,7 +3444,7 @@ function LinkedInPageContent() {
                         /* ── 2-step onboarding guide ── */
                         <div className="w-full max-w-sm">
                           <p className="text-base font-semibold text-slate-700 mb-1">Almost ready to generate!</p>
-                          <p className="text-sm text-slate-500 mb-6">Two quick steps and your AI content engine is live.</p>
+                          <p className="text-sm text-slate-600 mb-6">Two quick steps and your AI content engine is live.</p>
 
                           <div className="space-y-3 text-left">
                             {/* Step 1 — active */}
@@ -3467,14 +3467,14 @@ function LinkedInPageContent() {
 
                             {/* Step 2 — locked */}
                             <div className="flex items-center gap-4 rounded-xl border border-slate-100 bg-slate-50/60 px-4 py-3.5 opacity-50 select-none">
-                              <div className="w-8 h-8 rounded-full bg-slate-200 text-slate-500 text-sm font-bold flex items-center justify-center shrink-0">
+                              <div className="w-8 h-8 rounded-full bg-slate-200 text-slate-600 text-sm font-bold flex items-center justify-center shrink-0">
                                 2
                               </div>
                               <div className="flex-1 min-w-0">
-                                <p className="text-sm font-semibold text-slate-500">Generate 14 posts</p>
-                                <p className="text-xs text-slate-500 mt-0.5">AI-written, scheduled for the next two weeks</p>
+                                <p className="text-sm font-semibold text-slate-600">Generate 14 posts</p>
+                                <p className="text-xs text-slate-600 mt-0.5">AI-written, scheduled for the next two weeks</p>
                               </div>
-                              <Lock className="w-4 h-4 text-slate-400 shrink-0" />
+                              <Lock className="w-4 h-4 text-slate-600 shrink-0" />
                             </div>
                           </div>
                         </div>
@@ -3483,7 +3483,7 @@ function LinkedInPageContent() {
                         <>
                           <div>
                             <p className="text-base font-semibold text-slate-700 mb-1">No posts yet</p>
-                            <p className="text-sm text-slate-500 max-w-xs">Generate AI-written LinkedIn posts, scheduled for the next days.</p>
+                            <p className="text-sm text-slate-600 max-w-xs">Generate AI-written LinkedIn posts, scheduled for the next days.</p>
                           </div>
                           <button
                             onClick={handleGenerate}
@@ -3507,7 +3507,7 @@ function LinkedInPageContent() {
                         <>
                           <div>
                             <p className="text-base font-semibold text-slate-700 mb-1">No posts yet</p>
-                            <p className="text-sm text-slate-500 max-w-xs">Your trial has ended. Subscribe to generate more posts.</p>
+                            <p className="text-sm text-slate-600 max-w-xs">Your trial has ended. Subscribe to generate more posts.</p>
                           </div>
                           <button
                             onClick={() => setShowPlanModal(true)}
@@ -3521,7 +3521,7 @@ function LinkedInPageContent() {
                         <>
                           <div>
                             <p className="text-base font-semibold text-slate-700 mb-1">No posts yet</p>
-                            <p className="text-sm text-slate-500 max-w-xs">Start your 14-day free trial to generate posts. No card required.</p>
+                            <p className="text-sm text-slate-600 max-w-xs">Start your 14-day free trial to generate posts. No card required.</p>
                           </div>
                           <button
                             onClick={() => setShowPlanModal(true)}
@@ -3595,7 +3595,7 @@ function LinkedInPageContent() {
                   </div>
                   <div>
                     <p className="text-base font-semibold text-slate-700 mb-1">Connect LinkedIn first</p>
-                    <p className="text-sm text-slate-500 max-w-xs">
+                    <p className="text-sm text-slate-600 max-w-xs">
                       Go to the Account tab to connect your LinkedIn profile and start generating posts.
                     </p>
                   </div>
@@ -3779,7 +3779,7 @@ function LinkedInPageContent() {
                 {/* Avoid topics / Additional instructions */}
                 <div>
                   <label className="block text-xs font-semibold text-slate-600 mb-1.5 uppercase tracking-wide">
-                    Avoid topics / Additional instructions <span className="normal-case font-normal text-slate-500">(optional)</span>
+                    Avoid topics / Additional instructions <span className="normal-case font-normal text-slate-600">(optional)</span>
                   </label>
                   <textarea
                     rows={3}
@@ -3847,7 +3847,7 @@ function LinkedInPageContent() {
                     </div>
                     <div>
                       <p className="text-sm font-semibold text-slate-700 mb-1">No accounts connected</p>
-                      <p className="text-xs text-slate-500 max-w-xs">
+                      <p className="text-xs text-slate-600 max-w-xs">
                         Link your LinkedIn personal profile or company page to generate and schedule posts.
                       </p>
                     </div>
@@ -3874,7 +3874,7 @@ function LinkedInPageContent() {
                                 {account.pageType === "personal" ? "Personal" : "Organization"}
                               </Badge>
                               {account.pageHandle && (
-                                <span className="text-xs text-slate-500">@{account.pageHandle}</span>
+                                <span className="text-xs text-slate-600">@{account.pageHandle}</span>
                               )}
                               {account.expiresAt && new Date(account.expiresAt) <= new Date() && (
                                 <a href="/api/linkedin/connect" className="inline-flex items-center gap-1 text-[10px] font-semibold text-white bg-red-500 hover:bg-red-600 px-2 py-0.5 rounded-full transition-colors">
@@ -3998,7 +3998,7 @@ function LinkedInPageContent() {
                         </button>
                         <button
                           onClick={() => setCancelConfirming(false)}
-                          className="text-xs text-slate-500 hover:text-slate-600 underline underline-offset-2 whitespace-nowrap"
+                          className="text-xs text-slate-600 hover:text-slate-600 underline underline-offset-2 whitespace-nowrap"
                         >
                           Keep it
                         </button>
@@ -4049,13 +4049,13 @@ function LinkedInPageContent() {
                             </div>
                             <div className="text-right">
                               <span className={`text-sm font-bold ${l.color}`}>{l.price}</span>
-                              <p className="text-xs text-slate-500 mt-0.5">{checkingOut ? "Loading…" : "Subscribe"}</p>
+                              <p className="text-xs text-slate-600 mt-0.5">{checkingOut ? "Loading…" : "Subscribe"}</p>
                             </div>
                           </button>
                         )
                       })}
                     </div>
-                    <p className="text-xs text-slate-500 text-center">Subscribe now to keep access after your trial. Cancel anytime.</p>
+                    <p className="text-xs text-slate-600 text-center">Subscribe now to keep access after your trial. Cancel anytime.</p>
                   </div>
                 ) : trialExpired ? (
                   <div className="space-y-4">
@@ -4080,13 +4080,13 @@ function LinkedInPageContent() {
                             </div>
                             <div className="text-right">
                               <span className={`text-sm font-bold ${l.color}`}>{l.price}</span>
-                              <p className="text-xs text-slate-500 mt-0.5">{checkingOut ? "Loading…" : "Subscribe Now"}</p>
+                              <p className="text-xs text-slate-600 mt-0.5">{checkingOut ? "Loading…" : "Subscribe Now"}</p>
                             </div>
                           </button>
                         )
                       })}
                     </div>
-                    <p className="text-xs text-slate-500 text-center">Cancel anytime. Secure payment via Stripe.</p>
+                    <p className="text-xs text-slate-600 text-center">Cancel anytime. Secure payment via Stripe.</p>
                   </div>
                 ) : (
                   <div className="space-y-4">
@@ -4103,7 +4103,7 @@ function LinkedInPageContent() {
                         {checkingOut ? "Loading..." : "Start Free Trial — 14 Days →"}
                       </span>
                     </button>
-                    <p className="text-xs text-slate-500 text-center">Personal $49/mo · Duo $99/mo · All-in $199/mo · after trial</p>
+                    <p className="text-xs text-slate-600 text-center">Personal $49/mo · Duo $99/mo · All-in $199/mo · after trial</p>
                   </div>
                 )}
               </div>
@@ -4202,7 +4202,7 @@ function LinkedInPageContent() {
                         rows={5}
                         className="w-full px-3 py-2.5 text-sm rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-violet-300 resize-none"
                       />
-                      <p className="text-xs text-slate-500 mt-1">{supportMessage.trim().length}/20 characters minimum</p>
+                      <p className="text-xs text-slate-600 mt-1">{supportMessage.trim().length}/20 characters minimum</p>
                     </div>
 
                     {supportError && (
@@ -4288,7 +4288,7 @@ function LinkedInPageContent() {
             <div className="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl relative">
               {/* Close button */}
               <button
-                className="absolute top-4 right-4 text-slate-500 hover:text-slate-600 transition-colors text-xl leading-none"
+                className="absolute top-4 right-4 text-slate-600 hover:text-slate-600 transition-colors text-xl leading-none"
                 onClick={handleClose}
                 aria-label="Close"
               >
