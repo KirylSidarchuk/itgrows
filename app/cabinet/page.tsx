@@ -779,6 +779,8 @@ function LinkedInPageContent() {
   const [disconnecting, setDisconnecting] = useState<string | null>(null)
   const [statusMessage, setStatusMessage] = useState<string | null>(null)
   const [subscriptionPlan, setSubscriptionPlan] = useState<string | null>(null)
+  const [companyPagePlan, setCompanyPagePlan] = useState<string | null>(null)
+  const [buyingCompanyPlan, setBuyingCompanyPlan] = useState(false)
   const [subscriptionStatus, setSubscriptionStatus] = useState<string | null>(null)
   const [subscriptionEndDate, setSubscriptionEndDate] = useState<string | null>(null)
   const [trialEndsAt, setTrialEndsAt] = useState<string | null>(null)
@@ -983,6 +985,28 @@ function LinkedInPageContent() {
     }
   }
 
+  async function handleBuyCompanyPlan(tier: "single" | "two" | "unlimited") {
+    setBuyingCompanyPlan(true)
+    setOrgsMessage(null)
+    try {
+      const res = await fetch("/api/stripe/company-plan", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tier }),
+      })
+      const data = await res.json() as { url?: string; error?: string }
+      if (data.url) {
+        window.location.href = data.url
+      } else {
+        setOrgsMessage(data.error ?? "Could not start checkout. Please try again.")
+        setBuyingCompanyPlan(false)
+      }
+    } catch {
+      setOrgsMessage("Could not start checkout. Please try again.")
+      setBuyingCompanyPlan(false)
+    }
+  }
+
   const connected = searchParams.get("connected")
   const error = searchParams.get("error")
   const orgActivated = searchParams.get("org_activated")
@@ -1044,6 +1068,7 @@ function LinkedInPageContent() {
         setTrialEndsAt(data.trialEndsAt ?? null)
         setCancelAtPeriodEnd(data.cancelAtPeriodEnd ?? false)
         setCancelAt(data.cancelAt ?? null)
+        setCompanyPagePlan(data.companyPagePlan ?? null)
         if (data.status === "active" || data.status === "trialing") {
           setSubscriptionPlan(data.plan ?? null)
         }
@@ -2441,6 +2466,44 @@ function LinkedInPageContent() {
                     {orgsMessage}
                   </div>
                 )}
+
+                {/* Company-page plan & quota */}
+                {(() => {
+                  const planQuota = companyPagePlan === "unlimited" ? Infinity : companyPagePlan === "two" ? 2 : companyPagePlan === "single" ? 1 : 0
+                  const allInBonus = (subscriptionStatus === "active" || subscriptionStatus === "trialing") && (subscriptionPlan === "allin" || subscriptionPlan === "allin_annual") ? 1 : 0
+                  const totalQuota = planQuota + allInBonus
+                  const usedPages = accounts.filter((a) => a.pageType === "organization" && a.isActive).length
+                  const planLabel = companyPagePlan === "unlimited" ? "Unlimited" : companyPagePlan === "two" ? "Two pages" : companyPagePlan === "single" ? "Single" : null
+                  return (
+                    <div className="mb-5 p-4 rounded-xl bg-violet-50 border border-violet-100">
+                      <div className="flex items-center justify-between mb-2">
+                        <p className="text-sm font-semibold text-slate-800">Company-page plan</p>
+                        <span className="text-xs font-semibold text-violet-700 bg-violet-100 px-2.5 py-1 rounded-full">
+                          {planLabel ?? (allInBonus ? "All-in · 1 included" : "None")}
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-500 mb-3">
+                        {totalQuota === Infinity
+                          ? `${usedPages} page${usedPages === 1 ? "" : "s"} active · unlimited included`
+                          : `${usedPages} of ${totalQuota} included page${totalQuota === 1 ? "" : "s"} active${usedPages >= totalQuota ? " — extra pages are $99/mo each" : ""}`}
+                      </p>
+                      <div className="grid grid-cols-3 gap-2">
+                        {([["single", "Single", "$99"], ["two", "Two", "$149"], ["unlimited", "Unlimited", "$299"]] as const).map(([tier, name, price]) => (
+                          <button
+                            key={tier}
+                            onClick={() => handleBuyCompanyPlan(tier)}
+                            disabled={buyingCompanyPlan || companyPagePlan === tier}
+                            className={`flex flex-col items-center py-2.5 px-2 rounded-xl border text-center transition-colors disabled:opacity-60 ${companyPagePlan === tier ? "border-violet-400 bg-white ring-1 ring-violet-300" : "border-violet-200 bg-white hover:border-violet-400 hover:bg-violet-50"}`}
+                          >
+                            <span className="text-xs font-bold text-slate-800">{name}</span>
+                            <span className="text-xs text-violet-700 font-semibold">{price}/mo</span>
+                            <span className="text-[10px] text-slate-400 mt-0.5">{companyPagePlan === tier ? "Current" : tier === "unlimited" ? "∞ pages" : tier === "two" ? "2 pages" : "1 page"}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )
+                })()}
 
                 {accountsLoading ? (
                   <div className="flex justify-center py-10">

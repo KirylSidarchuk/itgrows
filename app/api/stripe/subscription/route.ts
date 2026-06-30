@@ -15,6 +15,7 @@ export async function GET() {
       subscriptionStatus: users.subscriptionStatus,
       subscriptionPlan: users.subscriptionPlan,
       subscriptionEndDate: users.subscriptionEndDate,
+      companyPagePlan: users.companyPagePlan,
       stripeCustomerId: users.stripeCustomerId,
       trialEndsAt: users.trialEndsAt,
       cancelAtPeriodEnd: users.cancelAtPeriodEnd,
@@ -35,5 +36,6 @@ export async function GET() {
     trialEndsAt: user.trialEndsAt ?? null,
     cancelAtPeriodEnd: user.cancelAtPeriodEnd ?? false,
     cancelAt: user.cancelAt ?? null,
+    companyPagePlan: user.companyPagePlan ?? null,
   })
 }
