@@ -19,12 +19,20 @@ function PersonalWelcomeContent() {
   const [linkedinConnected, setLinkedinConnected] = useState<boolean | null>(null)
 
   useEffect(() => {
-    // Fire conversion events on page load (only real paying customers reach this page)
-    if (typeof window !== "undefined" && window.gtag) {
-      window.gtag("event", "conversion", { send_to: "AW-18160234884/purchase" })
+    if (!subscribed) return
+    // Fire the real purchase conversion only on actual subscribe, once per checkout
+    // (sessionStorage guards against refresh double-counting).
+    if (typeof window !== "undefined" && typeof window.gtag === "function") {
+      if (!sessionStorage.getItem("itgrows_purchase_fired")) {
+        sessionStorage.setItem("itgrows_purchase_fired", "1")
+        window.gtag("event", "conversion", {
+          send_to: "AW-18160234884/ESZmCNuErMgcEITjvNND",
+          transaction_id: String(Date.now()),
+        })
+        track("purchase_completed")
+      }
     }
-    track("purchase_completed")
-  }, [])
+  }, [subscribed])
 
   useEffect(() => {
     fetch("/api/linkedin/pages")

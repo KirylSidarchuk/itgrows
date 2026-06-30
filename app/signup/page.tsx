@@ -107,6 +107,10 @@ function SignupForm() {
         setLoading(false)
         return
       }
+      // Google Ads: Sign-up conversion (primary optimization goal)
+      if (typeof window !== "undefined" && typeof (window as any).gtag === "function") {
+        (window as any).gtag("event", "conversion", { send_to: "AW-18160234884/SQ7pCN7Sk8gcEITjvNND" })
+      }
       router.push(callbackUrl)
     } catch {
       setError("Something went wrong")
