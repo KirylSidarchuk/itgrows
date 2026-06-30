@@ -33,10 +33,20 @@ export async function POST(req: NextRequest) {
     `
 
     await sendEmail({
-      to: "kiryl@itgrows.ai",
+      to: "kiryl.sidarchuk@gmail.com",
       subject: `[Feedback] ${feedbackType} from ${fromLabel}`,
       html,
     })
+
+    // Also notify in Telegram so landing feedback is never lost if email delivery fails
+    fetch("https://api.telegram.org/bot8213146538:AAH9ceXiIQ62-ICZJlUFx0psyd2nYq1gN7g/sendMessage", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        chat_id: 372194458,
+        text: `💬 Landing feedback — ${feedbackType}\nFrom: ${fromLabel}\n\n${message.trim()}`,
+      }),
+    }).catch(() => {})
 
     return NextResponse.json({ ok: true })
   } catch (err) {
