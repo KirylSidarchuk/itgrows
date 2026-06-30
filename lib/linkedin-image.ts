@@ -1,4 +1,4 @@
-import { callLLM } from "@/lib/llm-client"
+import { callLLM, openaiGenerateImage } from "@/lib/llm-client"
 
 const PROXY_URL = "http://34.60.133.229:4000"
 const LLM_API_KEY = process.env.LLM_API_KEY ?? "jtotFgxS1WQorT52LZym2ncyYzboliS6p04RqUwneFI"
@@ -99,6 +99,13 @@ Return ONLY the image prompt, nothing else.`,
     const result = await tryGenerateImage(model, imagePrompt)
     if (result) return result
     console.log(`[linkedin-image] Model ${model} exhausted all retries, trying next model`)
+  }
+
+  // Gateway image models all failed → OpenAI fallback.
+  const openaiImg = await openaiGenerateImage(imagePrompt)
+  if (openaiImg) {
+    console.log(`[linkedin-image] OpenAI fallback succeeded`)
+    return openaiImg
   }
 
   console.log(`[linkedin-image] All models failed, returning null`)
