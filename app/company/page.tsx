@@ -239,6 +239,41 @@ export default function CompanyPage() {
       {/* Pricing callout */}
       <section id="pricing" className="px-4 sm:px-6 py-16 sm:py-20" style={{ backgroundColor: "#ebe9e5" }}>
         <div className="max-w-5xl mx-auto text-center">
+          {/* Cost comparison: agency vs ItGrows (company) */}
+          <div className="max-w-4xl mx-auto mb-16">
+            <p className="text-center text-sm font-semibold uppercase tracking-widest text-violet-600 mb-2">The math is simple</p>
+            <h3 className="text-center text-2xl sm:text-3xl font-bold text-[#1b1916] mb-8">Replace a $3,000/mo agency with <span className="bg-gradient-to-r from-violet-600 via-pink-500 to-cyan-500 bg-clip-text text-transparent">$99/mo</span></h3>
+            <div className="relative grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 text-left">
+              <div className="hidden sm:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full bg-[#1b1916] text-white items-center justify-center font-extrabold text-sm shadow-lg">VS</div>
+              <div className="bg-slate-50 rounded-2xl border border-black/10 p-6 sm:p-7">
+                <div className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-4">Hiring an agency</div>
+                <ul className="space-y-2.5 text-sm text-slate-500">
+                  <li className="flex justify-between"><span>Social media agency</span><span className="font-semibold text-slate-600">$2,000+/mo</span></li>
+                  <li className="flex justify-between"><span>Content &amp; design</span><span className="font-semibold text-slate-600">$1,000+/mo</span></li>
+                  <li className="flex items-center gap-2 pt-1"><span className="text-red-400 font-bold">✕</span> Slow approvals &amp; handoffs</li>
+                  <li className="flex items-center gap-2"><span className="text-red-400 font-bold">✕</span> Generic — not your brand voice</li>
+                </ul>
+                <div className="mt-5 pt-3 border-t border-black/10 flex justify-between items-end">
+                  <span className="text-sm text-slate-500">Total</span>
+                  <span className="text-3xl font-extrabold text-slate-400 line-through decoration-red-400/70 decoration-2">$3,000+<span className="text-base font-medium">/mo</span></span>
+                </div>
+              </div>
+              <div className="bg-white rounded-2xl border-2 border-violet-500 p-6 sm:p-7 relative shadow-xl shadow-violet-300/40">
+                <div className="absolute -top-3 right-5 bg-green-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-sm">Save $2,900+/mo</div>
+                <div className="text-xs font-semibold uppercase tracking-widest text-violet-600 mb-4">With ItGrows</div>
+                <ul className="space-y-2.5 text-sm text-slate-700">
+                  <li className="flex items-center gap-2"><span className="text-violet-600 font-bold">✓</span> Company Page &amp; X on autopilot</li>
+                  <li className="flex items-center gap-2"><span className="text-violet-600 font-bold">✓</span> Approved by LinkedIn — official API</li>
+                  <li className="flex items-center gap-2"><span className="text-violet-600 font-bold">✓</span> On-brand, in your company voice</li>
+                  <li className="flex items-center gap-2"><span className="text-violet-600 font-bold">✓</span> Cancel anytime · no card to start</li>
+                </ul>
+                <div className="mt-5 pt-3 border-t border-violet-100 flex justify-between items-end">
+                  <span className="text-sm text-slate-500">From</span>
+                  <span className="text-4xl font-extrabold bg-gradient-to-r from-violet-600 to-pink-600 bg-clip-text text-transparent">$99<span className="text-base font-medium text-slate-400">/mo</span></span>
+                </div>
+              </div>
+            </div>
+          </div>
           <h2 className="text-3xl sm:text-4xl font-bold mb-3">Pricing for your <span className="bg-gradient-to-r from-violet-600 via-pink-500 to-cyan-500 bg-clip-text text-transparent">company pages</span></h2>
           <p className="text-slate-600 text-base mb-10">Run your LinkedIn Company Pages on autopilot — pick how many.</p>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 text-left items-stretch">
