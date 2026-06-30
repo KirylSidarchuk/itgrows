@@ -4,6 +4,7 @@ import { twitterAccounts, twitterPosts, users } from "@/lib/db/schema"
 import { eq, and, lte } from "drizzle-orm"
 import { sendEmail } from "@/lib/email"
 import { xTokenExpiredEmail, xPostFailedEmail } from "@/lib/email-templates"
+import { hasAccess } from "@/lib/access"
 
 async function refreshTwitterToken(account: typeof twitterAccounts.$inferSelect): Promise<string | null> {
   if (!account.refreshToken) return null
@@ -75,12 +76,22 @@ export async function GET(req: NextRequest) {
     const publishedThisRun = new Set<string>()    // accountId
 
     for (const post of duePosts) {
-      // Get user info for failure emails
+      // Get user info for failure emails + access check
       const [postUser] = await db
-        .select({ email: users.email, name: users.name })
+        .select({ email: users.email, name: users.name, subscriptionPlan: users.subscriptionPlan, subscriptionStatus: users.subscriptionStatus, trialEndsAt: users.trialEndsAt })
         .from(users)
         .where(eq(users.id, post.userId))
         .limit(1)
+
+      // Stop publishing once the subscription/trial lapses (mirrors publish-linkedin).
+      if (!postUser || !hasAccess({ subscriptionStatus: postUser.subscriptionStatus ?? null, subscriptionPlan: postUser.subscriptionPlan ?? null, trialEndsAt: postUser.trialEndsAt ?? null })) {
+        await db
+          .update(twitterPosts)
+          .set({ status: "failed", errorMessage: "subscription_required" })
+          .where(eq(twitterPosts.id, post.id))
+        failed++
+        continue
+      }
 
       // Get Twitter account for this user matching the post's accountType
       const [account] = await db
