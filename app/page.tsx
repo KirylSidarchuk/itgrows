@@ -674,13 +674,11 @@ export default function PersonalPage() {
           {/* Social proof strip */}
           <div className="mt-8 bg-white border border-slate-100 rounded-2xl px-6 py-5 flex flex-col sm:flex-row items-center gap-4 sm:gap-8 shadow-sm">
             <div className="flex -space-x-3">
-              {["E","W","A","M"].map((l, i) => (
-                <div key={i} className="w-9 h-9 rounded-full border-2 border-white flex items-center justify-center text-sm font-bold text-white" style={{ background: ["#7c3aed","#ec4899","#0ea5e9","#10b981"][i] }}>{l}</div>
-              ))}
+              <div className="w-9 h-9 rounded-full border-2 border-white flex items-center justify-center text-sm font-bold text-white bg-violet-600">K</div>
             </div>
             <div className="text-center sm:text-left">
-              <p className="text-sm font-semibold text-[#1b1916]">Consultants, coaches &amp; founders use ItGrows daily</p>
-              <p className="text-xs text-slate-400 mt-0.5">Building their personal brand on LinkedIn &amp; X — on autopilot</p>
+              <p className="text-sm font-semibold text-[#1b1916]">Built by a founder who uses it every day</p>
+              <p className="text-xs text-slate-400 mt-0.5">Growing his own LinkedIn &amp; X with the product itself — dogfooded, not theoretical</p>
             </div>
             <div className="sm:ml-auto">
               <button onClick={() => document.getElementById("ghost-form")?.scrollIntoView({ behavior: "smooth", block: "center" })} className="bg-violet-600 hover:bg-violet-500 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors whitespace-nowrap">
