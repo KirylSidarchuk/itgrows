@@ -4,6 +4,7 @@ import { db } from "@/lib/db"
 import { twitterPosts } from "@/lib/db/schema"
 import { eq, and } from "drizzle-orm"
 import { openaiGenerateImage } from "@/lib/llm-client"
+import { checkImageGenLimit, recordImageGen } from "@/lib/rate-limit"
 
 const IMAGE_API_URL = "http://34.60.133.229:4000/images/generate"
 const IMAGE_API_KEY = process.env.LLM_API_KEY ?? "jtotFgxS1WQorT52LZym2ncyYzboliS6p04RqUwneFI"
@@ -37,6 +38,15 @@ export async function POST(req: NextRequest) {
 
     if (!post) {
       return NextResponse.json({ error: "Post not found" }, { status: 404 })
+    }
+
+    // Spend cap: max 20 image generations/day per user, 5 per post.
+    const limit = await checkImageGenLimit(userId, postId)
+    if (!limit.allowed) {
+      return NextResponse.json(
+        { error: limit.reason === "per_post" ? "You've regenerated this image too many times." : "Daily image limit reached — try again tomorrow." },
+        { status: 429 }
+      )
     }
 
     // Build image prompt from tweet content
@@ -74,6 +84,7 @@ export async function POST(req: NextRequest) {
     if (!imageUrl) {
       throw new Error("Image generation failed (gateway + OpenAI)")
     }
+    await recordImageGen(userId, postId)
 
     // Save imageUrl to twitterPosts
     await db

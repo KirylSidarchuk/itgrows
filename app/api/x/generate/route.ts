@@ -4,6 +4,7 @@ import { db } from "@/lib/db"
 import { twitterAccounts, twitterPosts, linkedinBriefs, twitterBriefs, twitterCompanyBriefs, users } from "@/lib/db/schema"
 import { eq, and, or, desc } from "drizzle-orm"
 import { hasAccess } from "@/lib/access"
+import { checkXGenerateRateLimit } from "@/lib/rate-limit"
 
 export const maxDuration = 300
 
@@ -254,6 +255,12 @@ export async function POST(req: NextRequest) {
     const userAccess = { subscriptionStatus: user?.subscriptionStatus ?? null, subscriptionPlan: user?.subscriptionPlan ?? null, trialEndsAt: user?.trialEndsAt ?? null }
     if (!user || !hasAccess(userAccess)) {
       return NextResponse.json({ error: "subscription_required", message: "Active subscription or active trial required" }, { status: 403 })
+    }
+
+    // Rate limit: max 7 X posts per 3 hours per user.
+    const xRate = await checkXGenerateRateLimit(userId)
+    if (!xRate.allowed) {
+      return NextResponse.json({ error: "rate_limited", message: "You've generated a lot recently — please try again in a few hours.", retryAfter: xRate.retryAfter }, { status: 429 })
     }
 
     const body = await req.json() as GenerateXRequest

@@ -106,14 +106,14 @@ async function openaiChat(messages: LLMMessage[], params: { max_tokens?: number;
 
 // Image generation via OpenAI (fallback for the gateway image models).
 // Returns a base64 data URL, or null on failure.
-export async function openaiGenerateImage(prompt: string): Promise<string | null> {
+export async function openaiGenerateImage(prompt: string, quality?: string): Promise<string | null> {
   if (!OPENAI_API_KEY) return null
   const start = Date.now()
   try {
     const res = await fetch("https://api.openai.com/v1/images/generations", {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${OPENAI_API_KEY}` },
-      body: JSON.stringify({ model: OPENAI_IMAGE_MODEL, prompt, size: "1024x1024", quality: OPENAI_IMAGE_QUALITY, n: 1 }),
+      body: JSON.stringify({ model: OPENAI_IMAGE_MODEL, prompt, size: "1024x1024", quality: quality ?? OPENAI_IMAGE_QUALITY, n: 1 }),
     })
     if (!res.ok) {
       console.log(`[LLM] ${new Date().toISOString()} | caller=openai-image | model=${OPENAI_IMAGE_MODEL} | status=${res.status} | FAILED: ${(await res.text()).slice(0, 150)}`)

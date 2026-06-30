@@ -4,6 +4,7 @@ import { db } from "@/lib/db"
 import { linkedinPosts, linkedinBriefs } from "@/lib/db/schema"
 import { eq, and } from "drizzle-orm"
 import { generatePostImage } from "@/lib/linkedin-image"
+import { checkImageGenLimit, recordImageGen } from "@/lib/rate-limit"
 
 export const maxDuration = 120
 
@@ -43,6 +44,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Post not found" }, { status: 404 })
     }
 
+    // Spend cap: max 20 image generations/day per user, 5 regenerations per post.
+    const limit = await checkImageGenLimit(userId, postId)
+    if (!limit.allowed) {
+      return NextResponse.json(
+        { error: limit.reason === "per_post" ? "You've regenerated this image too many times." : "Daily image limit reached — try again tomorrow." },
+        { status: 429 }
+      )
+    }
+
     // Get niche from brief for better image prompts
     const [brief] = await db
       .select({ niche: linkedinBriefs.niche })
@@ -54,6 +64,7 @@ export async function POST(req: NextRequest) {
 
     // Generate new image
     const imageUrl = await generatePostImage(post.content, niche, imageStyle)
+    if (imageUrl) await recordImageGen(userId, postId)
 
     // Update post imageUrl in DB
     await db

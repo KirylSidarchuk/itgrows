@@ -1,5 +1,5 @@
 import { db } from "@/lib/db"
-import { linkedinPosts } from "@/lib/db/schema"
+import { linkedinPosts, twitterPosts, usageEvents, ghostModeLogs } from "@/lib/db/schema"
 import { eq, and, gte, count } from "drizzle-orm"
 
 /**
@@ -93,5 +93,79 @@ export async function checkGenerateRateLimit(userId: string): Promise<{ allowed:
   } catch {
     // If rate limit check fails, allow the request (fail open)
     return { allowed: true }
+  }
+}
+
+// --- Spend-protection caps ---
+
+const IMAGE_DAILY_CAP = 20      // image generations per user per day
+const IMAGE_PER_REF_CAP = 5     // regenerations of a single post's image
+
+/** Per-user image-generation cap: max 20/day, and max 5 regens per post (ref). */
+export async function checkImageGenLimit(userId: string, ref?: string): Promise<{ allowed: boolean; reason?: string }> {
+  if (BYPASS_USER_IDS.includes(userId)) return { allowed: true }
+  try {
+    const startOfDay = new Date()
+    startOfDay.setUTCHours(0, 0, 0, 0)
+
+    const dayRes = await db
+      .select({ c: count() })
+      .from(usageEvents)
+      .where(and(eq(usageEvents.userId, userId), eq(usageEvents.action, "image_gen"), gte(usageEvents.createdAt, startOfDay)))
+    if ((dayRes[0]?.c ?? 0) >= IMAGE_DAILY_CAP) return { allowed: false, reason: "daily" }
+
+    if (ref) {
+      const refRes = await db
+        .select({ c: count() })
+        .from(usageEvents)
+        .where(and(eq(usageEvents.userId, userId), eq(usageEvents.action, "image_gen"), eq(usageEvents.ref, ref)))
+      if ((refRes[0]?.c ?? 0) >= IMAGE_PER_REF_CAP) return { allowed: false, reason: "per_post" }
+    }
+
+    return { allowed: true }
+  } catch {
+    return { allowed: true } // fail open
+  }
+}
+
+/** Record a successful image generation (for the per-user cap). */
+export async function recordImageGen(userId: string, ref?: string): Promise<void> {
+  try {
+    await db.insert(usageEvents).values({ userId, action: "image_gen", ref: ref ?? null })
+  } catch {
+    // best-effort
+  }
+}
+
+/** X post generation cap: max 7 posts / 3 hours per user (mirrors LinkedIn). */
+export async function checkXGenerateRateLimit(userId: string): Promise<{ allowed: boolean; retryAfter?: number }> {
+  if (BYPASS_USER_IDS.includes(userId)) return { allowed: true }
+  try {
+    const threeHoursAgo = new Date(Date.now() - 3 * 60 * 60 * 1000)
+    const result = await db
+      .select({ count: count() })
+      .from(twitterPosts)
+      .where(and(eq(twitterPosts.userId, userId), gte(twitterPosts.createdAt, threeHoursAgo)))
+    if ((result[0]?.count ?? 0) >= 7) return { allowed: false, retryAfter: 3 * 60 * 60 }
+    return { allowed: true }
+  } catch {
+    return { allowed: true }
+  }
+}
+
+const GHOST_GLOBAL_DAILY_CAP = 300 // hard ceiling on anonymous ghost-mode previews/day (all IPs)
+
+/** Global daily ceiling on ghost-mode previews — a hard budget cap regardless of IP. */
+export async function checkGhostGlobalDailyCap(): Promise<boolean> {
+  try {
+    const startOfDay = new Date()
+    startOfDay.setUTCHours(0, 0, 0, 0)
+    const res = await db
+      .select({ c: count() })
+      .from(ghostModeLogs)
+      .where(and(eq(ghostModeLogs.success, true), gte(ghostModeLogs.createdAt, startOfDay)))
+    return (res[0]?.c ?? 0) < GHOST_GLOBAL_DAILY_CAP
+  } catch {
+    return true // fail open
   }
 }

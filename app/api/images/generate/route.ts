@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/auth"
+import { openaiGenerateImage } from "@/lib/llm-client"
+import { checkImageGenLimit, recordImageGen } from "@/lib/rate-limit"
 
 export const maxDuration = 300
 
@@ -10,9 +12,15 @@ const LLM_MODELS = ["gemini-2.5-flash-lite", "gemini-2.5-flash", "gemini-2.5-pro
 export async function POST(req: NextRequest) {
   const internalSecret = process.env.CRON_SECRET
   const isInternal = internalSecret && req.headers.get("x-internal-secret") === internalSecret
+  let userId: string | null = null
   if (!isInternal) {
     const session = await auth()
     if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    userId = session.user.id
+    const limit = await checkImageGenLimit(userId)
+    if (!limit.allowed) {
+      return NextResponse.json({ error: "Daily image limit reached — try again tomorrow." }, { status: 429 })
+    }
   }
 
   const { title, keywords } = await req.json()
@@ -84,7 +92,13 @@ Return ONLY the image prompt, nothing else.`
     }
   }
 
+  // Gateway image models all failed → OpenAI fallback.
   if (!imgData) {
+    const openaiImg = await openaiGenerateImage(imagePrompt)
+    if (openaiImg) {
+      if (userId) await recordImageGen(userId)
+      return NextResponse.json({ url: openaiImg, prompt: imagePrompt })
+    }
     return NextResponse.json({ error: `Image generation failed after all attempts. Last error: ${lastImgError}` }, { status: 500 })
   }
 
@@ -97,5 +111,6 @@ Return ONLY the image prompt, nothing else.`
 
   const mimeType = inlineData.mimeType || "image/jpeg"
   const dataUrl = `data:${mimeType};base64,${inlineData.data}`
+  if (userId) await recordImageGen(userId)
   return NextResponse.json({ url: dataUrl, prompt: imagePrompt })
 }

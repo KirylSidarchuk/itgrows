@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db"
 import { ghostModeLogs } from "@/lib/db/schema"
-import { getClientIP } from "@/lib/rate-limit"
+import { getClientIP, checkGhostGlobalDailyCap } from "@/lib/rate-limit"
 import { eq, sql } from "drizzle-orm"
 
 export const maxDuration = 120
@@ -87,6 +87,15 @@ export async function POST(req: NextRequest) {
     db.insert(ghostModeLogs).values({ success: false, error: "ip_lifetime_limited", durationMs: Date.now() - startTime, ip: clientIP }).catch(() => {})
     return NextResponse.json(
       { error: "You've used your 2 free previews. Sign up to generate unlimited LinkedIn posts." },
+      { status: 429 }
+    )
+  }
+
+  // Global daily ceiling — hard budget cap regardless of IP (anti-abuse for paid fallback).
+  if (!(await checkGhostGlobalDailyCap())) {
+    db.insert(ghostModeLogs).values({ success: false, error: "global_daily_cap", durationMs: Date.now() - startTime, ip: clientIP }).catch(() => {})
+    return NextResponse.json(
+      { error: "Free previews are at capacity for today. Sign up to generate unlimited posts." },
       { status: 429 }
     )
   }

@@ -301,3 +301,14 @@ export const postMetrics = pgTable("post_metrics", {
   index("post_metrics_twitter_post_id_idx").on(t.twitterPostIdLocal),
   index("post_metrics_platform_idx").on(t.platform),
 ])
+
+// Metered actions for per-user usage caps (e.g. image generation), to protect spend.
+export const usageEvents = pgTable("usage_events", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: uuid("user_id").notNull(),
+  action: text("action").notNull(),
+  ref: text("ref"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (t) => [
+  index("usage_events_user_action_idx").on(t.userId, t.action, t.createdAt),
+])
