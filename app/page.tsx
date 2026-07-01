@@ -70,6 +70,7 @@ export default function PersonalPage() {
   const [ghostPosts, setGhostPosts] = useState<string[]>([])
   const [ghostImages, setGhostImages] = useState<(string | null)[]>([])
   const [ghostError, setGhostError] = useState("")
+  const [showGhostDetails, setShowGhostDetails] = useState(false)
 
   const [showPlatformModal, setShowPlatformModal] = useState(false)
   const [showLandingPlanModal, setShowLandingPlanModal] = useState(false)
@@ -138,6 +139,13 @@ export default function PersonalPage() {
         setGhostPosts(data.posts)
         setGhostImages(data.images ?? [])
         track("preview_posts_shown")
+        // Carry-forward: persist so signup can pre-populate the cabinet with what they already saw (activation fix).
+        try {
+          localStorage.setItem("itgrows_ghost_handoff", JSON.stringify({
+            brief: { niche: ghostWhatYouDo, targetAudience: ghostAudience, tone: ghostTone.toLowerCase(), goals: ghostGoals.join(", ") },
+            posts: data.posts, images: data.images ?? [], ts: Date.now(),
+          }))
+        } catch { /* localStorage unavailable — non-fatal */ }
       } else if (res.status === 429) {
         setGhostError("You've used your 2 free previews. Sign up to generate unlimited posts →")
       } else {
@@ -360,7 +368,8 @@ export default function PersonalPage() {
           {/* Generator form — embedded in hero */}
           <div id="ghost-form" className="mt-10 max-w-3xl mx-auto text-left">
             <div className="bg-[#f8f7f6] border border-black/10 rounded-2xl p-5 sm:p-6">
-              <p className="text-sm font-semibold text-[#1b1916] mb-4">Tell us about yourself</p>
+              <p className="text-sm font-semibold text-[#1b1916] mb-1">See your first posts — in your voice</p>
+              <p className="text-xs text-slate-500 mb-4">One line about what you do. That&apos;s it — no signup.</p>
               <div className="space-y-3">
                 <div>
                   <label className="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wide">What do you do? <span className="text-violet-500">*</span></label>
@@ -372,49 +381,58 @@ export default function PersonalPage() {
                     className="w-full rounded-xl border border-black/15 bg-white px-4 py-2.5 text-sm text-[#1b1916] placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-400"
                   />
                 </div>
-                <div>
-                  <label className="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wide">Who is your audience?</label>
-                  <input
-                    type="text"
-                    value={ghostAudience}
-                    onChange={(e) => setGhostAudience(e.target.value)}
-                    placeholder="e.g. Founders, sales managers at SaaS companies"
-                    className="w-full rounded-xl border border-black/15 bg-white px-4 py-2.5 text-sm text-[#1b1916] placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-400"
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wide">Your tone</label>
-                    <select
-                      value={ghostTone}
-                      onChange={(e) => setGhostTone(e.target.value)}
-                      className="w-full rounded-xl border border-black/15 bg-white px-3 py-2.5 text-sm text-[#1b1916] focus:outline-none focus:ring-2 focus:ring-violet-400"
-                    >
-                      <option>Professional</option>
-                      <option>Bold &amp; Contrarian</option>
-                      <option>Inspiring</option>
-                      <option>Conversational</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wide">Your goal</label>
-                    <div className="flex flex-wrap gap-2">
-                      {["Get clients", "Build personal brand", "Network", "Share expertise"].map((goal) => {
-                        const selected = ghostGoals.includes(goal)
-                        return (
-                          <button
-                            key={goal}
-                            type="button"
-                            onClick={() => setGhostGoals(selected ? ghostGoals.filter((g) => g !== goal) : [...ghostGoals, goal])}
-                            className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${selected ? "bg-violet-600 border-violet-600 text-white" : "bg-white border-black/15 text-slate-600 hover:border-violet-400 hover:text-violet-600"}`}
-                          >
-                            {goal}
-                          </button>
-                        )
-                      })}
+                {!showGhostDetails && (
+                  <button type="button" onClick={() => setShowGhostDetails(true)} className="text-xs font-semibold text-violet-600 hover:text-violet-500">
+                    + Add audience, tone &amp; goal (optional)
+                  </button>
+                )}
+                {showGhostDetails && (
+                  <>
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wide">Who is your audience?</label>
+                      <input
+                        type="text"
+                        value={ghostAudience}
+                        onChange={(e) => setGhostAudience(e.target.value)}
+                        placeholder="e.g. Founders, sales managers at SaaS companies"
+                        className="w-full rounded-xl border border-black/15 bg-white px-4 py-2.5 text-sm text-[#1b1916] placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-400"
+                      />
                     </div>
-                  </div>
-                </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wide">Your tone</label>
+                        <select
+                          value={ghostTone}
+                          onChange={(e) => setGhostTone(e.target.value)}
+                          className="w-full rounded-xl border border-black/15 bg-white px-3 py-2.5 text-sm text-[#1b1916] focus:outline-none focus:ring-2 focus:ring-violet-400"
+                        >
+                          <option>Professional</option>
+                          <option>Bold &amp; Contrarian</option>
+                          <option>Inspiring</option>
+                          <option>Conversational</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wide">Your goal</label>
+                        <div className="flex flex-wrap gap-2">
+                          {["Get clients", "Build personal brand", "Network", "Share expertise"].map((goal) => {
+                            const selected = ghostGoals.includes(goal)
+                            return (
+                              <button
+                                key={goal}
+                                type="button"
+                                onClick={() => setGhostGoals(selected ? ghostGoals.filter((g) => g !== goal) : [...ghostGoals, goal])}
+                                className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${selected ? "bg-violet-600 border-violet-600 text-white" : "bg-white border-black/15 text-slate-600 hover:border-violet-400 hover:text-violet-600"}`}
+                              >
+                                {goal}
+                              </button>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
               <div className="flex items-center justify-between mt-4 gap-3">
                 <button
