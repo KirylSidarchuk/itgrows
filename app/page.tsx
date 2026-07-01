@@ -347,9 +347,16 @@ export default function PersonalPage() {
               Without Writing a Word
             </span>
           </h1>
-          <p className="text-base sm:text-xl text-slate-600 max-w-xl mx-auto mb-8 sm:mb-10 leading-relaxed">
-            Every day, ItGrows drafts LinkedIn and X posts <span className="text-violet-600 font-semibold">in your voice</span> — for you and for your <span className="text-violet-600 font-semibold">company page</span> — and publishes them. Review in 30 seconds, or set <span className="text-violet-600 font-semibold">full autopilot</span> once you trust it. Try it below, no signup needed.
+          <p className="text-sm sm:text-base text-slate-500 max-w-xl mx-auto mb-3 font-medium">For founders, execs &amp; consultants who should be posting — but never find the time.</p>
+          <p className="text-base sm:text-xl text-slate-600 max-w-xl mx-auto mb-6 sm:mb-8 leading-relaxed">
+            Set your voice once. Every day ItGrows writes and publishes <span className="text-violet-600 font-semibold">in your voice</span> to your <span className="text-violet-600 font-semibold">LinkedIn, company page, X, and blog</span>. Review in 30 seconds, or go <span className="text-violet-600 font-semibold">full autopilot</span> once you trust it. Try it below, no signup.
           </p>
+          {/* Trust bar — the fresh 2026 wedge: competitors got banned; we're on the official API */}
+          <div className="flex flex-wrap justify-center items-center gap-x-4 gap-y-2 mb-8 text-xs sm:text-sm text-slate-600">
+            <span className="inline-flex items-center gap-1.5 font-medium"><span className="text-green-600">✓</span> Official LinkedIn &amp; X API — ban-safe</span>
+            <span className="inline-flex items-center gap-1.5 font-medium"><span className="text-green-600">✓</span> You approve every post</span>
+            <span className="inline-flex items-center gap-1.5 font-medium"><span className="text-green-600">✓</span> Replaces a $2–3k/mo ghostwriter</span>
+          </div>
           <div className="flex justify-center items-center">
             <div className="relative w-full sm:w-auto">
               {/* Pulse ring behind the primary CTA button */}
@@ -363,7 +370,7 @@ export default function PersonalPage() {
               </Button>
             </div>
           </div>
-          <p className="mt-4 text-xs sm:text-sm text-slate-500 font-medium">14-day free trial · No card required · Official LinkedIn &amp; X API · You approve every post</p>
+          <p className="mt-4 text-xs sm:text-sm text-slate-500 font-medium">14-day free trial · No card required</p>
 
           {/* Generator form — embedded in hero */}
           <div id="ghost-form" className="mt-10 max-w-3xl mx-auto text-left">
@@ -453,7 +460,19 @@ export default function PersonalPage() {
             </div>
 
             {ghostError && (
-              <p className="mt-4 text-sm text-red-500">{ghostError}</p>
+              ghostError.includes("free previews") ? (
+                <div className="mt-4 rounded-xl border border-violet-200 bg-violet-50 p-4 text-center">
+                  <p className="text-sm font-semibold text-[#1b1916] mb-2">You&apos;ve seen a taste — get unlimited posts, published daily.</p>
+                  <button
+                    onClick={() => setShowLandingPlanModal(true)}
+                    className="inline-block px-6 py-2.5 rounded-lg bg-violet-600 hover:bg-violet-500 text-white font-semibold text-sm transition-colors"
+                  >
+                    Start 14 days free →
+                  </button>
+                </div>
+              ) : (
+                <p className="mt-4 text-sm text-slate-500">{ghostError}</p>
+              )
             )}
 
             {ghostPosts.length > 0 && (
@@ -496,7 +515,8 @@ export default function PersonalPage() {
 
                 <div className="bg-gradient-to-r from-violet-600 to-pink-600 rounded-2xl p-6 sm:p-8 text-center text-white">
                   <div className="text-2xl font-extrabold mb-2">Want these posted for you every day?</div>
-                  <p className="text-white/80 text-sm mb-5">Start your 14-day free trial. No card required.</p>
+                  <p className="text-white/80 text-sm mb-1">Start your 14-day free trial. No card required.</p>
+                  <p className="text-white/70 text-xs mb-5">✓ These posts are saved — create your account and they&apos;re waiting in your dashboard.</p>
                   <button
                     onClick={() => setShowLandingPlanModal(true)}
                     className="inline-block px-8 py-3 rounded-xl bg-white text-violet-600 font-bold text-sm hover:bg-violet-50 transition-colors"
@@ -690,9 +710,7 @@ export default function PersonalPage() {
 
           {/* Social proof strip */}
           <div className="mt-8 bg-white border border-slate-100 rounded-2xl px-6 py-5 flex flex-col sm:flex-row items-center gap-4 sm:gap-8 shadow-sm">
-            <div className="flex -space-x-3">
-              <div className="w-9 h-9 rounded-full border-2 border-white flex items-center justify-center text-sm font-bold text-white bg-violet-600">K</div>
-            </div>
+            <div className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-white bg-violet-600 flex-shrink-0">K</div>
             <div className="text-center sm:text-left">
               <p className="text-sm font-semibold text-[#1b1916]">Built by a founder who uses it every day</p>
               <p className="text-xs text-slate-400 mt-0.5">Growing his own LinkedIn &amp; X with the product itself — dogfooded, not theoretical</p>
