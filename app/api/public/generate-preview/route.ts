@@ -106,8 +106,9 @@ export async function POST(req: NextRequest) {
     )
   }
 
-  const body = await req.json() as { thoughts?: string }
+  const body = await req.json() as { thoughts?: string; mode?: string }
   const thoughts = (body.thoughts ?? "").trim().slice(0, 1000)
+  const isCompany = body.mode === "company"
 
   if (!thoughts || thoughts.length < 10) {
     db.insert(ghostModeLogs).values({ success: false, error: "Too short", durationMs: Date.now() - startTime, ip: clientIP }).catch(() => {})
@@ -116,7 +117,20 @@ export async function POST(req: NextRequest) {
 
   const currentYear = new Date().getFullYear()
 
-  const prompt = `You are a top LinkedIn ghostwriter. A user shared thoughts about themselves:
+  const prompt = isCompany
+    ? `You are a top B2B brand content strategist writing for a COMPANY's LinkedIn Page (not a personal profile). Here is what the company does:
+
+"${thoughts}"
+
+Write 3 distinct company-page LinkedIn posts in the brand's voice — first-person plural ("we"), on-brand, credible, never salesy or clickbaity. Each post: 100-150 words max, strong hook, ends with a question or a clear invitation to engage. Year: ${currentYear}. No clichés, no hashtag spam.
+
+Post 1: A point of view on the industry / a trend the company has an opinion on
+Post 2: A behind-the-scenes or "how we think about X" insight that builds trust
+Post 3: A practical, value-first tip your audience can use today
+
+Return ONLY a valid JSON array of exactly 3 strings. No markdown, no code blocks, no extra text.
+["post1 here","post2 here","post3 here"]`
+    : `You are a top LinkedIn ghostwriter. A user shared thoughts about themselves:
 
 "${thoughts}"
 

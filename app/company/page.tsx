@@ -41,12 +41,58 @@ export default function CompanyPage() {
   const [openFaq, setOpenFaq] = useState<number | null>(0)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
+  // Company ghost generator — the interactive "aha" hook, mirrored from the personal landing.
+  const [coWhatYouDo, setCoWhatYouDo] = useState("")
+  const [coLoading, setCoLoading] = useState(false)
+  const [coPosts, setCoPosts] = useState<string[]>([])
+  const [coImages, setCoImages] = useState<(string | null)[]>([])
+  const [coError, setCoError] = useState("")
+  const [coProgress, setCoProgress] = useState(0)
+
   useEffect(() => {
     fetch("/api/auth/session")
       .then((r) => r.json())
       .then((data) => { if (data?.user?.id) setSessionUser(data.user) })
       .catch(() => {})
   }, [])
+
+  useEffect(() => {
+    if (!coLoading) { setCoProgress(0); return }
+    const id = setInterval(() => setCoProgress((p) => p + 1), 2600)
+    return () => clearInterval(id)
+  }, [coLoading])
+
+  async function handleCompanyGenerate() {
+    if (coWhatYouDo.trim().length < 5) return
+    const thoughts = `Our company: ${coWhatYouDo}.`
+    setCoLoading(true); setCoError(""); setCoPosts([]); setCoImages([])
+    try {
+      const res = await fetch("/api/public/generate-preview", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ thoughts, mode: "company" }),
+      })
+      const data = await res.json() as { posts?: string[]; images?: (string | null)[]; error?: string }
+      if (data.posts && data.posts.length > 0) {
+        setCoPosts(data.posts)
+        setCoImages(data.images ?? [])
+        try {
+          localStorage.setItem("itgrows_ghost_handoff", JSON.stringify({
+            brief: { niche: coWhatYouDo, tone: "professional", goals: "Grow company brand", companyName: coWhatYouDo },
+            posts: data.posts, images: data.images ?? [], mode: "company", ts: Date.now(),
+          }))
+        } catch { /* non-fatal */ }
+      } else if (res.status === 429) {
+        setCoError("You've used your 2 free previews. Start a free trial to generate unlimited posts.")
+      } else {
+        setCoError("Our AI is busy right now — please try again in a moment.")
+      }
+    } catch {
+      setCoError("Something went wrong. Try again.")
+    } finally {
+      setCoLoading(false)
+    }
+  }
 
   async function handleCompanyPlan(tier: "single" | "two" | "unlimited") {
     try {
@@ -144,6 +190,83 @@ export default function CompanyPage() {
             <a href="#how"><Button size="lg" variant="ghost" className="text-slate-600 hover:text-[#1b1916] px-6 py-4 text-base rounded-xl">See how it works</Button></a>
           </div>
           <p className="mt-4 text-xs sm:text-sm text-slate-500 font-medium">No card required · Official LinkedIn &amp; X API · You approve every post</p>
+
+          {/* Company ghost generator */}
+          <div className="mt-10 max-w-3xl mx-auto text-left">
+            <div className="bg-[#f8f7f6] border border-black/10 rounded-2xl p-5 sm:p-6">
+              <p className="text-sm font-semibold text-[#1b1916] mb-1">See a post for your company — in your brand voice</p>
+              <p className="text-xs text-slate-500 mb-4">One line about what your company does. No signup.</p>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <input
+                  type="text"
+                  value={coWhatYouDo}
+                  onChange={(e) => setCoWhatYouDo(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === "Enter") handleCompanyGenerate() }}
+                  placeholder="e.g. We build fractional-CFO software for Series A startups"
+                  className="flex-1 rounded-xl border border-black/15 bg-white px-4 py-2.5 text-sm text-[#1b1916] placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-400"
+                />
+                <button
+                  onClick={handleCompanyGenerate}
+                  disabled={coLoading || coWhatYouDo.trim().length < 5}
+                  className="px-6 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold transition-colors flex items-center justify-center gap-2 whitespace-nowrap"
+                >
+                  {coLoading ? (<><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />Generating…</>) : "Generate posts →"}
+                </button>
+              </div>
+
+              {coLoading && (
+                <div className="mt-6 space-y-4">
+                  <p className="text-sm text-violet-600 font-medium flex items-center gap-2">
+                    <span className="w-3.5 h-3.5 border-2 border-violet-300 border-t-violet-600 rounded-full animate-spin" />
+                    {["Studying your brand…", "Writing your first company post…", "Writing a point-of-view post…", "Designing matching cover images…", "Almost there — polishing…"][Math.min(coProgress, 4)]}
+                  </p>
+                  {[0, 1].map((i) => (
+                    <div key={i} className="bg-white border border-black/10 rounded-2xl p-5 sm:p-6 animate-pulse">
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="w-10 h-10 rounded-lg bg-slate-200" />
+                        <div className="space-y-1.5"><div className="h-3 w-28 bg-slate-200 rounded" /><div className="h-2.5 w-16 bg-slate-100 rounded" /></div>
+                      </div>
+                      <div className="space-y-2"><div className="h-3 bg-slate-200 rounded w-full" /><div className="h-3 bg-slate-200 rounded w-11/12" /><div className="h-3 bg-slate-100 rounded w-4/5" /></div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {coError && (
+                coError.includes("free previews") ? (
+                  <div className="mt-4 rounded-xl border border-violet-200 bg-violet-50 p-4 text-center">
+                    <p className="text-sm font-semibold text-[#1b1916] mb-2">You&apos;ve seen a taste — get unlimited posts, published daily.</p>
+                    <Link href="/signup"><Button className="bg-violet-600 hover:bg-violet-500 text-white font-semibold text-sm">Start 14 days free →</Button></Link>
+                  </div>
+                ) : (
+                  <p className="mt-4 text-sm text-slate-500">{coError}</p>
+                )
+              )}
+
+              {coPosts.length > 0 && (
+                <div className="mt-6 space-y-4">
+                  {coPosts.map((post, i) => (
+                    <div key={i} className="bg-white border border-black/10 rounded-2xl overflow-hidden shadow-sm">
+                      {coImages[i] && (<img src={coImages[i]!} alt="Post cover" className="w-full h-48 object-cover" />)}
+                      <div className="p-5 sm:p-6">
+                        <div className="flex items-center gap-3 mb-4">
+                          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-violet-500 to-cyan-500 flex items-center justify-center text-white text-sm font-bold flex-shrink-0">Co</div>
+                          <div><div className="font-semibold text-sm text-[#1b1916]">Your Company</div><div className="text-xs text-slate-400">LinkedIn Page · Just now</div></div>
+                        </div>
+                        <p className="text-sm text-[#1b1916] whitespace-pre-wrap leading-relaxed">{post}</p>
+                      </div>
+                    </div>
+                  ))}
+                  <div className="bg-gradient-to-r from-violet-600 to-cyan-600 rounded-2xl p-6 sm:p-8 text-center text-white">
+                    <div className="text-2xl font-extrabold mb-2">Want these on your company page every day?</div>
+                    <p className="text-white/80 text-sm mb-1">Start your 14-day free trial. No card required.</p>
+                    <p className="text-white/70 text-xs mb-5">✓ These posts are saved — create your account and they&apos;re waiting in your dashboard.</p>
+                    <Link href="/signup"><Button className="bg-white text-violet-600 font-bold text-sm hover:bg-violet-50">Get 14 days free →</Button></Link>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
 
           {/* Moat banner */}
           <div className="mt-10 max-w-2xl mx-auto flex items-start gap-3 bg-violet-50 border border-violet-200 rounded-2xl px-5 py-4 text-left">

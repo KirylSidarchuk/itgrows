@@ -71,6 +71,7 @@ export default function PersonalPage() {
   const [ghostImages, setGhostImages] = useState<(string | null)[]>([])
   const [ghostError, setGhostError] = useState("")
   const [showGhostDetails, setShowGhostDetails] = useState(false)
+  const [ghostProgress, setGhostProgress] = useState(0)
 
   const [showPlatformModal, setShowPlatformModal] = useState(false)
   const [showLandingPlanModal, setShowLandingPlanModal] = useState(false)
@@ -166,6 +167,13 @@ export default function PersonalPage() {
       })
       .catch(() => {})
   }, [])
+
+  // Rotate a friendly progress line while generating so the 30-60s wait doesn't feel dead.
+  useEffect(() => {
+    if (!ghostLoading) { setGhostProgress(0); return }
+    const id = setInterval(() => setGhostProgress((p) => p + 1), 2600)
+    return () => clearInterval(id)
+  }, [ghostLoading])
 
   async function handleCheckout(plan: "personal" | "duo" | "allin" | "personal_annual" | "duo_annual" | "allin_annual" | "company" | "company_annual") {
     track("start_trial_clicked", { plan })
@@ -458,6 +466,31 @@ export default function PersonalPage() {
                 </button>
               </div>
             </div>
+
+            {ghostLoading && (
+              <div className="mt-6 space-y-4">
+                <p className="text-sm text-violet-600 font-medium flex items-center gap-2">
+                  <span className="w-3.5 h-3.5 border-2 border-violet-300 border-t-violet-600 rounded-full animate-spin" />
+                  {["Studying your voice…", "Writing your first post…", "Writing a bold, contrarian take…", "Designing matching cover images…", "Almost there — polishing…"][Math.min(ghostProgress, 4)]}
+                </p>
+                {[0, 1].map((i) => (
+                  <div key={i} className="bg-white border border-black/10 rounded-2xl p-5 sm:p-6 animate-pulse">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="w-10 h-10 rounded-full bg-slate-200" />
+                      <div className="space-y-1.5">
+                        <div className="h-3 w-24 bg-slate-200 rounded" />
+                        <div className="h-2.5 w-16 bg-slate-100 rounded" />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="h-3 bg-slate-200 rounded w-full" />
+                      <div className="h-3 bg-slate-200 rounded w-11/12" />
+                      <div className="h-3 bg-slate-100 rounded w-4/5" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
 
             {ghostError && (
               ghostError.includes("free previews") ? (
