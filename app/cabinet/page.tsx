@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Suspense } from "react"
-import { Loader2, RefreshCw, Send, Calendar, Check, Settings, LogOut, Zap, Lock, MessageCircle, BarChart2, ImageIcon } from "lucide-react"
+import { Loader2, RefreshCw, Send, Calendar, Check, Settings, LogOut, Zap, Lock, MessageCircle, BarChart2, ImageIcon, Sparkles } from "lucide-react"
 import { signOut, useSession } from "next-auth/react"
 
 interface LinkedInAccount {
@@ -809,6 +809,8 @@ function LinkedInPageContent() {
   const [refreshSuccess, setRefreshSuccess] = useState(false)
   const [posts, setPosts] = useState<LinkedInPost[]>([])
   const [postsLoading, setPostsLoading] = useState(false)
+  // Carry-forward: posts the user generated on the landing page (localStorage handoff), shown until they publish.
+  const [savedGhostPosts, setSavedGhostPosts] = useState<{ posts: string[]; images: (string | null)[] } | null>(null)
   const [generating, setGenerating] = useState(false)
   const [generateError, setGenerateError] = useState<string | null>(null)
   const [generateErrorKind, setGenerateErrorKind] = useState<"ai_busy" | "other" | null>(null)
@@ -1073,6 +1075,35 @@ function LinkedInPageContent() {
       setActivePlatform("x")
     }
   }, [xConnected])
+
+  // Carry-forward: pull the posts + brief the user generated on the landing page (localStorage handoff).
+  // Show the posts until they publish, and pre-fill the Professional DNA so they don't re-enter it.
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("itgrows_ghost_handoff")
+      if (!raw) return
+      const h = JSON.parse(raw) as {
+        posts?: string[]
+        images?: (string | null)[]
+        brief?: { niche?: string; targetAudience?: string; tone?: string; goals?: string; companyName?: string }
+      }
+      if (Array.isArray(h.posts) && h.posts.length > 0) {
+        setSavedGhostPosts({ posts: h.posts, images: h.images ?? [] })
+      }
+      // Only pre-fill the brief before any account/brief exists, so we never clobber a real saved DNA.
+      if (h.brief?.niche && accounts.length === 0) {
+        setBrief((prev) => ({
+          ...prev,
+          niche: h.brief!.niche ?? prev.niche,
+          targetAudience: h.brief!.targetAudience || prev.targetAudience,
+          tone: h.brief!.tone || prev.tone,
+          goals: h.brief!.goals || prev.goals,
+          companyName: h.brief!.companyName || prev.companyName,
+        }))
+      }
+    } catch { /* malformed handoff — ignore */ }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   useEffect(() => {
     if (connected === "1") {
@@ -2499,6 +2530,47 @@ function LinkedInPageContent() {
               <p className="text-slate-600 text-sm">Connect LinkedIn to get started</p>
             )}
           </div>
+
+          {/* Carry-forward: posts generated on the landing page, waiting to be published */}
+          {savedGhostPosts && posts.length === 0 && (
+            <div className="mb-4 sm:mb-6 rounded-2xl border border-violet-200 bg-white shadow-sm overflow-hidden">
+              <div className="flex items-start justify-between gap-3 px-4 sm:px-5 py-4 bg-gradient-to-r from-violet-50 to-pink-50 border-b border-violet-100">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-violet-600 text-white flex items-center justify-center shrink-0">
+                    <Sparkles className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-[#1b1916]">Your posts are ready 🎉</p>
+                    <p className="text-xs text-slate-600 mt-0.5">We saved the {savedGhostPosts.posts.length} posts you generated. {isConnected ? "Generate your full schedule to publish them." : "Connect an account and start your trial to publish on autopilot."}</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => { setSavedGhostPosts(null); try { localStorage.removeItem("itgrows_ghost_handoff") } catch {} }}
+                  className="shrink-0 text-slate-400 hover:text-slate-600 transition-colors text-lg leading-none"
+                  aria-label="Dismiss"
+                >
+                  ✕
+                </button>
+              </div>
+              <div className="p-4 sm:p-5 space-y-3">
+                {savedGhostPosts.posts.slice(0, 3).map((post, i) => (
+                  <div key={i} className="rounded-xl border border-slate-100 bg-slate-50/60 overflow-hidden">
+                    {savedGhostPosts.images[i] && (
+                      <img src={savedGhostPosts.images[i]!} alt="Post cover" className="w-full h-36 object-cover" />
+                    )}
+                    <p className="text-sm text-slate-700 whitespace-pre-wrap leading-relaxed p-4 line-clamp-4">{post}</p>
+                  </div>
+                ))}
+                <button
+                  onClick={() => setShowPlanModal(true)}
+                  disabled={checkingOut}
+                  className="w-full sm:w-auto bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-white font-semibold text-sm px-6 py-2.5 rounded-xl shadow-sm transition-opacity disabled:opacity-70"
+                >
+                  {checkingOut ? "Loading..." : isConnected ? "Generate my schedule →" : "Start free trial to publish these →"}
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* Upgrade banner — no plan, no trial */}
           {!hasPersonalPlan && !trialExpired && !loading && (
