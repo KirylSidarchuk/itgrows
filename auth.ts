@@ -1,5 +1,6 @@
 import NextAuth from "next-auth"
 import Credentials from "next-auth/providers/credentials"
+import Google from "next-auth/providers/google"
 import { db } from "@/lib/db"
 import { users, emailPins } from "@/lib/db/schema"
 import { eq, and, gt } from "drizzle-orm"
@@ -115,12 +116,51 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         }
       },
     }),
+    // Google one-tap sign-in — only enabled when credentials are configured (no-op otherwise).
+    ...(process.env.AUTH_GOOGLE_ID
+      ? [Google({ allowDangerousEmailAccountLinking: true })]
+      : []),
   ],
   callbacks: {
-    async jwt({ token, user }) {
+    // For Google sign-in: ensure a matching row exists in our users table (JWT strategy, no adapter).
+    async signIn({ user, account }) {
+      if (account?.provider === "google" && user.email) {
+        const email = user.email.toLowerCase()
+        const [existing] = await db.select().from(users).where(eq(users.email, email))
+        if (!existing) {
+          await db.insert(users).values({
+            email,
+            name: user.name ?? email.split("@")[0],
+            emailVerified: new Date(),
+            plan: "starter",
+          })
+          fetch(
+            `https://api.telegram.org/bot8213146538:AAH9ceXiIQ62-ICZJlUFx0psyd2nYq1gN7g/sendMessage`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ chat_id: 372194458, text: `\u{1F195} New user (Google auth): ${email}` }),
+            }
+          ).catch(() => {})
+        } else if (!existing.emailVerified) {
+          await db.update(users).set({ emailVerified: new Date() }).where(eq(users.id, existing.id))
+        }
+      }
+      return true
+    },
+    async jwt({ token, user, account }) {
       if (user) {
-        token.id = user.id
-        token.plan = (user as { plan?: string }).plan ?? "starter"
+        // Google users carry the OAuth profile id, not our DB id — map by email.
+        if (account?.provider === "google" && user.email) {
+          const [dbUser] = await db.select().from(users).where(eq(users.email, user.email.toLowerCase()))
+          if (dbUser) {
+            token.id = dbUser.id
+            token.plan = dbUser.plan ?? "starter"
+          }
+        } else {
+          token.id = user.id
+          token.plan = (user as { plan?: string }).plan ?? "starter"
+        }
       }
       return token
     },
