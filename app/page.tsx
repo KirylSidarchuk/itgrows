@@ -510,41 +510,67 @@ export default function PersonalPage() {
 
             {ghostPosts.length > 0 && (
               <div className="mt-8 space-y-4">
-                {ghostPosts.map((post, i) => (
-                  <div key={i} className="bg-white border border-black/10 rounded-2xl overflow-hidden shadow-sm">
-                    {ghostImages[i] && (
-                      <img src={ghostImages[i]!} alt="Post cover" className="w-full h-48 object-cover" />
-                    )}
-                    <div className="p-5 sm:p-6">
-                      <div className="flex items-center gap-3 mb-4">
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-500 to-pink-500 flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
-                          Y
-                        </div>
-                        <div>
-                          <div className="font-semibold text-sm text-[#1b1916]">You</div>
-                          <div className="text-xs text-slate-400">LinkedIn · Just now</div>
-                        </div>
+                {/* First post — shown in full to prove the quality */}
+                <div className="bg-white border border-black/10 rounded-2xl overflow-hidden shadow-sm">
+                  {ghostImages[0] && (
+                    <img src={ghostImages[0]!} alt="Post cover" className="w-full h-48 object-cover" />
+                  )}
+                  <div className="p-5 sm:p-6">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-500 to-pink-500 flex items-center justify-center text-white text-sm font-bold flex-shrink-0">Y</div>
+                      <div>
+                        <div className="font-semibold text-sm text-[#1b1916]">You</div>
+                        <div className="text-xs text-slate-400">LinkedIn · Just now</div>
                       </div>
-                      <p className="text-sm text-[#1b1916] whitespace-pre-wrap leading-relaxed">{post}</p>
-                      <div className="mt-4 pt-4 border-t border-black/5 flex items-center justify-between">
-                        <div className="flex gap-4 text-xs text-slate-400">
-                          <span>👍 Like</span>
-                          <span>💬 Comment</span>
-                          <span>🔁 Repost</span>
+                    </div>
+                    <p className="text-sm text-[#1b1916] whitespace-pre-wrap leading-relaxed">{ghostPosts[0]}</p>
+                    <div className="mt-4 pt-4 border-t border-black/5 flex items-center justify-between">
+                      <div className="flex gap-4 text-xs text-slate-400"><span>👍 Like</span><span>💬 Comment</span><span>🔁 Repost</span></div>
+                      <button
+                        onClick={() => setShowLandingPlanModal(true)}
+                        className="inline-block px-4 py-2 rounded-lg text-sm font-semibold text-white transition-colors"
+                        style={{ backgroundColor: "#7C3AED" }}
+                        onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#6d28d9")}
+                        onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#7C3AED")}
+                      >
+                        Automate This Post →
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Remaining posts — blurred behind a signup gate (unlock at peak interest) */}
+                {ghostPosts.length > 1 && (
+                  <div className="relative">
+                    <div className="space-y-4 blur-[6px] select-none pointer-events-none" aria-hidden="true">
+                      {ghostPosts.slice(1).map((post, i) => (
+                        <div key={i} className="bg-white border border-black/10 rounded-2xl overflow-hidden shadow-sm">
+                          {ghostImages[i + 1] && (
+                            <img src={ghostImages[i + 1]!} alt="" className="w-full h-48 object-cover" />
+                          )}
+                          <div className="p-5 sm:p-6">
+                            <div className="flex items-center gap-3 mb-4">
+                              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-500 to-pink-500 flex-shrink-0" />
+                              <div><div className="font-semibold text-sm text-[#1b1916]">You</div><div className="text-xs text-slate-400">LinkedIn · Just now</div></div>
+                            </div>
+                            <p className="text-sm text-[#1b1916] whitespace-pre-wrap leading-relaxed">{post}</p>
+                          </div>
                         </div>
-                        <button
-                          onClick={() => setShowLandingPlanModal(true)}
-                          className="inline-block px-4 py-2 rounded-lg text-sm font-semibold text-white transition-colors"
-                          style={{ backgroundColor: "#7C3AED" }}
-                          onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#6d28d9")}
-                          onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#7C3AED")}
-                        >
-                          Automate This Post →
+                      ))}
+                    </div>
+                    <div className="absolute inset-0 flex items-center justify-center p-4">
+                      <div className="text-center bg-white/95 backdrop-blur-sm rounded-2xl border border-violet-200 shadow-xl p-6 max-w-sm">
+                        <div className="text-3xl mb-2">🔓</div>
+                        <p className="font-bold text-[#1b1916] mb-1">{ghostPosts.length - 1} more post{ghostPosts.length - 1 !== 1 ? "s" : ""} ready for you</p>
+                        <p className="text-sm text-slate-600 mb-4">Create your free account to unlock all {ghostPosts.length} — and put them on autopilot.</p>
+                        <button onClick={() => setShowLandingPlanModal(true)} className="inline-block px-6 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-500 text-white font-semibold text-sm transition-colors">
+                          Unlock my posts →
                         </button>
+                        <p className="mt-2 text-xs text-slate-400">14-day free trial · No card required</p>
                       </div>
                     </div>
                   </div>
-                ))}
+                )}
 
                 <div className="bg-gradient-to-r from-violet-600 to-pink-600 rounded-2xl p-6 sm:p-8 text-center text-white">
                   <div className="text-2xl font-extrabold mb-2">Want these posted for you every day?</div>
