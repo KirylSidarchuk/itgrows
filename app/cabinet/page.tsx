@@ -1722,7 +1722,7 @@ function LinkedInPageContent() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ postId }),
     })
-    const data = await res.json() as { success?: boolean; error?: string; twitterPostId?: string }
+    const data = await res.json() as { success?: boolean; error?: string; twitterPostId?: string; imageSkipped?: boolean }
     if (res.ok) {
       setXPosts((prev) =>
         prev.map((p) =>
@@ -1732,6 +1732,9 @@ function LinkedInPageContent() {
         )
       )
       setXPublishedCollapsed(false)
+      if (data.imageSkipped) {
+        setStatusMessage("Tweet published — the image couldn't be attached yet (X image publishing is coming soon).")
+      }
     } else if (res.status === 400 && data.error === "Post already published") {
       // Post was published by cron while page was open — just update local state
       setXPosts((prev) =>

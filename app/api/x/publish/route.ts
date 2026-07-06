@@ -160,7 +160,9 @@ export async function POST(req: NextRequest) {
       })
       .where(and(eq(twitterPosts.id, postId), eq(twitterPosts.userId, userId)))
 
-    return NextResponse.json({ success: true, twitterPostId })
+    // Be honest that X media upload isn't wired yet: if the post had an image, it was
+    // published text-only. The client surfaces this instead of silently claiming full success.
+    return NextResponse.json({ success: true, twitterPostId, imageSkipped: !!post.imageUrl })
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error"
     return NextResponse.json({ error: message }, { status: 500 })
