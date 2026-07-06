@@ -97,38 +97,41 @@ export function buildLinkedInPrompt(brief: {
   const goals = brief.goals ?? "build authority and engage audience"
   const audience = brief.targetAudience ? `Target audience: ${brief.targetAudience}. ` : ""
 
+  // Angles are THEMES, not requests for a specific true event. Any angle that would
+  // normally invite a made-up backstory (a success story, a milestone, a past failure,
+  // behind-the-scenes) is phrased as a principle/observation so the model has nothing to fabricate.
   const companyAngles = [
     "industry observation",
     "contrarian take",
     "a trend we're watching",
-    "a lesson we learned",
+    "a lesson framed as a principle",
     "a common myth debunked",
     "a practical tip for our audience",
     "a future prediction",
-    "a team achievement or milestone",
-    "a behind-the-scenes company insight",
+    "a value or standard we hold",
+    "how we think about a relevant problem (as a principle, not an invented behind-the-scenes story)",
     "a question we keep asking ourselves",
     "an unpopular industry opinion",
-    "a reflection on a challenge we overcame",
-    "a success story from our experience",
-    "a gratitude or appreciation moment",
+    "a common challenge in our field and how to approach it",
+    "what actually drives results in our field (principles, no invented case study)",
+    "a genuine appreciation for our audience or community",
   ]
 
   const personalAngles = [
-    "personal lesson",
+    "a personal lesson framed as a principle",
     "industry observation",
     "contrarian take",
-    '"what I wish I knew"',
-    "a mistake and what it taught me",
+    '"what I wish I knew" — as general advice',
+    "a common mistake in the field and how to avoid it",
     "a trend I'm watching",
     "a question I keep asking myself",
     "an unpopular opinion",
-    "a success story without fabrication",
+    "what actually drives success in this field (principles, no invented case study)",
     "a common myth debunked",
     "a practical tip",
-    "a reflection on failure",
+    "why a common approach falls short (as a pattern, not a personal failure story)",
     "a future prediction",
-    "a gratitude or appreciation moment",
+    "a genuine reflection or appreciation about the work",
   ]
 
   const angles = (isCompany ? companyAngles : personalAngles).slice(0, count).join(" | ")
@@ -166,7 +169,7 @@ FORMAT for each post:
 - MANDATORY: End every post with 3–5 hashtags on the very last line, SPECIFIC to that individual post's topic. Each post in the set MUST use a different mix of hashtags — never repeat the same hashtag set across posts. Combine one or two broad tags with post-specific ones (e.g. #Innovation #AITechnology #BusinessGrowth). Posts without hashtags are rejected.
 - Total length: 150–300 words.
 
-Cover ${count} different angles across the set:
+Cover ${count} different angles across the set. Treat each angle as a THEME to explore through insight, opinion, and principle — NEVER as a request for a specific true event. If a concrete detail (a story, client, number, date, past company) wasn't provided above, do not invent one to fit the angle; write from general observation instead:
 ${angles}
 
 Return ONLY a valid JSON array with exactly ${count} objects. Each object must have:
@@ -201,7 +204,7 @@ FORMAT for each post:
 - MANDATORY: End every post with 3–5 hashtags on the very last line, SPECIFIC to that individual post's topic. Each post in the set MUST use a different mix of hashtags — never repeat the same hashtag set across posts. Combine one or two broad tags with post-specific ones (e.g. #Innovation #Leadership #GrowthMindset). Posts without hashtags are rejected.
 - Total length: 150–300 words.
 
-Cover ${count} different angles across the set:
+Cover ${count} different angles across the set. Treat each angle as a THEME to explore through insight, opinion, and principle — NEVER as a request for a specific true event. If a concrete detail (a story, client, number, date, past company) wasn't provided above, do not invent one to fit the angle; write from general observation instead:
 ${angles}
 
 Return ONLY a valid JSON array with exactly ${count} objects. Each object must have:
