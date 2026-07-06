@@ -32,7 +32,7 @@ const companyFaqs = [
   },
   {
     q: "Do we need a credit card to start?",
-    a: "No. Start a 14-day free trial with no card. You only add a payment method when you decide to continue.",
+    a: "You add a card to start your 14-day free trial, but you're not charged until it ends. Cancel anytime before then from your dashboard and you pay nothing.",
   },
 ]
 
@@ -191,7 +191,7 @@ export default function CompanyPage() {
           </div>
           <div className="mt-5 flex flex-wrap justify-center items-center gap-2 text-xs sm:text-sm">
             <span className="inline-flex items-center gap-1.5 font-semibold text-violet-900 bg-violet-50 border border-violet-200 rounded-full px-3 py-1.5 shadow-sm">🛡️ Approved by LinkedIn — official API</span>
-            <span className="inline-flex items-center gap-1.5 font-medium text-slate-700 bg-white border border-black/10 rounded-full px-3 py-1.5"><span className="text-green-600">✓</span> No card required</span>
+            <span className="inline-flex items-center gap-1.5 font-medium text-slate-700 bg-white border border-black/10 rounded-full px-3 py-1.5"><span className="text-green-600">✓</span> Cancel anytime</span>
             <span className="inline-flex items-center gap-1.5 font-medium text-slate-700 bg-white border border-black/10 rounded-full px-3 py-1.5"><span className="text-green-600">✓</span> You approve every post</span>
           </div>
 
@@ -284,14 +284,14 @@ export default function CompanyPage() {
                           <p className="font-bold text-[#1b1916] mb-1">{coPosts.length - 1} more post{coPosts.length - 1 !== 1 ? "s" : ""} ready for your page</p>
                           <p className="text-sm text-slate-600 mb-4">Create your free account to unlock all {coPosts.length} — and put your company page on autopilot.</p>
                           <Link href="/signup"><Button className="bg-violet-600 hover:bg-violet-500 text-white font-semibold text-sm">Unlock my posts →</Button></Link>
-                          <p className="mt-2 text-xs text-slate-400">14-day free trial · No card required</p>
+                          <p className="mt-2 text-xs text-slate-400">14-day free trial · Cancel anytime</p>
                         </div>
                       </div>
                     </div>
                   )}
                   <div className="bg-gradient-to-r from-violet-600 to-cyan-600 rounded-2xl p-6 sm:p-8 text-center text-white">
                     <div className="text-2xl font-extrabold mb-2">Want these on your company page every day?</div>
-                    <p className="text-white/80 text-sm mb-1">Start your 14-day free trial. No card required.</p>
+                    <p className="text-white/80 text-sm mb-1">Start your 14-day free trial. Cancel anytime.</p>
                     <p className="text-white/70 text-xs mb-5">✓ These posts are saved — create your account and they&apos;re waiting in your dashboard.</p>
                     <Link href="/signup"><Button className="bg-white text-violet-600 font-bold text-sm hover:bg-violet-50">Get 14 days free →</Button></Link>
                   </div>
@@ -448,7 +448,7 @@ export default function CompanyPage() {
                   <li className="flex items-center gap-2"><span className="text-violet-600 font-bold">✓</span> Company Page &amp; X on autopilot</li>
                   <li className="flex items-center gap-2"><span className="text-violet-600 font-bold">✓</span> Approved by LinkedIn — official API</li>
                   <li className="flex items-center gap-2"><span className="text-violet-600 font-bold">✓</span> On-brand, in your company voice</li>
-                  <li className="flex items-center gap-2"><span className="text-violet-600 font-bold">✓</span> Cancel anytime · no card to start</li>
+                  <li className="flex items-center gap-2"><span className="text-violet-600 font-bold">✓</span> 14-day free trial · Cancel anytime</li>
                 </ul>
                 <div className="mt-5 pt-3 border-t border-violet-100 flex justify-between items-end">
                   <span className="text-sm text-slate-500">From</span>
@@ -480,7 +480,7 @@ export default function CompanyPage() {
               <Button onClick={() => handleCompanyPlan("unlimited")} className="w-full bg-white border border-violet-300 text-violet-700 hover:bg-violet-50 py-3 rounded-xl font-semibold">Start free trial</Button>
             </div>
           </div>
-          <p className="text-sm text-slate-500 mt-8">No card required · Cancel anytime · Want your team&apos;s personal accounts too? <Link href="/#pricing" className="text-violet-600 font-semibold hover:text-violet-500">See All-in &amp; personal plans →</Link></p>
+          <p className="text-sm text-slate-500 mt-8">14-day free trial · Cancel anytime · Want your team&apos;s personal accounts too? <Link href="/#pricing" className="text-violet-600 font-semibold hover:text-violet-500">See All-in &amp; personal plans →</Link></p>
         </div>
       </section>
 
@@ -507,7 +507,7 @@ export default function CompanyPage() {
         <div className="max-w-2xl mx-auto">
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-4">Your company should be posting. <span className="bg-gradient-to-r from-violet-600 via-pink-500 to-cyan-500 bg-clip-text text-transparent">Today.</span></h2>
           <p className="text-slate-600 text-base sm:text-lg mb-8">Set up your brand voice once. ItGrows keeps every account active — on autopilot.</p>
-          <Link href="/signup"><Button size="lg" className="bg-violet-600 hover:bg-violet-500 text-white px-10 py-4 text-lg rounded-xl font-semibold shadow-lg shadow-violet-600/30">Start 14-day free trial — no card</Button></Link>
+          <Link href="/signup"><Button size="lg" className="bg-violet-600 hover:bg-violet-500 text-white px-10 py-4 text-lg rounded-xl font-semibold shadow-lg shadow-violet-600/30">Start 14-day free trial</Button></Link>
         </div>
       </section>
 

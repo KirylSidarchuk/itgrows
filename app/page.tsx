@@ -50,7 +50,7 @@ const faqs = [
   },
   {
     q: "Do I need a credit card to start?",
-    a: "No card required to start your 14-day free trial. You'll only need a payment method when your trial ends and you choose to continue.",
+    a: "Yes — you add a card to start your 14-day free trial, but you're not charged until the trial ends. Cancel anytime before then from your dashboard and you won't be charged a cent.",
   },
   {
     q: "What happens to my content if I cancel?",
@@ -378,7 +378,7 @@ export default function PersonalPage() {
               </Button>
             </div>
           </div>
-          <p className="mt-4 text-xs sm:text-sm text-slate-500 font-medium">14-day free trial · No card required</p>
+          <p className="mt-4 text-xs sm:text-sm text-slate-500 font-medium">14-day free trial · Cancel anytime</p>
 
           {/* Generator form — embedded in hero */}
           <div id="ghost-form" className="mt-10 max-w-3xl mx-auto text-left">
@@ -568,7 +568,7 @@ export default function PersonalPage() {
                           Unlock my posts →
                         </button>
                         <p className="mt-3 text-[11px] text-slate-400 leading-relaxed">✓ In your voice, not generic AI &nbsp;·&nbsp; ✓ Official API, ban-safe &nbsp;·&nbsp; ✓ You approve every post</p>
-                        <p className="mt-1 text-xs text-slate-400">14-day free trial · No card required</p>
+                        <p className="mt-1 text-xs text-slate-400">14-day free trial · Cancel anytime</p>
                       </div>
                     </div>
                   </div>
@@ -576,7 +576,7 @@ export default function PersonalPage() {
 
                 <div className="bg-gradient-to-r from-violet-600 to-pink-600 rounded-2xl p-6 sm:p-8 text-center text-white">
                   <div className="text-2xl font-extrabold mb-2">Want these posted for you every day?</div>
-                  <p className="text-white/80 text-sm mb-1">Start your 14-day free trial. No card required.</p>
+                  <p className="text-white/80 text-sm mb-1">Start your 14-day free trial. Cancel anytime.</p>
                   <p className="text-white/70 text-xs mb-5">✓ These posts are saved — create your account and they&apos;re waiting in your dashboard.</p>
                   <button
                     onClick={() => { window.location.href = "/signup" }}
@@ -920,7 +920,7 @@ export default function PersonalPage() {
                     <li className="flex items-center gap-2"><span className="text-violet-600 font-bold">✓</span> Daily posts in your voice, on autopilot</li>
                     <li className="flex items-center gap-2"><span className="text-violet-600 font-bold">✓</span> Never sick, never off — every single day</li>
                     <li className="flex items-center gap-2"><span className="text-violet-600 font-bold">✓</span> You approve · official LinkedIn &amp; X API</li>
-                    <li className="flex items-center gap-2"><span className="text-violet-600 font-bold">✓</span> Cancel anytime · no card to start</li>
+                    <li className="flex items-center gap-2"><span className="text-violet-600 font-bold">✓</span> 14-day free trial · Cancel anytime</li>
                   </ul>
                   <div className="mt-5 pt-3 border-t border-violet-100 flex justify-between items-end">
                     <span className="text-sm text-slate-500">From</span>
@@ -971,7 +971,7 @@ export default function PersonalPage() {
                   <span className="text-slate-500 mb-2">/mo</span>
                 </div>
                 {billingCycle === "annual" && <p className="text-xs text-green-600 font-semibold mt-0.5">$411 billed annually · save $177</p>}
-                <p className="text-sm text-slate-400 mt-1">14-day free trial · no card required</p>
+                <p className="text-sm text-slate-400 mt-1">14-day free trial · Cancel anytime</p>
               </CardHeader>
               <CardContent className="space-y-4 px-6 pb-8">
                 <Button
@@ -980,7 +980,7 @@ export default function PersonalPage() {
                 >
                   Get 14 Days Free →
                 </Button>
-                <p className="text-center text-xs text-slate-400">🔒 OAuth secure · No card required · Cancel anytime</p>
+                <p className="text-center text-xs text-slate-400">🔒 OAuth secure · Cancel anytime</p>
                 <ul className="space-y-2 pt-1">
                   {["1 account: LinkedIn or X", "Daily posts in your voice", "Custom images for every post", "Auto-scheduling at peak time", "Profile DNA analysis"].map((item, i) => (
                     <li key={i} className="flex items-center gap-2 text-sm text-slate-600">
@@ -1017,7 +1017,7 @@ export default function PersonalPage() {
                   <span className="text-slate-500 mb-2">/mo</span>
                 </div>
                 {billingCycle === "annual" && <p className="text-xs text-green-600 font-semibold mt-0.5">$831 billed annually · save $357</p>}
-                <p className="text-sm text-slate-400 mt-1">14-day free trial · no card required</p>
+                <p className="text-sm text-slate-400 mt-1">14-day free trial · Cancel anytime</p>
               </CardHeader>
               <CardContent className="space-y-4 px-6 pb-8">
                 <Button
@@ -1026,7 +1026,7 @@ export default function PersonalPage() {
                 >
                   Get 14 Days Free →
                 </Button>
-                <p className="text-center text-xs text-slate-400">🔒 OAuth secure · No card required · Cancel anytime</p>
+                <p className="text-center text-xs text-slate-400">🔒 OAuth secure · Cancel anytime</p>
                 <ul className="space-y-2 pt-1">
                   {["Any 2 accounts from LinkedIn, X personal, X company", "Official LinkedIn & X API — ban-safe", "Daily posts in your voice", "Platform-specific voice & style", "Unified dashboard for both platforms", "Custom images for every post"].map((item, i) => (
                     <li key={i} className="flex items-center gap-2 text-sm text-slate-600">
@@ -1072,7 +1072,7 @@ export default function PersonalPage() {
                   <span className="text-slate-500 mb-2">/mo</span>
                 </div>
                 {billingCycle === "annual" && <p className="text-xs text-green-600 font-semibold mt-0.5">$1,671 billed annually · save $717</p>}
-                <p className="text-sm text-slate-400 mt-1">14-day free trial · no card required</p>
+                <p className="text-sm text-slate-400 mt-1">14-day free trial · Cancel anytime</p>
               </CardHeader>
               <CardContent className="space-y-4 px-6 pb-8">
                 <Button
@@ -1081,7 +1081,7 @@ export default function PersonalPage() {
                 >
                   Get 14 Days Free →
                 </Button>
-                <p className="text-center text-xs text-slate-400">🔒 OAuth secure · No card required · Cancel anytime</p>
+                <p className="text-center text-xs text-slate-400">🔒 OAuth secure · Cancel anytime</p>
                 <ul className="space-y-2 pt-1">
                   {["LinkedIn personal + Company Page + X personal + X company", "1 LinkedIn Company Page included — approved by LinkedIn (extra pages $99/mo)", "Daily posts in your voice", "Analytics & strategic session included", "Platform-specific voice & style"].map((item, i) => (
                     <li key={i} className="flex items-center gap-2 text-sm text-slate-600">
@@ -1093,7 +1093,7 @@ export default function PersonalPage() {
             </Card>
 
           </div>
-          <p className="text-center mt-8 text-sm text-slate-600">✓ 14-day free trial, no card &nbsp;·&nbsp; ✓ Cancel anytime &nbsp;·&nbsp; ✓ Full refund within 7 days of subscribing if it&apos;s not for you</p>
+          <p className="text-center mt-8 text-sm text-slate-600">✓ 14-day free trial &nbsp;·&nbsp; ✓ Cancel anytime before it ends — no charge &nbsp;·&nbsp; ✓ Full refund within 7 days of your first payment</p>
         </div>
       </section>
 
@@ -1149,9 +1149,9 @@ export default function PersonalPage() {
             onClick={() => handleCheckoutWithPlatform("personal")}
             className="bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-white px-6 sm:px-10 py-4 sm:py-6 text-base sm:text-lg rounded-xl w-full sm:w-auto whitespace-normal text-center leading-snug h-auto"
           >
-            Start your 14-day free trial — no card
+            Start your 14-day free trial
           </Button>
-          <p className="mt-4 text-xs sm:text-sm text-slate-500">14-day free trial · No card required · From $49/month · Cancel anytime</p>
+          <p className="mt-4 text-xs sm:text-sm text-slate-500">14-day free trial · Cancel anytime · From $49/month</p>
           <p className="mt-2 text-xs sm:text-sm text-slate-600 font-medium">Not happy in your first 7 days after subscribing? Email us for a full refund — no questions asked.</p>
           <p className="mt-2 text-xs text-slate-400">🔒 OAuth secure · No password stored</p>
         </div>
@@ -1271,7 +1271,7 @@ export default function PersonalPage() {
               </svg>
             </button>
             <h2 className="text-xl font-bold text-[#1b1916] mb-1">Choose your plan</h2>
-            <p className="text-slate-500 text-sm mb-5">14-day free trial on all plans. No card required.</p>
+            <p className="text-slate-500 text-sm mb-5">14-day free trial on all plans. Cancel anytime.</p>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="border border-black/10 rounded-xl p-5 flex flex-col gap-3 hover:border-violet-400 transition-colors cursor-pointer" onClick={() => { setShowLandingPlanModal(false); handleCheckoutWithPlatform("personal") }}>
                 <div className="font-bold text-[#1b1916]">Personal</div>

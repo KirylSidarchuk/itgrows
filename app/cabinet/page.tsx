@@ -788,7 +788,6 @@ function LinkedInPageContent() {
   const [subscriptionStatus, setSubscriptionStatus] = useState<string | null>(null)
   const [subscriptionEndDate, setSubscriptionEndDate] = useState<string | null>(null)
   const [trialEndsAt, setTrialEndsAt] = useState<string | null>(null)
-  const [startingTrial, setStartingTrial] = useState(false)
   const [activeTab, setActiveTab] = useState<ActiveTab>("posts")
   const [brief, setBrief] = useState<LinkedInBrief>({
     niche: "",
@@ -934,29 +933,6 @@ function LinkedInPageContent() {
       }
     } catch {
       setStatusMessage("Something went wrong. Please try again.")
-      setCheckingOut(false)
-    }
-  }
-
-  async function handleStartTrial() {
-    setStartingTrial(true)
-    try {
-      const res = await fetch("/api/trial/start", { method: "POST" })
-      const data = await res.json() as { trialEndsAt?: string; error?: string }
-      if (res.ok && data.trialEndsAt) {
-        setTrialEndsAt(data.trialEndsAt)
-        setStatusMessage("Your trial has started! Generate your first posts now.")
-      } else if (data.error === "trial_already_used") {
-        setStatusMessage("You have already used your free trial. Please subscribe to continue.")
-      } else if (data.error === "already_subscribed") {
-        setStatusMessage("You already have an active subscription.")
-      } else {
-        setStatusMessage(data.error ?? "Something went wrong. Please try again.")
-      }
-    } catch {
-      setStatusMessage("Something went wrong. Please try again.")
-    } finally {
-      setStartingTrial(false)
       setCheckingOut(false)
     }
   }
@@ -3666,7 +3642,7 @@ function LinkedInPageContent() {
                         <>
                           <div>
                             <p className="text-base font-semibold text-slate-700 mb-1">No posts yet</p>
-                            <p className="text-sm text-slate-600 max-w-xs">Start your 14-day free trial to generate posts. No card required.</p>
+                            <p className="text-sm text-slate-600 max-w-xs">Start your 14-day free trial to generate posts. Cancel anytime.</p>
                           </div>
                           <button
                             onClick={() => setShowPlanModal(true)}
@@ -4109,7 +4085,7 @@ function LinkedInPageContent() {
                         </div>
                       </div>
                       <Badge variant="outline" className="text-xs border-green-200 text-green-700 bg-green-50 px-2 py-0.5">
-                        Active
+                        {subscriptionStatus === "trialing" ? "Trial" : "Active"}
                       </Badge>
                     </div>
                     <p className="text-sm text-slate-600 px-1">
@@ -4153,7 +4129,7 @@ function LinkedInPageContent() {
                         onClick={handleCancelSubscription}
                         className="text-xs text-red-400 hover:text-red-600 underline underline-offset-2 px-1 pt-1 text-left"
                       >
-                        Cancel subscription
+                        {subscriptionStatus === "trialing" ? "Cancel trial" : "Cancel subscription"}
                       </button>
                     )}
                   </div>
@@ -4237,7 +4213,7 @@ function LinkedInPageContent() {
                   <div className="space-y-4">
                     <div className="p-4 rounded-xl bg-slate-50 border border-slate-100">
                       <p className="text-sm font-semibold text-slate-700 mb-1">No Active Plan</p>
-                      <p className="text-xs text-slate-600">14-day free trial · No card required · Cancel anytime.</p>
+                      <p className="text-xs text-slate-600">14-day free trial · Cancel anytime — no charge until it ends.</p>
                     </div>
                     <button
                       onClick={() => setShowPlanModal(true)}
