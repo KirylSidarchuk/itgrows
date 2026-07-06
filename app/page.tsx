@@ -497,7 +497,7 @@ export default function PersonalPage() {
                 <div className="mt-4 rounded-xl border border-violet-200 bg-violet-50 p-4 text-center">
                   <p className="text-sm font-semibold text-[#1b1916] mb-2">You&apos;ve seen a taste — get unlimited posts, published daily.</p>
                   <button
-                    onClick={() => setShowLandingPlanModal(true)}
+                    onClick={() => { window.location.href = "/signup" }}
                     className="inline-block px-6 py-2.5 rounded-lg bg-violet-600 hover:bg-violet-500 text-white font-semibold text-sm transition-colors"
                   >
                     Start 14 days free →
@@ -527,7 +527,7 @@ export default function PersonalPage() {
                     <div className="mt-4 pt-4 border-t border-black/5 flex items-center justify-between">
                       <div className="flex gap-4 text-xs text-slate-400"><span>👍 Like</span><span>💬 Comment</span><span>🔁 Repost</span></div>
                       <button
-                        onClick={() => setShowLandingPlanModal(true)}
+                        onClick={() => { window.location.href = "/signup" }}
                         className="inline-block px-4 py-2 rounded-lg text-sm font-semibold text-white transition-colors"
                         style={{ backgroundColor: "#7C3AED" }}
                         onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#6d28d9")}
@@ -562,11 +562,13 @@ export default function PersonalPage() {
                       <div className="text-center bg-white/95 backdrop-blur-sm rounded-2xl border border-violet-200 shadow-xl p-6 max-w-sm">
                         <div className="text-3xl mb-2">🔓</div>
                         <p className="font-bold text-[#1b1916] mb-1">{ghostPosts.length - 1} more post{ghostPosts.length - 1 !== 1 ? "s" : ""} ready for you</p>
-                        <p className="text-sm text-slate-600 mb-4">Create your free account to unlock all {ghostPosts.length} — and put them on autopilot.</p>
-                        <button onClick={() => setShowLandingPlanModal(true)} className="inline-block px-6 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-500 text-white font-semibold text-sm transition-colors">
+                        <p className="text-sm text-slate-600 mb-1">Create your free account to unlock all {ghostPosts.length} — and put them on autopilot.</p>
+                        <p className="text-xs text-slate-500 mb-4">The work of a <span className="font-semibold text-slate-700">$2,500/mo ghostwriter</span> — for a fraction.</p>
+                        <button onClick={() => { window.location.href = "/signup" }} className="inline-block px-6 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-500 text-white font-semibold text-sm transition-colors">
                           Unlock my posts →
                         </button>
-                        <p className="mt-2 text-xs text-slate-400">14-day free trial · No card required</p>
+                        <p className="mt-3 text-[11px] text-slate-400 leading-relaxed">✓ In your voice, not generic AI &nbsp;·&nbsp; ✓ Official API, ban-safe &nbsp;·&nbsp; ✓ You approve every post</p>
+                        <p className="mt-1 text-xs text-slate-400">14-day free trial · No card required</p>
                       </div>
                     </div>
                   </div>
@@ -577,7 +579,7 @@ export default function PersonalPage() {
                   <p className="text-white/80 text-sm mb-1">Start your 14-day free trial. No card required.</p>
                   <p className="text-white/70 text-xs mb-5">✓ These posts are saved — create your account and they&apos;re waiting in your dashboard.</p>
                   <button
-                    onClick={() => setShowLandingPlanModal(true)}
+                    onClick={() => { window.location.href = "/signup" }}
                     className="inline-block px-8 py-3 rounded-xl bg-white text-violet-600 font-bold text-sm hover:bg-violet-50 transition-colors"
                   >
                     Get 14 Days Free →
@@ -832,7 +834,7 @@ export default function PersonalPage() {
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-10">
             <h2 className="text-2xl sm:text-3xl font-bold text-[#1b1916] mb-3">Built for people who have <span className="bg-gradient-to-r from-violet-600 via-pink-500 to-cyan-500 bg-clip-text text-transparent">expertise worth sharing</span></h2>
-            <p className="text-slate-500 text-base max-w-lg mx-auto">Used by <span className="text-violet-600 font-semibold">executives, consultants, and founders</span> building influence on LinkedIn and X.</p>
+            <p className="text-slate-500 text-base max-w-lg mx-auto">Built for <span className="text-violet-600 font-semibold">executives, consultants, and founders</span> building influence on LinkedIn and X.</p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="bg-white rounded-2xl border border-black/10 p-6">
@@ -1139,7 +1141,7 @@ export default function PersonalPage() {
             </span>
           </h2>
           <p className="text-slate-600 text-base sm:text-lg mb-8 sm:mb-10">
-            Join professionals who attract <span className="text-violet-600 font-semibold">clients, partners and opportunities</span> on LinkedIn and X — on autopilot.
+            Attract <span className="text-violet-600 font-semibold">clients, partners and opportunities</span> on LinkedIn and X — on autopilot.
           </p>
           <Button
             size="lg"
