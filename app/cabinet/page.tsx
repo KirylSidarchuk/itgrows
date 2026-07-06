@@ -1115,7 +1115,7 @@ function LinkedInPageContent() {
         setCancelAtPeriodEnd(data.cancelAtPeriodEnd ?? false)
         setCancelAt(data.cancelAt ?? null)
         setCompanyPagePlan(data.companyPagePlan ?? null)
-        if (data.status === "active" || data.status === "trialing") {
+        if (data.status === "active" || data.status === "trialing" || data.status === "past_due") {
           setSubscriptionPlan(data.plan ?? null)
         }
       })

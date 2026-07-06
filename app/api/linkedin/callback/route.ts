@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
+import { auth } from "@/auth"
 import { db } from "@/lib/db"
 import { linkedinAccounts, linkedinBriefs } from "@/lib/db/schema"
 import { eq, and } from "drizzle-orm"
@@ -22,6 +23,14 @@ export async function GET(req: NextRequest) {
   const isTypeSuffix = colonIdx !== -1 && (state.slice(colonIdx + 1) === "personal" || state.slice(colonIdx + 1) === "company")
   const userId = isTypeSuffix ? state.slice(0, colonIdx) : state
   const connectType: "personal" | "company" = isTypeSuffix && state.slice(colonIdx + 1) === "company" ? "company" : "personal"
+
+  // CSRF / account-binding protection: `state` carries the initiating user's id. Require a
+  // logged-in session that matches it, so a crafted callback URL can't graft a LinkedIn
+  // account (or the attacker's LinkedIn) onto a different user's account.
+  const session = await auth()
+  if (!session?.user?.id || session.user.id !== userId) {
+    return NextResponse.redirect(`${process.env.NEXTAUTH_URL}/cabinet?error=oauth_denied`)
+  }
 
   try {
     // Exchange code for access token

@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/auth"
 import { db } from "@/lib/db"
-import { twitterAccounts, twitterPosts } from "@/lib/db/schema"
+import { twitterAccounts, twitterPosts, users } from "@/lib/db/schema"
 import { eq, and } from "drizzle-orm"
+import { hasAccess } from "@/lib/access"
 
 interface PublishRequest {
   postId: string
@@ -52,6 +53,17 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
     const userId = session.user.id
+
+    // Require an active subscription/trial to publish (parity with LinkedIn publish;
+    // otherwise a lapsed user with a valid X token could keep publishing for free).
+    const [subUser] = await db
+      .select({ subscriptionStatus: users.subscriptionStatus, subscriptionPlan: users.subscriptionPlan, trialEndsAt: users.trialEndsAt })
+      .from(users)
+      .where(eq(users.id, userId))
+      .limit(1)
+    if (!hasAccess({ subscriptionStatus: subUser?.subscriptionStatus ?? null, subscriptionPlan: subUser?.subscriptionPlan ?? null, trialEndsAt: subUser?.trialEndsAt ?? null })) {
+      return NextResponse.json({ error: "subscription_required", message: "Your subscription has ended. Reactivate to publish." }, { status: 403 })
+    }
 
     const body = await req.json() as PublishRequest
     const { postId } = body
