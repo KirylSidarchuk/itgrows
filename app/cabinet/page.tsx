@@ -1970,7 +1970,7 @@ function LinkedInPageContent() {
                 <p className="text-xs text-slate-600 mb-4">billed monthly</p>
                 <p className="text-sm font-semibold text-slate-700 mb-3">Personal + Company growth</p>
                 <ul className="text-sm text-slate-600 space-y-2 mb-6 flex-1">
-                  <li className="flex items-center gap-2"><span className="text-green-500 font-bold">✓</span> LinkedIn + X + Company X</li>
+                  <li className="flex items-center gap-2"><span className="text-green-500 font-bold">✓</span> LinkedIn + Company Page + X + Company X</li>
                   <li className="flex items-center gap-2"><span className="text-green-500 font-bold">✓</span> Daily posts on every account — 1 per day each</li>
                   <li className="flex items-center gap-2"><span className="text-green-500 font-bold">✓</span> Auto-scheduling</li>
                   <li className="flex items-center gap-2"><span className="text-green-500 font-bold">✓</span> AI-generated images</li>
