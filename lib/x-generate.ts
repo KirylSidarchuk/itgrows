@@ -118,10 +118,10 @@ Generate ${maxPosts} engaging tweets that feel authentic and personal.
 
 RULES:
 1. Each tweet must be under 280 characters (including hashtags).
-2. Never invent statistics, case studies, or fabricated claims.
-3. Write in the first person — real opinions and observations.
+2. Never invent statistics, case studies, fabricated claims, or specific personal events/anecdotes (no "back in 2021…", "last week a client…", "we grew revenue 3x…"). If a concrete detail wasn't provided, write from general principle and observation instead — never make one up.
+3. Write in the first person — real opinions and observations, framed as a general reflection ("I've noticed…", "In my experience…"), not an invented specific event.
 4. Include 2-3 relevant hashtags per tweet.
-5. Mix formats: insight/tip, personal take, question to audience, mini-story, bold statement.
+5. Mix formats: insight/tip, personal take, question to audience, a principle or lesson (not a made-up story), bold statement.
 6. No generic marketing language or sales pitches.
 
 Return ONLY a valid JSON array with exactly ${maxPosts} objects. Each object must have:

@@ -3,7 +3,7 @@ import { db } from "@/lib/db"
 import { ghostModeLogs } from "@/lib/db/schema"
 import { getClientIP, checkGhostGlobalDailyCap } from "@/lib/rate-limit"
 import { openaiChat, openaiGenerateImage } from "@/lib/llm-client"
-import { eq, sql } from "drizzle-orm"
+import { eq, and, sql } from "drizzle-orm"
 
 export const maxDuration = 120
 
@@ -82,12 +82,14 @@ async function generateImageForPost(postContent: string): Promise<string | null>
 export async function POST(req: NextRequest) {
   const startTime = Date.now()
 
-  // DB-based lifetime rate limiting: max 2 requests per IP address, all time
+  // DB-based lifetime rate limiting: max 2 SUCCESSFUL previews per IP, all time.
+  // Count only success=true so a user whose attempts failed (LLM timeout/parse error)
+  // isn't permanently locked out having never received a preview.
   const clientIP = getClientIP(req)
   const countResult = await db
     .select({ count: sql<number>`count(*)` })
     .from(ghostModeLogs)
-    .where(eq(ghostModeLogs.ip, clientIP))
+    .where(and(eq(ghostModeLogs.ip, clientIP), eq(ghostModeLogs.success, true)))
   const ipCount = Number(countResult[0]?.count ?? 0)
   if (ipCount >= 2) {
     db.insert(ghostModeLogs).values({ success: false, error: "ip_lifetime_limited", durationMs: Date.now() - startTime, ip: clientIP }).catch(() => {})
