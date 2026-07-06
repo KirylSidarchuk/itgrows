@@ -8,15 +8,17 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
   const type = searchParams.get("type") === "company" ? "company" : "personal"
 
-  // Two separate LinkedIn apps: a PERSONAL app (Sign In with OpenID Connect + Share on
-  // LinkedIn → member scopes) and a COMPANY app (Community Management API → organization
-  // scopes). Each app is only approved for its own Products — sending an app a scope it
-  // lacks the Product for triggers LinkedIn's "Bummer, something went wrong". So the
-  // personal flow must NOT request org scopes, and the company flow must use the company app.
+  // Two separate LinkedIn apps, each approved only for its own Products (sending an app a
+  // scope it lacks the Product for triggers LinkedIn's "Bummer, something went wrong"):
+  //   • COMPANY app  → Community Management API (org scopes). This is the existing
+  //     LINKEDIN_CLIENT_ID/SECRET (set up for Company Pages), left untouched.
+  //   • PERSONAL app → Sign In with OpenID Connect + Share on LinkedIn (member scopes),
+  //     configured via LINKEDIN_PERSONAL_CLIENT_ID/SECRET. Falls back to LINKEDIN_CLIENT_ID
+  //     so behaviour is unchanged until the personal app vars are added in env.
   const isCompany = type === "company"
   const clientId = isCompany
-    ? (process.env.LINKEDIN_COMPANY_CLIENT_ID ?? process.env.LINKEDIN_CLIENT_ID!)
-    : process.env.LINKEDIN_CLIENT_ID!
+    ? process.env.LINKEDIN_CLIENT_ID!
+    : (process.env.LINKEDIN_PERSONAL_CLIENT_ID ?? process.env.LINKEDIN_CLIENT_ID!)
   const scope = isCompany
     ? "r_organization_social rw_organization_admin w_organization_social"
     : "openid profile email w_member_social"

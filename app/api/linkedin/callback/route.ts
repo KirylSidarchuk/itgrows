@@ -32,13 +32,15 @@ export async function GET(req: NextRequest) {
         grant_type: "authorization_code",
         code,
         redirect_uri: `${process.env.NEXTAUTH_URL}/api/linkedin/callback`,
-        // Must exchange with the SAME app the auth request used (personal vs company).
+        // Must exchange with the SAME app the auth request used. Company = the existing
+        // LINKEDIN_CLIENT_ID/SECRET (unchanged); personal = LINKEDIN_PERSONAL_CLIENT_ID/SECRET
+        // with fallback to the existing vars so nothing changes until they're added.
         client_id: connectType === "company"
-          ? (process.env.LINKEDIN_COMPANY_CLIENT_ID ?? process.env.LINKEDIN_CLIENT_ID!)
-          : process.env.LINKEDIN_CLIENT_ID!,
+          ? process.env.LINKEDIN_CLIENT_ID!
+          : (process.env.LINKEDIN_PERSONAL_CLIENT_ID ?? process.env.LINKEDIN_CLIENT_ID!),
         client_secret: connectType === "company"
-          ? (process.env.LINKEDIN_COMPANY_CLIENT_SECRET ?? process.env.LINKEDIN_CLIENT_SECRET!)
-          : process.env.LINKEDIN_CLIENT_SECRET!,
+          ? process.env.LINKEDIN_CLIENT_SECRET!
+          : (process.env.LINKEDIN_PERSONAL_CLIENT_SECRET ?? process.env.LINKEDIN_CLIENT_SECRET!),
       }),
     })
 
