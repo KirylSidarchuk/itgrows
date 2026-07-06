@@ -5,11 +5,11 @@ export function hasAccess(user: {
   subscriptionPlan: string | null
   trialEndsAt: Date | null
 }): boolean {
+  // Access requires a real Stripe subscription (trialing counts — the trial is a
+  // card-required Stripe trial now). The legacy cardless `trialEndsAt` grant was
+  // removed: trials no longer exist without a Stripe subscription.
   const active = user.subscriptionStatus === "active" || user.subscriptionStatus === "past_due" || user.subscriptionStatus === "trialing"
   if (active && user.subscriptionPlan) {
-    return true
-  }
-  if (user.trialEndsAt && user.trialEndsAt > new Date()) {
     return true
   }
   return false
@@ -26,9 +26,6 @@ export function getAccountSlots(user: {
     if (user.subscriptionPlan === "duo" || user.subscriptionPlan === "duo_annual") return 2
     if (user.subscriptionPlan === "personal" || user.subscriptionPlan === "personal_annual" || user.subscriptionPlan === "personal_annual_discount") return 1
     if (user.subscriptionPlan === "company" || user.subscriptionPlan === "company_annual") return 1
-  }
-  if (user.trialEndsAt && user.trialEndsAt > new Date()) {
-    return 1
   }
   return 0
 }
