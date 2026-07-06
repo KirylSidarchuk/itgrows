@@ -43,7 +43,7 @@ export default function PrivacyPage() {
             <ul className="list-disc list-inside space-y-2 ml-2">
               <li><strong>Email address</strong> — used for account creation, authentication, and service communications.</li>
               <li><strong>Website URL</strong> — used to analyze your site niche and generate relevant content.</li>
-              <li><strong>Generated articles</strong> — content we create on your behalf is stored to enable publishing and scheduling.</li>
+              <li><strong>Generated posts</strong> — content we create on your behalf is stored to enable publishing and scheduling.</li>
               <li><strong>Usage data</strong> — anonymized logs about how you interact with the platform (pages visited, features used).</li>
               <li><strong>Billing information</strong> — handled exclusively by Stripe; we do not store your payment card details.</li>
             </ul>
@@ -53,7 +53,7 @@ export default function PrivacyPage() {
             <h2 className="text-xl font-semibold text-[#1b1916] mb-3">3. How We Use Your Data</h2>
             <ul className="list-disc list-inside space-y-2 ml-2">
               <li>To provide and improve the ItGrows.ai service.</li>
-              <li>To generate SEO articles, social posts, and other content tailored to your website.</li>
+              <li>To generate social posts tailored to your voice, audience, and goals.</li>
               <li>To send transactional emails (account verification, billing receipts).</li>
               <li>To communicate important service updates.</li>
               <li>To detect and prevent abuse or unauthorized access.</li>

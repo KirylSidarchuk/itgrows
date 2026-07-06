@@ -24,13 +24,13 @@ export default function TermsPage() {
 
       <main className="max-w-3xl mx-auto px-6 py-16">
         <h1 className="text-4xl font-bold mb-2 text-[#1b1916]">Terms of Service</h1>
-        <p className="text-slate-500 text-sm mb-10">Last updated: April 2026</p>
+        <p className="text-slate-500 text-sm mb-10">Last updated: July 2026</p>
 
         <div className="space-y-10 text-slate-700 leading-relaxed">
           <section>
             <h2 className="text-xl font-semibold text-[#1b1916] mb-3">1. About ItGrows.ai</h2>
             <p>
-              ItGrows.ai is an AI-powered LinkedIn automation platform that writes and auto-publishes LinkedIn posts on your behalf. By accessing or using ItGrows.ai, you agree to be bound by these Terms of Service.
+              ItGrows.ai is an AI-powered social media automation platform that writes and auto-publishes posts to your LinkedIn (personal profile and Company Pages) and X accounts on your behalf. By accessing or using ItGrows.ai, you agree to be bound by these Terms of Service.
             </p>
             <p className="mt-3">
               These terms apply to all users, including free trial users and paid subscribers.
@@ -52,13 +52,15 @@ export default function TermsPage() {
 
           <section>
             <h2 className="text-xl font-semibold text-[#1b1916] mb-3">3. Subscription and Payment</h2>
-            <p>ItGrows.ai offers the following paid plans:</p>
+            <p>ItGrows.ai offers the following paid plans (billed monthly, with annual billing available at a discount):</p>
             <ul className="list-disc list-inside space-y-2 ml-2 mt-2">
-              <li><strong>Monthly Plan — $99/month:</strong> Full access billed monthly. Cancel anytime.</li>
-              <li><strong>Annual Plan — $999/year:</strong> Full access billed annually (~$83/month). Saves ~16% vs monthly.</li>
+              <li><strong>Personal — $49/month:</strong> one account (LinkedIn or X).</li>
+              <li><strong>Duo — $99/month:</strong> any two accounts.</li>
+              <li><strong>All-in — $199/month:</strong> LinkedIn personal + a LinkedIn Company Page + X personal + X company.</li>
+              <li><strong>Company Pages — $99 / $149 / $299/month:</strong> run one, two, or unlimited companies (LinkedIn Company Page + X) on autopilot.</li>
             </ul>
             <p className="mt-3">
-              New users receive 15 free article generations (trial). A paid subscription is required to continue after the trial limit.
+              All plans start with a <strong>14-day free trial</strong>. A valid payment method is required to start the trial; you are not charged until the trial ends. You can cancel anytime before the trial ends from your dashboard and you will not be charged.
             </p>
             <p className="mt-3">
               All payments are processed via Stripe. Subscriptions renew automatically unless cancelled before the renewal date. By subscribing, you authorize us to charge your payment method on a recurring basis.
@@ -111,7 +113,7 @@ export default function TermsPage() {
           <section>
             <h2 className="text-xl font-semibold text-[#1b1916] mb-3">8. Limitation of Liability</h2>
             <p>
-              ItGrows.ai is provided &quot;as is&quot; without warranties of any kind, express or implied. We do not guarantee that AI-generated content will achieve specific SEO rankings, traffic, or business results.
+              ItGrows.ai is provided &quot;as is&quot; without warranties of any kind, express or implied. We do not guarantee that AI-generated content will achieve specific engagement, follower growth, or business results.
             </p>
             <p className="mt-3">
               To the maximum extent permitted by law, ItGrows.ai shall not be liable for any indirect, incidental, special, consequential, or punitive damages, including loss of profits, data, or business opportunity, arising from your use of the service.
