@@ -266,6 +266,7 @@ export const emailPins = pgTable("email_pins", {
   name: text("name"),
   expiresAt: timestamp("expires_at").notNull(),
   used: boolean("used").notNull().default(false),
+  attempts: integer("attempts").notNull().default(0),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 }, (t) => [index("email_pins_email_idx").on(t.email)])
 

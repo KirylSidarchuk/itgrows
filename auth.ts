@@ -2,7 +2,7 @@ import NextAuth from "next-auth"
 import Credentials from "next-auth/providers/credentials"
 import { db } from "@/lib/db"
 import { users, emailPins } from "@/lib/db/schema"
-import { eq, and, gt } from "drizzle-orm"
+import { eq, and, gt, desc } from "drizzle-orm"
 import bcrypt from "bcryptjs"
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
@@ -52,23 +52,41 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         const email = (credentials.email as string).toLowerCase().trim()
         const pin = credentials.pin as string
 
-        // Verify PIN
+        const MAX_PIN_ATTEMPTS = 5
+
+        // Fetch the latest valid, unused PIN for this email (by email, NOT by pin — so we can
+        // count wrong guesses and lock out brute-force of the 6-digit space).
         const [pinRecord] = await db
           .select()
           .from(emailPins)
           .where(
             and(
               eq(emailPins.email, email),
-              eq(emailPins.pin, pin),
               eq(emailPins.used, false),
               gt(emailPins.expiresAt, new Date())
             )
           )
+          .orderBy(desc(emailPins.createdAt))
           .limit(1)
 
         if (!pinRecord) return null
 
-        // Mark PIN as used
+        // Too many wrong guesses on this PIN → burn it. The attacker must then request a new
+        // PIN, which send-pin rate-limits (60s), making brute-force infeasible.
+        if ((pinRecord.attempts ?? 0) >= MAX_PIN_ATTEMPTS) {
+          await db.update(emailPins).set({ used: true }).where(eq(emailPins.id, pinRecord.id))
+          return null
+        }
+
+        if (pinRecord.pin !== pin) {
+          await db
+            .update(emailPins)
+            .set({ attempts: (pinRecord.attempts ?? 0) + 1 })
+            .where(eq(emailPins.id, pinRecord.id))
+          return null
+        }
+
+        // Correct PIN — mark used
         await db
           .update(emailPins)
           .set({ used: true })
