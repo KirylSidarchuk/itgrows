@@ -189,7 +189,11 @@ export default function CompanyPage() {
             <Link href="/signup"><Button size="lg" className="bg-violet-600 hover:bg-violet-500 text-white px-9 py-4 text-base sm:text-lg rounded-xl font-semibold shadow-lg shadow-violet-600/30">Start 14-day free trial</Button></Link>
             <a href="#how"><Button size="lg" variant="ghost" className="text-slate-600 hover:text-[#1b1916] px-6 py-4 text-base rounded-xl">See how it works</Button></a>
           </div>
-          <p className="mt-4 text-xs sm:text-sm text-slate-500 font-medium">No card required · Official LinkedIn &amp; X API · You approve every post</p>
+          <div className="mt-5 flex flex-wrap justify-center items-center gap-2 text-xs sm:text-sm">
+            <span className="inline-flex items-center gap-1.5 font-semibold text-violet-900 bg-violet-50 border border-violet-200 rounded-full px-3 py-1.5 shadow-sm">🛡️ Approved by LinkedIn — official API</span>
+            <span className="inline-flex items-center gap-1.5 font-medium text-slate-700 bg-white border border-black/10 rounded-full px-3 py-1.5"><span className="text-green-600">✓</span> No card required</span>
+            <span className="inline-flex items-center gap-1.5 font-medium text-slate-700 bg-white border border-black/10 rounded-full px-3 py-1.5"><span className="text-green-600">✓</span> You approve every post</span>
+          </div>
 
           {/* Company ghost generator */}
           <div className="mt-10 max-w-3xl mx-auto text-left">

@@ -359,11 +359,11 @@ export default function PersonalPage() {
           <p className="text-base sm:text-xl text-slate-600 max-w-xl mx-auto mb-6 sm:mb-8 leading-relaxed">
             Set your voice once. Every day ItGrows writes and publishes <span className="text-violet-600 font-semibold">in your voice</span> to your <span className="text-violet-600 font-semibold">LinkedIn, company page, X, and blog</span>. Review in 30 seconds, or go <span className="text-violet-600 font-semibold">full autopilot</span> once you trust it. Try it below, no signup.
           </p>
-          {/* Trust bar — the fresh 2026 wedge: competitors got banned; we're on the official API */}
-          <div className="flex flex-wrap justify-center items-center gap-x-4 gap-y-2 mb-8 text-xs sm:text-sm text-slate-600">
-            <span className="inline-flex items-center gap-1.5 font-medium"><span className="text-green-600">✓</span> Official LinkedIn &amp; X API — ban-safe</span>
-            <span className="inline-flex items-center gap-1.5 font-medium"><span className="text-green-600">✓</span> You approve every post</span>
-            <span className="inline-flex items-center gap-1.5 font-medium"><span className="text-green-600">✓</span> Replaces a $2–3k/mo ghostwriter</span>
+          {/* Trust bar — the fresh 2026 wedge: competitors got banned; we're the approved, official-API app */}
+          <div className="flex flex-wrap justify-center items-center gap-2 mb-8 text-xs sm:text-sm">
+            <span className="inline-flex items-center gap-1.5 font-semibold text-violet-900 bg-violet-50 border border-violet-200 rounded-full px-3 py-1.5 shadow-sm">🛡️ Approved by LinkedIn — official API, ban-safe</span>
+            <span className="inline-flex items-center gap-1.5 font-medium text-slate-700 bg-white border border-black/10 rounded-full px-3 py-1.5"><span className="text-green-600">✓</span> You approve every post</span>
+            <span className="inline-flex items-center gap-1.5 font-medium text-slate-700 bg-white border border-black/10 rounded-full px-3 py-1.5"><span className="text-green-600">✓</span> Replaces a $2–3k/mo ghostwriter</span>
           </div>
           <div className="flex justify-center items-center">
             <div className="relative w-full sm:w-auto">
