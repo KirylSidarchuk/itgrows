@@ -4,6 +4,7 @@ import { auth } from "@/auth"
 import { db } from "@/lib/db"
 import { users } from "@/lib/db/schema"
 import { eq } from "drizzle-orm"
+import { pickMainSubscription } from "@/lib/stripe-plans"
 
 function getStripe() {
   const key = process.env.STRIPE_SECRET_KEY
@@ -37,9 +38,8 @@ export async function POST() {
     limit: 10,
   })
 
-  const cancelable = subscriptions.data.find((s) =>
-    ["active", "trialing", "past_due"].includes(s.status)
-  )
+  // Target the MAIN (personal) subscription, not a company-pages add-on sub on the same customer.
+  const cancelable = pickMainSubscription(subscriptions.data)
   if (!cancelable) {
     return NextResponse.json({ error: "No active subscription found" }, { status: 400 })
   }
