@@ -28,7 +28,7 @@ const steps = [
 const faqs = [
   {
     q: "Will my followers know my posts are AI-generated?",
-    a: "Only if you tell them. ItGrows writes in your voice based on your profile, niche, and communication style — not generic AI copy. Most followers can't tell the difference. That said, many of our users choose to disclose AI assistance. The FTC recommends transparency about AI-assisted content, which we support.",
+    a: "Only if you tell them. ItGrows writes in your voice based on your profile, niche, and communication style — not generic AI copy — so the output reads as you, not as a bot. We recommend disclosing AI assistance where appropriate; the FTC encourages transparency about AI-assisted content, which we support.",
     defaultOpen: true,
   },
   {
@@ -46,7 +46,7 @@ const faqs = [
   },
   {
     q: "Is this against LinkedIn's or X's Terms of Service?",
-    a: "No. We use official, approved APIs from both platforms. Posting via third-party tools is explicitly allowed by both LinkedIn and X. Thousands of businesses use tools like Buffer, Hootsuite, and Sprout Social — ItGrows operates the same way.",
+    a: "No. We use official, approved APIs from both platforms. Posting via third-party tools is explicitly allowed by both LinkedIn and X. Thousands of businesses use approved, API-based tools like Buffer, Hootsuite, and Sprout Social — ItGrows uses the same official, approved-API approach.",
   },
   {
     q: "Do I need a credit card to start?",
@@ -361,9 +361,9 @@ export default function PersonalPage() {
           </p>
           {/* Trust bar — the fresh 2026 wedge: competitors got banned; we're the approved, official-API app */}
           <div className="flex flex-wrap justify-center items-center gap-2 mb-8 text-xs sm:text-sm">
-            <span className="inline-flex items-center gap-1.5 font-semibold text-violet-900 bg-violet-50 border border-violet-200 rounded-full px-3 py-1.5 shadow-sm">🛡️ Approved by LinkedIn — official API, ban-safe</span>
+            <span className="inline-flex items-center gap-1.5 font-semibold text-violet-900 bg-violet-50 border border-violet-200 rounded-full px-3 py-1.5 shadow-sm">🛡️ Approved by LinkedIn — official API</span>
             <span className="inline-flex items-center gap-1.5 font-medium text-slate-700 bg-white border border-black/10 rounded-full px-3 py-1.5"><span className="text-green-600">✓</span> You approve every post</span>
-            <span className="inline-flex items-center gap-1.5 font-medium text-slate-700 bg-white border border-black/10 rounded-full px-3 py-1.5"><span className="text-green-600">✓</span> Replaces a $2–3k/mo ghostwriter</span>
+            <span className="inline-flex items-center gap-1.5 font-medium text-slate-700 bg-white border border-black/10 rounded-full px-3 py-1.5"><span className="text-green-600">✓</span> Replaces a $2,500/mo ghostwriter</span>
           </div>
           <div className="flex justify-center items-center">
             <div className="relative w-full sm:w-auto">
@@ -539,45 +539,28 @@ export default function PersonalPage() {
                   </div>
                 </div>
 
-                {/* Remaining posts — blurred behind a signup gate (unlock at peak interest) */}
-                {ghostPosts.length > 1 && (
-                  <div className="relative">
-                    <div className="space-y-4 blur-[6px] select-none pointer-events-none" aria-hidden="true">
-                      {ghostPosts.slice(1).map((post, i) => (
-                        <div key={i} className="bg-white border border-black/10 rounded-2xl overflow-hidden shadow-sm">
-                          {ghostImages[i + 1] && (
-                            <img src={ghostImages[i + 1]!} alt="" className="w-full h-48 object-cover" />
-                          )}
-                          <div className="p-5 sm:p-6">
-                            <div className="flex items-center gap-3 mb-4">
-                              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-500 to-pink-500 flex-shrink-0" />
-                              <div><div className="font-semibold text-sm text-[#1b1916]">You</div><div className="text-xs text-slate-400">LinkedIn · Just now</div></div>
-                            </div>
-                            <p className="text-sm text-[#1b1916] whitespace-pre-wrap leading-relaxed">{post}</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                    <div className="absolute inset-0 flex items-center justify-center p-4">
-                      <div className="text-center bg-white/95 backdrop-blur-sm rounded-2xl border border-violet-200 shadow-xl p-6 max-w-sm">
-                        <div className="text-3xl mb-2">🔓</div>
-                        <p className="font-bold text-[#1b1916] mb-1">{ghostPosts.length - 1} more post{ghostPosts.length - 1 !== 1 ? "s" : ""} ready for you</p>
-                        <p className="text-sm text-slate-600 mb-1">Create your free account to unlock all {ghostPosts.length} — and put them on autopilot.</p>
-                        <p className="text-xs text-slate-500 mb-4">The work of a <span className="font-semibold text-slate-700">$2,500/mo ghostwriter</span> — for a fraction.</p>
-                        <button onClick={() => { window.location.href = "/signup" }} className="inline-block px-6 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-500 text-white font-semibold text-sm transition-colors">
-                          Unlock my posts →
-                        </button>
-                        <p className="mt-3 text-[11px] text-slate-400 leading-relaxed">✓ In your voice, not generic AI &nbsp;·&nbsp; ✓ Official API, ban-safe &nbsp;·&nbsp; ✓ You approve every post</p>
-                        <p className="mt-1 text-xs text-slate-400">14-day free trial · Cancel anytime</p>
+                {/* Remaining posts — shown in FULL too. The hero promises "see your posts, no
+                    signup", so we keep that promise honestly: no blur, nothing hidden. Signup is
+                    for auto-writing & publishing posts like these daily (the real value). */}
+                {ghostPosts.slice(1).map((post, i) => (
+                  <div key={i} className="bg-white border border-black/10 rounded-2xl overflow-hidden shadow-sm">
+                    {ghostImages[i + 1] && (
+                      <img src={ghostImages[i + 1]!} alt="Post cover" className="w-full h-48 object-cover" />
+                    )}
+                    <div className="p-5 sm:p-6">
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-500 to-pink-500 flex items-center justify-center text-white text-sm font-bold flex-shrink-0">Y</div>
+                        <div><div className="font-semibold text-sm text-[#1b1916]">You</div><div className="text-xs text-slate-400">LinkedIn · Just now</div></div>
                       </div>
+                      <p className="text-sm text-[#1b1916] whitespace-pre-wrap leading-relaxed">{post}</p>
                     </div>
                   </div>
-                )}
+                ))}
 
                 <div className="bg-gradient-to-r from-violet-600 to-pink-600 rounded-2xl p-6 sm:p-8 text-center text-white">
-                  <div className="text-2xl font-extrabold mb-2">Want these posted for you every day?</div>
-                  <p className="text-white/80 text-sm mb-1">Start your 14-day free trial. Cancel anytime.</p>
-                  <p className="text-white/70 text-xs mb-5">✓ These posts are saved — create your account and they&apos;re waiting in your dashboard.</p>
+                  <div className="text-2xl font-extrabold mb-2">These are yours — want them published for you every day?</div>
+                  <p className="text-white/80 text-sm mb-1">You just saw them free, no signup. Sign up to auto-write &amp; publish posts like these daily to your LinkedIn &amp; X — on autopilot.</p>
+                  <p className="text-white/70 text-xs mb-5">✓ 14-day free trial · Cancel anytime &nbsp;·&nbsp; ✓ These posts are saved — waiting in your dashboard.</p>
                   <button
                     onClick={() => { window.location.href = "/signup" }}
                     className="inline-block px-8 py-3 rounded-xl bg-white text-violet-600 font-bold text-sm hover:bg-violet-50 transition-colors"
@@ -764,7 +747,7 @@ export default function PersonalPage() {
               <p className="text-slate-500 text-sm leading-relaxed">Posts publish automatically on your schedule. Clients start recognising your name. Inbound leads, speaking invites, partnership requests — consistency compounds.</p>
               <div className="mt-6 flex items-center gap-2 text-xs text-emerald-600 font-medium">
                 <svg className="w-4 h-4 flex-shrink-0" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7.5" stroke="#10b981" strokeWidth="1"/><path d="M5 8l2 2 4-4" stroke="#10b981" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                Results in 30 days
+                Show up daily
               </div>
             </div>
           </div>
@@ -1066,7 +1049,7 @@ export default function PersonalPage() {
                   </div>
                 </div>
                 <CardTitle className="text-[#1b1916] text-xl">All-in</CardTitle>
-                <p className="text-slate-500 text-sm mt-1">All 4 accounts · LinkedIn personal + Company Page + X personal + X company</p>
+                <p className="text-slate-500 text-sm mt-1">Everything · LinkedIn personal + Company Page + X personal + X company</p>
                 <div className="flex items-end gap-1 mt-4 justify-center">
                   <span className="text-5xl font-extrabold text-[#1b1916]">{billingCycle === "annual" ? "$139" : "$199"}</span>
                   <span className="text-slate-500 mb-2">/mo</span>
@@ -1276,20 +1259,20 @@ export default function PersonalPage() {
               <div className="border border-black/10 rounded-xl p-5 flex flex-col gap-3 hover:border-violet-400 transition-colors cursor-pointer" onClick={() => { setShowLandingPlanModal(false); handleCheckoutWithPlatform("personal") }}>
                 <div className="font-bold text-[#1b1916]">Personal</div>
                 <div className="text-2xl font-extrabold text-violet-600">$49<span className="text-sm font-normal text-slate-400">/mo</span></div>
-                <div className="text-sm text-slate-600">1 platform · 1 account</div>
+                <div className="text-sm text-slate-600">1 account · LinkedIn or X</div>
                 <button className="mt-auto w-full py-2 rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-sm font-semibold transition-colors">Start Free Trial</button>
               </div>
               <div className="border-2 border-violet-500 rounded-xl p-5 flex flex-col gap-3 cursor-pointer relative" onClick={() => { setShowLandingPlanModal(false); handleCheckoutWithPlatform("duo") }}>
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-violet-600 text-white text-xs font-bold px-3 py-1 rounded-full">Most Popular</div>
                 <div className="font-bold text-[#1b1916]">Duo</div>
                 <div className="text-2xl font-extrabold text-violet-600">$99<span className="text-sm font-normal text-slate-400">/mo</span></div>
-                <div className="text-sm text-slate-600">2 platforms · 2 accounts</div>
+                <div className="text-sm text-slate-600">2 accounts · LinkedIn + X</div>
                 <button className="mt-auto w-full py-2 rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-sm font-semibold transition-colors">Start Free Trial</button>
               </div>
               <div className="border border-black/10 rounded-xl p-5 flex flex-col gap-3 hover:border-violet-400 transition-colors cursor-pointer" onClick={() => { setShowLandingPlanModal(false); handleCheckoutWithPlatform("allin") }}>
                 <div className="font-bold text-[#1b1916]">All-in</div>
                 <div className="text-2xl font-extrabold text-violet-600">$199<span className="text-sm font-normal text-slate-400">/mo</span></div>
-                <div className="text-sm text-slate-600">All platforms · Unlimited</div>
+                <div className="text-sm text-slate-600">All 3 accounts + Company Page</div>
                 <button className="mt-auto w-full py-2 rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-sm font-semibold transition-colors">Start Free Trial</button>
               </div>
             </div>
