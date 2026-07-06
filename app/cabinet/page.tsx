@@ -1790,6 +1790,9 @@ function LinkedInPageContent() {
   const connectedAccountCount = (accounts.length > 0 ? 1 : 0) + (xPersonalAccount ? 1 : 0) + (xCompanyAccount ? 1 : 0)
   const canConnectMore = hasPersonalPlan && connectedAccountCount < accountSlots
   const upgradeNeeded = hasPersonalPlan && connectedAccountCount >= accountSlots
+  // A company-pages plan ($99/$149/$299) is a standalone bundle that includes the company's X
+  // account too, so company X can be connected on a company plan regardless of personal-plan slots.
+  const hasCompanyPlan = !!companyPagePlan
 
   const trialDaysLeft = (() => {
     if (!trialEndsAt) return null
@@ -2857,7 +2860,7 @@ function LinkedInPageContent() {
                             )}
                           </div>
                         </div>
-                      ) : upgradeNeeded ? (
+                      ) : (upgradeNeeded && !hasCompanyPlan) ? (
                         <div className="flex flex-col items-start gap-2">
                           <p className="text-xs text-slate-600">Company X account not connected</p>
                           <p className="text-xs text-amber-600 font-medium">Upgrade to Duo/All-in to connect more accounts</p>

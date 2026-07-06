@@ -14,7 +14,7 @@ const XIcon = ({ className = "w-5 h-5" }: { className?: string }) => (
 const companyFaqs = [
   {
     q: "Can you really auto-publish to our company's LinkedIn Page?",
-    a: "Yes. ItGrows is approved by LinkedIn for the Community Management API — the official, vetted access that lets us publish to Company Pages on your behalf. Most AI content tools never get this approval, so they can only touch personal profiles.",
+    a: "Yes. ItGrows is approved by LinkedIn for the Community Management API — the official, vetted access that lets us publish to Company Pages on your behalf. Most AI content tools never get this approval, so they can only touch personal profiles. Your company's X account is included in every plan too — we run it on the same autopilot.",
     defaultOpen: true,
   },
   {
@@ -443,26 +443,26 @@ export default function CompanyPage() {
               </div>
             </div>
           </div>
-          <h2 className="text-3xl sm:text-4xl font-bold mb-3">Pricing for your <span className="bg-gradient-to-r from-violet-600 via-pink-500 to-cyan-500 bg-clip-text text-transparent">company pages</span></h2>
-          <p className="text-slate-600 text-base mb-10">Run your LinkedIn Company Pages on autopilot — pick how many.</p>
+          <h2 className="text-3xl sm:text-4xl font-bold mb-3">Pricing for your <span className="bg-gradient-to-r from-violet-600 via-pink-500 to-cyan-500 bg-clip-text text-transparent">company</span></h2>
+          <p className="text-slate-600 text-base mb-10">Run your company&apos;s LinkedIn Page and X account on autopilot — pick how many companies.</p>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 text-left items-stretch">
             <div className="bg-white rounded-2xl border border-black/10 p-6 flex flex-col">
               <div className="text-sm font-semibold text-violet-600 uppercase tracking-wide mb-1">Single</div>
               <div className="flex items-end gap-1 mb-2"><span className="text-4xl font-extrabold">$99</span><span className="text-slate-500 mb-1">/mo</span></div>
-              <p className="text-slate-600 text-sm mb-6 flex-1">One LinkedIn Company Page, fully automated.</p>
+              <p className="text-slate-600 text-sm mb-6 flex-1">One company — LinkedIn Company Page + X account, fully automated.</p>
               <Button onClick={() => handleCompanyPlan("single")} className="w-full bg-white border border-violet-300 text-violet-700 hover:bg-violet-50 py-3 rounded-xl font-semibold">Start free trial</Button>
             </div>
             <div className="relative bg-white rounded-2xl border-2 border-violet-400 p-6 flex flex-col shadow-sm">
               <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-violet-600 text-white text-xs font-semibold px-3 py-1 rounded-full">Best value</div>
               <div className="text-sm font-semibold text-violet-600 uppercase tracking-wide mb-1">Two pages</div>
               <div className="flex items-end gap-1 mb-2"><span className="text-4xl font-extrabold">$149</span><span className="text-slate-500 mb-1">/mo</span></div>
-              <p className="text-slate-600 text-sm mb-6 flex-1">Two Company Pages — less than two singles.</p>
+              <p className="text-slate-600 text-sm mb-6 flex-1">Two companies — LinkedIn Page + X each. Less than two singles.</p>
               <Button onClick={() => handleCompanyPlan("two")} className="w-full bg-violet-600 hover:bg-violet-500 text-white py-3 rounded-xl font-semibold">Start free trial</Button>
             </div>
             <div className="bg-white rounded-2xl border border-black/10 p-6 flex flex-col">
               <div className="text-sm font-semibold text-violet-600 uppercase tracking-wide mb-1">Unlimited</div>
               <div className="flex items-end gap-1 mb-2"><span className="text-4xl font-extrabold">$299</span><span className="text-slate-500 mb-1">/mo</span></div>
-              <p className="text-slate-600 text-sm mb-6 flex-1">Any number of Company Pages, one flat price.</p>
+              <p className="text-slate-600 text-sm mb-6 flex-1">Any number of companies — LinkedIn Page + X each, one flat price.</p>
               <Button onClick={() => handleCompanyPlan("unlimited")} className="w-full bg-white border border-violet-300 text-violet-700 hover:bg-violet-50 py-3 rounded-xl font-semibold">Start free trial</Button>
             </div>
           </div>

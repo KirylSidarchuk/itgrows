@@ -74,11 +74,24 @@ export async function POST(req: NextRequest) {
             break
           }
 
-          // Handle Company Page PLAN subscription (Single/Two/Unlimited) — set the user's quota plan
+          // Handle Company Page PLAN subscription (Single/Two/Unlimited). Standalone bundle:
+          // the company's LinkedIn Page(s) + X. Grant access (subscriptionStatus/plan) so the user
+          // can generate & publish — but NEVER overwrite an existing personal plan (a buyer who has
+          // a personal plan AND a company add-on keeps their personal plan).
           if (plan === "company_page_plan" && userId) {
+            const isTrialing = subscription.status === "trialing"
+            const [existing] = await db
+              .select({ subscriptionPlan: users.subscriptionPlan })
+              .from(users).where(eq(users.id, userId)).limit(1)
             await db
               .update(users)
-              .set({ companyPagePlan: subscription.metadata?.tier ?? null })
+              .set({
+                companyPagePlan: subscription.metadata?.tier ?? null,
+                ...(existing?.subscriptionPlan ? {} : {
+                  subscriptionStatus: isTrialing ? "trialing" : "active",
+                  subscriptionPlan: "company",
+                }),
+              })
               .where(eq(users.id, userId))
             break
           }
@@ -132,14 +145,26 @@ export async function POST(req: NextRequest) {
           break
         }
 
-        // Handle Company Page PLAN subscription update — keep the user's quota plan in sync
+        // Handle Company Page PLAN subscription update — keep quota + access in sync
         if (subscription.metadata?.plan === "company_page_plan") {
           const uid = subscription.metadata?.userId
           if (uid) {
             const accessible = ["active", "trialing"].includes(subscription.status)
+            const [existing] = await db
+              .select({ subscriptionPlan: users.subscriptionPlan })
+              .from(users).where(eq(users.id, uid)).limit(1)
+            // Only manage subscriptionStatus/plan for company-primary users (plan "company" or
+            // none) — never disturb someone whose primary plan is a personal one.
+            const companyPrimary = !existing?.subscriptionPlan || existing.subscriptionPlan === "company"
             await db
               .update(users)
-              .set({ companyPagePlan: accessible ? (subscription.metadata?.tier ?? null) : null })
+              .set({
+                companyPagePlan: accessible ? (subscription.metadata?.tier ?? null) : null,
+                ...(companyPrimary ? {
+                  subscriptionStatus: subscription.status === "trialing" ? "trialing" : (accessible ? "active" : "inactive"),
+                  subscriptionPlan: accessible ? "company" : null,
+                } : {}),
+              })
               .where(eq(users.id, uid))
           }
           break
@@ -212,10 +237,19 @@ export async function POST(req: NextRequest) {
           break
         }
 
-        // Handle Company Page PLAN subscription deletion — clear the user's quota plan
+        // Handle Company Page PLAN subscription deletion — clear quota + access (company-primary only)
         if (subscription.metadata?.plan === "company_page_plan") {
           const uid = subscription.metadata?.userId
-          if (uid) await db.update(users).set({ companyPagePlan: null }).where(eq(users.id, uid))
+          if (uid) {
+            const [existing] = await db
+              .select({ subscriptionPlan: users.subscriptionPlan })
+              .from(users).where(eq(users.id, uid)).limit(1)
+            const companyPrimary = !existing?.subscriptionPlan || existing.subscriptionPlan === "company"
+            await db.update(users).set({
+              companyPagePlan: null,
+              ...(companyPrimary ? { subscriptionStatus: "inactive", subscriptionPlan: null } : {}),
+            }).where(eq(users.id, uid))
+          }
           break
         }
 
