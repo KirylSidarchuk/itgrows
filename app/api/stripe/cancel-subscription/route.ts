@@ -30,17 +30,21 @@ export async function POST() {
     return NextResponse.json({ error: "No active subscription" }, { status: 400 })
   }
 
+  // Include trialing / past_due so a user can cancel during their free trial (no charge).
   const subscriptions = await stripe.subscriptions.list({
     customer: user.stripeCustomerId,
-    status: "active",
-    limit: 1,
+    status: "all",
+    limit: 10,
   })
 
-  if (subscriptions.data.length === 0) {
+  const cancelable = subscriptions.data.find((s) =>
+    ["active", "trialing", "past_due"].includes(s.status)
+  )
+  if (!cancelable) {
     return NextResponse.json({ error: "No active subscription found" }, { status: 400 })
   }
 
-  const updated = await stripe.subscriptions.update(subscriptions.data[0].id, {
+  const updated = await stripe.subscriptions.update(cancelable.id, {
     cancel_at_period_end: true,
   })
 

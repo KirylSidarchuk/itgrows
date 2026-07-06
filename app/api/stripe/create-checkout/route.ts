@@ -71,7 +71,8 @@ export async function POST(req: NextRequest) {
     payment_method_types: ["card"],
     line_items: [{ price: priceId, quantity: 1 }],
     mode: "subscription",
-    payment_method_collection: "if_required",
+    // Card required up front to start the 14-day free trial (no charge until it ends).
+    payment_method_collection: "always",
     subscription_data: {
       metadata: { userId: user.id, plan },
       trial_period_days: 14,

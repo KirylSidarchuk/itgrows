@@ -13,7 +13,7 @@ function getStripe() {
 }
 
 // Checkout for a LinkedIn Company Page plan (Single $99 / Two $149 / Unlimited $299).
-// 14-day free trial, no card required — mirrors the main subscription checkout.
+// 14-day free trial, card required up front — mirrors the main subscription checkout.
 export async function POST(req: NextRequest) {
   const stripe = getStripe()
   const session = await auth()
@@ -55,7 +55,8 @@ export async function POST(req: NextRequest) {
     payment_method_types: ["card"],
     line_items: [{ price: priceId, quantity: 1 }],
     mode: "subscription",
-    payment_method_collection: "if_required",
+    // Card required up front to start the 14-day free trial (no charge until it ends).
+    payment_method_collection: "always",
     subscription_data: {
       metadata: { userId: user.id, plan: "company_page_plan", tier },
       trial_period_days: 14,
