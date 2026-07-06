@@ -730,7 +730,7 @@ export default function PersonalPage() {
               <div className="w-11 h-11 rounded-full bg-pink-100 flex items-center justify-center mb-6">
                 <span className="text-pink-500 font-bold text-lg">2</span>
               </div>
-              <h3 className="font-bold text-[#1b1916] text-lg mb-3">AI writes 14 posts for you</h3>
+              <h3 className="font-bold text-[#1b1916] text-lg mb-3">AI writes your posts, daily</h3>
               <p className="text-slate-500 text-sm leading-relaxed">LinkedIn and X posts crafted in your voice — insightful, on-brand, engagement-ready. Review them in 30 seconds or let autopilot handle everything.</p>
               <div className="mt-6 flex items-center gap-2 text-xs text-pink-500 font-medium">
                 <svg className="w-4 h-4 flex-shrink-0" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7.5" stroke="#ec4899" strokeWidth="1"/><path d="M5 8l2 2 4-4" stroke="#ec4899" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
@@ -1011,7 +1011,7 @@ export default function PersonalPage() {
                 </Button>
                 <p className="text-center text-xs text-slate-400">🔒 OAuth secure · Cancel anytime</p>
                 <ul className="space-y-2 pt-1">
-                  {["Any 2 accounts from LinkedIn, X personal, X company", "Official LinkedIn & X API — ban-safe", "Daily posts in your voice", "Platform-specific voice & style", "Unified dashboard for both platforms", "Custom images for every post"].map((item, i) => (
+                  {["Any 2 accounts from LinkedIn, X personal, X company", "Official LinkedIn & X API", "Daily posts in your voice", "Platform-specific voice & style", "Unified dashboard for both platforms", "Custom images for every post"].map((item, i) => (
                     <li key={i} className="flex items-center gap-2 text-sm text-slate-600">
                       <span className="text-violet-600 font-bold">✓</span> {item}
                     </li>

@@ -1897,7 +1897,7 @@ function LinkedInPageContent() {
                     </>
                   )}
                 </div>
-                <p className="text-xs text-slate-600 mb-4">billed monthly</p>
+                <p className="text-xs text-slate-600 mb-4">{billingCycle === "annual" ? "billed annually" : "billed monthly"}</p>
                 <p className="text-sm font-semibold text-slate-700 mb-3">1 platform of your choice</p>
                 <ul className="text-sm text-slate-600 space-y-2 mb-6 flex-1">
                   <li className="flex items-center gap-2"><span className="text-green-500 font-bold">✓</span> LinkedIn or X</li>
@@ -1933,7 +1933,7 @@ function LinkedInPageContent() {
                     </>
                   )}
                 </div>
-                <p className="text-xs text-slate-600 mb-4">billed monthly</p>
+                <p className="text-xs text-slate-600 mb-4">{billingCycle === "annual" ? "billed annually" : "billed monthly"}</p>
                 <p className="text-sm font-semibold text-slate-700 mb-3">LinkedIn + X together</p>
                 <ul className="text-sm text-slate-600 space-y-2 mb-6 flex-1">
                   <li className="flex items-center gap-2"><span className="text-green-500 font-bold">✓</span> LinkedIn <span className="font-bold text-violet-600">+</span> X — both</li>
@@ -1967,7 +1967,7 @@ function LinkedInPageContent() {
                     </>
                   )}
                 </div>
-                <p className="text-xs text-slate-600 mb-4">billed monthly</p>
+                <p className="text-xs text-slate-600 mb-4">{billingCycle === "annual" ? "billed annually" : "billed monthly"}</p>
                 <p className="text-sm font-semibold text-slate-700 mb-3">Personal + Company growth</p>
                 <ul className="text-sm text-slate-600 space-y-2 mb-6 flex-1">
                   <li className="flex items-center gap-2"><span className="text-green-500 font-bold">✓</span> LinkedIn + Company Page + X + Company X</li>
@@ -2126,8 +2126,8 @@ function LinkedInPageContent() {
           {
             icon: "⚡",
             title: "Step 2: Generate posts",
-            subtitle: "14 posts in one click",
-            body: "Hit Generate and AI writes 14 posts — one for each day of your trial. Each post is unique, on-brand, and ready to publish. You can edit any post before it goes live.",
+            subtitle: "Two weeks of posts in one click",
+            body: "Hit Generate and AI writes your first two weeks of posts — one per day, each unique, on-brand, and ready to publish. You can edit any post before it goes live. After that, new posts keep coming daily on autopilot.",
             visual: (
               <div className="mt-4 flex flex-col gap-2">
                 {["Day 1 · Thought leadership post", "Day 2 · Personal story", "Day 3 · Industry insight"].map((label, i) => (
@@ -3595,7 +3595,7 @@ function LinkedInPageContent() {
                                 2
                               </div>
                               <div className="flex-1 min-w-0">
-                                <p className="text-sm font-semibold text-slate-600">Generate 14 posts</p>
+                                <p className="text-sm font-semibold text-slate-600">Generate your posts</p>
                                 <p className="text-xs text-slate-600 mt-0.5">AI-written, scheduled for the next two weeks</p>
                               </div>
                               <Lock className="w-4 h-4 text-slate-600 shrink-0" />
