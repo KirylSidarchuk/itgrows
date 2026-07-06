@@ -36,7 +36,6 @@ export default async function BlogPage() {
             ItGrows.ai
           </Link>
           <div className="hidden md:flex items-center gap-6 text-sm text-slate-600">
-            <a href="/#features" className="hover:text-[#1b1916] transition-colors">Features</a>
             <a href="/#how-it-works" className="hover:text-[#1b1916] transition-colors">How it works</a>
             <a href="/#pricing" className="hover:text-[#1b1916] transition-colors">Pricing</a>
             <Link href="/blog" className="text-[#1b1916] font-medium">Blog</Link>

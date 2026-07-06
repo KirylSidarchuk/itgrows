@@ -38,7 +38,7 @@ function PersonalWelcomeContent() {
     fetch("/api/linkedin/pages")
       .then((r) => r.json())
       .then((data) => {
-        setLinkedinConnected(Array.isArray(data) && data.length > 0)
+        setLinkedinConnected(Array.isArray(data?.accounts) && data.accounts.length > 0)
       })
       .catch(() => setLinkedinConnected(false))
   }, [])
@@ -59,7 +59,7 @@ function PersonalWelcomeContent() {
         {/* Subscription activated banner */}
         {subscribed && (
           <div className="mb-6 rounded-xl bg-green-50 border border-green-200 px-6 py-4 text-green-800 text-sm font-medium">
-            Welcome! Your subscription is now active.
+            You&apos;re in! Your 14-day free trial has started — you won&apos;t be charged until it ends.
           </div>
         )}
 
@@ -69,13 +69,13 @@ function PersonalWelcomeContent() {
         </div>
 
         <h1 className="text-4xl font-extrabold text-[#1b1916] mb-4 leading-tight">
-          Welcome to ItGrows Personal!
+          Welcome to ItGrows!
         </h1>
 
         {isConnected ? (
           <>
             <p className="text-lg text-slate-600 mb-3 leading-relaxed">
-              Your LinkedIn autopilot is now active.
+              Your posting autopilot is now active.
             </p>
             <p className="text-sm text-slate-500 mb-10">
               LinkedIn is already connected — we&apos;ll start generating and publishing posts automatically.
@@ -95,7 +95,7 @@ function PersonalWelcomeContent() {
         ) : (
           <>
             <p className="text-lg text-slate-600 mb-3 leading-relaxed">
-              Your LinkedIn autopilot is now active.
+              Your posting autopilot is now active.
             </p>
             <p className="text-sm text-slate-500 mb-10">
               Connect your LinkedIn account and fill a 2-minute brief — then we&apos;ll start generating your posts automatically.
