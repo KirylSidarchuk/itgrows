@@ -806,22 +806,22 @@ export default function PersonalPage() {
                   <div className="text-slate-300 text-sm mt-1">posts, in my voice</div>
                 </div>
                 <div>
-                  <div className="text-3xl sm:text-4xl font-black" style={{ background: "linear-gradient(90deg, #f472b6, #ec4899)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>Inbound</div>
-                  <div className="text-slate-300 text-sm mt-1">conversations started</div>
+                  <div className="text-3xl sm:text-4xl font-black" style={{ background: "linear-gradient(90deg, #f472b6, #ec4899)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>0 hrs</div>
+                  <div className="text-slate-300 text-sm mt-1">spent writing</div>
                 </div>
                 <div>
-                  <div className="text-3xl sm:text-4xl font-black" style={{ background: "linear-gradient(90deg, #67e8f9, #22d3ee)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>Advisory</div>
-                  <div className="text-slate-300 text-sm mt-1">clients won</div>
+                  <div className="text-3xl sm:text-4xl font-black" style={{ background: "linear-gradient(90deg, #67e8f9, #22d3ee)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>30 sec</div>
+                  <div className="text-slate-300 text-sm mt-1">to review a day</div>
                 </div>
               </div>
               <p className="text-slate-300 text-lg italic leading-relaxed">
-                &ldquo;I went from posting maybe once a week to every single day — in my own voice. Within a few months it was driving real inbound conversations, and a few turned into advisory clients. It pays for itself with one.&rdquo;
+                &ldquo;I went from posting maybe once a week to every single day — in my own voice, in about 30 seconds a day. I built ItGrows because I needed it myself, and I run my own LinkedIn &amp; X accounts on it.&rdquo;
               </p>
               <div className="flex items-center justify-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-violet-600 flex items-center justify-center text-white font-bold text-sm">K</div>
                 <div className="text-left">
-                  <p className="text-white font-semibold text-sm">Kiryl S.</p>
-                  <p className="text-slate-400 text-xs">B2B Consultant &amp; Founder</p>
+                  <p className="text-white font-semibold text-sm">Kiryl — founder of ItGrows</p>
+                  <p className="text-slate-400 text-xs">I run my own LinkedIn &amp; X on it, daily</p>
                 </div>
               </div>
             </div>
@@ -914,7 +914,7 @@ export default function PersonalPage() {
                   </div>
                 </div>
                 <div className="bg-white rounded-2xl border-2 border-violet-500 p-6 sm:p-7 relative shadow-xl shadow-violet-300/40">
-                  <div className="absolute -top-3 right-5 bg-green-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-sm">Save $2,400+/mo</div>
+                  <div className="absolute -top-3 right-5 bg-green-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-sm">A fraction of the cost</div>
                   <div className="text-xs font-semibold uppercase tracking-widest text-violet-600 mb-4">With ItGrows</div>
                   <ul className="space-y-2.5 text-sm text-slate-700">
                     <li className="flex items-center gap-2"><span className="text-violet-600 font-bold">✓</span> Daily posts in your voice, on autopilot</li>
@@ -982,7 +982,7 @@ export default function PersonalPage() {
                 </Button>
                 <p className="text-center text-xs text-slate-400">🔒 OAuth secure · No card required · Cancel anytime</p>
                 <ul className="space-y-2 pt-1">
-                  {["1 account: LinkedIn OR X personal OR X company", "Daily posts in your voice", "Custom images for every post", "Auto-scheduling at peak time", "Profile DNA analysis"].map((item, i) => (
+                  {["1 account: LinkedIn or X", "Daily posts in your voice", "Custom images for every post", "Auto-scheduling at peak time", "Profile DNA analysis"].map((item, i) => (
                     <li key={i} className="flex items-center gap-2 text-sm text-slate-600">
                       <span className="text-blue-600 font-bold">✓</span> {item}
                     </li>
@@ -1028,7 +1028,7 @@ export default function PersonalPage() {
                 </Button>
                 <p className="text-center text-xs text-slate-400">🔒 OAuth secure · No card required · Cancel anytime</p>
                 <ul className="space-y-2 pt-1">
-                  {["Any 2 accounts from LinkedIn, X personal, X company", "Daily posts in your voice", "Platform-specific voice & style", "Unified dashboard for both platforms", "Custom images for every post"].map((item, i) => (
+                  {["Any 2 accounts from LinkedIn, X personal, X company", "Official LinkedIn & X API — ban-safe", "Daily posts in your voice", "Platform-specific voice & style", "Unified dashboard for both platforms", "Custom images for every post"].map((item, i) => (
                     <li key={i} className="flex items-center gap-2 text-sm text-slate-600">
                       <span className="text-violet-600 font-bold">✓</span> {item}
                     </li>
@@ -1040,7 +1040,7 @@ export default function PersonalPage() {
             {/* All-in Plan */}
             <Card className="relative border-black/10 bg-white shadow-sm">
               <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                <Badge className="bg-amber-500 text-white border-0 px-4 py-1">Best Value</Badge>
+                <Badge className="bg-slate-200 text-slate-600 border-0 px-4 py-1">Full coverage</Badge>
               </div>
               <CardHeader className="text-center pb-2 pt-8">
                 <div className="flex justify-center gap-1 mb-3">
@@ -1093,6 +1093,7 @@ export default function PersonalPage() {
             </Card>
 
           </div>
+          <p className="text-center mt-8 text-sm text-slate-600">✓ 14-day free trial, no card &nbsp;·&nbsp; ✓ Cancel anytime &nbsp;·&nbsp; ✓ Full refund within 7 days of subscribing if it&apos;s not for you</p>
         </div>
       </section>
 
@@ -1151,6 +1152,7 @@ export default function PersonalPage() {
             Start your 14-day free trial — no card
           </Button>
           <p className="mt-4 text-xs sm:text-sm text-slate-500">14-day free trial · No card required · From $49/month · Cancel anytime</p>
+          <p className="mt-2 text-xs sm:text-sm text-slate-600 font-medium">Not happy in your first 7 days after subscribing? Email us for a full refund — no questions asked.</p>
           <p className="mt-2 text-xs text-slate-400">🔒 OAuth secure · No password stored</p>
         </div>
       </section>
