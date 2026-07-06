@@ -110,8 +110,8 @@ const PLAN_DISPLAY: Record<string, { name: string; price: string }> = {
   duo_annual: { name: "Duo Annual", price: "$831/year · billed annually" },
   allin: { name: "All-in", price: "$199/month" },
   allin_annual: { name: "All-in Annual", price: "$1,671/year · billed annually" },
-  company: { name: "Company", price: "$149/month" },
-  company_annual: { name: "Company Annual", price: "$1,251/year · billed annually" },
+  company: { name: "Company plan", price: "from $99/month" },
+  company_annual: { name: "Company plan (annual)", price: "billed annually" },
 }
 function planName(p: string | null | undefined): string { return (p && PLAN_DISPLAY[p]?.name) || "Subscription" }
 function planPrice(p: string | null | undefined): string { return (p && PLAN_DISPLAY[p]?.price) || "" }
@@ -1901,7 +1901,7 @@ function LinkedInPageContent() {
                 <p className="text-sm font-semibold text-slate-700 mb-3">1 platform of your choice</p>
                 <ul className="text-sm text-slate-600 space-y-2 mb-6 flex-1">
                   <li className="flex items-center gap-2"><span className="text-green-500 font-bold">✓</span> LinkedIn or X</li>
-                  <li className="flex items-center gap-2"><span className="text-green-500 font-bold">✓</span> 14 AI posts · 1 per day</li>
+                  <li className="flex items-center gap-2"><span className="text-green-500 font-bold">✓</span> Daily posts · 1 per day, ongoing</li>
                   <li className="flex items-center gap-2"><span className="text-green-500 font-bold">✓</span> Auto-scheduling</li>
                   <li className="flex items-center gap-2"><span className="text-green-500 font-bold">✓</span> AI-generated images</li>
                 </ul>
@@ -1937,7 +1937,7 @@ function LinkedInPageContent() {
                 <p className="text-sm font-semibold text-slate-700 mb-3">LinkedIn + X together</p>
                 <ul className="text-sm text-slate-600 space-y-2 mb-6 flex-1">
                   <li className="flex items-center gap-2"><span className="text-green-500 font-bold">✓</span> LinkedIn <span className="font-bold text-violet-600">+</span> X — both</li>
-                  <li className="flex items-center gap-2"><span className="text-green-500 font-bold">✓</span> 14 AI posts per platform</li>
+                  <li className="flex items-center gap-2"><span className="text-green-500 font-bold">✓</span> Daily posts on both — 1 per day each</li>
                   <li className="flex items-center gap-2"><span className="text-green-500 font-bold">✓</span> Auto-scheduling</li>
                   <li className="flex items-center gap-2"><span className="text-green-500 font-bold">✓</span> AI-generated images</li>
                 </ul>
@@ -1971,7 +1971,7 @@ function LinkedInPageContent() {
                 <p className="text-sm font-semibold text-slate-700 mb-3">Personal + Company growth</p>
                 <ul className="text-sm text-slate-600 space-y-2 mb-6 flex-1">
                   <li className="flex items-center gap-2"><span className="text-green-500 font-bold">✓</span> LinkedIn + X + Company X</li>
-                  <li className="flex items-center gap-2"><span className="text-green-500 font-bold">✓</span> 14 AI posts per account</li>
+                  <li className="flex items-center gap-2"><span className="text-green-500 font-bold">✓</span> Daily posts on every account — 1 per day each</li>
                   <li className="flex items-center gap-2"><span className="text-green-500 font-bold">✓</span> Auto-scheduling</li>
                   <li className="flex items-center gap-2"><span className="text-green-500 font-bold">✓</span> AI-generated images</li>
                 </ul>
@@ -1992,9 +1992,9 @@ function LinkedInPageContent() {
                 <span className="text-xs font-bold text-[#0077B5] bg-blue-50 rounded-full px-3 py-1 mb-4">Single</span>
                 <div className="mb-1"><span className="text-4xl font-black text-slate-900">$99</span><span className="text-slate-600 text-sm font-normal">/month</span></div>
                 <p className="text-xs text-slate-600 mb-4">billed monthly</p>
-                <p className="text-sm font-semibold text-slate-700 mb-3">1 LinkedIn Company Page</p>
+                <p className="text-sm font-semibold text-slate-700 mb-3">1 company · LinkedIn Page + X</p>
                 <ul className="text-sm text-slate-600 space-y-2 mb-6 flex-1">
-                  <li className="flex items-center gap-2"><span className="text-[#0077B5] font-bold">✓</span> 1 Company Page, automated</li>
+                  <li className="flex items-center gap-2"><span className="text-[#0077B5] font-bold">✓</span> LinkedIn Company Page + X account, automated</li>
                   <li className="flex items-center gap-2"><span className="text-[#0077B5] font-bold">✓</span> Approved by LinkedIn API</li>
                   <li className="flex items-center gap-2"><span className="text-[#0077B5] font-bold">✓</span> Company voice &amp; tone</li>
                   <li className="flex items-center gap-2"><span className="text-[#0077B5] font-bold">✓</span> Autopublish</li>
@@ -2013,9 +2013,9 @@ function LinkedInPageContent() {
                 <span className="text-xs font-bold text-[#0077B5] bg-blue-50 rounded-full px-3 py-1 mb-4">Two pages</span>
                 <div className="mb-1"><span className="text-4xl font-black text-slate-900">$149</span><span className="text-slate-600 text-sm font-normal">/month</span></div>
                 <p className="text-xs text-slate-600 mb-4">billed monthly</p>
-                <p className="text-sm font-semibold text-slate-700 mb-3">2 LinkedIn Company Pages</p>
+                <p className="text-sm font-semibold text-slate-700 mb-3">2 companies · LinkedIn Page + X each</p>
                 <ul className="text-sm text-slate-600 space-y-2 mb-6 flex-1">
-                  <li className="flex items-center gap-2"><span className="text-[#0077B5] font-bold">✓</span> 2 Company Pages — saves vs 2× Single</li>
+                  <li className="flex items-center gap-2"><span className="text-[#0077B5] font-bold">✓</span> 2 × (LinkedIn Page + X) — saves vs 2× Single</li>
                   <li className="flex items-center gap-2"><span className="text-[#0077B5] font-bold">✓</span> Approved by LinkedIn API</li>
                   <li className="flex items-center gap-2"><span className="text-[#0077B5] font-bold">✓</span> Company voice &amp; tone</li>
                   <li className="flex items-center gap-2"><span className="text-[#0077B5] font-bold">✓</span> Autopublish</li>
@@ -2033,9 +2033,9 @@ function LinkedInPageContent() {
                 <span className="text-xs font-bold text-[#0077B5] bg-blue-50 rounded-full px-3 py-1 mb-4">Unlimited</span>
                 <div className="mb-1"><span className="text-4xl font-black text-slate-900">$299</span><span className="text-slate-600 text-sm font-normal">/month</span></div>
                 <p className="text-xs text-slate-600 mb-4">billed monthly</p>
-                <p className="text-sm font-semibold text-slate-700 mb-3">Unlimited Company Pages</p>
+                <p className="text-sm font-semibold text-slate-700 mb-3">Unlimited companies · LinkedIn Page + X</p>
                 <ul className="text-sm text-slate-600 space-y-2 mb-6 flex-1">
-                  <li className="flex items-center gap-2"><span className="text-[#0077B5] font-bold">✓</span> Any number of Company Pages</li>
+                  <li className="flex items-center gap-2"><span className="text-[#0077B5] font-bold">✓</span> Any number of companies (LinkedIn Page + X each)</li>
                   <li className="flex items-center gap-2"><span className="text-[#0077B5] font-bold">✓</span> Approved by LinkedIn API</li>
                   <li className="flex items-center gap-2"><span className="text-[#0077B5] font-bold">✓</span> Company voice &amp; tone</li>
                   <li className="flex items-center gap-2"><span className="text-[#0077B5] font-bold">✓</span> Autopublish</li>
