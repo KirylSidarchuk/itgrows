@@ -24,7 +24,9 @@ export async function GET(req: NextRequest) {
       .from(users)
       .where(
         or(
-          eq(users.subscriptionStatus, "active"),
+          // Card-required Stripe trials set status "trialing" (and never trialEndsAt), so
+          // trialing/past_due MUST be included or trial users get zero auto-generated posts.
+          inArray(users.subscriptionStatus, ["active", "trialing", "past_due"]),
           gt(users.trialEndsAt, now)
         )
       )

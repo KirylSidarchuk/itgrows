@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db"
 import { users, linkedinAccounts } from "@/lib/db/schema"
-import { and, eq, lt, gt, notExists, or, isNotNull } from "drizzle-orm"
+import { and, eq, lt, gt, notExists, or, isNotNull, inArray } from "drizzle-orm"
 import { sendEmail } from "@/lib/email"
 
 const baseStyle = `
@@ -57,7 +57,7 @@ export async function GET(req: NextRequest) {
           lt(users.createdAt, windowEnd),
           eq(users.linkedinReminderSent, false),
           or(
-            eq(users.subscriptionStatus, "active"),
+            inArray(users.subscriptionStatus, ["active", "trialing", "past_due"]),
             and(isNotNull(users.trialEndsAt), gt(users.trialEndsAt, now))
           ),
           notExists(

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db"
 import { twitterAccounts, twitterPosts, twitterBriefs, twitterCompanyBriefs, linkedinBriefs, users } from "@/lib/db/schema"
-import { eq, and, or, gt, count, desc } from "drizzle-orm"
+import { eq, and, or, gt, count, desc, inArray } from "drizzle-orm"
 import { hasAccess } from "@/lib/access"
 import { callLLM } from "@/lib/llm-client"
 
@@ -201,7 +201,9 @@ export async function GET(req: NextRequest) {
       .from(users)
       .where(
         or(
-          eq(users.subscriptionStatus, "active"),
+          // Include trialing/past_due — card-required Stripe trials use status "trialing"
+          // and never set trialEndsAt, so they'd otherwise get zero auto-generated tweets.
+          inArray(users.subscriptionStatus, ["active", "trialing", "past_due"]),
           gt(users.trialEndsAt, now)
         )
       )
