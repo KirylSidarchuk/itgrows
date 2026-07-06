@@ -1,17 +1,13 @@
 import { auth } from "@/auth"
 import { redirect } from "next/navigation"
-import Sidebar from "@/components/dashboard/Sidebar"
 
+// Legacy /dashboard/* routes are all redirect stubs (to /cabinet or /business/dashboard/*).
+// This layout only keeps the auth guard; the old SEO Sidebar was removed as dead code.
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const session = await auth()
   if (!session?.user) {
     redirect("/login")
   }
 
-  return (
-    <div className="min-h-screen text-[#1b1916] flex" style={{ background: "linear-gradient(135deg, #c8edfb 0%, #ddd4f8 45%, #f9d8f0 100%)", minHeight: "100vh" }}>
-      <Sidebar />
-      <main className="flex-1 overflow-auto">{children}</main>
-    </div>
-  )
+  return <>{children}</>
 }
