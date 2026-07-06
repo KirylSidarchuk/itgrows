@@ -117,28 +117,34 @@ export async function POST(req: NextRequest) {
 
   const currentYear = new Date().getFullYear()
 
+  const antiFabrication = `CRITICAL — NO FABRICATION: Use ONLY the information given above. Do NOT invent specific facts, events, companies, products, clients, dates, numbers, metrics, funding, job history, or personal anecdotes (e.g. "back in 2021 my startup…", "last week a client told me…", "we grew revenue 3x…"). If a concrete detail wasn't provided, do not make one up — write from general professional insight and observation instead. Fabricated specifics destroy trust; never include them.`
+
   const prompt = isCompany
     ? `You are a top B2B brand content strategist writing for a COMPANY's LinkedIn Page (not a personal profile). Here is what the company does:
 
 "${thoughts}"
 
-Write 3 distinct company-page LinkedIn posts in the brand's voice — first-person plural ("we"), on-brand, credible, never salesy or clickbaity. Each post: 100-150 words max, strong hook, ends with a question or a clear invitation to engage. Year: ${currentYear}. No clichés, no hashtag spam.
+${antiFabrication}
+
+Write 3 distinct company-page LinkedIn posts in the brand's voice — first-person plural ("we"), on-brand, credible, never salesy or clickbaity. Each post: 100-150 words max, strong hook, ends with a question or a clear invitation to engage. Year: ${currentYear}. No clichés, no hashtag spam, no invented case studies or numbers.
 
 Post 1: A point of view on the industry / a trend the company has an opinion on
-Post 2: A behind-the-scenes or "how we think about X" insight that builds trust
-Post 3: A practical, value-first tip your audience can use today
+Post 2: How the company thinks about a relevant problem (framed as a principle, NOT an invented behind-the-scenes story)
+Post 3: A practical, value-first tip the audience can use today
 
 Return ONLY a valid JSON array of exactly 3 strings. No markdown, no code blocks, no extra text.
 ["post1 here","post2 here","post3 here"]`
-    : `You are a top LinkedIn ghostwriter. A user shared thoughts about themselves:
+    : `You are a top LinkedIn ghostwriter. A user shared a short description of what they do:
 
 "${thoughts}"
 
-Write 3 distinct LinkedIn posts. Each post: 100-150 words max, strong hook, real human tone, ends with a question. Year: ${currentYear}. No clichés.
+${antiFabrication}
 
-Post 1: Personal story or lesson
-Post 2: Bold/contrarian opinion
-Post 3: Practical insight
+Write 3 distinct LinkedIn posts they could publish. Each post: 100-150 words max, strong hook, natural human tone, ends with a question. Year: ${currentYear}. No clichés, no fabricated stats.
+
+Post 1: A sharp insight or lesson from their field, framed as a principle or observation (NOT a made-up personal anecdote)
+Post 2: A bold or contrarian opinion relevant to their audience
+Post 3: A practical, actionable tip their audience can use today
 
 Return ONLY a valid JSON array of exactly 3 strings. No markdown, no code blocks, no extra text.
 ["post1 here","post2 here","post3 here"]`

@@ -186,11 +186,12 @@ STRICT RULES — violations make the post unusable:
 4. NEVER use "Contact us today", "DM me", or any sales-pitch language.
 5. NEVER refer to "our company" or describe the author's company in the third person.
 6. NEVER write generic marketing copy — every post must feel like a real person's genuine reflection.
+7. NEVER invent specific personal events, dates, past companies/jobs, or anecdotes that were not provided (no "back in 2021, my second startup…", "last week a client…"). If a concrete backstory wasn't given, do not fabricate one — write from principle and observation instead.
 
 WHAT EACH POST MUST DO:
-- Share a personal perspective: "I've noticed…", "In my experience…", "What I've learned…"
-- Offer an industry observation, trend, or lesson learned from real professional life.
-- Tell a story from professional experience without fabricating names, numbers, or outcomes.
+- Share a personal perspective as a general reflection: "I've noticed…", "In my experience…", "What I've learned…" (without inventing a specific fabricated event).
+- Offer an industry observation, trend, or lesson.
+- Frame insight as a principle or pattern, not a made-up specific anecdote with invented details.
 - End with a thought-provoking question or call to reflection that invites the reader to share their view.
 
 FORMAT for each post:
