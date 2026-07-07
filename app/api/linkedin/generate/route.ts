@@ -53,7 +53,18 @@ export async function POST(req: NextRequest) {
       .from(users).where(eq(users.id, userId)).limit(1)
     const userAccess = { subscriptionStatus: user?.subscriptionStatus ?? null, subscriptionPlan: user?.subscriptionPlan ?? null, trialEndsAt: user?.trialEndsAt ?? null }
     if (!user || !hasAccess(userAccess)) {
-      return NextResponse.json({ error: "subscription_required", message: "Active subscription or active trial required" }, { status: 403 })
+      // Free FIRST generation: let a connected user (no card yet) generate one schedule so they
+      // see their own AI posts in-app before the card ask. Publishing/autopilot stays card-gated
+      // (see /api/linkedin/publish). Once they already have posts, generating again needs a plan.
+      const [existingPost] = await db
+        .select({ id: linkedinPosts.id })
+        .from(linkedinPosts)
+        .where(eq(linkedinPosts.userId, userId))
+        .limit(1)
+      if (existingPost) {
+        return NextResponse.json({ error: "subscription_required", message: "Active subscription or active trial required" }, { status: 403 })
+      }
+      // else: allow this one free first generation (aha-moment before the card).
     }
     let maxPosts = 14
     if (user?.cancelAtPeriodEnd && user?.subscriptionEndDate) {

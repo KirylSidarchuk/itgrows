@@ -1553,6 +1553,11 @@ function LinkedInPageContent() {
       }
       if (!res.ok) {
         const data = await res.json().catch(() => ({})) as { error?: string; message?: string; retryAfter?: number }
+        if (res.status === 403 && data.error === "subscription_required") {
+          // Free first generation already used → prompt to start the trial to keep going.
+          setShowPlanModal(true)
+          return
+        }
         if (data.error === "ai_busy") {
           setGenerateErrorKind("ai_busy")
           setGenerateError(null)
@@ -3474,6 +3479,33 @@ function LinkedInPageContent() {
                         <Lock className="w-4 h-4" />
                         Subscribe to Generate →
                       </button>
+                    ) : isConnected && posts.length === 0 ? (
+                      <div className="relative group">
+                        <Button
+                          disabled={generating || !briefFilled}
+                          onClick={handleGenerate}
+                          className="bg-violet-600 hover:bg-violet-500 text-white font-semibold px-6 py-2.5 rounded-xl shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                          title={!briefFilled ? "Fill your Professional DNA first" : undefined}
+                        >
+                          {generating ? (
+                            <>
+                              <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                              {generateTimer > 0 ? `Generating... (${generateTimer}s left)` : "Almost done..."}
+                            </>
+                          ) : (
+                            <>
+                              <Zap className="w-4 h-4 mr-2" />
+                              Generate my posts — free
+                            </>
+                          )}
+                        </Button>
+                        {!briefFilled && !generating && (
+                          <div className="absolute left-0 top-full mt-2 z-10 hidden group-hover:block bg-slate-800 text-white text-xs rounded-lg px-3 py-2 whitespace-nowrap shadow-lg">
+                            Fill your Professional DNA first
+                            <div className="absolute -top-1.5 left-6 w-3 h-3 bg-slate-800 rotate-45" />
+                          </div>
+                        )}
+                      </div>
                     ) : (
                       <Button
                         onClick={() => setShowPlanModal(true)}
