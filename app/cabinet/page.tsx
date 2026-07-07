@@ -2528,7 +2528,7 @@ function LinkedInPageContent() {
                   </div>
                   <div>
                     <p className="text-sm font-bold text-[#1b1916]">Your posts are ready 🎉</p>
-                    <p className="text-xs text-slate-600 mt-0.5">We saved the {savedGhostPosts.posts.length} posts you generated. {isConnected ? "Generate your full schedule to publish them." : "Connect an account and start your trial to publish on autopilot."}</p>
+                    <p className="text-xs text-slate-600 mt-0.5">We saved the {savedGhostPosts.posts.length} posts you generated. {isConnected ? "Generate your full schedule free — publish when you're ready." : "Connect LinkedIn to generate your full schedule free — you only add a card to publish on autopilot."}</p>
                   </div>
                 </div>
                 <button
@@ -2549,11 +2549,14 @@ function LinkedInPageContent() {
                   </div>
                 ))}
                 <button
-                  onClick={() => setShowPlanModal(true)}
-                  disabled={checkingOut}
+                  onClick={() => {
+                    if (!isConnected) { window.location.href = "/api/linkedin/connect?type=personal"; return }
+                    void handleGenerate()
+                  }}
+                  disabled={checkingOut || generating}
                   className="w-full sm:w-auto bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-white font-semibold text-sm px-6 py-2.5 rounded-xl shadow-sm transition-opacity disabled:opacity-70"
                 >
-                  {checkingOut ? "Loading..." : isConnected ? "Generate my schedule →" : "Start free trial to publish these →"}
+                  {generating ? "Generating…" : isConnected ? "Generate my full schedule — free →" : "Connect LinkedIn to publish these →"}
                 </button>
               </div>
             </div>
@@ -3748,22 +3751,22 @@ function LinkedInPageContent() {
                   )}
                 </>
               ) : (
-                <div className="bg-white rounded-2xl border border-slate-100 shadow-sm py-16 flex flex-col items-center gap-5 text-center">
+                <div className="bg-white rounded-2xl border border-slate-100 shadow-sm py-14 flex flex-col items-center gap-5 text-center px-6">
                   <div className="w-16 h-16 rounded-2xl bg-[#0077B5] flex items-center justify-center shadow-lg">
                     <LinkedInIcon className="w-9 h-9 text-white" />
                   </div>
                   <div>
-                    <p className="text-base font-semibold text-slate-700 mb-1">Connect LinkedIn first</p>
-                    <p className="text-sm text-slate-600 max-w-xs">
-                      Go to the Account tab to connect your LinkedIn profile and start generating posts.
+                    <p className="text-lg font-bold text-slate-800 mb-1">Connect LinkedIn to see your posts — free</p>
+                    <p className="text-sm text-slate-600 max-w-sm mx-auto">
+                      We&apos;ll generate a full schedule of posts in your voice, with cover images — free, before you enter any card. You approve every post; nothing publishes without you.
                     </p>
                   </div>
-                  <button
-                    onClick={() => setActiveTab("account")}
-                    className="text-sm font-semibold text-violet-600 hover:text-violet-500 transition-colors"
-                  >
-                    Go to Account →
-                  </button>
+                  <a href="/api/linkedin/connect?type=personal">
+                    <Button className="bg-[#0077B5] hover:bg-[#00669c] text-white font-semibold px-6 py-2.5 rounded-xl shadow-sm">
+                      <LinkedInIcon className="w-4 h-4 mr-2" /> Connect LinkedIn
+                    </Button>
+                  </a>
+                  <p className="text-xs text-slate-400 max-w-xs">🔒 You log in on LinkedIn&apos;s site — we never see your password, and you can revoke access anytime.</p>
                 </div>
               )}
             </div>
