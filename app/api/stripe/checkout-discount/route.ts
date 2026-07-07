@@ -44,6 +44,17 @@ export async function POST(req: NextRequest) {
     if (user) userId = user.id
   }
 
+  // Never create a paid subscription we can't attach to an account — otherwise the buyer
+  // pays and gets no access (the webhook grants on subscription metadata.userId). The
+  // win-back link always carries ?email=, so a real user resolves above; if not, ask
+  // them to sign in rather than orphaning a paid subscription.
+  if (!userId) {
+    return NextResponse.json(
+      { error: "Please sign in with the email your offer was sent to, then reopen the discount link.", code: "identify_required" },
+      { status: 401 }
+    )
+  }
+
   const checkoutSession = await stripe.checkout.sessions.create({
     payment_method_types: ["card"],
     line_items: [{ price: priceId, quantity: 1 }],
@@ -51,17 +62,15 @@ export async function POST(req: NextRequest) {
     success_url: "https://itgrows.ai/welcome?subscribed=1&session_id={CHECKOUT_SESSION_ID}",
     cancel_url: "https://itgrows.ai/",
     ...(email ? { customer_email: email } : {}),
+    client_reference_id: userId,
     allow_promotion_codes: false,
     // Win-back: no second trial — the discounted price charges immediately so the
-    // offer converts to a paying subscription right away.
-    ...(userId
-      ? {
-          metadata: { userId },
-          subscription_data: {
-            metadata: { userId, plan: "personal_annual_discount" },
-          },
-        }
-      : {}),
+    // offer converts to a paying subscription right away. userId is guaranteed here,
+    // so the subscription is always attributable for the webhook to grant access.
+    metadata: { userId },
+    subscription_data: {
+      metadata: { userId, plan: "personal_annual_discount" },
+    },
   })
 
   return NextResponse.json({ url: checkoutSession.url })
