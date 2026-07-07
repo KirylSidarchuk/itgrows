@@ -1,12 +1,15 @@
 import { db } from "@/lib/db"
 import { blogPosts } from "@/lib/db/schema"
-import { desc } from "drizzle-orm"
+import { desc, eq } from "drizzle-orm"
 import type { MetadataRoute } from "next"
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  // Only OUR marketing posts (siteSlug="itgrows") belong in itgrows.ai's sitemap —
+  // client-site posts live under their own domains, not here.
   const posts = await db
     .select({ slug: blogPosts.slug, publishedAt: blogPosts.publishedAt })
     .from(blogPosts)
+    .where(eq(blogPosts.siteSlug, "itgrows"))
     .orderBy(desc(blogPosts.publishedAt))
 
   const staticRoutes: MetadataRoute.Sitemap = [
