@@ -259,14 +259,29 @@ export async function POST(req: NextRequest) {
       .where(eq(users.id, userId))
       .limit(1)
     const userAccess = { subscriptionStatus: user?.subscriptionStatus ?? null, subscriptionPlan: user?.subscriptionPlan ?? null, trialEndsAt: user?.trialEndsAt ?? null }
+    let freeFirstGen = false
     if (!user || !hasAccess(userAccess)) {
-      return NextResponse.json({ error: "subscription_required", message: "Active subscription or active trial required" }, { status: 403 })
+      // Free FIRST generation (parity with /api/linkedin/generate): a connected user
+      // with no card yet may generate ONE batch to see their own AI posts before the
+      // card ask. Publishing/autopilot stays card-gated (see /api/x/publish). Once any
+      // post exists, generating again needs a plan.
+      const [existingPost] = await db
+        .select({ id: twitterPosts.id })
+        .from(twitterPosts)
+        .where(eq(twitterPosts.userId, userId))
+        .limit(1)
+      if (existingPost) {
+        return NextResponse.json({ error: "subscription_required", message: "Active subscription or active trial required" }, { status: 403 })
+      }
+      freeFirstGen = true
     }
 
-    // Rate limit: max 7 X posts per 3 hours per user.
-    const xRate = await checkXGenerateRateLimit(userId)
-    if (!xRate.allowed) {
-      return NextResponse.json({ error: "rate_limited", message: "You've generated a lot recently — please try again in a few hours.", retryAfter: xRate.retryAfter }, { status: 429 })
+    // Rate limit: max 7 X posts per 3 hours per user (skipped for the one free first gen).
+    if (!freeFirstGen) {
+      const xRate = await checkXGenerateRateLimit(userId)
+      if (!xRate.allowed) {
+        return NextResponse.json({ error: "rate_limited", message: "You've generated a lot recently — please try again in a few hours.", retryAfter: xRate.retryAfter }, { status: 429 })
+      }
     }
 
     const body = await req.json() as GenerateXRequest

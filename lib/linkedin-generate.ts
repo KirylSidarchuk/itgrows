@@ -248,6 +248,14 @@ export async function generateForUser(userId: string): Promise<{ success: boolea
       .where(eq(linkedinBriefs.userId, userId))
       .limit(1)
 
+    // Don't auto-generate off an empty Professional DNA — a generic first batch is a
+    // bad first impression. Skip (not an error); the user fills their DNA and then the
+    // in-cabinet "Generate my posts — free" button produces a personalized first batch.
+    const briefFilled = !!(dbBrief?.niche?.trim() || dbBrief?.goals?.trim() || dbBrief?.targetAudience?.trim())
+    if (!briefFilled) {
+      return { success: true }
+    }
+
     const brief = dbBrief ?? {}
 
     const [userRecord] = await db
