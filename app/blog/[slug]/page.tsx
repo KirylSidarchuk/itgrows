@@ -89,18 +89,27 @@ export default async function BlogPostPage({
       : {}),
   }
 
-  // Extract FAQ items from the article for FAQPage structured data
+  // Extract FAQ items from the article for FAQPage structured data.
+  // Our generator renders FAQ questions as bold paragraphs (**Q**  ->  <p><strong>Q</strong></p>)
+  // followed by a <p> answer; older content used <h3> questions. Support both formats.
   const faqItems: Array<{ question: string; answer: string }> = []
-  const faqRegex = /<h3[^>]*>(.*?)<\/h3>\s*<p[^>]*>([\s\S]*?)<\/p>/gi
   const faqSectionMatch = post.content.match(/<h2[^>]*>[^<]*(?:frequently asked questions|faq)[^<]*<\/h2>([\s\S]*)/i)
   if (faqSectionMatch) {
-    let faqMatch
-    while ((faqMatch = faqRegex.exec(faqSectionMatch[1])) !== null && faqItems.length < 5) {
-      const question = faqMatch[1].replace(/<[^>]+>/g, "").trim()
-      const answer = faqMatch[2].replace(/<[^>]+>/g, "").trim()
-      if (question && answer) {
-        faqItems.push({ question, answer })
+    const faqPatterns = [
+      /<p[^>]*>\s*<strong>([\s\S]*?)<\/strong>\s*<\/p>\s*<p[^>]*>([\s\S]*?)<\/p>/gi, // bold-paragraph questions
+      /<h3[^>]*>([\s\S]*?)<\/h3>\s*<p[^>]*>([\s\S]*?)<\/p>/gi,                        // legacy h3 questions
+    ]
+    for (const faqRegex of faqPatterns) {
+      let faqMatch
+      while ((faqMatch = faqRegex.exec(faqSectionMatch[1])) !== null && faqItems.length < 5) {
+        const question = faqMatch[1].replace(/<[^>]+>/g, "").trim()
+        const answer = faqMatch[2].replace(/<[^>]+>/g, "").trim()
+        // Only keep genuine Q/A pairs (a question ends with "?"); skips the CTA strong-line.
+        if (question.endsWith("?") && answer) {
+          faqItems.push({ question, answer })
+        }
       }
+      if (faqItems.length > 0) break
     }
   }
 

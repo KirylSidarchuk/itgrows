@@ -15,7 +15,7 @@ export const ITGROWS_SITE_CONTEXT = {
     "Naturally position ItGrows as the AI alternative to a $2,500/month LinkedIn ghostwriter: it writes posts in your own voice and auto-publishes to LinkedIn and X through LinkedIn's official, approved API, while you approve every post. Mention ItGrows 2-3 times only where it fits contextually — never force it. End with a clear, low-friction call to action to try ItGrows free (see your own posts generated in 30 seconds, no signup required).",
 }
 
-// Cluster A keywords, ordered roughly by buying intent (highest first).
+// Cluster A — "ghostwriter replacement" (highest buying intent, closest to purchase).
 export const CLUSTER_A_KEYWORDS: string[] = [
   "how much does a linkedin ghostwriter cost",
   "linkedin ghostwriter alternative",
@@ -33,4 +33,40 @@ export const CLUSTER_A_KEYWORDS: string[] = [
   "linkedin content agency vs ai tool",
   "automate linkedin thought leadership posts",
   "hire a linkedin ghostwriter or use ai",
+]
+
+// Cluster B — "automation / how-to" (DIY audience actively looking for a tool; more volume).
+export const CLUSTER_B_KEYWORDS: string[] = [
+  "how to automate linkedin posts",
+  "ai linkedin post generator",
+  "best ai tool for linkedin content",
+  "how to schedule linkedin and x posts",
+  "automate linkedin content creation",
+  "ai tools for personal branding on linkedin",
+  "how to post consistently on linkedin",
+  "how to write linkedin posts faster with ai",
+  "auto publish posts to linkedin and x",
+  "linkedin content calendar automation",
+  "ai tool to write posts in your own voice",
+  "how to grow on linkedin without spending hours writing",
+]
+
+// Cluster C — "agencies / scale / white-label" (higher LTV; narrower segment).
+export const CLUSTER_C_KEYWORDS: string[] = [
+  "white label linkedin content service",
+  "linkedin content for agency clients",
+  "how to manage multiple linkedin company pages",
+  "linkedin ghostwriting for agencies",
+  "scale linkedin content for multiple clients",
+  "ai social media tools for agencies",
+  "manage client linkedin accounts at scale",
+  "linkedin automation for agencies",
+]
+
+// The cron publishes the first not-yet-used keyword from this ordered queue:
+// A (buy intent) first, then B (volume), then C (agencies).
+export const BLOG_KEYWORD_QUEUE: string[] = [
+  ...CLUSTER_A_KEYWORDS,
+  ...CLUSTER_B_KEYWORDS,
+  ...CLUSTER_C_KEYWORDS,
 ]

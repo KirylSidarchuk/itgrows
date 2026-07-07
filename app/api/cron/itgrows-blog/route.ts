@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db"
 import { blogPosts, users } from "@/lib/db/schema"
 import { eq } from "drizzle-orm"
-import { CLUSTER_A_KEYWORDS, ITGROWS_SITE_CONTEXT } from "@/lib/itgrows-blog-keywords"
+import { BLOG_KEYWORD_QUEUE, ITGROWS_SITE_CONTEXT } from "@/lib/itgrows-blog-keywords"
 
 export const maxDuration = 300
 
@@ -78,9 +78,9 @@ export async function GET(req: NextRequest) {
       .from(blogPosts)
       .where(eq(blogPosts.siteSlug, "itgrows"))
     const usedSet = new Set(used.map((u) => (u.keyword ?? "").toLowerCase().trim()))
-    const keyword = override || CLUSTER_A_KEYWORDS.find((k) => !usedSet.has(k.toLowerCase()))
+    const keyword = override || BLOG_KEYWORD_QUEUE.find((k) => !usedSet.has(k.toLowerCase()))
     if (!keyword) {
-      return NextResponse.json({ done: true, message: "All cluster-A keywords already published. Add more keywords." })
+      return NextResponse.json({ done: true, message: "All queued keywords (A/B/C) already published. Add more keywords." })
     }
 
     // Generate the article + cover image via the existing engine (internal call = no auth/paywall).
@@ -146,7 +146,7 @@ export async function GET(req: NextRequest) {
       hasCover: !!data.coverImageUrl,
       post: inserted,
       url: `https://www.itgrows.ai/blog/${slug}`,
-      remaining: CLUSTER_A_KEYWORDS.filter((k) => !usedSet.has(k.toLowerCase()) && k !== keyword).length,
+      remaining: BLOG_KEYWORD_QUEUE.filter((k) => !usedSet.has(k.toLowerCase()) && k !== keyword).length,
     })
   } catch (err) {
     const message = err instanceof Error ? (err.stack ?? err.message) : String(err)
