@@ -3,6 +3,10 @@ import { blogPosts } from "@/lib/db/schema"
 import { desc, eq } from "drizzle-orm"
 import type { MetadataRoute } from "next"
 
+// Always reflect the DB so cron-published posts hit the sitemap immediately
+// (without a revalidate this renders once at build and new posts never appear).
+export const revalidate = 0
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Only OUR marketing posts (siteSlug="itgrows") belong in itgrows.ai's sitemap —
   // client-site posts live under their own domains, not here.

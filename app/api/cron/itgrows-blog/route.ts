@@ -36,9 +36,11 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
+  let stage = "start"
   try {
     // Resolve the owner for marketing posts: reuse an existing itgrows post's owner,
     // else fall back to the founder account. (blog_posts.userId is NOT NULL.)
+    stage = "resolve-owner"
     let ownerId: string | null = null
     const [existing] = await db
       .select({ userId: blogPosts.userId })
@@ -62,6 +64,7 @@ export async function GET(req: NextRequest) {
     }
 
     // Pick the next keyword not yet published (dedup against existing itgrows posts).
+    stage = "pick-keyword"
     const override = req.nextUrl.searchParams.get("keyword")?.trim()
     const used = await db
       .select({ keyword: blogPosts.keyword })
@@ -74,6 +77,8 @@ export async function GET(req: NextRequest) {
     }
 
     // Generate the article + cover image via the existing engine (internal call = no auth/paywall).
+    stage = "generate"
+    console.log(`[itgrows-blog] generating "${keyword}" via ${req.nextUrl.origin}/api/seo/generate (owner=${ownerId})`)
     const genRes = await fetch(`${req.nextUrl.origin}/api/seo/generate`, {
       method: "POST",
       headers: { "Content-Type": "application/json", "x-internal-secret": cronSecret },
@@ -84,10 +89,13 @@ export async function GET(req: NextRequest) {
         siteContext: ITGROWS_SITE_CONTEXT,
       }),
     })
+    console.log(`[itgrows-blog] seo/generate responded ${genRes.status} ${genRes.headers.get("content-type") ?? ""}`)
     if (!genRes.ok) {
       const errText = await genRes.text()
-      return NextResponse.json({ error: "Generation failed", keyword, detail: errText.slice(0, 500) }, { status: 502 })
+      console.error(`[itgrows-blog] generation failed ${genRes.status}: ${errText.slice(0, 300)}`)
+      return NextResponse.json({ error: "Generation failed", status: genRes.status, keyword, detail: errText.slice(0, 500) }, { status: 502 })
     }
+    stage = "parse-response"
     const data = (await genRes.json()) as {
       title?: string
       content?: string
@@ -101,6 +109,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Generator returned empty title/content", keyword }, { status: 502 })
     }
 
+    stage = "insert"
     const slug = slugify(data.title)
     const [inserted] = await db
       .insert(blogPosts)
@@ -127,7 +136,8 @@ export async function GET(req: NextRequest) {
       remaining: CLUSTER_A_KEYWORDS.filter((k) => !usedSet.has(k.toLowerCase()) && k !== keyword).length,
     })
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Unknown error"
-    return NextResponse.json({ error: message }, { status: 500 })
+    const message = err instanceof Error ? (err.stack ?? err.message) : String(err)
+    console.error(`[itgrows-blog] FAILED at stage="${stage}":`, message)
+    return NextResponse.json({ error: message.slice(0, 800), stage }, { status: 500 })
   }
 }
