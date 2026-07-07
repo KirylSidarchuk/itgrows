@@ -357,7 +357,7 @@ export default function PersonalPage() {
           </h1>
           <p className="text-sm sm:text-base text-slate-500 max-w-xl mx-auto mb-3 font-medium">For founders, execs &amp; consultants who should be posting — but never find the time.</p>
           <p className="text-base sm:text-xl text-slate-600 max-w-xl mx-auto mb-6 sm:mb-8 leading-relaxed">
-            Set your voice once. Every day ItGrows writes and publishes <span className="text-violet-600 font-semibold">in your voice</span> to your <span className="text-violet-600 font-semibold">LinkedIn, company page, X, and blog</span>. Review in 30 seconds, or go <span className="text-violet-600 font-semibold">full autopilot</span> once you trust it. Try it below, no signup.
+            Set your voice once. ItGrows writes and auto-publishes <span className="text-violet-600 font-semibold">in your voice</span> to your <span className="text-violet-600 font-semibold">LinkedIn, Company Page, and X</span> — through <span className="text-violet-600 font-semibold">LinkedIn&apos;s official, approved API</span>, not a workaround that gets accounts flagged. Review in 30 seconds, or go <span className="text-violet-600 font-semibold">full autopilot</span>.
           </p>
           {/* Trust bar — the fresh 2026 wedge: competitors got banned; we're the approved, official-API app */}
           <div className="flex flex-wrap justify-center items-center gap-2 mb-8 text-xs sm:text-sm">
