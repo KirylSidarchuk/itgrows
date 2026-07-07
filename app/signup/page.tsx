@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { signIn } from "next-auth/react"
 import Link from "next/link"
+import OAuthButtons from "@/components/auth/OAuthButtons"
 
 function SignupForm() {
   const router = useRouter()
@@ -280,6 +281,7 @@ function SignupForm() {
           <p className="text-slate-500 text-sm mt-1">Start growing your business today</p>
         </div>
         <div className="bg-white border border-black/10 rounded-2xl p-8">
+          <OAuthButtons callbackUrl={callbackUrl} />
           <form onSubmit={handleSendPin} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-[#1b1916] mb-1.5">Name</label>

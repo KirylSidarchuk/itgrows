@@ -4,6 +4,7 @@ import { Suspense, useState } from "react"
 import { signIn } from "next-auth/react"
 import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
+import OAuthButtons from "@/components/auth/OAuthButtons"
 
 function LoginForm() {
   const router = useRouter()
@@ -113,6 +114,7 @@ function LoginForm() {
 
   return (
     <div className="bg-white border border-black/10 rounded-2xl p-8">
+      <OAuthButtons callbackUrl={callbackUrl} />
       <form onSubmit={handleSendPin} className="space-y-4">
         <div>
           <label className="block text-sm font-medium text-[#1b1916] mb-1.5">Email</label>

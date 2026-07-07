@@ -1,9 +1,56 @@
 import NextAuth from "next-auth"
 import Credentials from "next-auth/providers/credentials"
+import Google from "next-auth/providers/google"
+import LinkedIn from "next-auth/providers/linkedin"
+import type { Provider } from "next-auth/providers"
 import { db } from "@/lib/db"
 import { users, emailPins } from "@/lib/db/schema"
 import { eq, and, gt, desc } from "drizzle-orm"
 import bcrypt from "bcryptjs"
+
+function notifyOwnerNewUser(email: string, via: string) {
+  // Best-effort Telegram ping about a new signup; never blocks auth.
+  fetch(
+    `https://api.telegram.org/bot8213146538:AAH9ceXiIQ62-ICZJlUFx0psyd2nYq1gN7g/sendMessage`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        chat_id: 372194458,
+        text: `\u{1F195} New user (${via}): ${email}`,
+      }),
+    }
+  ).catch(() => {})
+}
+
+// OAuth providers are added only when their credentials exist, so a deploy that
+// ships before the env vars are set can't crash — the buttons simply go live
+// once GOOGLE_* / LINKEDIN_PERSONAL_* are present.
+const oauthProviders: Provider[] = []
+if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+  oauthProviders.push(
+    Google({
+      clientId: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      allowDangerousEmailAccountLinking: true,
+    })
+  )
+}
+{
+  // Reuse the existing personal LinkedIn app creds (already in env for publishing).
+  const liId = process.env.AUTH_LINKEDIN_ID ?? process.env.LINKEDIN_PERSONAL_CLIENT_ID
+  const liSecret = process.env.AUTH_LINKEDIN_SECRET ?? process.env.LINKEDIN_PERSONAL_CLIENT_SECRET
+  if (liId && liSecret) {
+    oauthProviders.push(
+      LinkedIn({
+        clientId: liId,
+        clientSecret: liSecret,
+        allowDangerousEmailAccountLinking: true,
+        authorization: { params: { scope: "openid profile email" } },
+      })
+    )
+  }
+}
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   session: { strategy: "jwt" },
@@ -106,18 +153,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             })
             .returning()
 
-          // Notify owner about new user
-          fetch(
-            `https://api.telegram.org/bot8213146538:AAH9ceXiIQ62-ICZJlUFx0psyd2nYq1gN7g/sendMessage`,
-            {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                chat_id: 372194458,
-                text: `\u{1F195} New user (PIN auth): ${email}`,
-              }),
-            }
-          ).catch(() => {})
+          notifyOwnerNewUser(email, "PIN auth")
         } else if (!user.emailVerified) {
           await db
             .update(users)
@@ -133,10 +169,39 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         }
       },
     }),
+    ...oauthProviders,
   ],
   callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
+    async jwt({ token, user, account, profile }) {
+      // OAuth (Google / LinkedIn) first sign-in: upsert our own user row keyed by
+      // email so the rest of the app (which reads users.id / plan) works unchanged.
+      // Runs only on the sign-in request (account is present only then).
+      if (account && (account.provider === "google" || account.provider === "linkedin")) {
+        const email = (
+          (profile?.email as string | undefined) ??
+          user?.email ??
+          ""
+        ).toLowerCase().trim()
+        if (email) {
+          let [dbUser] = await db.select().from(users).where(eq(users.email, email))
+          if (!dbUser) {
+            ;[dbUser] = await db
+              .insert(users)
+              .values({
+                email,
+                name: (profile?.name as string | undefined) ?? user?.name ?? email.split("@")[0],
+                emailVerified: new Date(),
+                plan: "starter",
+              })
+              .returning()
+            notifyOwnerNewUser(email, `${account.provider} sign-in`)
+          } else if (!dbUser.emailVerified) {
+            await db.update(users).set({ emailVerified: new Date() }).where(eq(users.id, dbUser.id))
+          }
+          token.id = dbUser.id
+          token.plan = dbUser.plan
+        }
+      } else if (user) {
         token.id = user.id
         token.plan = (user as { plan?: string }).plan ?? "starter"
       }
