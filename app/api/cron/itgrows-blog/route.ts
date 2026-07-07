@@ -8,6 +8,13 @@ export const maxDuration = 300
 
 const OWNER_FALLBACK_EMAIL = "kiryl.sidarchuk@gmail.com"
 
+// Call the internal engine via the PUBLIC production domain, not req.nextUrl.origin:
+// the cron runs on the deployment URL (*.vercel.app), which has Deployment Protection
+// and returns an HTML interstitial for server-to-server calls (breaks JSON parsing).
+// The public alias is unprotected, and seo/generate's own nested image call then also
+// resolves to this domain.
+const SITE_URL = process.env.ITGROWS_PUBLIC_URL ?? "https://www.itgrows.ai"
+
 function slugify(text: string): string {
   return (
     text
@@ -78,8 +85,8 @@ export async function GET(req: NextRequest) {
 
     // Generate the article + cover image via the existing engine (internal call = no auth/paywall).
     stage = "generate"
-    console.log(`[itgrows-blog] generating "${keyword}" via ${req.nextUrl.origin}/api/seo/generate (owner=${ownerId})`)
-    const genRes = await fetch(`${req.nextUrl.origin}/api/seo/generate`, {
+    console.log(`[itgrows-blog] generating "${keyword}" via ${SITE_URL}/api/seo/generate (owner=${ownerId})`)
+    const genRes = await fetch(`${SITE_URL}/api/seo/generate`, {
       method: "POST",
       headers: { "Content-Type": "application/json", "x-internal-secret": cronSecret },
       body: JSON.stringify({
@@ -94,6 +101,12 @@ export async function GET(req: NextRequest) {
       const errText = await genRes.text()
       console.error(`[itgrows-blog] generation failed ${genRes.status}: ${errText.slice(0, 300)}`)
       return NextResponse.json({ error: "Generation failed", status: genRes.status, keyword, detail: errText.slice(0, 500) }, { status: 502 })
+    }
+    if (!(genRes.headers.get("content-type") ?? "").includes("application/json")) {
+      // 200 but not JSON = an interstitial (e.g. deployment-protection HTML). Fail cleanly.
+      const body = await genRes.text()
+      console.error(`[itgrows-blog] non-JSON 200 from seo/generate: ${body.slice(0, 200)}`)
+      return NextResponse.json({ error: "seo/generate returned non-JSON (protection interstitial?)", keyword, detail: body.slice(0, 300) }, { status: 502 })
     }
     stage = "parse-response"
     const data = (await genRes.json()) as {
