@@ -1135,7 +1135,7 @@ export default function PersonalPage() {
             Start your 14-day free trial
           </Button>
           <p className="mt-4 text-xs sm:text-sm text-slate-500">14-day free trial · Cancel anytime · From $49/month</p>
-          <p className="mt-2 text-xs sm:text-sm text-slate-600 font-medium">Not happy in your first 7 days after subscribing? Email us for a full refund — no questions asked.</p>
+          <p className="mt-2 text-xs sm:text-sm text-slate-600 font-medium">Not happy in your first 7 days after subscribing? Email us for a full refund.</p>
           <p className="mt-2 text-xs text-slate-400">🔒 OAuth secure · No password stored</p>
         </div>
       </section>

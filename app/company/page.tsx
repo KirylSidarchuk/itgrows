@@ -186,8 +186,8 @@ export default function CompanyPage() {
             ItGrows writes and publishes on-brand posts to your <span className="text-violet-600 font-semibold">company&apos;s LinkedIn Page</span> and X account — daily, in <span className="text-violet-600 font-semibold">your brand voice</span>. Your team&apos;s personal accounts too. <span className="text-violet-600 font-semibold">You approve</span>, or go full autopilot.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
-            <Link href="/signup"><Button size="lg" className="bg-violet-600 hover:bg-violet-500 text-white px-9 py-4 text-base sm:text-lg rounded-xl font-semibold shadow-lg shadow-violet-600/30">Start 14-day free trial</Button></Link>
-            <a href="#how"><Button size="lg" variant="ghost" className="text-slate-600 hover:text-[#1b1916] px-6 py-4 text-base rounded-xl">See how it works</Button></a>
+            <a href="#company-generator"><Button size="lg" className="bg-violet-600 hover:bg-violet-500 text-white px-9 py-4 text-base sm:text-lg rounded-xl font-semibold shadow-lg shadow-violet-600/30">See a post for your company — free</Button></a>
+            <Link href="/signup"><Button size="lg" variant="ghost" className="text-slate-600 hover:text-[#1b1916] px-6 py-4 text-base rounded-xl">Start 14-day free trial</Button></Link>
           </div>
           <div className="mt-5 flex flex-wrap justify-center items-center gap-2 text-xs sm:text-sm">
             <span className="inline-flex items-center gap-1.5 font-semibold text-violet-900 bg-violet-50 border border-violet-200 rounded-full px-3 py-1.5 shadow-sm">🛡️ Approved by LinkedIn — official API</span>
@@ -196,7 +196,7 @@ export default function CompanyPage() {
           </div>
 
           {/* Company ghost generator */}
-          <div className="mt-10 max-w-3xl mx-auto text-left">
+          <div id="company-generator" className="mt-10 max-w-3xl mx-auto text-left scroll-mt-24">
             <div className="bg-[#f8f7f6] border border-black/10 rounded-2xl p-5 sm:p-6">
               <p className="text-sm font-semibold text-[#1b1916] mb-1">See a post for your company — in your brand voice</p>
               <p className="text-xs text-slate-500 mb-4">One line about what your company does. No signup.</p>
