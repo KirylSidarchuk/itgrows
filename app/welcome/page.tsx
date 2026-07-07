@@ -95,10 +95,10 @@ function PersonalWelcomeContent() {
         ) : (
           <>
             <p className="text-lg text-slate-600 mb-3 leading-relaxed">
-              Your posting autopilot is now active.
+              One step left — connect LinkedIn to go live.
             </p>
             <p className="text-sm text-slate-500 mb-10">
-              Connect your LinkedIn account and fill a 2-minute brief — then we&apos;ll start generating your posts automatically.
+              Connect your LinkedIn account and fill a 2-minute brief — then we&apos;ll generate your posts (free to preview) and publish on autopilot.
             </p>
             <Link href="/cabinet">
               <Button

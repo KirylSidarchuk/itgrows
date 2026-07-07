@@ -52,6 +52,7 @@ export async function POST(req: NextRequest) {
     const [user] = await db.select({ subscriptionPlan: users.subscriptionPlan, subscriptionStatus: users.subscriptionStatus, trialEndsAt: users.trialEndsAt, cancelAtPeriodEnd: users.cancelAtPeriodEnd, subscriptionEndDate: users.subscriptionEndDate })
       .from(users).where(eq(users.id, userId)).limit(1)
     const userAccess = { subscriptionStatus: user?.subscriptionStatus ?? null, subscriptionPlan: user?.subscriptionPlan ?? null, trialEndsAt: user?.trialEndsAt ?? null }
+    let freeFirstGen = false
     if (!user || !hasAccess(userAccess)) {
       // Free FIRST generation: let a connected user (no card yet) generate one schedule so they
       // see their own AI posts in-app before the card ask. Publishing/autopilot stays card-gated
@@ -64,7 +65,7 @@ export async function POST(req: NextRequest) {
       if (existingPost) {
         return NextResponse.json({ error: "subscription_required", message: "Active subscription or active trial required" }, { status: 403 })
       }
-      // else: allow this one free first generation (aha-moment before the card).
+      freeFirstGen = true // one free first generation (aha-moment before the card)
     }
     let maxPosts = 14
     if (user?.cancelAtPeriodEnd && user?.subscriptionEndDate) {
@@ -72,16 +73,18 @@ export async function POST(req: NextRequest) {
       if (daysLeft < 14) maxPosts = Math.max(daysLeft, 1)
     }
 
-    // Check rate limit
-    const rateLimit = await checkGenerateRateLimit(userId)
-    if (!rateLimit.allowed) {
-      return NextResponse.json(
-        { error: "rate_limit_exceeded", message: "You can generate once every 3 hours. Please try again later." },
-        {
-          status: 429,
-          headers: { "Retry-After": String(rateLimit.retryAfter ?? 3600) }
-        }
-      )
+    // Check rate limit (skip for the one free first generation so a failed attempt can be retried)
+    if (!freeFirstGen) {
+      const rateLimit = await checkGenerateRateLimit(userId)
+      if (!rateLimit.allowed) {
+        return NextResponse.json(
+          { error: "rate_limit_exceeded", message: "You can generate once every 3 hours. Please try again later." },
+          {
+            status: 429,
+            headers: { "Retry-After": String(rateLimit.retryAfter ?? 3600) }
+          }
+        )
+      }
     }
 
     const body = await req.json() as GenerateLinkedInRequest
