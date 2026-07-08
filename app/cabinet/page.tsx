@@ -3756,14 +3756,26 @@ function LinkedInPageContent() {
                     <LinkedInIcon className="w-9 h-9 text-white" />
                   </div>
                   <div>
-                    <p className="text-lg font-bold text-slate-800 mb-1">Connect LinkedIn to see your posts — free</p>
-                    <p className="text-sm text-slate-600 max-w-sm mx-auto">
-                      We&apos;ll generate a full schedule of posts in your voice, with cover images — free, before you enter any card. You approve every post; nothing publishes without you.
+                    <p className="text-lg font-bold text-slate-800 mb-1">
+                      {savedGhostPosts && savedGhostPosts.posts.length > 0
+                        ? `Your ${savedGhostPosts.posts.length} posts are saved — connect LinkedIn to publish them`
+                        : "Connect LinkedIn to get your posts — free"}
                     </p>
+                    <p className="text-sm text-slate-600 max-w-sm mx-auto">
+                      We&apos;ll write a full schedule in your voice, with cover images — free, before you enter any card. You approve every post; nothing publishes without you.
+                    </p>
+                  </div>
+                  {/* Bounded 3-step path so connecting feels like step 1 of 3, not an open-ended commitment. */}
+                  <div className="flex items-center justify-center gap-2 text-xs text-slate-500">
+                    <span className="font-semibold text-violet-600">1. Connect</span>
+                    <span className="text-slate-300">→</span>
+                    <span>2. Personalize</span>
+                    <span className="text-slate-300">→</span>
+                    <span>3. Generate — free</span>
                   </div>
                   <a href="/api/linkedin/connect?type=personal">
                     <Button className="bg-[#0077B5] hover:bg-[#00669c] text-white font-semibold px-6 py-2.5 rounded-xl shadow-sm">
-                      <LinkedInIcon className="w-4 h-4 mr-2" /> Connect LinkedIn
+                      <LinkedInIcon className="w-4 h-4 mr-2" /> Connect LinkedIn — takes 20 seconds
                     </Button>
                   </a>
                   <p className="text-xs text-slate-400 max-w-xs">🔒 You log in on LinkedIn&apos;s site — we never see your password, and you can revoke access anytime.</p>
