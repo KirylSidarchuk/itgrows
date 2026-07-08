@@ -4,6 +4,7 @@ import { SessionProvider } from "next-auth/react"
 import { Analytics } from "@vercel/analytics/next"
 import Script from "next/script"
 import CookieBanner from "@/components/CookieBanner"
+import VisitBeacon from "@/components/VisitBeacon"
 import "./globals.css";
 
 const geistSans = Geist({
@@ -65,6 +66,7 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <SessionProvider>{children}</SessionProvider>
+        <VisitBeacon />
         <Analytics />
         <CookieBanner />
         <Script src="https://t.contentsquare.net/uxa/973805ba839a0.js" strategy="afterInteractive" />

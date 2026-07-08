@@ -313,3 +313,23 @@ export const usageEvents = pgTable("usage_events", {
 }, (t) => [
   index("usage_events_user_action_idx").on(t.userId, t.action, t.createdAt),
 ])
+
+// First-party page-view counter (Vercel Analytics visits aren't queryable from code) —
+// feeds the daily Telegram report. visitorHash = daily-rotating hash of IP+UA for uniques.
+export const siteVisits = pgTable("site_visits", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  path: text("path"),
+  visitorHash: text("visitor_hash"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (t) => [
+  index("site_visits_created_at_idx").on(t.createdAt),
+])
+
+// One snapshot row per day so the daily report can show day-over-day deltas.
+export const dailyStats = pgTable("daily_stats", {
+  day: text("day").primaryKey(),
+  totalUsers: integer("total_users").notNull().default(0),
+  paying: integer("paying").notNull().default(0),
+  trialing: integer("trialing").notNull().default(0),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+})
