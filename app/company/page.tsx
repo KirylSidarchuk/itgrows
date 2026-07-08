@@ -184,25 +184,21 @@ export default function CompanyPage() {
             <Link href="/" className="px-4 py-1.5 rounded-full text-sm font-semibold text-slate-600 hover:text-[#1b1916] transition-colors">For me — Personal</Link>
             <span className="px-4 py-1.5 rounded-full text-sm font-semibold bg-violet-600 text-white">For my company</span>
           </div>
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold leading-tight mb-5 tracking-tight">
+          <h1 className="text-3xl sm:text-5xl md:text-6xl font-extrabold leading-tight mb-4 tracking-tight">
             Put your company on LinkedIn &amp; X —
             <span className="block bg-gradient-to-r from-violet-600 via-pink-500 to-cyan-500 bg-clip-text text-transparent">on autopilot</span>
           </h1>
-          <p className="text-base sm:text-xl text-slate-600 max-w-2xl mx-auto mb-8 leading-relaxed">
+          <p className="text-base sm:text-xl text-slate-600 max-w-2xl mx-auto mb-6 leading-relaxed">
             ItGrows writes and publishes on-brand posts to your <span className="text-violet-600 font-semibold">company&apos;s LinkedIn Page</span> and X account — daily, in <span className="text-violet-600 font-semibold">your brand voice</span>. Your team&apos;s personal accounts too. <span className="text-violet-600 font-semibold">You approve</span>, or go full autopilot.
           </p>
-          <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
-            <a href="#company-generator"><Button size="lg" className="bg-violet-600 hover:bg-violet-500 text-white px-9 py-4 text-base sm:text-lg rounded-xl font-semibold shadow-lg shadow-violet-600/30">See a post for your company — free</Button></a>
-            <Link href="/signup"><Button size="lg" variant="ghost" className="text-slate-600 hover:text-[#1b1916] px-6 py-4 text-base rounded-xl">Start 14-day free trial</Button></Link>
-          </div>
-          <div className="mt-5 flex flex-wrap justify-center items-center gap-2 text-xs sm:text-sm">
+          <div className="mt-4 flex flex-wrap justify-center items-center gap-2 text-xs sm:text-sm">
             <span className="inline-flex items-center gap-1.5 font-semibold text-violet-900 bg-violet-50 border border-violet-200 rounded-full px-3 py-1.5 shadow-sm">🛡️ Approved by LinkedIn — official API</span>
             <span className="inline-flex items-center gap-1.5 font-medium text-slate-700 bg-white border border-black/10 rounded-full px-3 py-1.5"><span className="text-green-600">✓</span> Cancel anytime</span>
             <span className="inline-flex items-center gap-1.5 font-medium text-slate-700 bg-white border border-black/10 rounded-full px-3 py-1.5"><span className="text-green-600">✓</span> You approve every post</span>
           </div>
 
-          {/* Company ghost generator */}
-          <div id="company-generator" className="mt-10 max-w-3xl mx-auto text-left scroll-mt-24">
+          {/* Company ghost generator — the primary hero action (parity with the personal page) */}
+          <div id="company-generator" className="mt-6 max-w-3xl mx-auto text-left scroll-mt-24">
             <div className="bg-[#f8f7f6] border border-black/10 rounded-2xl p-5 sm:p-6">
               <p className="text-sm font-semibold text-[#1b1916] mb-1">See a post for your company — in your brand voice</p>
               <p className="text-xs text-slate-500 mb-4">One line about what your company does. No signup.</p>
