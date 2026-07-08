@@ -1,8 +1,9 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
+import { track } from "@vercel/analytics"
 
 const LinkedInIcon = ({ className = "w-5 h-5" }: { className?: string }) => (
   <svg viewBox="0 0 24 24" fill="white" className={className}><path d="M20.447 20.452H16.89v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a1.977 1.977 0 0 1-1.972-1.98 1.977 1.977 0 0 1 1.972-1.979 1.977 1.977 0 0 1 1.972 1.979 1.977 1.977 0 0 1-1.972 1.98zm1.99 13.019H3.347V9h3.98v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" /></svg>
@@ -45,6 +46,13 @@ export default function CompanyPage() {
   const [coWhatYouDo, setCoWhatYouDo] = useState("")
   const [coLoading, setCoLoading] = useState(false)
   const [coPosts, setCoPosts] = useState<string[]>([])
+  const coResultRef = useRef<HTMLDivElement>(null)
+
+  // Preview→signup with attribution (parity with the personal page's goSignupFromPreview).
+  function goSignupFromPreview(source: string) {
+    track("start_trial_clicked", { source })
+    window.location.href = "/signup"
+  }
   const [coImages, setCoImages] = useState<(string | null)[]>([])
   const [coError, setCoError] = useState("")
   const [coProgress, setCoProgress] = useState(0)
@@ -65,6 +73,7 @@ export default function CompanyPage() {
   async function handleCompanyGenerate() {
     if (coWhatYouDo.trim().length < 5) return
     const thoughts = `Our company: ${coWhatYouDo}.`
+    track("generate_preview_clicked", { page: "company" })
     setCoLoading(true); setCoError(""); setCoPosts([]); setCoImages([])
     try {
       const res = await fetch("/api/public/generate-preview", {
@@ -76,6 +85,9 @@ export default function CompanyPage() {
       if (data.posts && data.posts.length > 0) {
         setCoPosts(data.posts)
         setCoImages(data.images ?? [])
+        track("preview_posts_shown", { page: "company" })
+        // Mobile: results render below the fold — bring them into view (parity with personal).
+        setTimeout(() => { coResultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }) }, 120)
         // Save text+brief WITHOUT the large base64 images first (so text always survives the ~5MB
         // localStorage quota), then try to attach images; a quota failure must not lose the posts.
         const coHandoffBase = {
@@ -188,14 +200,9 @@ export default function CompanyPage() {
             Put your company on LinkedIn &amp; X —
             <span className="block bg-gradient-to-r from-violet-600 via-pink-500 to-cyan-500 bg-clip-text text-transparent">on autopilot</span>
           </h1>
-          <p className="text-base sm:text-xl text-slate-600 max-w-2xl mx-auto mb-6 leading-relaxed">
-            ItGrows writes and publishes on-brand posts to your <span className="text-violet-600 font-semibold">company&apos;s LinkedIn Page</span> and X account — daily, in <span className="text-violet-600 font-semibold">your brand voice</span>. Your team&apos;s personal accounts too. <span className="text-violet-600 font-semibold">You approve</span>, or go full autopilot.
+          <p className="text-base sm:text-xl text-slate-600 max-w-2xl mx-auto mb-4 leading-relaxed">
+            AI writes and publishes to your <span className="text-violet-600 font-semibold">company&apos;s LinkedIn Page and X</span> — daily, in your brand voice. You approve, or go full autopilot.
           </p>
-          <div className="mt-4 flex flex-wrap justify-center items-center gap-2 text-xs sm:text-sm">
-            <span className="inline-flex items-center gap-1.5 font-semibold text-violet-900 bg-violet-50 border border-violet-200 rounded-full px-3 py-1.5 shadow-sm">🛡️ Approved by LinkedIn — official API</span>
-            <span className="inline-flex items-center gap-1.5 font-medium text-slate-700 bg-white border border-black/10 rounded-full px-3 py-1.5"><span className="text-green-600">✓</span> Cancel anytime</span>
-            <span className="inline-flex items-center gap-1.5 font-medium text-slate-700 bg-white border border-black/10 rounded-full px-3 py-1.5"><span className="text-green-600">✓</span> You approve every post</span>
-          </div>
 
           {/* Company ghost generator — the primary hero action (parity with the personal page) */}
           <div id="company-generator" className="mt-6 max-w-3xl mx-auto text-left scroll-mt-24">
@@ -219,6 +226,14 @@ export default function CompanyPage() {
                   {coLoading ? (<><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />Generating…</>) : "Generate posts →"}
                 </button>
               </div>
+
+              {/* Trust chips + trial line — BELOW the input (parity with the personal hero) */}
+              <div className="flex flex-wrap justify-center items-center gap-2 mt-4 text-xs sm:text-sm">
+                <span className="inline-flex items-center gap-1.5 font-semibold text-violet-900 bg-violet-50 border border-violet-200 rounded-full px-3 py-1.5 shadow-sm">🛡️ Approved by LinkedIn — official API</span>
+                <span className="inline-flex items-center gap-1.5 font-medium text-slate-700 bg-white border border-black/10 rounded-full px-3 py-1.5"><span className="text-green-600">✓</span> You approve every post</span>
+                <span className="inline-flex items-center gap-1.5 font-medium text-slate-700 bg-white border border-black/10 rounded-full px-3 py-1.5"><span className="text-green-600">✓</span> Cancel anytime</span>
+              </div>
+              <p className="text-center mt-3 text-xs sm:text-sm text-slate-500 font-medium">14-day free trial · Your team&apos;s personal accounts too</p>
 
               {coLoading && (
                 <div className="mt-6 space-y-4">
@@ -250,7 +265,7 @@ export default function CompanyPage() {
               )}
 
               {coPosts.length > 0 && (
-                <div className="mt-6 space-y-4">
+                <div ref={coResultRef} className="mt-6 space-y-4 scroll-mt-24">
                   {/* First post — shown in full to prove the quality */}
                   <div className="bg-white border border-black/10 rounded-2xl overflow-hidden shadow-sm">
                     {coImages[0] && (<img src={coImages[0]!} alt="Post cover" className="w-full h-48 object-cover" />)}
@@ -280,8 +295,8 @@ export default function CompanyPage() {
                   <div className="bg-gradient-to-r from-violet-600 to-cyan-600 rounded-2xl p-6 sm:p-8 text-center text-white">
                     <div className="text-2xl font-extrabold mb-2">These are yours — want them on your company page every day?</div>
                     <p className="text-white/80 text-sm mb-1">You just saw them free, no signup. Sign up to auto-write &amp; publish posts like these daily to your company&apos;s LinkedIn &amp; X — on autopilot.</p>
-                    <p className="text-white/70 text-xs mb-5">✓ 14-day free trial · Cancel anytime &nbsp;·&nbsp; ✓ These posts are saved — waiting in your dashboard.</p>
-                    <Link href="/signup"><Button className="bg-white text-violet-600 font-bold text-sm hover:bg-violet-50">Get 14 days free →</Button></Link>
+                    <p className="text-white/70 text-xs mb-5">✓ Free for 14 days · You&apos;re not charged today &nbsp;·&nbsp; ✓ These posts are saved — waiting in your dashboard.</p>
+                    <Button onClick={() => goSignupFromPreview("company_preview_banner")} className="bg-white text-violet-600 font-bold text-sm hover:bg-violet-50">Get 14 days free →</Button>
                   </div>
                 </div>
               )}
@@ -402,7 +417,7 @@ export default function CompanyPage() {
               <p className="text-sm text-white/75">Show up where deals and hires are decided.</p>
             </div>
           </div>
-          <Link href="/signup"><Button size="lg" className="bg-white text-violet-700 hover:bg-white/90 px-9 py-4 text-base sm:text-lg rounded-xl font-bold shadow-lg">Put your brand on autopilot — start free</Button></Link>
+          <Link href="/signup" className="block w-full sm:w-auto sm:inline-block"><Button size="lg" className="w-full sm:w-auto whitespace-normal h-auto bg-white text-violet-700 hover:bg-white/90 px-6 sm:px-9 py-4 text-base sm:text-lg rounded-xl font-bold shadow-lg">Put your brand on autopilot — start free</Button></Link>
           <p className="text-sm text-white/70 mt-4">Every silent week is momentum handed to a competitor. Start today.</p>
         </div>
       </section>
@@ -500,7 +515,23 @@ export default function CompanyPage() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-black/10 px-6 py-8 text-center text-slate-500 text-sm" style={{ backgroundColor: "#ebe9e5" }}>
+      {/* Sticky mobile CTA — once the company posts render, convert without scrolling back (parity with personal) */}
+      {coPosts.length > 0 && (
+        <div className="fixed bottom-0 inset-x-0 z-40 sm:hidden bg-white border-t border-black/10 shadow-[0_-4px_20px_rgba(0,0,0,0.08)] px-4 py-3 flex items-center gap-3">
+          <div className="min-w-0 flex-1">
+            <div className="text-xs font-semibold text-[#1b1916] leading-tight">Your {coPosts.length} post{coPosts.length > 1 ? "s are" : " is"} ready</div>
+            <div className="text-[11px] text-slate-500 leading-tight">Free 14 days · cancel anytime</div>
+          </div>
+          <button
+            onClick={() => goSignupFromPreview("company_sticky_mobile")}
+            className="flex-shrink-0 px-5 py-2.5 rounded-xl bg-violet-600 text-white font-bold text-sm hover:bg-violet-500 transition-colors"
+          >
+            Get 14 Days Free →
+          </button>
+        </div>
+      )}
+
+      <footer className={`border-t border-black/10 px-6 py-8 text-center text-slate-500 text-sm ${coPosts.length > 0 ? "pb-24 sm:pb-8" : ""}`} style={{ backgroundColor: "#ebe9e5" }}>
         <div className="max-w-6xl mx-auto">
           © 2026 ItGrows.ai. All rights reserved. ·{" "}
           <Link href="/privacy" className="hover:text-[#1b1916] transition-colors">Privacy Policy</Link>{" · "}

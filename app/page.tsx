@@ -387,6 +387,7 @@ export default function PersonalPage() {
                     type="text"
                     value={ghostWhatYouDo}
                     onChange={(e) => setGhostWhatYouDo(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === "Enter" && !ghostLoading && ghostWhatYouDo.trim().length >= 5) handleGhostGenerate() }}
                     placeholder="e.g. I'm an organizational transformation consultant helping Fortune 500 companies navigate change"
                     className="w-full rounded-xl border border-black/15 bg-white px-4 py-2.5 text-sm text-[#1b1916] placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-400"
                   />
@@ -500,7 +501,7 @@ export default function PersonalPage() {
                 <div className="mt-4 rounded-xl border border-violet-200 bg-violet-50 p-4 text-center">
                   <p className="text-sm font-semibold text-[#1b1916] mb-2">You&apos;ve seen a taste — get unlimited posts, published daily.</p>
                   <button
-                    onClick={() => { window.location.href = "/signup" }}
+                    onClick={() => goSignupFromPreview("preview_limit")}
                     className="inline-block px-6 py-2.5 rounded-lg bg-violet-600 hover:bg-violet-500 text-white font-semibold text-sm transition-colors"
                   >
                     Start 14 days free →
@@ -728,7 +729,7 @@ export default function PersonalPage() {
               <p className="text-sm text-white/75">When opportunity strikes, they think of you first.</p>
             </div>
           </div>
-          <Button size="lg" onClick={() => document.getElementById("ghost-form")?.scrollIntoView({ behavior: "smooth", block: "center" })} className="bg-white text-violet-700 hover:bg-white/90 px-9 py-4 text-base sm:text-lg rounded-xl font-bold shadow-lg">
+          <Button size="lg" onClick={() => document.getElementById("ghost-form")?.scrollIntoView({ behavior: "smooth", block: "center" })} className="w-full sm:w-auto whitespace-normal h-auto bg-white text-violet-700 hover:bg-white/90 px-6 sm:px-9 py-4 text-base sm:text-lg rounded-xl font-bold shadow-lg">
             Be the one they remember — start free
           </Button>
           <p className="text-sm text-white/70 mt-4">Consistency compounds. The best time to start was a year ago — the next best is today.</p>
@@ -1007,7 +1008,7 @@ export default function PersonalPage() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-black/10 px-6 py-8 text-center text-slate-500 text-sm" style={{ backgroundColor: "#ebe9e5" }}>
+      <footer className={`border-t border-black/10 px-6 py-8 text-center text-slate-500 text-sm ${ghostPosts.length > 0 ? "pb-24 sm:pb-8" : ""}`} style={{ backgroundColor: "#ebe9e5" }}>
         <p>
           © 2026 ItGrows.ai. All rights reserved. ·{" "}
           <Link href="/privacy" className="hover:text-[#1b1916] transition-colors">Privacy Policy</Link>
@@ -1022,7 +1023,7 @@ export default function PersonalPage() {
         <div className="fixed bottom-0 inset-x-0 z-40 sm:hidden bg-white border-t border-black/10 shadow-[0_-4px_20px_rgba(0,0,0,0.08)] px-4 py-3 flex items-center gap-3">
           <div className="min-w-0 flex-1">
             <div className="text-xs font-semibold text-[#1b1916] leading-tight">Your {ghostPosts.length} post{ghostPosts.length > 1 ? "s are" : " is"} ready</div>
-            <div className="text-[11px] text-slate-500 leading-tight">Free for 14 days · cancel anytime</div>
+            <div className="text-[11px] text-slate-500 leading-tight">Free 14 days · cancel anytime</div>
           </div>
           <button
             onClick={() => goSignupFromPreview("sticky_mobile")}
