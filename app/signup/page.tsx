@@ -23,6 +23,20 @@ function SignupForm() {
 
   const pin = digits.join("")
 
+  // Warm the signup with the posts the visitor just generated on the landing (activation fix):
+  // the same localStorage handoff the cabinet reads, so signup feels like "finish what I started".
+  const [handoff, setHandoff] = useState<{ posts: string[]; images?: (string | null)[]; n: number } | null>(null)
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("itgrows_ghost_handoff")
+      if (!raw) return
+      const h = JSON.parse(raw) as { posts?: string[]; images?: (string | null)[] }
+      if (Array.isArray(h.posts) && h.posts.length > 0) {
+        setHandoff({ posts: h.posts, images: h.images, n: h.posts.length })
+      }
+    } catch { /* ignore */ }
+  }, [])
+
   useEffect(() => {
     if (step !== "pin") return
     setTimeLeft(900)
@@ -277,10 +291,31 @@ function SignupForm() {
               ItGrows.ai
             </span>
           </Link>
-          <h1 className="text-2xl font-bold text-[#1b1916] mt-4">Create your account</h1>
-          <p className="text-slate-500 text-sm mt-1">Start growing your business today</p>
+          {handoff ? (
+            <>
+              <h1 className="text-2xl font-bold text-[#1b1916] mt-4">One step left — claim your posts</h1>
+              <p className="text-slate-500 text-sm mt-1">Create your account to publish the {handoff.n} post{handoff.n > 1 ? "s" : ""} you just wrote to your LinkedIn &amp; X. Free for 14 days, cancel anytime.</p>
+            </>
+          ) : (
+            <>
+              <h1 className="text-2xl font-bold text-[#1b1916] mt-4">Create your account</h1>
+              <p className="text-slate-500 text-sm mt-1">Start growing your business today</p>
+            </>
+          )}
         </div>
         <div className="bg-white border border-black/10 rounded-2xl p-8">
+          {handoff && (
+            <div className="mb-5 rounded-xl border border-violet-200 bg-violet-50 p-3 flex gap-3 items-start">
+              {handoff.images?.[0] && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={handoff.images[0]!} alt="Your generated post" className="w-14 h-14 rounded-lg object-cover flex-shrink-0" />
+              )}
+              <div className="min-w-0">
+                <div className="text-xs font-semibold text-violet-700 mb-0.5">✓ {handoff.n} post{handoff.n > 1 ? "s" : ""} saved{handoff.n > 1 ? ` · +${handoff.n - 1} more waiting` : ""}</div>
+                <p className="text-xs text-slate-600">{handoff.posts[0].slice(0, 120)}{handoff.posts[0].length > 120 ? "…" : ""}</p>
+              </div>
+            </div>
+          )}
           <OAuthButtons callbackUrl={callbackUrl} />
           <form onSubmit={handleSendPin} className="space-y-4">
             <div>

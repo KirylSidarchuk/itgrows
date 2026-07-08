@@ -11,7 +11,7 @@ export default function OAuthButtons({ callbackUrl = "/cabinet" }: { callbackUrl
   const [loading, setLoading] = useState<"google" | "linkedin" | null>(null)
 
   return (
-    <div className="space-y-3">
+    <div className="flex flex-col gap-3">
       <button
         type="button"
         onClick={() => { setLoading("google"); signIn("google", { callbackUrl }) }}
@@ -31,7 +31,7 @@ export default function OAuthButtons({ callbackUrl = "/cabinet" }: { callbackUrl
         type="button"
         onClick={() => { setLoading("linkedin"); signIn("linkedin", { callbackUrl }) }}
         disabled={loading !== null}
-        className="w-full flex items-center justify-center gap-3 py-3 rounded-xl border border-black/15 bg-white hover:bg-slate-50 text-[#1b1916] text-sm font-semibold transition-colors disabled:opacity-60"
+        className="order-first w-full flex items-center justify-center gap-3 py-3 rounded-xl border border-black/15 bg-white hover:bg-slate-50 text-[#1b1916] text-sm font-semibold transition-colors disabled:opacity-60"
       >
         <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
           <path fill="#0A66C2" d="M20.45 20.45h-3.56v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.13 1.45-2.13 2.94v5.67H9.35V9h3.42v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.45v6.29zM5.34 7.43a2.06 2.06 0 1 1 0-4.13 2.06 2.06 0 0 1 0 4.13zM7.12 20.45H3.55V9h3.57v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.22.79 24 1.77 24h20.45c.98 0 1.78-.78 1.78-1.73V1.73C24 .77 23.2 0 22.22 0z" />

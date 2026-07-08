@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -68,6 +68,7 @@ export default function PersonalPage() {
   const [ghostGoals, setGhostGoals] = useState<string[]>([])
   const [ghostLoading, setGhostLoading] = useState(false)
   const [ghostPosts, setGhostPosts] = useState<string[]>([])
+  const ghostResultRef = useRef<HTMLDivElement>(null)
   const [ghostImages, setGhostImages] = useState<(string | null)[]>([])
   const [ghostError, setGhostError] = useState("")
   const [showGhostDetails, setShowGhostDetails] = useState(false)
@@ -140,13 +141,21 @@ export default function PersonalPage() {
         setGhostPosts(data.posts)
         setGhostImages(data.images ?? [])
         track("preview_posts_shown")
-        // Carry-forward: persist so signup can pre-populate the cabinet with what they already saw (activation fix).
+        // Carry-forward: persist so /signup and the cabinet can show what they already saw (activation fix).
+        // Save text+brief WITHOUT the (large, base64) images FIRST so the text always survives the ~5MB
+        // localStorage quota; then try to attach images. A quota failure on images must not lose the posts.
+        const handoffBase = {
+          brief: { niche: ghostWhatYouDo, targetAudience: ghostAudience, tone: ghostTone.toLowerCase(), goals: ghostGoals.join(", ") },
+          posts: data.posts, ts: Date.now(),
+        }
         try {
-          localStorage.setItem("itgrows_ghost_handoff", JSON.stringify({
-            brief: { niche: ghostWhatYouDo, targetAudience: ghostAudience, tone: ghostTone.toLowerCase(), goals: ghostGoals.join(", ") },
-            posts: data.posts, images: data.images ?? [], ts: Date.now(),
-          }))
+          localStorage.setItem("itgrows_ghost_handoff", JSON.stringify({ ...handoffBase, images: [] }))
+          try {
+            localStorage.setItem("itgrows_ghost_handoff", JSON.stringify({ ...handoffBase, images: data.images ?? [] }))
+          } catch { /* images too big for quota — text+brief already saved above */ }
         } catch { /* localStorage unavailable — non-fatal */ }
+        // Mobile: results render below the fold — scroll them into view so the aha lands.
+        setTimeout(() => { ghostResultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }) }, 120)
       } else if (res.status === 429) {
         setGhostError("You've used your 2 free previews. Sign up to generate unlimited posts →")
       } else {
@@ -157,6 +166,13 @@ export default function PersonalPage() {
     } finally {
       setGhostLoading(false)
     }
+  }
+
+  // Send to signup from a preview CTA, tracking the click so we can actually measure preview→trial
+  // (previously only the pricing buttons fired start_trial_clicked, so this step was invisible).
+  function goSignupFromPreview(source: string) {
+    track("start_trial_clicked", { source })
+    window.location.href = "/signup"
   }
 
   useEffect(() => {
@@ -509,7 +525,7 @@ export default function PersonalPage() {
             )}
 
             {ghostPosts.length > 0 && (
-              <div className="mt-8 space-y-4">
+              <div ref={ghostResultRef} className="mt-8 space-y-4 scroll-mt-24">
                 {/* First post — shown in full to prove the quality */}
                 <div className="bg-white border border-black/10 rounded-2xl overflow-hidden shadow-sm">
                   {ghostImages[0] && (
@@ -527,7 +543,7 @@ export default function PersonalPage() {
                     <div className="mt-4 pt-4 border-t border-black/5 flex items-center justify-between">
                       <div className="flex gap-4 text-xs text-slate-400"><span>👍 Like</span><span>💬 Comment</span><span>🔁 Repost</span></div>
                       <button
-                        onClick={() => { window.location.href = "/signup" }}
+                        onClick={() => goSignupFromPreview("preview_post")}
                         className="inline-block px-4 py-2 rounded-lg text-sm font-semibold text-white transition-colors"
                         style={{ backgroundColor: "#7C3AED" }}
                         onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#6d28d9")}
@@ -562,12 +578,12 @@ export default function PersonalPage() {
                   <p className="text-white/80 text-sm mb-1">You just saw them free, no signup. Sign up to auto-write &amp; publish posts like these daily to your LinkedIn &amp; X — on autopilot.</p>
                   <p className="text-white/70 text-xs mb-5">✓ 14-day free trial · Cancel anytime &nbsp;·&nbsp; ✓ These posts are saved — waiting in your dashboard.</p>
                   <button
-                    onClick={() => { window.location.href = "/signup" }}
+                    onClick={() => goSignupFromPreview("preview_banner")}
                     className="inline-block px-8 py-3 rounded-xl bg-white text-violet-600 font-bold text-sm hover:bg-violet-50 transition-colors"
                   >
                     Get 14 Days Free →
                   </button>
-                  <p className="mt-3 text-white/60 text-xs">🔒 OAuth secure · No password stored · Cancel anytime</p>
+                  <p className="mt-3 text-white/60 text-xs">Free for 14 days · You&apos;re not charged today · Cancel anytime in 1 click</p>
                 </div>
               </div>
             )}
@@ -1150,10 +1166,27 @@ export default function PersonalPage() {
         </p>
       </footer>
 
+      {/* Sticky mobile CTA — once the visitor has their posts, let them start the trial without
+          scrolling past 3 full posts to the bottom banner (66% of traffic is mobile). */}
+      {ghostPosts.length > 0 && (
+        <div className="fixed bottom-0 inset-x-0 z-40 sm:hidden bg-white border-t border-black/10 shadow-[0_-4px_20px_rgba(0,0,0,0.08)] px-4 py-3 flex items-center gap-3">
+          <div className="min-w-0 flex-1">
+            <div className="text-xs font-semibold text-[#1b1916] leading-tight">Your {ghostPosts.length} post{ghostPosts.length > 1 ? "s are" : " is"} ready</div>
+            <div className="text-[11px] text-slate-500 leading-tight">Free for 14 days · cancel anytime</div>
+          </div>
+          <button
+            onClick={() => goSignupFromPreview("sticky_mobile")}
+            className="flex-shrink-0 px-5 py-2.5 rounded-xl bg-violet-600 text-white font-bold text-sm hover:bg-violet-500 transition-colors"
+          >
+            Get 14 Days Free →
+          </button>
+        </div>
+      )}
+
       {/* Floating Feedback Button */}
       <button
         onClick={() => { setFeedbackOpen(true); setFeedbackDone(false); setFeedbackError("") }}
-        className="fixed bottom-6 right-6 z-50 flex items-center gap-2 px-4 py-3 rounded-full text-white text-sm font-semibold shadow-lg transition-all hover:scale-105 active:scale-95"
+        className={`fixed ${ghostPosts.length > 0 ? "bottom-24 sm:bottom-6" : "bottom-6"} right-6 z-50 flex items-center gap-2 px-4 py-3 rounded-full text-white text-sm font-semibold shadow-lg transition-all hover:scale-105 active:scale-95`}
         style={{ background: "linear-gradient(135deg, #7C3AED, #6d28d9)" }}
         aria-label="Open feedback form"
       >

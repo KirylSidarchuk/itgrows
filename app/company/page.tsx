@@ -76,11 +76,17 @@ export default function CompanyPage() {
       if (data.posts && data.posts.length > 0) {
         setCoPosts(data.posts)
         setCoImages(data.images ?? [])
+        // Save text+brief WITHOUT the large base64 images first (so text always survives the ~5MB
+        // localStorage quota), then try to attach images; a quota failure must not lose the posts.
+        const coHandoffBase = {
+          brief: { niche: coWhatYouDo, tone: "professional", goals: "Grow company brand", companyName: coWhatYouDo },
+          posts: data.posts, mode: "company", ts: Date.now(),
+        }
         try {
-          localStorage.setItem("itgrows_ghost_handoff", JSON.stringify({
-            brief: { niche: coWhatYouDo, tone: "professional", goals: "Grow company brand", companyName: coWhatYouDo },
-            posts: data.posts, images: data.images ?? [], mode: "company", ts: Date.now(),
-          }))
+          localStorage.setItem("itgrows_ghost_handoff", JSON.stringify({ ...coHandoffBase, images: [] }))
+          try {
+            localStorage.setItem("itgrows_ghost_handoff", JSON.stringify({ ...coHandoffBase, images: data.images ?? [] }))
+          } catch { /* images too big for quota — text+brief already saved */ }
         } catch { /* non-fatal */ }
       } else if (res.status === 429) {
         setCoError("You've used your 2 free previews. Start a free trial to generate unlimited posts.")
