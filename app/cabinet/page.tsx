@@ -1076,6 +1076,26 @@ function LinkedInPageContent() {
           goals: h.brief!.goals || prev.goals,
           companyName: h.brief!.companyName || prev.companyName,
         }))
+        // Persist it server-side (user-level brief) if no DB brief exists yet. Without this the
+        // post-connect state reset + fetchBrief wipes what the user typed on the landing, and the
+        // connect-time auto-generation (which requires a DB brief) silently skips.
+        fetch("/api/linkedin/brief")
+          .then((r) => r.json())
+          .then((data: { brief?: { niche?: string | null } | null }) => {
+            if (data?.brief?.niche) return // a real DNA already exists — never clobber it
+            return fetch("/api/linkedin/brief", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                niche: h.brief!.niche,
+                targetAudience: h.brief!.targetAudience || undefined,
+                tone: h.brief!.tone || "professional",
+                goals: h.brief!.goals || undefined,
+                companyName: h.brief!.companyName || undefined,
+              }),
+            })
+          })
+          .catch(() => {})
       }
     } catch { /* malformed handoff — ignore */ }
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -1554,6 +1574,17 @@ function LinkedInPageContent() {
       if (!res.ok) {
         const data = await res.json().catch(() => ({})) as { error?: string; message?: string; retryAfter?: number }
         if (res.status === 403 && data.error === "subscription_required") {
+          // Race guard: the connect-time auto-generation may have JUST created their free posts,
+          // which makes this manual click 403 ("posts exist"). If posts exist now, show them —
+          // popping a paywall while their free posts sit in the DB is the worst first impression.
+          try {
+            const check = await fetch(`/api/linkedin/posts${selectedLinkedInAccountId ? `?linkedinAccountId=${selectedLinkedInAccountId}` : ""}`)
+            const checkData = await check.json().catch(() => ({})) as { posts?: LinkedInPost[] }
+            if (Array.isArray(checkData.posts) && checkData.posts.length > 0) {
+              fetchPosts(selectedLinkedInAccountId)
+              return
+            }
+          } catch { /* fall through to the plan modal */ }
           // Free first generation already used → prompt to start the trial to keep going.
           setShowPlanModal(true)
           return
@@ -2518,8 +2549,9 @@ function LinkedInPageContent() {
             )}
           </div>
 
-          {/* Carry-forward: posts generated on the landing page, waiting to be published */}
-          {savedGhostPosts && posts.length === 0 && (
+          {/* Carry-forward: posts generated on the landing page, waiting to be published.
+              Posts tab + LinkedIn only, so it never competes with the DNA form or the X panel. */}
+          {savedGhostPosts && posts.length === 0 && activePlatform === "linkedin" && activeTab === "posts" && (
             <div className="mb-4 sm:mb-6 rounded-2xl border border-violet-200 bg-white shadow-sm overflow-hidden">
               <div className="flex items-start justify-between gap-3 px-4 sm:px-5 py-4 bg-gradient-to-r from-violet-50 to-pink-50 border-b border-violet-100">
                 <div className="flex items-center gap-3">
@@ -2540,14 +2572,18 @@ function LinkedInPageContent() {
                 </button>
               </div>
               <div className="p-4 sm:p-5 space-y-3">
+                {/* Mobile shows only the first preview so the CTA stays near the fold; desktop shows all. */}
                 {savedGhostPosts.posts.slice(0, 3).map((post, i) => (
-                  <div key={i} className="rounded-xl border border-slate-100 bg-slate-50/60 overflow-hidden">
+                  <div key={i} className={`rounded-xl border border-slate-100 bg-slate-50/60 overflow-hidden ${i > 0 ? "hidden sm:block" : ""}`}>
                     {savedGhostPosts.images[i] && (
                       <img src={savedGhostPosts.images[i]!} alt="Post cover" className="w-full h-36 object-cover" />
                     )}
                     <p className="text-sm text-slate-700 whitespace-pre-wrap leading-relaxed p-4 line-clamp-4">{post}</p>
                   </div>
                 ))}
+                {savedGhostPosts.posts.length > 1 && (
+                  <p className="sm:hidden text-xs text-slate-500 text-center">+{savedGhostPosts.posts.length - 1} more saved</p>
+                )}
                 <button
                   onClick={() => {
                     if (!isConnected) { window.location.href = "/api/linkedin/connect?type=personal"; return }
@@ -2562,8 +2598,9 @@ function LinkedInPageContent() {
             </div>
           )}
 
-          {/* Upgrade banner — no plan, no trial */}
-          {!hasPersonalPlan && !trialExpired && !loading && (
+          {/* Upgrade banner — no plan, no trial. Hidden until an account is connected so the
+              pre-connect screen has ONE ask (connect), not a competing card-ask above it. */}
+          {isConnected && !hasPersonalPlan && !trialExpired && !loading && (
             <div className="mb-4 sm:mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 rounded-2xl px-4 sm:px-5 py-4 text-white shadow-lg"
               style={{ background: "linear-gradient(135deg, #7c3aed 0%, #a855f7 60%, #ec4899 100%)" }}>
               <div className="flex items-center gap-3">
@@ -2572,7 +2609,7 @@ function LinkedInPageContent() {
                 </div>
                 <div>
                   <p className="text-sm font-bold">Try Free for 14 Days</p>
-                  <p className="text-xs text-white/75 mt-0.5">AI posts, custom images, auto-scheduling · connect LinkedIn or X to start</p>
+                  <p className="text-xs text-white/75 mt-0.5">AI posts, custom images, publishing on autopilot · cancel anytime</p>
                 </div>
               </div>
               <button
@@ -3546,8 +3583,20 @@ function LinkedInPageContent() {
                     <div className="rounded-xl border border-red-100 bg-red-50 p-5 flex items-start gap-4">
                       <div className="text-2xl">😔</div>
                       <div>
-                        <p className="font-semibold text-red-800">Something went wrong</p>
-                        <p className="text-sm text-red-700 mt-1">Please try again or contact support if the issue persists.</p>
+                        {/* Show the actual server message — a generic "something went wrong" hid
+                            actionable errors like "fill your Professional DNA" (dead end at the aha). */}
+                        <p className="font-semibold text-red-800">{/dna|brief/i.test(generateError) ? "One step missing" : "Something went wrong"}</p>
+                        <p className="text-sm text-red-700 mt-1">{generateError}</p>
+                        {/dna|brief/i.test(generateError) ? (
+                          <button
+                            onClick={() => { setGenerateError(null); setGenerateErrorKind(null); setActiveTab("dna") }}
+                            className="mt-2 text-sm font-semibold text-violet-700 hover:text-violet-500 transition-colors"
+                          >
+                            Fill your Professional DNA →
+                          </button>
+                        ) : (
+                          <p className="text-xs text-red-600/70 mt-1">Try again, or contact support if it persists.</p>
+                        )}
                       </div>
                     </div>
                   )}
@@ -3680,17 +3729,26 @@ function LinkedInPageContent() {
                           </button>
                         </>
                       ) : (
+                        /* Connected free user, 0 posts: their FIRST generation is free (see
+                           /api/linkedin/generate freeFirstGen) — point them at DNA → free generate,
+                           never at a card-ask that contradicts the free path. */
                         <>
                           <div>
-                            <p className="text-base font-semibold text-slate-700 mb-1">No posts yet</p>
-                            <p className="text-sm text-slate-600 max-w-xs">Start your 14-day free trial to generate posts. Cancel anytime.</p>
+                            <p className="text-base font-semibold text-slate-700 mb-1">
+                              {briefFilled ? "Your first posts are free" : "One step left — then your first posts are free"}
+                            </p>
+                            <p className="text-sm text-slate-600 max-w-xs">
+                              {briefFilled
+                                ? "Generate a full schedule in your voice — free, no card. You only add a card to publish on autopilot."
+                                : "Fill your Professional DNA (1 minute) and generate a full schedule in your voice — free, no card."}
+                            </p>
                           </div>
                           <button
-                            onClick={() => setShowPlanModal(true)}
-                            disabled={checkingOut}
+                            onClick={briefFilled ? () => void handleGenerate() : () => setActiveTab("dna")}
+                            disabled={generating}
                             className="mt-2 bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-white font-semibold text-sm px-6 py-2.5 rounded-xl shadow-sm transition-opacity disabled:opacity-70"
                           >
-                            {checkingOut ? "Loading..." : "Start Free Trial →"}
+                            {generating ? "Generating…" : briefFilled ? "Generate my posts — free →" : "Fill Professional DNA →"}
                           </button>
                         </>
                       )}
@@ -3766,16 +3824,16 @@ function LinkedInPageContent() {
                     </p>
                   </div>
                   {/* Bounded 3-step path so connecting feels like step 1 of 3, not an open-ended commitment. */}
-                  <div className="flex items-center justify-center gap-2 text-xs text-slate-500">
-                    <span className="font-semibold text-violet-600">1. Connect</span>
+                  <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-xs text-slate-500">
+                    <span className="font-semibold text-violet-600 whitespace-nowrap">1. Connect</span>
                     <span className="text-slate-300">→</span>
-                    <span>2. Personalize</span>
+                    <span className="whitespace-nowrap">2. Personalize</span>
                     <span className="text-slate-300">→</span>
-                    <span>3. Generate — free</span>
+                    <span className="whitespace-nowrap">3. Generate — free</span>
                   </div>
-                  <a href="/api/linkedin/connect?type=personal">
-                    <Button className="bg-[#0077B5] hover:bg-[#00669c] text-white font-semibold px-6 py-2.5 rounded-xl shadow-sm">
-                      <LinkedInIcon className="w-4 h-4 mr-2" /> Connect LinkedIn — takes 20 seconds
+                  <a href="/api/linkedin/connect?type=personal" className="w-full sm:w-auto">
+                    <Button className="w-full sm:w-auto whitespace-normal h-auto bg-[#0077B5] hover:bg-[#00669c] text-white font-semibold px-6 py-2.5 rounded-xl shadow-sm">
+                      <LinkedInIcon className="w-4 h-4 mr-2 shrink-0" /> Connect LinkedIn — 20 seconds
                     </Button>
                   </a>
                   <p className="text-xs text-slate-400 max-w-xs">🔒 You log in on LinkedIn&apos;s site — we never see your password, and you can revoke access anytime.</p>
