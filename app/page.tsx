@@ -357,7 +357,7 @@ export default function PersonalPage() {
       </nav>
 
       {/* Hero */}
-      <section id="ghost-mode" className="relative px-4 sm:px-6 pt-16 sm:pt-24 pb-20 sm:pb-32 text-center overflow-hidden">
+      <section id="ghost-mode" className="relative px-4 sm:px-6 pt-10 sm:pt-24 pb-20 sm:pb-32 text-center overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-violet-100/60 to-transparent pointer-events-none" />
         <div className="absolute top-10 left-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-violet-400/10 rounded-full blur-3xl pointer-events-none" />
         <div className="relative max-w-4xl mx-auto">
@@ -365,15 +365,15 @@ export default function PersonalPage() {
             <span className="px-4 py-1.5 rounded-full text-sm font-semibold bg-violet-600 text-white">For me — Personal</span>
             <Link href="/company" className="px-4 py-1.5 rounded-full text-sm font-semibold text-slate-600 hover:text-[#1b1916] transition-colors">For my company</Link>
           </div>
-          <h1 className="text-4xl sm:text-5xl md:text-7xl font-extrabold leading-tight mb-4 sm:mb-6 tracking-tight text-[#1b1916]">
+          <h1 className="text-3xl sm:text-5xl md:text-7xl font-extrabold leading-tight mb-3 sm:mb-5 tracking-tight text-[#1b1916]">
             Build Your Authority on LinkedIn &amp; X —
             <span className="block bg-gradient-to-r from-violet-600 via-pink-500 to-cyan-500 bg-clip-text text-transparent">
-              Without Writing a Word
+              on Autopilot
             </span>
           </h1>
           <p className="text-sm sm:text-base text-slate-500 max-w-xl mx-auto mb-3 font-medium">For founders, execs &amp; consultants who should be posting — but never find the time.</p>
           <p className="text-base sm:text-xl text-slate-600 max-w-xl mx-auto mb-6 sm:mb-8 leading-relaxed">
-            Set your voice once. ItGrows writes and auto-publishes <span className="text-violet-600 font-semibold">in your voice</span> to your <span className="text-violet-600 font-semibold">LinkedIn, Company Page, and X</span> — through <span className="text-violet-600 font-semibold">LinkedIn&apos;s official, approved API</span>, not a workaround that gets accounts flagged. Review in 30 seconds, or go <span className="text-violet-600 font-semibold">full autopilot</span>.
+            An AI that <span className="text-violet-600 font-semibold">writes and auto-posts in your voice</span> — daily, to your LinkedIn and X. Approve each in 30 seconds, or go full autopilot.
           </p>
           {/* Generator IS the hero's primary action — the input is the first thing a visitor
               (61% mobile) can do, no scroll, no extra click. Trust chips + trial line moved BELOW it. */}
@@ -409,7 +409,7 @@ export default function PersonalPage() {
                         className="w-full rounded-xl border border-black/15 bg-white px-4 py-2.5 text-sm text-[#1b1916] placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-400"
                       />
                     </div>
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div>
                         <label className="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wide">Your tone</label>
                         <select
@@ -449,7 +449,7 @@ export default function PersonalPage() {
                 <button
                   onClick={handleGhostGenerate}
                   disabled={ghostLoading || ghostWhatYouDo.trim().length < 5}
-                  className="ml-auto px-6 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold transition-colors flex items-center gap-2"
+                  className="w-full sm:w-auto sm:ml-auto justify-center px-6 py-3 rounded-xl bg-violet-600 hover:bg-violet-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold transition-colors flex items-center gap-2"
                 >
                   {ghostLoading ? (
                     <>
