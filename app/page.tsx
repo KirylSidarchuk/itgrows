@@ -375,29 +375,9 @@ export default function PersonalPage() {
           <p className="text-base sm:text-xl text-slate-600 max-w-xl mx-auto mb-6 sm:mb-8 leading-relaxed">
             Set your voice once. ItGrows writes and auto-publishes <span className="text-violet-600 font-semibold">in your voice</span> to your <span className="text-violet-600 font-semibold">LinkedIn, Company Page, and X</span> — through <span className="text-violet-600 font-semibold">LinkedIn&apos;s official, approved API</span>, not a workaround that gets accounts flagged. Review in 30 seconds, or go <span className="text-violet-600 font-semibold">full autopilot</span>.
           </p>
-          {/* Trust bar — the fresh 2026 wedge: competitors got banned; we're the approved, official-API app */}
-          <div className="flex flex-wrap justify-center items-center gap-2 mb-8 text-xs sm:text-sm">
-            <span className="inline-flex items-center gap-1.5 font-semibold text-violet-900 bg-violet-50 border border-violet-200 rounded-full px-3 py-1.5 shadow-sm">🛡️ Approved by LinkedIn — official API</span>
-            <span className="inline-flex items-center gap-1.5 font-medium text-slate-700 bg-white border border-black/10 rounded-full px-3 py-1.5"><span className="text-green-600">✓</span> You approve every post</span>
-            <span className="inline-flex items-center gap-1.5 font-medium text-slate-700 bg-white border border-black/10 rounded-full px-3 py-1.5"><span className="text-green-600">✓</span> Replaces a $2,500/mo ghostwriter</span>
-          </div>
-          <div className="flex justify-center items-center">
-            <div className="relative w-full sm:w-auto">
-              {/* Pulse ring behind the primary CTA button */}
-              <span className="absolute inset-0 rounded-xl animate-pulse bg-violet-400/30 pointer-events-none" style={{ margin: "-4px" }} />
-              <Button
-                size="lg"
-                onClick={() => { document.getElementById("ghost-form")?.scrollIntoView({ behavior: "smooth", block: "center" }) }}
-                className="relative bg-violet-600 hover:bg-violet-500 text-white px-10 py-4 text-base sm:text-lg rounded-xl w-full sm:w-auto font-semibold shadow-lg shadow-violet-600/30"
-              >
-                See Your Posts in 30 Seconds — No Signup
-              </Button>
-            </div>
-          </div>
-          <p className="mt-4 text-xs sm:text-sm text-slate-500 font-medium">14-day free trial · Cancel anytime</p>
-
-          {/* Generator form — embedded in hero */}
-          <div id="ghost-form" className="mt-10 max-w-3xl mx-auto text-left">
+          {/* Generator IS the hero's primary action — the input is the first thing a visitor
+              (61% mobile) can do, no scroll, no extra click. Trust chips + trial line moved BELOW it. */}
+          <div id="ghost-form" className="mt-6 max-w-3xl mx-auto text-left">
             <div className="bg-[#f8f7f6] border border-black/10 rounded-2xl p-5 sm:p-6">
               <p className="text-sm font-semibold text-[#1b1916] mb-1">See your first posts — in your voice</p>
               <p className="text-xs text-slate-500 mb-4">One line about what you do. That&apos;s it — no signup.</p>
@@ -482,6 +462,14 @@ export default function PersonalPage() {
                 </button>
               </div>
             </div>
+
+            {/* Trust chips + trial line — now BELOW the input so the generator is the first thing you see */}
+            <div className="flex flex-wrap justify-center items-center gap-2 mt-6 text-xs sm:text-sm">
+              <span className="inline-flex items-center gap-1.5 font-semibold text-violet-900 bg-violet-50 border border-violet-200 rounded-full px-3 py-1.5 shadow-sm">🛡️ Approved by LinkedIn — official API</span>
+              <span className="inline-flex items-center gap-1.5 font-medium text-slate-700 bg-white border border-black/10 rounded-full px-3 py-1.5"><span className="text-green-600">✓</span> You approve every post</span>
+              <span className="inline-flex items-center gap-1.5 font-medium text-slate-700 bg-white border border-black/10 rounded-full px-3 py-1.5"><span className="text-green-600">✓</span> Replaces a $2,500/mo ghostwriter</span>
+            </div>
+            <p className="text-center mt-3 text-xs sm:text-sm text-slate-500 font-medium">14-day free trial · Cancel anytime</p>
 
             {ghostLoading && (
               <div className="mt-6 space-y-4">
