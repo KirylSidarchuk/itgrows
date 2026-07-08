@@ -75,7 +75,6 @@ export default function PersonalPage() {
   const [ghostProgress, setGhostProgress] = useState(0)
 
   const [showPlatformModal, setShowPlatformModal] = useState(false)
-  const [showLandingPlanModal, setShowLandingPlanModal] = useState(false)
   const [pendingPlan, setPendingPlan] = useState<string | null>(null)
   const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([])
   const [billingCycle, setBillingCycle] = useState<"monthly" | "annual">("monthly")
@@ -593,116 +592,6 @@ export default function PersonalPage() {
         </div>
       </section>
 
-      {/* Platforms Section */}
-      <section className="px-4 sm:px-6 py-16 sm:py-20" style={{ backgroundColor: "#ebe9e5" }}>
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-8">
-            <h2 className="text-3xl sm:text-4xl font-bold mb-3 text-[#1b1916]">Your voice on LinkedIn &amp; X — <span className="bg-gradient-to-r from-violet-600 via-pink-500 to-cyan-500 bg-clip-text text-transparent">personal and company</span></h2>
-            <p className="text-slate-600 text-base sm:text-lg max-w-xl mx-auto">See everything ItGrows can run for you, then pick what fits — your own brand, your company&apos;s, or both.</p>
-          </div>
-          <p className="text-xs font-semibold tracking-widest text-slate-400 uppercase mb-3 text-center">For you — personal accounts</p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-            {/* LinkedIn card */}
-            <div className="bg-white rounded-2xl border border-black/10 p-6 sm:p-8 flex flex-col gap-4">
-              <div className="flex items-center gap-3">
-                <div className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0" style={{ background: "linear-gradient(135deg, #0A66C2, #0077b6)" }}>
-                  <svg viewBox="0 0 24 24" fill="white" className="w-5 h-5">
-                    <path d="M20.447 20.452H16.89v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a1.977 1.977 0 0 1-1.972-1.98 1.977 1.977 0 0 1 1.972-1.979 1.977 1.977 0 0 1 1.972 1.979 1.977 1.977 0 0 1-1.972 1.98zm1.99 13.019H3.347V9h3.98v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
-                  </svg>
-                </div>
-                <div>
-                  <div className="font-bold text-[#1b1916] text-base">LinkedIn</div>
-                  <div className="text-xs text-slate-500 font-medium uppercase tracking-wide">Professional Authority</div>
-                </div>
-              </div>
-              <p className="text-slate-600 text-sm leading-relaxed">Thought leadership posts, career positioning, and B2B lead generation — published daily in your professional voice.</p>
-              <ul className="space-y-2">
-                {["Thought leadership & expertise", "Career growth & job opportunities", "B2B leads & client outreach"].map((item) => (
-                  <li key={item} className="flex items-center gap-2 text-sm text-slate-600">
-                    <span className="text-blue-600 font-bold">✓</span> {item}
-                  </li>
-                ))}
-              </ul>
-            </div>
-            {/* X (Twitter) card */}
-            <div className="bg-white rounded-2xl border border-black/10 p-6 sm:p-8 flex flex-col gap-4">
-              <div className="flex items-center gap-3">
-                <div className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 bg-black">
-                  <svg viewBox="0 0 24 24" fill="white" className="w-5 h-5">
-                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.253 5.622 5.912-5.622Zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-                  </svg>
-                </div>
-                <div>
-                  <div className="font-bold text-[#1b1916] text-base">X (Twitter)</div>
-                  <div className="text-xs text-slate-500 font-medium uppercase tracking-wide">Real-Time Presence</div>
-                </div>
-              </div>
-              <p className="text-slate-600 text-sm leading-relaxed">Daily tweets and threads that keep you in trending conversations, grow followers, and build brand awareness in real time.</p>
-              <ul className="space-y-2">
-                {["Daily engagement & trending topics", "Brand awareness & follower growth", "Real-time presence in your niche"].map((item) => (
-                  <li key={item} className="flex items-center gap-2 text-sm text-slate-600">
-                    <span className="text-slate-800 font-bold">✓</span> {item}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-
-          <p className="text-xs font-semibold tracking-widest text-slate-400 uppercase mt-10 mb-3 text-center">For your company — company accounts <Link href="/company" className="text-violet-600 normal-case tracking-normal font-semibold hover:text-violet-500">· see the company plan →</Link></p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-            {/* LinkedIn Company card */}
-            <div className="relative bg-white rounded-2xl border border-black/10 p-6 sm:p-8 flex flex-col gap-4">
-              <span className="absolute top-4 right-4 inline-flex items-center gap-1 text-[11px] font-semibold text-violet-700 bg-violet-100 border border-violet-200 px-2.5 py-1 rounded-full">
-                <svg viewBox="0 0 16 16" fill="none" className="w-3 h-3"><circle cx="8" cy="8" r="7.5" stroke="currentColor" strokeWidth="1.2"/><path d="M5 8l2 2 4-4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                LinkedIn-approved
-              </span>
-              <div className="flex items-center gap-3">
-                <div className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0" style={{ background: "linear-gradient(135deg, #0A66C2, #0077b6)" }}>
-                  <svg viewBox="0 0 24 24" fill="white" className="w-5 h-5"><path d="M20.447 20.452H16.89v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a1.977 1.977 0 0 1-1.972-1.98 1.977 1.977 0 0 1 1.972-1.979 1.977 1.977 0 0 1 1.972 1.979 1.977 1.977 0 0 1-1.972 1.98zm1.99 13.019H3.347V9h3.98v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" /></svg>
-                </div>
-                <div>
-                  <div className="font-bold text-[#1b1916] text-base">LinkedIn — Company Page</div>
-                  <div className="text-xs text-slate-500 font-medium uppercase tracking-wide">Official, approved API</div>
-                </div>
-              </div>
-              <p className="text-slate-600 text-sm leading-relaxed">Publish to your company&apos;s LinkedIn Page on autopilot — via LinkedIn&apos;s approved Community Management API, something most AI content tools can&apos;t do.</p>
-              <ul className="space-y-2">
-                {["Approved by LinkedIn (60-day vetted access)", "Company voice, separate from your personal", "We/Our brand tone, not I/My"].map((item) => (
-                  <li key={item} className="flex items-center gap-2 text-sm text-slate-600">
-                    <span className="text-blue-600 font-bold">✓</span> {item}
-                  </li>
-                ))}
-              </ul>
-            </div>
-            {/* X Company card */}
-            <div className="bg-white rounded-2xl border border-black/10 p-6 sm:p-8 flex flex-col gap-4">
-              <div className="flex items-center gap-3">
-                <div className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 bg-black">
-                  <svg viewBox="0 0 24 24" fill="white" className="w-5 h-5"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.253 5.622 5.912-5.622Zm-1.161 17.52h1.833L7.084 4.126H5.117z" /></svg>
-                </div>
-                <div>
-                  <div className="font-bold text-[#1b1916] text-base">X — Company</div>
-                  <div className="text-xs text-slate-500 font-medium uppercase tracking-wide">Your brand account</div>
-                </div>
-              </div>
-              <p className="text-slate-600 text-sm leading-relaxed">Keep your company&apos;s X account active with daily on-brand posts — managed alongside everything else.</p>
-              <ul className="space-y-2">
-                {["Daily brand presence on autopilot", "Consistent company voice", "Managed in one place with the rest"].map((item) => (
-                  <li key={item} className="flex items-center gap-2 text-sm text-slate-600">
-                    <span className="text-slate-800 font-bold">✓</span> {item}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-
-          <div className="mt-8 flex items-start gap-3 bg-violet-50 border border-violet-200 rounded-2xl px-5 py-4">
-            <svg className="w-5 h-5 text-violet-600 flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" strokeLinecap="round" strokeLinejoin="round"/><path d="M9 12l2 2 4-4" strokeLinecap="round" strokeLinejoin="round"/></svg>
-            <p className="text-sm text-violet-900 leading-relaxed"><span className="font-semibold">Approved by LinkedIn to auto-publish to Company Pages</span> — something most AI content tools can&apos;t do. Not a workaround; official, vetted access.</p>
-          </div>
-        </div>
-      </section>
-
       {/* How It Works */}
       <section id="how-it-works" className="px-4 sm:px-6 py-16 sm:py-24 bg-white">
         <div className="max-w-5xl mx-auto">
@@ -811,33 +700,6 @@ export default function PersonalPage() {
                   <p className="text-slate-400 text-xs">I run my own LinkedIn &amp; X on it, daily</p>
                 </div>
               </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Who it's for */}
-      <section className="px-4 sm:px-6 py-14 sm:py-20" style={{ backgroundColor: "#f3f2f1" }}>
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-10">
-            <h2 className="text-2xl sm:text-3xl font-bold text-[#1b1916] mb-3">Built for people who have <span className="bg-gradient-to-r from-violet-600 via-pink-500 to-cyan-500 bg-clip-text text-transparent">expertise worth sharing</span></h2>
-            <p className="text-slate-500 text-base max-w-lg mx-auto">Built for <span className="text-violet-600 font-semibold">executives, consultants, and founders</span> building influence on LinkedIn and X.</p>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="bg-white rounded-2xl border border-black/10 p-6">
-              <div className="text-2xl mb-3">🏛️</div>
-              <h3 className="font-bold text-[#1b1916] mb-2">Executives</h3>
-              <p className="text-sm text-slate-500 leading-relaxed">VPs, C-suite, and Managing Directors building thought leadership to attract board, advisory, and speaking opportunities.</p>
-            </div>
-            <div className="bg-white rounded-2xl border border-black/10 p-6">
-              <div className="text-2xl mb-3">💼</div>
-              <h3 className="font-bold text-[#1b1916] mb-2">Consultants &amp; Advisors</h3>
-              <p className="text-sm text-slate-500 leading-relaxed">Independent consultants growing their inbound pipeline by publishing expertise — without hiring a content team.</p>
-            </div>
-            <div className="bg-white rounded-2xl border border-black/10 p-6">
-              <div className="text-2xl mb-3">🚀</div>
-              <h3 className="font-bold text-[#1b1916] mb-2">Founders</h3>
-              <p className="text-sm text-slate-500 leading-relaxed">Early-stage founders establishing credibility and attracting investors, customers, and talent through consistent personal brand.</p>
             </div>
           </div>
         </div>
@@ -1256,50 +1118,6 @@ export default function PersonalPage() {
         </div>
       )}
 
-      {/* Landing Plan Picker Modal */}
-      {showLandingPlanModal && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4"
-          style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
-          onClick={(e) => { if (e.target === e.currentTarget) setShowLandingPlanModal(false) }}
-        >
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-6 relative">
-            <button
-              onClick={() => setShowLandingPlanModal(false)}
-              className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors text-gray-400 hover:text-gray-700"
-              aria-label="Close"
-            >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="w-4 h-4">
-                <line x1="18" y1="6" x2="6" y2="18" />
-                <line x1="6" y1="6" x2="18" y2="18" />
-              </svg>
-            </button>
-            <h2 className="text-xl font-bold text-[#1b1916] mb-1">Choose your plan</h2>
-            <p className="text-slate-500 text-sm mb-5">14-day free trial on all plans. Cancel anytime.</p>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="border border-black/10 rounded-xl p-5 flex flex-col gap-3 hover:border-violet-400 transition-colors cursor-pointer" onClick={() => { setShowLandingPlanModal(false); handleCheckoutWithPlatform("personal") }}>
-                <div className="font-bold text-[#1b1916]">Personal</div>
-                <div className="text-2xl font-extrabold text-violet-600">$49<span className="text-sm font-normal text-slate-400">/mo</span></div>
-                <div className="text-sm text-slate-600">1 account · LinkedIn or X</div>
-                <button className="mt-auto w-full py-2 rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-sm font-semibold transition-colors">Start Free Trial</button>
-              </div>
-              <div className="border-2 border-violet-500 rounded-xl p-5 flex flex-col gap-3 cursor-pointer relative" onClick={() => { setShowLandingPlanModal(false); handleCheckoutWithPlatform("duo") }}>
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-violet-600 text-white text-xs font-bold px-3 py-1 rounded-full">Most Popular</div>
-                <div className="font-bold text-[#1b1916]">Duo</div>
-                <div className="text-2xl font-extrabold text-violet-600">$99<span className="text-sm font-normal text-slate-400">/mo</span></div>
-                <div className="text-sm text-slate-600">2 accounts · LinkedIn + X</div>
-                <button className="mt-auto w-full py-2 rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-sm font-semibold transition-colors">Start Free Trial</button>
-              </div>
-              <div className="border border-black/10 rounded-xl p-5 flex flex-col gap-3 hover:border-violet-400 transition-colors cursor-pointer" onClick={() => { setShowLandingPlanModal(false); handleCheckoutWithPlatform("allin") }}>
-                <div className="font-bold text-[#1b1916]">All-in</div>
-                <div className="text-2xl font-extrabold text-violet-600">$199<span className="text-sm font-normal text-slate-400">/mo</span></div>
-                <div className="text-sm text-slate-600">All 3 accounts + Company Page</div>
-                <button className="mt-auto w-full py-2 rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-sm font-semibold transition-colors">Start Free Trial</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Feedback Modal */}
       {feedbackOpen && (
