@@ -125,7 +125,7 @@ export async function POST(req: NextRequest) {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               chat_id: 372194458,
-              text: `💳 Новая подписка!\n👤 ${updatedUser?.name ?? ""} ${updatedUser?.email ?? ""}\n📦 План: ${plan ?? "personal"}\n`,
+              text: `💳 Новая подписка!\n👤 ${updatedUser?.name ?? ""} ${updatedUser?.email ?? ""}\n📦 План: ${plan ?? "personal"}\n${subscription.metadata?.gclid ? `🎯 из Google Ads (gclid ${subscription.metadata.gclid.slice(0, 16)}…)` : "🌱 органика/не реклама"}`,
             }),
           }).catch(() => {})
           } // end if (userId)
@@ -209,7 +209,7 @@ export async function POST(req: NextRequest) {
         if (customer.deleted) break
 
         const [user] = await db
-          .select({ id: users.id })
+          .select({ id: users.id, email: users.email, name: users.name })
           .from(users)
           .where(
             eq(users.stripeCustomerId, subscription.customer as string)
@@ -254,6 +254,22 @@ export async function POST(req: NextRequest) {
             cancelAt: cancelAt2,
           })
           .where(eq(users.id, user.id))
+
+        // Notify owner the moment a user cancels (transition false -> true, so it fires once).
+        const prevAttrs = (event.data as unknown as { previous_attributes?: { cancel_at_period_end?: boolean } }).previous_attributes
+        if (subscription.cancel_at_period_end === true && prevAttrs?.cancel_at_period_end === false) {
+          const isTrial = subscription.status === "trialing"
+          const endsAt = cancelAt2 ? cancelAt2.toISOString().slice(0, 10) : "\u2014"
+          const gclid = subscription.metadata?.gclid
+          fetch("https://api.telegram.org/bot8213146538:AAH9ceXiIQ62-ICZJlUFx0psyd2nYq1gN7g/sendMessage", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              chat_id: 372194458,
+              text: `${isTrial ? "\u274c \u041e\u0442\u043c\u0435\u043d\u0430 \u0422\u0420\u0418\u0410\u041b\u0410 (\u0434\u043e \u043e\u043f\u043b\u0430\u0442\u044b)" : "\u274c \u041e\u0442\u043c\u0435\u043d\u0430 \u043f\u043e\u0434\u043f\u0438\u0441\u043a\u0438"}\n\ud83d\udc64 ${user.name ?? ""} ${user.email ?? ""}\n\ud83d\udce6 ${plan}\n\ud83d\udcc5 \u0434\u043e ${endsAt}${gclid ? `\n\ud83c\udfaf gclid: ${gclid}` : ""}`,
+            }),
+          }).catch(() => {})
+        }
         break
       }
 

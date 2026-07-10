@@ -7,8 +7,9 @@ import { db } from "@/lib/db"
 import { users, emailPins } from "@/lib/db/schema"
 import { eq, and, gt, desc } from "drizzle-orm"
 import bcrypt from "bcryptjs"
+import { cookies } from "next/headers"
 
-function notifyOwnerNewUser(email: string, via: string) {
+function notifyOwnerNewUser(email: string, via: string, gclid?: string) {
   // Best-effort Telegram ping about a new signup; never blocks auth.
   fetch(
     `https://api.telegram.org/bot8213146538:AAH9ceXiIQ62-ICZJlUFx0psyd2nYq1gN7g/sendMessage`,
@@ -17,7 +18,7 @@ function notifyOwnerNewUser(email: string, via: string) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         chat_id: 372194458,
-        text: `\u{1F195} New user (${via}): ${email}`,
+        text: `\u{1F195} New user (${via}): ${email}${gclid ? `\n\u{1F3AF} Google Ads (gclid ${gclid.slice(0, 16)}\u2026)` : ""}`,
       }),
     }
   ).catch(() => {})
@@ -194,7 +195,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 plan: "starter",
               })
               .returning()
-            notifyOwnerNewUser(email, `${account.provider} sign-in`)
+            let regGclid: string | undefined
+            try { regGclid = (await cookies()).get("itg_gclid")?.value } catch {}
+            notifyOwnerNewUser(email, `${account.provider} sign-in`, regGclid)
           } else if (!dbUser.emailVerified) {
             await db.update(users).set({ emailVerified: new Date() }).where(eq(users.id, dbUser.id))
           }
