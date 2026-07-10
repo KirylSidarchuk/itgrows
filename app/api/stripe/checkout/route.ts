@@ -4,6 +4,7 @@ import { auth } from "@/auth"
 import { db } from "@/lib/db"
 import { users } from "@/lib/db/schema"
 import { eq } from "drizzle-orm"
+import { cookies } from "next/headers"
 
 function getStripe() {
   const key = process.env.STRIPE_SECRET_KEY
@@ -68,17 +69,21 @@ export async function POST(req: NextRequest) {
 
   const baseUrl = process.env.NEXTAUTH_URL ?? "https://itgrows.ai"
 
+  const PLAN_VALUE: Record<string, number> = { personal: 49, personal_annual: 49, duo: 99, duo_annual: 99, allin: 199, allin_annual: 199, company: 99, company_annual: 99 }
+  const planValue = PLAN_VALUE[plan] ?? 49
+  const gclid = (await cookies()).get("itg_gclid")?.value
+
   const checkoutSession = await stripe.checkout.sessions.create({
     customer: customerId,
     payment_method_types: ["card"],
     line_items: [{ price: priceId, quantity: 1 }],
     mode: "subscription",
-    success_url: `${baseUrl}/welcome?session_id={CHECKOUT_SESSION_ID}`,
+    success_url: `${baseUrl}/welcome?session_id={CHECKOUT_SESSION_ID}&subscribed=1&itg_conv=trial&v=${planValue}`,
     cancel_url: `${baseUrl}/`,
     // Card required up front to start the 14-day free trial (no charge until it ends).
     payment_method_collection: "always",
     subscription_data: {
-      metadata: { userId: user.id, plan },
+      metadata: { userId: user.id, plan, ...(gclid ? { gclid } : {}) },
       trial_period_days: 14,
       trial_settings: {
         end_behavior: {

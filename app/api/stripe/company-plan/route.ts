@@ -5,6 +5,7 @@ import { db } from "@/lib/db"
 import { users } from "@/lib/db/schema"
 import { eq } from "drizzle-orm"
 import { COMPANY_PLAN_PRICES, isCompanyPlan } from "@/lib/company-plans"
+import { cookies } from "next/headers"
 
 function getStripe() {
   const key = process.env.STRIPE_SECRET_KEY
@@ -50,6 +51,10 @@ export async function POST(req: NextRequest) {
 
   const baseUrl = process.env.NEXTAUTH_URL ?? "https://itgrows.ai"
 
+  const TIER_VALUE: Record<string, number> = { single: 99, two: 149, unlimited: 299 }
+  const tierValue = TIER_VALUE[tier as string] ?? 99
+  const gclid = (await cookies()).get("itg_gclid")?.value
+
   const checkoutSession = await stripe.checkout.sessions.create({
     customer: customerId,
     payment_method_types: ["card"],
@@ -58,15 +63,15 @@ export async function POST(req: NextRequest) {
     // Card required up front to start the 14-day free trial (no charge until it ends).
     payment_method_collection: "always",
     subscription_data: {
-      metadata: { userId: user.id, plan: "company_page_plan", tier },
+      metadata: { userId: user.id, plan: "company_page_plan", tier, ...(gclid ? { gclid } : {}) },
       trial_period_days: 14,
       trial_settings: {
         end_behavior: { missing_payment_method: "cancel" },
       },
     },
-    success_url: `${baseUrl}/cabinet?tab=companies&company_plan=${tier}`,
+    success_url: `${baseUrl}/cabinet?tab=companies&company_plan=${tier}&itg_conv=trial&v=${tierValue}`,
     cancel_url: `${baseUrl}/company#pricing`,
-    metadata: { userId: user.id, plan: "company_page_plan", tier },
+    metadata: { userId: user.id, plan: "company_page_plan", tier, ...(gclid ? { gclid } : {}) },
   })
 
   return NextResponse.json({ url: checkoutSession.url })

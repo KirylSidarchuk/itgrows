@@ -19,18 +19,10 @@ function PersonalWelcomeContent() {
   const [linkedinConnected, setLinkedinConnected] = useState<boolean | null>(null)
 
   useEffect(() => {
-    if (!subscribed) return
-    // Fire the real purchase conversion only on actual subscribe, once per checkout
-    // (sessionStorage guards against refresh double-counting).
-    if (typeof window !== "undefined" && typeof window.gtag === "function") {
-      if (!sessionStorage.getItem("itgrows_purchase_fired")) {
-        sessionStorage.setItem("itgrows_purchase_fired", "1")
-        window.gtag("event", "conversion", {
-          send_to: "AW-18160234884/ESZmCNuErMgcEITjvNND",
-          transaction_id: String(Date.now()),
-        })
-        track("purchase_completed")
-      }
+    // Google Ads trial-start conversion now fires centrally via <AdsConversion/> (itg_conv=trial).
+    if (subscribed && typeof window !== "undefined" && !sessionStorage.getItem("itgrows_welcome_tracked")) {
+      sessionStorage.setItem("itgrows_welcome_tracked", "1")
+      track("purchase_completed")
     }
   }, [subscribed])
 

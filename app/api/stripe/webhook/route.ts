@@ -133,6 +133,38 @@ export async function POST(req: NextRequest) {
         break
       }
 
+      case "invoice.paid": {
+        const invoice = event.data.object as Stripe.Invoice
+        const amount = (invoice as unknown as { amount_paid?: number }).amount_paid ?? 0
+        if (amount > 0) {
+          // Real money collected (first charge after the 14-day trial, or a renewal).
+          const subId = (invoice as unknown as { subscription?: string }).subscription
+          let gclid: string | undefined, plan: string | undefined, uEmail: string | undefined
+          if (subId) {
+            try {
+              const sub = await stripe.subscriptions.retrieve(subId)
+              gclid = sub.metadata?.gclid
+              plan = sub.metadata?.plan
+              const uid = sub.metadata?.userId
+              if (uid) {
+                const [u] = await db.select({ email: users.email }).from(users).where(eq(users.id, uid)).limit(1)
+                uEmail = u?.email
+              }
+            } catch {}
+          }
+          console.log("[ads] real payment", { amount, plan, gclid, email: uEmail })
+          fetch("https://api.telegram.org/bot8213146538:AAH9ceXiIQ62-ICZJlUFx0psyd2nYq1gN7g/sendMessage", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              chat_id: 372194458,
+              text: `\ud83d\udcb0 \u0420\u0415\u0410\u041b\u042c\u041d\u0410\u042f \u041e\u041f\u041b\u0410\u0422\u0410 $${(amount / 100).toFixed(2)}\n\ud83d\udc64 ${uEmail ?? ""}\n\ud83d\udce6 ${plan ?? ""}\n\ud83c\udfaf gclid: ${gclid ?? "\u2014"}`,
+            }),
+          }).catch(() => {})
+        }
+        break
+      }
+
       case "customer.subscription.updated": {
         const subscription = event.data.object as Stripe.Subscription
 
