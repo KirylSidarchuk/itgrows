@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/auth"
 import { db } from "@/lib/db"
 import { linkedinAccounts, linkedinBriefs } from "@/lib/db/schema"
-import { eq, and } from "drizzle-orm"
+import { eq, and, sql } from "drizzle-orm"
 
 const LLM_BASE_URL = "http://34.60.133.229:4000"
 const LLM_MODEL = "gemini-2.5-flash-lite"
@@ -29,6 +29,7 @@ export async function GET(req: NextRequest) {
   // account (or the attacker's LinkedIn) onto a different user's account.
   const session = await auth()
   if (!session?.user?.id || session.user.id !== userId) {
+    await db.execute(sql`INSERT INTO analytics_events (user_id, event, path, props) VALUES (${userId}, 'linkedin_connect_fail', '/api/linkedin/callback', ${JSON.stringify({ reason: "no_session_or_mismatch", hadSession: !!session?.user?.id })}::jsonb)`).catch(() => {})
     return NextResponse.redirect(`${process.env.NEXTAUTH_URL}/cabinet?error=oauth_denied`)
   }
 
@@ -56,6 +57,7 @@ export async function GET(req: NextRequest) {
     if (!tokenRes.ok) {
       const errText = await tokenRes.text()
       console.error("LinkedIn token exchange failed:", errText)
+      await db.execute(sql`INSERT INTO analytics_events (user_id, event, path, props) VALUES (${userId}, 'linkedin_connect_fail', '/api/linkedin/callback', ${JSON.stringify({ reason: "token_exchange", status: tokenRes.status })}::jsonb)`).catch(() => {})
       return NextResponse.redirect(`${process.env.NEXTAUTH_URL}/cabinet?error=token_failed`)
     }
 
@@ -383,6 +385,7 @@ Return only the JSON object, no markdown, no extra text.`,
       })
     }
 
+    await db.execute(sql`INSERT INTO analytics_events (user_id, event, path, props) VALUES (${userId}, 'linkedin_connect_ok', '/api/linkedin/callback', ${JSON.stringify({ connectType })}::jsonb)`).catch(() => {})
     return NextResponse.redirect(`${process.env.NEXTAUTH_URL}/cabinet?connected=1`)
   } catch (err) {
     console.error("LinkedIn callback error:", err)

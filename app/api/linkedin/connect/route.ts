@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/auth"
+import { db } from "@/lib/db"
+import { sql } from "drizzle-orm"
 
 export async function GET(req: NextRequest) {
   const session = await auth()
@@ -31,6 +33,8 @@ export async function GET(req: NextRequest) {
     state: `${session.user.id}:${type}`,
     scope,
   })
+
+  await db.execute(sql`INSERT INTO analytics_events (user_id, event, path, props) VALUES (${session.user.id}, 'linkedin_connect_start', '/api/linkedin/connect', ${JSON.stringify({ type })}::jsonb)`).catch(() => {})
 
   return NextResponse.redirect(`https://www.linkedin.com/oauth/v2/authorization?${params}`)
 }

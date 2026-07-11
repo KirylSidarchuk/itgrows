@@ -6,6 +6,7 @@ import Script from "next/script"
 import CookieBanner from "@/components/CookieBanner"
 import VisitBeacon from "@/components/VisitBeacon"
 import AdsConversion from "@/components/AdsConversion"
+import ProductAnalytics from "@/components/Analytics"
 import "./globals.css";
 
 const geistSans = Geist({
@@ -69,6 +70,7 @@ export default function RootLayout({
         <SessionProvider>{children}</SessionProvider>
         <VisitBeacon />
         <AdsConversion />
+        <ProductAnalytics />
         <Analytics />
         <CookieBanner />
         <Script src="https://t.contentsquare.net/uxa/973805ba839a0.js" strategy="afterInteractive" />
