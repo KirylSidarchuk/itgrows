@@ -68,11 +68,17 @@ export async function GET(req: NextRequest) {
       diag.users_ever_linkedin_reminded = (rows(await db.execute(sql`SELECT count(*)::int AS n FROM users WHERE linkedin_reminder_sent = true`))[0] || {}).n
     } catch (e) { diag.count_err = (e as Error).message }
     try {
-      diag.col_types = rows(await db.execute(sql`
-        SELECT table_name, column_name, data_type FROM information_schema.columns
-        WHERE table_name IN ('linkedin_accounts','twitter_accounts','users')
-          AND column_name IN ('user_id','id') ORDER BY 1,2`))
-    } catch (e) { diag.col_types_err = (e as Error).message }
+      diag.onboarding_candidates_now = rows(await db.execute(sql`
+        SELECT u.email, to_char(u.created_at,'MM-DD HH24:MI') AS at
+        FROM users u
+        WHERE u.created_at < now() - interval '24 hours'
+          AND u.onboarding_email_sent_at IS NULL
+          AND COALESCE(u.subscription_status,'inactive') = 'inactive'
+          AND NOT EXISTS (SELECT 1 FROM linkedin_accounts la WHERE la.user_id = u.id::text)
+          AND NOT EXISTS (SELECT 1 FROM twitter_accounts ta WHERE ta.user_id = u.id)
+        ORDER BY u.created_at DESC LIMIT 50`))
+      diag.fixed_query = "ok"
+    } catch (e) { diag.fixed_query = "ERROR: " + (e as Error).message }
 
     return NextResponse.json({ now_utc: new Date().toISOString(), regs_by_day: regsByDay, recent_users: recentUsers, subscriptions_and_cancels: subs, analytics_by_day: activity, nudges_sent: nudges, diag })
   } catch (e) {
