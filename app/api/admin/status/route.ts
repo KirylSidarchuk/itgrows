@@ -68,10 +68,11 @@ export async function GET(req: NextRequest) {
       diag.users_ever_linkedin_reminded = (rows(await db.execute(sql`SELECT count(*)::int AS n FROM users WHERE linkedin_reminder_sent = true`))[0] || {}).n
     } catch (e) { diag.count_err = (e as Error).message }
     try {
-      // reproduce drizzle eq(linkedinAccounts.userId, users.id) WITHOUT cast
-      await db.execute(sql`SELECT 1 FROM users u WHERE NOT EXISTS (SELECT 1 FROM linkedin_accounts la WHERE la.user_id = u.id) LIMIT 1`)
-      diag.uncast_join = "ok"
-    } catch (e) { diag.uncast_join = "ERROR: " + (e as Error).message }
+      diag.col_types = rows(await db.execute(sql`
+        SELECT table_name, column_name, data_type FROM information_schema.columns
+        WHERE table_name IN ('linkedin_accounts','twitter_accounts','users')
+          AND column_name IN ('user_id','id') ORDER BY 1,2`))
+    } catch (e) { diag.col_types_err = (e as Error).message }
 
     return NextResponse.json({ now_utc: new Date().toISOString(), regs_by_day: regsByDay, recent_users: recentUsers, subscriptions_and_cancels: subs, analytics_by_day: activity, nudges_sent: nudges, diag })
   } catch (e) {
