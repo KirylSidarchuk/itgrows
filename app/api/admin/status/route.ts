@@ -61,29 +61,7 @@ export async function GET(req: NextRequest) {
       FROM usage_events ue LEFT JOIN users u ON u.id = ue.user_id
       WHERE ue.action = 'posts_ready_nudge'
       ORDER BY ue.created_at DESC LIMIT 20`)) } catch {}
-    // DIAG: have the connect-nudge crons ever worked? + reproduce the join
-    const diag: Row = {}
-    try {
-      diag.users_ever_onboarding_emailed = (rows(await db.execute(sql`SELECT count(*)::int AS n FROM users WHERE onboarding_email_sent_at IS NOT NULL`))[0] || {}).n
-      diag.users_ever_linkedin_reminded = (rows(await db.execute(sql`SELECT count(*)::int AS n FROM users WHERE linkedin_reminder_sent = true`))[0] || {}).n
-    } catch (e) { diag.count_err = (e as Error).message }
-    try {
-      diag.onboarding_candidates_now = rows(await db.execute(sql`
-        SELECT u.email, to_char(u.created_at,'MM-DD HH24:MI') AS at
-        FROM users u
-        WHERE u.created_at < now() - interval '24 hours'
-          AND u.created_at > now() - interval '30 days'
-          AND u.onboarding_email_sent_at IS NULL
-          AND COALESCE(u.subscription_status,'inactive') = 'inactive'
-          AND u.email NOT IN ('kiryl@itgrows.ai','kiryl.sidarchuk@gmail.com','futurecodefounder@gmail.com','ceo@itgrows.ai')
-          AND u.email NOT LIKE '%@example.com'
-          AND NOT EXISTS (SELECT 1 FROM linkedin_accounts la WHERE la.user_id = u.id::text)
-          AND NOT EXISTS (SELECT 1 FROM twitter_accounts ta WHERE ta.user_id = u.id)
-        ORDER BY u.created_at DESC LIMIT 50`))
-      diag.fixed_query = "ok"
-    } catch (e) { diag.fixed_query = "ERROR: " + (e as Error).message }
-
-    return NextResponse.json({ now_utc: new Date().toISOString(), regs_by_day: regsByDay, recent_users: recentUsers, subscriptions_and_cancels: subs, analytics_by_day: activity, nudges_sent: nudges, diag })
+    return NextResponse.json({ now_utc: new Date().toISOString(), regs_by_day: regsByDay, recent_users: recentUsers, subscriptions_and_cancels: subs, analytics_by_day: activity, nudges_sent: nudges })
   } catch (e) {
     return NextResponse.json({ error: (e as Error).message }, { status: 500 })
   }
