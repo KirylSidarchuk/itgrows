@@ -52,7 +52,13 @@ export async function GET(req: NextRequest) {
       FROM analytics_events WHERE created_at > now() - interval '1 day' * ${days}
       GROUP BY 1,2 ORDER BY 1 DESC, n DESC`))
 
-    return NextResponse.json({ now_utc: new Date().toISOString(), regs_by_day: regsByDay, recent_users: recentUsers, subscriptions_and_cancels: subs, analytics_by_day: activity })
+    let nudges: Row[] = []
+    try { nudges = rows(await db.execute(sql`
+      SELECT to_char(ue.created_at,'MM-DD HH24:MI') AS at, u.email
+      FROM usage_events ue LEFT JOIN users u ON u.id = ue.user_id
+      WHERE ue.action = 'posts_ready_nudge'
+      ORDER BY ue.created_at DESC LIMIT 20`)) } catch {}
+    return NextResponse.json({ now_utc: new Date().toISOString(), regs_by_day: regsByDay, recent_users: recentUsers, subscriptions_and_cancels: subs, analytics_by_day: activity, nudges_sent: nudges })
   } catch (e) {
     return NextResponse.json({ error: (e as Error).message }, { status: 500 })
   }
