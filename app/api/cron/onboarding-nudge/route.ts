@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db"
 import { users, twitterAccounts } from "@/lib/db/schema"
-import { and, lt, isNull, or, eq, notExists, sql } from "drizzle-orm"
+import { and, lt, gt, isNull, or, eq, notExists, notInArray, notLike, sql } from "drizzle-orm"
 import { sendEmail } from "@/lib/email"
+
+// Never nudge our own / test accounts
+const EXCLUDED_EMAILS = ["kiryl@itgrows.ai", "kiryl.sidarchuk@gmail.com", "futurecodefounder@gmail.com", "ceo@itgrows.ai"]
 
 function onboardingNudgeEmail(name: string): string {
   return `
@@ -33,6 +36,7 @@ export async function GET(req: NextRequest) {
   try {
     const now = new Date()
     const cutoff = new Date(now.getTime() - 24 * 60 * 60 * 1000)
+    const floor = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000) // only nudge signups from the last 30 days
 
     const candidates = await db
       .select({
@@ -44,6 +48,9 @@ export async function GET(req: NextRequest) {
       .where(
         and(
           lt(users.createdAt, cutoff),
+          gt(users.createdAt, floor),
+          notInArray(users.email, EXCLUDED_EMAILS),
+          notLike(users.email, "%@example.com"),
           isNull(users.onboardingEmailSentAt),
           or(
             isNull(users.subscriptionStatus),
