@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db"
-import { users, linkedinAccounts, twitterAccounts } from "@/lib/db/schema"
-import { and, lt, isNull, or, eq, notExists } from "drizzle-orm"
+import { users, twitterAccounts } from "@/lib/db/schema"
+import { and, lt, isNull, or, eq, notExists, sql } from "drizzle-orm"
 import { sendEmail } from "@/lib/email"
 
 function onboardingNudgeEmail(name: string): string {
@@ -49,12 +49,8 @@ export async function GET(req: NextRequest) {
             isNull(users.subscriptionStatus),
             eq(users.subscriptionStatus, "inactive")
           ),
-          notExists(
-            db
-              .select({ id: linkedinAccounts.id })
-              .from(linkedinAccounts)
-              .where(eq(linkedinAccounts.userId, users.id))
-          ),
+          // linkedin_accounts.user_id is TEXT in prod (schema drift) -> cast to avoid text=uuid error
+          sql`NOT EXISTS (SELECT 1 FROM linkedin_accounts la WHERE la.user_id = ${users.id}::text)`,
           notExists(
             db
               .select({ id: twitterAccounts.id })

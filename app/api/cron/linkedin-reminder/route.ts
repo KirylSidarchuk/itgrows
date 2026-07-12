@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db"
-import { users, linkedinAccounts } from "@/lib/db/schema"
-import { and, eq, lt, gt, notExists, or, isNotNull, inArray } from "drizzle-orm"
+import { users } from "@/lib/db/schema"
+import { and, eq, lt, gt, or, isNotNull, inArray, sql } from "drizzle-orm"
 import { sendEmail } from "@/lib/email"
 
 const baseStyle = `
@@ -60,12 +60,8 @@ export async function GET(req: NextRequest) {
             inArray(users.subscriptionStatus, ["active", "trialing", "past_due"]),
             and(isNotNull(users.trialEndsAt), gt(users.trialEndsAt, now))
           ),
-          notExists(
-            db
-              .select({ id: linkedinAccounts.id })
-              .from(linkedinAccounts)
-              .where(eq(linkedinAccounts.userId, users.id))
-          )
+          // linkedin_accounts.user_id is TEXT in prod (schema drift) -> cast to avoid text=uuid error
+          sql`NOT EXISTS (SELECT 1 FROM linkedin_accounts la WHERE la.user_id = ${users.id}::text)`
         )
       )
 
