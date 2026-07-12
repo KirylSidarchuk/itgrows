@@ -72,8 +72,11 @@ export async function GET(req: NextRequest) {
         SELECT u.email, to_char(u.created_at,'MM-DD HH24:MI') AS at
         FROM users u
         WHERE u.created_at < now() - interval '24 hours'
+          AND u.created_at > now() - interval '30 days'
           AND u.onboarding_email_sent_at IS NULL
           AND COALESCE(u.subscription_status,'inactive') = 'inactive'
+          AND u.email NOT IN ('kiryl@itgrows.ai','kiryl.sidarchuk@gmail.com','futurecodefounder@gmail.com','ceo@itgrows.ai')
+          AND u.email NOT LIKE '%@example.com'
           AND NOT EXISTS (SELECT 1 FROM linkedin_accounts la WHERE la.user_id = u.id::text)
           AND NOT EXISTS (SELECT 1 FROM twitter_accounts ta WHERE ta.user_id = u.id)
         ORDER BY u.created_at DESC LIMIT 50`))
