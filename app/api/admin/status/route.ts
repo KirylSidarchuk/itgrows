@@ -19,10 +19,13 @@ export async function GET(req: NextRequest) {
       GROUP BY 1 ORDER BY 1 DESC`))
 
     const recentUsers = rows(await db.execute(sql`
-      SELECT email, name, to_char(created_at,'MM-DD HH24:MI') AS at, subscription_status, onboarding_completed
-      FROM users WHERE created_at > now() - interval '1 day' * ${days}
-        AND lower(email) NOT IN (${O1}, ${O2}, ${O3})
-      ORDER BY created_at DESC LIMIT 20`))
+      SELECT u.email, u.name, to_char(u.created_at,'MM-DD HH24:MI') AS at, u.subscription_status, u.onboarding_completed,
+             to_char(u.onboarding_email_sent_at,'MM-DD HH24:MI') AS onboarding_email_at,
+             u.linkedin_reminder_sent,
+             EXISTS(SELECT 1 FROM linkedin_accounts la WHERE la.user_id = u.id::text) AS has_linkedin
+      FROM users u WHERE u.created_at > now() - interval '1 day' * ${days}
+        AND lower(u.email) NOT IN (${O1}, ${O2}, ${O3})
+      ORDER BY u.created_at DESC LIMIT 20`))
 
     const subs = rows(await db.execute(sql`
       SELECT email, subscription_status, subscription_plan,
