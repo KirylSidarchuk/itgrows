@@ -76,7 +76,15 @@ export async function GET(req: NextRequest) {
              count(*)::int AS n, count(DISTINCT coalesce(user_id::text, anon_id))::int AS ppl
       FROM analytics_events WHERE event='click' AND created_at > now() - interval '1 day' * ${days}
       GROUP BY 1,2 ORDER BY n DESC LIMIT 30`))
-    return NextResponse.json({ now_utc: new Date().toISOString(), regs_by_day: regsByDay, recent_users: recentUsers, subscriptions_and_cancels: subs, analytics_by_day: activity, visitors_by_day: visitorsByDay, top_paths: topPaths, clicks_by_label: clicksByLabel, nudges_sent: nudges })
+    const gclidRecon = rows(await db.execute(sql`
+      SELECT to_char(date_trunc('day', created_at),'YYYY-MM-DD') AS day,
+             count(DISTINCT substring(path from 'gclid=([^&]+)'))::int AS distinct_gclids,
+             count(DISTINCT substring(path from 'gbraid=([^&]+)'))::int AS distinct_gbraids,
+             count(DISTINCT coalesce(user_id::text, anon_id)) FILTER (WHERE path ~ 'gclid=|gbraid=')::int AS ad_visitors,
+             count(DISTINCT coalesce(user_id::text, anon_id)) FILTER (WHERE path !~ 'gclid=|gbraid=' OR path IS NULL)::int AS nonad_visitors
+      FROM analytics_events WHERE created_at > now() - interval '1 day' * ${days}
+      GROUP BY 1 ORDER BY 1 DESC`))
+    return NextResponse.json({ now_utc: new Date().toISOString(), regs_by_day: regsByDay, recent_users: recentUsers, subscriptions_and_cancels: subs, analytics_by_day: activity, visitors_by_day: visitorsByDay, top_paths: topPaths, clicks_by_label: clicksByLabel, gclid_recon: gclidRecon, nudges_sent: nudges })
   } catch (e) {
     return NextResponse.json({ error: (e as Error).message }, { status: 500 })
   }
