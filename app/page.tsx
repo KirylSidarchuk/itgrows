@@ -63,6 +63,8 @@ export default function PersonalPage() {
   const [sessionUser, setSessionUser] = useState<{ name?: string | null; email?: string | null } | null>(null)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [ghostWhatYouDo, setGhostWhatYouDo] = useState("")
+  // When set, the next ghostWhatYouDo change auto-runs the generator (ValueTrack ?topic= / persona chips).
+  const autoRunGenerate = useRef(false)
   const [ghostAudience, setGhostAudience] = useState("")
   const [ghostTone, setGhostTone] = useState("Professional")
   const [ghostGoals, setGhostGoals] = useState<string[]>([])
@@ -140,6 +142,8 @@ export default function PersonalPage() {
         setGhostPosts(data.posts)
         setGhostImages(data.images ?? [])
         track("preview_posts_shown")
+        // Product analytics: generation actually finished (funnel step between click and /signup)
+        try { navigator.sendBeacon("/api/track", JSON.stringify({ event: "preview_rendered", path: window.location.pathname + window.location.search, anon_id: localStorage.getItem("itg_anon") })) } catch {}
         // Carry-forward: persist so /signup and the cabinet can show what they already saw (activation fix).
         // Save text+brief WITHOUT the (large, base64) images FIRST so the text always survives the ~5MB
         // localStorage quota; then try to attach images. A quota failure on images must not lose the posts.
@@ -173,6 +177,29 @@ export default function PersonalPage() {
     track("start_trial_clicked", { source })
     window.location.href = "/signup"
   }
+
+  // ValueTrack: ad final URLs carry ?topic={keyword}. Pre-fill the generator with the search
+  // keyword and auto-run it, so a paid visitor sees posts about what they searched — zero typing.
+  useEffect(() => {
+    try {
+      const t = new URLSearchParams(window.location.search).get("topic")
+      if (!t) return
+      const topic = t.replace(/[+_]/g, " ").replace(/\s+/g, " ").trim()
+      if (topic.length < 5 || topic.length > 90) return
+      setGhostWhatYouDo(topic)
+      autoRunGenerate.current = true
+      track("topic_autofill", { topic })
+    } catch { /* ignore malformed params */ }
+  }, [])
+
+  // Runs the generator right after a programmatic fill (topic param or persona chip).
+  useEffect(() => {
+    if (autoRunGenerate.current && ghostWhatYouDo.trim().length >= 5 && !ghostLoading && ghostPosts.length === 0) {
+      autoRunGenerate.current = false
+      handleGhostGenerate()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ghostWhatYouDo])
 
   useEffect(() => {
     fetch("/api/auth/session")
@@ -398,6 +425,21 @@ export default function PersonalPage() {
                     placeholder="e.g. I'm an organizational transformation consultant helping Fortune 500 companies navigate change"
                     className="w-full rounded-xl border border-black/15 bg-white px-4 py-2.5 text-sm text-[#1b1916] placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-400"
                   />
+                  {/* One-tap personas: fill + instantly generate — typing is optional, not the entry ticket */}
+                  {ghostPosts.length === 0 && !ghostLoading && (
+                    <div className="flex flex-wrap gap-1.5 mt-2">
+                      {["SaaS founder", "Marketing consultant", "Fractional CFO", "Real estate agent", "Executive coach"].map((p) => (
+                        <button
+                          key={p}
+                          type="button"
+                          onClick={() => { autoRunGenerate.current = true; setGhostWhatYouDo(`I'm a ${p.toLowerCase()} sharing what I learn with my clients and peers`); track("persona_chip_clicked", { persona: p }) }}
+                          className="px-3 py-1.5 rounded-full border border-black/15 bg-white text-xs text-slate-600 hover:border-violet-400 hover:text-violet-700 transition-colors"
+                        >
+                          {p}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
                 {!showGhostDetails && (
                   <button type="button" onClick={() => setShowGhostDetails(true)} className="text-xs font-semibold text-violet-600 hover:text-violet-500">

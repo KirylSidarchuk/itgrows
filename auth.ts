@@ -5,7 +5,7 @@ import LinkedIn from "next-auth/providers/linkedin"
 import type { Provider } from "next-auth/providers"
 import { db } from "@/lib/db"
 import { users, emailPins } from "@/lib/db/schema"
-import { eq, and, gt, desc } from "drizzle-orm"
+import { eq, and, gt, desc, sql } from "drizzle-orm"
 import bcrypt from "bcryptjs"
 import { cookies } from "next/headers"
 
@@ -154,7 +154,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             })
             .returning()
 
-          notifyOwnerNewUser(email, "PIN auth")
+          // Key the ad click to the new user for attribution / future offline conversion import.
+          let pinGclid: string | undefined
+          try { pinGclid = (await cookies()).get("itg_gclid")?.value } catch {}
+          notifyOwnerNewUser(email, "PIN auth", pinGclid)
+          try {
+            await db.execute(sql`INSERT INTO analytics_events (user_id, event, path, props) VALUES (${user.id}, 'signup', '/signup', ${JSON.stringify({ via: "pin", gclid: pinGclid ?? null })}::jsonb)`)
+          } catch { /* analytics must never block auth */ }
         } else if (!user.emailVerified) {
           await db
             .update(users)
@@ -198,6 +204,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             let regGclid: string | undefined
             try { regGclid = (await cookies()).get("itg_gclid")?.value } catch {}
             notifyOwnerNewUser(email, `${account.provider} sign-in`, regGclid)
+            try {
+              await db.execute(sql`INSERT INTO analytics_events (user_id, event, path, props) VALUES (${dbUser.id}, 'signup', '/signup', ${JSON.stringify({ via: account.provider, gclid: regGclid ?? null })}::jsonb)`)
+            } catch { /* analytics must never block auth */ }
           } else if (!dbUser.emailVerified) {
             await db.update(users).set({ emailVerified: new Date() }).where(eq(users.id, dbUser.id))
           }

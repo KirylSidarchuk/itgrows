@@ -12,6 +12,14 @@ function SignupForm() {
   const callbackUrl = searchParams.get("callbackUrl") ?? "/cabinet"
   const planParam = searchParams.get("plan")
 
+  // Funnel step events (page view -> oauth click / email submit -> complete) so we can see
+  // exactly where /signup loses people instead of guessing.
+  const sgTrack = (event: string, props?: Record<string, unknown>) => {
+    try { navigator.sendBeacon("/api/track", JSON.stringify({ event, path: "/signup", props, anon_id: localStorage.getItem("itg_anon") })) } catch {}
+  }
+  useEffect(() => { sgTrack("signup_view", { plan: planParam ?? undefined }) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [])
+
   const [name, setName] = useState("")
   const [email, setEmail] = useState("")
   const [digits, setDigits] = useState(["", "", "", "", "", ""])
@@ -92,6 +100,7 @@ function SignupForm() {
     e.preventDefault()
     setError("")
     setLoading(true)
+    sgTrack("signup_email_submit")
     try {
       const res = await fetch("/api/auth/send-pin", {
         method: "POST",
@@ -127,6 +136,7 @@ function SignupForm() {
       if (typeof window !== "undefined" && typeof (window as any).gtag === "function") {
         (window as any).gtag("event", "conversion", { send_to: "AW-18160234884/SQ7pCN7Sk8gcEITjvNND" })
       }
+      sgTrack("signup_complete", { via: "pin", plan: planParam ?? undefined })
       // If the visitor picked a plan on the pricing card before registering, resume that checkout
       // instead of dropping them in the cabinet (plan param set by the landing's handleCheckout).
       if (planParam) {
@@ -333,7 +343,9 @@ function SignupForm() {
               </div>
             </div>
           )}
-          <OAuthButtons callbackUrl={callbackUrl} />
+          <div onClickCapture={() => sgTrack("signup_oauth_click")}>
+            <OAuthButtons callbackUrl={callbackUrl} />
+          </div>
           <form onSubmit={handleSendPin} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-[#1b1916] mb-1.5">Name</label>
