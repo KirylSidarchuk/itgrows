@@ -10,6 +10,7 @@ function SignupForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const callbackUrl = searchParams.get("callbackUrl") ?? "/cabinet"
+  const planParam = searchParams.get("plan")
 
   const [name, setName] = useState("")
   const [email, setEmail] = useState("")
@@ -125,6 +126,22 @@ function SignupForm() {
       // Google Ads: Sign-up conversion (primary optimization goal)
       if (typeof window !== "undefined" && typeof (window as any).gtag === "function") {
         (window as any).gtag("event", "conversion", { send_to: "AW-18160234884/SQ7pCN7Sk8gcEITjvNND" })
+      }
+      // If the visitor picked a plan on the pricing card before registering, resume that checkout
+      // instead of dropping them in the cabinet (plan param set by the landing's handleCheckout).
+      if (planParam) {
+        try {
+          const co = await fetch("/api/stripe/create-checkout", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ plan: planParam }),
+          })
+          const coData = await co.json()
+          if (co.ok && coData.url) {
+            window.location.href = coData.url
+            return
+          }
+        } catch { /* fall through to cabinet */ }
       }
       router.push(callbackUrl)
     } catch {
@@ -294,12 +311,12 @@ function SignupForm() {
           {handoff ? (
             <>
               <h1 className="text-2xl font-bold text-[#1b1916] mt-4">One step left — claim your posts</h1>
-              <p className="text-slate-500 text-sm mt-1">Create your account to publish the {handoff.n} post{handoff.n > 1 ? "s" : ""} you just wrote to your LinkedIn &amp; X. Free for 14 days, cancel anytime.</p>
+              <p className="text-slate-500 text-sm mt-1">Your {handoff.n} post{handoff.n > 1 ? "s are" : " is"} saved. Creating an account is <strong>free</strong> — you only add a card if you start the 14-day trial.</p>
             </>
           ) : (
             <>
-              <h1 className="text-2xl font-bold text-[#1b1916] mt-4">Create your account</h1>
-              <p className="text-slate-500 text-sm mt-1">Start growing your business today</p>
+              <h1 className="text-2xl font-bold text-[#1b1916] mt-4">Create your free account</h1>
+              <p className="text-slate-500 text-sm mt-1">✓ Free account · No card at this step. Add a card only if you start the 14-day trial.</p>
             </>
           )}
         </div>
@@ -366,9 +383,36 @@ function SignupForm() {
   )
 }
 
+// Server-rendered shell: the page is a client component with useSearchParams (CSR bailout),
+// so this fallback IS the initial HTML paid visitors see before the JS bundle hydrates.
+// Keep it a real page (logo, promise, skeleton), not a white screen.
+function SignupShell() {
+  return (
+    <div className="min-h-screen bg-[#f3f2f1] flex items-center justify-center px-4">
+      <div className="w-full max-w-md">
+        <div className="text-center mb-8">
+          <span className="text-2xl font-bold bg-gradient-to-r from-violet-600 to-pink-500 bg-clip-text text-transparent">
+            ItGrows.ai
+          </span>
+          <h1 className="text-2xl font-bold text-[#1b1916] mt-4">Create your free account</h1>
+          <p className="text-slate-500 text-sm mt-1">✓ Free account · No card at this step. Add a card only if you start the 14-day trial.</p>
+        </div>
+        <div className="bg-white border border-black/10 rounded-2xl p-8">
+          <div className="space-y-3">
+            <div className="h-11 rounded-xl bg-[#f3f2f1] animate-pulse" />
+            <div className="h-11 rounded-xl bg-[#f3f2f1] animate-pulse" />
+            <div className="h-11 rounded-xl bg-violet-100 animate-pulse" />
+          </div>
+          <p className="text-center text-xs text-slate-400 mt-6">Loading sign-up options…</p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function SignupPage() {
   return (
-    <Suspense>
+    <Suspense fallback={<SignupShell />}>
       <SignupForm />
     </Suspense>
   )

@@ -195,7 +195,8 @@ export default function PersonalPage() {
     const sessionRes = await fetch("/api/auth/session")
     const sessionData = await sessionRes.json() as { user?: { id: string } }
     if (!sessionData?.user?.id) {
-      window.location.href = "/signup"
+      // Preserve the chosen plan through registration: /signup resumes checkout after verify.
+      window.location.href = `/signup?plan=${encodeURIComponent(plan)}`
       return
     }
     // Already logged in → go to cabinet to start trial
@@ -278,8 +279,11 @@ export default function PersonalPage() {
                 <Link href="/login?callbackUrl=/cabinet">
                   <Button variant="ghost" className="text-slate-600 hover:text-[#1b1916] text-sm px-3">Login</Button>
                 </Link>
+                <Link href="/signup" onClick={() => track("free_signup_clicked", { source: "nav" })}>
+                  <Button variant="outline" className="text-sm px-4 border-violet-300 text-violet-700 hover:bg-violet-50">Sign up free</Button>
+                </Link>
                 <Button onClick={() => { document.getElementById("ghost-form")?.scrollIntoView({ behavior: "smooth", block: "center" }) }} className="bg-violet-600 hover:bg-violet-500 text-white text-sm px-4">
-                  Try Free — See Your Posts
+                  See 3 free posts — no signup
                 </Button>
               </>
             )}
@@ -342,11 +346,14 @@ export default function PersonalPage() {
                   <Link href="/login?callbackUrl=/cabinet" onClick={() => setMobileMenuOpen(false)}>
                     <Button variant="outline" className="w-full text-sm border-black/20">Login</Button>
                   </Link>
+                  <Link href="/signup" onClick={() => { setMobileMenuOpen(false); track("free_signup_clicked", { source: "nav_mobile" }) }}>
+                    <Button variant="outline" className="w-full text-sm border-violet-300 text-violet-700">Sign up free</Button>
+                  </Link>
                   <Button
                     onClick={() => { setMobileMenuOpen(false); document.getElementById("ghost-form")?.scrollIntoView({ behavior: "smooth", block: "center" }) }}
                     className="w-full bg-violet-600 hover:bg-violet-500 text-white text-sm"
                   >
-                    Try Free — See Your Posts
+                    See 3 free posts — no signup
                   </Button>
                 </>
               )}
@@ -469,7 +476,12 @@ export default function PersonalPage() {
               <span className="inline-flex items-center gap-1.5 font-medium text-slate-700 bg-white border border-black/10 rounded-full px-3 py-1.5"><span className="text-green-600">✓</span> You approve every post</span>
               <span className="inline-flex items-center gap-1.5 font-medium text-slate-700 bg-white border border-black/10 rounded-full px-3 py-1.5"><span className="text-green-600">✓</span> Replaces a $2,500/mo ghostwriter</span>
             </div>
-            <p className="text-center mt-3 text-xs sm:text-sm text-slate-500 font-medium">14-day free trial · Cancel anytime</p>
+            <p className="text-center mt-3 text-xs sm:text-sm text-slate-500 font-medium">
+              14-day free trial · Cancel anytime ·{" "}
+              <Link href="/signup" onClick={() => track("free_signup_clicked", { source: "hero" })} className="text-violet-600 hover:underline font-semibold">
+                or create a free account — no card
+              </Link>
+            </p>
 
             {ghostLoading && (
               <div className="mt-6 space-y-4">
@@ -569,9 +581,9 @@ export default function PersonalPage() {
                     onClick={() => goSignupFromPreview("preview_banner")}
                     className="inline-block px-8 py-3 rounded-xl bg-white text-violet-600 font-bold text-sm hover:bg-violet-50 transition-colors"
                   >
-                    Get 14 Days Free →
+                    Save my posts — free account, no card
                   </button>
-                  <p className="mt-3 text-white/60 text-xs">Free for 14 days · You&apos;re not charged today · Cancel anytime in 1 click</p>
+                  <p className="mt-3 text-white/60 text-xs">Account is free · Card only if you start the 14-day trial · Cancel anytime in 1 click</p>
                 </div>
               </div>
             )}
@@ -828,7 +840,7 @@ export default function PersonalPage() {
                   onClick={() => handleCheckoutWithPlatform("personal")}
                   className="w-full bg-blue-600 hover:bg-blue-500 text-white py-5 text-sm rounded-xl mt-2"
                 >
-                  Get 14 Days Free →
+                  Start 14-day trial →
                 </Button>
                 <p className="text-center text-xs text-slate-400">🔒 OAuth secure · Cancel anytime</p>
                 <ul className="space-y-2 pt-1">
@@ -874,7 +886,7 @@ export default function PersonalPage() {
                   onClick={() => handleCheckoutWithPlatform("duo")}
                   className="w-full bg-violet-600 hover:bg-violet-500 text-white py-5 text-sm rounded-xl mt-2"
                 >
-                  Get 14 Days Free →
+                  Start 14-day trial →
                 </Button>
                 <p className="text-center text-xs text-slate-400">🔒 OAuth secure · Cancel anytime</p>
                 <ul className="space-y-2 pt-1">
@@ -929,7 +941,7 @@ export default function PersonalPage() {
                   onClick={() => handleCheckout("allin")}
                   className="w-full bg-slate-900 hover:bg-slate-700 text-white py-5 text-sm rounded-xl mt-2"
                 >
-                  Get 14 Days Free →
+                  Start 14-day trial →
                 </Button>
                 <p className="text-center text-xs text-slate-400">🔒 OAuth secure · Cancel anytime</p>
                 <ul className="space-y-2 pt-1">
@@ -1023,13 +1035,13 @@ export default function PersonalPage() {
         <div className="fixed bottom-0 inset-x-0 z-40 sm:hidden bg-white border-t border-black/10 shadow-[0_-4px_20px_rgba(0,0,0,0.08)] px-4 py-3 flex items-center gap-3">
           <div className="min-w-0 flex-1">
             <div className="text-xs font-semibold text-[#1b1916] leading-tight">Your {ghostPosts.length} post{ghostPosts.length > 1 ? "s are" : " is"} ready</div>
-            <div className="text-[11px] text-slate-500 leading-tight">Free 14 days · cancel anytime</div>
+            <div className="text-[11px] text-slate-500 leading-tight">Free account · no card</div>
           </div>
           <button
             onClick={() => goSignupFromPreview("sticky_mobile")}
             className="flex-shrink-0 px-5 py-2.5 rounded-xl bg-violet-600 text-white font-bold text-sm hover:bg-violet-500 transition-colors"
           >
-            Get 14 Days Free →
+            Save my posts — free
           </button>
         </div>
       )}
