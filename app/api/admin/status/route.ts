@@ -61,7 +61,17 @@ export async function GET(req: NextRequest) {
       FROM usage_events ue LEFT JOIN users u ON u.id = ue.user_id
       WHERE ue.action = 'posts_ready_nudge'
       ORDER BY ue.created_at DESC LIMIT 20`)) } catch {}
-    return NextResponse.json({ now_utc: new Date().toISOString(), regs_by_day: regsByDay, recent_users: recentUsers, subscriptions_and_cancels: subs, analytics_by_day: activity, nudges_sent: nudges })
+    const visitorsByDay = rows(await db.execute(sql`
+      SELECT to_char(date_trunc('day', created_at),'YYYY-MM-DD') AS day,
+             count(DISTINCT coalesce(user_id::text, anon_id))::int AS visitors,
+             count(*) FILTER (WHERE event='page_view')::int AS page_views
+      FROM analytics_events WHERE created_at > now() - interval '1 day' * ${days}
+      GROUP BY 1 ORDER BY 1 DESC`))
+    const topPaths = rows(await db.execute(sql`
+      SELECT path, count(*)::int AS n, count(DISTINCT coalesce(user_id::text, anon_id))::int AS ppl
+      FROM analytics_events WHERE event='page_view' AND created_at > now() - interval '1 day' * ${days}
+      GROUP BY 1 ORDER BY n DESC LIMIT 12`))
+    return NextResponse.json({ now_utc: new Date().toISOString(), regs_by_day: regsByDay, recent_users: recentUsers, subscriptions_and_cancels: subs, analytics_by_day: activity, visitors_by_day: visitorsByDay, top_paths: topPaths, nudges_sent: nudges })
   } catch (e) {
     return NextResponse.json({ error: (e as Error).message }, { status: 500 })
   }
