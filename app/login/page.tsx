@@ -1,6 +1,6 @@
 "use client"
 
-import { Suspense, useState } from "react"
+import { Suspense, useState, useEffect } from "react"
 import { signIn } from "next-auth/react"
 import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
@@ -10,6 +10,23 @@ function LoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const callbackUrl = searchParams.get("callbackUrl") ?? "/cabinet"
+
+  // NextAuth lands here with ?error=Configuration|OAuthCallbackError|... when a sign-in
+  // flow blows up server-side. Show a human message instead of a silent bare form, and
+  // log it so we can measure how often real users hit this (login_error in analytics).
+  const authError = searchParams.get("error")
+  useEffect(() => {
+    if (!authError) return
+    try {
+      navigator.sendBeacon("/api/track", JSON.stringify({
+        event: "login_error",
+        path: "/login",
+        props: { code: authError, callbackUrl },
+        anon_id: localStorage.getItem("itg_anon"),
+      }))
+    } catch { /* ignore */ }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const [email, setEmail] = useState("")
   const [pin, setPin] = useState("")
@@ -114,6 +131,11 @@ function LoginForm() {
 
   return (
     <div className="bg-white border border-black/10 rounded-2xl p-8">
+      {authError && (
+        <div className="mb-4 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+          Something went wrong on our side while signing you in — sorry about that. Please sign in again below; your work is saved.
+        </div>
+      )}
       <OAuthButtons callbackUrl={callbackUrl} />
       <form onSubmit={handleSendPin} className="space-y-4">
         <div>

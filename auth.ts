@@ -9,6 +9,17 @@ import { eq, and, gt, desc, sql } from "drizzle-orm"
 import bcrypt from "bcryptjs"
 import { cookies } from "next/headers"
 
+// Retry a transient failure (dropped DB connection etc.) once before letting it
+// propagate — an uncaught throw here becomes /login?error=Configuration for the user.
+async function withRetry<T>(fn: () => Promise<T>): Promise<T> {
+  try {
+    return await fn()
+  } catch {
+    await new Promise((r) => setTimeout(r, 400))
+    return await fn()
+  }
+}
+
 function notifyOwnerNewUser(email: string, via: string, gclid?: string) {
   // Best-effort Telegram ping about a new signup; never blocks auth.
   fetch(
@@ -141,7 +152,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           .where(eq(emailPins.id, pinRecord.id))
 
         // Find or create user
-        let [user] = await db.select().from(users).where(eq(users.email, email))
+        let [user] = await withRetry(() => db.select().from(users).where(eq(users.email, email)))
 
         if (!user) {
           ;[user] = await db
@@ -190,7 +201,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           ""
         ).toLowerCase().trim()
         if (email) {
-          let [dbUser] = await db.select().from(users).where(eq(users.email, email))
+          let [dbUser] = await withRetry(() => db.select().from(users).where(eq(users.email, email)))
           if (!dbUser) {
             ;[dbUser] = await db
               .insert(users)
