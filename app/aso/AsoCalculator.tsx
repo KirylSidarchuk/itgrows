@@ -254,8 +254,8 @@ export default function AsoCalculator() {
         </div>
         <p className="mt-3 text-xs text-slate-400">
           {platform === "ios"
-            ? "Model: CTR 40/24/15% × CVR 70% for ranks #1–3. CPI = Apple Search Ads benchmark range for the category and country (US overall ~$4, Finance ~$8.5); base = √(low × high)."
-            : "Model: CTR 35/22/14% × CVR 35% for ranks #1–3. CPI = real Google App Campaigns benchmark range (US avg $2.65–4, Finance $8–12). Keyword Planner bids are commercial-value evidence only, never the CPI basis."}
+            ? "Model: CTR 40/24/15% × CVR 70% for ranks #1–3. CPI = Apple Search Ads benchmark range for each keyword's category and country (open sources: AppTweak, SplitMetrics, Business of Apps); base = √(low × high)."
+            : "Model: CTR 35/22/14% × CVR 35% for ranks #1–3. CPI = Google App Campaigns benchmark range for each keyword's category and country (open sources: Business of Apps, Mapendo, AppsFlyer). Keyword Planner bids are commercial-value evidence only, never the CPI basis."}
           {" "}Bids and Google search demand auto-fill per keyword once the Google Ads API env is configured.
         </p>
       </div>
