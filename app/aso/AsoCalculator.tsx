@@ -229,15 +229,16 @@ export default function AsoCalculator() {
           </div>
           <div className="w-20">
             <label className={labelCls}>Country</label>
-            <input className={inputCls} value={geo} onChange={(e) => setGeo(e.target.value.toUpperCase())} placeholder="US" />
+            <input className={inputCls} value={geo} onChange={(e) => setGeo(e.target.value.toUpperCase())} placeholder="US" autoComplete="off" name="aso-country" />
           </div>
           <div className="w-36">
             <label className={labelCls}>Min. project fee, $</label>
-            <input className={inputCls} value={minFee} onChange={(e) => setMinFee(e.target.value)} placeholder="0" inputMode="decimal" />
+            <input className={inputCls} value={minFee} onChange={(e) => setMinFee(e.target.value)} placeholder="0" inputMode="decimal" autoComplete="off" name="aso-min-fee" />
           </div>
           <div className="w-44">
             <label className={labelCls}>Access token (Google Ads)</label>
-            <input className={inputCls} value={token} onChange={(e) => setToken(e.target.value)} placeholder="ASO_TOKEN" type="password" />
+            {/* text + off, not type=password: password inputs trigger browser credential autofill */}
+            <input className={`${inputCls} [-webkit-text-security:disc]`} value={token} onChange={(e) => setToken(e.target.value)} placeholder="ASO_TOKEN" autoComplete="off" name="aso-access-token" />
           </div>
           <button
             onClick={pullAll}
