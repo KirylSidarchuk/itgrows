@@ -19,6 +19,7 @@ export default function robots(): MetadataRoute.Robots {
           "/welcome",
           "/personal/welcome",
           "/subscribe-discount",
+          "/aso",
         ],
       },
     ],
