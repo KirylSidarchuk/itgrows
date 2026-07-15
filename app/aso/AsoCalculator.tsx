@@ -170,8 +170,13 @@ export default function AsoCalculator() {
     rows.forEach((r, i) => {
       const k = r.kw
       lines.push(`${i + 1}. "${k.keyword || "…"}" — ~${fmtInt(num(k.sv))} ${store} searches/day, target rank #${k.targetPos}`)
-      lines.push(`   Estimated organic installs: ~${fmtInt(r.target.installs)}/month (${(r.target.share * 100).toFixed(1).replace(/\.0$/, "")}% of search volume)`)
-      lines.push(`   Paid acquisition equivalent: ${fmtUsd(r.target.eqLow)}–${fmtUsd(r.target.eqHigh)}/month (base ${fmtUsd(r.target.eqBase)} at CPI ${fmtUsd2(r.cpis.base)})`)
+      lines.push(`   Estimated organic installs and paid acquisition equivalent by ranking:`)
+      r.positions.forEach((p) => {
+        lines.push(
+          `     #${p.pos}: ~${fmtInt(p.installs)} installs/month (${(p.share * 100).toFixed(1).replace(/\.0$/, "")}% of search volume) — equivalent ${fmtUsd(p.eqLow)}–${fmtUsd(p.eqHigh)}/month${p.pos === k.targetPos ? "  ← target" : ""}`
+        )
+      })
+      lines.push(`   Base scenario at rank #${k.targetPos}: ${fmtUsd(r.target.eqBase)}/month at CPI ${fmtUsd2(r.cpis.base)}`)
       const ev: string[] = []
       if (num(k.gSearches)) ev.push(`~${fmtInt(num(k.gSearches))} Google searches/month`)
       if (r.searchValue) ev.push(`top-of-page bids $${num(k.bidLow)}–$${num(k.bidHigh)} (the same click volume in Google Search would cost ~${fmtUsd(r.searchValue.monthly)}/month)`)
