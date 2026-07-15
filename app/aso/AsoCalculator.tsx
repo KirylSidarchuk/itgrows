@@ -322,11 +322,38 @@ export default function AsoCalculator() {
             </div>
             {k.status && <p className="mt-2 text-xs text-slate-500">{k.status}</p>}
             {r && (
-              <p className="mt-2 text-xs text-slate-600">
-                Rank #{k.targetPos}: <b>{fmtInt(r.target.installs)}</b> installs/mo ·
-                equivalent <b>{fmtUsd(r.target.eqLow)}–{fmtUsd(r.target.eqHigh)}</b>/mo (base {fmtUsd(r.target.eqBase)}, CPI {fmtUsd2(r.cpis.base)})
-                {r.searchValue && <> · Google Search click value ~{fmtUsd(r.searchValue.monthly)}/mo (CPC {fmtUsd2(r.searchValue.cpc)})</>}
-              </p>
+              <div className="mt-4 overflow-x-auto rounded-xl border border-slate-200">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-slate-200 text-left text-xs text-slate-500">
+                      <th className="px-4 py-3">Rank</th>
+                      <th className="px-4 py-3 text-right">Share of SV</th>
+                      <th className="px-4 py-3 text-right">Installs/mo</th>
+                      <th className="px-4 py-3 text-right">Equivalent low</th>
+                      <th className="px-4 py-3 text-right">Equivalent base</th>
+                      <th className="px-4 py-3 text-right">Equivalent high</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {r.positions.map((p) => (
+                      <tr key={p.pos} className={`border-b border-slate-100 last:border-0 ${p.pos === k.targetPos ? "bg-slate-50 font-semibold" : ""}`}>
+                        <td className="px-4 py-3">#{p.pos}</td>
+                        <td className="px-4 py-3 text-right">{(p.share * 100).toFixed(2)}%</td>
+                        <td className="px-4 py-3 text-right">{fmtInt(p.installs)}</td>
+                        <td className="px-4 py-3 text-right">{fmtUsd(p.eqLow)}/mo</td>
+                        <td className="px-4 py-3 text-right">{fmtUsd(p.eqBase)}/mo</td>
+                        <td className="px-4 py-3 text-right">{fmtUsd(p.eqHigh)}/mo</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                <div className="flex flex-wrap gap-x-6 gap-y-1 border-t border-slate-200 px-4 py-3 text-xs text-slate-500">
+                  <span>CPI low/base/high: <b>{fmtUsd2(r.cpis.low)} / {fmtUsd2(r.cpis.base)} / {fmtUsd2(r.cpis.high)}</b></span>
+                  {r.searchValue && (
+                    <span>Google Search click value (reference): <b>{fmtUsd(r.searchValue.monthly)}/mo</b> at CPC {fmtUsd2(r.searchValue.cpc)}</span>
+                  )}
+                </div>
+              </div>
             )}
           </div>
         )
@@ -341,8 +368,7 @@ export default function AsoCalculator() {
         </button>
       )}
 
-      {totals && rows.length > 0 && (
-        <>
+      {totals && rows.length > 1 && (
           <div className="mt-6 overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm">
             <table className="w-full text-sm">
               <thead>
@@ -380,7 +406,10 @@ export default function AsoCalculator() {
               </tbody>
             </table>
           </div>
+      )}
 
+      {totals && rows.length > 0 && (
+        <>
           <div className="mt-6 grid grid-cols-2 gap-4">
             <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
               <div className="text-xs text-slate-500">One-time success fee (20% of monthly base equivalent{totals.minApplied ? ", minimum applied" : ""})</div>
