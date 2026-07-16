@@ -217,11 +217,7 @@ export default function AsoCalculator() {
   const labelCls = "mb-1 block text-xs font-medium text-slate-500"
 
   return (
-    <main className="mx-auto max-w-4xl px-4 py-10">
-      <h1 className="text-2xl font-bold text-slate-900">ASO Offer Calculator</h1>
-      <p className="mt-1 text-sm text-slate-500">
-        Internal tool: organic installs from search rankings + paid acquisition equivalent + success fee.
-      </p>
+    <div>
 
       <div className="mt-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
         <div className="flex flex-wrap items-end gap-3">
@@ -449,6 +445,6 @@ export default function AsoCalculator() {
           Fill in search volume and the CPI range for at least one keyword — results will appear here.
         </p>
       )}
-    </main>
+    </div>
   )
 }

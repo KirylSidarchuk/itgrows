@@ -1,11 +1,11 @@
 import type { Metadata } from "next"
-import AsoCalculator from "./AsoCalculator"
+import AsoTabs from "./AsoTabs"
 
 export const metadata: Metadata = {
-  title: "ASO Offer Calculator",
+  title: "ASO Analyzer",
   robots: { index: false, follow: false },
 }
 
 export default function AsoPage() {
-  return <AsoCalculator />
+  return <AsoTabs />
 }
