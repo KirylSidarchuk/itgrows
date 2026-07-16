@@ -17,7 +17,7 @@ const LANG: Record<string, number> = {
   NL: 1010, PT: 1014, BR: 1014, PL: 1030, UA: 1031,
 }
 
-const API_VER = "v18" // keep in sync with courses-vm gads scripts
+const API_VER = "v21" // keep in sync with courses-vm gads scripts
 
 export async function GET(req: NextRequest) {
   const p = req.nextUrl.searchParams

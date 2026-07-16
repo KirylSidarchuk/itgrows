@@ -129,13 +129,19 @@ export default function AsoCalculator() {
         })
         return
       }
+      // Keyword Planner returns MONTHLY web searches; the model wants DAILY store
+      // searches. Empirically KP ≈ ASO-tool store volume, so use it 1:1 with ÷30.
+      const dailyFromKP = data.avgMonthlySearches
+        ? String(Math.round(Number(data.avgMonthlySearches) / 30))
+        : ""
       update(id, {
         pulledFor: key,
+        sv: dailyFromKP || kw.sv,
         gSearches: data.avgMonthlySearches ? String(data.avgMonthlySearches) : kw.gSearches,
         bidLow: data.lowTopOfPageBid ? String(data.lowTopOfPageBid) : kw.bidLow,
         bidHigh: data.highTopOfPageBid ? String(data.highTopOfPageBid) : kw.bidHigh,
         competition: data.competition ?? "",
-        status: `Google Ads: ~${data.avgMonthlySearches?.toLocaleString("en-US") ?? "?"} searches/mo, bids $${data.lowTopOfPageBid ?? "?"}–$${data.highTopOfPageBid ?? "?"}${data.competition ? `, competition ${data.competition}` : ""}`,
+        status: `Google Ads: ~${data.avgMonthlySearches?.toLocaleString("en-US") ?? "?"} searches/mo → ${dailyFromKP || "?"}/day, bids $${data.lowTopOfPageBid ?? "?"}–$${data.highTopOfPageBid ?? "?"}${data.competition ? `, competition ${data.competition}` : ""}`,
       })
     } catch (e) {
       update(id, { status: `Network error: ${String(e)}` })
