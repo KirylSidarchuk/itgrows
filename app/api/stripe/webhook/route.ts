@@ -12,6 +12,31 @@ function getStripe() {
   return new Stripe(key)
 }
 
+// This Stripe account also powers other products (e.g. magiscan) whose events reach this
+// same webhook. Map a price id to our plan, or null if it isn't one of ItGrows' prices,
+// so we only alert on OUR billing.
+function itgrowsPlanFromPrice(priceId?: string): string | null {
+  if (!priceId) return null
+  const map: Record<string, string> = {
+    [process.env.STRIPE_PRICE_ALLIN_MONTHLY ?? "price_1TVW9h2Ve258UiqtqaTvpEcz"]: "allin",
+    [process.env.STRIPE_PRICE_DUO_MONTHLY ?? "price_1TVW9h2Ve258UiqtSRGFgtOS"]: "duo",
+    [process.env.STRIPE_PRICE_PERSONAL_MONTHLY ?? "price_1TVW9g2Ve258UiqtC8gMDr6y"]: "personal",
+    [process.env.STRIPE_PRICE_PERSONAL_ANNUAL_NEW ?? "price_1TWByX2Ve258Uiqt7bJsbxcl"]: "personal_annual",
+    [process.env.STRIPE_PRICE_DUO_ANNUAL ?? "price_1TWByY2Ve258Uiqtc5ewdi5u"]: "duo_annual",
+    [process.env.STRIPE_PRICE_ALLIN_ANNUAL ?? "price_1TWBya2Ve258UiqtpFIzdgAL"]: "allin_annual",
+    [process.env.STRIPE_PRICE_COMPANY_MONTHLY ?? "price_1TWaK32Ve258UiqtmfxyHfnW"]: "company",
+    [process.env.STRIPE_PRICE_COMPANY_ANNUAL ?? "price_1TWaK62Ve258Uiqt3sU7ZFeU"]: "company_annual",
+  }
+  return map[priceId] ?? null
+}
+// True if the subscription is one of ours (by price, or by ItGrows-specific metadata.plan).
+function itgrowsSubPlan(priceId?: string, metaPlan?: string | null): string | null {
+  const byPrice = itgrowsPlanFromPrice(priceId)
+  if (byPrice) return byPrice
+  if (metaPlan === "company_page" || metaPlan === "company_page_plan") return metaPlan
+  return null
+}
+
 export async function POST(req: NextRequest) {
   const stripe = getStripe()
   const body = await req.text()
@@ -139,18 +164,19 @@ export async function POST(req: NextRequest) {
         if (amount > 0) {
           // Real money collected (first charge after the 14-day trial, or a renewal).
           const subId = (invoice as unknown as { subscription?: string }).subscription
-          let gclid: string | undefined, plan: string | undefined, uEmail: string | undefined
-          if (subId) {
-            try {
-              const sub = await stripe.subscriptions.retrieve(subId)
-              gclid = sub.metadata?.gclid
-              plan = sub.metadata?.plan
-              const uid = sub.metadata?.userId
-              if (uid) {
-                const [u] = await db.select({ email: users.email }).from(users).where(eq(users.id, uid)).limit(1)
-                uEmail = u?.email
-              }
-            } catch {}
+          if (!subId) break
+          let sub: Stripe.Subscription
+          try {
+            sub = await stripe.subscriptions.retrieve(subId)
+          } catch { break }
+          const plan = itgrowsSubPlan(sub.items?.data?.[0]?.price?.id, sub.metadata?.plan)
+          if (!plan) break // event for another product on this Stripe account (e.g. magiscan)
+          const gclid = sub.metadata?.gclid
+          let uEmail: string | undefined
+          const uid = sub.metadata?.userId
+          if (uid) {
+            const [u] = await db.select({ email: users.email }).from(users).where(eq(users.id, uid)).limit(1)
+            uEmail = u?.email
           }
           console.log("[ads] real payment", { amount, plan, gclid, email: uEmail })
           fetch("https://api.telegram.org/bot8213146538:AAH9ceXiIQ62-ICZJlUFx0psyd2nYq1gN7g/sendMessage", {
@@ -208,6 +234,32 @@ export async function POST(req: NextRequest) {
 
         if (customer.deleted) break
 
+        // Cancel alert — fire on the Stripe event itself, BEFORE the local user lookup, so a
+        // trial that was cancelled AND the account deleted (their users row is gone -> the sync
+        // below `break`s) still notifies. Gated to ItGrows-priced subs so magiscan is ignored.
+        {
+          const prevAttrs = (event.data as unknown as { previous_attributes?: { cancel_at_period_end?: boolean } }).previous_attributes
+          const updPlan = itgrowsSubPlan(subscription.items?.data?.[0]?.price?.id, subscription.metadata?.plan)
+          if (updPlan && subscription.cancel_at_period_end === true && prevAttrs?.cancel_at_period_end === false) {
+            const isTrial = subscription.status === "trialing"
+            const endsAt = subscription.cancel_at ? new Date(subscription.cancel_at * 1000).toISOString().slice(0, 10) : "\u2014"
+            const gclid = subscription.metadata?.gclid
+            const [maybeUser] = await db
+              .select({ name: users.name, email: users.email })
+              .from(users).where(eq(users.stripeCustomerId, subscription.customer as string)).limit(1)
+            const who = maybeUser?.email ?? (customer as Stripe.Customer).email ?? "(\u0430\u043a\u043a\u0430\u0443\u043d\u0442 \u0443\u0434\u0430\u043b\u0451\u043d)"
+            const nm = maybeUser?.name ?? ""
+            fetch("https://api.telegram.org/bot8213146538:AAH9ceXiIQ62-ICZJlUFx0psyd2nYq1gN7g/sendMessage", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                chat_id: 372194458,
+                text: `${isTrial ? "\u274c \u041e\u0442\u043c\u0435\u043d\u0430 \u0422\u0420\u0418\u0410\u041b\u0410 (\u0434\u043e \u043e\u043f\u043b\u0430\u0442\u044b)" : "\u274c \u041e\u0442\u043c\u0435\u043d\u0430 \u043f\u043e\u0434\u043f\u0438\u0441\u043a\u0438"}\n\ud83d\udc64 ${nm} ${who}\n\ud83d\udce6 ${updPlan}\n\ud83d\udcc5 \u0434\u043e ${endsAt}${gclid ? `\n\ud83c\udfaf gclid: ${gclid}` : ""}`,
+              }),
+            }).catch(() => {})
+          }
+        }
+
         const [user] = await db
           .select({ id: users.id, email: users.email, name: users.name })
           .from(users)
@@ -255,21 +307,6 @@ export async function POST(req: NextRequest) {
           })
           .where(eq(users.id, user.id))
 
-        // Notify owner the moment a user cancels (transition false -> true, so it fires once).
-        const prevAttrs = (event.data as unknown as { previous_attributes?: { cancel_at_period_end?: boolean } }).previous_attributes
-        if (subscription.cancel_at_period_end === true && prevAttrs?.cancel_at_period_end === false) {
-          const isTrial = subscription.status === "trialing"
-          const endsAt = cancelAt2 ? cancelAt2.toISOString().slice(0, 10) : "\u2014"
-          const gclid = subscription.metadata?.gclid
-          fetch("https://api.telegram.org/bot8213146538:AAH9ceXiIQ62-ICZJlUFx0psyd2nYq1gN7g/sendMessage", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              chat_id: 372194458,
-              text: `${isTrial ? "\u274c \u041e\u0442\u043c\u0435\u043d\u0430 \u0422\u0420\u0418\u0410\u041b\u0410 (\u0434\u043e \u043e\u043f\u043b\u0430\u0442\u044b)" : "\u274c \u041e\u0442\u043c\u0435\u043d\u0430 \u043f\u043e\u0434\u043f\u0438\u0441\u043a\u0438"}\n\ud83d\udc64 ${user.name ?? ""} ${user.email ?? ""}\n\ud83d\udce6 ${plan}\n\ud83d\udcc5 \u0434\u043e ${endsAt}${gclid ? `\n\ud83c\udfaf gclid: ${gclid}` : ""}`,
-            }),
-          }).catch(() => {})
-        }
         break
       }
 
