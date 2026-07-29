@@ -15,7 +15,7 @@ export async function GET(req: NextRequest) {
     const events = new Set(ep.enabled_events)
     const before = [...events]
     events.add("invoice.paid")
-    const updated = await s.webhookEndpoints.update(ep.id, { enabled_events: [...events] })
+    const updated = await s.webhookEndpoints.update(ep.id, { enabled_events: [...events] as Stripe.WebhookEndpointUpdateParams.EnabledEvent[] })
     return NextResponse.json({ endpoint: ep.url, before, after: updated.enabled_events })
   } catch (e) {
     return NextResponse.json({ error: (e as Error).message }, { status: 500 })
