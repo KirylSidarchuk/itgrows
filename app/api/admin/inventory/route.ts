@@ -35,17 +35,7 @@ export async function GET(req: NextRequest) {
       FROM analytics_events WHERE created_at > now() - interval '1 day' * ${days}
       GROUP BY 1 ORDER BY pv DESC LIMIT 40`))
 
-    // funnel: ordered by people desc, the canonical steps
-    const funnelSteps = ['page_view','click','generate_preview_clicked','preview_rendered','preview_posts_shown',
-      'start_trial_clicked','free_signup_clicked','persona_chip_clicked','topic_autofill','show_all_posts',
-      'signup_view','signup_oauth_click','signup_email_submit','signup_complete','signup',
-      'linkedin_connect_start','linkedin_connect_ok','linkedin_connect_fail','login_error']
-    const funnel = rows(await db.execute(sql`
-      SELECT event, count(DISTINCT coalesce(user_id::text, anon_id))::int AS people, count(*)::int AS hits
-      FROM analytics_events WHERE event = ANY(${funnelSteps}) AND created_at > now() - interval '1 day' * ${days}
-      GROUP BY event`))
-
-    return NextResponse.json({ window_days: days, now: new Date().toISOString(), event_types: events, click_labels: clicks, page_paths: paths, funnel_events: funnel })
+    return NextResponse.json({ window_days: days, now: new Date().toISOString(), event_types: events, click_labels: clicks, page_paths: paths })
   } catch (e) {
     return NextResponse.json({ error: (e as Error).message }, { status: 500 })
   }
