@@ -74,6 +74,7 @@ export default function PersonalPage() {
   const [ghostImages, setGhostImages] = useState<(string | null)[]>([])
   const [ghostError, setGhostError] = useState("")
   const [showGhostDetails, setShowGhostDetails] = useState(false)
+  const [showAllGhost, setShowAllGhost] = useState(false)
   const [ghostProgress, setGhostProgress] = useState(0)
 
   const [showPlatformModal, setShowPlatformModal] = useState(false)
@@ -131,6 +132,7 @@ export default function PersonalPage() {
     setGhostError("")
     setGhostPosts([])
     setGhostImages([])
+    setShowAllGhost(false)
     try {
       const res = await fetch("/api/public/generate-preview", {
         method: "POST",
@@ -519,10 +521,9 @@ export default function PersonalPage() {
               <span className="inline-flex items-center gap-1.5 font-medium text-slate-700 bg-white border border-black/10 rounded-full px-3 py-1.5"><span className="text-green-600">✓</span> Replaces a $2,500/mo ghostwriter</span>
             </div>
             <p className="text-center mt-3 text-xs sm:text-sm text-slate-500 font-medium">
-              14-day free trial · Cancel anytime ·{" "}
               <Link href="/signup" onClick={() => track("free_signup_clicked", { source: "hero" })} className="text-violet-600 hover:underline font-semibold">
-                or create a free account — no card
-              </Link>
+                Create a free account — no card
+              </Link>{" "}· 14-day auto-posting trial (card) when you&apos;re ready
             </p>
 
             {ghostLoading && (
@@ -591,16 +592,43 @@ export default function PersonalPage() {
                         onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#6d28d9")}
                         onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#7C3AED")}
                       >
-                        Automate This Post →
+                        Get my next 20 posts — free →
                       </button>
                     </div>
                   </div>
                 </div>
 
-                {/* Remaining posts — shown in FULL too. The hero promises "see your posts, no
-                    signup", so we keep that promise honestly: no blur, nothing hidden. Signup is
-                    for auto-writing & publishing posts like these daily (the real value). */}
-                {ghostPosts.slice(1).map((post, i) => (
+                {/* Inline account CTA right under Post #1 — the 61%-mobile majority sees a
+                    reason to register inside the ~30s attention window, before any long scroll. */}
+                {ghostPosts.length > 1 && (
+                  <div className="rounded-2xl border border-violet-200 bg-violet-50 p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center gap-3">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-bold text-[#1b1916]">That&apos;s 1 of {ghostPosts.length}. You need ~20 a month.</p>
+                      <p className="text-xs text-slate-600 mt-0.5">A free account keeps ItGrows writing in this exact voice &amp; auto-posts them for you.</p>
+                    </div>
+                    <button
+                      onClick={() => goSignupFromPreview("preview_inline")}
+                      className="shrink-0 px-5 py-2.5 rounded-xl bg-violet-600 text-white font-bold text-sm hover:bg-violet-500 transition-colors"
+                    >
+                      Create my free account →
+                    </button>
+                  </div>
+                )}
+
+                {/* Posts #2/#3 collapsed so the CTA stays above the mobile fold. NOT gated —
+                    one tap reveals them in full, honoring "see your posts free". */}
+                {ghostPosts.length > 1 && !showAllGhost && (
+                  <button
+                    type="button"
+                    onClick={() => { setShowAllGhost(true); track("show_all_posts") }}
+                    className="w-full rounded-2xl border border-dashed border-violet-300 bg-white py-3 text-sm font-semibold text-violet-700 hover:bg-violet-50 transition-colors"
+                  >
+                    Show my other {ghostPosts.length - 1} post{ghostPosts.length - 1 > 1 ? "s" : ""} ↓
+                  </button>
+                )}
+
+                {/* Remaining posts — shown in FULL when expanded (no blur, nothing hidden). */}
+                {showAllGhost && ghostPosts.slice(1).map((post, i) => (
                   <div key={i} className="bg-white border border-black/10 rounded-2xl overflow-hidden shadow-sm">
                     {ghostImages[i + 1] && (
                       <img src={ghostImages[i + 1]!} alt="Post cover" className="w-full h-48 object-cover" />
@@ -616,16 +644,16 @@ export default function PersonalPage() {
                 ))}
 
                 <div className="bg-gradient-to-r from-violet-600 to-pink-600 rounded-2xl p-6 sm:p-8 text-center text-white">
-                  <div className="text-2xl font-extrabold mb-2">These are yours — want them published for you every day?</div>
-                  <p className="text-white/80 text-sm mb-1">You just saw them free, no signup. Sign up to auto-write &amp; publish posts like these daily to your LinkedIn &amp; X — on autopilot.</p>
-                  <p className="text-white/70 text-xs mb-5">✓ 14-day free trial · Cancel anytime &nbsp;·&nbsp; ✓ These posts are saved — waiting in your dashboard.</p>
+                  <div className="text-2xl font-extrabold mb-2">That&apos;s {ghostPosts.length} posts. You need ~20 a month.</div>
+                  <p className="text-white/80 text-sm mb-4">These are yours — copy them, free. The hard part is showing up daily. A free account keeps ItGrows writing in this exact voice and auto-posts to your LinkedIn &amp; X.</p>
                   <button
                     onClick={() => goSignupFromPreview("preview_banner")}
                     className="inline-block px-8 py-3 rounded-xl bg-white text-violet-600 font-bold text-sm hover:bg-violet-50 transition-colors"
                   >
-                    Save my posts — free account, no card
+                    Create my free account →
                   </button>
-                  <p className="mt-3 text-white/60 text-xs">Account is free · Card only if you start the 14-day trial · Cancel anytime in 1 click</p>
+                  <p className="mt-3 text-white/70 text-xs">Free with Google or LinkedIn — no card. You only add a card later to turn on the 14-day auto-posting trial.</p>
+                  <a href="#pricing" onClick={() => track("see_plans_from_preview")} className="inline-block mt-3 text-white/80 text-xs underline hover:text-white">See plans &amp; pricing →</a>
                 </div>
               </div>
             )}
@@ -1076,14 +1104,14 @@ export default function PersonalPage() {
       {ghostPosts.length > 0 && (
         <div className="fixed bottom-0 inset-x-0 z-40 sm:hidden bg-white border-t border-black/10 shadow-[0_-4px_20px_rgba(0,0,0,0.08)] px-4 py-3 flex items-center gap-3">
           <div className="min-w-0 flex-1">
-            <div className="text-xs font-semibold text-[#1b1916] leading-tight">Your {ghostPosts.length} post{ghostPosts.length > 1 ? "s are" : " is"} ready</div>
+            <div className="text-xs font-semibold text-[#1b1916] leading-tight">Keep posting all month — not just these {ghostPosts.length}</div>
             <div className="text-[11px] text-slate-500 leading-tight">Free account · no card</div>
           </div>
           <button
             onClick={() => goSignupFromPreview("sticky_mobile")}
             className="flex-shrink-0 px-5 py-2.5 rounded-xl bg-violet-600 text-white font-bold text-sm hover:bg-violet-500 transition-colors"
           >
-            Save my posts — free
+            Create free account →
           </button>
         </div>
       )}
