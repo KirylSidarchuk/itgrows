@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import Stripe from "stripe"
 import { db } from "@/lib/db"
 import { users, linkedinAccounts } from "@/lib/db/schema"
-import { eq } from "drizzle-orm"
+import { eq, sql } from "drizzle-orm"
 import { sendEmail } from "@/lib/email"
 import { subscriptionActivatedEmail, paymentFailedEmail, subscriptionCancelledEmail } from "@/lib/email-templates"
 
@@ -133,6 +133,11 @@ export async function POST(req: NextRequest) {
               subscriptionEndDate: endTs ? new Date(endTs * 1000) : null,
             })
             .where(eq(users.id, userId))
+
+          // Funnel: card entered -> trial/subscription created (closes the checkout hand-off blind spot)
+          try {
+            await db.execute(sql`INSERT INTO analytics_events (user_id, event, path, props) VALUES (${userId}, 'checkout_completed', '/stripe/webhook', ${JSON.stringify({ plan: plan ?? null, trial: isTrialing })}::jsonb)`)
+          } catch { /* analytics must never block the webhook */ }
 
           const [updatedUser] = await db.select({ email: users.email, name: users.name })
             .from(users).where(eq(users.id, userId)).limit(1)

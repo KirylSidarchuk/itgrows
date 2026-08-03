@@ -3,7 +3,7 @@ import Stripe from "stripe"
 import { auth } from "@/auth"
 import { db } from "@/lib/db"
 import { users } from "@/lib/db/schema"
-import { eq } from "drizzle-orm"
+import { eq, sql } from "drizzle-orm"
 import { cookies } from "next/headers"
 
 function getStripe() {
@@ -91,6 +91,10 @@ export async function POST(req: NextRequest) {
     cancel_url: `${baseUrl}/cabinet?cancelled=1`,
     metadata: { userId: user.id, plan, ...(gclid ? { gclid } : {}) },
   })
+
+  try {
+    await db.execute(sql`INSERT INTO analytics_events (user_id, event, path, props) VALUES (${user.id}, 'checkout_session_created', '/api/stripe/create-checkout', ${JSON.stringify({ plan, session: checkoutSession.id })}::jsonb)`)
+  } catch { /* analytics must never block checkout */ }
 
   return NextResponse.json({ url: checkoutSession.url })
 }
