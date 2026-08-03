@@ -5,9 +5,9 @@ export function hasAccess(user: {
   subscriptionPlan: string | null
   trialEndsAt: Date | null
 }): boolean {
-  // Access requires a real Stripe subscription (trialing counts — the trial is a
-  // card-required Stripe trial now). The legacy cardless `trialEndsAt` grant was
-  // removed: trials no longer exist without a Stripe subscription.
+  // Access requires a real Stripe subscription. trialing counts (the 14-day trial is
+  // NO-CARD now: Stripe starts it trialing and auto-cancels at the end if no card was
+  // added, flipping status to canceled -> this returns false -> functionality disabled).
   const active = user.subscriptionStatus === "active" || user.subscriptionStatus === "past_due" || user.subscriptionStatus === "trialing"
   if (active && user.subscriptionPlan) {
     return true

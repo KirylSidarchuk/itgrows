@@ -33,7 +33,7 @@ const companyFaqs = [
   },
   {
     q: "Do we need a credit card to start?",
-    a: "You add a card to start your 14-day free trial, but you're not charged until it ends. Cancel anytime before then from your dashboard and you pay nothing.",
+    a: "No credit card required. Start your 14-day free trial with just your account; nothing is charged when it ends unless you choose to subscribe.",
   },
 ]
 
@@ -295,7 +295,7 @@ export default function CompanyPage() {
                   <div className="bg-gradient-to-r from-violet-600 to-cyan-600 rounded-2xl p-6 sm:p-8 text-center text-white">
                     <div className="text-2xl font-extrabold mb-2">These are yours — want them on your company page every day?</div>
                     <p className="text-white/80 text-sm mb-1">You just saw them free, no signup. Sign up to auto-write &amp; publish posts like these daily to your company&apos;s LinkedIn &amp; X — on autopilot.</p>
-                    <p className="text-white/70 text-xs mb-5">✓ Free for 14 days · You&apos;re not charged today &nbsp;·&nbsp; ✓ These posts are saved — waiting in your dashboard.</p>
+                    <p className="text-white/70 text-xs mb-5">✓ Free for 14 days · No credit card required &nbsp;·&nbsp; ✓ These posts are saved — waiting in your dashboard.</p>
                     <Button onClick={() => goSignupFromPreview("company_preview_banner")} className="bg-white text-violet-600 font-bold text-sm hover:bg-violet-50">Get 14 days free →</Button>
                   </div>
                 </div>

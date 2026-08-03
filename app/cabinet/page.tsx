@@ -2560,7 +2560,7 @@ function LinkedInPageContent() {
                   </div>
                   <div>
                     <p className="text-sm font-bold text-[#1b1916]">Your posts are ready 🎉</p>
-                    <p className="text-xs text-slate-600 mt-0.5">We saved the {savedGhostPosts.posts.length} posts you generated. {isConnected ? "Generate your full schedule free — publish when you're ready." : "Connect LinkedIn to generate your full schedule free — you only add a card to publish on autopilot."}</p>
+                    <p className="text-xs text-slate-600 mt-0.5">We saved the {savedGhostPosts.posts.length} posts you generated. {isConnected ? "Generate your full schedule free — publish when you're ready." : "Connect LinkedIn to generate your full schedule free — start a free 14-day trial to publish on autopilot, no card needed."}</p>
                   </div>
                 </div>
                 <button
@@ -3739,7 +3739,7 @@ function LinkedInPageContent() {
                             </p>
                             <p className="text-sm text-slate-600 max-w-xs">
                               {briefFilled
-                                ? "Generate a full schedule in your voice — free, no card. You only add a card to publish on autopilot."
+                                ? "Generate a full schedule in your voice — free, no card. Start a free 14-day trial to publish on autopilot, no card needed."
                                 : "Fill your Professional DNA (1 minute) and generate a full schedule in your voice — free, no card."}
                             </p>
                           </div>
@@ -3820,7 +3820,7 @@ function LinkedInPageContent() {
                         : "Connect LinkedIn to get your posts — free"}
                     </p>
                     <p className="text-sm text-slate-600 max-w-sm mx-auto">
-                      We&apos;ll write a full schedule in your voice, with cover images — free, before you enter any card. You approve every post; nothing publishes without you.
+                      We&apos;ll write a full schedule in your voice, with cover images — free, no card required to try it. You approve every post; nothing publishes without you.
                     </p>
                   </div>
                   {/* Bounded 3-step path so connecting feels like step 1 of 3, not an open-ended commitment. */}
@@ -4324,7 +4324,7 @@ function LinkedInPageContent() {
                   <div className="space-y-4">
                     <div className="p-4 rounded-xl bg-slate-50 border border-slate-100">
                       <p className="text-sm font-semibold text-slate-700 mb-1">No Active Plan</p>
-                      <p className="text-xs text-slate-600">14-day free trial · Cancel anytime — no charge until it ends.</p>
+                      <p className="text-xs text-slate-600">14-day free trial · No credit card required · Cancel anytime.</p>
                     </div>
                     <button
                       onClick={() => setShowPlanModal(true)}

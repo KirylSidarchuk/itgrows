@@ -60,7 +60,7 @@ export default function TermsPage() {
               <li><strong>Company Pages — $99 / $149 / $299/month:</strong> run one, two, or unlimited companies (LinkedIn Company Page + X) on autopilot.</li>
             </ul>
             <p className="mt-3">
-              All plans start with a <strong>14-day free trial</strong>. A valid payment method is required to start the trial; you are not charged until the trial ends. You can cancel anytime before the trial ends from your dashboard and you will not be charged.
+              All plans start with a <strong>14-day free trial</strong>. No payment method is required to start the trial. If you do not add a card, the trial simply ends after 14 days and your access pauses — you are never charged automatically. You can add a card anytime to continue after the trial, and you can cancel anytime from your dashboard.
             </p>
             <p className="mt-3">
               All payments are processed via Stripe. Subscriptions renew automatically unless cancelled before the renewal date. By subscribing, you authorize us to charge your payment method on a recurring basis.

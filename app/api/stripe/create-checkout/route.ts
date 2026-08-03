@@ -77,7 +77,9 @@ export async function POST(req: NextRequest) {
     line_items: [{ price: priceId, quantity: 1 }],
     mode: "subscription",
     // Card required up front to start the 14-day free trial (no charge until it ends).
-    payment_method_collection: "always",
+    // No card required to start the 14-day trial; Stripe cancels it at the end if no
+    // payment method was added (end_behavior below), which revokes access via the webhook.
+    payment_method_collection: "if_required",
     subscription_data: {
       metadata: { userId: user.id, plan, ...(gclid ? { gclid } : {}) },
       trial_period_days: 14,

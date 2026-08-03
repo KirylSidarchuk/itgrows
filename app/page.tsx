@@ -50,7 +50,7 @@ const faqs = [
   },
   {
     q: "Do I need a credit card to start?",
-    a: "Yes — you add a card to start your 14-day free trial, but you're not charged until the trial ends. Cancel anytime before then from your dashboard and you won't be charged a cent.",
+    a: "No — no credit card required. Start your 14-day free trial with just your LinkedIn or Google account. When the trial ends nothing is charged automatically; you only add a card if you decide to keep going.",
   },
   {
     q: "What happens to my content if I cancel?",
@@ -523,7 +523,7 @@ export default function PersonalPage() {
             <p className="text-center mt-3 text-xs sm:text-sm text-slate-500 font-medium">
               <Link href="/signup" onClick={() => track("free_signup_clicked", { source: "hero" })} className="text-violet-600 hover:underline font-semibold">
                 Create a free account — no card
-              </Link>{" "}· 14-day auto-posting trial (card) when you&apos;re ready
+              </Link>{" "}· 14-day auto-posting trial — no card required
             </p>
 
             {ghostLoading && (
@@ -652,7 +652,7 @@ export default function PersonalPage() {
                   >
                     Create my free account →
                   </button>
-                  <p className="mt-3 text-white/70 text-xs">Free with Google or LinkedIn — no card. You only add a card later to turn on the 14-day auto-posting trial.</p>
+                  <p className="mt-3 text-white/70 text-xs">Free with Google or LinkedIn — and your 14-day auto-posting trial needs no card either. Add one only if you decide to keep going.</p>
                   <a href="#pricing" onClick={() => track("see_plans_from_preview")} className="inline-block mt-3 text-white/80 text-xs underline hover:text-white">See plans &amp; pricing →</a>
                 </div>
               </div>
@@ -1025,7 +1025,7 @@ export default function PersonalPage() {
             </Card>
 
           </div>
-          <p className="text-center mt-8 text-sm text-slate-600">✓ 14-day free trial &nbsp;·&nbsp; ✓ Cancel anytime before it ends — no charge &nbsp;·&nbsp; ✓ Full refund within 7 days of your first payment</p>
+          <p className="text-center mt-8 text-sm text-slate-600">✓ 14-day free trial &nbsp;·&nbsp; ✓ No credit card required &nbsp;·&nbsp; ✓ Cancel anytime</p>
         </div>
       </section>
 
