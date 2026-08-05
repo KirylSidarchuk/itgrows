@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/auth"
 import { db } from "@/lib/db"
-import { linkedinAccounts, linkedinBriefs } from "@/lib/db/schema"
+import { linkedinAccounts, linkedinBriefs, users } from "@/lib/db/schema"
 import { eq, and, sql } from "drizzle-orm"
+import { hasAccess } from "@/lib/access"
 
 const LLM_BASE_URL = "http://34.60.133.229:4000"
 const LLM_MODEL = "gemini-2.5-flash-lite"
@@ -144,21 +145,43 @@ export async function GET(req: NextRequest) {
         // Non-fatal: continue without positions
       }
 
-      // Guard: the same LinkedIn member connected to a DIFFERENT ItGrows account would make
-      // LinkedIn revoke the older grant, silently killing publishing for the first (often paying)
-      // account. Refuse instead of breaking them. (Root-caused from a live incident 2026-08.)
+      // LinkedIn keeps ONE grant per app+member: connecting the same LinkedIn from a second
+      // ItGrows account silently revokes the first account's token (live incident 2026-08).
+      // Policy: if the other account is a PAYING/trialing one, refuse (protect the payer).
+      // If it's an abandoned/free duplicate, release that stale link so THIS connect can work —
+      // otherwise the user is permanently locked out of reconnecting.
       if (personUrn) {
         const takenBy = await db
           .select({ id: linkedinAccounts.id, userId: linkedinAccounts.userId })
           .from(linkedinAccounts)
           .where(and(eq(linkedinAccounts.linkedinPersonUrn, personUrn), eq(linkedinAccounts.pageType, "personal")))
-          .limit(5)
-        const otherOwner = takenBy.find((a) => a.userId !== userId)
-        if (otherOwner) {
+          .limit(10)
+        for (const other of takenBy.filter((a) => a.userId !== userId)) {
+          const [otherUser] = await db
+            .select({
+              subscriptionStatus: users.subscriptionStatus,
+              subscriptionPlan: users.subscriptionPlan,
+              trialEndsAt: users.trialEndsAt,
+            })
+            .from(users)
+            .where(eq(users.id, other.userId))
+            .limit(1)
+          const otherIsPaying = otherUser ? hasAccess({
+            subscriptionStatus: otherUser.subscriptionStatus ?? null,
+            subscriptionPlan: otherUser.subscriptionPlan ?? null,
+            trialEndsAt: otherUser.trialEndsAt ?? null,
+          }) : false
+          if (otherIsPaying) {
+            try {
+              await db.execute(sql`INSERT INTO analytics_events (user_id, event, path, props) VALUES (${userId}, 'linkedin_connect_fail', '/api/linkedin/callback', ${JSON.stringify({ reason: "already_linked_to_paying_account" })}::jsonb)`)
+            } catch { /* ignore */ }
+            return NextResponse.redirect(`${process.env.NEXTAUTH_URL}/cabinet?error=linkedin_already_linked`)
+          }
+          // stale duplicate on a non-paying account — release it
+          await db.delete(linkedinAccounts).where(eq(linkedinAccounts.id, other.id))
           try {
-            await db.execute(sql`INSERT INTO analytics_events (user_id, event, path, props) VALUES (${userId}, 'linkedin_connect_fail', '/api/linkedin/callback', ${JSON.stringify({ reason: "already_linked_to_other_account" })}::jsonb)`)
+            await db.execute(sql`INSERT INTO analytics_events (user_id, event, path, props) VALUES (${userId}, 'linkedin_stale_link_released', '/api/linkedin/callback', ${JSON.stringify({ from_user: other.userId })}::jsonb)`)
           } catch { /* ignore */ }
-          return NextResponse.redirect(`${process.env.NEXTAUTH_URL}/cabinet?error=linkedin_already_linked`)
         }
       }
 

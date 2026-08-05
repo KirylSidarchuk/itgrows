@@ -1109,6 +1109,7 @@ function LinkedInPageContent() {
         oauth_denied: "LinkedIn authorization was denied.",
         token_failed: "Failed to obtain access token from LinkedIn.",
         server_error: "A server error occurred during connection.",
+        linkedin_already_linked: "This LinkedIn profile is already connected to another ItGrows account with an active plan. Sign in to that account, or contact us and we'll move it over.",
       }
       setStatusMessage(messages[error] ?? "Connection failed. Please try again.")
     }
