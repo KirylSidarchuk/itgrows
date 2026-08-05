@@ -229,6 +229,25 @@ export async function POST(req: NextRequest) {
 
     if (!liResponse.ok) {
       const errText = await liResponse.text()
+
+      // 401 / REVOKED_ACCESS_TOKEN = LinkedIn killed the grant (app removed, or the same
+      // LinkedIn re-authorised from another ItGrows account). Not retriable — the user must
+      // reconnect. Store a clean, classified error instead of a raw JSON dump so the
+      // "reconnect your LinkedIn" messaging (not a billing-looking error) reaches them.
+      if (liResponse.status === 401 || errText.includes("REVOKED_ACCESS_TOKEN")) {
+        try {
+          await db.update(linkedinAccounts).set({ isActive: false }).where(eq(linkedinAccounts.id, account.id))
+        } catch { /* never block the response */ }
+        await db
+          .update(linkedinPosts)
+          .set({ status: "failed", publishError: "linkedin_token_expired" })
+          .where(and(eq(linkedinPosts.id, postId), eq(linkedinPosts.userId, userId)))
+        return NextResponse.json(
+          { error: "linkedin_token_expired", message: "LinkedIn revoked access. Please reconnect your LinkedIn account to resume publishing." },
+          { status: 401 }
+        )
+      }
+
       // Mark as failed — include userId in WHERE to prevent cross-user modification
       await db
         .update(linkedinPosts)

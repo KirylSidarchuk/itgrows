@@ -192,6 +192,16 @@ async function publishPost(post: {
 
   if (!liResponse.ok) {
     const errText = await liResponse.text()
+    // 401 / REVOKED_ACCESS_TOKEN = LinkedIn killed the grant (user removed the app, or
+    // re-authorised the same LinkedIn from another ItGrows account). No refresh can fix it —
+    // the user must reconnect. Flag the account so the cabinet stops showing it as working,
+    // and return the token error so the actionable "reconnect" email is sent (not a raw dump).
+    if (liResponse.status === 401 || errText.includes("REVOKED_ACCESS_TOKEN")) {
+      try {
+        await db.update(linkedinAccounts).set({ isActive: false }).where(eq(linkedinAccounts.id, account.id))
+      } catch { /* never block the publish loop */ }
+      return { success: false, error: "linkedin_token_expired" }
+    }
     return { success: false, error: `LinkedIn API ${liResponse.status}: ${errText}` }
   }
 

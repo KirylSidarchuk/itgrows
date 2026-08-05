@@ -144,6 +144,24 @@ export async function GET(req: NextRequest) {
         // Non-fatal: continue without positions
       }
 
+      // Guard: the same LinkedIn member connected to a DIFFERENT ItGrows account would make
+      // LinkedIn revoke the older grant, silently killing publishing for the first (often paying)
+      // account. Refuse instead of breaking them. (Root-caused from a live incident 2026-08.)
+      if (personUrn) {
+        const takenBy = await db
+          .select({ id: linkedinAccounts.id, userId: linkedinAccounts.userId })
+          .from(linkedinAccounts)
+          .where(and(eq(linkedinAccounts.linkedinPersonUrn, personUrn), eq(linkedinAccounts.pageType, "personal")))
+          .limit(5)
+        const otherOwner = takenBy.find((a) => a.userId !== userId)
+        if (otherOwner) {
+          try {
+            await db.execute(sql`INSERT INTO analytics_events (user_id, event, path, props) VALUES (${userId}, 'linkedin_connect_fail', '/api/linkedin/callback', ${JSON.stringify({ reason: "already_linked_to_other_account" })}::jsonb)`)
+          } catch { /* ignore */ }
+          return NextResponse.redirect(`${process.env.NEXTAUTH_URL}/cabinet?error=linkedin_already_linked`)
+        }
+      }
+
       // Upsert personal account — replace if already exists
       const existing = await db
         .select({ id: linkedinAccounts.id })
