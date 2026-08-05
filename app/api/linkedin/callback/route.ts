@@ -201,6 +201,9 @@ export async function GET(req: NextRequest) {
             linkedinPersonUrn: personUrn,
             pageName,
             pageHandle,
+            // A reconnect must clear the deactivation set by the publish cron on a revoked
+            // token — otherwise the account stays flagged dead after the user fixed it.
+            isActive: true,
           })
           .where(eq(linkedinAccounts.id, existing[0].id))
       } else {
