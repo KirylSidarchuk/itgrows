@@ -2753,7 +2753,7 @@ function LinkedInPageContent() {
                   <div className="text-center py-10">
                     <p className="text-sm text-slate-600 mb-2">No company pages found.</p>
                     <p className="text-xs text-slate-600 mb-4">Connect your LinkedIn account — company pages are loaded automatically.</p>
-                    {accounts.length === 0 && (
+                    {!accounts.some((a) => a.pageType === "personal") && (
                       <a
                         href={`/api/linkedin/connect?userId=${session?.user?.id}&type=personal`}
                         className="inline-flex items-center gap-2 bg-[#0077B5] hover:bg-[#005f8e] text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors"
@@ -4060,13 +4060,27 @@ function LinkedInPageContent() {
                         + Connect LinkedIn
                       </Button>
                     </a>
-                  ) : accounts.some((a) => a.pageType === "personal") && !accounts.some((a) => a.pageType === "organization") ? (
-                    <a href="/api/linkedin/connect?type=company">
-                      <Button size="sm" variant="outline" className="border-[#0077B5] text-[#0077B5] hover:bg-blue-50 text-xs rounded-xl">
-                        + Connect Company Page
-                      </Button>
-                    </a>
-                  ) : null}
+                  ) : (
+                    /* Offer whichever type is missing. Previously, having company pages but no
+                       personal profile rendered NO button at all — users who disconnected their
+                       personal profile were locked out of reconnecting it. */
+                    <div className="flex items-center gap-2">
+                      {!accounts.some((a) => a.pageType === "personal") && (
+                        <a href="/api/linkedin/connect?type=personal">
+                          <Button size="sm" className="bg-[#0077B5] hover:bg-[#005f8e] text-white text-xs rounded-xl">
+                            + Connect Personal Profile
+                          </Button>
+                        </a>
+                      )}
+                      {!accounts.some((a) => a.pageType === "organization") && (
+                        <a href="/api/linkedin/connect?type=company">
+                          <Button size="sm" variant="outline" className="border-[#0077B5] text-[#0077B5] hover:bg-blue-50 text-xs rounded-xl">
+                            + Connect Company Page
+                          </Button>
+                        </a>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 {loading ? (
