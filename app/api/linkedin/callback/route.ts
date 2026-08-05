@@ -4,6 +4,7 @@ import { db } from "@/lib/db"
 import { linkedinAccounts, linkedinBriefs, users } from "@/lib/db/schema"
 import { eq, and, sql } from "drizzle-orm"
 import { hasAccess } from "@/lib/access"
+import { notifyOwner } from "@/lib/telegram"
 
 const LLM_BASE_URL = "http://34.60.133.229:4000"
 const LLM_MODEL = "gemini-2.5-flash-lite"
@@ -174,6 +175,10 @@ export async function GET(req: NextRequest) {
           if (otherIsPaying) {
             try {
               await db.execute(sql`INSERT INTO analytics_events (user_id, event, path, props) VALUES (${userId}, 'linkedin_connect_fail', '/api/linkedin/callback', ${JSON.stringify({ reason: "already_linked_to_paying_account" })}::jsonb)`)
+            } catch { /* ignore */ }
+            try {
+              const [who] = await db.select({ email: users.email }).from(users).where(eq(users.id, userId)).limit(1)
+              notifyOwner(`\u26a0\ufe0f LinkedIn connect \u0417\u0410\u0411\u041b\u041e\u041a\u0418\u0420\u041e\u0412\u0410\u041d (\u0443\u0436\u0435 \u043f\u0440\u0438\u0432\u044f\u0437\u0430\u043d \u043a \u043f\u043b\u0430\u0442\u044f\u0449\u0435\u043c\u0443 \u0430\u043a\u043a\u0430\u0443\u043d\u0442\u0443)\n\ud83d\udc64 ${who?.email ?? userId}`)
             } catch { /* ignore */ }
             return NextResponse.redirect(`${process.env.NEXTAUTH_URL}/cabinet?error=linkedin_already_linked`)
           }
@@ -430,6 +435,10 @@ Return only the JSON object, no markdown, no extra text.`,
     }
 
     await db.execute(sql`INSERT INTO analytics_events (user_id, event, path, props) VALUES (${userId}, 'linkedin_connect_ok', '/api/linkedin/callback', ${JSON.stringify({ connectType })}::jsonb)`).catch(() => {})
+    try {
+      const [who] = await db.select({ email: users.email, name: users.name }).from(users).where(eq(users.id, userId)).limit(1)
+      notifyOwner(`\u2705 LinkedIn \u043f\u043e\u0434\u043a\u043b\u044e\u0447\u0451\u043d (${connectType})\n\ud83d\udc64 ${who?.name ?? ""} ${who?.email ?? userId}`)
+    } catch { /* alert must never break the redirect */ }
     return NextResponse.redirect(`${process.env.NEXTAUTH_URL}/cabinet?connected=1`)
   } catch (err) {
     console.error("LinkedIn callback error:", err)

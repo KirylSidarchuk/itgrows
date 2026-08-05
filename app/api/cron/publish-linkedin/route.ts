@@ -6,6 +6,7 @@ import { eq, and, lte } from "drizzle-orm"
 import { sendEmail } from "@/lib/email"
 import { postPublishedEmail, postFailedEmail, linkedinTokenExpiredEmail } from "@/lib/email-templates"
 import { hasAccess } from "@/lib/access"
+import { notifyOwner } from "@/lib/telegram"
 import { generatePostImage } from "@/lib/linkedin-image"
 
 interface LinkedInUgcPostBody {
@@ -219,6 +220,8 @@ export async function GET(req: NextRequest) {
 
   try {
     const now = new Date()
+    // Collected so one summary alert goes out per run (never one message per post).
+    const failures: { email: string; reason: string }[] = []
 
     // Find all scheduled posts due to publish
     const duePosts = await db
@@ -307,6 +310,7 @@ export async function GET(req: NextRequest) {
           .set({ status: "failed", publishError: result.error ?? "Unknown error" })
           .where(eq(linkedinPosts.id, post.id))
         failed++
+        failures.push({ email: postUser?.email ?? "?", reason: result.error ?? "unknown" })
         console.error(`[publish-linkedin] Failed to publish post ${post.id}:`, result.error)
         if (result.error === "linkedin_token_expired" && postUser?.email) {
           await sendEmail({
@@ -322,6 +326,20 @@ export async function GET(req: NextRequest) {
           })
         }
       }
+    }
+
+    // Alert the owner about failures — this monitoring gap is why a customer's posts
+    // silently failed for a week before they reported it themselves.
+    if (failures.length > 0) {
+      const byReason = failures.reduce<Record<string, string[]>>((acc, f) => {
+        (acc[f.reason] ??= []).push(f.email)
+        return acc
+      }, {})
+      const lines = Object.entries(byReason).map(([reason, emails]) => {
+        const uniq = [...new Set(emails)]
+        return `\u2022 ${reason}: ${uniq.join(", ")}`
+      })
+      notifyOwner(`\u274c \u041f\u0443\u0431\u043b\u0438\u043a\u0430\u0446\u0438\u044f LinkedIn \u2014 ${failed} \u043e\u0448\u0438\u0431\u043e\u043a (\u043e\u043f\u0443\u0431\u043b\u0438\u043a\u043e\u0432\u0430\u043d\u043e ${published})\n${lines.join("\n")}`)
     }
 
     return NextResponse.json({ published, failed, total: duePosts.length })
