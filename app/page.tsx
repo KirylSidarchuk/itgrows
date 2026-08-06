@@ -1127,14 +1127,14 @@ export default function PersonalPage() {
       {/* Floating Feedback Button */}
       <button
         onClick={() => { setFeedbackOpen(true); setFeedbackDone(false); setFeedbackError("") }}
-        className={`fixed ${ghostPosts.length > 0 ? "bottom-24 sm:bottom-6" : "bottom-6"} right-6 z-50 flex items-center gap-2 px-4 py-3 rounded-full text-white text-sm font-semibold shadow-lg transition-all hover:scale-105 active:scale-95`}
+        className={`fixed ${ghostPosts.length > 0 ? "bottom-24 sm:bottom-6" : "bottom-4 sm:bottom-6"} right-4 sm:right-6 z-50 flex items-center justify-center w-11 h-11 sm:w-auto sm:h-auto sm:gap-2 sm:px-4 sm:py-3 rounded-full text-white text-sm font-semibold shadow-lg transition-all hover:scale-105 active:scale-95`}
         style={{ background: "linear-gradient(135deg, #7C3AED, #6d28d9)" }}
         aria-label="Open feedback form"
       >
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
           <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
         </svg>
-        Feedback
+        <span className="hidden sm:inline">Feedback</span>
       </button>
 
       {/* Platform Selection Modal */}
