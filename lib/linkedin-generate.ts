@@ -90,6 +90,7 @@ export function buildLinkedInPrompt(brief: {
   companyName?: string | null
   targetAudience?: string | null
   avoidTopics?: string | null
+  topics?: string | null
 }, count: number = 14, isCompany: boolean = false): string {
   const currentYear = new Date().getFullYear()
   const tone = brief.tone ?? "professional"
@@ -140,9 +141,18 @@ export function buildLinkedInPrompt(brief: {
     ? `\nIMPORTANT: Do NOT mention or promote the following topics: ${brief.avoidTopics.trim()}`
     : ""
 
+  // The user's own editorial plan for this batch. When present it OVERRIDES the generic
+  // angle rotation: each listed topic gets its own post, cycled if there are more posts
+  // than topics, so the batch follows their plan instead of our defaults.
+  const topicsLine = brief.topics?.trim()
+    ? `\n\nTHE AUTHOR'S TOPIC PLAN FOR THIS BATCH (highest priority — follow it):
+${brief.topics.trim()}
+Write the posts so these topics are covered in the order given, one topic per post. If there are more posts than topics, cycle back through the list with a different angle each time. Do not drift onto unrelated subjects.`
+    : ""
+
   if (isCompany) {
     return `You are a LinkedIn content expert writing for a company page in the ${niche} space. The voice represents the company, not an individual.
-${audience}Goals: ${goals}. Current year: ${currentYear}.${avoidTopicsLine}
+${audience}Goals: ${goals}. Current year: ${currentYear}.${avoidTopicsLine}${topicsLine}
 
 VOICE RULE — this is a company page:
 - ALWAYS write in first person plural: "We", "Our", "Us", "We've", "We're".
@@ -180,7 +190,7 @@ Write the ${count} posts now, return only the JSON array:`
   }
 
   return `You are a LinkedIn thought leadership expert writing in the first person for a ${tone} professional in the ${niche} space.
-${audience}Goals: ${goals}. Current year: ${currentYear}.${avoidTopicsLine}
+${audience}Goals: ${goals}. Current year: ${currentYear}.${avoidTopicsLine}${topicsLine}
 
 STRICT RULES — violations make the post unusable:
 1. NEVER invent case studies, e.g. "Company X increased sales by Y%" — these are fabricated and damage credibility.

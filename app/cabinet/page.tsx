@@ -44,6 +44,7 @@ interface LinkedInBrief {
   isAutoFilled?: boolean
   postingFrequency: string
   avoidTopics?: string
+  topics?: string
   imageStyle?: string
 }
 
@@ -1147,7 +1148,7 @@ function LinkedInPageContent() {
     if (accounts.length > 0) {
       // Reset state immediately before loading new account data
       setPosts([])
-      setBrief({ niche: "", tone: "professional", goals: "", companyName: "", targetAudience: "", avoidTopics: "", postingFrequency: "daily", imageStyle: "ai_art" })
+      setBrief({ niche: "", tone: "professional", goals: "", companyName: "", targetAudience: "", avoidTopics: "", topics: "", postingFrequency: "daily", imageStyle: "ai_art" })
       fetchBrief(selectedLinkedInAccountId)
       fetchPosts(selectedLinkedInAccountId)
     }
@@ -1253,6 +1254,7 @@ function LinkedInPageContent() {
             targetAudience: data.brief.targetAudience ?? "",
             postingFrequency: data.brief.postingFrequency ?? "daily",
             avoidTopics: data.brief.avoidTopics ?? "",
+            topics: data.brief.topics ?? "",
             imageStyle: data.brief.imageStyle ?? "ai_art",
           })
           setBriefIsAutoFilled(data.brief.isAutoFilled === true)
@@ -4007,6 +4009,22 @@ function LinkedInPageContent() {
                       </button>
                     ))}
                   </div>
+                </div>
+
+                {/* Topics for the next batch — the author's own editorial plan.
+                    Requested by a paying customer who runs a weekly topic rotation. */}
+                <div>
+                  <label className="block text-xs font-semibold text-slate-600 mb-1.5 uppercase tracking-wide">
+                    Topics for your next posts <span className="normal-case font-normal text-slate-600">(optional)</span>
+                  </label>
+                  <textarea
+                    rows={4}
+                    placeholder={"One topic per line \u2014 we write one post per topic, in this order.\n\nWhy transformation programmes stall in year two\nWhat operations leaders get wrong about AI pilots\nHiring for change capability, not just experience"}
+                    value={brief.topics ?? ""}
+                    onChange={(e) => setBrief((b) => ({ ...b, topics: e.target.value }))}
+                    className="w-full px-3 py-2.5 text-sm rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-violet-300 resize-none transition-colors"
+                  />
+                  <p className="text-[11px] text-slate-500 mt-1">Leave it empty and ItGrows picks the topics. Applies to the next batch it generates.</p>
                 </div>
 
                 {/* Avoid topics / Additional instructions */}

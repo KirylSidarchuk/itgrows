@@ -158,6 +158,8 @@ export const linkedinBriefs = pgTable("linkedin_briefs", {
   profileUrl: text("profile_url"),
   postingFrequency: text("posting_frequency").notNull().default("daily"),
   avoidTopics: text("avoid_topics"),
+  // Topics the user WANTS covered in the next batch (their own editorial plan).
+  topics: text("topics"),
   imageStyle: text("image_style").default("ai_art"),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
 })
