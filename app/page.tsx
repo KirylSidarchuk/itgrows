@@ -932,8 +932,8 @@ export default function PersonalPage() {
             </Card>
 
             {/* Duo — Most Popular */}
-            <Card className="relative border-violet-500 bg-gradient-to-b from-violet-50 to-white shadow-2xl shadow-violet-200">
-              <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+            <Card className="relative overflow-visible mt-5 sm:mt-0 border-violet-500 bg-gradient-to-b from-violet-50 to-white shadow-2xl shadow-violet-200">
+              <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-10">
                 <Badge className="bg-violet-600 text-white border-0 px-4 py-1">Most Popular</Badge>
               </div>
               <CardHeader className="text-center pb-2 pt-8">
@@ -978,8 +978,8 @@ export default function PersonalPage() {
             </Card>
 
             {/* All-in Plan */}
-            <Card className="relative border-black/10 bg-white shadow-sm">
-              <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+            <Card className="relative overflow-visible mt-5 sm:mt-0 border-black/10 bg-white shadow-sm">
+              <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-10">
                 <Badge className="bg-slate-200 text-slate-600 border-0 px-4 py-1">Full coverage</Badge>
               </div>
               <CardHeader className="text-center pb-2 pt-8">
