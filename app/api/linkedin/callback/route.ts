@@ -220,6 +220,9 @@ export async function GET(req: NextRequest) {
           pageType: "personal",
           pageName,
           pageHandle,
+          // is_active defaults to false (that default exists for company pages, which are
+          // activated per paid page). A personal profile is live the moment it is connected.
+          isActive: true,
         })
       }
     }

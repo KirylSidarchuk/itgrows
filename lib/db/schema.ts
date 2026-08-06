@@ -134,7 +134,7 @@ export const linkedinAccounts = pgTable("linkedin_accounts", {
 export const linkedinPosts = pgTable("linkedin_posts", {
   id: uuid("id").defaultRandom().primaryKey(),
   userId: text("user_id").notNull(),
-  linkedinAccountId: uuid("linkedin_account_id").references(() => linkedinAccounts.id, { onDelete: "cascade" }),
+  linkedinAccountId: uuid("linkedin_account_id").references(() => linkedinAccounts.id, { onDelete: "set null" }),
   content: text("content").notNull(),
   status: text("status").notNull().default("draft"), // draft | scheduled | published | failed
   scheduledFor: timestamp("scheduled_for", { withTimezone: true }),
@@ -148,7 +148,7 @@ export const linkedinPosts = pgTable("linkedin_posts", {
 export const linkedinBriefs = pgTable("linkedin_briefs", {
   id: uuid("id").defaultRandom().primaryKey(),
   userId: text("user_id").notNull(),
-  linkedinAccountId: uuid("linkedin_account_id").references(() => linkedinAccounts.id, { onDelete: "cascade" }),
+  linkedinAccountId: uuid("linkedin_account_id").references(() => linkedinAccounts.id, { onDelete: "set null" }),
   niche: text("niche"),
   tone: text("tone").default("professional"),
   goals: text("goals"),

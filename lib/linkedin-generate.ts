@@ -230,7 +230,9 @@ export async function generateForUser(userId: string): Promise<{ success: boolea
     const [account] = await db
       .select()
       .from(linkedinAccounts)
-      .where(eq(linkedinAccounts.userId, userId))
+      // Prefer the personal profile — see the note in /api/linkedin/generate: an unordered
+      // "any account" pick sent personal posts to a company page.
+      .where(and(eq(linkedinAccounts.userId, userId), eq(linkedinAccounts.pageType, "personal")))
       .limit(1)
 
     if (!account) {

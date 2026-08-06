@@ -99,11 +99,23 @@ export async function POST(req: NextRequest) {
         .where(and(eq(linkedinAccounts.userId, userId), eq(linkedinAccounts.id, linkedinAccountId)))
         .limit(1)
     } else {
+      // The comment used to say "first personal" but the query took ANY account with no
+      // ordering — so a user with company pages could have their personal posts silently
+      // written to a company page (and then the Posts tab, which reads the PERSONAL account,
+      // showed "No posts yet"). Prefer personal; fall back deterministically to the oldest.
       ;[account] = await db
         .select()
         .from(linkedinAccounts)
-        .where(eq(linkedinAccounts.userId, userId))
+        .where(and(eq(linkedinAccounts.userId, userId), eq(linkedinAccounts.pageType, "personal")))
         .limit(1)
+      if (!account) {
+        ;[account] = await db
+          .select()
+          .from(linkedinAccounts)
+          .where(eq(linkedinAccounts.userId, userId))
+          .orderBy(linkedinAccounts.createdAt)
+          .limit(1)
+      }
     }
 
     if (!account) {
