@@ -50,12 +50,16 @@ export async function GET(req: NextRequest) {
         row.card_brand_last4 = methods.data[0] ? `${methods.data[0].card?.brand} ****${methods.data[0].card?.last4}` : null
         row.missing_payment_method_behaviour = sub.trial_settings?.end_behavior?.missing_payment_method ?? "(default: create_invoice)"
         row.cancel_at_period_end = sub.cancel_at_period_end
-        // The bottom line the owner actually needs.
-        row.what_happens_at_trial_end = hasCard
-          ? "charges the card and becomes a paying subscription"
-          : (sub.trial_settings?.end_behavior?.missing_payment_method === "cancel"
+        // The bottom line the owner actually needs. A cancelled subscription -- or one already set
+        // to stop at period end -- never reaches the charge, so say so instead of reporting the
+        // happy path for a customer who is on their way out.
+        row.what_happens_at_trial_end =
+          sub.status === "canceled" ? "already cancelled -- no further charge"
+          : sub.cancel_at_period_end ? "set to cancel at period end -- no further charge"
+          : hasCard ? "charges the card and becomes a paying subscription"
+          : sub.trial_settings?.end_behavior?.missing_payment_method === "cancel"
               ? "cancels automatically -- no charge, access switches off"
-              : "no card on file; Stripe will not be able to charge")
+              : "no card on file; Stripe will not be able to charge"
       } catch (e) {
         row.stripe_error = (e as Error).message
       }
