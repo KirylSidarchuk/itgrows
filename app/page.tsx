@@ -795,7 +795,7 @@ export default function PersonalPage() {
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-5 leading-tight">Every day you don&apos;t post, a competitor earns the trust that could&apos;ve been yours</h2>
           <p className="text-lg text-white/85 max-w-2xl mx-auto mb-6">Your next client, investor, or hire is scrolling LinkedIn and X right now. The people who show up — consistently — are the ones they remember and reach out to.</p>
           <p className="text-base text-white/80 max-w-2xl mx-auto mb-10">
-            <strong className="text-white">Your profile and your company page, one place — two voices.</strong> Run your personal presence and your company&apos;s page side by side, each with its own topics and tone.
+            <strong className="text-white">Your profile and your company page, one place — two voices.</strong>{" "}Run your personal presence and your company&apos;s page side by side, each with its own topics and tone.
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-10 text-left">
             <div className="rounded-2xl p-5 bg-white/10 border border-white/15">
