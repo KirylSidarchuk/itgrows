@@ -42,14 +42,21 @@ export async function GET(req: NextRequest) {
     // that is exactly how the last incident stayed invisible. Ask LinkedIn directly.
     if (probe) {
       const live = rows(await db.execute(sql`
-        SELECT la.id, la.access_token FROM linkedin_accounts la
+        SELECT la.id, la.access_token, la.page_type FROM linkedin_accounts la
         JOIN users u ON u.id::text = la.user_id
         WHERE (${email}::text IS NULL OR lower(u.email) = lower(${email}))
           AND (${email}::text IS NOT NULL OR u.subscription_status IN ('active', 'trialing'))`))
       const verdicts: Record<string, string> = {}
       await Promise.all(live.map(async (r) => {
+        // Personal and company tokens come from two different LinkedIn apps with different scopes:
+        // a company token has no access to userinfo, so probing it there returns 403 ACCESS_DENIED
+        // on a perfectly healthy connection. Ask each token something it is actually allowed to do,
+        // otherwise this check cries wolf on every company page.
+        const url = r.page_type === "organization"
+          ? "https://api.linkedin.com/v2/organizationAcls?q=roleAssignee&role=ADMINISTRATOR&state=APPROVED&count=1"
+          : "https://api.linkedin.com/v2/userinfo"
         try {
-          const res = await fetch("https://api.linkedin.com/v2/userinfo", {
+          const res = await fetch(url, {
             headers: { Authorization: `Bearer ${r.access_token as string}` },
           })
           verdicts[r.id as string] = res.ok ? "ok" : `${res.status} ${(await res.text()).slice(0, 120)}`
