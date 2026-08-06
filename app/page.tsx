@@ -707,10 +707,10 @@ export default function PersonalPage() {
                 <span className="text-pink-500 font-bold text-lg">2</span>
               </div>
               <h3 className="font-bold text-[#1b1916] text-lg mb-3">AI writes your posts, daily</h3>
-              <p className="text-slate-500 text-sm leading-relaxed">LinkedIn and X posts crafted in your voice — insightful, on-brand, engagement-ready. Review them in 30 seconds or let autopilot handle everything.</p>
+              <p className="text-slate-500 text-sm leading-relaxed">LinkedIn and X posts crafted in your voice on the topics you set — insightful, on-brand, engagement-ready. Approve the batch in 30 seconds, edit anything that isn&apos;t right, or let it publish on its own once you trust the output.</p>
               <div className="mt-6 flex items-center gap-2 text-xs text-pink-500 font-medium">
                 <svg className="w-4 h-4 flex-shrink-0" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7.5" stroke="#ec4899" strokeWidth="1"/><path d="M5 8l2 2 4-4" stroke="#ec4899" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                Works while you sleep
+                30 seconds a day
               </div>
             </div>
 
@@ -857,7 +857,7 @@ export default function PersonalPage() {
                   <div className="absolute -top-3 right-5 bg-green-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-sm">A fraction of the cost</div>
                   <div className="text-xs font-semibold uppercase tracking-widest text-violet-600 mb-4">With ItGrows</div>
                   <ul className="space-y-2.5 text-sm text-slate-700">
-                    <li className="flex items-center gap-2"><span className="text-violet-600 font-bold">✓</span> Daily posts in your voice, on autopilot</li>
+                    <li className="flex items-center gap-2"><span className="text-violet-600 font-bold">✓</span> Daily posts in your voice, on the topics you choose</li>
                     <li className="flex items-center gap-2"><span className="text-violet-600 font-bold">✓</span> Never sick, never off — every single day</li>
                     <li className="flex items-center gap-2"><span className="text-violet-600 font-bold">✓</span> You approve · official LinkedIn &amp; X API</li>
                     <li className="flex items-center gap-2"><span className="text-violet-600 font-bold">✓</span> 14-day free trial · Cancel anytime</li>
@@ -1076,13 +1076,13 @@ export default function PersonalPage() {
       <section className="px-4 sm:px-6 py-16 sm:py-24 text-center" style={{ backgroundColor: "#ebe9e5" }}>
         <div className="max-w-3xl mx-auto">
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-4 sm:mb-6 text-[#1b1916]">
-            Ready to Build a Brand That Works{" "}
+            Ready to Show Up Every Day —{" "}
             <span className="bg-gradient-to-r from-violet-600 to-cyan-600 bg-clip-text text-transparent">
-              While You Sleep?
+              Without Writing a Word?
             </span>
           </h2>
           <p className="text-slate-600 text-base sm:text-lg mb-8 sm:mb-10">
-            Attract <span className="text-violet-600 font-semibold">clients, partners and opportunities</span> on LinkedIn and X — on autopilot.
+            You set the topics. ItGrows writes and publishes them in your voice on LinkedIn and X — so <span className="text-violet-600 font-semibold">clients, partners and opportunities</span> come to you while you get on with the work.
           </p>
           <Button
             size="lg"
