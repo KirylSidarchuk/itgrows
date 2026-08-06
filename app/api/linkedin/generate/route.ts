@@ -134,17 +134,31 @@ export async function POST(req: NextRequest) {
       imageStyle?: string | null
     } = {}
 
-    if (body.brief) {
+    // The brief MUST belong to the account we are writing for. Previously the client-sent
+    // brief was trusted blindly while the account was resolved separately, so a company page
+    // could be published with another account's DNA (a personal AI/AR brief ended up on an
+    // online-education company page, in company voice). Only trust the client's brief when it
+    // explicitly named the same account; otherwise load that account's own brief.
+    if (body.brief && linkedinAccountId && linkedinAccountId === account.id) {
       brief = body.brief
     } else {
-      const [dbBrief] = await db
+      const [accountBrief] = await db
         .select()
         .from(linkedinBriefs)
-        .where(linkedinAccountId
-          ? and(eq(linkedinBriefs.userId, userId), eq(linkedinBriefs.linkedinAccountId, linkedinAccountId))
-          : eq(linkedinBriefs.userId, userId))
+        .where(and(eq(linkedinBriefs.userId, userId), eq(linkedinBriefs.linkedinAccountId, account.id)))
         .limit(1)
-      if (dbBrief) brief = dbBrief
+      if (accountBrief) {
+        brief = accountBrief
+      } else if (account.pageType === "personal") {
+        // Legacy: the personal brief is stored with a NULL account id.
+        const [personalBrief] = await db
+          .select()
+          .from(linkedinBriefs)
+          .where(and(eq(linkedinBriefs.userId, userId), isNull(linkedinBriefs.linkedinAccountId)))
+          .limit(1)
+        if (personalBrief) brief = personalBrief
+        else if (body.brief) brief = body.brief
+      }
     }
 
     const briefFilled = !!(brief.niche?.trim() || brief.goals?.trim() || brief.targetAudience?.trim())

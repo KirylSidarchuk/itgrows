@@ -1,6 +1,6 @@
 import { db } from "@/lib/db"
 import { linkedinPosts, linkedinBriefs, linkedinAccounts, users } from "@/lib/db/schema"
-import { eq, and, inArray } from "drizzle-orm"
+import { eq, and, inArray, isNull } from "drizzle-orm"
 import { callLLM } from "@/lib/llm-client"
 import { generatePostImage } from "@/lib/linkedin-image"
 import { sendEmail } from "@/lib/email"
@@ -254,11 +254,20 @@ export async function generateForUser(userId: string): Promise<{ success: boolea
     }
 
     // Get brief
-    const [dbBrief] = await db
+    // Must match the account resolved above — an unscoped "any brief" pick is how a
+    // company page got written with a different account's DNA.
+    let [dbBrief] = await db
       .select()
       .from(linkedinBriefs)
-      .where(eq(linkedinBriefs.userId, userId))
+      .where(and(eq(linkedinBriefs.userId, userId), eq(linkedinBriefs.linkedinAccountId, account.id)))
       .limit(1)
+    if (!dbBrief && account.pageType === "personal") {
+      ;[dbBrief] = await db
+        .select()
+        .from(linkedinBriefs)
+        .where(and(eq(linkedinBriefs.userId, userId), isNull(linkedinBriefs.linkedinAccountId)))
+        .limit(1)
+    }
 
     // Don't auto-generate off an empty Professional DNA — a generic first batch is a
     // bad first impression. Skip (not an error); the user fills their DNA and then the
