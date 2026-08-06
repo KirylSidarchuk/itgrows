@@ -336,7 +336,7 @@ function PostCard({
                 onClick={() => setShowStylePicker(true)}
                 disabled={regenerating}
                 title="Regenerate image"
-                className="flex items-center gap-1 px-2 py-1 rounded-lg bg-white/90 hover:bg-white border border-slate-200 shadow-sm text-xs text-slate-600 hover:text-violet-600 transition-all opacity-0 group-hover:opacity-100"
+                className="flex items-center gap-1 px-2 py-1 rounded-lg bg-white/95 hover:bg-white border border-slate-200 shadow-sm text-xs text-slate-600 hover:text-violet-600 transition-all"
               >
                 {regenerating ? (
                   <Loader2 className="w-3 h-3 animate-spin" />
