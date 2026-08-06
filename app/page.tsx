@@ -401,14 +401,14 @@ export default function PersonalPage() {
             <Link href="/company" className="px-4 py-1.5 rounded-full text-sm font-semibold text-slate-600 hover:text-[#1b1916] transition-colors">For my company</Link>
           </div>
           <h1 className="text-3xl sm:text-5xl md:text-7xl font-extrabold leading-tight mb-3 sm:mb-5 tracking-tight text-[#1b1916]">
-            Build Your Authority on LinkedIn &amp; X —
+            You choose the topics.
             <span className="block bg-gradient-to-r from-violet-600 via-pink-500 to-cyan-500 bg-clip-text text-transparent">
-              on Autopilot
+              It writes and posts them in your voice.
             </span>
           </h1>
-          <p className="text-sm sm:text-base text-slate-500 max-w-xl mx-auto mb-3 font-medium">For founders, execs &amp; consultants who should be posting — but never find the time.</p>
+          <p className="text-sm sm:text-base text-slate-500 max-w-xl mx-auto mb-3 font-medium">For founders, execs &amp; consultants building their own authority — usually while handling everything else themselves.</p>
           <p className="text-base sm:text-xl text-slate-600 max-w-xl mx-auto mb-6 sm:mb-8 leading-relaxed">
-            An AI that <span className="text-violet-600 font-semibold">writes and auto-posts in your voice</span> — daily, to your LinkedIn and X. Approve each in 30 seconds, or go full autopilot.
+            Set your topics for the week. ItGrows writes each post <span className="text-violet-600 font-semibold">in your voice</span> and publishes to your LinkedIn and X on schedule — <span className="text-violet-600 font-semibold">you approve or edit anything</span> before it goes out.
           </p>
           {/* Generator IS the hero's primary action — the input is the first thing a visitor
               (61% mobile) can do, no scroll, no extra click. Trust chips + trial line moved BELOW it. */}
@@ -517,7 +517,7 @@ export default function PersonalPage() {
             {/* Trust chips + trial line — now BELOW the input so the generator is the first thing you see */}
             <div className="flex flex-wrap justify-center items-center gap-2 mt-6 text-xs sm:text-sm">
               <span className="inline-flex items-center gap-1.5 font-semibold text-violet-900 bg-violet-50 border border-violet-200 rounded-full px-3 py-1.5 shadow-sm">🛡️ Approved by LinkedIn — official API</span>
-              <span className="inline-flex items-center gap-1.5 font-medium text-slate-700 bg-white border border-black/10 rounded-full px-3 py-1.5"><span className="text-green-600">✓</span> You approve every post</span>
+              <span className="inline-flex items-center gap-1.5 font-medium text-slate-700 bg-white border border-black/10 rounded-full px-3 py-1.5"><span className="text-green-600">✓</span> You set the topics · you approve every post</span>
               <span className="inline-flex items-center gap-1.5 font-medium text-slate-700 bg-white border border-black/10 rounded-full px-3 py-1.5"><span className="text-green-600">✓</span> Replaces a $2,500/mo ghostwriter</span>
             </div>
             <p className="text-center mt-3 text-xs sm:text-sm text-slate-500 font-medium">
@@ -793,8 +793,16 @@ export default function PersonalPage() {
         <div className="max-w-4xl mx-auto text-center text-white">
           <p className="text-sm font-semibold uppercase tracking-widest text-white/70 mb-3">While you stay silent</p>
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-5 leading-tight">Every day you don&apos;t post, a competitor earns the trust that could&apos;ve been yours</h2>
-          <p className="text-lg text-white/85 max-w-2xl mx-auto mb-10">Your next client, investor, or hire is scrolling LinkedIn and X right now. The people who show up — consistently — are the ones they remember and reach out to.</p>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10 text-left">
+          <p className="text-lg text-white/85 max-w-2xl mx-auto mb-6">Your next client, investor, or hire is scrolling LinkedIn and X right now. The people who show up — consistently — are the ones they remember and reach out to.</p>
+          <p className="text-base text-white/80 max-w-2xl mx-auto mb-10">
+            <strong className="text-white">Your profile and your company page, one place — two voices.</strong> Run your personal presence and your company&apos;s page side by side, each with its own topics and tone.
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-10 text-left">
+            <div className="rounded-2xl p-5 bg-white/10 border border-white/15">
+              <div className="text-2xl mb-2">🚀</div>
+              <h3 className="font-bold mb-1">Just launched something?</h3>
+              <p className="text-sm text-white/75">A new firm, practice or institute is invisible until people hear about it — from you.</p>
+            </div>
             <div className="rounded-2xl p-5 bg-white/10 border border-white/15">
               <div className="text-2xl mb-2">🎯</div>
               <h3 className="font-bold mb-1">Inbound, not outreach</h3>
@@ -803,7 +811,7 @@ export default function PersonalPage() {
             <div className="rounded-2xl p-5 bg-white/10 border border-white/15">
               <div className="text-2xl mb-2">📈</div>
               <h3 className="font-bold mb-1">Authority that compounds</h3>
-              <p className="text-sm text-white/75">Board seats, advisory, speaking, investor attention.</p>
+              <p className="text-sm text-white/75">Advisory seats, speaking invitations, an executive network that opens doors.</p>
             </div>
             <div className="rounded-2xl p-5 bg-white/10 border border-white/15">
               <div className="text-2xl mb-2">⚡</div>
