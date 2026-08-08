@@ -4141,34 +4141,31 @@ function LinkedInPageContent() {
                               {account.pageHandle && (
                                 <span className="text-xs text-slate-600">@{account.pageHandle}</span>
                               )}
-                              {/* A broken connection is usually NOT an expired one: LinkedIn revokes a
-                                  token long before its expiry date, so keying this button off expiresAt
-                                  alone left the customer with no way back — the only button on screen was
-                                  Disconnect, which is what she pressed, and that detached her history.
-                                  The publish path already flags a dead personal token as inactive, so
-                                  offer the reconnect on that too. (A company page is inactive until it is
-                                  paid for, which is not a fault, hence the pageType check.) */}
-                              {((account.expiresAt && new Date(account.expiresAt) <= new Date()) ||
-                                (account.pageType === "personal" && account.isActive === false)) && (
-                                <a
-                                  href={`/api/linkedin/connect?type=${account.pageType === "personal" ? "personal" : "company"}`}
-                                  className="inline-flex items-center gap-1 text-[10px] font-semibold text-white bg-red-500 hover:bg-red-600 px-2 py-0.5 rounded-full transition-colors"
-                                >
-                                  Reconnect to resume posting
-                                </a>
+                              {account.expiresAt && new Date(account.expiresAt) <= new Date() && (
+                                <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-white bg-red-500 px-2 py-0.5 rounded-full">
+                                  Expired
+                                </span>
                               )}
                             </div>
                           </div>
                         </div>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="border-red-200 text-red-500 hover:bg-red-50 text-xs rounded-lg"
-                          disabled={disconnecting === account.id}
-                          onClick={() => handleDisconnect(account.id)}
-                        >
-                          {disconnecting === account.id ? <Loader2 className="w-3 h-3 animate-spin" /> : "Disconnect"}
-                        </Button>
+                        <div className="flex items-center gap-2">
+                          <a
+                            href={`/api/linkedin/connect?type=${account.pageType === "personal" ? "personal" : "company"}`}
+                            className="inline-flex items-center px-3 py-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-100 text-xs font-medium transition-colors"
+                          >
+                            Reconnect
+                          </a>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="border-red-200 text-red-500 hover:bg-red-50 text-xs rounded-lg"
+                            disabled={disconnecting === account.id}
+                            onClick={() => handleDisconnect(account.id)}
+                          >
+                            {disconnecting === account.id ? <Loader2 className="w-3 h-3 animate-spin" /> : "Disconnect"}
+                          </Button>
+                        </div>
                       </div>
                     ))}
                   </div>
