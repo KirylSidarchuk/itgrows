@@ -225,6 +225,17 @@ export async function GET(req: NextRequest) {
           isActive: true,
         })
       }
+
+      // Disconnect deletes the account row, and the posts FK is ON DELETE SET NULL, so every post
+      // the customer has ever published survives in the table but stops belonging to any account.
+      // The cabinet lists posts per account, so to her it looks like the product deleted her entire
+      // history. Re-adopt anything left ownerless onto the profile she just reconnected.
+      await db.execute(sql`
+        UPDATE linkedin_posts SET linkedin_account_id = (
+          SELECT id FROM linkedin_accounts
+          WHERE user_id = ${userId}::text AND page_type = 'personal'
+          ORDER BY created_at DESC LIMIT 1)
+        WHERE user_id = ${userId} AND linkedin_account_id IS NULL`).catch(() => {})
     }
 
     // Scraping and brief auto-fill only apply to personal account flow

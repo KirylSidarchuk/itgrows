@@ -315,10 +315,12 @@ export async function generateForUser(userId: string): Promise<{ success: boolea
       return { success: false, error: "Invalid posts data" }
     }
 
-    // Delete existing draft/scheduled posts before generating new ones
+    // Clear the upcoming schedule for THIS account only. Unscoped, generating for a personal
+    // profile also wiped the pending posts of the same user's company page.
     await db.delete(linkedinPosts).where(
       and(
         eq(linkedinPosts.userId, userId),
+        eq(linkedinPosts.linkedinAccountId, account.id),
         inArray(linkedinPosts.status, ["draft", "scheduled"])
       )
     )

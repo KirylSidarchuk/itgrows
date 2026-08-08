@@ -253,19 +253,17 @@ export async function POST(req: NextRequest) {
       throw new Error("Invalid posts data from LLM")
     }
 
-    // Delete existing draft/scheduled posts before generating new ones (scoped to specific account)
+    // Clear the upcoming schedule for the account we are generating for -- and ONLY that account.
+    // This used to key off the raw request param while the insert below keys off the resolved
+    // account, so a call that omitted the id fell into an "orphaned posts" branch and deleted the
+    // pending schedule of an account that had just been disconnected. Keying both off `account.id`
+    // makes it impossible to delete another account's work.
     await db.delete(linkedinPosts).where(
-      linkedinAccountId
-        ? and(
-            eq(linkedinPosts.userId, userId),
-            eq(linkedinPosts.linkedinAccountId, linkedinAccountId),
-            inArray(linkedinPosts.status, ["draft", "scheduled"])
-          )
-        : and(
-            eq(linkedinPosts.userId, userId),
-            isNull(linkedinPosts.linkedinAccountId),
-            inArray(linkedinPosts.status, ["draft", "scheduled"])
-          )
+      and(
+        eq(linkedinPosts.userId, userId),
+        eq(linkedinPosts.linkedinAccountId, account.id),
+        inArray(linkedinPosts.status, ["draft", "scheduled"])
+      )
     )
 
     // Schedule posts at 10:00 UTC, gap depends on postingFrequency
