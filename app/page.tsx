@@ -7,6 +7,26 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { track } from "@vercel/analytics"
 
+// Landing funnel events used to go to Vercel Analytics ONLY. That is a separate stream with no join
+// key to our own tables, so the biggest drop-off in the business -- people who generate posts, see
+// the value, and then leave without registering -- was invisible in the database every funnel query
+// reads. Mirror each event into our own store as well, so the step can finally be measured.
+type EvProps = Record<string, string | number | boolean | null>
+function ev(name: string, props?: EvProps) {
+  try { track(name, props) } catch {}
+  try {
+    navigator.sendBeacon(
+      "/api/track",
+      JSON.stringify({
+        event: name,
+        path: window.location.pathname + window.location.search,
+        anon_id: localStorage.getItem("itg_anon"),
+        props: props ?? {},
+      })
+    )
+  } catch {}
+}
+
 const steps = [
   {
     num: "01",
@@ -127,7 +147,7 @@ export default function PersonalPage() {
     if (ghostWhatYouDo.trim().length < 5) return
     const goalStr = ghostGoals.length > 0 ? ghostGoals.join(", ") : "Build personal brand"
     const thoughts = `${ghostWhatYouDo}. Audience: ${ghostAudience || "general professionals"}. Tone: ${ghostTone}. Goal: ${goalStr}.`
-    track("generate_preview_clicked", { tone: ghostTone, goal: goalStr })
+    ev("generate_preview_clicked", { tone: ghostTone, goal: goalStr })
     setGhostLoading(true)
     setGhostError("")
     setGhostPosts([])
@@ -143,7 +163,7 @@ export default function PersonalPage() {
       if (data.posts && data.posts.length > 0) {
         setGhostPosts(data.posts)
         setGhostImages(data.images ?? [])
-        track("preview_posts_shown")
+        ev("preview_posts_shown")
         // Product analytics: generation actually finished (funnel step between click and /signup)
         try { navigator.sendBeacon("/api/track", JSON.stringify({ event: "preview_rendered", path: window.location.pathname + window.location.search, anon_id: localStorage.getItem("itg_anon") })) } catch {}
         // Carry-forward: persist so /signup and the cabinet can show what they already saw (activation fix).
@@ -176,7 +196,7 @@ export default function PersonalPage() {
   // Send to signup from a preview CTA, tracking the click so we can actually measure preview→trial
   // (previously only the pricing buttons fired start_trial_clicked, so this step was invisible).
   function goSignupFromPreview(source: string) {
-    track("start_trial_clicked", { source })
+    ev("start_trial_clicked", { source })
     window.location.href = "/signup"
   }
 
@@ -190,7 +210,7 @@ export default function PersonalPage() {
       if (topic.length < 5 || topic.length > 90) return
       setGhostWhatYouDo(topic)
       autoRunGenerate.current = true
-      track("topic_autofill", { topic })
+      ev("topic_autofill", { topic })
     } catch { /* ignore malformed params */ }
   }, [])
 
@@ -220,7 +240,7 @@ export default function PersonalPage() {
   }, [ghostLoading])
 
   async function handleCheckout(plan: "personal" | "duo" | "allin" | "personal_annual" | "duo_annual" | "allin_annual" | "company" | "company_annual") {
-    track("start_trial_clicked", { plan })
+    ev("start_trial_clicked", { plan })
     const sessionRes = await fetch("/api/auth/session")
     const sessionData = await sessionRes.json() as { user?: { id: string } }
     if (!sessionData?.user?.id) {
@@ -308,7 +328,7 @@ export default function PersonalPage() {
                 <Link href="/login?callbackUrl=/cabinet">
                   <Button variant="ghost" className="text-slate-600 hover:text-[#1b1916] text-sm px-3">Login</Button>
                 </Link>
-                <Link href="/signup" onClick={() => track("free_signup_clicked", { source: "nav" })}>
+                <Link href="/signup" onClick={() => ev("free_signup_clicked", { source: "nav" })}>
                   <Button variant="outline" className="text-sm px-4 border-violet-300 text-violet-700 hover:bg-violet-50">Sign up free</Button>
                 </Link>
                 <Button onClick={() => { document.getElementById("ghost-form")?.scrollIntoView({ behavior: "smooth", block: "center" }) }} className="bg-violet-600 hover:bg-violet-500 text-white text-sm px-4">
@@ -375,7 +395,7 @@ export default function PersonalPage() {
                   <Link href="/login?callbackUrl=/cabinet" onClick={() => setMobileMenuOpen(false)}>
                     <Button variant="outline" className="w-full text-sm border-black/20">Login</Button>
                   </Link>
-                  <Link href="/signup" onClick={() => { setMobileMenuOpen(false); track("free_signup_clicked", { source: "nav_mobile" }) }}>
+                  <Link href="/signup" onClick={() => { setMobileMenuOpen(false); ev("free_signup_clicked", { source: "nav_mobile" }) }}>
                     <Button variant="outline" className="w-full text-sm border-violet-300 text-violet-700">Sign up free</Button>
                   </Link>
                   <Button
@@ -434,7 +454,7 @@ export default function PersonalPage() {
                         <button
                           key={p}
                           type="button"
-                          onClick={() => { autoRunGenerate.current = true; setGhostWhatYouDo(`I'm a ${p.toLowerCase()} sharing what I learn with my clients and peers`); track("persona_chip_clicked", { persona: p }) }}
+                          onClick={() => { autoRunGenerate.current = true; setGhostWhatYouDo(`I'm a ${p.toLowerCase()} sharing what I learn with my clients and peers`); ev("persona_chip_clicked", { persona: p }) }}
                           className="px-3 py-1.5 rounded-full border border-black/15 bg-white text-xs text-slate-600 hover:border-violet-400 hover:text-violet-700 transition-colors"
                         >
                           {p}
@@ -521,7 +541,7 @@ export default function PersonalPage() {
               <span className="inline-flex items-center gap-1.5 font-medium text-slate-700 bg-white border border-black/10 rounded-full px-3 py-1.5"><span className="text-green-600">✓</span> Replaces a $2,500/mo ghostwriter</span>
             </div>
             <p className="text-center mt-3 text-xs sm:text-sm text-slate-500 font-medium">
-              <Link href="/signup" onClick={() => track("free_signup_clicked", { source: "hero" })} className="text-violet-600 hover:underline font-semibold">
+              <Link href="/signup" onClick={() => ev("free_signup_clicked", { source: "hero" })} className="text-violet-600 hover:underline font-semibold">
                 Create a free account — no card
               </Link>{" "}· 14-day auto-posting trial — no card required
             </p>
@@ -620,7 +640,7 @@ export default function PersonalPage() {
                 {ghostPosts.length > 1 && !showAllGhost && (
                   <button
                     type="button"
-                    onClick={() => { setShowAllGhost(true); track("show_all_posts") }}
+                    onClick={() => { setShowAllGhost(true); ev("show_all_posts") }}
                     className="w-full rounded-2xl border border-dashed border-violet-300 bg-white py-3 text-sm font-semibold text-violet-700 hover:bg-violet-50 transition-colors"
                   >
                     Show my other {ghostPosts.length - 1} post{ghostPosts.length - 1 > 1 ? "s" : ""} ↓
@@ -653,7 +673,7 @@ export default function PersonalPage() {
                     Create my free account →
                   </button>
                   <p className="mt-3 text-white/70 text-xs">Free with Google or LinkedIn — and your 14-day auto-posting trial needs no card either. Add one only if you decide to keep going.</p>
-                  <a href="#pricing" onClick={() => track("see_plans_from_preview")} className="inline-block mt-3 text-white/80 text-xs underline hover:text-white">See plans &amp; pricing →</a>
+                  <a href="#pricing" onClick={() => ev("see_plans_from_preview")} className="inline-block mt-3 text-white/80 text-xs underline hover:text-white">See plans &amp; pricing →</a>
                 </div>
               </div>
             )}
