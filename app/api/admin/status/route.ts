@@ -76,6 +76,30 @@ export async function GET(req: NextRequest) {
              count(*)::int AS n, count(DISTINCT coalesce(user_id::text, anon_id))::int AS ppl
       FROM analytics_events WHERE event='click' AND created_at > now() - interval '1 day' * ${days}
       GROUP BY 1,2 ORDER BY n DESC LIMIT 30`))
+    // The blog is the only channel that has ever produced a paying customer, and until now nobody
+    // could say which posts bring anyone or whether a reader ever reaches the product. Answer both:
+    // traffic per post, and whether the same anonymous visitor later generated posts or signed up.
+    const blogPosts = rows(await db.execute(sql`
+      SELECT path, count(*)::int AS views, count(DISTINCT coalesce(user_id::text, anon_id))::int AS readers
+      FROM analytics_events
+      WHERE event = 'page_view' AND path LIKE '/blog%'
+        AND created_at > now() - interval '1 day' * ${days}
+      GROUP BY 1 ORDER BY readers DESC, views DESC LIMIT 20`))
+    const blogFunnel = rows(await db.execute(sql`
+      WITH readers AS (
+        SELECT DISTINCT coalesce(user_id::text, anon_id) AS person
+        FROM analytics_events
+        WHERE event = 'page_view' AND path LIKE '/blog%'
+          AND created_at > now() - interval '1 day' * ${days}
+          AND coalesce(user_id::text, anon_id) IS NOT NULL)
+      SELECT
+        (SELECT count(*)::int FROM readers) AS blog_readers,
+        (SELECT count(DISTINCT r.person)::int FROM readers r JOIN analytics_events e
+           ON coalesce(e.user_id::text, e.anon_id) = r.person
+          WHERE e.event = 'preview_rendered') AS then_generated,
+        (SELECT count(DISTINCT r.person)::int FROM readers r JOIN analytics_events e
+           ON coalesce(e.user_id::text, e.anon_id) = r.person
+          WHERE e.event IN ('signup','signup_view','free_signup_clicked')) AS then_reached_signup`))
     const gclidRecon = rows(await db.execute(sql`
       SELECT to_char(date_trunc('day', created_at),'YYYY-MM-DD') AS day,
              count(DISTINCT substring(path from 'gclid=([^&]+)'))::int AS distinct_gclids,
@@ -84,7 +108,7 @@ export async function GET(req: NextRequest) {
              count(DISTINCT coalesce(user_id::text, anon_id)) FILTER (WHERE path !~ 'gclid=|gbraid=' OR path IS NULL)::int AS nonad_visitors
       FROM analytics_events WHERE created_at > now() - interval '1 day' * ${days}
       GROUP BY 1 ORDER BY 1 DESC`))
-    return NextResponse.json({ now_utc: new Date().toISOString(), regs_by_day: regsByDay, recent_users: recentUsers, subscriptions_and_cancels: subs, analytics_by_day: activity, visitors_by_day: visitorsByDay, top_paths: topPaths, clicks_by_label: clicksByLabel, gclid_recon: gclidRecon, nudges_sent: nudges })
+    return NextResponse.json({ now_utc: new Date().toISOString(), regs_by_day: regsByDay, recent_users: recentUsers, subscriptions_and_cancels: subs, analytics_by_day: activity, visitors_by_day: visitorsByDay, top_paths: topPaths, blog_posts: blogPosts, blog_funnel: blogFunnel, clicks_by_label: clicksByLabel, gclid_recon: gclidRecon, nudges_sent: nudges })
   } catch (e) {
     return NextResponse.json({ error: (e as Error).message }, { status: 500 })
   }
