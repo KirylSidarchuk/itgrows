@@ -2,6 +2,11 @@
 
 import { useState } from "react"
 
+// Google Ads conversion for a submitted access request. Fired only after the API confirms the
+// lead was stored, so the campaign optimises against leads we actually received rather than
+// against people who merely reached the button.
+const LEAD_CONVERSION = "AW-18160234884/1-4fCM7GhuAcEITjvNND"
+
 // Deliberately a request form, not a checkout. Onboarding starts with an hour of conversation
 // about the customer's positions, so an unattended $499 subscription would sell something we
 // cannot yet deliver unattended.
@@ -28,6 +33,12 @@ export default function LeadForm() {
         body: JSON.stringify(form),
       })
       if (!res.ok) throw new Error("failed")
+      try {
+        const w = window as unknown as { gtag?: (...args: unknown[]) => void }
+        w.gtag?.("event", "conversion", { send_to: LEAD_CONVERSION })
+      } catch {
+        // Reporting must never cost us the confirmation the visitor is waiting for.
+      }
       setSent(true)
     } catch {
       setError("That did not go through. Email kiryl@itgrows.ai and we will pick it up from there.")
