@@ -34,7 +34,7 @@ const STEPS = [
   { i: "📊", t: "Structure is scored", d: "Out of 100, before it reaches you." },
   { i: "✅", t: "You approve", d: "Nothing publishes without you. Ever." },
   { i: "🌐", t: "It lands on your domain", d: "One DNS record. Your name, your authority." },
-  { i: "🔁", t: "Your social posts too", d: "Each article is cut down into LinkedIn posts, an X thread and Instagram visuals." },
+  { i: "📈", t: "You see who came", d: "A monthly report from the server log: which engines crawled you, which fetched you mid-answer." },
 ]
 
 const RUNGS = [
@@ -47,7 +47,6 @@ const RUNGS = [
 const INCLUDED = [
   "Up to 12 articles a month, on your domain",
   "An original cover image for every one",
-  "LinkedIn, X and Instagram repurposing",
   "Blog hosting — one DNS record",
   "Monthly evidence report from the server log",
   "Approval queue, full veto",

@@ -47,7 +47,7 @@ export async function GET() {
 - **Personal — $49/mo:** one platform account (LinkedIn or X).
 - **Duo — $99/mo:** any two accounts.
 - **All-in — $199/mo:** LinkedIn personal + Company Page + X personal + X company.
-- **Business — $499/mo:** the GEO engine — up to 12 articles a month published to your own domain, repurposed to LinkedIn and X, with a dashboard of which answer engines crawled them.
+- **Business — $499/mo:** the GEO engine — up to 12 articles a month published to your own domain, structured so AI assistants can quote them, with a monthly report of which answer engines crawled and retrieved them.
 - 14-day free trial, no credit card required. Cancel any time.
 
 ## Discoverable content
