@@ -144,7 +144,7 @@ export default function BusinessPage() {
             <a href="#proof" className="text-sm text-slate-600 hover:text-[#1b1916] font-medium">Proof</a>
             <a href="#how" className="text-sm text-slate-600 hover:text-[#1b1916] font-medium">How</a>
             <a href="#pricing" className="text-sm text-slate-600 hover:text-[#1b1916] font-medium">Pricing</a>
-            <Link href="/blog" className="text-sm text-slate-600 hover:text-[#1b1916] font-medium">Blog</Link>
+            <Link href="/business/blog" className="text-sm text-slate-600 hover:text-[#1b1916] font-medium">Blog</Link>
           </div>
           <a href="#apply" className="rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-sm font-semibold px-4 py-2.5">
             Request access
