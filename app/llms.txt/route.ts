@@ -47,6 +47,7 @@ export async function GET() {
 - **Personal — $49/mo:** one platform account (LinkedIn or X).
 - **Duo — $99/mo:** any two accounts.
 - **All-in — $199/mo:** LinkedIn personal + Company Page + X personal + X company.
+- **Business — $499/mo:** the GEO engine — up to 12 articles a month published to your own domain, repurposed to LinkedIn and X, with a dashboard of which answer engines crawled them.
 - 14-day free trial, no credit card required. Cancel any time.
 
 ## Discoverable content
@@ -54,7 +55,7 @@ export async function GET() {
 - [${BASE}/sitemap.xml](${BASE}/sitemap.xml) — full URL list
 - [${BASE}/blog](${BASE}/blog) — articles on LinkedIn authority, ghostwriting alternatives and thought-leadership content
 - [${BASE}/company](${BASE}/company) — LinkedIn Company Page publishing
-- [${BASE}/case-studies](${BASE}/case-studies) — customer outcomes
+- [${BASE}/business](${BASE}/business) — GEO engine for businesses: articles published to your own domain, structured for AI assistants, with measured crawler evidence
 
 ## Markdown alternates
 
