@@ -18,6 +18,10 @@ function formatDate(date: Date): string {
   })
 }
 
+// Must run per request: a prerendered response is served from the CDN and never
+// reaches the server, so crawler visits would be invisible.
+export const dynamic = "force-dynamic"
+
 export async function generateMetadata({
   params,
 }: {

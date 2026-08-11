@@ -8,7 +8,10 @@ import { noteCrawler } from "@/lib/crawler-log"
 // pricing footer through its context window before it reaches the argument. This serves the
 // article and nothing else — the same technique our sister site uses, where the answer-engine
 // crawlers now outnumber Googlebot by two orders of magnitude.
-export const revalidate = 3600
+
+// Must run per request: a prerendered response is served from the CDN and never
+// reaches the server, so crawler visits would be invisible.
+export const dynamic = "force-dynamic"
 
 export async function GET(
   _req: Request,

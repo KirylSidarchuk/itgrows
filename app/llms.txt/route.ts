@@ -6,9 +6,12 @@ import { noteCrawler } from "@/lib/crawler-log"
 // /llms.txt — the emerging convention for telling an assistant what a site is and where its
 // substance lives, in one fetch, without it having to infer any of that from marketing pages.
 // Generated from the database so newly published articles appear the day they go live.
-export const revalidate = 3600
 
 const BASE = "https://www.itgrows.ai"
+
+// Must run per request: a prerendered response is served from the CDN and never
+// reaches the server, so crawler visits would be invisible.
+export const dynamic = "force-dynamic"
 
 export async function GET() {
   void noteCrawler("/llms.txt")

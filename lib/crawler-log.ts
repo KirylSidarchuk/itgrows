@@ -1,4 +1,5 @@
 import { headers } from "next/headers"
+import { after } from "next/server"
 import { db } from "@/lib/db"
 import { sql } from "drizzle-orm"
 
@@ -49,14 +50,19 @@ export async function noteCrawler(path: string): Promise<void> {
     const bot = identify(ua)
     if (!bot) return
 
-    void db
-      .execute(sql`
-        INSERT INTO analytics_events (event, path, props)
-        VALUES ('crawler_hit', ${path.slice(0, 300)}, ${JSON.stringify({
-          bot,
-          ua: ua.slice(0, 200),
-        })}::jsonb)`)
-      .catch(() => {})
+    // after() is the documented way to do post-response work. A bare fire-and-forget promise is
+    // killed the moment the serverless function returns its response, which is why the first
+    // attempt at this recorded nothing at all.
+    after(async () => {
+      try {
+        await db.execute(sql`
+          INSERT INTO analytics_events (event, path, props)
+          VALUES ('crawler_hit', ${path.slice(0, 300)}, ${JSON.stringify({
+            bot,
+            ua: ua.slice(0, 200),
+          })}::jsonb)`)
+      } catch {}
+    })
   } catch {
     // Never let telemetry surface as an error on a page a crawler is reading.
   }
