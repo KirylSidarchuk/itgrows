@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { noteCrawler } from "@/lib/crawler-log"
 import { db } from "@/lib/db"
 import { blogPosts } from "@/lib/db/schema"
 import { desc, eq } from "drizzle-orm"
@@ -18,6 +19,7 @@ function formatDate(date: Date): string {
 }
 
 export default async function BlogPage() {
+  void noteCrawler("/blog")
   const posts = await db
     .select()
     .from(blogPosts)

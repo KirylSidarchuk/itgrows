@@ -1,6 +1,7 @@
 import { db } from "@/lib/db"
 import { blogPosts } from "@/lib/db/schema"
 import { and, eq } from "drizzle-orm"
+import { noteCrawler } from "@/lib/crawler-log"
 
 // Clean markdown alternates for every article, at /blog/{slug}.md
 // An assistant fetching the HTML page has to carry a navigation bar, a cookie banner and a
@@ -14,6 +15,7 @@ export async function GET(
   { params }: { params: Promise<{ slug: string }> }
 ) {
   const { slug } = await params
+  void noteCrawler(`/blog/${slug}.md`)
 
   const [post] = await db
     .select({

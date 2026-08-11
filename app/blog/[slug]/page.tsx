@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation"
+import { noteCrawler } from "@/lib/crawler-log"
 import Link from "next/link"
 import { db } from "@/lib/db"
 import { blogPosts } from "@/lib/db/schema"
@@ -57,6 +58,7 @@ export default async function BlogPostPage({
 }: {
   params: Promise<{ slug: string }>
 }) {
+  void noteCrawler("/blog/[slug]")
   const { slug } = await params
 
   const [post] = await db

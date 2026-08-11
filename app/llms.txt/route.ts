@@ -1,6 +1,7 @@
 import { db } from "@/lib/db"
 import { blogPosts } from "@/lib/db/schema"
 import { desc, eq } from "drizzle-orm"
+import { noteCrawler } from "@/lib/crawler-log"
 
 // /llms.txt — the emerging convention for telling an assistant what a site is and where its
 // substance lives, in one fetch, without it having to infer any of that from marketing pages.
@@ -10,6 +11,7 @@ export const revalidate = 3600
 const BASE = "https://www.itgrows.ai"
 
 export async function GET() {
+  void noteCrawler("/llms.txt")
   let articles: { slug: string; title: string | null }[] = []
   try {
     articles = await db

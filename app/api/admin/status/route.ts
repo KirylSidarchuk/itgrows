@@ -100,6 +100,21 @@ export async function GET(req: NextRequest) {
         (SELECT count(DISTINCT r.person)::int FROM readers r JOIN analytics_events e
            ON coalesce(e.user_id::text, e.anon_id) = r.person
           WHERE e.event IN ('signup','signup_view','free_signup_clicked')) AS then_reached_signup`))
+    // Which answer engines actually visit, and what they fetch. Vercel gives us no request logs,
+    // so without this we cannot tell whether any GEO work changed anything — the same blindness
+    // that let a month of advertising run unmeasured.
+    const crawlers = rows(await db.execute(sql`
+      SELECT props->>'bot' AS bot, count(*)::int AS hits,
+             count(DISTINCT path)::int AS urls,
+             to_char(max(created_at),'MM-DD HH24:MI') AS last_seen
+      FROM analytics_events
+      WHERE event = 'crawler_hit' AND created_at > now() - interval '1 day' * ${days}
+      GROUP BY 1 ORDER BY hits DESC LIMIT 20`))
+    const crawlerPaths = rows(await db.execute(sql`
+      SELECT path, count(*)::int AS hits
+      FROM analytics_events
+      WHERE event = 'crawler_hit' AND created_at > now() - interval '1 day' * ${days}
+      GROUP BY 1 ORDER BY hits DESC LIMIT 15`))
     const gclidRecon = rows(await db.execute(sql`
       SELECT to_char(date_trunc('day', created_at),'YYYY-MM-DD') AS day,
              count(DISTINCT substring(path from 'gclid=([^&]+)'))::int AS distinct_gclids,
@@ -108,7 +123,7 @@ export async function GET(req: NextRequest) {
              count(DISTINCT coalesce(user_id::text, anon_id)) FILTER (WHERE path !~ 'gclid=|gbraid=' OR path IS NULL)::int AS nonad_visitors
       FROM analytics_events WHERE created_at > now() - interval '1 day' * ${days}
       GROUP BY 1 ORDER BY 1 DESC`))
-    return NextResponse.json({ now_utc: new Date().toISOString(), regs_by_day: regsByDay, recent_users: recentUsers, subscriptions_and_cancels: subs, analytics_by_day: activity, visitors_by_day: visitorsByDay, top_paths: topPaths, blog_posts: blogPosts, blog_funnel: blogFunnel, clicks_by_label: clicksByLabel, gclid_recon: gclidRecon, nudges_sent: nudges })
+    return NextResponse.json({ now_utc: new Date().toISOString(), regs_by_day: regsByDay, recent_users: recentUsers, subscriptions_and_cancels: subs, analytics_by_day: activity, visitors_by_day: visitorsByDay, top_paths: topPaths, blog_posts: blogPosts, blog_funnel: blogFunnel, crawlers, crawler_paths: crawlerPaths, clicks_by_label: clicksByLabel, gclid_recon: gclidRecon, nudges_sent: nudges })
   } catch (e) {
     return NextResponse.json({ error: (e as Error).message }, { status: 500 })
   }
