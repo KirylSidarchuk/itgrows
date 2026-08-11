@@ -41,6 +41,7 @@ const CRAWLERS = [
 ]
 
 const STEPS = [
+  { i: "🔧", t: "We set your site up", d: "Free with your first month: robots.txt, llms.txt, whatever is blocking the engines, and a spec for your developer." },
   { i: "🎯", t: "You set the topics", d: "One hour, once. The questions your buyers actually ask." },
   { i: "✍️", t: "We write the articles", d: "Up to 12 a month, researched and written for you. You write nothing." },
   { i: "🧩", t: "Shaped so AI can quote it", d: "Direct answer first, every heading a real question, structure scored out of 100." },
@@ -57,6 +58,7 @@ const RUNGS = [
 ]
 
 const INCLUDED = [
+  "Site setup — free when you start",
   "Up to 12 articles a month, on your domain",
   "An original cover image for every one",
   "Blog hosting — one DNS record",
@@ -278,7 +280,7 @@ export default function BusinessPage() {
             We write and publish your articles
           </h2>
           <p className="text-slate-600 text-center mb-10 text-sm sm:text-base">
-            Six steps. You spend an hour on the first one and minutes on the fourth.
+            We set the site up once, free. After that the subscription is the writing and publishing.
           </p>
           <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
             {STEPS.map((s, i) => (
@@ -342,6 +344,9 @@ export default function BusinessPage() {
                 <span className="text-slate-500 text-lg font-medium">/mo</span>
               </div>
               <p className="text-slate-500 text-sm mt-2">One plan. Month to month.</p>
+              <p className="text-violet-700 text-sm font-semibold mt-3 bg-violet-50 border border-violet-200 rounded-full inline-block px-4 py-1.5">
+                Site setup free when you start
+              </p>
             </div>
             <ul className="space-y-2.5 mb-7">
               {INCLUDED.map((f) => (

@@ -14,11 +14,17 @@ interface SiteContext {
   brandMentions?: string
 }
 
+interface InternalLink {
+  title: string
+  url: string
+}
+
 interface GenerateRequest {
   keyword: string
   language?: string
   tone?: string
   siteContext?: SiteContext
+  internalLinks?: InternalLink[]
 }
 
 interface SeoBreakdown {
@@ -31,7 +37,7 @@ interface SeoBreakdown {
   tables: number
 }
 
-function buildPrompt(keyword: string, language: string, tone: string, siteContext?: SiteContext): string {
+function buildPrompt(keyword: string, language: string, tone: string, siteContext?: SiteContext, internalLinks?: InternalLink[]): string {
   const langLabel: Record<string, string> = {
     en: "English",
     ru: "Russian",
@@ -44,7 +50,15 @@ function buildPrompt(keyword: string, language: string, tone: string, siteContex
     ? `\nThis article is for a website in the ${siteContext.niche} niche${siteContext.targetAudience ? `, targeting ${siteContext.targetAudience}` : ""}. Keep content specific to this niche.${siteContext.productName ? `\nPRODUCT: "${siteContext.productName}". ${siteContext.brandMentions ?? `Naturally mention ${siteContext.productName} as a relevant tool or solution at least 2-3 times throughout the article where it fits contextually. Include a brief call-to-action mentioning ${siteContext.productName} in the conclusion.`}` : ""}`
     : ""
 
-  return `You are a world-class SEO and AEO (Answer Engine Optimization) content strategist. Write a comprehensive, authoritative article in ${lang} that ranks well in Google, Bing, ChatGPT, and Perplexity.${nicheInstruction}
+  // Only emitted when the caller supplies siblings, so single-article generation is unchanged.
+  const linkInstruction =
+    internalLinks && internalLinks.length > 0
+      ? `\n\n=== INTERNAL LINKS (REQUIRED) ===\nThese articles already exist on this same site. Link to 2-4 of them from inside the body, in Markdown, where the reference genuinely helps the reader — never in a list at the end, never all in one paragraph, and never to an article that is not relevant to the sentence it sits in. Use the article's own title as the anchor text, or a natural phrase from the sentence.\n${internalLinks
+          .map((l) => `- [${l.title}](${l.url})`)
+          .join("\n")}`
+      : ""
+
+  return `You are a world-class SEO and AEO (Answer Engine Optimization) content strategist. Write a comprehensive, authoritative article in ${lang} that ranks well in Google, Bing, ChatGPT, and Perplexity.${nicheInstruction}${linkInstruction}
 
 Topic/Keyword: "${keyword}"
 Tone: ${tone}
@@ -332,7 +346,7 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json() as GenerateRequest
-    const { keyword, language = "en", tone = "Professional", siteContext } = body
+    const { keyword, language = "en", tone = "Professional", siteContext, internalLinks } = body
 
     if (!keyword || typeof keyword !== "string") {
       return NextResponse.json({ error: "keyword is required" }, { status: 400 })
@@ -346,7 +360,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "keyword contains template placeholder — invalid keyword" }, { status: 400 })
     }
 
-    const prompt = buildPrompt(trimmedKeyword, language, tone, siteContext)
+    const prompt = buildPrompt(trimmedKeyword, language, tone, siteContext, internalLinks)
 
     const rawContent = await callLLM(
       [{ role: "user", content: prompt }],
