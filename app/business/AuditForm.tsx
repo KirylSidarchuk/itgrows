@@ -6,6 +6,7 @@ type Verdict = "blocked" | "allowed" | "wildcard" | "none"
 
 interface Audit {
   site: string
+  unreachable?: boolean
   checkedUrl: string
   robots: { found: boolean; bots: { bot: string; verdict: Verdict }[] }
   liveFetch: { bot: string; status: number; blocked: boolean }[]
@@ -67,12 +68,15 @@ export default function AuditForm() {
     }
   }
 
-  const blocked = data
-    ? [
-        ...data.robots.bots.filter((b) => b.verdict === "blocked").map((b) => b.bot),
-        ...data.liveFetch.filter((b) => b.blocked).map((b) => b.bot),
-      ]
-    : []
+  // An unreachable result carries only { site, unreachable } — reading robots/liveFetch off it
+  // would throw and take the whole page down.
+  const blocked =
+    data && !data.unreachable
+      ? [
+          ...data.robots.bots.filter((b) => b.verdict === "blocked").map((b) => b.bot),
+          ...data.liveFetch.filter((b) => b.blocked).map((b) => b.bot),
+        ]
+      : []
   const thin = (data?.surface.urlCount ?? 0) < 30
 
   return (
@@ -105,7 +109,30 @@ export default function AuditForm() {
         {error && <p className="text-sm text-red-600 mt-3">{error}</p>}
       </form>
 
-      {data && (
+      {data?.unreachable && (
+        <div ref={resultRef} className="mt-5 scroll-mt-24 bg-white border border-black/10 rounded-2xl overflow-hidden">
+          <div className="px-5 py-6 text-center bg-red-50 border-b border-red-200">
+            <div className="text-3xl mb-2">🚧</div>
+            <div className="font-extrabold text-base sm:text-lg leading-snug">
+              {data.site} refused every request we made
+            </div>
+          </div>
+          <div className="p-5">
+            <p className="text-sm text-slate-600 leading-relaxed mb-4">
+              Not a typo — we tried as a browser and as three different crawlers, and got nothing back. That is almost
+              always bot protection. It stops the answer engines exactly the same way.
+            </p>
+            <a
+              href="#apply"
+              className="block w-full text-center rounded-xl bg-violet-600 hover:bg-violet-500 text-white px-6 py-3.5 text-sm font-semibold"
+            >
+              Talk to us about it — $499/mo →
+            </a>
+          </div>
+        </div>
+      )}
+
+      {data && !data.unreachable && (
         <div ref={resultRef} className="mt-5 scroll-mt-24 bg-white border border-black/10 rounded-2xl overflow-hidden">
           {/* Verdict */}
           <div

@@ -171,7 +171,7 @@ export default function BusinessPage() {
               <a href="https://www.pickaclass.com" target="_blank" rel="noopener" className="text-violet-600 font-semibold hover:underline">
                 pickaclass.com
               </a>{" "}
-              · 28 Jul – 11 Aug 2026
+              · fifteen days
             </p>
           </div>
 
@@ -232,9 +232,10 @@ export default function BusinessPage() {
           </div>
 
           <p className="text-slate-400 text-xs sm:text-sm mt-10 max-w-2xl mx-auto leading-relaxed">
-            Counted from the server log, 28 July – 11 August 2026. A retrieval proves an assistant reached for the
-            page, not that the answer quoted it — and a user-agent can be faked. It is still the closest thing to
-            evidence this category has.
+            Counted from the server log. This is <strong className="text-slate-300">fifteen days</strong> — as far back
+            as the logs are kept, not as far back as the engine has been running. A retrieval proves an assistant
+            reached for the page, not that the answer quoted it. It is still the closest thing to evidence this
+            category has.
           </p>
         </div>
       </section>

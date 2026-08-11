@@ -137,14 +137,26 @@ export async function POST(req: NextRequest) {
     ...Object.values(BOT_UAS).map((ua) => statusOnly(origin, ua, 9000)),
   ])
 
-  if (homeHuman.status === 0) {
-    return NextResponse.json(
-      { error: "We could not reach that site. Check the address and try again." },
-      { status: 502 }
-    )
-  }
-
   const botStatuses = Object.keys(BOT_UAS).map((name, i) => [name, botStatusValues[i] as number] as const)
+
+  // A site that answers nothing at all is not a typo — it is usually bot protection refusing
+  // anything that is not a residential browser. Telling the owner to "check the address" when the
+  // address is right is both wrong and insulting, and it hides the most useful finding we have:
+  // whatever refuses us refuses the answer engines the same way.
+  const nothingAnswered =
+    homeHuman.status === 0 &&
+    robotsRes.status === 0 &&
+    sitemapRes.status === 0 &&
+    botStatuses.every(([, s]) => s === 0)
+
+  if (nothingAnswered) {
+    await db
+      .execute(sql`
+        INSERT INTO analytics_events (event, path, props)
+        VALUES ('geo_audit', '/business', ${JSON.stringify({ site: target.hostname, unreachable: true })}::jsonb)`)
+      .catch(() => {})
+    return NextResponse.json({ site: target.hostname, unreachable: true })
+  }
 
   // Count URLs. A sitemap index points at more sitemaps, so follow one level to avoid reporting
   // "3 pages" for a site that has thirty thousand.
@@ -186,6 +198,7 @@ export async function POST(req: NextRequest) {
 
   const result = {
     site: target.hostname,
+    unreachable: false,
     checkedUrl: contentUrl ?? origin,
     robots: {
       found: robotsRes.status === 200,
