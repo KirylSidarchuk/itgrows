@@ -28,12 +28,15 @@ export const metadata: Metadata = {
 
 // Counted 2026-08-11 across the full retained nginx log archive of a site we operate,
 // 28 July to 11 August 2026. Our own server log, not an industry study.
+// All six counted the same way on the same pass — requests, not user-agent tokens, because most
+// of these names appear twice in their own UA string and a token count silently doubles them.
 const CRAWLERS = [
-  { name: "ClaudeBot", hits: "19,128,649", n: 19128649, ai: true },
-  { name: "GPTBot", hits: "2,720,918", n: 2720918, ai: true },
-  { name: "Applebot", hits: "2,617,827", n: 2617827, ai: true },
-  { name: "Amazonbot", hits: "1,156,976", n: 1156976, ai: true },
-  { name: "Googlebot", hits: "51,933", n: 51933, ai: false },
+  { name: "ClaudeBot", sub: "Claude", hits: "19,272,125", n: 19272125, ai: true },
+  { name: "Meta-ExternalAgent", sub: "Meta AI", hits: "3,854,076", n: 3854076, ai: true },
+  { name: "GPTBot", sub: "ChatGPT", hits: "2,744,985", n: 2744985, ai: true },
+  { name: "Applebot", sub: "Apple Intelligence", hits: "2,655,555", n: 2655555, ai: true },
+  { name: "Amazonbot", sub: "Amazon", hits: "1,170,268", n: 1170268, ai: true },
+  { name: "Googlebot", sub: "Google Search", hits: "52,292", n: 52292, ai: false },
 ]
 
 const STEPS = [
@@ -160,6 +163,32 @@ export default function BusinessPage() {
             So that when someone asks about your field, they name you. Check your own site first — free, no signup.
           </p>
           <AuditForm />
+
+          {/* The headline names four; we watch all of these. Every one appears in our own logs. */}
+          <div className="mt-10">
+            <p className="text-[11px] uppercase tracking-[0.15em] font-bold text-slate-400 mb-4">
+              Engines we track
+            </p>
+            <div className="flex flex-wrap justify-center gap-2">
+              {[
+                "ChatGPT",
+                "Claude",
+                "Perplexity",
+                "Gemini",
+                "Meta AI",
+                "Copilot",
+                "Apple Intelligence",
+                "Amazon",
+              ].map((e) => (
+                <span
+                  key={e}
+                  className="text-xs sm:text-sm font-semibold text-slate-700 bg-white border border-black/10 rounded-full px-3.5 py-1.5"
+                >
+                  {e}
+                </span>
+              ))}
+            </div>
+          </div>
         </div>
       </section>
 
@@ -168,7 +197,7 @@ export default function BusinessPage() {
         <div className="max-w-3xl mx-auto">
           <div className="text-center mb-10">
             <div className="text-6xl sm:text-8xl font-extrabold tracking-tighter bg-gradient-to-r from-violet-600 to-cyan-500 bg-clip-text text-transparent">
-              370×
+              368×
             </div>
             <p className="text-base sm:text-xl font-semibold mt-2">
               more crawling from one answer engine than from Google
@@ -186,9 +215,9 @@ export default function BusinessPage() {
             {CRAWLERS.map((c) => (
               <div key={c.name} className="px-5 py-4 border-b border-black/5 last:border-0">
                 <div className="flex items-baseline justify-between mb-2 gap-3">
-                  <span className="font-semibold text-sm flex items-center gap-2 min-w-0">
-                    <span className="truncate">{c.name}</span>
-                    {c.ai && <span className="text-[10px] uppercase tracking-wide font-bold text-violet-700 bg-violet-50 border border-violet-200 rounded px-1.5 py-0.5 shrink-0">AI</span>}
+                  <span className="font-semibold text-sm flex items-baseline gap-2 min-w-0">
+                    <span className="truncate">{c.sub}</span>
+                    <span className="text-[11px] font-normal text-slate-400 truncate hidden sm:inline">{c.name}</span>
                   </span>
                   <span className="text-sm font-bold tabular-nums shrink-0">{c.hits}</span>
                 </div>
