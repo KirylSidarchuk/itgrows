@@ -16,6 +16,14 @@ export const metadata: Metadata = {
     url: "https://www.itgrows.ai/business",
     type: "website",
   },
+  // Without this the root layout's card wins, and a link shared to X or Slack advertises the
+  // personal posting product — "AI Drafts Your LinkedIn & X Posts" — which is not what this sells.
+  twitter: {
+    card: "summary_large_image",
+    title: "Make your site visible to ChatGPT, Claude, Perplexity and Gemini",
+    description:
+      "Articles published to your own domain, structured for answer engines, with measured evidence of who came. Free check.",
+  },
 }
 
 // Counted 2026-08-11 across the full retained nginx log archive of a site we operate,
