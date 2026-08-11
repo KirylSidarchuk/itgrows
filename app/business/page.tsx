@@ -38,10 +38,10 @@ const STEPS = [
 ]
 
 const RUNGS = [
-  { i: "🤖", t: "Crawled", w: "Week 1–2", proof: true },
-  { i: "💬", t: "Retrieved live", w: "Week 3–5", proof: true },
-  { i: "📚", t: "Regular source", w: "Week 6–10", proof: false },
-  { i: "⭐", t: "Authority", w: "Month 3+", proof: false },
+  { i: "🤖", t: "Crawled", w: "Week 1–2", d: "The engines find and read your new material" },
+  { i: "💬", t: "Retrieved live", w: "Week 3–5", d: "Assistants fetch your pages mid-answer" },
+  { i: "📚", t: "Regular source", w: "Week 6–10", d: "Reached for across related questions" },
+  { i: "⭐", t: "Authority", w: "Month 3+", d: "A default reference for your topic" },
 ]
 
 const INCLUDED = [
@@ -195,98 +195,47 @@ export default function BusinessPage() {
             ))}
           </div>
 
-          {/* Named, linkable proof — a reader can go and look at both of these */}
-          <div className="grid sm:grid-cols-2 gap-4 mt-6">
-            <a
-              href="https://www.pickaclass.com"
-              target="_blank"
-              rel="noopener"
-              className="block bg-white border border-black/10 rounded-2xl p-5 hover:border-violet-300 transition-colors"
-            >
-              <div className="text-[10px] uppercase tracking-wide font-bold text-violet-700 bg-violet-50 border border-violet-200 rounded px-1.5 py-0.5 inline-block mb-2">
-                Latest case
-              </div>
-              <div className="text-xs text-slate-500 mb-1">International edtech platform</div>
-              <div className="font-bold text-base mb-3 text-violet-600">pickaclass.com ↗</div>
-              <div className="flex gap-4">
-                <div>
-                  <div className="text-2xl font-extrabold tracking-tight">19.1M</div>
-                  <div className="text-[11px] text-slate-500 leading-tight">AI crawls / 2 weeks</div>
+        </div>
+      </section>
+
+      {/* The case, given the whole width it deserves */}
+      <section className="px-4 sm:px-6 py-16 sm:py-24" style={{ backgroundColor: "#1b1916" }}>
+        <div className="max-w-5xl mx-auto text-center">
+          <div className="inline-block text-[11px] uppercase tracking-[0.2em] font-bold text-violet-300 border border-violet-400/40 rounded-full px-4 py-1.5 mb-6">
+            Latest case
+          </div>
+          <p className="text-slate-400 text-sm sm:text-base mb-2">International edtech platform</p>
+          <a
+            href="https://www.pickaclass.com"
+            target="_blank"
+            rel="noopener"
+            className="inline-block text-3xl sm:text-5xl font-extrabold tracking-tight text-white hover:text-violet-300 transition-colors mb-12"
+          >
+            pickaclass.com ↗
+          </a>
+
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+            {[
+              { n: "19.1M", l: "AI crawls", s: "in two weeks" },
+              { n: "1,919", l: "live retrievals", s: "assistants mid-answer" },
+              { n: "1,890", l: "different pages", s: "reached for" },
+              { n: "~11,000", l: "organic visits", s: "every month" },
+            ].map((m) => (
+              <div key={m.l} className="rounded-2xl bg-white/[0.06] border border-white/10 p-5 sm:p-7">
+                <div className="text-3xl sm:text-5xl font-extrabold tracking-tighter bg-gradient-to-r from-violet-400 to-cyan-300 bg-clip-text text-transparent">
+                  {m.n}
                 </div>
-                <div>
-                  <div className="text-2xl font-extrabold tracking-tight">~11,000</div>
-                  <div className="text-[11px] text-slate-500 leading-tight">organic visits / month</div>
-                </div>
+                <div className="text-sm sm:text-base font-semibold text-white mt-2 leading-tight">{m.l}</div>
+                <div className="text-[11px] sm:text-xs text-slate-400 mt-1 leading-tight">{m.s}</div>
               </div>
-              <div className="text-[10px] text-slate-400 mt-3 leading-tight">
-                Running on this engine
-              </div>
-            </a>
-            <a
-              href="https://blog.magiscan.app"
-              target="_blank"
-              rel="noopener"
-              className="block bg-white border border-black/10 rounded-2xl p-5 hover:border-violet-300 transition-colors"
-            >
-              <div className="text-xs text-slate-500 mb-2">Client · industrial 3D scanning</div>
-              <div className="font-bold text-base mb-3 text-violet-600">blog.magiscan.app ↗</div>
-              <div className="flex gap-4">
-                <div>
-                  <div className="text-2xl font-extrabold tracking-tight">56</div>
-                  <div className="text-[11px] text-slate-500 leading-tight">live retrievals / 2 weeks</div>
-                </div>
-                <div>
-                  <div className="text-2xl font-extrabold tracking-tight">24</div>
-                  <div className="text-[11px] text-slate-500 leading-tight">articles reached for</div>
-                </div>
-              </div>
-            </a>
+            ))}
           </div>
 
-          {/* Crawler vs live reader — the distinction the whole product rests on */}
-          <div className="grid sm:grid-cols-2 gap-4 mt-10">
-            <div className="bg-white border border-black/10 rounded-2xl p-5">
-              <div className="text-3xl mb-2">🤖</div>
-              <div className="font-bold text-sm mb-1">Indexing crawler</div>
-              <p className="text-xs text-slate-600 leading-relaxed">
-                Building a library. May never show you to anyone.
-              </p>
-            </div>
-            <div className="bg-white border-2 border-violet-300 rounded-2xl p-5">
-              <div className="text-3xl mb-2">💬</div>
-              <div className="font-bold text-sm mb-1">Live reader</div>
-              <p className="text-xs text-slate-600 leading-relaxed">
-                Sent <strong>while answering a real person</strong>. This one counts.
-              </p>
-            </div>
-          </div>
-
-          {/* The live-retrieval evidence */}
-          <div className="mt-6 bg-white border border-black/10 rounded-2xl p-6 sm:p-8">
-            <div className="grid grid-cols-3 gap-3 sm:gap-4 text-center mb-5">
-              {[
-                { n: "56", l: "live retrievals" },
-                { n: "24", l: "articles" },
-                { n: "2", l: "weeks" },
-              ].map((s) => (
-                <div key={s.l} className="bg-[#f8f7f6] rounded-xl p-3 sm:p-5">
-                  <div className="text-3xl sm:text-5xl font-extrabold tracking-tight text-violet-600">{s.n}</div>
-                  <div className="text-[11px] sm:text-sm text-slate-600 mt-1 leading-tight">{s.l}</div>
-                </div>
-              ))}
-            </div>
-            <p className="text-sm sm:text-base text-slate-700 leading-relaxed text-center">
-              On{" "}
-              <a href="https://blog.magiscan.app" target="_blank" rel="noopener" className="text-violet-600 font-semibold hover:underline">
-                blog.magiscan.app
-              </a>{" "}
-              — a few dozen pages, written by this engine. <strong>Not a large site.</strong>
-            </p>
-            <p className="text-xs text-slate-500 leading-relaxed text-center mt-3">
-              A retrieval proves the assistant reached for the article, not that the answer quoted it. User-agents can
-              be faked. It is still the closest thing to evidence this category has.
-            </p>
-          </div>
+          <p className="text-slate-400 text-xs sm:text-sm mt-10 max-w-2xl mx-auto leading-relaxed">
+            Counted from the server log, 28 July – 11 August 2026. A retrieval proves an assistant reached for the
+            page, not that the answer quoted it — and a user-agent can be faked. It is still the closest thing to
+            evidence this category has.
+          </p>
         </div>
       </section>
 
@@ -310,29 +259,39 @@ export default function BusinessPage() {
       {/* Ladder */}
       <section className="px-4 sm:px-6 py-14 sm:py-20" style={{ backgroundColor: "#ebe9e5" }}>
         <div className="max-w-3xl mx-auto">
-          <h2 className="text-2xl sm:text-4xl font-extrabold mb-3 tracking-tight text-center">Four rungs</h2>
-          <p className="text-slate-600 text-center mb-10 text-sm sm:text-base">
-            Green is read from a server log. Amber we will not pretend to measure.
+          <h2 className="text-2xl sm:text-4xl font-extrabold mb-3 tracking-tight text-center">Where this goes</h2>
+          <p className="text-slate-600 text-center mb-12 text-sm sm:text-base">
+            Authority compounds. Here is the road.
           </p>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-            {RUNGS.map((r) => (
-              <div
-                key={r.t}
-                className={`rounded-2xl p-4 sm:p-5 border-2 text-center ${r.proof ? "bg-white border-green-300" : "bg-white/60 border-amber-200"}`}
-              >
-                <div className="text-3xl mb-2">{r.i}</div>
-                <div className="font-bold text-sm mb-1">{r.t}</div>
-                <div className="text-xs text-slate-500 mb-3">{r.w}</div>
-                <span
-                  className={`text-[10px] uppercase tracking-wide font-bold px-2 py-1 rounded-full border ${
-                    r.proof ? "text-green-700 bg-green-50 border-green-200" : "text-amber-700 bg-amber-50 border-amber-200"
-                  }`}
-                >
-                  {r.proof ? "Measured" : "Not yet"}
-                </span>
-              </div>
-            ))}
+
+          <div className="relative">
+            {/* The road itself — behind the nodes, hidden on mobile where the list stacks */}
+            <div className="hidden lg:block absolute top-[38px] left-[12.5%] right-[12.5%] h-1 rounded-full bg-gradient-to-r from-violet-300 via-violet-500 to-cyan-400" />
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 lg:gap-4">
+              {RUNGS.map((r, i) => (
+                <div key={r.t} className="relative flex lg:flex-col items-start lg:items-center gap-4 lg:gap-0 lg:text-center">
+                  {/* Node */}
+                  <div
+                    className="relative z-10 w-[76px] h-[76px] shrink-0 rounded-full bg-white border-4 flex items-center justify-center text-3xl shadow-sm lg:mb-5"
+                    style={{ borderColor: ["#c4b5fd", "#a78bfa", "#8b5cf6", "#22d3ee"][i] }}
+                  >
+                    {r.i}
+                  </div>
+                  <div className="min-w-0 lg:px-1">
+                    <div className="text-[11px] font-bold tracking-widest text-violet-600 mb-1">{r.w.toUpperCase()}</div>
+                    <div className="font-bold text-base mb-1">{r.t}</div>
+                    <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">{r.d}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
+
+          <p className="text-center text-xs sm:text-sm text-slate-500 mt-10 max-w-xl mx-auto leading-relaxed">
+            Your monthly report shows the first two straight from the server log — which engines came, and which
+            fetched you mid-answer.
+          </p>
         </div>
       </section>
 
