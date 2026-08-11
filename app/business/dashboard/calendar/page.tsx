@@ -127,10 +127,10 @@ function getCurrentStageIndex(weeks: number): number {
 }
 
 const AI_STAGES = [
-  { label: "AI Crawling", icon: "🤖", weekStart: 1, weekEnd: 2, desc: "GPTBot & PerplexityBot discover your article" },
-  { label: "First Citations", icon: "💬", weekStart: 3, weekEnd: 5, desc: "Article appears in occasional AI answers" },
-  { label: "Regular Source", icon: "📚", weekStart: 6, weekEnd: 10, desc: "Consistently cited for related queries" },
-  { label: "Authority Source", icon: "⭐", weekStart: 11, weekEnd: null, desc: "Top AI source for your topic" },
+  { label: "Crawled", icon: "🤖", weekStart: 1, weekEnd: 2, desc: "GPTBot & PerplexityBot discover your article" },
+  { label: "Retrieved live", icon: "💬", weekStart: 3, weekEnd: 5, desc: "Assistants fetch it while answering someone" },
+  { label: "Regular source", icon: "📚", weekStart: 6, weekEnd: 10, desc: "Consistently cited for related queries" },
+  { label: "Authority source", icon: "⭐", weekStart: 11, weekEnd: null, desc: "Top AI source for your topic" },
 ]
 
 function getCurrentAIStageIndex(weeks: number): number {
@@ -167,11 +167,11 @@ function AISearchTracker({ publishDate }: { publishDate: string }) {
             currentStageIdx >= 0 ? "bg-cyan-50 text-cyan-600" :
             "bg-slate-100 text-slate-500"
           }`}>
-            {currentStageIdx < 0 ? "Not yet crawled" : AI_STAGES[currentStageIdx].icon + " " + AI_STAGES[currentStageIdx].label}
+            {currentStageIdx < 0 ? "Just published" : "Expected: " + AI_STAGES[currentStageIdx].icon + " " + AI_STAGES[currentStageIdx].label}
           </span>
         </div>
       </div>
-      <p className="text-slate-400 text-xs mb-5">ChatGPT & Perplexity citation timeline</p>
+      <p className="text-slate-400 text-xs mb-5">Typical timeline after publishing — projected from the publish date, not measured for this article.</p>
 
       {/* Timeline */}
       <div className="relative pb-2">
@@ -279,7 +279,7 @@ function AISearchTracker({ publishDate }: { publishDate: string }) {
           ) : (
             <>
               <p className="text-sm font-semibold text-[#1b1916]">
-                Currently: <span className="text-cyan-700">{AI_STAGES[currentStageIdx].label}</span>
+                Expected around now: <span className="text-cyan-700">{AI_STAGES[currentStageIdx].label}</span>
                 {nextStage && <span className="text-slate-500 font-normal"> → Next: <strong>{nextStage.label}</strong></span>}
               </p>
               <p className="text-xs text-slate-500 mt-0.5">

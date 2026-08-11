@@ -257,10 +257,10 @@ interface AIStage {
 }
 
 const AI_STAGES: AIStage[] = [
-  { label: "AI Crawling", icon: "🤖", weekStart: 1, weekEnd: 2, desc: "GPTBot & PerplexityBot discover your article" },
-  { label: "First Citations", icon: "💬", weekStart: 3, weekEnd: 5, desc: "Article appears in occasional AI answers" },
-  { label: "Regular Source", icon: "📚", weekStart: 6, weekEnd: 10, desc: "Consistently cited for related queries" },
-  { label: "Authority Source", icon: "⭐", weekStart: 11, weekEnd: null, desc: "Top AI source for your topic" },
+  { label: "Crawled", icon: "🤖", weekStart: 1, weekEnd: 2, desc: "GPTBot & PerplexityBot discover your article" },
+  { label: "Retrieved live", icon: "💬", weekStart: 3, weekEnd: 5, desc: "Assistants fetch it while answering someone" },
+  { label: "Regular source", icon: "📚", weekStart: 6, weekEnd: 10, desc: "Consistently cited for related queries" },
+  { label: "Authority source", icon: "⭐", weekStart: 11, weekEnd: null, desc: "Top AI source for your topic" },
 ]
 
 function getWeeksSince(dateStr: string): number {
@@ -418,10 +418,10 @@ function RankingProgressTracker({ seoTasks }: { seoTasks: Task[] }) {
             aiCurrentStageIdx >= 0 ? "bg-cyan-50 text-cyan-600" :
             "bg-slate-100 text-slate-500"
           }`}>
-            {aiCurrentStageIdx < 0 ? "Not yet crawled" : AI_STAGES[aiCurrentStageIdx].icon + " " + AI_STAGES[aiCurrentStageIdx].label}
+            {aiCurrentStageIdx < 0 ? "Just published" : "Expected: " + AI_STAGES[aiCurrentStageIdx].icon + " " + AI_STAGES[aiCurrentStageIdx].label}
           </span>
         </div>
-        <p className="text-slate-400 text-xs mb-4">ChatGPT & Perplexity citation timeline</p>
+        <p className="text-slate-400 text-xs mb-4">Typical timeline after publishing — projected from the publish date, not measured for this article.</p>
 
         {/* AI Timeline */}
         <div className="relative">
@@ -502,10 +502,10 @@ function RankingProgressTracker({ seoTasks }: { seoTasks: Task[] }) {
             : "bg-slate-50 text-slate-600 border border-slate-200"
         }`}>
           {aiCurrentStageIdx < 0
-            ? "Your article hasn't been crawled by AI bots yet. This usually happens within days of publishing."
+            ? "Just published. AI crawlers usually pick new articles up within days."
             : aiCurrentStageIdx === AI_STAGES.length - 1
-            ? "Your content is an authority source for AI search — excellent!"
-            : `Currently: ${AI_STAGES[aiCurrentStageIdx].label} — ${AI_STAGES[aiCurrentStageIdx].desc}. Next: ${AI_STAGES[aiCurrentStageIdx + 1].label} (~${getProjectedDate(publishDate, AI_STAGES[aiCurrentStageIdx + 1].weekStart)})`
+            ? "On a typical trajectory, an article this old is an established source by now. We do not yet measure this rung directly — treat it as an expectation, not a result."
+            : `Expected around now: ${AI_STAGES[aiCurrentStageIdx].label} — ${AI_STAGES[aiCurrentStageIdx].desc}. Next: ${AI_STAGES[aiCurrentStageIdx + 1].label} (~${getProjectedDate(publishDate, AI_STAGES[aiCurrentStageIdx + 1].weekStart)})`
           }
         </div>
       </div>
