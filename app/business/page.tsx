@@ -6,9 +6,9 @@ import LeadForm from "./LeadForm"
 // Server-rendered on purpose. This page sells machine legibility, so it has to be legible to a
 // machine itself: the substance is in the HTML, not assembled by script after arrival.
 export const metadata: Metadata = {
-  title: "GEO engine for your business — get cited by AI assistants | ItGrows",
+  title: "Make your site visible to ChatGPT, Claude, Perplexity and Gemini | ItGrows",
   description:
-    "We publish research-grade articles to your own domain, shaped so ChatGPT, Claude and Perplexity can quote them — and show you which answer engines actually visited. $499/mo.",
+    "We publish research-grade articles to your own domain, shaped so AI assistants can quote them — and show you which answer engines actually visited. Free check, then $499/mo.",
   alternates: { canonical: "https://www.itgrows.ai/business" },
   openGraph: {
     title: "GEO engine for your business — get cited by AI assistants",
@@ -142,14 +142,14 @@ export default function BusinessPage() {
       <section className="relative px-4 sm:px-6 pt-12 sm:pt-16 pb-12 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-violet-100/60 to-transparent pointer-events-none" />
         <div className="relative max-w-4xl mx-auto text-center">
-          <h1 className="text-3xl sm:text-5xl md:text-6xl font-extrabold leading-[1.05] mb-4 tracking-tight">
-            Ask an AI about your field.
+          <h1 className="text-3xl sm:text-5xl md:text-6xl font-extrabold leading-[1.08] mb-5 tracking-tight">
+            We make your site visible to
             <span className="block bg-gradient-to-r from-violet-600 via-pink-500 to-cyan-500 bg-clip-text text-transparent">
-              Does it name you?
+              ChatGPT, Claude, Perplexity and Gemini
             </span>
           </h1>
-          <p className="text-base sm:text-lg text-slate-600 max-w-xl mx-auto mb-8">
-            Start with your own site. Free, no signup.
+          <p className="text-base sm:text-xl text-slate-600 max-w-2xl mx-auto mb-8">
+            So that when someone asks about your field, they name you. Check your own site first — free, no signup.
           </p>
           <AuditForm />
         </div>
