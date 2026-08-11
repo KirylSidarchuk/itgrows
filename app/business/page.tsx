@@ -2,16 +2,17 @@ import type { Metadata } from "next"
 import Link from "next/link"
 import AuditForm from "./AuditForm"
 import LeadForm from "./LeadForm"
+import { ENGINE_ICONS } from "./engine-icons"
 
 // Server-rendered on purpose. This page sells machine legibility, so it has to be legible to a
 // machine itself: the substance is in the HTML, not assembled by script after arrival.
 export const metadata: Metadata = {
-  title: "Make your site visible to ChatGPT, Claude, Perplexity and Gemini | ItGrows",
+  title: "Make your site visible to ChatGPT, Claude, Perplexity, Gemini and the rest | ItGrows",
   description:
     "We publish research-grade articles to your own domain, shaped so AI assistants can quote them — and show you which answer engines actually visited. Free check, then $499/mo.",
   alternates: { canonical: "https://www.itgrows.ai/business" },
   openGraph: {
-    title: "GEO engine for your business — get cited by AI assistants",
+    title: "Make your site visible to ChatGPT, Claude, Perplexity, Gemini and the rest",
     description: "Articles on your own domain, shaped for answer engines, with measured evidence. $499/mo.",
     url: "https://www.itgrows.ai/business",
     type: "website",
@@ -20,7 +21,7 @@ export const metadata: Metadata = {
   // personal posting product — "AI Drafts Your LinkedIn & X Posts" — which is not what this sells.
   twitter: {
     card: "summary_large_image",
-    title: "Make your site visible to ChatGPT, Claude, Perplexity and Gemini",
+    title: "Make your site visible to ChatGPT, Claude, Perplexity, Gemini and the rest",
     description:
       "Articles published to your own domain, structured for answer engines, with measured evidence of who came. Free check.",
   },
@@ -40,11 +41,11 @@ const CRAWLERS = [
 ]
 
 const STEPS = [
-  { i: "🎯", t: "You set the territory", d: "One hour. The questions your buyers ask." },
-  { i: "✍️", t: "We write for the answer", d: "Direct answer first. Every heading a real question." },
-  { i: "📊", t: "Structure is scored", d: "Out of 100, before it reaches you." },
-  { i: "✅", t: "You approve", d: "Nothing publishes without you. Ever." },
-  { i: "🌐", t: "It lands on your domain", d: "One DNS record. Your name, your authority." },
+  { i: "🎯", t: "You set the topics", d: "One hour, once. The questions your buyers actually ask." },
+  { i: "✍️", t: "We write the articles", d: "Up to 12 a month, researched and written for you. You write nothing." },
+  { i: "🧩", t: "Shaped so AI can quote it", d: "Direct answer first, every heading a real question, structure scored out of 100." },
+  { i: "✅", t: "You approve each one", d: "Every article waits in a queue. Edit it, or kill it. Nothing publishes without you." },
+  { i: "🌐", t: "We publish to your blog", d: "On your own domain, with a cover image. One DNS record to set up." },
   { i: "📈", t: "You see who came", d: "A monthly report from the server log: which engines crawled you, which fetched you mid-answer." },
 ]
 
@@ -156,7 +157,7 @@ export default function BusinessPage() {
           <h1 className="text-3xl sm:text-5xl md:text-6xl font-extrabold leading-[1.08] mb-5 tracking-tight">
             We make your site visible to
             <span className="block bg-gradient-to-r from-violet-600 via-pink-500 to-cyan-500 bg-clip-text text-transparent">
-              ChatGPT, Claude, Perplexity and Gemini
+              ChatGPT, Claude, Perplexity, Gemini and the rest
             </span>
           </h1>
           <p className="text-base sm:text-xl text-slate-600 max-w-2xl mx-auto mb-8">
@@ -170,21 +171,15 @@ export default function BusinessPage() {
               Engines we track
             </p>
             <div className="flex flex-wrap justify-center gap-2">
-              {[
-                "ChatGPT",
-                "Claude",
-                "Perplexity",
-                "Gemini",
-                "Meta AI",
-                "Copilot",
-                "Apple Intelligence",
-                "Amazon",
-              ].map((e) => (
+              {ENGINE_ICONS.map((e) => (
                 <span
-                  key={e}
-                  className="text-xs sm:text-sm font-semibold text-slate-700 bg-white border border-black/10 rounded-full px-3.5 py-1.5"
+                  key={e.label}
+                  className="inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-slate-700 bg-white border border-black/10 rounded-full pl-2.5 pr-3.5 py-1.5"
                 >
-                  {e}
+                  <svg viewBox="0 0 24 24" className="w-4 h-4 shrink-0 fill-slate-800" aria-hidden="true">
+                    <path d={e.d} />
+                  </svg>
+                  {e.label}
                 </span>
               ))}
             </div>
@@ -279,7 +274,12 @@ export default function BusinessPage() {
       {/* How */}
       <section id="how" className="px-4 sm:px-6 py-14 sm:py-20 scroll-mt-20">
         <div className="max-w-4xl mx-auto">
-          <h2 className="text-2xl sm:text-4xl font-extrabold mb-10 tracking-tight text-center">Six steps. One needs you.</h2>
+          <h2 className="text-2xl sm:text-4xl font-extrabold mb-3 tracking-tight text-center">
+            We write and publish your articles
+          </h2>
+          <p className="text-slate-600 text-center mb-10 text-sm sm:text-base">
+            Six steps. You spend an hour on the first one and minutes on the fourth.
+          </p>
           <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
             {STEPS.map((s, i) => (
               <div key={s.t} className="bg-white border border-black/10 rounded-2xl p-4 sm:p-5">
