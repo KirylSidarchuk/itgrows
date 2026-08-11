@@ -142,6 +142,7 @@ export default function CompanyPage() {
           <div className="hidden md:flex items-center gap-7">
             <a href="#how" className="text-sm text-slate-600 hover:text-[#1b1916] transition-colors font-medium">How It Works</a>
             <a href="#pricing" className="text-sm text-slate-600 hover:text-[#1b1916] transition-colors font-medium">Pricing</a>
+            <Link href="/business" className="text-sm text-slate-600 hover:text-[#1b1916] transition-colors font-medium">For business</Link>
             <Link href="/blog" className="text-sm text-slate-600 hover:text-[#1b1916] transition-colors font-medium">Blog</Link>
           </div>
           <div className="hidden md:flex items-center gap-2">
@@ -172,6 +173,7 @@ export default function CompanyPage() {
           <div className="md:hidden border-t border-black/10 mt-4 pt-4 pb-2 flex flex-col gap-1">
             <a href="#how" className="px-3 py-2.5 text-sm font-medium text-slate-600 hover:text-[#1b1916] hover:bg-black/5 rounded-lg transition-colors" onClick={() => setMobileMenuOpen(false)}>How It Works</a>
             <a href="#pricing" className="px-3 py-2.5 text-sm font-medium text-slate-600 hover:text-[#1b1916] hover:bg-black/5 rounded-lg transition-colors" onClick={() => setMobileMenuOpen(false)}>Pricing</a>
+            <Link href="/business" className="px-3 py-2.5 text-sm font-medium text-slate-600 hover:text-[#1b1916] hover:bg-black/5 rounded-lg transition-colors" onClick={() => setMobileMenuOpen(false)}>For business</Link>
             <Link href="/blog" className="px-3 py-2.5 text-sm font-medium text-slate-600 hover:text-[#1b1916] hover:bg-black/5 rounded-lg transition-colors" onClick={() => setMobileMenuOpen(false)}>Blog</Link>
             <div className="border-t border-black/10 mt-2 pt-3 flex flex-col gap-2">
               {sessionUser ? (
