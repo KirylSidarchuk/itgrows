@@ -36,12 +36,47 @@ function Tile({ value, label, tone }: { value: string; label: string; tone: Tone
   )
 }
 
+// Secondary conversion. The ads promise a free check, so the free check has to be the thing we
+// can measure — asking a stranger to request a $499/mo service after two clicks is far too rare
+// an event to tell us which keyword did the work.
+const REPORT_CONVERSION = "AW-18160234884/GnV1COO4h-AcEITjvNND"
+
 export default function AuditForm() {
   const [url, setUrl] = useState("")
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState("")
   const [data, setData] = useState<Audit | null>(null)
   const resultRef = useRef<HTMLDivElement>(null)
+
+  const [reportEmail, setReportEmail] = useState("")
+  const [reportSent, setReportSent] = useState(false)
+  const [reportBusy, setReportBusy] = useState(false)
+
+  async function requestReport(e: React.FormEvent) {
+    e.preventDefault()
+    if (!reportEmail.includes("@") || reportBusy || !data) return
+    setReportBusy(true)
+    try {
+      const res = await fetch("/api/business/audit/report", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: reportEmail, site: data.site, audit: data }),
+      })
+      if (res.ok) {
+        try {
+          const w = window as unknown as { gtag?: (...args: unknown[]) => void }
+          w.gtag?.("event", "conversion", { send_to: REPORT_CONVERSION })
+        } catch {
+          // Never let reporting break the confirmation.
+        }
+        setReportSent(true)
+      }
+    } catch {
+      // Silent: the audit result is already on screen and is the thing they came for.
+    } finally {
+      setReportBusy(false)
+    }
+  }
 
   async function run(e: React.FormEvent) {
     e.preventDefault()
@@ -203,6 +238,39 @@ export default function AuditForm() {
               We cannot read your server logs — this shows whether they are allowed in and whether there is enough to
               hold them, not who visited.
             </p>
+            {reportSent ? (
+              <div className="rounded-xl bg-green-50 border border-green-200 p-4 text-center mb-3">
+                <p className="text-sm font-semibold text-green-800">On its way.</p>
+                <p className="text-xs text-green-700 mt-1 leading-relaxed">
+                  You will get the full findings and the fix list, written by a person, within a day.
+                </p>
+              </div>
+            ) : (
+              <form onSubmit={requestReport} className="mb-4">
+                <p className="text-sm font-semibold mb-1">Want the full report and the fix list?</p>
+                <p className="text-xs text-slate-500 mb-3 leading-relaxed">
+                  Everything above plus what to change, in what order, and which parts your developer needs.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <input
+                    type="email"
+                    value={reportEmail}
+                    onChange={(e) => setReportEmail(e.target.value)}
+                    placeholder="you@company.com"
+                    aria-label="Email for the full report"
+                    className="flex-1 rounded-xl border border-black/15 bg-white px-4 py-3 text-sm text-[#1b1916] placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-400"
+                  />
+                  <button
+                    type="submit"
+                    disabled={reportBusy || !reportEmail.includes("@")}
+                    className="px-5 py-3 rounded-xl bg-[#1b1916] hover:bg-[#33302c] disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold transition-colors whitespace-nowrap"
+                  >
+                    {reportBusy ? "Sending…" : "Email it to me"}
+                  </button>
+                </div>
+              </form>
+            )}
+
             <a
               href="#apply"
               className="block w-full text-center rounded-xl bg-violet-600 hover:bg-violet-500 text-white px-6 py-3.5 text-sm font-semibold"
