@@ -203,7 +203,10 @@ export default function BusinessPage() {
               rel="noopener"
               className="block bg-white border border-black/10 rounded-2xl p-5 hover:border-violet-300 transition-colors"
             >
-              <div className="text-xs text-slate-500 mb-2">Client · online courses</div>
+              <div className="text-[10px] uppercase tracking-wide font-bold text-violet-700 bg-violet-50 border border-violet-200 rounded px-1.5 py-0.5 inline-block mb-2">
+                Latest case
+              </div>
+              <div className="text-xs text-slate-500 mb-1">International edtech platform</div>
               <div className="font-bold text-base mb-3 text-violet-600">pickaclass.com ↗</div>
               <div className="flex gap-4">
                 <div>
@@ -211,9 +214,12 @@ export default function BusinessPage() {
                   <div className="text-[11px] text-slate-500 leading-tight">AI crawls / 2 weeks</div>
                 </div>
                 <div>
-                  <div className="text-2xl font-extrabold tracking-tight">~2,600</div>
-                  <div className="text-[11px] text-slate-500 leading-tight">organic visits / week</div>
+                  <div className="text-2xl font-extrabold tracking-tight">~11,000</div>
+                  <div className="text-[11px] text-slate-500 leading-tight">organic visits / month</div>
                 </div>
+              </div>
+              <div className="text-[10px] text-slate-400 mt-3 leading-tight">
+                Running on this engine
               </div>
             </a>
             <a
