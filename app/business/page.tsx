@@ -34,7 +34,7 @@ const STEPS = [
   { i: "📊", t: "Structure is scored", d: "Out of 100, before it reaches you." },
   { i: "✅", t: "You approve", d: "Nothing publishes without you. Ever." },
   { i: "🌐", t: "It lands on your domain", d: "One DNS record. Your name, your authority." },
-  { i: "🔁", t: "It becomes social", d: "LinkedIn, X and Instagram from the same thinking." },
+  { i: "🔁", t: "Your social posts too", d: "Each article is cut down into LinkedIn posts, an X thread and Instagram visuals." },
 ]
 
 const RUNGS = [
