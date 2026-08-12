@@ -18,6 +18,9 @@ const esc = (v: unknown) =>
 const TEST_DOMAINS = new Set([
   "hbr.org", "stripe.com", "notion.so", "mckinsey.com", "bcg.com", "shopify.com",
   "itgrows.ai", "www.itgrows.ai", "example.com", "blog.w-v.co.uk",
+  // Our own properties and clients. Checking these is us looking at our own work, not demand.
+  "appslift.com", "magiscan.app", "blog.magiscan.app", "pickaclass.com", "www.pickaclass.com",
+  "learnflat.com", "walkself.com", "amazon.com",
 ])
 
 function table(caption: string, question: string, cols: string[], data: Row[], keys: string[]) {
