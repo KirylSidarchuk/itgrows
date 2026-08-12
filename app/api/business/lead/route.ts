@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server"
+import { NextRequest, NextResponse, after } from "next/server"
 import { Resend } from "resend"
 import { db } from "@/lib/db"
 import { sql } from "drizzle-orm"
@@ -52,6 +52,34 @@ export async function POST(req: NextRequest) {
   } catch {
     // Already persisted above; the lead is not lost even if delivery fails.
   }
+
+  // Everything a first call would have established, done without one: run the same audit the
+  // visitor just saw, read the site, and send back a proposal they only have to correct.
+  // Deliberately after the response — the person is waiting on a confirmation, not on us.
+  after(async () => {
+    try {
+      const base = process.env.ITGROWS_PUBLIC_URL ?? "https://www.itgrows.ai"
+      const secret = process.env.CRON_SECRET
+      if (!secret) return
+
+      const auditRes = await fetch(`${base}/api/business/audit`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: website }),
+      })
+      const audit = auditRes.ok ? await auditRes.json() : { site: website }
+
+      await fetch(`${base}/api/business/onboard`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-internal-secret": secret },
+        body: JSON.stringify({ ...lead, audit }),
+      })
+    } catch (err) {
+      // The lead is already stored and the notification already sent; a failed proposal means a
+      // human writes the first email, not that anything is lost.
+      console.error("[lead] onboarding proposal failed:", err)
+    }
+  })
 
   return NextResponse.json({ ok: true })
 }
