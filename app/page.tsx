@@ -772,6 +772,48 @@ export default function PersonalPage() {
         </div>
       </section>
 
+      {/* Memory — the thing that separates a body of work from a feed */}
+      <section className="px-4 sm:px-6 py-16 sm:py-24" style={{ backgroundColor: "#f3f2f1" }}>
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-10 sm:mb-14">
+            <span className="inline-block text-xs font-semibold tracking-widest text-violet-500 uppercase bg-violet-50 px-4 py-1.5 rounded-full mb-5">
+              What makes it yours
+            </span>
+            <h2 className="text-3xl sm:text-4xl font-bold text-[#1b1916] leading-tight">
+              It remembers what you&apos;ve<br className="hidden sm:block" /> already said
+            </h2>
+            <p className="text-slate-500 mt-4 text-base sm:text-lg max-w-xl mx-auto leading-relaxed">
+              Most AI tools write every post as if it were your first. Ours reads your last twenty before
+              writing the next one.
+            </p>
+          </div>
+
+          <div className="grid sm:grid-cols-2 gap-4 sm:gap-5">
+            <div className="bg-white/70 border border-black/10 rounded-2xl p-6">
+              <div className="text-2xl mb-3">🔁</div>
+              <div className="font-bold text-[#1b1916] mb-2">Every other tool</div>
+              <p className="text-sm text-slate-500 leading-relaxed">
+                Week four says what week one said, in different words. Nothing builds on anything. You spend
+                Sunday stitching it into something that holds together.
+              </p>
+            </div>
+            <div className="bg-white border-2 border-violet-200 rounded-2xl p-6 shadow-sm">
+              <div className="text-2xl mb-3">🧠</div>
+              <div className="font-bold text-[#1b1916] mb-2">ItGrows</div>
+              <p className="text-sm text-slate-600 leading-relaxed">
+                Knows what you published. Won&apos;t repeat it. Says so when a post extends an earlier idea —
+                and lets you disagree with yourself, because changing your mind in public is credibility.
+              </p>
+            </div>
+          </div>
+
+          <p className="text-center text-sm text-slate-500 mt-8 max-w-2xl mx-auto leading-relaxed">
+            The result is a body of work rather than a feed — which is the difference between posting
+            often and being taken seriously.
+          </p>
+        </div>
+      </section>
+
       {/* Results / Outcomes */}
       <section id="results" className="px-4 sm:px-6 py-16 sm:py-28" style={{ background: "linear-gradient(135deg, #1e0a3c 0%, #0f0f23 50%, #0d1117 100%)" }}>
         <div className="max-w-6xl mx-auto">

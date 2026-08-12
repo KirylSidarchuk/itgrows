@@ -63,10 +63,27 @@ export const CLUSTER_C_KEYWORDS: string[] = [
   "linkedin automation for agencies",
 ]
 
+// Cluster D — "coherence": the reader has plenty of posts and no through-line. Lower volume than
+// B, but the highest intent to switch, because it is a pain no other tool addresses.
+export const CLUSTER_D_KEYWORDS: string[] = [
+  "why do ai content tools repeat themselves",
+  "why my linkedin posts feel disconnected",
+  "how to build a consistent thought leadership narrative",
+  "how to develop one idea across multiple linkedin posts",
+  "what is a thought leadership agenda",
+  "how to plan a year of thought leadership content",
+  "building a body of work on linkedin",
+  "linkedin content strategy vs posting randomly",
+  "how to make ai written posts sound like one person",
+  "does ai remember what it wrote for you",
+]
+
 // The cron publishes the first not-yet-used keyword from this ordered queue:
-// A (buy intent) first, then B (volume), then C (agencies).
+// A (buy intent), then D (coherence — the thing we just built and nobody else answers),
+// then B (volume), then C (agencies).
 export const BLOG_KEYWORD_QUEUE: string[] = [
   ...CLUSTER_A_KEYWORDS,
+  ...CLUSTER_D_KEYWORDS,
   ...CLUSTER_B_KEYWORDS,
   ...CLUSTER_C_KEYWORDS,
 ]
