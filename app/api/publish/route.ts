@@ -3,6 +3,7 @@ import { auth } from "@/auth"
 import { db } from "@/lib/db"
 import { connectedSites, blogPosts } from "@/lib/db/schema"
 import { eq, and } from "drizzle-orm"
+import { publishToWordPress } from "@/lib/wordpress-publish"
 
 interface PublishRequest {
   siteUrl: string
@@ -17,6 +18,9 @@ interface PublishRequest {
   keyword?: string
   coverImageUrl?: string | null
   webhookUrl?: string
+  // Set when the customer pasted an application password instead of installing the plugin.
+  wpUsername?: string
+  wpAppPassword?: string
 }
 
 interface PublishResult {
@@ -41,7 +45,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: "Invalid request body" }, { status: 400 })
   }
 
-  const { siteUrl, siteToken, platform, title, content, metaDescription, siteId, siteSlug, keywords, keyword, coverImageUrl, webhookUrl } = body
+  const { siteUrl, siteToken, platform, title, content, metaDescription, siteId, siteSlug, keywords, keyword, coverImageUrl, webhookUrl, wpUsername, wpAppPassword } = body
 
   if (!siteUrl || !siteToken || !title || !content) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
@@ -243,6 +247,20 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       const message = err instanceof Error ? err.message : "Webflow publish failed"
       return NextResponse.json({ success: false, error: message }, { status: 502 })
     }
+  }
+
+  // WordPress with an application password needs nothing installed on the customer's site.
+  if (platform === "wordpress" && wpUsername?.trim() && wpAppPassword?.trim()) {
+    const r = await publishToWordPress(normalUrl, wpUsername, wpAppPassword, {
+      title,
+      content,
+      metaDescription,
+      slug: generateSlug(title),
+      coverImageUrl,
+    })
+    return r.success
+      ? NextResponse.json({ success: true, url: r.url, post_id: r.postId, cover: r.cover })
+      : NextResponse.json({ success: false, error: r.error }, { status: 502 })
   }
 
   // Choose endpoint based on platform

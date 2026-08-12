@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db"
 import { scheduledPosts, connectedSites, blogPosts } from "@/lib/db/schema"
 import { eq, lte, and } from "drizzle-orm"
+import { publishToWordPress } from "@/lib/wordpress-publish"
 
 export const runtime = "nodejs"
 export const maxDuration = 300
@@ -171,6 +172,39 @@ export async function GET(req: NextRequest) {
       } else if (site && !isBlogPostsPlatform) {
         let normalUrl = site.url.trim().replace(/\/$/, "")
         if (!normalUrl.startsWith("http")) normalUrl = "https://" + normalUrl
+
+        // An application password means nothing has to be installed on their site. Checked
+        // before the endpoint choice below, which sends WordPress to our plugin.
+        if (site.platform === "wordpress" && site.wpUsername?.trim() && site.wpAppPassword?.trim()) {
+          const wp = await publishToWordPress(site.url, site.wpUsername, site.wpAppPassword, {
+            title: article.title,
+            content: article.content,
+            metaDescription: article.metaDescription,
+            slug: generateSlug(article.title),
+            coverImageUrl: article.coverImageUrl ?? null,
+          })
+          if (wp.success) {
+            console.log(`[SEO Autopilot] Published to WordPress via app password: ${wp.url} (cover ${wp.cover})`)
+          } else {
+            console.error(`[SEO Autopilot] WordPress app-password publish failed: ${wp.error}`)
+          }
+          // Separate branches rather than a ternary: a union of two object shapes is not
+          // assignable to drizzle's set(). There is no published_url column — the URL lives in
+          // the log line above, and success is recorded by published_at.
+          if (wp.success) {
+            await db.update(scheduledPosts)
+              .set({ status: "published", publishedAt: new Date(), publishError: null })
+              .where(eq(scheduledPosts.id, post.id))
+          } else {
+            await db.update(scheduledPosts)
+              .set({ status: "failed", publishError: (wp.error ?? "").slice(0, 500) })
+              .where(eq(scheduledPosts.id, post.id))
+          }
+          processed.push({ id: post.id, keyword: post.keyword,
+                           status: wp.success ? "published" : "failed",
+                           ...(wp.success ? {} : { error: wp.error }) })
+          continue
+        }
 
         let endpoint: string
         if (site.platform === "wordpress") {
