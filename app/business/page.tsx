@@ -41,13 +41,22 @@ const CRAWLERS = [
 ]
 
 const STEPS = [
-  { i: "🔧", t: "We set your site up", d: "Free with your first month: robots.txt, llms.txt, whatever is blocking the engines, and a spec for your developer." },
-  { i: "🎯", t: "You set the topics", d: "One hour, once. The questions your buyers actually ask." },
-  { i: "✍️", t: "We write the articles", d: "Up to 12 a month, researched and written for you. You write nothing." },
-  { i: "🧩", t: "Shaped so AI can quote it", d: "Direct answer first, every heading a real question, structure scored out of 100." },
-  { i: "✅", t: "You approve each one", d: "Every article waits in a queue. Edit it, or kill it. Nothing publishes without you." },
-  { i: "🌐", t: "We publish to your blog", d: "On your own domain, with a cover image. One DNS record to set up." },
-  { i: "📈", t: "You see who came", d: "A monthly report from the server log: which engines crawled you, which fetched you mid-answer." },
+  {
+    t: "We set it up, you set the topics",
+    d: "Free with your first month: robots.txt, llms.txt, whatever is blocking the engines, and a spec for your developer. Your part is an hour, once — the questions your buyers actually ask.",
+  },
+  {
+    t: "We write, shaped so AI can quote it",
+    d: "Up to 12 articles a month, researched and written for you. Direct answer first, every heading a real question, structure scored out of 100. You write nothing.",
+  },
+  {
+    t: "You approve, we publish",
+    d: "Every article waits in a queue — edit it, or kill it. Nothing reaches your domain without you. Then it goes live on your own blog, with a cover image.",
+  },
+  {
+    t: "You see who came",
+    d: "A monthly report read from the server log: which engines crawled you, and which fetched your pages while answering somebody.",
+  },
 ]
 
 const RUNGS = [
@@ -282,13 +291,24 @@ export default function BusinessPage() {
           <p className="text-slate-600 text-center mb-10 text-sm sm:text-base">
             We set the site up once, free. After that the subscription is the writing and publishing.
           </p>
-          <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {STEPS.map((s, i) => (
-              <div key={s.t} className="bg-white border border-black/10 rounded-2xl p-4 sm:p-5">
-                <div className="text-2xl sm:text-3xl mb-2">{s.i}</div>
-                <div className="text-[10px] font-bold text-violet-600 tracking-widest mb-1">0{i + 1}</div>
-                <h3 className="font-bold text-sm sm:text-base mb-1 leading-snug">{s.t}</h3>
-                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">{s.d}</p>
+              <div
+                key={s.t}
+                className="relative bg-white border border-black/10 rounded-2xl p-6 pt-8 overflow-hidden"
+              >
+                {/* The numeral is the ornament — large, pale, and behind the words. */}
+                <span
+                  aria-hidden="true"
+                  className="absolute -top-3 right-3 text-[76px] font-extrabold leading-none tracking-tighter text-violet-600/[0.07] select-none"
+                >
+                  {i + 1}
+                </span>
+                <div className="relative">
+                  <div className="w-8 h-[3px] rounded-full bg-gradient-to-r from-violet-500 to-cyan-400 mb-4" />
+                  <h3 className="font-bold text-base mb-2 leading-snug">{s.t}</h3>
+                  <p className="text-sm text-slate-600 leading-relaxed">{s.d}</p>
+                </div>
               </div>
             ))}
           </div>
