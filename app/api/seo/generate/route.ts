@@ -38,10 +38,20 @@ interface SeoBreakdown {
 }
 
 function buildPrompt(keyword: string, language: string, tone: string, siteContext?: SiteContext, internalLinks?: InternalLink[]): string {
+  // An unknown code falls back to English, which is a silent, expensive failure: a German blog
+  // would receive fluent English articles and nothing would error. Every language we might
+  // actually be asked for belongs here.
   const langLabel: Record<string, string> = {
     en: "English",
     ru: "Russian",
     uk: "Ukrainian",
+    de: "German",
+    fr: "French",
+    es: "Spanish",
+    it: "Italian",
+    nl: "Dutch",
+    pt: "Portuguese",
+    pl: "Polish",
   }
   const lang = langLabel[language] ?? "English"
   const currentYear = new Date().getFullYear()
