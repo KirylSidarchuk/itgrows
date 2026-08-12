@@ -1,6 +1,6 @@
 import { db } from "@/lib/db"
 import { linkedinPosts, linkedinBriefs, linkedinAccounts, users } from "@/lib/db/schema"
-import { eq, and, inArray, isNull } from "drizzle-orm"
+import { eq, and, inArray, isNull, desc } from "drizzle-orm"
 import { callLLM } from "@/lib/llm-client"
 import { generatePostImage } from "@/lib/linkedin-image"
 import { sendEmail } from "@/lib/email"
@@ -91,7 +91,7 @@ export function buildLinkedInPrompt(brief: {
   targetAudience?: string | null
   avoidTopics?: string | null
   topics?: string | null
-}, count: number = 14, isCompany: boolean = false): string {
+}, count: number = 14, isCompany: boolean = false, published: string[] = []): string {
   const currentYear = new Date().getFullYear()
   const tone = brief.tone ?? "professional"
   const niche = brief.niche ?? "business"
@@ -135,6 +135,21 @@ export function buildLinkedInPrompt(brief: {
     "a genuine reflection or appreciation about the work",
   ]
 
+  // Excerpts, not whole posts: enough for the model to recognise ground already covered without
+  // spending the context budget the new writing needs.
+  const memoryBlock = published.length
+    ? `
+
+ALREADY PUBLISHED BY THIS AUTHOR — most recent first:
+${published.map((p, i) => `${i + 1}. ${p}`).join("\n")}
+
+HOW TO USE THAT LIST:
+- Do not restate any of it. Saying the same thing in fresh words is the single fastest way to look automated.
+- Where a new post genuinely extends one of those ideas, say so in the author's own voice — "I wrote a while back that…, and I think I was only half right" — so the reader sees a mind developing rather than a feed being filled.
+- Leave room to disagree with an earlier position. Changing one's mind in public is credibility, not inconsistency.
+- Keep the voice continuous with what is above. It is the same person writing.`
+    : ""
+
   const angles = (isCompany ? companyAngles : personalAngles).slice(0, count).join(" | ")
 
   const avoidTopicsLine = brief.avoidTopics?.trim()
@@ -152,7 +167,7 @@ Write the posts so these topics are covered in the order given, one topic per po
 
   if (isCompany) {
     return `You are a LinkedIn content expert writing for a company page in the ${niche} space. The voice represents the company, not an individual.
-${audience}Goals: ${goals}. Current year: ${currentYear}.${avoidTopicsLine}${topicsLine}
+${audience}Goals: ${goals}. Current year: ${currentYear}.${avoidTopicsLine}${topicsLine}${memoryBlock}
 
 VOICE RULE — this is a company page:
 - ALWAYS write in first person plural: "We", "Our", "Us", "We've", "We're".
@@ -190,7 +205,7 @@ Write the ${count} posts now, return only the JSON array:`
   }
 
   return `You are a LinkedIn thought leadership expert writing in the first person for a ${tone} professional in the ${niche} space.
-${audience}Goals: ${goals}. Current year: ${currentYear}.${avoidTopicsLine}${topicsLine}
+${audience}Goals: ${goals}. Current year: ${currentYear}.${avoidTopicsLine}${topicsLine}${memoryBlock}
 
 STRICT RULES — violations make the post unusable:
 1. NEVER invent case studies, e.g. "Company X increased sales by Y%" — these are fabricated and damage credibility.
@@ -292,7 +307,24 @@ export async function generateForUser(userId: string): Promise<{ success: boolea
     }
 
     const isCompany = account.pageType === "company" || account.pageType === "organization"
-    const prompt = buildLinkedInPrompt(brief, maxPosts, isCompany)
+    // What this author has actually published on this account. Scoped to the resolved account so
+    // a personal voice is never shaped by a company page's history, or the reverse.
+    const history = await db
+      .select({ content: linkedinPosts.content })
+      .from(linkedinPosts)
+      .where(and(
+        eq(linkedinPosts.userId, userId),
+        eq(linkedinPosts.linkedinAccountId, account.id),
+        eq(linkedinPosts.status, "published"),
+      ))
+      .orderBy(desc(linkedinPosts.publishedAt))
+      .limit(20)
+
+    const published = history.map((h) =>
+      h.content.replace(/#[^\s#]+/g, "").replace(/\s+/g, " ").trim().slice(0, 220)
+    ).filter((t) => t.length > 40)
+
+    const prompt = buildLinkedInPrompt(brief, maxPosts, isCompany, published)
 
     let rawContent = ""
     try {
