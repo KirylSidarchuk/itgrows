@@ -110,10 +110,88 @@ function robotsVerdict(robots: string, bot: string): "blocked" | "allowed" | "wi
   return star ? "wildcard" : "none"
 }
 
+// Children of a sitemap index, content first. An index lists product, category and blog
+// sitemaps in whatever order it likes, and reading the first three off the top is how a site with
+// thousands of articles gets reported as having none.
+const CONTENT_SITEMAP = /(blog|post|article|guide|resource|learn|help|news|insight|knowledge|faq)/i
+
+function pickChildren(children: string[], limit: number): string[] {
+  const content = children.filter((c) => CONTENT_SITEMAP.test(c))
+  const rest = children.filter((c) => !CONTENT_SITEMAP.test(c))
+  return [...content, ...rest].slice(0, limit)
+}
+
+// A page that answers a question is the unit an assistant quotes. Recognised from the slug: a
+// leading question word, a comparison, or an explicit guide. Opaque URLs will not match, so this
+// floors rather than estimates — the same rule the page count follows.
+const ANSWER_SLUG =
+  /(^|\/)((how|what|why|when|where|which|who|can|does|do|is|are|should)[-_]|.*[-_]vs[-_]|.*[-_](guide|checklist|faq|explained|examples?)(\/|$|\.))/i
+
+function countAnswers(locs: string[]): number {
+  return locs.filter((u) => {
+    try {
+      const p = new URL(u).pathname
+      return p !== "/" && ANSWER_SLUG.test(p)
+    } catch {
+      return false
+    }
+  }).length
+}
+
+// How often the site actually publishes, from <lastmod>. A site that rebuilds its whole sitemap
+// on every deploy stamps every URL with today's date; reporting that as a publishing rate would
+// be inventing a number, so it returns null instead.
+function cadencePerMonth(xml: string): number | null {
+  const dates = [...xml.matchAll(/<lastmod>\s*([^<]+?)\s*<\/lastmod>/g)]
+    .map((m) => Date.parse(m[1]))
+    .filter((t) => !Number.isNaN(t))
+  if (dates.length < 8) return null
+
+  const now = Date.now()
+  const DAY = 86400000
+  const sameWeek = dates.filter((t) => now - t < 7 * DAY).length
+  if (sameWeek / dates.length > 0.8) return null
+
+  const inWindow = dates.filter((t) => now - t < 180 * DAY).length
+  return Math.round((inWindow / 6) * 10) / 10
+}
+
+// One fetch, the sitemap only — enough to say how much a competitor has and how fast it grows.
+async function rivalSurface(raw: string) {
+  const target = normalise(raw)
+  if (!target) return null
+  const origin = `${target.protocol}//${target.hostname}`
+
+  const first = await grab(`${origin}/sitemap.xml`, HUMAN_UA, 10000)
+  if (first.status !== 200 || !/<loc>/.test(first.text)) return null
+
+  let xml = first.text
+  let locs = [...xml.matchAll(/<loc>\s*([^<]+?)\s*<\/loc>/g)].map((m) => m[1])
+  let urlCount = locs.length
+
+  let partial = false
+  if (/<sitemapindex/i.test(xml)) {
+    const children = pickChildren(locs, 6)
+    partial = children.length < locs.length
+    const bodies = await Promise.all(children.map(async (c) => (await grab(c, HUMAN_UA, 8000)).text))
+    xml = bodies.join("\n")
+    locs = bodies.flatMap((b) => [...b.matchAll(/<loc>\s*([^<]+?)\s*<\/loc>/g)].map((m) => m[1]))
+    urlCount = locs.length
+  }
+
+  return {
+    site: target.hostname,
+    urlCount,
+    answerPages: countAnswers(locs),
+    perMonth: cadencePerMonth(xml),
+    partial,
+  }
+}
+
 export async function POST(req: NextRequest) {
-  let body: { url?: string }
+  let body: { url?: string; competitor?: string }
   try {
-    body = (await req.json()) as { url?: string }
+    body = (await req.json()) as { url?: string; competitor?: string }
   } catch {
     return NextResponse.json({ error: "Bad request" }, { status: 400 })
   }
@@ -127,6 +205,12 @@ export async function POST(req: NextRequest) {
 
   // Everything that does not depend on another response goes out at once — this runs inside a
   // serverless function with a hard ceiling, and sequential probes blow through it.
+  // Kicked off here so the competitor's sitemaps are fetched alongside ours rather than after
+  // them. A competitor that fails to resolve must not take the caller's own result down with it.
+  const rivalPromise = body.competitor
+    ? rivalSurface(String(body.competitor)).catch(() => null)
+    : Promise.resolve(null)
+
   const [robotsRes, homeHuman, sitemapRes, llmsStatus, ...botStatusValues] = await Promise.all([
     grab(`${origin}/robots.txt`, HUMAN_UA, 7000),
     grab(origin, HUMAN_UA, 9000),
@@ -162,18 +246,22 @@ export async function POST(req: NextRequest) {
   // "3 pages" for a site that has thirty thousand.
   let urlCount = (sitemapRes.text.match(/<loc>/g) ?? []).length
   let sitemapKind: "none" | "urlset" | "index" = "none"
+  let partial = false
+  let locs = [...sitemapRes.text.matchAll(/<loc>\s*([^<]+?)\s*<\/loc>/g)].map((m) => m[1])
   if (sitemapRes.status === 200 && urlCount > 0) {
     sitemapKind = /<sitemapindex/i.test(sitemapRes.text) ? "index" : "urlset"
     if (sitemapKind === "index") {
-      const children = [...sitemapRes.text.matchAll(/<loc>\s*([^<]+?)\s*<\/loc>/g)].map((m) => m[1]).slice(0, 3)
-      const counts = await Promise.all(
-        children.map(async (c) => ((await grab(c, HUMAN_UA, 8000)).text.match(/<loc>/g) ?? []).length)
-      )
+      const children = pickChildren(locs, 6)
+      partial = children.length < locs.length
+      const bodies = await Promise.all(children.map(async (c) => (await grab(c, HUMAN_UA, 8000)).text))
       // Only the sitemaps we opened are counted, so this is a floor, never an estimate. The UI
       // renders it with a "≥" for exactly that reason.
-      urlCount = counts.reduce((a, b) => a + b, 0)
+      urlCount = bodies.reduce((a, b) => a + (b.match(/<loc>/g) ?? []).length, 0)
+      locs = bodies.flatMap((b) => [...b.matchAll(/<loc>\s*([^<]+?)\s*<\/loc>/g)].map((m) => m[1]))
     }
   }
+
+  const answerPages = countAnswers(locs)
 
   // JSON-LD on the homepage is a weak signal — marketing homepages often have none while every
   // article has plenty. Sample a real content URL from the sitemap too.
@@ -196,6 +284,8 @@ export async function POST(req: NextRequest) {
     .replace(/\s+/g, " ")
     .trim()
 
+  const rival = await rivalPromise
+
   const result = {
     site: target.hostname,
     unreachable: false,
@@ -206,7 +296,8 @@ export async function POST(req: NextRequest) {
     },
     liveFetch: botStatuses.map(([bot, status]) => ({ bot, status, blocked: status === 403 || status === 401 })),
     humanStatus: homeHuman.status,
-    surface: { urlCount, sitemapKind, isFloor: sitemapKind === "index" },
+    surface: { urlCount, sitemapKind, isFloor: partial, answerPages, partial },
+    rival,
     llmsTxt: llmsStatus === 200,
     structuredData: { count: jsonLdTypes.length, types: uniqueTypes },
     serverRenderedWords: textOnly.split(" ").filter(Boolean).length,
@@ -218,6 +309,7 @@ export async function POST(req: NextRequest) {
       VALUES ('geo_audit', '/business', ${JSON.stringify({
         site: result.site,
         urlCount: result.surface.urlCount,
+        answerPages: result.surface.answerPages,
         llmsTxt: result.llmsTxt,
         blocked: result.robots.bots.filter((b) => b.verdict === "blocked").map((b) => b.bot),
       })}::jsonb)`)
