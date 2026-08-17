@@ -91,7 +91,7 @@ export function buildLinkedInPrompt(brief: {
   targetAudience?: string | null
   avoidTopics?: string | null
   topics?: string | null
-}, count: number = 14, isCompany: boolean = false, published: string[] = []): string {
+}, count: number = 14, isCompany: boolean = false, published: string[] = [], arc: string[] = []): string {
   const currentYear = new Date().getFullYear()
   const tone = brief.tone ?? "professional"
   const niche = brief.niche ?? "business"
@@ -135,20 +135,33 @@ export function buildLinkedInPrompt(brief: {
     "a genuine reflection or appreciation about the work",
   ]
 
-  // Excerpts, not whole posts: enough for the model to recognise ground already covered without
-  // spending the context budget the new writing needs.
+  // Two different jobs, so two different shapes. The recent arc goes in whole and in order,
+  // because continuing an argument requires seeing how it developed. Older work stays as
+  // excerpts, because its only job is to stop the same ground being covered twice.
+  const arcBlock = arc.length
+    ? `
+
+THE CURRENT ARC — this author's most recent posts, in publication order, in full:
+${arc.join("\n\n")}
+
+HOW TO USE THE ARC:
+- This is where the thinking has actually got to. Continue it. Do not restart it.
+- Read it as one developing argument, not as a list of subjects. Notice what was established, what was left open, and what was only assumed.
+- A week should go somewhere. Open or advance something, then connect, challenge, qualify or extend it across the following posts. By the end the reader should be somewhere they were not at the start — that may be a provisional position, a contradiction, a link to another thread, or a better question than the one that opened it.
+- Where a post genuinely revises an earlier one, say so in the author's own voice — "I wrote a while back that…, and I think I was only half right". Changing one's mind in public is credibility, not inconsistency.
+- Do not imitate the surface of these posts. Openings, sentence rhythms and rhetorical moves must vary, because a person who thinks does not sound identical every day. Match how this author interrogates an idea, not the shape of their paragraphs.`
+    : ""
+
   const memoryBlock = published.length
     ? `
 
-ALREADY PUBLISHED BY THIS AUTHOR — most recent first:
+EARLIER GROUND ALREADY COVERED — excerpts, most recent first:
 ${published.map((p, i) => `${i + 1}. ${p}`).join("\n")}
 
-HOW TO USE THAT LIST:
-- Do not restate any of it. Saying the same thing in fresh words is the single fastest way to look automated.
-- Where a new post genuinely extends one of those ideas, say so in the author's own voice — "I wrote a while back that…, and I think I was only half right" — so the reader sees a mind developing rather than a feed being filled.
-- Leave room to disagree with an earlier position. Changing one's mind in public is credibility, not inconsistency.
-- Keep the voice continuous with what is above. It is the same person writing.`
+Do not restate any of it. Saying the same thing in fresh words is the single fastest way to look automated.`
     : ""
+
+  const historyBlock = arcBlock + memoryBlock
 
   const angles = (isCompany ? companyAngles : personalAngles).slice(0, count).join(" | ")
 
@@ -167,7 +180,7 @@ Write the posts so these topics are covered in the order given, one topic per po
 
   if (isCompany) {
     return `You are a LinkedIn content expert writing for a company page in the ${niche} space. The voice represents the company, not an individual.
-${audience}Goals: ${goals}. Current year: ${currentYear}.${avoidTopicsLine}${topicsLine}${memoryBlock}
+${audience}Goals: ${goals}. Current year: ${currentYear}.${avoidTopicsLine}${topicsLine}${historyBlock}
 
 VOICE RULE — this is a company page:
 - ALWAYS write in first person plural: "We", "Our", "Us", "We've", "We're".
@@ -205,7 +218,7 @@ Write the ${count} posts now, return only the JSON array:`
   }
 
   return `You are a LinkedIn thought leadership expert writing in the first person for a ${tone} professional in the ${niche} space.
-${audience}Goals: ${goals}. Current year: ${currentYear}.${avoidTopicsLine}${topicsLine}${memoryBlock}
+${audience}Goals: ${goals}. Current year: ${currentYear}.${avoidTopicsLine}${topicsLine}${historyBlock}
 
 STRICT RULES — violations make the post unusable:
 1. NEVER invent case studies, e.g. "Company X increased sales by Y%" — these are fabricated and damage credibility.
@@ -310,7 +323,7 @@ export async function generateForUser(userId: string): Promise<{ success: boolea
     // What this author has actually published on this account. Scoped to the resolved account so
     // a personal voice is never shaped by a company page's history, or the reverse.
     const history = await db
-      .select({ content: linkedinPosts.content })
+      .select({ content: linkedinPosts.content, publishedAt: linkedinPosts.publishedAt })
       .from(linkedinPosts)
       .where(and(
         eq(linkedinPosts.userId, userId),
@@ -318,13 +331,37 @@ export async function generateForUser(userId: string): Promise<{ success: boolea
         eq(linkedinPosts.status, "published"),
       ))
       .orderBy(desc(linkedinPosts.publishedAt))
-      .limit(20)
+      .limit(30)
 
-    const published = history.map((h) =>
-      h.content.replace(/#[^\s#]+/g, "").replace(/\s+/g, " ").trim().slice(0, 220)
-    ).filter((t) => t.length > 40)
+    const clean = (t: string) => t.replace(/#[^\s#]+/g, "").replace(/\s+/g, " ").trim()
+    const ARC_DAYS = 14
+    const ARC_MAX_CHARS = 18000
+    const cutoff = Date.now() - ARC_DAYS * 86400000
 
-    const prompt = buildLinkedInPrompt(brief, maxPosts, isCompany, published)
+    // Oldest first, so the model reads the argument in the order it was made.
+    const recent = history
+      .filter((h) => h.publishedAt && h.publishedAt.getTime() >= cutoff)
+      .reverse()
+
+    let budget = ARC_MAX_CHARS
+    const arc: string[] = []
+    for (const h of recent) {
+      const body = clean(h.content)
+      if (body.length < 40) continue
+      if (body.length > budget) break
+      budget -= body.length
+      const day = h.publishedAt ? h.publishedAt.toISOString().slice(0, 10) : ""
+      arc.push(`[${day}] ${body}`)
+    }
+
+    // Anything not in the arc keeps its old job: preventing repetition.
+    const inArc = new Set(recent.map((h) => h.content))
+    const published = history
+      .filter((h) => !inArc.has(h.content))
+      .map((h) => clean(h.content).slice(0, 220))
+      .filter((t) => t.length > 40)
+
+    const prompt = buildLinkedInPrompt(brief, maxPosts, isCompany, published, arc)
 
     let rawContent = ""
     try {
