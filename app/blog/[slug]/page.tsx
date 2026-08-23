@@ -3,7 +3,7 @@ import { noteCrawler } from "@/lib/crawler-log"
 import Link from "next/link"
 import { db } from "@/lib/db"
 import { blogPosts } from "@/lib/db/schema"
-import { and, eq, or } from "drizzle-orm"
+import { and, desc, eq, ne, or } from "drizzle-orm"
 
 // itgrows.ai internal blog owner — only their posts are publicly accessible at /blog
 const ITGROWS_OWNER_USER_ID = "7cd0011c-fadd-4ff5-bd1e-6445fea70b22"
@@ -57,6 +57,64 @@ export async function generateMetadata({
   }
 }
 
+type BlogRow = { slug: string; title: string; siteSlug: string | null; keyword: string | null }
+
+// Reading suggestions, and one honest bridge to the product. A GEO reader is already asking the
+// question /business answers; a LinkedIn reader is not, and is offered the explainer instead.
+function ReadNext({ current, related }: { current: BlogRow; related: BlogRow[] }) {
+  const isGeo = current.siteSlug === "itgrows-business"
+  const base = isGeo ? "/business/blog" : "/blog"
+
+  return (
+    <div className="mt-14 pt-10 border-t border-black/10">
+      {related.length > 0 && (
+        <>
+          <h2 className="text-sm font-bold uppercase tracking-wide text-[#1b1916]/50 mb-4">Read next</h2>
+          <ul className="space-y-3 mb-10">
+            {related.map((r) => (
+              <li key={r.slug}>
+                <Link
+                  href={`${base}/${r.slug}`}
+                  className="block rounded-xl border border-black/10 px-4 py-3 hover:border-violet-400 transition-colors"
+                >
+                  <span className="font-medium text-[#1b1916]">{r.title}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+
+      <div className="rounded-2xl bg-[#f5f3f0] border border-black/10 p-6">
+        {isGeo ? (
+          <>
+            <p className="text-[#1b1916] font-semibold mb-2">We do this for companies.</p>
+            <p className="text-sm text-[#1b1916]/70 leading-relaxed mb-4">
+              Answer-shaped articles published on your own domain, so an assistant has something of
+              yours to quote. $499 a month.
+            </p>
+            <Link href="/business" className="inline-flex items-center gap-2 rounded-xl bg-violet-600 hover:bg-violet-500 text-white px-5 py-2.5 text-sm font-semibold transition-colors">
+              See how it works →
+            </Link>
+          </>
+        ) : (
+          <>
+            <p className="text-[#1b1916] font-semibold mb-2">A different question worth asking</p>
+            <p className="text-sm text-[#1b1916]/70 leading-relaxed mb-4">
+              People increasingly ask an assistant instead of a search engine, and it answers by
+              quoting somebody. We measured our own logs: AI crawlers read our sites roughly 370
+              times more often than Google does.
+            </p>
+            <Link href="/business" className="inline-flex items-center gap-2 text-violet-600 hover:text-violet-500 font-semibold text-sm transition-colors">
+              Why assistants name some companies and not others →
+            </Link>
+          </>
+        )}
+      </div>
+    </div>
+  )
+}
+
 export default async function BlogPostPage({
   params,
 }: {
@@ -69,6 +127,23 @@ export default async function BlogPostPage({
     .select()
     .from(blogPosts)
     .where(and(eq(blogPosts.slug, slug), or(eq(blogPosts.userId, ITGROWS_OWNER_USER_ID), eq(blogPosts.siteSlug, "itgrows"))))
+
+  // Two more from the same blog, most recent first, excluding this one. Matching on shared
+  // keywords would be better; the table has no index for it, so recency is the cheap honest
+  // version rather than a slow clever one.
+  const related = post
+    ? await db
+        .select({
+          slug: blogPosts.slug,
+          title: blogPosts.title,
+          siteSlug: blogPosts.siteSlug,
+          keyword: blogPosts.keyword,
+        })
+        .from(blogPosts)
+        .where(and(eq(blogPosts.siteSlug, post.siteSlug ?? "itgrows"), ne(blogPosts.slug, slug)))
+        .orderBy(desc(blogPosts.publishedAt))
+        .limit(2)
+    : []
 
   if (!post) {
     notFound()
@@ -200,6 +275,10 @@ export default async function BlogPostPage({
               allowedAttributes: { ...sanitizeHtml.defaults.allowedAttributes, img: ["src", "alt", "class"], "*": ["class"] }
             }) }}
           />
+
+          {/* What to read next. The blog is the only surface bringing strangers in, so it has to
+              lead somewhere; without this every article is a dead end. */}
+          <ReadNext current={post} related={related} />
 
           {/* Back link */}
           <div className="mt-12 pt-8 border-t border-black/10">
