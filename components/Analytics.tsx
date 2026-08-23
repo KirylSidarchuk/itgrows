@@ -17,6 +17,45 @@ function anonId(): string {
   }
 }
 
+// Host only. A full referrer URL can carry the visitor's search terms, which we have no business
+// storing, and the host is what answers "where did they come from".
+function referrerHost(): string {
+  try {
+    const r = document.referrer
+    if (!r) return "direct"
+    const h = new URL(r).hostname.replace(/^www\./, "")
+    return h === location.hostname.replace(/^www\./, "") ? "internal" : h
+  } catch {
+    return "unknown"
+  }
+}
+
+// First view of this visit. Later navigations refer to our own pages, so only the first one
+// knows the real source; a session marker keeps it that way without any cross-visit tracking.
+function firstOfVisit(): boolean {
+  try {
+    if (sessionStorage.getItem("itg_seen")) return false
+    sessionStorage.setItem("itg_seen", "1")
+    return true
+  } catch {
+    return false
+  }
+}
+
+function campaign(): Record<string, string> {
+  const out: Record<string, string> = {}
+  try {
+    const q = new URLSearchParams(location.search)
+    for (const k of ["utm_source", "utm_medium", "utm_campaign", "gclid", "gad_source", "fbclid"]) {
+      const v = q.get(k)
+      if (v) out[k] = v.slice(0, 120)
+    }
+  } catch {
+    /* a malformed query string is not worth failing over */
+  }
+  return out
+}
+
 function send(event: string, props: Record<string, unknown>) {
   try {
     const body = JSON.stringify({
@@ -40,7 +79,10 @@ export default function Analytics() {
   const pathname = usePathname()
 
   useEffect(() => {
-    send("page_view", {})
+    const entry = firstOfVisit()
+    send("page_view", entry
+      ? { entry: true, referrer: referrerHost(), ...campaign() }
+      : {})
   }, [pathname])
 
   useEffect(() => {
