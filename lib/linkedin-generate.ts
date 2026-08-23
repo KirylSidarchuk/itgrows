@@ -423,6 +423,9 @@ export async function generateForUser(userId: string): Promise<{ success: boolea
         status: "scheduled",
         scheduledFor,
         imageUrl: imageUrls[i],
+        // Kept verbatim so a later edit can be seen as an edit rather than inferred from style.
+        source: "ai",
+        generatedContent: withHashtags,
       })
     }
 

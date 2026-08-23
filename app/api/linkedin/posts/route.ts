@@ -94,11 +94,31 @@ export async function PATCH(req: NextRequest) {
       content: string
       scheduledFor: Date
       status: string
+      source: string
+      generatedContent: string
+      editedAt: Date
     }> = {}
 
     if (content !== undefined) updates.content = content
     if (scheduledFor !== undefined) updates.scheduledFor = new Date(scheduledFor)
     if (status !== undefined) updates.status = status
+
+    // An edit only counts when the words actually changed. Rescheduling a post is not authorship,
+    // and marking it as edited would let machine text pass itself off as the author's later.
+    if (content !== undefined) {
+      const [before] = await db
+        .select({ content: linkedinPosts.content, generatedContent: linkedinPosts.generatedContent })
+        .from(linkedinPosts)
+        .where(and(eq(linkedinPosts.id, postId), eq(linkedinPosts.userId, userId)))
+        .limit(1)
+
+      if (before && before.content.trim() !== content.trim()) {
+        updates.source = "edited"
+        updates.editedAt = new Date()
+        // Only on the first edit, so the original survives repeated passes.
+        if (!before.generatedContent) updates.generatedContent = before.content
+      }
+    }
 
     if (Object.keys(updates).length === 0) {
       return NextResponse.json({ error: "No fields to update" }, { status: 400 })

@@ -143,6 +143,12 @@ export const linkedinPosts = pgTable("linkedin_posts", {
   publishError: text("publish_error"),
   imageUrl: text("image_url"),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+  // Where these words came from: "ai" as generated, "edited" once the author changed them,
+  // "human" when they wrote it themselves. Read back by the generator so it can weight the
+  // author's own text above its own.
+  source: text("source"),
+  generatedContent: text("generated_content"),
+  editedAt: timestamp("edited_at", { withTimezone: true }),
 }, (t) => [index("linkedin_posts_user_id_idx").on(t.userId), index("linkedin_posts_status_idx").on(t.status)])
 
 export const linkedinBriefs = pgTable("linkedin_briefs", {
