@@ -64,12 +64,12 @@ export async function GET(req: NextRequest) {
     const visitorsByDay = rows(await db.execute(sql`
       SELECT to_char(date_trunc('day', created_at),'YYYY-MM-DD') AS day,
              count(DISTINCT coalesce(user_id::text, anon_id))::int AS visitors,
-             count(*) FILTER (WHERE event='page_view')::int AS page_views
+             count(*) FILTER (WHERE event='page_view' AND (visitor_kind IS NULL OR visitor_kind = 'human'))::int AS page_views
       FROM analytics_events WHERE created_at > now() - interval '1 day' * ${days}
       GROUP BY 1 ORDER BY 1 DESC`))
     const topPaths = rows(await db.execute(sql`
       SELECT path, count(*)::int AS n, count(DISTINCT coalesce(user_id::text, anon_id))::int AS ppl
-      FROM analytics_events WHERE event='page_view' AND created_at > now() - interval '1 day' * ${days}
+      FROM analytics_events WHERE event='page_view' AND (visitor_kind IS NULL OR visitor_kind = 'human') AND created_at > now() - interval '1 day' * ${days}
       GROUP BY 1 ORDER BY n DESC LIMIT 12`))
     const clicksByLabel = rows(await db.execute(sql`
       SELECT coalesce(props->>'label', props->>'href', '?') AS label, path,
@@ -82,14 +82,14 @@ export async function GET(req: NextRequest) {
     const blogPosts = rows(await db.execute(sql`
       SELECT path, count(*)::int AS views, count(DISTINCT coalesce(user_id::text, anon_id))::int AS readers
       FROM analytics_events
-      WHERE event = 'page_view' AND path LIKE '/blog%'
+      WHERE event = 'page_view' AND (visitor_kind IS NULL OR visitor_kind = 'human') AND path LIKE '/blog%'
         AND created_at > now() - interval '1 day' * ${days}
       GROUP BY 1 ORDER BY readers DESC, views DESC LIMIT 20`))
     const blogFunnel = rows(await db.execute(sql`
       WITH readers AS (
         SELECT DISTINCT coalesce(user_id::text, anon_id) AS person
         FROM analytics_events
-        WHERE event = 'page_view' AND path LIKE '/blog%'
+        WHERE event = 'page_view' AND (visitor_kind IS NULL OR visitor_kind = 'human') AND path LIKE '/blog%'
           AND created_at > now() - interval '1 day' * ${days}
           AND coalesce(user_id::text, anon_id) IS NOT NULL)
       SELECT

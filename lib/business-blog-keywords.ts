@@ -58,6 +58,18 @@ export const CLUSTER_DIAGNOSIS: string[] = [
 ]
 
 // Cluster 4 — decision. Comparing options, budgets and whether to buy at all.
+// Terms Google is already showing us for, ordered by impressions over the last 30 days. Every one
+// is someone looking for a provider rather than an explanation, which is the intent our five
+// published articles do not serve.
+export const CLUSTER_SERVICE: string[] = [
+  "ai search optimization service",
+  "generative engine optimization service",
+  "ai visibility agency",
+  "answer engine optimization service",
+  "generative engine optimization agency",
+  "what to look for in a geo agency",
+]
+
 export const CLUSTER_DECISION: string[] = [
   "how much does generative engine optimization cost",
   "geo agency vs seo agency",
@@ -84,6 +96,8 @@ export const CLUSTER_AUDIENCE: string[] = [
 // the cluster has something to point at, then each week mixes a mechanics or diagnosis piece with
 // a long-tail one, so the site never looks like it is grinding through a keyword list.
 export const BUSINESS_BLOG_QUEUE: string[] = [
+  // First, because these are the only terms currently earning impressions.
+  ...CLUSTER_SERVICE,
   ...CLUSTER_CORE.slice(0, 3),
   ...CLUSTER_MECHANICS.slice(0, 2),
   ...CLUSTER_CORE.slice(3, 6),

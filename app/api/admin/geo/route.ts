@@ -58,7 +58,7 @@ export async function GET(req: NextRequest) {
     one(sql`SELECT count(*)::int AS n FROM analytics_events WHERE event='business_lead' AND created_at > ${since}`),
     one(sql`SELECT count(*)::int AS n FROM analytics_events WHERE event='onboard_sent' AND created_at > ${since}`),
     one(sql`SELECT count(*)::int AS n FROM analytics_events WHERE event='audit_report_request' AND created_at > ${since}`),
-    one(sql`SELECT count(*)::int AS n FROM analytics_events WHERE event='page_view' AND created_at > ${since}`),
+    one(sql`SELECT count(*)::int AS n FROM analytics_events WHERE event='page_view' AND created_at > ${since} AND (visitor_kind IS NULL OR visitor_kind = 'human')`),
     one(sql`SELECT count(*)::int AS n FROM analytics_events WHERE event='signup' AND created_at > ${since}`),
   ])
 
