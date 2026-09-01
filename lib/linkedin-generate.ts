@@ -429,7 +429,11 @@ export async function generateForUser(userId: string): Promise<{
       return { success: false, error: "Could not parse LLM response" }
     }
 
-    let defects = findDefects(postsData.map((p) => p.content ?? ""), drawQuota(postsData.map((p) => p.content ?? "")))
+    let defects = findDefects(
+      postsData.map((p) => p.content ?? ""),
+      drawQuota(postsData.map((p) => p.content ?? "")),
+      maxPosts
+    )
     let attempts = 1
     while (defects.length > 0 && attempts < 3) {
       attempts++
@@ -446,7 +450,8 @@ export async function generateForUser(userId: string): Promise<{
       if (!candidate) continue
       const candidateDefects = findDefects(
         candidate.map((p) => p.content ?? ""),
-        drawQuota(candidate.map((p) => p.content ?? ""))
+        drawQuota(candidate.map((p) => p.content ?? "")),
+        maxPosts
       )
       if (candidateDefects.length < defects.length) {
         postsData = candidate

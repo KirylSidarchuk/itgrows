@@ -68,8 +68,15 @@ const CONSTRUCTIONS: [string, RegExp][] = [
 const BACK_REFERENCE = /\b(i wrote|i(?:'ve| have) (?:written|discussed|explored)|as i (?:wrote|discussed|explored|noted))\b/i
 const OPENS_BACKWARD = /^(i wrote|as i|building on|reflecting on|my earlier|following on)/i
 
-export function findDefects(posts: string[], quota: BatchQuota): Defect[] {
+export function findDefects(posts: string[], quota: BatchQuota, expected?: number): Defect[] {
   const out: Defect[] = []
+
+  // A truncated response is the most common failure, and it used to pass: too few posts to
+  // have a shape meant nothing could be wrong with the shape.
+  if (expected && posts.length < Math.ceil(expected * 0.6)) {
+    out.push({ post: null, why: `only ${posts.length} posts came back, ${expected} were asked for` })
+  }
+
   if (posts.length < 3) return out
 
   posts.forEach((p, i) => {
