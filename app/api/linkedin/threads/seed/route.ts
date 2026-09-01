@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db"
 import { linkedinAccounts, linkedinPosts, postThreads } from "@/lib/db/schema"
-import { and, asc, eq, isNull, sql } from "drizzle-orm"
+import { and, asc, eq, inArray, isNull, sql } from "drizzle-orm"
 import { callLLM } from "@/lib/llm-client"
 
 // Seed an author's lines of thinking from what they have already published.
@@ -61,12 +61,18 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: `only ${posts.length} published posts — too few to find threads in` }, { status: 422 })
   }
 
-  const corpus = posts
+  // Recent work, in excerpt. The full corpus crowded the response out and the model came back
+  // with one thread; where a line of thinking stands now is visible in the recent work anyway,
+  // and an excerpt is enough to tell which line a post belongs to.
+  const CONSIDER = 60
+  const EXCERPT = 700
+  const considered = posts.slice(-CONSIDER)
+  const corpus = considered
     .map((p, i) => `[${i + 1} | ${p.publishedAt?.toISOString().slice(0, 10) ?? ""}] ` +
-      p.content.replace(/#[^\s#]+/g, "").replace(/\s+/g, " ").trim())
+      p.content.replace(/#[^\s#]+/g, "").replace(/\s+/g, " ").trim().slice(0, EXCERPT))
     .join("\n\n")
 
-  const prompt = `Below are ${posts.length} LinkedIn posts by one author, numbered and in publication order.
+  const prompt = `Below are ${considered.length} LinkedIn posts by one author, numbered and in publication order.
 
 Identify the LINES OF THINKING running through them. A line of thinking is not a topic label. Two
 posts belong to the same line when the second develops, qualifies, illustrates or challenges the
@@ -90,7 +96,7 @@ ${corpus}`
 
   let raw = ""
   try {
-    raw = await callLLM([{ role: "user", content: prompt }], { caller: "threads/seed", max_tokens: 6000, temperature: 0.3 })
+    raw = await callLLM([{ role: "user", content: prompt }], { caller: "threads/seed", max_tokens: 8000, temperature: 0.3 })
   } catch (e) {
     return NextResponse.json({ error: e instanceof Error ? e.message : String(e) }, { status: 502 })
   }
@@ -127,10 +133,10 @@ ${corpus}`
       stateSetBy: "system",
     }).returning({ id: postThreads.id })
 
-    const ids = t.posts.filter((n) => n >= 1 && n <= posts.length).map((n) => posts[n - 1].id)
+    const ids = t.posts.filter((n) => n >= 1 && n <= considered.length).map((n) => considered[n - 1].id)
     if (ids.length) {
       await db.update(linkedinPosts).set({ threadId: row.id })
-        .where(sql`${linkedinPosts.id} = ANY(${ids})`)
+        .where(inArray(linkedinPosts.id, ids))
     }
     written.push({ name: t.name, state, posts: ids.length })
   }
