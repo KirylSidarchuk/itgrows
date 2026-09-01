@@ -1,4 +1,5 @@
 import { db } from "@/lib/db"
+import { drawQuota, findDefects } from "./linkedin-batch-check"
 import { linkedinPosts, linkedinBriefs, linkedinAccounts, users } from "@/lib/db/schema"
 import { eq, and, inArray, isNull, desc } from "drizzle-orm"
 import { callLLM } from "@/lib/llm-client"
@@ -396,15 +397,56 @@ export async function generateForUser(userId: string): Promise<{ success: boolea
       return { success: false, error: e instanceof Error ? e.message : String(e) }
     }
 
-    const jsonMatch = rawContent.match(/\[[\s\S]*\]/)
-    if (!jsonMatch) {
+    const parseBatch = (raw: string): PostData[] | null => {
+      const m = raw.match(/\[[\s\S]*\]/)
+      if (!m) return null
+      try {
+        const parsed = JSON.parse(m[0]) as PostData[]
+        return Array.isArray(parsed) && parsed.length > 0 ? parsed : null
+      } catch {
+        return null
+      }
+    }
+
+    // Generate, then check the batch as a set. A post can read well while the fourteen it belongs
+    // to announce themselves — same ending, same opener, same length. Up to three attempts; the
+    // least bad is used rather than leaving the author with nothing.
+    let postsData = parseBatch(rawContent)
+    if (!postsData) {
       return { success: false, error: "Could not parse LLM response" }
     }
 
-    const postsData = JSON.parse(jsonMatch[0]) as PostData[]
+    let defects = findDefects(postsData.map((p) => p.content ?? ""), drawQuota(postsData.map((p) => p.content ?? "")))
+    let attempts = 1
+    while (defects.length > 0 && attempts < 3) {
+      attempts++
+      let retryRaw = ""
+      try {
+        retryRaw = await callLLM(
+          [{ role: "user", content: prompt }],
+          { caller: "auto-generate/linkedin", max_tokens: 4096, temperature: 0.9 }
+        )
+      } catch {
+        break
+      }
+      const candidate = parseBatch(retryRaw)
+      if (!candidate) continue
+      const candidateDefects = findDefects(
+        candidate.map((p) => p.content ?? ""),
+        drawQuota(candidate.map((p) => p.content ?? ""))
+      )
+      if (candidateDefects.length < defects.length) {
+        postsData = candidate
+        defects = candidateDefects
+      }
+      if (defects.length === 0) break
+    }
 
-    if (!Array.isArray(postsData) || postsData.length === 0) {
-      return { success: false, error: "Invalid posts data" }
+    if (defects.length > 0) {
+      console.warn(
+        `[linkedin-generate] user=${userId} used attempt ${attempts} with ${defects.length} remaining defect(s): ` +
+        defects.map((d) => d.why).join("; ")
+      )
     }
 
     // Clear the upcoming schedule for THIS account only. Unscoped, generating for a personal
