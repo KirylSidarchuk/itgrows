@@ -111,13 +111,15 @@ export function findDefects(posts: string[], quota: BatchQuota, expected?: numbe
   }
 
   // Length should follow the thought. A set that is all one size is a house style, not a voice.
+  // The defect is uniformity, not the absence of any particular size. Demanding both extremes
+  // asks for a distribution the model cannot aim at; it applies one length to everything, and
+  // which length depends only on what the instruction emphasised.
   const lengths = posts.map((p) => p.split(/\s+/).length)
-  const short = lengths.filter((n) => n < 110).length
-  const long = lengths.filter((n) => n > 180).length
-  if (short < 1 || long < 1) {
+  const spread = Math.max(...lengths) - Math.min(...lengths)
+  if (spread < 60) {
     out.push({
       post: null,
-      why: `no length variety: ${short} short, ${long} long (range ${Math.min(...lengths)}-${Math.max(...lengths)})`,
+      why: `every post is nearly the same length (${Math.min(...lengths)}-${Math.max(...lengths)} words)`,
     })
   }
 

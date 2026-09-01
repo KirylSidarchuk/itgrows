@@ -228,7 +228,7 @@ FORMAT for each post:
 - Hook in the first line: a bold statement or genuine question that stops the scroll.
 - 3–5 short paragraphs (each 2–4 sentences).
 - Final line: an open question to the reader (e.g. "What's your experience with this?").
-- Vary the length deliberately. A couple of posts should be short — under 100 words, one idea, stated and stopped. A couple should run past 190, working something through. The rest sit between. A set of posts that are all the same size reads as a house style rather than a person.
+- LENGTH, PER POST, NOT ON AVERAGE: make the 2nd and the 7th post short — under 100 words, one idea, stated and stopped. Make the 4th and the 10th long — over 190 words, working something through properly. Write the rest at whatever length the thought needs. Do not apply one length to the whole set; a batch of identically sized posts reads as a house style rather than a person.
 - MANDATORY: End every post with 3–5 hashtags on the very last line, SPECIFIC to that individual post's topic. Each post in the set MUST use a different mix of hashtags — never repeat the same hashtag set across posts. Combine one or two broad tags with post-specific ones (e.g. #Innovation #AITechnology #BusinessGrowth). Posts without hashtags are rejected.
 - Total length: 150–300 words.
 
@@ -264,7 +264,7 @@ FORMAT for each post:
 - Hook in the first line: a bold statement or genuine question that stops the scroll.
 - 3–5 short paragraphs (each 2–4 sentences).
 - Final line: an open question to the reader (e.g. "What's your experience with this?").
-- Vary the length deliberately. A couple of posts should be short — under 100 words, one idea, stated and stopped. A couple should run past 190, working something through. The rest sit between. A set of posts that are all the same size reads as a house style rather than a person.
+- LENGTH, PER POST, NOT ON AVERAGE: make the 2nd and the 7th post short — under 100 words, one idea, stated and stopped. Make the 4th and the 10th long — over 190 words, working something through properly. Write the rest at whatever length the thought needs. Do not apply one length to the whole set; a batch of identically sized posts reads as a house style rather than a person.
 - MANDATORY: End every post with 3–5 hashtags on the very last line, SPECIFIC to that individual post's topic. Each post in the set MUST use a different mix of hashtags — never repeat the same hashtag set across posts. Combine one or two broad tags with post-specific ones (e.g. #Innovation #Leadership #GrowthMindset). Posts without hashtags are rejected.
 - Total length: 150–300 words.
 
