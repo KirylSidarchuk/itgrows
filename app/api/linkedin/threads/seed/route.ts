@@ -90,6 +90,10 @@ For each, give:
 - "position": one sentence stating where the thinking currently stands, in the author's voice. If
   it has not arrived anywhere, say what it is circling.
 
+Name each line of thinking in words the author actually used. Do NOT invent a term, label or
+coinage and present it as theirs — a name they have never written, appearing in their own record
+as one of their lines of thinking, is worse than a dull accurate one.
+
 Return ONLY valid JSON: {"threads": [...], "orphans": [post numbers]}
 
 ${corpus}`
@@ -121,8 +125,17 @@ ${corpus}`
       .where(and(eq(postThreads.userId, userId), eq(postThreads.accountId, account.id)))
   }
 
+  // The instruction above was in the post prompt too, and the model still coined a term and
+  // attributed it to the author. Checking is cheaper than trusting.
+  const looksCoined = (name: string) =>
+    /\b(debt|paradox|principle|effect|law|framework|doctrine|fallacy)\b/i.test(name) &&
+    /[A-Z][a-z]+\s+[A-Z][a-z]+/.test(name)
+
   const written: { name: string; state: string; posts: number }[] = []
   for (const t of threads) {
+    if (looksCoined(t.name)) {
+      t.name = t.name.toLowerCase()
+    }
     const state = VALID.has(t.state) ? t.state : "question"
     const [row] = await db.insert(postThreads).values({
       userId,

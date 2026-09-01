@@ -1,7 +1,7 @@
 import { db } from "@/lib/db"
 import { drawQuota, findDefects } from "./linkedin-batch-check"
-import { linkedinPosts, linkedinBriefs, linkedinAccounts, users } from "@/lib/db/schema"
-import { eq, and, inArray, isNull, desc } from "drizzle-orm"
+import { linkedinPosts, linkedinBriefs, linkedinAccounts, users, postThreads } from "@/lib/db/schema"
+import { eq, and, inArray, isNull, desc, asc } from "drizzle-orm"
 import { callLLM } from "@/lib/llm-client"
 import { generatePostImage } from "@/lib/linkedin-image"
 import { sendEmail } from "@/lib/email"
@@ -503,11 +503,42 @@ export async function generateForUser(userId: string): Promise<{ success: boolea
       .from(users)
       .where(eq(users.id, userId))
       .limit(1)
+    // One question, once a batch. The thread picked is whichever has gone longest without its
+    // author touching it, so attention rotates rather than settling on the newest thing.
+    let threadQuestion = ""
+    try {
+      const [stale] = await db
+        .select({ id: postThreads.id, name: postThreads.name, state: postThreads.state, position: postThreads.position })
+        .from(postThreads)
+        .where(and(eq(postThreads.userId, userId), eq(postThreads.accountId, account.id)))
+        .orderBy(asc(postThreads.updatedAt))
+        .limit(1)
+      if (stale?.position) {
+        const base = process.env.NEXT_PUBLIC_BASE_URL ?? "https://www.itgrows.ai"
+        const link = (answer: string) =>
+          `${base}/api/linkedin/threads/answer?thread=${stale.id}&answer=${answer}`
+        threadQuestion = `
+          <hr style="border:none;border-top:1px solid #e5e5e5;margin:28px 0">
+          <p style="margin:0 0 8px;font-size:13px;color:#666">One question, and it is the only one.</p>
+          <p style="margin:0 0 6px;font-size:15px"><b>${stale.name}</b> — you last had this at:</p>
+          <p style="margin:0 0 14px;font-size:15px;color:#333">&ldquo;${stale.position}&rdquo;</p>
+          <p style="margin:0 0 12px;font-size:15px">Is that still where it stands?</p>
+          <p style="margin:0">
+            <a href="${link('same')}" style="display:inline-block;margin:0 6px 6px 0;padding:8px 14px;border:1px solid #ccc;border-radius:8px;color:#333;text-decoration:none;font-size:14px">Still stands</a>
+            <a href="${link('refined')}" style="display:inline-block;margin:0 6px 6px 0;padding:8px 14px;border:1px solid #ccc;border-radius:8px;color:#333;text-decoration:none;font-size:14px">Refined it</a>
+            <a href="${link('changed')}" style="display:inline-block;margin:0 6px 6px 0;padding:8px 14px;border:1px solid #ccc;border-radius:8px;color:#333;text-decoration:none;font-size:14px">Changed my mind</a>
+            <a href="${link('resting')}" style="display:inline-block;margin:0 6px 6px 0;padding:8px 14px;border:1px solid #ccc;border-radius:8px;color:#333;text-decoration:none;font-size:14px">Done with it</a>
+          </p>`
+      }
+    } catch {
+      // The question is a bonus; never let it stop the batch email.
+    }
+
     if (user?.email) {
       sendEmail({
         to: user.email,
         subject: "Your first LinkedIn posts are ready 🚀",
-        html: linkedinPostsReadyEmail(user.name ?? "there", firstDate),
+        html: linkedinPostsReadyEmail(user.name ?? "there", firstDate) + threadQuestion,
       }).catch(() => {})
     }
 
