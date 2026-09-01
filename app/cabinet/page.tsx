@@ -44,6 +44,8 @@ interface LinkedInBrief {
   isAutoFilled?: boolean
   postingFrequency: string
   avoidTopics?: string
+  exploring?: string
+  neverSay?: string
   topics?: string
   imageStyle?: string
 }
@@ -87,6 +89,8 @@ interface TwitterBrief {
   q4: string
   q5: string
   avoidTopics?: string
+  exploring?: string
+  neverSay?: string
 }
 
 const STATUS_COLORS: Record<string, string> = {
@@ -798,6 +802,8 @@ function LinkedInPageContent() {
     targetAudience: "",
     postingFrequency: "daily",
     avoidTopics: "",
+    exploring: "",
+    neverSay: "",
     imageStyle: "ai_art",
   })
   const [briefIsAutoFilled, setBriefIsAutoFilled] = useState(false)
@@ -1148,7 +1154,7 @@ function LinkedInPageContent() {
     if (accounts.length > 0) {
       // Reset state immediately before loading new account data
       setPosts([])
-      setBrief({ niche: "", tone: "professional", goals: "", companyName: "", targetAudience: "", avoidTopics: "", topics: "", postingFrequency: "daily", imageStyle: "ai_art" })
+      setBrief({ niche: "", tone: "professional", goals: "", companyName: "", targetAudience: "", avoidTopics: "", exploring: "", neverSay: "", topics: "", postingFrequency: "daily", imageStyle: "ai_art" })
       fetchBrief(selectedLinkedInAccountId)
       fetchPosts(selectedLinkedInAccountId)
     }
@@ -1254,6 +1260,8 @@ function LinkedInPageContent() {
             targetAudience: data.brief.targetAudience ?? "",
             postingFrequency: data.brief.postingFrequency ?? "daily",
             avoidTopics: data.brief.avoidTopics ?? "",
+            exploring: data.brief.exploring ?? "",
+            neverSay: data.brief.neverSay ?? "",
             topics: data.brief.topics ?? "",
             imageStyle: data.brief.imageStyle ?? "ai_art",
           })
@@ -1535,6 +1543,8 @@ function LinkedInPageContent() {
           targetAudience: b.targetAudience ?? "",
           postingFrequency: b.postingFrequency ?? "daily",
           avoidTopics: prev.avoidTopics ?? "",
+          exploring: prev.exploring ?? "",
+          neverSay: prev.neverSay ?? "",
           imageStyle: prev.imageStyle ?? "ai_art",
         }))
         if (b.profileUrl) setProfileUrl(b.profileUrl)
@@ -4039,6 +4049,38 @@ function LinkedInPageContent() {
                     onChange={(e) => setBrief((b) => ({ ...b, avoidTopics: e.target.value }))}
                     className="w-full px-3 py-2.5 text-sm rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-violet-300 resize-none transition-colors"
                   />
+                </div>
+
+                {/* What you are still working through. Not a topic list — a topic is something to
+                    write about, this is something you have not finished thinking about. */}
+                <div>
+                  <label className="block text-xs font-semibold text-slate-600 mb-1.5 uppercase tracking-wide">
+                    Still open <span className="normal-case font-normal text-slate-600">(optional)</span>
+                  </label>
+                  <textarea
+                    rows={4}
+                    placeholder={"What you are working through right now — a question, something that bothers you, a passage you read, an argument you are testing.\n\nIt will be treated as unfinished: posts may enter it or test an edge of it, and will not resolve it into a conclusion."}
+                    value={brief.exploring ?? ""}
+                    onChange={(e) => setBrief((b) => ({ ...b, exploring: e.target.value }))}
+                    className="w-full px-3 py-2.5 text-sm rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-violet-300 resize-none transition-colors"
+                  />
+                  <p className="text-[11px] text-slate-500 mt-1">Not a brief. Nothing here has to become a post.</p>
+                </div>
+
+                {/* Rejected phrasings. A flat prohibition, which is the instruction the model
+                    follows most reliably. */}
+                <div>
+                  <label className="block text-xs font-semibold text-slate-600 mb-1.5 uppercase tracking-wide">
+                    Never say this <span className="normal-case font-normal text-slate-600">(optional)</span>
+                  </label>
+                  <textarea
+                    rows={3}
+                    placeholder={"Words and constructions you would never use. One per line.\n\ngame-changer\nIn today's fast-paced world\nunlock the power of"}
+                    value={brief.neverSay ?? ""}
+                    onChange={(e) => setBrief((b) => ({ ...b, neverSay: e.target.value }))}
+                    className="w-full px-3 py-2.5 text-sm rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-violet-300 resize-none transition-colors"
+                  />
+                  <p className="text-[11px] text-slate-500 mt-1">Applies to every batch from the next one on.</p>
                 </div>
 
                 <Button

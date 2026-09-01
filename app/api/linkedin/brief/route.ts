@@ -55,6 +55,8 @@ interface BriefRequest {
   profileUrl?: string
   postingFrequency?: string
   avoidTopics?: string
+  exploring?: string
+  neverSay?: string
   topics?: string
   imageStyle?: string
   linkedinAccountId?: string
@@ -69,7 +71,7 @@ export async function POST(req: NextRequest) {
     const userId = session.user.id
 
     const body = await req.json() as BriefRequest
-    const { niche, tone, goals, companyName, targetAudience, profileUrl, postingFrequency, avoidTopics, topics, imageStyle, linkedinAccountId } = body
+    const { niche, tone, goals, companyName, targetAudience, profileUrl, postingFrequency, avoidTopics, topics, exploring, neverSay, imageStyle, linkedinAccountId } = body
     const validFrequency = postingFrequency === "every_other_day" ? "every_other_day" : "daily"
     const validImageStyle = ["ai_art", "minimalist", "photorealistic", "infographic", "no_image"].includes(imageStyle ?? "") ? imageStyle! : "ai_art"
 
@@ -95,6 +97,8 @@ export async function POST(req: NextRequest) {
             isAutoFilled: false,
             postingFrequency: validFrequency,
             avoidTopics: avoidTopics ?? null,
+            exploring: exploring ?? null,
+            neverSay: neverSay ?? null,
             topics: topics ?? null,
             imageStyle: validImageStyle,
             updatedAt: new Date(),
@@ -116,6 +120,8 @@ export async function POST(req: NextRequest) {
             isAutoFilled: false,
             postingFrequency: validFrequency,
             avoidTopics: avoidTopics ?? null,
+            exploring: exploring ?? null,
+            neverSay: neverSay ?? null,
             topics: topics ?? null,
             imageStyle: validImageStyle,
             updatedAt: new Date(),
@@ -147,6 +153,8 @@ export async function POST(req: NextRequest) {
           isAutoFilled: false,
           postingFrequency: validFrequency,
           avoidTopics: avoidTopics ?? null,
+            exploring: exploring ?? null,
+            neverSay: neverSay ?? null,
           imageStyle: validImageStyle,
           updatedAt: new Date(),
         })
@@ -167,6 +175,8 @@ export async function POST(req: NextRequest) {
           isAutoFilled: false,
           postingFrequency: validFrequency,
           avoidTopics: avoidTopics ?? null,
+            exploring: exploring ?? null,
+            neverSay: neverSay ?? null,
           imageStyle: validImageStyle,
           updatedAt: new Date(),
         })

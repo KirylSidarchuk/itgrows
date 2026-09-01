@@ -164,6 +164,12 @@ export const linkedinBriefs = pgTable("linkedin_briefs", {
   profileUrl: text("profile_url"),
   postingFrequency: text("posting_frequency").notNull().default("daily"),
   avoidTopics: text("avoid_topics"),
+  // What the author is still working through. Deliberately not a topic list: a topic is
+  // something to write about, this is something they have not finished thinking about.
+  exploring: text("exploring"),
+  // Phrasings the author has struck out. A prohibition, which is the one kind of instruction
+  // the model follows without a number attached to it.
+  neverSay: text("never_say"),
   // Topics the user WANTS covered in the next batch (their own editorial plan).
   topics: text("topics"),
   imageStyle: text("image_style").default("ai_art"),

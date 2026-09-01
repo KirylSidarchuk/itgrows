@@ -91,6 +91,8 @@ export function buildLinkedInPrompt(brief: {
   targetAudience?: string | null
   avoidTopics?: string | null
   topics?: string | null
+  exploring?: string | null
+  neverSay?: string | null
 }, count: number = 14, isCompany: boolean = false, published: string[] = [], arc: string[] = []): string {
   const currentYear = new Date().getFullYear()
   const tone = brief.tone ?? "professional"
@@ -169,6 +171,27 @@ Do not restate any of it. Saying the same thing in fresh words is the single fas
     ? `\nIMPORTANT: Do NOT mention or promote the following topics: ${brief.avoidTopics.trim()}`
     : ""
 
+  // Things the author has struck out. Stated as a flat prohibition because that is the form this
+  // model obeys; a softer "try to avoid" is ignored.
+  const neverSayLine = brief.neverSay?.trim()
+    ? `\nNEVER USE THE FOLLOWING WORDS, PHRASINGS OR CONSTRUCTIONS. The author has rejected them and seeing one is worse than a weaker post:\n${brief.neverSay.trim()}`
+    : ""
+
+  // Live inquiry. The instruction not to resolve it is the point: left to itself the model will
+  // tidy an open question into a conclusion the author has not reached.
+  const exploringBlock = brief.exploring?.trim()
+    ? `
+
+STILL OPEN — what this author is currently working through:
+${brief.exploring.trim()}
+
+HOW TO TREAT IT:
+- This is unfinished thinking, not a brief. Do not resolve it. Do not produce a post that answers it neatly.
+- A post may enter it, test one edge of it, connect it to something already published, or state plainly what would have to be true for it to hold. Ending without an answer is correct here.
+- Do not write about all of it at once, and do not force it into every post. Some of the batch should ignore it entirely.
+- Never present it as an established position. It is being examined.`
+    : ""
+
   // The user's own editorial plan for this batch. When present it OVERRIDES the generic
   // angle rotation: each listed topic gets its own post, cycled if there are more posts
   // than topics, so the batch follows their plan instead of our defaults.
@@ -180,7 +203,7 @@ Write the posts so these topics are covered in the order given, one topic per po
 
   if (isCompany) {
     return `You are a LinkedIn content expert writing for a company page in the ${niche} space. The voice represents the company, not an individual.
-${audience}Goals: ${goals}. Current year: ${currentYear}.${avoidTopicsLine}${topicsLine}${historyBlock}
+${audience}Goals: ${goals}. Current year: ${currentYear}.${avoidTopicsLine}${neverSayLine}${exploringBlock}${topicsLine}${historyBlock}
 
 VOICE RULE — this is a company page:
 - ALWAYS write in first person plural: "We", "Our", "Us", "We've", "We're".
@@ -218,7 +241,7 @@ Write the ${count} posts now, return only the JSON array:`
   }
 
   return `You are a LinkedIn thought leadership expert writing in the first person for a ${tone} professional in the ${niche} space.
-${audience}Goals: ${goals}. Current year: ${currentYear}.${avoidTopicsLine}${topicsLine}${historyBlock}
+${audience}Goals: ${goals}. Current year: ${currentYear}.${avoidTopicsLine}${neverSayLine}${exploringBlock}${topicsLine}${historyBlock}
 
 STRICT RULES — violations make the post unusable:
 1. NEVER invent case studies, e.g. "Company X increased sales by Y%" — these are fabricated and damage credibility.
