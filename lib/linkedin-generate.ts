@@ -276,7 +276,18 @@ Return ONLY a valid JSON array with exactly ${count} objects. Each object must h
 Write the ${count} posts now, return only the JSON array:`
 }
 
-export async function generateForUser(userId: string): Promise<{ success: boolean; error?: string }> {
+export type GenerationDiagnostics = {
+  attempts: number
+  remainingDefects: string[]
+  questionAttached: string | null
+  postsCreated: number
+}
+
+export async function generateForUser(userId: string): Promise<{
+  success: boolean
+  error?: string
+  diagnostics?: GenerationDiagnostics
+}> {
   try {
     // Get LinkedIn account
     const [account] = await db
@@ -506,6 +517,7 @@ export async function generateForUser(userId: string): Promise<{ success: boolea
     // One question, once a batch. The thread picked is whichever has gone longest without its
     // author touching it, so attention rotates rather than settling on the newest thing.
     let threadQuestion = ""
+    let questionThread: string | null = null
     try {
       const [stale] = await db
         .select({ id: postThreads.id, name: postThreads.name, state: postThreads.state, position: postThreads.position })
@@ -514,6 +526,7 @@ export async function generateForUser(userId: string): Promise<{ success: boolea
         .orderBy(asc(postThreads.updatedAt))
         .limit(1)
       if (stale?.position) {
+        questionThread = stale.name
         const base = process.env.NEXT_PUBLIC_BASE_URL ?? "https://www.itgrows.ai"
         const link = (answer: string) =>
           `${base}/api/linkedin/threads/answer?thread=${stale.id}&answer=${answer}`
@@ -542,7 +555,15 @@ export async function generateForUser(userId: string): Promise<{ success: boolea
       }).catch(() => {})
     }
 
-    return { success: true }
+    return {
+      success: true,
+      diagnostics: {
+        attempts,
+        remainingDefects: defects.map((d) => d.why),
+        questionAttached: questionThread,
+        postsCreated: slice.length,
+      },
+    }
   } catch (err) {
     return { success: false, error: err instanceof Error ? err.message : "Unknown error" }
   }
