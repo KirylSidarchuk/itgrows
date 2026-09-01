@@ -809,6 +809,8 @@ function LinkedInPageContent() {
   const [briefIsAutoFilled, setBriefIsAutoFilled] = useState(false)
   const [profileUrl, setProfileUrl] = useState("")
   const [savingBrief, setSavingBrief] = useState(false)
+  // Set after an edit that changed the words, so the author can say what it meant.
+  const [editKindFor, setEditKindFor] = useState<string | null>(null)
   const [briefSaved, setBriefSaved] = useState(false)
   const [refreshingBrief, setRefreshingBrief] = useState(false)
   const [refreshMessage, setRefreshMessage] = useState<string | null>(null)
@@ -1623,7 +1625,17 @@ function LinkedInPageContent() {
     }
   }
 
+  async function markEditKind(postId: string, editKind: string) {
+    setEditKindFor(null)
+    await fetch("/api/linkedin/posts", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ postId, editKind }),
+    }).catch(() => {})
+  }
+
   async function handleUpdatePost(postId: string, content: string, scheduledFor: string) {
+    const previous = posts.find((p) => p.id === postId)?.content ?? ""
     const res = await fetch("/api/linkedin/posts", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -1643,6 +1655,40 @@ function LinkedInPageContent() {
       prev.map((p) =>
         p.id === postId ? { ...p, content, scheduledFor: scheduledFor || p.scheduledFor, publishError: null } : p
       )
+    )
+    // Only worth asking when the words moved. Rescheduling is not authorship.
+    if (previous.trim() !== content.trim()) setEditKindFor(postId)
+  }
+
+  function EditKindPrompt() {
+    if (!editKindFor) return null
+    const opts: [string, string][] = [
+      ["wording", "Just wording"],
+      ["refined", "Refined the point"],
+      ["position", "Changed my position"],
+    ]
+    return (
+      <div className="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 bg-white border border-black/10 rounded-2xl shadow-xl px-5 py-4 max-w-md w-[calc(100%-2rem)]">
+        <p className="text-sm font-semibold text-[#1b1916] mb-1">What did that change mean?</p>
+        <p className="text-xs text-slate-500 mb-3">Only if it meant something. Most edits are just wording.</p>
+        <div className="flex flex-wrap gap-2">
+          {opts.map(([value, label]) => (
+            <button
+              key={value}
+              onClick={() => markEditKind(editKindFor, value)}
+              className="px-3 py-1.5 text-xs font-medium rounded-xl border border-slate-200 hover:border-violet-400 transition-colors"
+            >
+              {label}
+            </button>
+          ))}
+          <button
+            onClick={() => setEditKindFor(null)}
+            className="px-3 py-1.5 text-xs text-slate-500 hover:text-slate-700 transition-colors"
+          >
+            Dismiss
+          </button>
+        </div>
+      </div>
     )
   }
 
@@ -4660,6 +4706,8 @@ function LinkedInPageContent() {
           </div>
         )
       })()}
+
+      <EditKindPrompt />
     </div>
   )
 }

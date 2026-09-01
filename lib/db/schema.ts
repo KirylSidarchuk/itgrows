@@ -151,6 +151,10 @@ export const linkedinPosts = pgTable("linkedin_posts", {
   source: text("source"),
   generatedContent: text("generated_content"),
   editedAt: timestamp("edited_at", { withTimezone: true }),
+  // What the edit meant, when the author says it meant something: wording | refined | position.
+  // Never inferred from the diff — hedging added reads the same whether the certainty moved or
+  // the sentence was clumsy.
+  editKind: text("edit_kind"),
 }, (t) => [index("linkedin_posts_user_id_idx").on(t.userId), index("linkedin_posts_status_idx").on(t.status)])
 
 export const linkedinBriefs = pgTable("linkedin_briefs", {

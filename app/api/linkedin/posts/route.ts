@@ -73,6 +73,7 @@ interface PatchRequest {
   content?: string
   scheduledFor?: string
   status?: string
+  editKind?: string
 }
 
 export async function PATCH(req: NextRequest) {
@@ -84,7 +85,7 @@ export async function PATCH(req: NextRequest) {
     const userId = session.user.id
 
     const body = await req.json() as PatchRequest
-    const { postId, content, scheduledFor, status } = body
+    const { postId, content, scheduledFor, status, editKind } = body
 
     if (!postId) {
       return NextResponse.json({ error: "postId is required" }, { status: 400 })
@@ -94,6 +95,7 @@ export async function PATCH(req: NextRequest) {
       content: string
       scheduledFor: Date
       status: string
+      editKind: string
       source: string
       generatedContent: string
       editedAt: Date
@@ -115,6 +117,10 @@ export async function PATCH(req: NextRequest) {
       if (before && before.content.trim() !== content.trim()) {
         updates.source = "edited"
         updates.editedAt = new Date()
+        // Only when the author says so. Unmarked is the common case and a legitimate answer.
+        if (editKind && ["wording", "refined", "position"].includes(editKind)) {
+          updates.editKind = editKind
+        }
         // Only on the first edit, so the original survives repeated passes.
         if (!before.generatedContent) updates.generatedContent = before.content
       }
