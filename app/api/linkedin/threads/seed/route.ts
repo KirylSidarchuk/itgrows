@@ -64,8 +64,8 @@ export async function POST(req: NextRequest) {
   // Recent work, in excerpt. The full corpus crowded the response out and the model came back
   // with one thread; where a line of thinking stands now is visible in the recent work anyway,
   // and an excerpt is enough to tell which line a post belongs to.
-  const CONSIDER = 60
-  const EXCERPT = 700
+  const CONSIDER = 30
+  const EXCERPT = 450
   const considered = posts.slice(-CONSIDER)
   const corpus = considered
     .map((p, i) => `[${i + 1} | ${p.publishedAt?.toISOString().slice(0, 10) ?? ""}] ` +
@@ -76,7 +76,7 @@ export async function POST(req: NextRequest) {
 
 Identify the LINES OF THINKING running through them. A line of thinking is not a topic label. Two
 posts belong to the same line when the second develops, qualifies, illustrates or challenges the
-first — not merely when they share vocabulary. Expect 6 to 10. Some posts belong to none, and that
+first — not merely when they share vocabulary. Expect 5 to 8. Some posts belong to none, and that
 is a real finding rather than an error.
 
 For each, give:
@@ -96,7 +96,7 @@ ${corpus}`
 
   let raw = ""
   try {
-    raw = await callLLM([{ role: "user", content: prompt }], { caller: "threads/seed", max_tokens: 8000, temperature: 0.3 })
+    raw = await callLLM([{ role: "user", content: prompt }], { caller: "threads/seed", max_tokens: 4000, temperature: 0.3 })
   } catch (e) {
     return NextResponse.json({ error: e instanceof Error ? e.message : String(e) }, { status: 502 })
   }
