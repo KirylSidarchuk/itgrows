@@ -143,6 +143,8 @@ export const linkedinPosts = pgTable("linkedin_posts", {
   publishError: text("publish_error"),
   imageUrl: text("image_url"),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+  // The line of thinking this post belongs to.
+  threadId: uuid("thread_id"),
   // Where these words came from: "ai" as generated, "edited" once the author changed them,
   // "human" when they wrote it themselves. Read back by the generator so it can weight the
   // author's own text above its own.
@@ -346,4 +348,19 @@ export const dailyStats = pgTable("daily_stats", {
   paying: integer("paying").notNull().default(0),
   trialing: integer("trialing").notNull().default(0),
   createdAt: timestamp("created_at").notNull().defaultNow(),
+})
+
+// A line of thinking, not a topic. Carries the state its author put it in — the progression they
+// described: question, hypothesis, evidence, provisional position, challenge, refinement. The
+// state is set by the author; the system may seed it and may ask, but never decides.
+export const postThreads = pgTable("post_threads", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: text("user_id").notNull(),
+  accountId: uuid("account_id").references(() => linkedinAccounts.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  state: text("state").notNull().default("question"),
+  position: text("position"),
+  stateSetBy: text("state_set_by").notNull().default("system"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 })
