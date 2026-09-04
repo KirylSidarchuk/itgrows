@@ -68,6 +68,26 @@ const CONSTRUCTIONS: [string, RegExp][] = [
 const BACK_REFERENCE = /\b(i wrote|i(?:'ve| have) (?:written|discussed|explored)|as i (?:wrote|discussed|explored|noted))\b/i
 const OPENS_BACKWARD = /^(i wrote|as i|building on|reflecting on|my earlier|following on)/i
 
+// Word trigrams, compared as sets. Cheap, and it catches a post that has been reworded as well as
+// one that was emitted twice — which is what actually happened: a batch went out with the fourth
+// and eleventh posts identical, and every check passed because they all measure the shape of the
+// set rather than whether two members say the same thing.
+function shingles(text: string): Set<string> {
+  const w = text.toLowerCase().replace(/#[^\s#]+/g, "").replace(/[^a-z0-9\s]/g, " ").split(/\s+/).filter(Boolean)
+  const out = new Set<string>()
+  for (let i = 0; i + 2 < w.length; i++) out.add(`${w[i]} ${w[i + 1]} ${w[i + 2]}`)
+  return out
+}
+
+function nearDuplicate(a: string, b: string): number {
+  const x = shingles(a)
+  const y = shingles(b)
+  if (x.size < 5 || y.size < 5) return 0
+  let shared = 0
+  for (const s of x) if (y.has(s)) shared++
+  return shared / Math.min(x.size, y.size)
+}
+
 export function findDefects(posts: string[], quota: BatchQuota, expected?: number): Defect[] {
   const out: Defect[] = []
 
@@ -121,6 +141,20 @@ export function findDefects(posts: string[], quota: BatchQuota, expected?: numbe
       post: null,
       why: `every post is nearly the same length (${Math.min(...lengths)}-${Math.max(...lengths)} words)`,
     })
+  }
+
+  // Two posts making the same argument is worse than any stylistic tic: the reader sees the
+  // machine directly.
+  for (let i = 0; i < posts.length; i++) {
+    for (let j = i + 1; j < posts.length; j++) {
+      const overlap = nearDuplicate(posts[i], posts[j])
+      if (overlap > 0.5) {
+        out.push({
+          post: j + 1,
+          why: `post ${j + 1} repeats post ${i + 1} (${Math.round(overlap * 100)}% of the same phrasing)`,
+        })
+      }
+    }
   }
 
   return out

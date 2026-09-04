@@ -117,13 +117,16 @@ export async function PATCH(req: NextRequest) {
       if (before && before.content.trim() !== content.trim()) {
         updates.source = "edited"
         updates.editedAt = new Date()
-        // Only when the author says so. Unmarked is the common case and a legitimate answer.
-        if (editKind && ["wording", "refined", "position"].includes(editKind)) {
-          updates.editKind = editKind
-        }
+
         // Only on the first edit, so the original survives repeated passes.
         if (!before.generatedContent) updates.generatedContent = before.content
       }
+    }
+
+    // Arrives on its own request, after the content was saved — so it cannot sit inside the
+    // branch that handles new text, which is where it was and why every answer was discarded.
+    if (editKind && ["wording", "refined", "position"].includes(editKind)) {
+      updates.editKind = editKind
     }
 
     if (Object.keys(updates).length === 0) {
