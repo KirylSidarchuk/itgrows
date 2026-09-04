@@ -88,6 +88,28 @@ function nearDuplicate(a: string, b: string): number {
   return shared / Math.min(x.size, y.size)
 }
 
+// The closing paragraph that should have been cut: it points back at what was just said and then
+// restates it one level up. Deliberately narrow — a final paragraph merely starting with "This"
+// is often fine, and the abstraction verb is what makes it a restatement rather than a step.
+const TRAILING_RESTATEMENT = new RegExp(
+  // A demonstrative, then within a few words a verb that lifts what was just said to a higher
+  // level. The gap matters: "This disconnect highlights the need for..." is the same move as
+  // "This highlights..." and was the example that slipped through.
+  "^(this|that|it)\\b[^.!?]{0,45}?\\b(" +
+  "highlights|underscores|speaks to|points to|reflects|comes down to|boils down to|" +
+  "means that|reminds us|shows us|suggests that|is really about|isn't just about|is not just about" +
+  ")\\b" +
+  "|^(this|that) (is|isn't|is not)\\s+(just|merely|simply|only)?\\s*about\\b" +
+  "|^what this means\\b|^ultimately[,\\s]|^in essence[,\\s]|^in short[,\\s]",
+  "i"
+)
+
+function trailingRestatement(post: string): boolean {
+  const paras = post.replace(/#[^\s#]+/g, "").trim().split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean)
+  if (paras.length < 2) return false
+  return TRAILING_RESTATEMENT.test(paras[paras.length - 1])
+}
+
 export function findDefects(posts: string[], quota: BatchQuota, expected?: number): Defect[] {
   const out: Defect[] = []
 
@@ -101,6 +123,9 @@ export function findDefects(posts: string[], quota: BatchQuota, expected?: numbe
 
   posts.forEach((p, i) => {
     for (const [rx, why] of BANNED) if (rx.test(p)) out.push({ post: i + 1, why })
+    if (trailingRestatement(p)) {
+      out.push({ post: i + 1, why: "closes by restating the point more abstractly; the paragraph before it was the ending" })
+    }
   })
 
   const endings = posts.filter((p) => p.trim().endsWith("?")).length
