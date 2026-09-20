@@ -110,7 +110,14 @@ function trailingRestatement(post: string): boolean {
   return TRAILING_RESTATEMENT.test(paras[paras.length - 1])
 }
 
-export function findDefects(posts: string[], quota: BatchQuota, expected?: number): Defect[] {
+export function findDefects(
+  posts: string[],
+  quota: BatchQuota,
+  expected?: number,
+  // What this author has already published. A batch can be internally varied and still be
+  // nothing but copies of older posts — which is exactly what happened.
+  alreadyPublished: string[] = []
+): Defect[] {
   const out: Defect[] = []
 
   // A truncated response is the most common failure, and it used to pass: too few posts to
@@ -178,6 +185,16 @@ export function findDefects(posts: string[], quota: BatchQuota, expected?: numbe
           post: j + 1,
           why: `post ${j + 1} repeats post ${i + 1} (${Math.round(overlap * 100)}% of the same phrasing)`,
         })
+      }
+    }
+  }
+
+  for (let i = 0; i < posts.length; i++) {
+    for (const prior of alreadyPublished) {
+      const overlap = nearDuplicate(posts[i], prior)
+      if (overlap > 0.5) {
+        out.push({ post: i + 1, why: `post ${i + 1} repeats something already published (${Math.round(overlap * 100)}%)` })
+        break
       }
     }
   }

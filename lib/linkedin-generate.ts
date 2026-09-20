@@ -148,6 +148,9 @@ THE CURRENT ARC — this author's most recent posts, in publication order, in fu
 ${arc.join("\n\n")}
 
 HOW TO USE THE ARC:
+- NEVER REPRODUCE ANY POST ABOVE. Not its opening, not its argument, not a lightly reworded
+  version of it. Those posts are already published; returning one is the single worst thing
+  you can do here, because it appears on the author's profile twice.
 - This is where the thinking has actually got to. Continue it. Do not restart it.
 - Read it as one developing argument, not as a list of subjects. Notice what was established, what was left open, and what was only assumed.
 - A week should go somewhere. Open or advance something, then connect, challenge, qualify or extend it across the following posts. By the end the reader should be somewhere they were not at the start — that may be a provisional position, a contradiction, a link to another thread, or a better question than the one that opened it.
@@ -436,7 +439,8 @@ export async function generateForUser(userId: string): Promise<{
     let defects = findDefects(
       postsData.map((p) => p.content ?? ""),
       drawQuota(postsData.map((p) => p.content ?? "")),
-      maxPosts
+      maxPosts,
+      history.map((h) => h.content)
     )
     let attempts = 1
     while (defects.length > 0 && attempts < 3) {
@@ -455,7 +459,8 @@ export async function generateForUser(userId: string): Promise<{
       const candidateDefects = findDefects(
         candidate.map((p) => p.content ?? ""),
         drawQuota(candidate.map((p) => p.content ?? "")),
-        maxPosts
+        maxPosts,
+        history.map((h) => h.content)
       )
       if (candidateDefects.length < defects.length) {
         postsData = candidate
