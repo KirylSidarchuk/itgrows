@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db"
 import { sql } from "drizzle-orm"
 import { notifyOwner } from "@/lib/telegram"
+import { sendEmail } from "@/lib/email"
+import { linkedinTokenExpiringEmail } from "@/lib/email-templates"
 
 // Runs three hours before the publish crons. A LinkedIn token can be revoked at any time -- when a
 // customer re-authorises the same app from a second account, LinkedIn silently kills the first grant
@@ -21,7 +23,7 @@ export async function GET(req: NextRequest) {
   try {
     // Only accounts that are actually meant to publish: a paying/trialing owner with a queue.
     const accounts = rows(await db.execute(sql`
-      SELECT la.id, la.access_token, la.page_type, la.page_name, u.email, u.name,
+      SELECT la.id, la.access_token, la.page_type, la.page_name, la.expires_at, u.email, u.name,
              (SELECT count(*)::int FROM linkedin_posts lp
                 WHERE lp.linkedin_account_id = la.id AND lp.status = 'scheduled') AS queued,
              (SELECT to_char(min(lp.scheduled_for), 'MM-DD HH24:MI') FROM linkedin_posts lp
@@ -51,13 +53,41 @@ export async function GET(req: NextRequest) {
       }
     }))
 
+    // A live token that is about to die is invisible to the probe above: it answers 200 right up
+    // to the deadline. LinkedIn issues sixty-day grants and hands us no refresh token, so the
+    // only remedy is telling the customer before it lapses rather than after.
+    const expiring: string[] = []
+    for (const a of withQueue) {
+      const exp = a.expires_at ? new Date(a.expires_at as string) : null
+      if (!exp) continue
+      const days = Math.floor((exp.getTime() - Date.now()) / 86400000)
+      if (days > 2 || days < 0) continue
+
+      expiring.push(`• ${a.name ?? a.email} (${a.email}) — ${a.page_name ?? a.page_type}: expires in ${days} day(s), ${a.queued} posts queued.`)
+      if (a.email) {
+        sendEmail({
+          to: a.email as string,
+          subject: days <= 0
+            ? "Your LinkedIn connection expires today"
+            : `Your LinkedIn connection expires in ${days} day${days === 1 ? "" : "s"}`,
+          html: linkedinTokenExpiringEmail((a.name as string) ?? "there", days),
+        }).catch(() => { /* a failed warning must not stop the rest */ })
+      }
+    }
+
+    if (expiring.length > 0) {
+      notifyOwner(
+        `⏳ LinkedIn connection about to expire\n\n${expiring.join("\n")}\n\nThey have been emailed. Nobody can renew it from our side — they have to reconnect.`
+      )
+    }
+
     if (broken.length > 0) {
       notifyOwner(
         `⚠️ LinkedIn connection broken — nothing will publish at 10:00 UTC\n\n${broken.join("\n")}\n\nThey need to reconnect from the cabinet; we cannot fix it from our side.`
       )
     }
 
-    return NextResponse.json({ checked: withQueue.length, broken: broken.length, details: broken })
+    return NextResponse.json({ checked: withQueue.length, broken: broken.length, expiring: expiring.length, details: broken })
   } catch (e) {
     const err = e as Error
     notifyOwner(`⚠️ connection-watch cron failed: ${err.message}`)

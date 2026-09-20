@@ -77,6 +77,25 @@ export function postFailedEmail(name: string, postPreview: string, error: string
   `
 }
 
+export function linkedinTokenExpiringEmail(name: string, days: number): string {
+  const when = days <= 0 ? "today" : days === 1 ? "tomorrow" : `in ${days} days`
+  const urgent = days <= 1
+  return `
+    <div style="${baseStyle}">
+      <div style="background: linear-gradient(135deg, ${urgent ? "#b91c1c, #ef4444" : "#7c3aed, #a855f7"}); padding: 24px 32px; border-radius: 12px 12px 0 0;">
+        <h1 style="color: white; margin: 0; font-size: 20px;">🔗 Your LinkedIn connection expires ${when}</h1>
+      </div>
+      <div style="padding: 32px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 12px 12px;">
+        <p style="color: #374151;">Hi ${name},</p>
+        <p style="color: #374151;">LinkedIn grants access for sixty days at a time and gives us no way to renew it on your behalf, so your connection expires ${when} and your scheduled posts will stop going out.</p>
+        <p style="color: #374151;">Reconnecting takes about ten seconds and nothing in your queue is lost.</p>
+        <a href="https://itgrows.ai/api/linkedin/connect" style="display: inline-block; background: #0a66c2; color: white; padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; margin-top: 8px;">Reconnect LinkedIn →</a>
+        <p style="color: #9ca3af; font-size: 12px; margin-top: 32px;">ItGrows.ai · We send this shortly before the deadline so nothing stops without warning.</p>
+      </div>
+    </div>
+  `
+}
+
 export function linkedinTokenExpiredEmail(name: string): string {
   return `
     <div style="${baseStyle}">
