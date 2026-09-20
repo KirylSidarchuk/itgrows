@@ -432,6 +432,20 @@ export async function generateForUser(userId: string): Promise<{
     // to announce themselves — same ending, same opener, same length. Up to three attempts; the
     // least bad is used rather than leaving the author with nothing.
     let postsData = parseBatch(rawContent)
+    // An unparseable reply is as transient as a badly shaped one, and giving up here leaves the
+    // author with nothing scheduled at all.
+    for (let parseTry = 2; !postsData && parseTry <= 3; parseTry++) {
+      console.warn(`[linkedin-generate] user=${userId} unparseable response, parse attempt ${parseTry}`)
+      try {
+        const again = await callLLM(
+          [{ role: "user", content: prompt }],
+          { caller: "auto-generate/linkedin", max_tokens: 4096, temperature: 0.85 }
+        )
+        postsData = parseBatch(again)
+      } catch {
+        break
+      }
+    }
     if (!postsData) {
       return { success: false, error: "Could not parse LLM response" }
     }
