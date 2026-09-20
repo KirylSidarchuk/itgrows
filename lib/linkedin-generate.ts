@@ -288,6 +288,7 @@ Write the ${count} posts now, return only the JSON array:`
 export type GenerationDiagnostics = {
   attempts: number
   remainingDefects: string[]
+  droppedAsRepeat: number
   questionAttached: string | null
   postsCreated: number
 }
@@ -469,6 +470,18 @@ export async function generateForUser(userId: string): Promise<{
       if (defects.length === 0) break
     }
 
+    // A repeat is the one defect worth shipping fewer posts over: it appears on the author's
+    // profile a second time, which is more visible than any tic the retries were chasing.
+    const repeatIdx = new Set(
+      defects.filter((d) => d.post && /repeats/.test(d.why)).map((d) => (d.post as number) - 1)
+    )
+    const droppedAsRepeat = repeatIdx.size
+    if (droppedAsRepeat) {
+      postsData = postsData.filter((_, i) => !repeatIdx.has(i))
+      defects = defects.filter((d) => !(d.post && repeatIdx.has(d.post - 1)))
+      console.warn(`[linkedin-generate] user=${userId} dropped ${droppedAsRepeat} post(s) that repeated published work`)
+    }
+
     if (defects.length > 0) {
       console.warn(
         `[linkedin-generate] user=${userId} used attempt ${attempts} with ${defects.length} remaining defect(s): ` +
@@ -576,6 +589,7 @@ export async function generateForUser(userId: string): Promise<{
       diagnostics: {
         attempts,
         remainingDefects: defects.map((d) => d.why),
+        droppedAsRepeat,
         questionAttached: questionThread,
         postsCreated: slice.length,
       },
