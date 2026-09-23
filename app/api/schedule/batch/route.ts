@@ -67,7 +67,6 @@ export async function POST(req: NextRequest) {
   }
 
   let siteUrl = body.siteUrl
-  const language = body.language || "en"
   const tone = body.tone || "Professional"
 
   // Look up default connected site to get siteProfile
@@ -108,7 +107,14 @@ export async function POST(req: NextRequest) {
     targetAudience?: string
     topics?: string[]
     publishEveryNDays?: number
+    language?: string
   } | null | undefined
+
+  // The cron that refills a queue knows only the site URL, so an explicit language never reaches
+  // here — and the old default handed a German site fifteen English articles. A site that states
+  // its language gets it; everyone else keeps English exactly as before.
+  const profileLanguage = (siteProfile?.language ?? "").trim()
+  const language = body.language || profileLanguage || "en"
 
   // Normalize URL
   let fetchUrl = siteUrl.trim()

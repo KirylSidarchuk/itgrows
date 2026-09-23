@@ -49,6 +49,7 @@ export async function POST(req: NextRequest) {
     metaDescription?: string
     coverImageUrl?: string | null
     imageFor?: string
+    seedQueue?: boolean
   }
   if (!body.userId) return NextResponse.json({ error: "userId required" }, { status: 400 })
 
@@ -74,6 +75,19 @@ export async function POST(req: NextRequest) {
   }
 
   const baseUrlForImage = process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"
+
+  // A queue is only refilled for someone who has just had something published, so an account
+  // that has never published never receives a first batch and stays empty for ever. This gives
+  // it the first one; from then on the ordinary cycle keeps it filled.
+  if (body.seedQueue) {
+    const seedRes = await fetch(`${baseUrlForImage}/api/schedule/batch`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-cron-secret": process.env.CRON_SECRET ?? "" },
+      body: JSON.stringify({ siteUrl: site.url }),
+    })
+    const seed = (await seedRes.json()) as Record<string, unknown>
+    return NextResponse.json({ mode: "seed", status: seedRes.status, ...seed })
+  }
   if (body.imageFor) {
     const imgRes = await fetch(`${baseUrlForImage}/api/images/generate`, {
       method: "POST",
