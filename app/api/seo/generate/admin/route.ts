@@ -3,6 +3,8 @@ import { db } from "@/lib/db"
 import { connectedSites } from "@/lib/db/schema"
 import { eq } from "drizzle-orm"
 import { publishToWordPress } from "@/lib/wordpress-publish"
+import { sendEmail } from "@/lib/email"
+import { draftReadyEmail } from "@/lib/email-templates"
 
 // Write one article for a named site, and only publish it on a second, explicit call.
 //
@@ -50,6 +52,7 @@ export async function POST(req: NextRequest) {
     coverImageUrl?: string | null
     imageFor?: string
     seedQueue?: boolean
+    testEmailTo?: string
   }
   if (!body.userId) return NextResponse.json({ error: "userId required" }, { status: 400 })
 
@@ -75,6 +78,21 @@ export async function POST(req: NextRequest) {
   }
 
   const baseUrlForImage = process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"
+
+  if (body.testEmailTo) {
+    const html = draftReadyEmail(
+      "Fabian Wilk",
+      "Briefkastenfirma im Ausland: Risiken, Substanz und die richtige Gestaltung",
+      `${site.url.replace(/\/$/, "")}/wp-admin/post.php?post=11149&action=edit`,
+      (site.siteProfile as { language?: string } | null)?.language,
+    )
+    try {
+      await sendEmail({ to: body.testEmailTo, subject: "[Test] Entwurf zur Freigabe", html })
+      return NextResponse.json({ mode: "testEmail", sent: true, to: body.testEmailTo })
+    } catch (e) {
+      return NextResponse.json({ mode: "testEmail", sent: false, error: String(e) }, { status: 502 })
+    }
+  }
 
   // A queue is only refilled for someone who has just had something published, so an account
   // that has never published never receives a first batch and stays empty for ever. This gives
