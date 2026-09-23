@@ -37,6 +37,25 @@ interface SeoBreakdown {
   tables: number
 }
 
+// The heading belongs to the reader, not to our scorer. Spelling it in English inside German
+// prose is the single most visible tell that nobody read the article before sending it. Shared
+// so the scorer looks for the same words the prompt asked for.
+function takeawaysHeadingFor(language: string): string {
+  const labels: Record<string, string> = {
+    en: "Key Takeaways",
+    de: "Das Wichtigste in Kürze",
+    ru: "Главное вкратце",
+    uk: "Головне стисло",
+    fr: "L'essentiel en bref",
+    es: "Puntos clave",
+    it: "In sintesi",
+    nl: "Kort samengevat",
+    pt: "Pontos principais",
+    pl: "Najważniejsze w skrócie",
+  }
+  return labels[language] ?? "Key Takeaways"
+}
+
 function buildPrompt(keyword: string, language: string, tone: string, siteContext?: SiteContext, internalLinks?: InternalLink[]): string {
   // An unknown code falls back to English, which is a silent, expensive failure: a German blog
   // would receive fluent English articles and nothing would error. Every language we might
@@ -54,6 +73,7 @@ function buildPrompt(keyword: string, language: string, tone: string, siteContex
     pl: "Polish",
   }
   const lang = langLabel[language] ?? "English"
+  const takeaways = takeawaysHeadingFor(language)
   const currentYear = new Date().getFullYear()
 
   const nicheInstruction = siteContext?.niche
@@ -94,7 +114,8 @@ Current year: ${currentYear}
    - End intro with a brief overview of what the article covers
 
 3. KEY TAKEAWAYS section (bullet list, 4-6 bullets):
-   - Add a ## Key Takeaways heading right after the intro
+   - Add a "## ${takeaways}" heading right after the intro, spelled exactly like that
+   - Write every heading in ${lang}. Never leave an English heading in a non-English article.
    - Each bullet = one concrete, specific fact or action (not vague summaries)
    - This helps both readers and AI engines quickly grasp value
 
@@ -139,6 +160,7 @@ function computeSeoScore(
   content: string,
   keywords: string[],
   metaDescription: string,
+  takeawaysHeading?: string,
 ): { score: number; breakdown: SeoBreakdown } {
   // Word count score (0-25)
   const wordCount = content
@@ -180,6 +202,7 @@ function computeSeoScore(
 
   // Key Takeaways score (0-10)
   const hasKeyTakeaways = /key takeaways/i.test(content)
+    || (!!takeawaysHeading && content.toLowerCase().includes(takeawaysHeading.toLowerCase()))
   const keyTakeawaysScore = hasKeyTakeaways ? 10 : 0
 
   // Table score (0-5): structured tables improve AEO ranking
@@ -397,6 +420,7 @@ export async function POST(req: NextRequest) {
       parsed.content,
       parsed.keywords,
       parsed.metaDescription,
+      takeawaysHeadingFor(language),
     )
 
     // Generate cover image — retry up to 3 times to ensure every article has one

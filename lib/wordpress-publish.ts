@@ -84,6 +84,11 @@ export async function publishToWordPress(
   // against a newline picked up in a paste.
   const auth = Buffer.from(`${username.trim()}:${appPassword.trim()}`).toString("base64")
 
+  // WordPress prints the post title above the content, and the article carries its own H1, so
+  // every page showed the heading twice. The hosted blog needs that H1 and keeps it; only the
+  // copy going to WordPress loses it.
+  const content = article.content.replace(/^\s*<h1\b[^>]*>[\s\S]*?<\/h1>\s*/i, "")
+
   const featuredMedia = await uploadCover(base, auth, article)
 
   try {
@@ -92,7 +97,7 @@ export async function publishToWordPress(
       headers: { Authorization: `Basic ${auth}`, "Content-Type": "application/json" },
       body: JSON.stringify({
         title: article.title,
-        content: article.content,
+        content,
         excerpt: article.metaDescription ?? "",
         slug: article.slug,
         // A customer who reads before anything goes live gets a draft; the default is unchanged.
