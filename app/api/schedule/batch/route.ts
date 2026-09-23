@@ -108,6 +108,7 @@ export async function POST(req: NextRequest) {
     topics?: string[]
     publishEveryNDays?: number
     language?: string
+    topicGuidance?: string
   } | null | undefined
 
   // The cron that refills a queue knows only the site URL, so an explicit language never reaches
@@ -155,7 +156,7 @@ export async function POST(req: NextRequest) {
 
   // Build site profile context for the prompt
   const siteProfileContext = siteProfile?.niche
-    ? `\nSite niche: ${siteProfile.niche}\nSite products/services: ${siteProfile.products?.join(", ") || "N/A"}\nTarget audience: ${siteProfile.targetAudience || "N/A"}\nGenerate 15 unique article topics SPECIFICALLY for this niche. Topics must be directly relevant to: ${siteProfile.niche}.`
+    ? `\nSite niche: ${siteProfile.niche}\nSite products/services: ${siteProfile.products?.join(", ") || "N/A"}\nTarget audience: ${siteProfile.targetAudience || "N/A"}\nGenerate 15 unique article topics SPECIFICALLY for this niche. Topics must be directly relevant to: ${siteProfile.niche}.${siteProfile.topicGuidance ? `\nTOPIC DIRECTION (follow this strictly): ${siteProfile.topicGuidance}` : ""}`
     : `\nSite URL: ${siteUrl}`
 
   // Call LLM once asking for 15 unique topic suggestions
