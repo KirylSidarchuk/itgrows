@@ -9,6 +9,8 @@
 // scheduled-publishing cron, which does not go through that endpoint.
 
 export interface WpArticle {
+  /** "draft" holds the post for review instead of publishing it. */
+  status?: "publish" | "draft"
   title: string
   content: string
   metaDescription?: string | null
@@ -93,7 +95,8 @@ export async function publishToWordPress(
         content: article.content,
         excerpt: article.metaDescription ?? "",
         slug: article.slug,
-        status: "publish",
+        // A customer who reads before anything goes live gets a draft; the default is unchanged.
+        status: article.status === "draft" ? "draft" : "publish",
         ...(featuredMedia ? { featured_media: featuredMedia } : {}),
       }),
       signal: AbortSignal.timeout(20000),

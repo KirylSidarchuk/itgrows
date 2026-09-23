@@ -96,6 +96,44 @@ export function linkedinTokenExpiringEmail(name: string, days: number): string {
   `
 }
 
+export function draftReadyEmail(name: string, title: string, editUrl: string, language?: string): string {
+  // The recipient reads this in the language their site is written in; a review request they
+  // have to translate is a review that does not happen.
+  const de = (language ?? "").toLowerCase().startsWith("de")
+  const t = de
+    ? {
+        head: "Ein neuer Artikel wartet auf Ihre Freigabe",
+        hi: `Guten Tag ${name},`,
+        body: "wir haben einen neuen Artikel als Entwurf in Ihrem WordPress abgelegt. Er ist auf Ihrer Website noch nicht sichtbar.",
+        how: "Bitte lesen Sie ihn durch, ändern Sie, was Sie ändern möchten, und klicken Sie oben rechts auf <strong>Veröffentlichen</strong>. Erst dann geht er online.",
+        cta: "Entwurf öffnen →",
+        foot: "ItGrows.ai · Ohne Ihre Freigabe erscheint nichts auf Ihrer Website.",
+      }
+    : {
+        head: "A new article is waiting for your approval",
+        hi: `Hi ${name},`,
+        body: "We have placed a new article in your WordPress as a draft. It is not visible on your site yet.",
+        how: "Read it through, change anything you want changed, and click <strong>Publish</strong> at the top right. Only then does it go live.",
+        cta: "Open the draft →",
+        foot: "ItGrows.ai · Nothing appears on your site without your approval.",
+      }
+  return `
+    <div style="${baseStyle}">
+      <div style="background: linear-gradient(135deg, #0f766e, #14b8a6); padding: 24px 32px; border-radius: 12px 12px 0 0;">
+        <h1 style="color: white; margin: 0; font-size: 20px;">\u{1F4DD} ${t.head}</h1>
+      </div>
+      <div style="padding: 32px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 12px 12px;">
+        <p style="color: #374151;">${t.hi}</p>
+        <p style="color: #374151;">${t.body}</p>
+        <p style="color: #111827; font-size: 17px; font-weight: 600; margin: 20px 0 4px;">${title}</p>
+        <p style="color: #374151;">${t.how}</p>
+        <a href="${editUrl}" style="display: inline-block; background: #0f766e; color: white; padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; margin-top: 8px;">${t.cta}</a>
+        <p style="color: #9ca3af; font-size: 12px; margin-top: 32px;">${t.foot}</p>
+      </div>
+    </div>
+  `
+}
+
 export function linkedinTokenExpiredEmail(name: string): string {
   return `
     <div style="${baseStyle}">

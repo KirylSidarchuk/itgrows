@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db"
-import { scheduledPosts, connectedSites, blogPosts } from "@/lib/db/schema"
+import { scheduledPosts, connectedSites, blogPosts, users } from "@/lib/db/schema"
+import { sendEmail } from "@/lib/email"
+import { draftReadyEmail } from "@/lib/email-templates"
 import { eq, lte, and } from "drizzle-orm"
 import { publishToWordPress } from "@/lib/wordpress-publish"
 
@@ -64,7 +66,7 @@ export async function GET(req: NextRequest) {
 
   // Cache site data per userId to avoid repeated DB queries
   const siteCache: Record<string, typeof connectedSites.$inferSelect | null> = {}
-  const siteProfileCache: Record<string, { niche?: string; targetAudience?: string; productName?: string; brandMentions?: string } | null> = {}
+  const siteProfileCache: Record<string, { niche?: string; targetAudience?: string; productName?: string; brandMentions?: string; publishStatus?: "publish" | "draft"; language?: string } | null> = {}
 
   function generateSlug(t: string): string {
     return t.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") + "-" + Math.random().toString(36).slice(2, 8)
@@ -98,7 +100,7 @@ export async function GET(req: NextRequest) {
           .where(eq(connectedSites.userId, post.userId))
         const defaultSite = userSites.find((s) => s.isDefault) ?? userSites[0] ?? null
         siteCache[post.userId] = defaultSite
-        const rawProfile = defaultSite?.siteProfile as { niche?: string; targetAudience?: string; productName?: string; brandMentions?: string } | null | undefined
+        const rawProfile = defaultSite?.siteProfile as { niche?: string; targetAudience?: string; productName?: string; brandMentions?: string; publishStatus?: "publish" | "draft"; language?: string } | null | undefined
         siteProfileCache[post.userId] = rawProfile ?? null
       }
 
@@ -176,15 +178,36 @@ export async function GET(req: NextRequest) {
         // An application password means nothing has to be installed on their site. Checked
         // before the endpoint choice below, which sends WordPress to our plugin.
         if (site.platform === "wordpress" && site.wpUsername?.trim() && site.wpAppPassword?.trim()) {
+          // A site whose owner reads before anything goes live is marked on the site profile.
+          // Absent — which is every site but one — this is "publish", exactly as before.
+          const wantsDraft = siteProfile?.publishStatus === "draft"
           const wp = await publishToWordPress(site.url, site.wpUsername, site.wpAppPassword, {
             title: article.title,
             content: article.content,
             metaDescription: article.metaDescription,
             slug: generateSlug(article.title),
             coverImageUrl: article.coverImageUrl ?? null,
+            status: wantsDraft ? "draft" : "publish",
           })
           if (wp.success) {
-            console.log(`[SEO Autopilot] Published to WordPress via app password: ${wp.url} (cover ${wp.cover})`)
+            console.log(`[SEO Autopilot] ${wantsDraft ? "Drafted" : "Published"} to WordPress via app password: ${wp.url} (cover ${wp.cover})`)
+            // A draft nobody is told about is the same as nothing published, so the one person
+            // who has to approve it gets a link straight into their editor. Only for draft
+            // sites, so no other customer's inbox changes.
+            if (wantsDraft && wp.postId) {
+              const [owner] = await db.select({ email: users.email, name: users.name })
+                .from(users).where(eq(users.id, post.userId)).limit(1)
+              if (owner?.email) {
+                const editUrl = `${normalUrl}/wp-admin/post.php?post=${wp.postId}&action=edit`
+                await sendEmail({
+                  to: owner.email,
+                  subject: (siteProfile?.language ?? "").toLowerCase().startsWith("de")
+                    ? `Entwurf zur Freigabe: ${article.title}`
+                    : `Draft ready for your approval: ${article.title}`,
+                  html: draftReadyEmail(owner.name ?? "there", article.title, editUrl, siteProfile?.language),
+                }).catch((e) => console.warn("[SEO Autopilot] draft notice failed:", e))
+              }
+            }
           } else {
             console.error(`[SEO Autopilot] WordPress app-password publish failed: ${wp.error}`)
           }
