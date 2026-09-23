@@ -72,6 +72,7 @@ export async function POST(req: NextRequest) {
       metaDescription: body.metaDescription ?? "",
       slug: generateSlug(body.title),
       coverImageUrl: body.coverImageUrl ?? null,
+      language: body.language ?? (profile as { language?: string } | null)?.language,
       status: profile?.publishStatus === "draft" ? "draft" : "publish",
     })
     return NextResponse.json({ mode: "publish", requestedStatus: profile?.publishStatus ?? "publish", ...wp })

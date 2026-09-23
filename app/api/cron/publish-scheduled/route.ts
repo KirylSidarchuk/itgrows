@@ -188,6 +188,7 @@ export async function GET(req: NextRequest) {
             slug: generateSlug(article.title),
             coverImageUrl: article.coverImageUrl ?? null,
             status: wantsDraft ? "draft" : "publish",
+            language: post.language ?? undefined,
           })
           if (wp.success) {
             console.log(`[SEO Autopilot] ${wantsDraft ? "Drafted" : "Published"} to WordPress via app password: ${wp.url} (cover ${wp.cover})`)

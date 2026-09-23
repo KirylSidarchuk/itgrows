@@ -4,6 +4,7 @@ import { db } from "@/lib/db"
 import { users, blogPosts, scheduledPosts } from "@/lib/db/schema"
 import { eq, and, isNotNull, count } from "drizzle-orm"
 import { callLLM } from "@/lib/llm-client"
+import { faqHeadingFor } from "@/lib/faq-schema"
 
 export const maxDuration = 300
 
@@ -74,6 +75,7 @@ function buildPrompt(keyword: string, language: string, tone: string, siteContex
   }
   const lang = langLabel[language] ?? "English"
   const takeaways = takeawaysHeadingFor(language)
+  const faqHeading = faqHeadingFor(language)
   const currentYear = new Date().getFullYear()
 
   const nicheInstruction = siteContext?.niche
@@ -131,8 +133,9 @@ Current year: ${currentYear}
      * Mention well-known tools, platforms, or industry standards
      * Include nuanced insights that generic articles miss
 
-5. FAQ SECTION — add at the very end of the article body:
-   - Use ## Frequently Asked Questions as the heading
+5. FAQ SECTION — MANDATORY, add at the very end of the article body:
+   - Use "## ${faqHeading}" as the heading, spelled exactly like that
+   - An article without this section is incomplete. Never omit it.
    - Include exactly 5 questions and detailed answers
    - Questions must be phrased as real user queries (full question sentences)
    - Each answer: 2-4 sentences, direct and specific — start with the answer, not context
@@ -161,6 +164,7 @@ function computeSeoScore(
   keywords: string[],
   metaDescription: string,
   takeawaysHeading?: string,
+  scoreLanguage?: string,
 ): { score: number; breakdown: SeoBreakdown } {
   // Word count score (0-25)
   const wordCount = content
@@ -197,7 +201,7 @@ function computeSeoScore(
   // FAQ section score (0-10)
   const hasFaq =
     /frequently asked questions/i.test(content) ||
-    /faq/i.test(content)
+    /faq/i.test(content) || content.toLowerCase().includes(faqHeadingFor(scoreLanguage).toLowerCase())
   const faqScore = hasFaq ? 10 : 0
 
   // Key Takeaways score (0-10)
@@ -421,6 +425,7 @@ export async function POST(req: NextRequest) {
       parsed.keywords,
       parsed.metaDescription,
       takeawaysHeadingFor(language),
+      language,
     )
 
     // Generate cover image — retry up to 3 times to ensure every article has one

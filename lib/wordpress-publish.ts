@@ -1,3 +1,4 @@
+import { extractFaq, faqJsonLd } from "@/lib/faq-schema"
 // Publishing to WordPress with nothing installed on the customer's site.
 //
 // The plugin route (/wp-json/itgrows/v1/publish) still exists and is still the fallback, but it
@@ -11,6 +12,7 @@
 export interface WpArticle {
   /** "draft" holds the post for review instead of publishing it. */
   status?: "publish" | "draft"
+  language?: string
   title: string
   content: string
   metaDescription?: string | null
@@ -87,7 +89,11 @@ export async function publishToWordPress(
   // WordPress prints the post title above the content, and the article carries its own H1, so
   // every page showed the heading twice. The hosted blog needs that H1 and keeps it; only the
   // copy going to WordPress loses it.
-  const content = article.content.replace(/^\s*<h1\b[^>]*>[\s\S]*?<\/h1>\s*/i, "")
+  let content = article.content.replace(/^\s*<h1\b[^>]*>[\s\S]*?<\/h1>\s*/i, "")
+
+  // The FAQ schema used to come from our own blog page, which never renders for a customer's
+  // WordPress. Carried inside the HTML, it arrives wherever the article is published.
+  content += faqJsonLd(extractFaq(content, article.language))
 
   const featuredMedia = await uploadCover(base, auth, article)
 
