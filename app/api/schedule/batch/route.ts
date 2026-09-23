@@ -107,6 +107,7 @@ export async function POST(req: NextRequest) {
     products?: string[]
     targetAudience?: string
     topics?: string[]
+    publishEveryNDays?: number
   } | null | undefined
 
   // Normalize URL
@@ -191,7 +192,11 @@ Return ONLY valid JSON, no markdown.`
     return NextResponse.json({ error: "LLM returned no topics" }, { status: 500 })
   }
 
-  // Schedule 15 posts: today + N days (N = 1..15)
+  // Schedule 15 posts, spaced by the site's own cadence. A site that publishes straight to the
+  // web wants one a day; a site where a person reads every article first does not, and burying
+  // them in approval requests is how the reading stops. Absent, the gap is one day as before.
+  const rawGap = Number(siteProfile?.publishEveryNDays ?? 1)
+  const dayGap = Number.isFinite(rawGap) ? Math.min(Math.max(Math.round(rawGap), 1), 14) : 1
   const today = new Date()
   const insertedPosts = []
 
@@ -208,7 +213,7 @@ Return ONLY valid JSON, no markdown.`
   for (let i = 0; i < topics.length; i++) {
     const topic = topics[i]
     const scheduledDate = new Date(today)
-    scheduledDate.setDate(today.getDate() + i + 1)
+    scheduledDate.setDate(today.getDate() + (i + 1) * dayGap)
     const dateStr = scheduledDate.toISOString().split("T")[0]
 
     const [post] = await db
