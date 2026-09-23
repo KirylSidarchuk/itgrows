@@ -47,6 +47,8 @@ export async function POST(req: NextRequest) {
     title?: string
     content?: string
     metaDescription?: string
+    coverImageUrl?: string | null
+    imageFor?: string
   }
   if (!body.userId) return NextResponse.json({ error: "userId required" }, { status: 400 })
 
@@ -65,10 +67,22 @@ export async function POST(req: NextRequest) {
       content: body.content,
       metaDescription: body.metaDescription ?? "",
       slug: generateSlug(body.title),
-      coverImageUrl: null,
+      coverImageUrl: body.coverImageUrl ?? null,
       status: profile?.publishStatus === "draft" ? "draft" : "publish",
     })
     return NextResponse.json({ mode: "publish", requestedStatus: profile?.publishStatus ?? "publish", ...wp })
+  }
+
+  const baseUrlForImage = process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"
+  if (body.imageFor) {
+    const imgRes = await fetch(`${baseUrlForImage}/api/images/generate`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-internal-secret": process.env.CRON_SECRET ?? "" },
+      body: JSON.stringify({ title: body.imageFor, keywords: [] }),
+    })
+    const img = (await imgRes.json()) as { url?: string; error?: string }
+    if (!imgRes.ok) return NextResponse.json({ error: img.error ?? "image failed" }, { status: 502 })
+    return NextResponse.json({ mode: "image", url: img.url ?? null })
   }
 
   if (!body.keyword) return NextResponse.json({ error: "keyword required" }, { status: 400 })
@@ -93,7 +107,7 @@ export async function POST(req: NextRequest) {
       siteContext,
     }),
   })
-  const article = (await genRes.json()) as { error?: string; title?: string; content?: string; metaDescription?: string }
+  const article = (await genRes.json()) as { error?: string; title?: string; content?: string; metaDescription?: string; coverImageUrl?: string | null }
   if (!genRes.ok) {
     return NextResponse.json({ error: article.error ?? "generation failed", status: genRes.status }, { status: 502 })
   }
@@ -104,6 +118,7 @@ export async function POST(req: NextRequest) {
     wouldPublishAs: profile?.publishStatus === "draft" ? "draft" : "publish",
     title: article.title,
     metaDescription: article.metaDescription,
+    coverImageUrl: article.coverImageUrl ?? null,
     wordCount: (article.content ?? "").replace(/<[^>]+>/g, " ").split(/\s+/).filter(Boolean).length,
     content: article.content,
   })
