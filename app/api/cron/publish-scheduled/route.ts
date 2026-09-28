@@ -4,7 +4,7 @@ import { scheduledPosts, connectedSites, blogPosts, users } from "@/lib/db/schem
 import { sendEmail } from "@/lib/email"
 import { draftReadyEmail } from "@/lib/email-templates"
 import { eq, lte, and } from "drizzle-orm"
-import { publishToWordPress } from "@/lib/wordpress-publish"
+import { publishToWordPress, canUseAppPassword } from "@/lib/wordpress-publish"
 
 export const runtime = "nodejs"
 export const maxDuration = 300
@@ -114,7 +114,10 @@ export async function GET(req: NextRequest) {
       // itgrows_blog = internal blog (no verification needed)
       // custom = CNAME blog served by blogs.itgrows.ai (no external endpoint to verify)
       const isHostedBlog = !site || site.platform === "itgrows_blog" || (site.platform === "custom" && !!site.blogDomain)
-      if (site && !isHostedBlog && site.lastCheckOk !== true) {
+      // An application password is authenticated by WordPress on every publish, so the plugin
+      // ping this gate was built for says nothing about it. Requiring it here failed a customer
+      // whose credentials worked, every night, in silence.
+      if (site && !isHostedBlog && !canUseAppPassword(site) && site.lastCheckOk !== true) {
         await db.update(scheduledPosts)
           .set({ status: "failed", publishError: "Site integration not verified. Please complete setup in Settings." })
           .where(eq(scheduledPosts.id, post.id))
