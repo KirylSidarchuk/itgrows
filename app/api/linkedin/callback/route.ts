@@ -17,6 +17,20 @@ export async function GET(req: NextRequest) {
   const error = searchParams.get("error")
 
   if (error || !code || !state) {
+    // Until now this redirected without a word, which is why a customer could try for days and
+    // leave nothing to diagnose. state may be absent, so the user id is best-effort.
+    const maybeUser = state ? state.split(":")[0] : null
+    const detail = {
+      reason: "oauth_denied_detail",
+      linkedinError: error,
+      linkedinErrorDescription: searchParams.get("error_description"),
+      hadCode: !!code,
+      hadState: !!state,
+    }
+    await db.execute(sql`INSERT INTO analytics_events (user_id, event, path, props) VALUES (${maybeUser}, 'linkedin_connect_fail', '/api/linkedin/callback', ${JSON.stringify(detail)}::jsonb)`).catch(() => {})
+    try {
+      notifyOwner(`\u26a0\ufe0f LinkedIn connect \u043e\u0442\u043a\u0430\u0437\n\u043f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u044c: ${maybeUser ?? "?"}\nLinkedIn: ${error ?? "no error"} \u2014 ${searchParams.get("error_description") ?? ""}\ncode: ${!!code} state: ${!!state}`)
+    } catch { /* ignore */ }
     return NextResponse.redirect(`${process.env.NEXTAUTH_URL}/cabinet?error=oauth_denied`)
   }
 
