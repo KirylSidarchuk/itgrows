@@ -1035,6 +1035,20 @@ function LinkedInPageContent() {
 
   const connected = searchParams.get("connected")
   const alreadyConnected = searchParams.get("already_connected")
+
+  // Replacing a live connection is irreversible the moment LinkedIn is authorised: it revokes the
+  // old token there and then. Finishing the flow replaces it; abandoning it halfway leaves the
+  // customer with nothing. Only worth asking when there is something to lose.
+  const confirmReplaceConnection = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (!accounts.some((a) => a.pageType === "personal")) return
+    const ok = window.confirm(
+      "This replaces your current LinkedIn connection.\n\n" +
+      "Please complete the LinkedIn screen to the end. If you close it halfway, posting stops " +
+      "until you connect again.\n\nContinue?"
+    )
+    if (!ok) e.preventDefault()
+  }
+
   const error = searchParams.get("error")
   const orgActivated = searchParams.get("org_activated")
   const tabParam = searchParams.get("tab")
@@ -2820,6 +2834,7 @@ function LinkedInPageContent() {
                     <p className="text-xs text-slate-600 mb-4">Connect your LinkedIn account — company pages are loaded automatically.</p>
                     {!accounts.some((a) => a.pageType === "personal") && (
                       <a
+                        onClick={confirmReplaceConnection}
                         href={`/api/linkedin/connect?userId=${session?.user?.id}&type=personal&force=1`}
                         className="inline-flex items-center gap-2 bg-[#0077B5] hover:bg-[#005f8e] text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors"
                       >
@@ -3489,6 +3504,7 @@ function LinkedInPageContent() {
                             </div>
                             {!s1 && (
                               <a
+                                onClick={confirmReplaceConnection}
                                 href="/api/linkedin/connect?force=1"
                                 className="text-xs font-semibold text-violet-600 hover:text-violet-500 transition-colors whitespace-nowrap"
                               >
@@ -3897,7 +3913,7 @@ function LinkedInPageContent() {
                     <span className="text-slate-300">→</span>
                     <span className="whitespace-nowrap">3. Generate — free</span>
                   </div>
-                  <a href="/api/linkedin/connect?type=personal&force=1" className="w-full sm:w-auto">
+                  <a onClick={confirmReplaceConnection} href="/api/linkedin/connect?type=personal&force=1" className="w-full sm:w-auto">
                     <Button className="w-full sm:w-auto whitespace-normal h-auto bg-[#0077B5] hover:bg-[#00669c] text-white font-semibold px-6 py-2.5 rounded-xl shadow-sm">
                       <LinkedInIcon className="w-4 h-4 mr-2 shrink-0" /> Connect LinkedIn — 20 seconds
                     </Button>
