@@ -1034,6 +1034,7 @@ function LinkedInPageContent() {
   }
 
   const connected = searchParams.get("connected")
+  const alreadyConnected = searchParams.get("already_connected")
   const error = searchParams.get("error")
   const orgActivated = searchParams.get("org_activated")
   const tabParam = searchParams.get("tab")
@@ -1113,16 +1114,22 @@ function LinkedInPageContent() {
   useEffect(() => {
     if (connected === "1") {
       setStatusMessage("LinkedIn connected successfully!")
-    } else if (error && !loading && accounts.length === 0) {
+    } else if (alreadyConnected === "1") {
+      // The connect endpoint declines to re-authorise while the current token still works,
+      // because re-authorising revokes it. Saying so beats returning the customer in silence.
+      setStatusMessage("Your LinkedIn is still connected and working, so there was nothing to reconnect. If posts are not going out, contact us and we'll look.")
+    } else if (error && !loading) {
+      // Previously this only spoke to users with no accounts at all — which is never the person
+      // trying to reconnect. They got the error in the URL and saw nothing on the page.
       const messages: Record<string, string> = {
-        oauth_denied: "LinkedIn authorization was denied.",
+        oauth_denied: "LinkedIn did not complete the authorization. Please try again, and if it keeps happening let us know — we now record exactly what LinkedIn reported.",
         token_failed: "Failed to obtain access token from LinkedIn.",
         server_error: "A server error occurred during connection.",
         linkedin_already_linked: "This LinkedIn profile is already connected to another ItGrows account with an active plan. Sign in to that account, or contact us and we'll move it over.",
       }
       setStatusMessage(messages[error] ?? "Connection failed. Please try again.")
     }
-  }, [connected, error, loading, accounts.length])
+  }, [connected, error, loading, accounts.length, alreadyConnected])
 
   useEffect(() => {
     fetch("/api/linkedin/pages")
