@@ -2652,7 +2652,7 @@ function LinkedInPageContent() {
                 )}
                 <button
                   onClick={() => {
-                    if (!isConnected) { window.location.href = "/api/linkedin/connect?type=personal"; return }
+                    if (!isConnected) { window.location.href = "/api/linkedin/connect?type=personal&force=1"; return }
                     void handleGenerate()
                   }}
                   disabled={checkingOut || generating}
@@ -2820,7 +2820,7 @@ function LinkedInPageContent() {
                     <p className="text-xs text-slate-600 mb-4">Connect your LinkedIn account — company pages are loaded automatically.</p>
                     {!accounts.some((a) => a.pageType === "personal") && (
                       <a
-                        href={`/api/linkedin/connect?userId=${session?.user?.id}&type=personal`}
+                        href={`/api/linkedin/connect?userId=${session?.user?.id}&type=personal&force=1`}
                         className="inline-flex items-center gap-2 bg-[#0077B5] hover:bg-[#005f8e] text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors"
                       >
                         <LinkedInIcon className="w-4 h-4" />
@@ -3489,7 +3489,7 @@ function LinkedInPageContent() {
                             </div>
                             {!s1 && (
                               <a
-                                href="/api/linkedin/connect"
+                                href="/api/linkedin/connect?force=1"
                                 className="text-xs font-semibold text-violet-600 hover:text-violet-500 transition-colors whitespace-nowrap"
                               >
                                 Connect →
@@ -3897,7 +3897,7 @@ function LinkedInPageContent() {
                     <span className="text-slate-300">→</span>
                     <span className="whitespace-nowrap">3. Generate — free</span>
                   </div>
-                  <a href="/api/linkedin/connect?type=personal" className="w-full sm:w-auto">
+                  <a href="/api/linkedin/connect?type=personal&force=1" className="w-full sm:w-auto">
                     <Button className="w-full sm:w-auto whitespace-normal h-auto bg-[#0077B5] hover:bg-[#00669c] text-white font-semibold px-6 py-2.5 rounded-xl shadow-sm">
                       <LinkedInIcon className="w-4 h-4 mr-2 shrink-0" /> Connect LinkedIn — 20 seconds
                     </Button>
@@ -4168,7 +4168,7 @@ function LinkedInPageContent() {
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-base font-semibold text-slate-800">Connected Accounts</h2>
                   {accounts.length === 0 ? (
-                    <a href="/api/linkedin/connect">
+                    <a href="/api/linkedin/connect?force=1">
                       <Button size="sm" className="bg-[#0077B5] hover:bg-[#005f8e] text-white text-xs rounded-xl">
                         + Connect LinkedIn
                       </Button>
@@ -4179,7 +4179,7 @@ function LinkedInPageContent() {
                        personal profile were locked out of reconnecting it. */
                     <div className="flex items-center gap-2">
                       {!accounts.some((a) => a.pageType === "personal") && (
-                        <a href="/api/linkedin/connect?type=personal">
+                        <a href="/api/linkedin/connect?type=personal&force=1">
                           <Button size="sm" className="bg-[#0077B5] hover:bg-[#005f8e] text-white text-xs rounded-xl">
                             + Connect Personal Profile
                           </Button>
@@ -4211,7 +4211,7 @@ function LinkedInPageContent() {
                         Link your LinkedIn personal profile or company page to generate and schedule posts.
                       </p>
                     </div>
-                    <a href="/api/linkedin/connect">
+                    <a href="/api/linkedin/connect?force=1">
                       <Button className="bg-[#0077B5] hover:bg-[#005f8e] text-white rounded-xl px-6">
                         Connect LinkedIn
                       </Button>
