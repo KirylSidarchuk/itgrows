@@ -1040,7 +1040,7 @@ function LinkedInPageContent() {
   // old token there and then. Finishing the flow replaces it; abandoning it halfway leaves the
   // customer with nothing. Only worth asking when there is something to lose.
   const confirmReplaceConnection = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    if (!accounts.some((a) => a.pageType === "personal")) return
+    if (accounts.length === 0) return
     const ok = window.confirm(
       "This replaces your current LinkedIn connection.\n\n" +
       "Please complete the LinkedIn screen to the end. If you close it halfway, posting stops " +
@@ -4262,7 +4262,8 @@ function LinkedInPageContent() {
                         </div>
                         <div className="flex items-center gap-2">
                           <a
-                            href={`/api/linkedin/connect?type=${account.pageType === "personal" ? "personal" : "company"}`}
+                            onClick={confirmReplaceConnection}
+                            href={`/api/linkedin/connect?type=${account.pageType === "personal" ? "personal" : "company"}&force=1`}
                             className="inline-flex items-center px-3 py-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-100 text-xs font-medium transition-colors"
                           >
                             Reconnect
