@@ -65,5 +65,9 @@ export function faqJsonLd(items: FaqItem[]): string {
       acceptedAnswer: { "@type": "Answer", text: f.answer },
     })),
   }
-  return `\n<script type="application/ld+json">${JSON.stringify(schema)}</script>`
+  // Wrapped in a Custom HTML block: the WordPress editor treats a bare <script> as unrecognised
+  // content and drops it the first time the customer saves, which is how seven published articles
+  // lost their markup. A core/html block is kept verbatim. Harmless anywhere else — a site that
+  // does not use the block editor just sees an HTML comment.
+  return `\n<!-- wp:html -->\n<script type="application/ld+json">${JSON.stringify(schema)}</script>\n<!-- /wp:html -->`
 }
