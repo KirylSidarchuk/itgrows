@@ -34,6 +34,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: "https://www.itgrows.ai/personal", lastModified: new Date(), changeFrequency: "weekly", priority: 0.8 },
     { url: "https://www.itgrows.ai/business", lastModified: new Date(), changeFrequency: "weekly", priority: 0.9 },
     { url: "https://www.itgrows.ai/business/blog", lastModified: new Date(), changeFrequency: "weekly", priority: 0.8 },
+    { url: "https://www.itgrows.ai/reddit", lastModified: new Date(), changeFrequency: "weekly", priority: 0.8 },
     ...businessPosts.map((post) => ({
       url: `https://www.itgrows.ai/business/blog/${post.slug}`,
       lastModified: post.publishedAt,

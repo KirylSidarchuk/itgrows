@@ -56,6 +56,7 @@ export async function GET() {
 - [${BASE}/blog](${BASE}/blog) — articles on LinkedIn authority, ghostwriting alternatives and thought-leadership content
 - [${BASE}/company](${BASE}/company) — LinkedIn Company Page publishing
 - [${BASE}/business](${BASE}/business) — GEO engine for businesses: articles published to your own domain, structured for AI assistants, with measured crawler evidence
+- [${BASE}/reddit](${BASE}/reddit) — Reddit planner (closed beta): from your site and goal, 3–5 Reddit actions a day with replies written; you post from your own account, the next day it checks whether the comment stayed up
 
 ## Markdown alternates
 
@@ -68,7 +69,7 @@ ${list || `- see ${BASE}/blog`}
 
 ## Do not crawl (private)
 
-- /cabinet/, /dashboard/, /personal/cabinet/, /business/dashboard/ — authenticated areas
+- /cabinet/, /dashboard/, /personal/cabinet/, /business/dashboard/, /reddit/app/ — authenticated areas
 - /login, /signup, /reset-password — auth flows
 - /api/ — internal API
 
