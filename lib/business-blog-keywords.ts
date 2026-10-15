@@ -1,3 +1,7 @@
+// NOT IN USE since 2026-10-15. Articles for /blog and /business/blog are written by
+// /root/blog_engine/marketing_blog.py on itgrows-vm (plan, keywords and allowed facts in
+// /root/blog_engine/plan.json); its Vercel crons were removed from vercel.json. Kept for history.
+
 // Keyword series + site context for the ItGrows for Business blog (siteSlug="itgrows-business",
 // served at /business/blog). Consumed by /api/cron/business-blog, which feeds one keyword per run
 // through the existing /api/seo/generate engine.
