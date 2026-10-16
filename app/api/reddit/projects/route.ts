@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db"
-import { desc, eq } from "drizzle-orm"
-import { redditProjects } from "@/lib/reddit/db"
+import { desc, eq, inArray, or } from "drizzle-orm"
+import { redditProjectMembers, redditProjects } from "@/lib/reddit/db"
 import { getRedditUser } from "@/lib/reddit/access"
 import { notifyOwner } from "@/lib/telegram"
 
@@ -15,9 +15,15 @@ export async function GET() {
   const user = await getRedditUser()
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   if (!user.beta) return NextResponse.json({ error: "Not in the beta" }, { status: 403 })
+  const memberOf = await db
+    .select({ projectId: redditProjectMembers.projectId })
+    .from(redditProjectMembers)
+    .where(eq(redditProjectMembers.email, user.email))
+  const ids = memberOf.map((m) => m.projectId)
   const rows = await db
     .select({
       id: redditProjects.id,
+      userId: redditProjects.userId,
       siteUrl: redditProjects.siteUrl,
       goal: redditProjects.goal,
       status: redditProjects.status,
@@ -26,15 +32,18 @@ export async function GET() {
       createdAt: redditProjects.createdAt,
     })
     .from(redditProjects)
-    .where(eq(redditProjects.userId, user.id))
+    .where(ids.length ? or(eq(redditProjects.userId, user.id), inArray(redditProjects.id, ids)) : eq(redditProjects.userId, user.id))
     .orderBy(desc(redditProjects.createdAt))
-  return NextResponse.json({ projects: rows })
+  return NextResponse.json({
+    canCreate: user.canCreate,
+    projects: rows.map(({ userId, ...p }) => ({ ...p, role: userId === user.id ? "owner" : "member" })),
+  })
 }
 
 export async function POST(req: NextRequest) {
   const user = await getRedditUser()
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-  if (!user.beta) return NextResponse.json({ error: "Not in the beta" }, { status: 403 })
+  if (!user.canCreate) return NextResponse.json({ error: "Your access covers the projects you were added to" }, { status: 403 })
 
   let body: { siteUrl?: unknown; goal?: unknown }
   try {

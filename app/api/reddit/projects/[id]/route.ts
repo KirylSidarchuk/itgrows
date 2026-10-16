@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db"
 import { and, desc, eq, gte } from "drizzle-orm"
-import { redditPlans, redditProjects, redditTasks } from "@/lib/reddit/db"
-import { getOwnedProject, getRedditUser } from "@/lib/reddit/access"
+import { users } from "@/lib/db/schema"
+import { redditPlans, redditProjectMembers, redditProjects, redditTasks } from "@/lib/reddit/db"
+import { getProjectAccess, getRedditUser } from "@/lib/reddit/access"
 
 export const dynamic = "force-dynamic"
 
@@ -12,27 +13,39 @@ export async function GET(_req: NextRequest, { params }: Params) {
   const user = await getRedditUser()
   if (!user?.beta) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   const { id } = await params
-  const project = await getOwnedProject(user.id, id)
-  if (!project) return NextResponse.json({ error: "Not found" }, { status: 404 })
+  const access = await getProjectAccess(user, id)
+  if (!access) return NextResponse.json({ error: "Not found" }, { status: 404 })
 
   const since = new Date(Date.now() - 30 * 86400_000).toISOString().slice(0, 10)
-  const [plans, tasks] = await Promise.all([
+  const [plans, tasks, members, [owner]] = await Promise.all([
     db.select().from(redditPlans).where(eq(redditPlans.projectId, id)).orderBy(desc(redditPlans.day)).limit(30),
     db
       .select()
       .from(redditTasks)
       .where(and(eq(redditTasks.projectId, id), gte(redditTasks.day, since)))
       .orderBy(desc(redditTasks.day), redditTasks.priority),
+    db.select().from(redditProjectMembers).where(eq(redditProjectMembers.projectId, id)).orderBy(redditProjectMembers.createdAt),
+    db.select({ email: users.email }).from(users).where(eq(users.id, access.project.userId)).limit(1),
   ])
-  return NextResponse.json({ project, plans, tasks })
+  return NextResponse.json({
+    project: access.project,
+    role: access.role,
+    me: user.email,
+    ownerEmail: owner?.email ?? null,
+    members,
+    plans,
+    tasks,
+  })
 }
 
 export async function PATCH(req: NextRequest, { params }: Params) {
   const user = await getRedditUser()
   if (!user?.beta) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   const { id } = await params
-  const project = await getOwnedProject(user.id, id)
-  if (!project) return NextResponse.json({ error: "Not found" }, { status: 404 })
+  const access = await getProjectAccess(user, id)
+  if (!access) return NextResponse.json({ error: "Not found" }, { status: 404 })
+  if (access.role !== "owner") return NextResponse.json({ error: "Only the project owner can change this" }, { status: 403 })
+  const project = access.project
 
   let body: Record<string, unknown>
   try {

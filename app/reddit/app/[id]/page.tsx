@@ -1,6 +1,6 @@
 import type { Metadata } from "next"
 import { notFound, redirect } from "next/navigation"
-import { getOwnedProject, getRedditUser } from "@/lib/reddit/access"
+import { getProjectAccess, getRedditUser } from "@/lib/reddit/access"
 import AppShell from "../AppShell"
 import ProjectClient from "./ProjectClient"
 
@@ -16,8 +16,8 @@ export default async function RedditProjectPage({ params }: { params: Promise<{ 
   const user = await getRedditUser()
   if (!user) redirect(`/login?callbackUrl=/reddit/app/${id}`)
   if (!user.beta) redirect("/reddit/app")
-  const project = await getOwnedProject(user.id, id)
-  if (!project) notFound()
+  const access = await getProjectAccess(user, id)
+  if (!access) notFound()
 
   return (
     <AppShell email={user.email}>

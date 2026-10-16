@@ -11,6 +11,7 @@ type ProjectRow = {
   status: string
   profile: { product_name?: string; one_liner?: string } | null
   lastRunAt: string | null
+  role: "owner" | "member"
 }
 
 const STATUS: Record<string, { label: string; cls: string }> = {
@@ -30,6 +31,7 @@ const GOALS = [
 export default function ProjectsClient() {
   const router = useRouter()
   const [projects, setProjects] = useState<ProjectRow[] | null>(null)
+  const [canCreate, setCanCreate] = useState(false)
   const [siteUrl, setSiteUrl] = useState("")
   const [goal, setGoal] = useState("")
   const [busy, setBusy] = useState(false)
@@ -38,7 +40,10 @@ export default function ProjectsClient() {
   useEffect(() => {
     fetch("/api/reddit/projects")
       .then((r) => (r.ok ? r.json() : { projects: [] }))
-      .then((d) => setProjects(d.projects ?? []))
+      .then((d) => {
+        setProjects(d.projects ?? [])
+        setCanCreate(!!d.canCreate)
+      })
       .catch(() => setProjects([]))
   }, [])
 
@@ -84,6 +89,7 @@ export default function ProjectsClient() {
                 <div className="flex flex-wrap items-center gap-3">
                   <span className="font-semibold text-lg">{p.profile?.product_name || p.siteUrl.replace(/^https?:\/\//, "")}</span>
                   <span className={`text-xs font-semibold rounded-full px-2.5 py-0.5 ${s.cls}`}>{s.label}</span>
+                  {p.role === "member" && <span className="text-xs text-slate-500">you are on the team</span>}
                 </div>
                 <span className="text-sm text-slate-500 break-all">{p.siteUrl}</span>
                 <span className="text-sm text-slate-700">Goal: {p.goal}</span>
@@ -93,6 +99,11 @@ export default function ProjectsClient() {
         </section>
       )}
 
+      {projects && !canCreate && projects.length === 0 && (
+        <p className="text-slate-600">You are not on any project yet. Ask the project owner to add this email to their team.</p>
+      )}
+
+      {canCreate && (
       <section className="bg-white border border-black/10 rounded-2xl p-6 max-w-2xl">
         <h2 className="text-lg font-bold mb-1">New project</h2>
         <p className="text-sm text-slate-600 mb-5">
@@ -146,6 +157,7 @@ export default function ProjectsClient() {
           </div>
         </form>
       </section>
+      )}
     </div>
   )
 }

@@ -30,6 +30,17 @@ export const redditProjects = pgTable("reddit_projects", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 })
 
+// People who work a project besides its owner, each from their own Reddit account and in their
+// own communities. Being listed here is also what lets them into the closed beta.
+export const redditProjectMembers = pgTable("reddit_project_members", {
+  projectId: uuid("project_id").notNull(),
+  email: text("email").notNull(),
+  redditUsername: text("reddit_username"),
+  communities: text("communities").array().notNull().default([]),
+  accountNote: text("account_note"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+})
+
 export const redditThreads = pgTable("reddit_threads", {
   id: uuid("id").primaryKey().defaultRandom(),
   projectId: uuid("project_id").notNull(),
@@ -67,6 +78,9 @@ export const redditTasks = pgTable("reddit_tasks", {
   draft: text("draft"),
   checks: jsonb("checks"),
   mentionsBrand: boolean("mentions_brand").notNull().default(false),
+  // On a team project each task belongs to one person, so two people never land in one thread.
+  assigneeEmail: text("assignee_email"),
+  doneByEmail: text("done_by_email"),
   // todo | done | skipped
   status: text("status").notNull().default("todo"),
   doneUrl: text("done_url"),

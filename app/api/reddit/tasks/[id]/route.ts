@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db"
 import { eq } from "drizzle-orm"
 import { redditTasks } from "@/lib/reddit/db"
-import { getOwnedProject, getRedditUser } from "@/lib/reddit/access"
+import { getProjectAccess, getRedditUser } from "@/lib/reddit/access"
 
 export const dynamic = "force-dynamic"
 
@@ -15,7 +15,9 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   if (!/^[0-9a-f-]{36}$/i.test(id)) return NextResponse.json({ error: "Not found" }, { status: 404 })
 
   const [task] = await db.select().from(redditTasks).where(eq(redditTasks.id, id)).limit(1)
-  if (!task || !(await getOwnedProject(user.id, task.projectId))) {
+  // Anyone on the project may mark a task; the check the next day is done against the Reddit
+  // account of whoever marked it.
+  if (!task || !(await getProjectAccess(user, task.projectId))) {
     return NextResponse.json({ error: "Not found" }, { status: 404 })
   }
 
@@ -38,6 +40,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       .update(redditTasks)
       .set({
         status: "done",
+        doneByEmail: user.email,
         doneUrl: url.slice(0, 500),
         doneAt: new Date(),
         skipReason: null,
@@ -63,7 +66,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   if (body.action === "undo") {
     const [t] = await db
       .update(redditTasks)
-      .set({ status: "todo", doneUrl: null, doneAt: null, skipReason: null, verifyStatus: null, verifiedAt: null, result: null })
+      .set({ status: "todo", doneByEmail: null, doneUrl: null, doneAt: null, skipReason: null, verifyStatus: null, verifiedAt: null, result: null })
       .where(eq(redditTasks.id, id))
       .returning()
     return NextResponse.json({ task: t })

@@ -53,8 +53,12 @@ type Task = {
   doneUrl: string | null
   skipReason: string | null
   verifyStatus: string | null
+  assigneeEmail: string | null
+  doneByEmail: string | null
   result: { score?: number | null; replies?: number | null; reply_quotes?: string[] } | null
 }
+type Member = { email: string; redditUsername: string | null; communities: string[]; accountNote: string | null }
+type Data = { project: Project; plans: Plan[]; tasks: Task[]; role: "owner" | "member"; me: string; members: Member[] }
 
 const todayUTC = () => new Date().toISOString().slice(0, 10)
 
@@ -82,12 +86,21 @@ export default function ProjectClient({ id }: { id: string }) {
   const [project, setProject] = useState<Project | null>(null)
   const [plans, setPlans] = useState<Plan[]>([])
   const [tasks, setTasks] = useState<Task[]>([])
+  const [members, setMembers] = useState<Member[]>([])
+  const [role, setRole] = useState<"owner" | "member">("member")
+  const [me, setMe] = useState("")
+  const [who, setWho] = useState<"mine" | "all">("all")
   const [loadError, setLoadError] = useState("")
 
-  const apply = useCallback((d: { project: Project; plans: Plan[]; tasks: Task[] }) => {
+  const apply = useCallback((d: Data) => {
     setProject(d.project)
     setPlans(d.plans)
     setTasks(d.tasks)
+    setMembers(d.members ?? [])
+    setRole(d.role)
+    setMe(d.me)
+    // Someone who posts sees their own list first; the owner who does not post sees everyone's.
+    if ((d.members ?? []).some((m) => m.email === d.me && m.redditUsername)) setWho("mine")
     setLoadError("")
   }, [])
   const fail = useCallback((e: unknown) => setLoadError(e instanceof Error ? e.message : "Could not load the project"), [])
@@ -124,12 +137,19 @@ export default function ProjectClient({ id }: { id: string }) {
   if (!project) return <p className="text-slate-500">Loading…</p>
 
   const name = project.profile?.product_name || project.siteUrl.replace(/^https?:\/\//, "")
-  const todays = tasks.filter((t) => t.day === today)
-  const earlier = tasks.filter((t) => t.day !== today)
+  const isOwner = role === "owner"
+  const team = members.filter((m) => m.redditUsername)
+  const label = (email: string | null) => {
+    const m = members.find((x) => x.email === email)
+    return m?.redditUsername ? `u/${m.redditUsername}` : email
+  }
+  const shown = team.length > 0 && who === "mine" ? tasks.filter((t) => t.assigneeEmail === me) : tasks
+  const todays = shown.filter((t) => t.day === today)
+  const earlier = shown.filter((t) => t.day !== today)
 
   return (
     <div className="grid gap-8">
-      <Header project={project} name={name} onChange={setProject} />
+      <Header project={project} name={name} onChange={setProject} isOwner={isOwner} />
 
       {project.status === "analyzing" && (
         <Notice>
@@ -153,16 +173,36 @@ export default function ProjectClient({ id }: { id: string }) {
         </div>
       )}
 
-      {project.status === "questions" && <Questions project={project} onSaved={(p) => { setProject(p); load() }} activate />}
+      {project.status === "questions" &&
+        (isOwner ? (
+          <Questions project={project} onSaved={(p) => { setProject(p); load() }} activate />
+        ) : (
+          <Notice>The project owner is answering a few questions about the product. Tasks start after that.</Notice>
+        ))}
 
       {(project.status === "active" || project.status === "paused") && (
         <>
-          <Results tasks={tasks} />
+          <Results tasks={tasks} members={team} />
 
           <section className="grid gap-4">
-            <div className="flex flex-wrap items-baseline justify-between gap-2">
-              <h2 className="text-xl font-bold">Today</h2>
-              <span className="text-sm text-slate-500">{today}</span>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex items-baseline gap-3">
+                <h2 className="text-xl font-bold">Today</h2>
+                <span className="text-sm text-slate-500">{today}</span>
+              </div>
+              {team.length > 0 && (
+                <div className="flex rounded-xl border border-black/10 bg-white p-0.5 text-sm">
+                  {(["mine", "all"] as const).map((w) => (
+                    <button
+                      key={w}
+                      onClick={() => setWho(w)}
+                      className={`px-3 py-1.5 rounded-lg ${who === w ? "bg-violet-600 text-white" : "text-slate-600"}`}
+                    >
+                      {w === "mine" ? "My tasks" : "Whole team"}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
             {todayPlan?.summary && <p className="text-slate-700">{todayPlan.summary}</p>}
             {!todayPlan && project.status === "active" && (
@@ -174,23 +214,31 @@ export default function ProjectClient({ id }: { id: string }) {
             )}
             {project.status === "paused" && <Notice>Paused. No new plans until you resume.</Notice>}
             {todays.map((t) => (
-              <TaskCard key={t.id} task={t} onUpdate={updateTask} />
+              <TaskCard key={t.id} task={t} onUpdate={updateTask} assignee={team.length > 0 ? label(t.assigneeEmail) : null} />
             ))}
             {todayPlan && todays.length === 0 && (
-              <Notice>Nothing worth doing today: the threads found were not good enough. That is a valid answer, not a failure.</Notice>
+              <Notice>
+                {who === "mine" && team.length > 0
+                  ? "Nothing for you today. Switch to Whole team to see the others' tasks."
+                  : "Nothing worth doing today: the threads found were not good enough. That is a valid answer, not a failure."}
+              </Notice>
             )}
             {todayPlan?.skipped && todayPlan.skipped.length > 0 && <Skipped items={todayPlan.skipped} />}
           </section>
 
+          <Team projectId={project.id} members={members} isOwner={isOwner} onChange={load} />
+
           {project.strategy && <StrategyView s={project.strategy} />}
 
-          {earlier.length > 0 && <History tasks={earlier} onUpdate={updateTask} />}
+          {earlier.length > 0 && <History tasks={earlier} onUpdate={updateTask} label={team.length > 0 ? label : null} />}
 
-          <details className="bg-white border border-black/10 rounded-2xl p-5">
-            <summary className="font-semibold cursor-pointer">Your answers</summary>
-            <p className="text-sm text-slate-600 mt-2 mb-4">Changes apply from the next plan.</p>
-            <Questions project={project} onSaved={setProject} />
-          </details>
+          {isOwner && (
+            <details className="bg-white border border-black/10 rounded-2xl p-5">
+              <summary className="font-semibold cursor-pointer">Your answers</summary>
+              <p className="text-sm text-slate-600 mt-2 mb-4">Changes apply from the next plan.</p>
+              <Questions project={project} onSaved={setProject} />
+            </details>
+          )}
         </>
       )}
     </div>
@@ -201,7 +249,7 @@ function Notice({ children }: { children: React.ReactNode }) {
   return <div className="bg-white border border-dashed border-black/15 rounded-2xl p-5 text-sm text-slate-600">{children}</div>
 }
 
-function Header({ project, name, onChange }: { project: Project; name: string; onChange: (p: Project) => void }) {
+function Header({ project, name, onChange, isOwner }: { project: Project; name: string; onChange: (p: Project) => void; isOwner: boolean }) {
   const [busy, setBusy] = useState(false)
   async function act(action: "pause" | "activate") {
     setBusy(true)
@@ -218,12 +266,12 @@ function Header({ project, name, onChange }: { project: Project; name: string; o
       </Link>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl sm:text-3xl font-bold">{name}</h1>
-        {project.status === "active" && (
+        {isOwner && project.status === "active" && (
           <button disabled={busy} onClick={() => act("pause")} className="text-sm border border-black/15 rounded-xl px-3.5 py-2 hover:border-black/30">
             Pause
           </button>
         )}
-        {project.status === "paused" && (
+        {isOwner && project.status === "paused" && (
           <button disabled={busy} onClick={() => act("activate")} className="text-sm rounded-xl bg-violet-600 hover:bg-violet-500 text-white font-semibold px-3.5 py-2">
             Resume
           </button>
@@ -326,7 +374,7 @@ function Questions({ project, onSaved, activate }: { project: Project; onSaved: 
   )
 }
 
-function TaskCard({ task, onUpdate }: { task: Task; onUpdate: (t: Task) => void }) {
+function TaskCard({ task, onUpdate, assignee }: { task: Task; onUpdate: (t: Task) => void; assignee?: string | null }) {
   const [mode, setMode] = useState<"idle" | "done" | "skip">("idle")
   const [url, setUrl] = useState("")
   const [reason, setReason] = useState("")
@@ -361,6 +409,7 @@ function TaskCard({ task, onUpdate }: { task: Task; onUpdate: (t: Task) => void 
         <span className="text-xs font-semibold rounded-full px-2.5 py-0.5 bg-violet-100 text-violet-800">{KIND[task.kind] ?? task.kind}</span>
         {task.subreddit && <span className="text-sm text-slate-500">{task.subreddit}</span>}
         {task.mentionsBrand && <span className="text-xs text-slate-500">mentions your product, with disclosure</span>}
+        {assignee && <span className="text-xs font-semibold rounded-full px-2.5 py-0.5 bg-cyan-100 text-cyan-800 ml-auto">{assignee}</span>}
       </div>
       <h3 className="font-semibold leading-snug">
         {task.url ? (
@@ -518,7 +567,7 @@ function Skipped({ items }: { items: NonNullable<Plan["skipped"]> }) {
   )
 }
 
-function Results({ tasks }: { tasks: Task[] }) {
+function Results({ tasks, members }: { tasks: Task[]; members: Member[] }) {
   const r = useMemo(() => {
     const done = tasks.filter((t) => t.status === "done")
     return {
@@ -528,6 +577,16 @@ function Results({ tasks }: { tasks: Task[] }) {
       replies: done.reduce((n, t) => n + (Number(t.result?.replies) || 0), 0),
     }
   }, [tasks])
+  const per = members.map((m) => {
+    const done = tasks.filter((t) => t.status === "done" && (t.doneByEmail ?? t.assigneeEmail) === m.email)
+    return {
+      who: `u/${m.redditUsername}`,
+      open: tasks.filter((t) => t.status === "todo" && t.assigneeEmail === m.email).length,
+      done: done.length,
+      up: done.filter((t) => t.verifyStatus === "visible").length,
+      removed: done.filter((t) => t.verifyStatus === "removed").length,
+    }
+  })
   const cells = [
     { n: r.done, l: "posted, last 30 days" },
     { n: r.up, l: "confirmed still up" },
@@ -535,13 +594,41 @@ function Results({ tasks }: { tasks: Task[] }) {
     { n: r.replies, l: "replies to your comments" },
   ]
   return (
-    <section className="grid grid-cols-2 sm:grid-cols-4 gap-px bg-black/10 border border-black/10 rounded-2xl overflow-hidden">
-      {cells.map((c) => (
-        <div key={c.l} className="bg-white p-4">
-          <div className="text-2xl font-bold tabular-nums">{c.n}</div>
-          <div className="text-xs text-slate-500">{c.l}</div>
+    <section className="grid gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-px bg-black/10 border border-black/10 rounded-2xl overflow-hidden">
+        {cells.map((c) => (
+          <div key={c.l} className="bg-white p-4">
+            <div className="text-2xl font-bold tabular-nums">{c.n}</div>
+            <div className="text-xs text-slate-500">{c.l}</div>
+          </div>
+        ))}
+      </div>
+      {per.length > 0 && (
+        <div className="overflow-x-auto bg-white border border-black/10 rounded-2xl">
+          <table className="w-full text-sm text-left">
+            <thead>
+              <tr className="text-xs uppercase tracking-wider text-slate-500">
+                <th className="px-4 py-2">Person</th>
+                <th className="px-4 py-2">Open tasks</th>
+                <th className="px-4 py-2">Posted</th>
+                <th className="px-4 py-2">Still up</th>
+                <th className="px-4 py-2">Removed</th>
+              </tr>
+            </thead>
+            <tbody className="tabular-nums">
+              {per.map((r) => (
+                <tr key={r.who} className="border-t border-black/5">
+                  <td className="px-4 py-2 font-medium">{r.who}</td>
+                  <td className="px-4 py-2">{r.open}</td>
+                  <td className="px-4 py-2">{r.done}</td>
+                  <td className="px-4 py-2">{r.up}</td>
+                  <td className="px-4 py-2">{r.removed}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
-      ))}
+      )}
     </section>
   )
 }
@@ -602,7 +689,7 @@ function StrategyView({ s }: { s: Strategy }) {
   )
 }
 
-function History({ tasks, onUpdate }: { tasks: Task[]; onUpdate: (t: Task) => void }) {
+function History({ tasks, onUpdate, label }: { tasks: Task[]; onUpdate: (t: Task) => void; label: ((email: string | null) => string | null) | null }) {
   const days = Array.from(new Set(tasks.map((t) => t.day)))
   return (
     <details className="bg-white border border-black/10 rounded-2xl p-5">
@@ -614,10 +701,119 @@ function History({ tasks, onUpdate }: { tasks: Task[]; onUpdate: (t: Task) => vo
             {tasks
               .filter((t) => t.day === d)
               .map((t) => (
-                <TaskCard key={t.id} task={t} onUpdate={onUpdate} />
+                <TaskCard key={t.id} task={t} onUpdate={onUpdate} assignee={label ? label(t.assigneeEmail) : null} />
               ))}
           </div>
         ))}
+      </div>
+    </details>
+  )
+}
+
+function Team({ projectId, members, isOwner, onChange }: { projectId: string; members: Member[]; isOwner: boolean; onChange: () => void }) {
+  const empty = { email: "", redditUsername: "", communities: "", accountNote: "" }
+  const [form, setForm] = useState(empty)
+  const [busy, setBusy] = useState(false)
+  const [err, setErr] = useState("")
+  const set = (k: keyof typeof empty) => (e: React.ChangeEvent<HTMLInputElement>) => setForm((f) => ({ ...f, [k]: e.target.value }))
+
+  async function save(e: React.FormEvent) {
+    e.preventDefault()
+    setBusy(true)
+    setErr("")
+    try {
+      await api(`/api/reddit/projects/${projectId}/members`, { method: "POST", body: JSON.stringify(form) })
+      setForm(empty)
+      onChange()
+    } catch (x) {
+      setErr(x instanceof Error ? x.message : "Could not save")
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function remove(email: string) {
+    setErr("")
+    try {
+      await api(`/api/reddit/projects/${projectId}/members?email=${encodeURIComponent(email)}`, { method: "DELETE" })
+      onChange()
+    } catch (x) {
+      setErr(x instanceof Error ? x.message : "Could not remove")
+    }
+  }
+
+  if (!isOwner && members.length === 0) return null
+  return (
+    <details className="bg-white border border-black/10 rounded-2xl p-5" open={isOwner && members.length === 0 ? false : undefined}>
+      <summary className="font-semibold cursor-pointer">Team ({members.length})</summary>
+      <div className="grid gap-4 mt-3 text-sm">
+        <p className="text-slate-600">
+          Each person posts from their own Reddit account and gets tasks only in their own communities, so two people
+          from your company never reply in the same thread. Product mentions are counted for the whole team. Communities
+          nobody owns are split between people. Teammates must never vote for or reply to each other: Reddit bans every
+          account involved.
+        </p>
+        {members.length > 0 && (
+          <ul className="grid gap-2">
+            {members.map((m) => (
+              <li key={m.email} className="flex flex-wrap items-center gap-x-3 gap-y-1 border border-black/5 rounded-xl px-3 py-2">
+                <span className="font-semibold">{m.redditUsername ? `u/${m.redditUsername}` : "no Reddit account yet"}</span>
+                <span className="text-slate-500 break-all">{m.email}</span>
+                <span className="text-slate-700">{m.communities.length ? m.communities.join(", ") : "any community"}</span>
+                {m.accountNote && <span className="text-slate-500">· {m.accountNote}</span>}
+                {isOwner && (
+                  <span className="ml-auto flex gap-3">
+                    <button
+                      className="text-xs text-violet-700 hover:underline"
+                      onClick={() =>
+                        setForm({
+                          email: m.email,
+                          redditUsername: m.redditUsername ?? "",
+                          communities: m.communities.join(", "),
+                          accountNote: m.accountNote ?? "",
+                        })
+                      }
+                    >
+                      Edit
+                    </button>
+                    <button className="text-xs text-slate-500 hover:text-rose-700" onClick={() => remove(m.email)}>
+                      Remove
+                    </button>
+                  </span>
+                )}
+              </li>
+            ))}
+          </ul>
+        )}
+        {isOwner && (
+          <form onSubmit={save} className="grid gap-3 border-t border-black/5 pt-4">
+            <div className="grid sm:grid-cols-2 gap-3">
+              <label className="grid gap-1">
+                <span className="font-semibold">Their email</span>
+                <input id="member-email" type="email" required value={form.email} onChange={set("email")} className="border border-black/15 rounded-xl px-3 py-2" />
+              </label>
+              <label className="grid gap-1">
+                <span className="font-semibold">Their Reddit username</span>
+                <input id="member-username" value={form.redditUsername} onChange={set("redditUsername")} placeholder="u/name" className="border border-black/15 rounded-xl px-3 py-2" />
+              </label>
+              <label className="grid gap-1">
+                <span className="font-semibold">Their communities</span>
+                <input id="member-communities" value={form.communities} onChange={set("communities")} placeholder="r/3Dprinting, r/functionalprint" className="border border-black/15 rounded-xl px-3 py-2" />
+              </label>
+              <label className="grid gap-1">
+                <span className="font-semibold">Account age and karma</span>
+                <input id="member-note" value={form.accountNote} onChange={set("accountNote")} placeholder="new account / 2 years, 1,500 karma" className="border border-black/15 rounded-xl px-3 py-2" />
+              </label>
+            </div>
+            <div className="flex flex-wrap items-center gap-3">
+              <button type="submit" disabled={busy} className="rounded-xl bg-violet-600 hover:bg-violet-500 disabled:opacity-60 text-white font-semibold px-4 py-2">
+                Save teammate
+              </button>
+              <span className="text-slate-500">They sign in at itgrows.ai/reddit/app with this email. Tasks for them start with the next plan.</span>
+            </div>
+            {err && <p className="text-rose-700">{err}</p>}
+          </form>
+        )}
       </div>
     </details>
   )
