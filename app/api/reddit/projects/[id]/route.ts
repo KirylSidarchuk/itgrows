@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db"
 import { and, desc, eq, gte } from "drizzle-orm"
 import { users } from "@/lib/db/schema"
-import { redditPlans, redditProjectMembers, redditProjects, redditTasks } from "@/lib/reddit/db"
+import { redditNotes, redditPlans, redditProjectMembers, redditProjects, redditTasks } from "@/lib/reddit/db"
 import { getProjectAccess, getRedditUser } from "@/lib/reddit/access"
 
 export const dynamic = "force-dynamic"
@@ -17,7 +17,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
   if (!access) return NextResponse.json({ error: "Not found" }, { status: 404 })
 
   const since = new Date(Date.now() - 30 * 86400_000).toISOString().slice(0, 10)
-  const [plans, tasks, members, [owner]] = await Promise.all([
+  const [plans, tasks, members, [owner], notes] = await Promise.all([
     db.select().from(redditPlans).where(eq(redditPlans.projectId, id)).orderBy(desc(redditPlans.day)).limit(30),
     db
       .select()
@@ -26,6 +26,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
       .orderBy(desc(redditTasks.day), redditTasks.priority),
     db.select().from(redditProjectMembers).where(eq(redditProjectMembers.projectId, id)).orderBy(redditProjectMembers.createdAt),
     db.select({ email: users.email }).from(users).where(eq(users.id, access.project.userId)).limit(1),
+    db.select().from(redditNotes).where(eq(redditNotes.projectId, id)).orderBy(desc(redditNotes.createdAt)).limit(100),
   ])
   return NextResponse.json({
     project: access.project,
@@ -33,6 +34,8 @@ export async function GET(_req: NextRequest, { params }: Params) {
     me: user.email,
     ownerEmail: owner?.email ?? null,
     members,
+    notes,
+    teamChat: !!access.project.teamChatId,
     plans,
     tasks,
   })

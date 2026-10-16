@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db"
-import { eq } from "drizzle-orm"
-import { redditTasks } from "@/lib/reddit/db"
+import { and, eq } from "drizzle-orm"
+import { redditProjectMembers, redditTasks } from "@/lib/reddit/db"
 import { getProjectAccess, getRedditUser } from "@/lib/reddit/access"
 
 export const dynamic = "force-dynamic"
@@ -21,7 +21,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     return NextResponse.json({ error: "Not found" }, { status: 404 })
   }
 
-  let body: { action?: unknown; url?: unknown; reason?: unknown }
+  let body: { action?: unknown; url?: unknown; reason?: unknown; to?: unknown }
   try {
     body = await req.json()
   } catch {
@@ -60,6 +60,21 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       .set({ status: "skipped", skipReason: String(body.reason ?? "").trim().slice(0, 500) || null })
       .where(eq(redditTasks.id, id))
       .returning()
+    return NextResponse.json({ task: t })
+  }
+
+  // Handing a task to a teammate who is free. Only undone tasks move, and only to someone on
+  // the team with a Reddit account; the page warns before a move into someone else's community.
+  if (body.action === "handoff") {
+    const to = String(body.to ?? "").trim().toLowerCase()
+    if (task.status !== "todo") return NextResponse.json({ error: "Only tasks not done yet can be handed over" }, { status: 409 })
+    const [m] = await db
+      .select({ email: redditProjectMembers.email, redditUsername: redditProjectMembers.redditUsername })
+      .from(redditProjectMembers)
+      .where(and(eq(redditProjectMembers.projectId, task.projectId), eq(redditProjectMembers.email, to)))
+      .limit(1)
+    if (!m?.redditUsername) return NextResponse.json({ error: "That person is not on the team or has no Reddit account yet" }, { status: 400 })
+    const [t] = await db.update(redditTasks).set({ assigneeEmail: m.email }).where(eq(redditTasks.id, id)).returning()
     return NextResponse.json({ task: t })
   }
 

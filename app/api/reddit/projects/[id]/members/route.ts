@@ -3,6 +3,7 @@ import { db } from "@/lib/db"
 import { and, eq } from "drizzle-orm"
 import { redditProjectMembers } from "@/lib/reddit/db"
 import { getProjectAccess, getRedditUser } from "@/lib/reddit/access"
+import { cleanCommunities, cleanUsername } from "@/lib/reddit/invite"
 
 export const dynamic = "force-dynamic"
 
@@ -58,6 +59,32 @@ export async function POST(req: NextRequest, { params }: Params) {
       set: { redditUsername, communities, accountNote },
     })
     .returning()
+  return NextResponse.json({ member })
+}
+
+// A member keeps their own details current (username, communities, account state); the owner
+// can still edit anyone through POST.
+export async function PATCH(req: NextRequest, { params }: Params) {
+  const { id } = await params
+  const user = await getRedditUser()
+  if (!user?.beta) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  if (!(await getProjectAccess(user, id))) return NextResponse.json({ error: "Not found" }, { status: 404 })
+  let body: { redditUsername?: unknown; communities?: unknown; accountNote?: unknown }
+  try {
+    body = await req.json()
+  } catch {
+    return NextResponse.json({ error: "Bad request" }, { status: 400 })
+  }
+  const [member] = await db
+    .update(redditProjectMembers)
+    .set({
+      redditUsername: cleanUsername(body.redditUsername),
+      communities: cleanCommunities(body.communities),
+      accountNote: String(body.accountNote ?? "").trim().slice(0, 300) || null,
+    })
+    .where(and(eq(redditProjectMembers.projectId, id), eq(redditProjectMembers.email, user.email)))
+    .returning()
+  if (!member) return NextResponse.json({ error: "You are not on this team" }, { status: 404 })
   return NextResponse.json({ member })
 }
 

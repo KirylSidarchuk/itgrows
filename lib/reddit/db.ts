@@ -26,6 +26,8 @@ export const redditProjects = pgTable("reddit_projects", {
   strategyAt: timestamp("strategy_at", { withTimezone: true }),
   lastRunAt: timestamp("last_run_at", { withTimezone: true }),
   error: text("error"),
+  // Telegram group where the worker posts the team's day, removals and the weekly summary.
+  teamChatId: text("team_chat_id"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 })
@@ -91,5 +93,26 @@ export const redditTasks = pgTable("reddit_tasks", {
   verifiedAt: timestamp("verified_at", { withTimezone: true }),
   verifyAttempts: integer("verify_attempts").notNull().default(0),
   result: jsonb("result"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+})
+
+// What the team has learned about a community. Shown to everyone on the project and read by the
+// planner before it writes the next day's tasks.
+export const redditNotes = pgTable("reddit_notes", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  projectId: uuid("project_id").notNull(),
+  subreddit: text("subreddit"),
+  body: text("body").notNull(),
+  authorEmail: text("author_email").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+})
+
+// A link the owner sends so people join the team themselves and fill in their own account.
+export const redditInvites = pgTable("reddit_invites", {
+  token: text("token").primaryKey(),
+  projectId: uuid("project_id").notNull(),
+  createdBy: text("created_by").notNull(),
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+  revoked: boolean("revoked").notNull().default(false),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 })

@@ -58,7 +58,8 @@ type Task = {
   result: { score?: number | null; replies?: number | null; reply_quotes?: string[] } | null
 }
 type Member = { email: string; redditUsername: string | null; communities: string[]; accountNote: string | null }
-type Data = { project: Project; plans: Plan[]; tasks: Task[]; role: "owner" | "member"; me: string; members: Member[] }
+type Note = { id: string; subreddit: string | null; body: string; authorEmail: string; createdAt: string }
+type Data = { project: Project; plans: Plan[]; tasks: Task[]; role: "owner" | "member"; me: string; members: Member[]; notes: Note[]; teamChat: boolean }
 
 const todayUTC = () => new Date().toISOString().slice(0, 10)
 
@@ -87,6 +88,8 @@ export default function ProjectClient({ id }: { id: string }) {
   const [plans, setPlans] = useState<Plan[]>([])
   const [tasks, setTasks] = useState<Task[]>([])
   const [members, setMembers] = useState<Member[]>([])
+  const [notes, setNotes] = useState<Note[]>([])
+  const [teamChat, setTeamChat] = useState(false)
   const [role, setRole] = useState<"owner" | "member">("member")
   const [me, setMe] = useState("")
   const [who, setWho] = useState<"mine" | "all">("all")
@@ -97,6 +100,8 @@ export default function ProjectClient({ id }: { id: string }) {
     setPlans(d.plans)
     setTasks(d.tasks)
     setMembers(d.members ?? [])
+    setNotes(d.notes ?? [])
+    setTeamChat(!!d.teamChat)
     setRole(d.role)
     setMe(d.me)
     // Someone who posts sees their own list first; the owner who does not post sees everyone's.
@@ -214,7 +219,7 @@ export default function ProjectClient({ id }: { id: string }) {
             )}
             {project.status === "paused" && <Notice>Paused. No new plans until you resume.</Notice>}
             {todays.map((t) => (
-              <TaskCard key={t.id} task={t} onUpdate={updateTask} assignee={team.length > 0 ? label(t.assigneeEmail) : null} />
+              <TaskCard key={t.id} task={t} onUpdate={updateTask} assignee={team.length > 0 ? label(t.assigneeEmail) : null} team={team} />
             ))}
             {todayPlan && todays.length === 0 && (
               <Notice>
@@ -226,11 +231,13 @@ export default function ProjectClient({ id }: { id: string }) {
             {todayPlan?.skipped && todayPlan.skipped.length > 0 && <Skipped items={todayPlan.skipped} />}
           </section>
 
-          <Team projectId={project.id} members={members} isOwner={isOwner} onChange={load} />
+          <Team projectId={project.id} members={members} isOwner={isOwner} me={me} teamChat={teamChat} onChange={load} />
+
+          <Notes projectId={project.id} notes={notes} me={me} isOwner={isOwner} label={label} onChange={load} />
 
           {project.strategy && <StrategyView s={project.strategy} />}
 
-          {earlier.length > 0 && <History tasks={earlier} onUpdate={updateTask} label={team.length > 0 ? label : null} />}
+          {earlier.length > 0 && <History tasks={earlier} onUpdate={updateTask} label={team.length > 0 ? label : null} team={team} />}
 
           {isOwner && (
             <details className="bg-white border border-black/10 rounded-2xl p-5">
@@ -374,8 +381,9 @@ function Questions({ project, onSaved, activate }: { project: Project; onSaved: 
   )
 }
 
-function TaskCard({ task, onUpdate, assignee }: { task: Task; onUpdate: (t: Task) => void; assignee?: string | null }) {
-  const [mode, setMode] = useState<"idle" | "done" | "skip">("idle")
+function TaskCard({ task, onUpdate, assignee, team = [] }: { task: Task; onUpdate: (t: Task) => void; assignee?: string | null; team?: Member[] }) {
+  const [mode, setMode] = useState<"idle" | "done" | "skip" | "handoff">("idle")
+  const [to, setTo] = useState("")
   const [url, setUrl] = useState("")
   const [reason, setReason] = useState("")
   const [err, setErr] = useState("")
@@ -453,8 +461,53 @@ function TaskCard({ task, onUpdate, assignee }: { task: Task; onUpdate: (t: Task
           <button onClick={() => setMode("skip")} className="rounded-xl border border-black/15 text-sm px-4 py-2 hover:border-black/30">
             Skip
           </button>
+          {team.length > 1 && (
+            <button onClick={() => setMode("handoff")} className="rounded-xl border border-black/15 text-sm px-4 py-2 hover:border-black/30">
+              Hand over
+            </button>
+          )}
         </div>
       )}
+      {task.status === "todo" && mode === "handoff" && (() => {
+        const others = team.filter((m) => m.email !== task.assigneeEmail)
+        const target = others.find((m) => m.email === to)
+        const owner = team.find((m) => task.subreddit && m.communities.includes(task.subreddit))
+        const warn = target && task.subreddit && owner && owner.email !== target.email
+          ? `${task.subreddit} is u/${owner.redditUsername}'s community. Hand over only if they agree.`
+          : ""
+        return (
+          <form
+            onSubmit={(e) => {
+              e.preventDefault()
+              if (to) send({ action: "handoff", to })
+            }}
+            className="grid gap-2"
+          >
+            <div className="flex flex-wrap gap-2">
+              <select
+                id={`handoff-${task.id}`}
+                value={to}
+                onChange={(e) => setTo(e.target.value)}
+                className="border border-black/15 rounded-xl px-3 py-2 text-sm bg-white"
+              >
+                <option value="">Choose a teammate…</option>
+                {others.map((m) => (
+                  <option key={m.email} value={m.email}>
+                    u/{m.redditUsername}
+                  </option>
+                ))}
+              </select>
+              <button type="submit" disabled={!to} className="rounded-xl bg-violet-600 hover:bg-violet-500 disabled:opacity-60 text-white text-sm font-semibold px-4 py-2">
+                Hand over
+              </button>
+              <button type="button" onClick={() => setMode("idle")} className="text-sm text-slate-500 px-2">
+                Cancel
+              </button>
+            </div>
+            {warn && <p className="text-sm text-amber-700">{warn}</p>}
+          </form>
+        )
+      })()}
       {task.status === "todo" && mode === "done" && (
         <form
           onSubmit={(e) => {
@@ -689,7 +742,7 @@ function StrategyView({ s }: { s: Strategy }) {
   )
 }
 
-function History({ tasks, onUpdate, label }: { tasks: Task[]; onUpdate: (t: Task) => void; label: ((email: string | null) => string | null) | null }) {
+function History({ tasks, onUpdate, label, team }: { tasks: Task[]; onUpdate: (t: Task) => void; label: ((email: string | null) => string | null) | null; team: Member[] }) {
   const days = Array.from(new Set(tasks.map((t) => t.day)))
   return (
     <details className="bg-white border border-black/10 rounded-2xl p-5">
@@ -701,7 +754,7 @@ function History({ tasks, onUpdate, label }: { tasks: Task[]; onUpdate: (t: Task
             {tasks
               .filter((t) => t.day === d)
               .map((t) => (
-                <TaskCard key={t.id} task={t} onUpdate={onUpdate} assignee={label ? label(t.assigneeEmail) : null} />
+                <TaskCard key={t.id} task={t} onUpdate={onUpdate} assignee={label ? label(t.assigneeEmail) : null} team={team} />
               ))}
           </div>
         ))}
@@ -710,7 +763,11 @@ function History({ tasks, onUpdate, label }: { tasks: Task[]; onUpdate: (t: Task
   )
 }
 
-function Team({ projectId, members, isOwner, onChange }: { projectId: string; members: Member[]; isOwner: boolean; onChange: () => void }) {
+function Team({ projectId, members, isOwner, me, teamChat, onChange }: { projectId: string; members: Member[]; isOwner: boolean; me: string; teamChat: boolean; onChange: () => void }) {
+  const mine = members.find((m) => m.email === me)
+  const taken: Record<string, string[]> = {}
+  for (const m of members) for (const c of m.communities) (taken[c] ??= []).push(m.redditUsername ? `u/${m.redditUsername}` : m.email)
+  const clashes = Object.entries(taken).filter(([, who]) => who.length > 1)
   const empty = { email: "", redditUsername: "", communities: "", accountNote: "" }
   const [form, setForm] = useState(empty)
   const [busy, setBusy] = useState(false)
@@ -742,6 +799,21 @@ function Team({ projectId, members, isOwner, onChange }: { projectId: string; me
     }
   }
 
+  async function saveMine(e: React.FormEvent) {
+    e.preventDefault()
+    setBusy(true)
+    setErr("")
+    try {
+      await api(`/api/reddit/projects/${projectId}/members`, { method: "PATCH", body: JSON.stringify(form) })
+      setForm(empty)
+      onChange()
+    } catch (x) {
+      setErr(x instanceof Error ? x.message : "Could not save")
+    } finally {
+      setBusy(false)
+    }
+  }
+
   if (!isOwner && members.length === 0) return null
   return (
     <details className="bg-white border border-black/10 rounded-2xl p-5" open={isOwner && members.length === 0 ? false : undefined}>
@@ -752,6 +824,20 @@ function Team({ projectId, members, isOwner, onChange }: { projectId: string; me
           from your company never reply in the same thread. Product mentions are counted for the whole team. Communities
           nobody owns are split between people. Teammates must never vote for or reply to each other: Reddit bans every
           account involved.
+        </p>
+        {clashes.length > 0 && (
+          <div className="bg-amber-50 border border-amber-200 rounded-xl px-3 py-2 text-amber-900">
+            {clashes.map(([c, who]) => (
+              <p key={c}>
+                {c} is chosen by {who.join(" and ")}. Decide who keeps it; until then each thread there still goes to one person only.
+              </p>
+            ))}
+          </div>
+        )}
+        <p className="text-slate-600">
+          {teamChat
+            ? "The team's Telegram group is connected: the day's tasks, removals and the weekly summary go there."
+            : "No Telegram group connected yet."}
         </p>
         {members.length > 0 && (
           <ul className="grid gap-2">
@@ -785,6 +871,36 @@ function Team({ projectId, members, isOwner, onChange }: { projectId: string; me
             ))}
           </ul>
         )}
+        {isOwner && <Invites projectId={projectId} />}
+        {!isOwner && mine && (
+          <form onSubmit={saveMine} className="grid gap-3 border-t border-black/5 pt-4">
+            <span className="font-semibold">Your details</span>
+            <div className="grid sm:grid-cols-3 gap-3">
+              <input id="mine-username" placeholder={mine.redditUsername ? `u/${mine.redditUsername}` : "u/name"} value={form.redditUsername} onChange={set("redditUsername")} className="border border-black/15 rounded-xl px-3 py-2" />
+              <input id="mine-communities" placeholder={mine.communities.join(", ") || "r/…, r/…"} value={form.communities} onChange={set("communities")} className="border border-black/15 rounded-xl px-3 py-2" />
+              <input id="mine-note" placeholder={mine.accountNote || "account age and karma"} value={form.accountNote} onChange={set("accountNote")} className="border border-black/15 rounded-xl px-3 py-2" />
+            </div>
+            <div className="flex flex-wrap gap-3 items-center">
+              <button
+                type="submit"
+                disabled={busy}
+                onClick={() =>
+                  setForm((f) => ({
+                    email: me,
+                    redditUsername: f.redditUsername || mine.redditUsername || "",
+                    communities: f.communities || mine.communities.join(", "),
+                    accountNote: f.accountNote || mine.accountNote || "",
+                  }))
+                }
+                className="rounded-xl bg-violet-600 hover:bg-violet-500 disabled:opacity-60 text-white font-semibold px-4 py-2"
+              >
+                Save my details
+              </button>
+              <span className="text-slate-500">Empty fields keep what is there now.</span>
+            </div>
+            {err && <p className="text-rose-700">{err}</p>}
+          </form>
+        )}
         {isOwner && (
           <form onSubmit={save} className="grid gap-3 border-t border-black/5 pt-4">
             <div className="grid sm:grid-cols-2 gap-3">
@@ -814,6 +930,144 @@ function Team({ projectId, members, isOwner, onChange }: { projectId: string; me
             {err && <p className="text-rose-700">{err}</p>}
           </form>
         )}
+      </div>
+    </details>
+  )
+}
+
+function Invites({ projectId }: { projectId: string }) {
+  const [invites, setInvites] = useState<{ token: string; url: string; expiresAt: string }[] | null>(null)
+  const [msg, setMsg] = useState("")
+
+  useEffect(() => {
+    let alive = true
+    api(`/api/reddit/projects/${projectId}/invites`)
+      .then((d) => alive && setInvites(d.invites))
+      .catch(() => alive && setInvites([]))
+    return () => {
+      alive = false
+    }
+  }, [projectId])
+
+  async function create() {
+    setMsg("")
+    try {
+      const d = await api(`/api/reddit/projects/${projectId}/invites`, { method: "POST" })
+      setInvites((l) => [d.invite, ...(l ?? [])])
+    } catch (x) {
+      setMsg(x instanceof Error ? x.message : "Could not create the link")
+    }
+  }
+
+  async function revoke(token: string) {
+    await api(`/api/reddit/projects/${projectId}/invites?token=${encodeURIComponent(token)}`, { method: "DELETE" }).catch(() => {})
+    setInvites((l) => (l ?? []).filter((i) => i.token !== token))
+  }
+
+  async function copy(url: string) {
+    try {
+      await navigator.clipboard.writeText(url)
+      setMsg("Link copied")
+    } catch {
+      setMsg("Copy is blocked here; select the link and copy it by hand.")
+    }
+  }
+
+  return (
+    <div className="grid gap-2 border-t border-black/5 pt-4">
+      <div className="flex flex-wrap items-center gap-3">
+        <span className="font-semibold">Invite link</span>
+        <button type="button" onClick={create} className="rounded-xl border border-black/15 px-3 py-1.5 hover:border-violet-400">
+          Create a link
+        </button>
+        <span className="text-slate-500">Each person opens it, signs in with their own email and fills in their Reddit account. Valid 7 days.</span>
+      </div>
+      {(invites ?? []).map((i) => (
+        <div key={i.token} className="flex flex-wrap items-center gap-2 bg-[#f6f5f4] rounded-xl px-3 py-2">
+          <span className="font-mono text-xs break-all flex-1 min-w-0">{i.url}</span>
+          <button type="button" onClick={() => copy(i.url)} className="text-xs border border-black/10 bg-white rounded-lg px-2.5 py-1">
+            Copy
+          </button>
+          <button type="button" onClick={() => revoke(i.token)} className="text-xs text-slate-500 hover:text-rose-700">
+            Revoke
+          </button>
+        </div>
+      ))}
+      {msg && <p className="text-slate-600">{msg}</p>}
+    </div>
+  )
+}
+
+function Notes({
+  projectId,
+  notes,
+  me,
+  isOwner,
+  label,
+  onChange,
+}: {
+  projectId: string
+  notes: Note[]
+  me: string
+  isOwner: boolean
+  label: (email: string | null) => string | null
+  onChange: () => void
+}) {
+  const [sub, setSub] = useState("")
+  const [body, setBody] = useState("")
+  const [err, setErr] = useState("")
+
+  async function add(e: React.FormEvent) {
+    e.preventDefault()
+    setErr("")
+    try {
+      await api(`/api/reddit/projects/${projectId}/notes`, { method: "POST", body: JSON.stringify({ subreddit: sub, body }) })
+      setSub("")
+      setBody("")
+      onChange()
+    } catch (x) {
+      setErr(x instanceof Error ? x.message : "Could not save")
+    }
+  }
+
+  async function remove(id: string) {
+    await api(`/api/reddit/projects/${projectId}/notes?note=${id}`, { method: "DELETE" }).catch(() => {})
+    onChange()
+  }
+
+  return (
+    <details className="bg-white border border-black/10 rounded-2xl p-5">
+      <summary className="font-semibold cursor-pointer">Notes on communities ({notes.length})</summary>
+      <div className="grid gap-4 mt-3 text-sm">
+        <p className="text-slate-600">
+          What you learn about a community, for everyone on the team: a removal and why, what a moderator allowed, a rule that
+          is not written down. Tomorrow&apos;s plan reads these.
+        </p>
+        <form onSubmit={add} className="grid sm:grid-cols-[10rem_1fr_auto] gap-2">
+          <input id="note-sub" value={sub} onChange={(e) => setSub(e.target.value)} placeholder="r/community" className="border border-black/15 rounded-xl px-3 py-2" />
+          <input id="note-body" value={body} onChange={(e) => setBody(e.target.value)} placeholder="Removed for linking in the first line; mods allow a link only when asked" className="border border-black/15 rounded-xl px-3 py-2 min-w-0" required />
+          <button type="submit" className="rounded-xl bg-violet-600 hover:bg-violet-500 text-white font-semibold px-4 py-2">
+            Add
+          </button>
+        </form>
+        {err && <p className="text-rose-700">{err}</p>}
+        <ul className="grid gap-2">
+          {notes.map((n) => (
+            <li key={n.id} className="border border-black/5 rounded-xl px-3 py-2 grid gap-0.5">
+              <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500">
+                {n.subreddit && <span className="font-semibold text-slate-700">{n.subreddit}</span>}
+                <span>{label(n.authorEmail)}</span>
+                <span>{n.createdAt.slice(0, 10)}</span>
+                {(isOwner || n.authorEmail === me) && (
+                  <button onClick={() => remove(n.id)} className="ml-auto hover:text-rose-700">
+                    Delete
+                  </button>
+                )}
+              </div>
+              <span>{n.body}</span>
+            </li>
+          ))}
+        </ul>
       </div>
     </details>
   )
