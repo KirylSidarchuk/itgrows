@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, useCallback } from "react"
+import { useEffect, useState, useCallback, useRef } from "react"
 import { useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -230,6 +230,40 @@ function PostCard({
   const [showStylePicker, setShowStylePicker] = useState(false)
   const [regenerating, setRegenerating] = useState(false)
   const [regenError, setRegenError] = useState<string | null>(null)
+  const [uploading, setUploading] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement | null>(null)
+
+  // The customer's own image, in place of a generated one. Read in the browser and sent as
+  // base64, because that is how every other image on a post is already stored.
+  async function handleUploadImage(file: File) {
+    setRegenError(null)
+    setUploading(true)
+    try {
+      const base64: string = await new Promise((resolve, reject) => {
+        const reader = new FileReader()
+        reader.onload = () => resolve(String(reader.result))
+        reader.onerror = () => reject(new Error("Could not read the file."))
+        reader.readAsDataURL(file)
+      })
+      const res = await fetch("/api/linkedin/upload-image", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ postId: post.id, base64, mimeType: file.type }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        setRegenError(data.error ?? "Upload failed. Please try again.")
+        return
+      }
+      setImageUrl(base64)
+      setShowStylePicker(false)
+    } catch (e) {
+      setRegenError(e instanceof Error ? e.message : "Upload failed.")
+    } finally {
+      setUploading(false)
+      if (fileInputRef.current) fileInputRef.current.value = ""
+    }
+  }
 
   async function handleRegenerateImage(style: string) {
     setShowStylePicker(false)
@@ -335,6 +369,25 @@ function PostCard({
                     {label}
                   </button>
                 ))}
+                <div className="border-t border-slate-100 mt-1 pt-1">
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={uploading}
+                    className="w-full text-left text-xs px-2 py-1.5 rounded-lg hover:bg-violet-50 hover:text-violet-700 text-slate-600 transition-colors disabled:opacity-60"
+                  >
+                    {uploading ? "Uploading…" : "Upload your own…"}
+                  </button>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    className="hidden"
+                    onChange={(e) => {
+                      const f = e.target.files?.[0]
+                      if (f) void handleUploadImage(f)
+                    }}
+                  />
+                </div>
               </div>
             ) : (
               <button
