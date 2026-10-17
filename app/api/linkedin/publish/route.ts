@@ -5,6 +5,7 @@ import { db } from "@/lib/db"
 import { linkedinAccounts, linkedinPosts, users } from "@/lib/db/schema"
 import { eq, and } from "drizzle-orm"
 import { hasAccess } from "@/lib/access"
+import { loadImageBuffer } from "@/lib/image-source"
 
 interface PublishRequest {
   postId: string
@@ -84,9 +85,10 @@ async function uploadImageToLinkedIn(
       return null
     }
 
-    // Step 2: Upload binary image
-    const base64Data = imageDataUrl.replace(/^data:[^;]+;base64,/, "")
-    const imageBuffer = Buffer.from(base64Data, "base64")
+    // Step 2: Upload binary image. The stored value is either an inline data
+    // URL (older rows) or a file URL on the image host, so it goes through the
+    // loader rather than being decoded as base64 unconditionally.
+    const imageBuffer = await loadImageBuffer(imageDataUrl)
     // Strip all metadata (EXIF, XMP, C2PA) to remove Content Credentials badge
     const strippedBuffer = await sharp(imageBuffer).withMetadata({}).toBuffer()
 

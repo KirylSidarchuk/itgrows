@@ -1,4 +1,5 @@
 import { callLLM, openaiGenerateImage } from "@/lib/llm-client"
+import { storeAndRecordImage } from "@/lib/image-store"
 
 const PROXY_URL = "http://34.60.133.229:4000"
 const LLM_API_KEY = process.env.LLM_API_KEY ?? "jtotFgxS1WQorT52LZym2ncyYzboliS6p04RqUwneFI"
@@ -45,7 +46,14 @@ async function tryGenerateImage(model: string, imagePrompt: string): Promise<str
       }
 
       const mimeType = inlineData.mimeType || "image/jpeg"
-      return `data:${mimeType};base64,${inlineData.data}`
+      // Hand back a stored file rather than inline base64. Falling back to the
+      // data URL keeps generation working if the store is down; both forms are
+      // understood by the publishers and by the image-serving routes.
+      const storedUrl = await storeAndRecordImage(
+        Buffer.from(inlineData.data, "base64"),
+        { filename: imagePrompt.slice(0, 60), kind: "generated", mime: mimeType, prompt: imagePrompt }
+      )
+      return storedUrl ?? `data:${mimeType};base64,${inlineData.data}`
     } catch (err) {
       const imgDuration = Date.now() - imgStart
       console.log(`[LLM] ${new Date().toISOString()} | caller=linkedin-image/generate | model=${model} | attempt=${attempt} | duration=${imgDuration}ms | ERROR: ${err}`)

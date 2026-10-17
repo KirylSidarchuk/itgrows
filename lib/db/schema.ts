@@ -368,3 +368,29 @@ export const postThreads = pgTable("post_threads", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 })
+
+// The image library: one row per stored image file. Images live as files under
+// /var/www/images and are served from blogs.itgrows.ai; this table is the index
+// that makes them listable and reusable, so the same cover does not have to be
+// generated twice. Rows are keyed by the hash of the bytes.
+export const images = pgTable("images", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  // Owner of the image. Null for images generated for our own blogs.
+  userId: text("user_id"),
+  url: text("url").notNull(),
+  name: text("name").notNull(),
+  sha256: text("sha256").notNull(),
+  bytes: integer("bytes").notNull(),
+  mime: text("mime"),
+  // generated — made by the image model; uploaded — sent by the customer;
+  // migrated — pulled out of a post row that held it inline as base64.
+  source: text("source").notNull().default("generated"),
+  // What it was generated from, when it was generated.
+  prompt: text("prompt"),
+  alt: text("alt"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+}, (t) => [
+  index("images_user_id_idx").on(t.userId),
+  index("images_sha256_idx").on(t.sha256),
+  index("images_created_at_idx").on(t.createdAt),
+])

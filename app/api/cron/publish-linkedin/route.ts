@@ -8,6 +8,7 @@ import { postPublishedEmail, postFailedEmail, linkedinTokenExpiredEmail } from "
 import { hasAccess } from "@/lib/access"
 import { notifyOwner } from "@/lib/telegram"
 import { generatePostImage } from "@/lib/linkedin-image"
+import { loadImageBuffer } from "@/lib/image-source"
 
 interface LinkedInUgcPostBody {
   author: string
@@ -83,9 +84,10 @@ async function uploadImageToLinkedIn(
       return null
     }
 
-    // Step 2: Upload binary image
-    const base64Data = imageDataUrl.replace(/^data:[^;]+;base64,/, "")
-    const imageBuffer = Buffer.from(base64Data, "base64")
+    // Step 2: Upload binary image. The stored value is either an inline data
+    // URL (older rows) or a file URL on the image host, so it goes through the
+    // loader rather than being decoded as base64 unconditionally.
+    const imageBuffer = await loadImageBuffer(imageDataUrl)
     // Strip all metadata (EXIF, XMP, C2PA) to remove Content Credentials badge
     const strippedBuffer = await sharp(imageBuffer).withMetadata({}).toBuffer()
 

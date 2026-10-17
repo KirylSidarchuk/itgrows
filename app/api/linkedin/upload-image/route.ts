@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/auth"
 import { db } from "@/lib/db"
 import { linkedinPosts } from "@/lib/db/schema"
+import { storeAndRecordImage } from "@/lib/image-store"
 import { and, eq } from "drizzle-orm"
 
 // Let a customer put their own image on a post.
@@ -89,9 +90,19 @@ export async function POST(req: NextRequest) {
       { status: 409 })
   }
 
-  const dataUrl = `data:${mimeType};base64,${bytes.toString("base64")}`
+  // Prefer a stored file: the image then costs one row of URL rather than a few
+  // megabytes of base64 in the post. Inline is kept as the fallback so an upload
+  // never fails just because the store is unreachable.
+  const storedUrl = await storeAndRecordImage(bytes, {
+    filename: `upload-${postId}`,
+    userId: session.user.id,
+    kind: "uploaded",
+    mime: mimeType,
+  })
+  const imageValue = storedUrl ?? `data:${mimeType};base64,${bytes.toString("base64")}`
+
   await db.update(linkedinPosts)
-    .set({ imageUrl: dataUrl })
+    .set({ imageUrl: imageValue })
     .where(eq(linkedinPosts.id, postId))
 
   return NextResponse.json({ ok: true, bytes: bytes.length })

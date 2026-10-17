@@ -2,28 +2,12 @@ import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/auth"
 import { db } from "@/lib/db"
 import { blogPosts } from "@/lib/db/schema"
+import { storeImage } from "@/lib/image-store"
 import { eq, desc } from "drizzle-orm"
 
-const VM_UPLOAD_URL = "http://136.114.136.34:4001/upload"
-
 async function uploadBase64Image(dataUrl: string, slug: string): Promise<string | null> {
-  try {
-    const [header, base64] = dataUrl.split(",")
-    if (!base64) return null
-    const mimeType = header.split(":")[1]?.split(";")[0] ?? "image/jpeg"
-    const ext = mimeType.includes("png") ? ".png" : ".jpg"
-    const filename = slug.slice(0, 100) + ext
-    const res = await fetch(VM_UPLOAD_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ base64, mimeType, filename }),
-    })
-    if (!res.ok) return null
-    const data = await res.json() as { url?: string }
-    return data.url ?? null
-  } catch {
-    return null
-  }
+  const stored = await storeImage(dataUrl, slug.slice(0, 100))
+  return stored?.url ?? null
 }
 
 export interface BlogPost {
