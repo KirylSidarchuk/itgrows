@@ -1,6 +1,11 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  images: {
+    // Image library files on the VM. Thumbnails in the library picker are resized
+    // from these rather than downloading every full-size cover.
+    remotePatterns: [{ protocol: "https", hostname: "blogs.itgrows.ai", pathname: "/images/**" }],
+  },
   async rewrites() {
     return [
       // Serve a clean markdown alternate for each article at /blog/{slug}.md without giving up

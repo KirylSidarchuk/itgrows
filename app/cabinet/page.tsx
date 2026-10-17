@@ -2,6 +2,8 @@
 
 import { useEffect, useState, useCallback, useRef } from "react"
 import { useSearchParams } from "next/navigation"
+import Image from "next/image"
+import { createPortal } from "react-dom"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Suspense } from "react"
@@ -200,6 +202,99 @@ const IMAGE_STYLE_OPTIONS: Array<[string, string]> = [
   ["no_image", "No Image"],
 ]
 
+interface LibraryImage {
+  id: string
+  url: string
+  source: string
+  createdAt: string
+}
+
+// The account's own images — uploaded, or already used on one of its posts — so a
+// good image can go on another post without being generated again.
+function ImageLibraryPicker({
+  onPick,
+  onClose,
+}: {
+  onPick: (url: string) => Promise<string | null>
+  onClose: () => void
+}) {
+  const [items, setItems] = useState<LibraryImage[] | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const [picking, setPicking] = useState<string | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+    fetch("/api/images/library?limit=120")
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
+      .then((d: { images?: LibraryImage[] }) => { if (!cancelled) setItems(d.images ?? []) })
+      .catch(() => { if (!cancelled) setError("Could not load your images. Please try again.") })
+    return () => { cancelled = true }
+  }, [])
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose() }
+    window.addEventListener("keydown", onKey)
+    return () => window.removeEventListener("keydown", onKey)
+  }, [onClose])
+
+  return createPortal(
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style={{ background: "rgba(15,23,42,0.45)" }}
+      onClick={onClose}
+    >
+      <div
+        className="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[80vh] flex flex-col"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
+          <span className="text-sm font-semibold text-slate-800">Your images</span>
+          <button onClick={onClose} className="text-slate-500 hover:text-slate-700 text-sm leading-none" aria-label="Close">
+            ✕
+          </button>
+        </div>
+        <div className="p-4 overflow-y-auto">
+          {error && <p className="text-sm text-red-500 mb-3">{error}</p>}
+          {error && items === null ? null : items === null ? (
+            <div className="flex justify-center py-10">
+              <Loader2 className="w-5 h-5 animate-spin text-slate-400" />
+            </div>
+          ) : items.length === 0 ? (
+            <p className="text-sm text-slate-500 py-6 text-center">
+              No images yet. Images you upload or use on your posts will appear here.
+            </p>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+              {items.map((img) => (
+                <button
+                  key={img.id}
+                  onClick={async () => {
+                    setPicking(img.url)
+                    setError(null)
+                    const failure = await onPick(img.url)
+                    setPicking(null)
+                    if (failure) setError(failure)
+                  }}
+                  disabled={picking !== null}
+                  className="relative aspect-[4/3] rounded-lg overflow-hidden bg-slate-100 border border-slate-100 hover:ring-2 hover:ring-violet-500 disabled:opacity-60 transition"
+                >
+                  <Image src={img.url} alt="" fill sizes="(max-width: 640px) 50vw, 180px" className="object-cover" />
+                  {picking === img.url && (
+                    <span className="absolute inset-0 flex items-center justify-center bg-white/70">
+                      <Loader2 className="w-4 h-4 animate-spin text-violet-600" />
+                    </span>
+                  )}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>,
+    document.body
+  )
+}
+
 function PostCard({
   post,
   onUpdate,
@@ -231,10 +326,31 @@ function PostCard({
   const [regenerating, setRegenerating] = useState(false)
   const [regenError, setRegenError] = useState<string | null>(null)
   const [uploading, setUploading] = useState(false)
+  const [showLibrary, setShowLibrary] = useState(false)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
 
+  // Returns an error message for the picker to show, or null once the image is on the post.
+  async function handlePickFromLibrary(url: string): Promise<string | null> {
+    setRegenError(null)
+    try {
+      const res = await fetch("/api/linkedin/set-image", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ postId: post.id, imageUrl: url }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) return data.error ?? "Could not use that image. Please try again."
+      setImageUrl(url)
+      setShowLibrary(false)
+      setShowStylePicker(false)
+      return null
+    } catch {
+      return "Could not use that image. Please try again."
+    }
+  }
+
   // The customer's own image, in place of a generated one. Read in the browser and sent as
-  // base64, because that is how every other image on a post is already stored.
+  // base64; the server stores it as a file in the account's image library.
   async function handleUploadImage(file: File) {
     setRegenError(null)
     setUploading(true)
@@ -387,6 +503,12 @@ function PostCard({
                       if (f) void handleUploadImage(f)
                     }}
                   />
+                  <button
+                    onClick={() => setShowLibrary(true)}
+                    className="w-full text-left text-xs px-2 py-1.5 rounded-lg hover:bg-violet-50 hover:text-violet-700 text-slate-600 transition-colors"
+                  >
+                    Choose from library…
+                  </button>
                 </div>
               </div>
             ) : (
@@ -405,6 +527,9 @@ function PostCard({
               </button>
             )}
           </div>
+        )}
+        {showLibrary && (
+          <ImageLibraryPicker onPick={handlePickFromLibrary} onClose={() => setShowLibrary(false)} />
         )}
         {regenError && (
           <p className="text-xs text-red-500 bg-red-50 px-3 py-1 border-t border-red-100">{regenError}</p>
