@@ -2,21 +2,20 @@ import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/auth"
 import { db } from "@/lib/db"
 import { images } from "@/lib/db/schema"
-import { eq, desc, and, isNull, or } from "drizzle-orm"
+import { eq, desc, and } from "drizzle-orm"
 import { storeAndRecordImage } from "@/lib/image-store"
+import { imagesOwnedBy } from "@/lib/image-library"
 
 const MAX_BYTES = 12 * 1024 * 1024
 
-// The customer's image library: everything they uploaded, plus the covers
-// generated for their own posts. Reusing one costs nothing, which is the point —
+// The customer's image library: everything they uploaded, plus the images on
+// their own posts. Reusing one costs nothing, which is the point —
 // a good image should not have to be generated twice.
 export async function GET(req: NextRequest) {
   const session = await auth()
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
   const limit = Math.min(Number(req.nextUrl.searchParams.get("limit") ?? 60), 200)
-  const mine = req.nextUrl.searchParams.get("mine") === "1"
-
   const rows = await db
     .select({
       id: images.id,
@@ -28,11 +27,7 @@ export async function GET(req: NextRequest) {
       createdAt: images.createdAt,
     })
     .from(images)
-    .where(
-      mine
-        ? eq(images.userId, session.user.id)
-        : or(eq(images.userId, session.user.id), isNull(images.userId))
-    )
+    .where(imagesOwnedBy(session.user.id))
     .orderBy(desc(images.createdAt))
     .limit(limit)
 

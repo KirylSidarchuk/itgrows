@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/auth"
 import { db } from "@/lib/db"
 import { images, linkedinPosts } from "@/lib/db/schema"
-import { and, eq, isNull, or } from "drizzle-orm"
+import { and, eq } from "drizzle-orm"
+import { imagesOwnedBy } from "@/lib/image-library"
 
 // Attaches an image the customer already has to a post. The URL is looked up in
 // the library rather than taken on trust, so a post can only ever point at an
@@ -20,10 +21,7 @@ export async function POST(req: NextRequest) {
     .select({ id: images.id })
     .from(images)
     .where(
-      and(
-        eq(images.url, imageUrl),
-        or(eq(images.userId, session.user.id), isNull(images.userId))
-      )
+      and(eq(images.url, imageUrl), imagesOwnedBy(session.user.id))
     )
     .limit(1)
 

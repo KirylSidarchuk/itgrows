@@ -96,15 +96,17 @@ export async function storeAndRecordImage(
   try {
     const { db } = await import("@/lib/db")
     const { images } = await import("@/lib/db/schema")
-    const { and, eq } = await import("drizzle-orm")
+    const { and, eq, isNull } = await import("drizzle-orm")
 
+    // One row per owner per image, so the same bytes uploaded by two accounts
+    // give each of them a row of their own.
     const existing = await db
       .select({ id: images.id })
       .from(images)
       .where(
         meta.userId
           ? and(eq(images.sha256, stored.sha256), eq(images.userId, meta.userId))
-          : eq(images.sha256, stored.sha256)
+          : and(eq(images.sha256, stored.sha256), isNull(images.userId))
       )
       .limit(1)
 
