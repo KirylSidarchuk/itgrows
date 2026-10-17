@@ -81,9 +81,33 @@ export async function generatePostImage(postContent: string, niche: string, imag
     imagePrompt = await callLLM(
       [{
         role: "user",
-        content: `Create a concise image generation prompt (max 50 words) for a LinkedIn post cover image.
-Post niche: "${niche}"
-Post content preview: "${postContent.slice(0, 200)}"${styleHint}
+        content: `You are choosing the image for a LinkedIn post. Work in two steps.
+
+STEP 1 — read the whole post and answer for yourself, without writing it down:
+  - What does this post actually argue? Not its subject: its claim.
+  - What tension, risk or uncomfortable truth sits underneath that claim?
+  - What should a reader feel or reconsider after reading it?
+
+STEP 2 — write an image prompt (max 50 words) that depicts THAT tension, not the subject matter.
+
+The difference matters. A post about trust is not people collaborating around a table — it is
+whether one person will voice the objection everyone else is swallowing. A post about
+accountability is not a handshake. Depict the moment, the consequence or the choice, not the
+topic label.
+
+NEVER depict: people seated around a conference table, handshakes, generic teams smiling at a
+laptop, rising arrows or bar charts, lightbulbs, jigsaw pieces, chess pieces, or a lone figure
+looking out of a high window. These are the clichés this instruction exists to avoid.
+
+No text, letters or numbers anywhere in the image.
+
+The post:
+"""
+${postContent.slice(0, 2600)}
+"""
+
+Field for context only (do not illustrate it literally): ${niche}.${styleHint}
+
 Return ONLY the image prompt, nothing else.`,
       }],
       { caller: "linkedin-image/prompt", temperature: 0.7 }
