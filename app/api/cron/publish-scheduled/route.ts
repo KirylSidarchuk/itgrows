@@ -279,8 +279,10 @@ export async function GET(req: NextRequest) {
           endpoint = `${normalUrl}/api/itgrows-publish`
         }
 
+        // Webhook sites render the title themselves (MagiScan's template has its own <h1>), so the
+        // article's leading <h1> is dropped, as the WordPress path already does.
         const wpPayload = site.platform === "octobercms" || site.platform === "php"
-          ? { token: site.siteToken, title: article.title, content: article.content + faqJsonLd(extractFaq(article.content, post.language ?? undefined)), metaDescription: article.metaDescription, slug: sharedSlug, keywords: article.keywords ?? [], coverImageUrl: article.coverImageUrl ?? null }
+          ? { token: site.siteToken, title: article.title, content: article.content.replace(/^\s*<h1\b[^>]*>[\s\S]*?<\/h1>\s*/i, "") + faqJsonLd(extractFaq(article.content, post.language ?? undefined)), metaDescription: article.metaDescription, slug: sharedSlug, keywords: article.keywords ?? [], coverImageUrl: article.coverImageUrl ?? null }
           : { token: site.siteToken, title: article.title, content: article.content, metaDescription: article.metaDescription, keywords: article.keywords ?? [], coverImageUrl: article.coverImageUrl ?? null }
 
         let publishedUrl: string | null = null
