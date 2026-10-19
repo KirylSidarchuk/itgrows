@@ -6,6 +6,8 @@ import { draftReadyEmail } from "@/lib/email-templates"
 import { eq, lte, and } from "drizzle-orm"
 import { publishToWordPress, canUseAppPassword } from "@/lib/wordpress-publish"
 import { slugBase } from "@/lib/slug"
+import { storeAndRecordImage } from "@/lib/image-store"
+import { extractFaq, faqJsonLd } from "@/lib/faq-schema"
 
 export const runtime = "nodejs"
 export const maxDuration = 300
@@ -127,22 +129,7 @@ export async function GET(req: NextRequest) {
         continue
       }
 
-      // Generate article (internal call — pass secret to bypass user session check)
-      const genRes = await fetch(`${baseUrl}/api/seo/generate`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-internal-secret": cronSecret,
-        },
-        body: JSON.stringify({ keyword: post.keyword, language: post.language, tone: post.tone, siteContext }),
-      })
-
-      if (!genRes.ok) {
-        const err = (await genRes.json()) as { error?: string }
-        throw new Error(err.error ?? "Failed to generate article")
-      }
-
-      const article = (await genRes.json()) as {
+      type Article = {
         keyword: string
         title: string
         content: string
@@ -150,6 +137,54 @@ export async function GET(req: NextRequest) {
         keywords: string[]
         coverImageUrl?: string
       }
+
+      // An article written ahead of time by the writer on the VM (blog_engine/client_writer.py:
+      // sources checked, editor-reviewed) is published as it is. Anything else is generated here,
+      // exactly as before — the VM writer failing must never stop a client's schedule.
+      const prepared = post.articleData as (Partial<Article> & { preparedBy?: string }) | null
+      let article: Article
+      if (prepared?.preparedBy === "vm-writer" && prepared.title && prepared.content) {
+        article = {
+          keyword: post.keyword,
+          title: prepared.title,
+          content: prepared.content,
+          metaDescription: prepared.metaDescription ?? "",
+          keywords: prepared.keywords ?? [],
+          coverImageUrl: prepared.coverImageUrl ?? undefined,
+        }
+      } else {
+        // Generate article (internal call — pass secret to bypass user session check)
+        const genRes = await fetch(`${baseUrl}/api/seo/generate`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-internal-secret": cronSecret,
+          },
+          body: JSON.stringify({ keyword: post.keyword, language: post.language, tone: post.tone, siteContext }),
+        })
+
+        if (!genRes.ok) {
+          const err = (await genRes.json()) as { error?: string }
+          throw new Error(err.error ?? "Failed to generate article")
+        }
+
+        article = (await genRes.json()) as Article
+      }
+
+      // A generated cover arrives as a base64 data URL. Store it once as a file, so the blog
+      // mirror, the client's own site and this row all carry a link instead of a megabyte each.
+      if (article.coverImageUrl?.startsWith("data:")) {
+        const storedCover = await storeAndRecordImage(article.coverImageUrl, {
+          filename: slugBase(article.title),
+          userId: post.userId,
+          kind: "generated",
+        })
+        if (storedCover) article.coverImageUrl = storedCover
+      }
+
+      // One address for every copy of the article. Two separate random tails used to give the
+      // client's page and our mirror different URLs, which search engines saw as duplicates.
+      const sharedSlug = generateSlug(article.title)
 
       // Publish to connected site
       // itgrows_blog = ItGrows.ai own blog → write to blog_posts table
@@ -159,7 +194,7 @@ export async function GET(req: NextRequest) {
 
       if (site && isBlogPostsPlatform) {
         // Save directly to blog_posts so blog-service can serve it via CNAME
-        const slug = generateSlug(article.title)
+        const slug = sharedSlug
         await db.insert(blogPosts).values({
           userId: post.userId,
           siteSlug: site.siteSlug ?? null,
@@ -245,7 +280,7 @@ export async function GET(req: NextRequest) {
         }
 
         const wpPayload = site.platform === "octobercms" || site.platform === "php"
-          ? { token: site.siteToken, title: article.title, content: article.content, metaDescription: article.metaDescription, slug: generateSlug(article.title), keywords: article.keywords ?? [], coverImageUrl: article.coverImageUrl ?? null }
+          ? { token: site.siteToken, title: article.title, content: article.content + faqJsonLd(extractFaq(article.content, post.language ?? undefined)), metaDescription: article.metaDescription, slug: sharedSlug, keywords: article.keywords ?? [], coverImageUrl: article.coverImageUrl ?? null }
           : { token: site.siteToken, title: article.title, content: article.content, metaDescription: article.metaDescription, keywords: article.keywords ?? [], coverImageUrl: article.coverImageUrl ?? null }
 
         let publishedUrl: string | null = null
@@ -302,7 +337,7 @@ export async function GET(req: NextRequest) {
         // Also insert into blog_posts so the /blog/ listing (blog-service) can serve this article.
         // Uses ON CONFLICT DO NOTHING in case the slug already exists (e.g. from a partial retry).
         try {
-          const blogSlug = generateSlug(article.title)
+          const blogSlug = sharedSlug
           await db.insert(blogPosts).values({
             userId: post.userId,
             siteSlug: site.siteSlug ?? null,
@@ -328,7 +363,7 @@ export async function GET(req: NextRequest) {
         .update(scheduledPosts)
         .set({
           status: "published",
-          articleData: article,
+          articleData: prepared?.preparedBy === "vm-writer" ? { ...prepared, ...article } : article,
           publishedAt: new Date(),
           publishAttempts: (post.publishAttempts ?? 0) + 1,
           ...(article.coverImageUrl ? { coverImageUrl: article.coverImageUrl } : {}),
