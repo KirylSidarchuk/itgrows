@@ -2,15 +2,11 @@ import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db"
 import { blogPosts, connectedSites } from "@/lib/db/schema"
 import { eq, or } from "drizzle-orm"
+import { slugBase } from "@/lib/slug"
 
 function slugify(text: string): string {
   return (
-    text
-      .toLowerCase()
-      .replace(/[^a-z0-9\s-]/g, "")
-      .replace(/\s+/g, "-")
-      .replace(/-+/g, "-")
-      .trim() +
+    slugBase(text) +
     "-" +
     Date.now().toString(36)
   )

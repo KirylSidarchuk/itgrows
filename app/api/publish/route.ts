@@ -4,6 +4,7 @@ import { db } from "@/lib/db"
 import { connectedSites, blogPosts } from "@/lib/db/schema"
 import { eq, and } from "drizzle-orm"
 import { publishToWordPress } from "@/lib/wordpress-publish"
+import { slugBase } from "@/lib/slug"
 
 interface PublishRequest {
   siteUrl: string
@@ -70,7 +71,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
   // Helper: generate a URL-friendly slug from the article title
   function generateSlug(t: string): string {
-    return t.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")
+    return slugBase(t)
   }
 
   let normalUrl = siteUrl.trim()

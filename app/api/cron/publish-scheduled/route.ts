@@ -5,6 +5,7 @@ import { sendEmail } from "@/lib/email"
 import { draftReadyEmail } from "@/lib/email-templates"
 import { eq, lte, and } from "drizzle-orm"
 import { publishToWordPress, canUseAppPassword } from "@/lib/wordpress-publish"
+import { slugBase } from "@/lib/slug"
 
 export const runtime = "nodejs"
 export const maxDuration = 300
@@ -69,7 +70,7 @@ export async function GET(req: NextRequest) {
   const siteProfileCache: Record<string, { niche?: string; targetAudience?: string; productName?: string; brandMentions?: string; publishStatus?: "publish" | "draft"; language?: string } | null> = {}
 
   function generateSlug(t: string): string {
-    return t.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") + "-" + Math.random().toString(36).slice(2, 8)
+    return slugBase(t) + "-" + Math.random().toString(36).slice(2, 8)
   }
 
   for (const post of duePosts) {
@@ -188,7 +189,8 @@ export async function GET(req: NextRequest) {
             title: article.title,
             content: article.content,
             metaDescription: article.metaDescription,
-            slug: generateSlug(article.title),
+            // WordPress keeps slugs unique itself, so no random tail in the address.
+            slug: slugBase(article.title),
             coverImageUrl: article.coverImageUrl ?? null,
             status: wantsDraft ? "draft" : "publish",
             language: post.language ?? undefined,

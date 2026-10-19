@@ -5,6 +5,7 @@ import { eq } from "drizzle-orm"
 import { publishToWordPress } from "@/lib/wordpress-publish"
 import { sendEmail } from "@/lib/email"
 import { draftReadyEmail } from "@/lib/email-templates"
+import { slugBase } from "@/lib/slug"
 
 // Write one article for a named site, and only publish it on a second, explicit call.
 //
@@ -31,7 +32,7 @@ interface SiteProfile {
 }
 
 function generateSlug(t: string): string {
-  return t.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") + "-" + Math.random().toString(36).slice(2, 8)
+  return slugBase(t) + "-" + Math.random().toString(36).slice(2, 8)
 }
 
 export async function POST(req: NextRequest) {

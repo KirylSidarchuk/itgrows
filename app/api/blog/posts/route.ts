@@ -4,6 +4,7 @@ import { db } from "@/lib/db"
 import { blogPosts } from "@/lib/db/schema"
 import { storeImage } from "@/lib/image-store"
 import { eq, desc } from "drizzle-orm"
+import { slugBase } from "@/lib/slug"
 
 async function uploadBase64Image(dataUrl: string, slug: string): Promise<string | null> {
   const stored = await storeImage(dataUrl, slug.slice(0, 100))
@@ -27,12 +28,7 @@ export interface BlogPost {
 
 function slugify(text: string): string {
   return (
-    text
-      .toLowerCase()
-      .replace(/[^a-z0-9\s-]/g, "")
-      .replace(/\s+/g, "-")
-      .replace(/-+/g, "-")
-      .trim() +
+    slugBase(text) +
     "-" +
     Date.now().toString(36)
   )

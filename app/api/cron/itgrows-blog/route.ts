@@ -3,6 +3,7 @@ import { db } from "@/lib/db"
 import { blogPosts, users } from "@/lib/db/schema"
 import { eq } from "drizzle-orm"
 import { BLOG_KEYWORD_QUEUE, ITGROWS_SITE_CONTEXT } from "@/lib/itgrows-blog-keywords"
+import { slugBase } from "@/lib/slug"
 
 export const maxDuration = 300
 
@@ -17,13 +18,7 @@ const SITE_URL = process.env.ITGROWS_PUBLIC_URL ?? "https://www.itgrows.ai"
 
 function slugify(text: string): string {
   return (
-    text
-      .toLowerCase()
-      .replace(/[^a-z0-9\s-]/g, "")
-      .replace(/\s+/g, "-")
-      .replace(/-+/g, "-")
-      .replace(/^-|-$/g, "")
-      .slice(0, 70) +
+    slugBase(text, 70) +
     "-" +
     Date.now().toString(36)
   )
