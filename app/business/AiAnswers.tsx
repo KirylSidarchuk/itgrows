@@ -207,16 +207,16 @@ function Result({ view, signupHref, onCta }: { view: TeaserView; signupHref: str
   return (
     <div>
       <div className="px-5 sm:px-6 pt-5 pb-4">
-        <div className="flex items-baseline gap-2 flex-wrap">
-          <span className="text-[40px] leading-none font-extrabold tracking-tight tabular-nums">
-            {s.named} <span className="text-slate-400 font-bold text-2xl">of {s.of}</span>
-          </span>
-        </div>
-        <h3 className="font-extrabold text-lg sm:text-xl mt-2 leading-snug">
-          Named in {s.named} of {s.of} answers
-          {silent.length > 0 && <span className="text-slate-500 font-semibold text-sm"> · {silent.map((e) => LABEL[e]).join(", ")} didn&apos;t respond</span>}
+        <h3 className="flex items-baseline gap-2 flex-wrap">
+          <span className="text-[40px] leading-none font-extrabold tracking-tight tabular-nums">{s.named}</span>
+          <span className="text-xl font-bold text-slate-500">of {s.of} answers named you</span>
         </h3>
-        <p className="text-sm text-slate-600 mt-1.5 leading-relaxed">{sub}</p>
+        {silent.length > 0 && (
+          <p className="text-xs text-slate-500 mt-1">
+            {silent.map((e) => LABEL[e]).join(", ")} didn&apos;t respond and {silent.length > 1 ? "are" : "is"} left out of the count.
+          </p>
+        )}
+        <p className="text-sm text-slate-600 mt-2 leading-relaxed">{sub}</p>
 
         <div className="grid grid-cols-2 gap-2.5 mt-4">
           {engines.map((e) => (
