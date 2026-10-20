@@ -155,9 +155,15 @@ export default function BusinessPage() {
             <a href="#pricing" className="text-sm text-slate-600 hover:text-[#1b1916] font-medium">Pricing</a>
             <Link href="/business/blog" className="text-sm text-slate-600 hover:text-[#1b1916] font-medium">Blog</Link>
           </div>
-          <a href="#apply" className="rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-sm font-semibold px-4 py-2.5">
-            Request access
-          </a>
+          <div className="flex items-center gap-4">
+            {/* Free report accounts sign in straight to their report, not to the LinkedIn cabinet. */}
+            <Link href="/login?callbackUrl=%2Fbusiness%2Fdashboard%2Fvisibility" className="text-sm text-slate-600 hover:text-[#1b1916] font-medium">
+              Sign in
+            </Link>
+            <a href="#apply" className="rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-sm font-semibold px-4 py-2.5">
+              Request access
+            </a>
+          </div>
         </div>
       </nav>
 

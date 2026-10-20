@@ -1,6 +1,7 @@
 "use client"
 
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
+import AiAnswers, { type TeaserView } from "./AiAnswers"
 
 type Verdict = "blocked" | "allowed" | "wildcard" | "none"
 
@@ -32,17 +33,143 @@ const DOT = { bad: "bg-red-500", good: "bg-green-500", warn: "bg-amber-500" } as
 // an event to tell us which keyword did the work.
 const REPORT_CONVERSION = "AW-18160234884/GnV1COO4h-AcEITjvNND"
 
+// How long the page follows an instant check before calling it failed. The VM keeps working, and a
+// retry within a day returns its answers at once.
+const TEASER_GIVE_UP_MS = 150_000
+
+function track(event: string, props?: Record<string, unknown>) {
+  try {
+    navigator.sendBeacon("/api/track", JSON.stringify({ event, path: "/business", props, anon_id: localStorage.getItem("itg_anon") }))
+  } catch {
+    // Analytics never gets in the way.
+  }
+}
+
+/** What the visitor typed, reduced to a bare domain for labels until the server says otherwise. */
+function bareDomain(raw: string) {
+  return raw
+    .trim()
+    .toLowerCase()
+    .replace(/^https?:\/\//, "")
+    .replace(/^www\./, "")
+    .split(/[/?#]/)[0]
+}
+
 export default function AuditForm() {
   const [url, setUrl] = useState("")
   const [competitor, setCompetitor] = useState("")
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState("")
   const [data, setData] = useState<Audit | null>(null)
-  const resultRef = useRef<HTMLDivElement>(null)
+  const urlRef = useRef<HTMLInputElement>(null)
 
   const [reportEmail, setReportEmail] = useState("")
   const [reportSent, setReportSent] = useState(false)
   const [reportBusy, setReportBusy] = useState(false)
+
+  // Card A: the instant check of what ChatGPT and Perplexity answer.
+  const [ai, setAi] = useState<TeaserView | null>(null)
+  const [aiOn, setAiOn] = useState(false)
+  const [aiDomain, setAiDomain] = useState("")
+  const [aiStart, setAiStart] = useState(0)
+  const [elapsed, setElapsed] = useState(0)
+  const aiToken = useRef(0)
+  const aiRef = useRef<HTMLDivElement>(null)
+  const [aiInView, setAiInView] = useState(true)
+  const [pillDone, setPillDone] = useState(false)
+
+  // Card B starts folded: the assistants' answers are the news, the crawler check explains them.
+  const [bOpen, setBOpen] = useState(false)
+
+  const aiRunning = aiOn && (!ai || ai.status === "running")
+  const aiFailed = ai?.status === "failed"
+  const aiDone = ai?.status === "done"
+
+  useEffect(() => {
+    if (!aiRunning) return
+    const t = setInterval(() => setElapsed(Math.round((Date.now() - aiStart) / 1000)), 1000)
+    return () => clearInterval(t)
+  }, [aiRunning, aiStart])
+
+  useEffect(() => {
+    const el = aiRef.current
+    if (!el || typeof IntersectionObserver === "undefined") return
+    const io = new IntersectionObserver(([entry]) => setAiInView(entry.isIntersecting), { threshold: 0.15 })
+    io.observe(el)
+    return () => io.disconnect()
+  }, [aiOn])
+
+  useEffect(() => {
+    if (aiDone && aiInView) setPillDone(true)
+  }, [aiDone, aiInView])
+
+  // When the answers fail, the crawler check is all there is: open it, and offer the email report.
+  useEffect(() => {
+    if (aiFailed) setBOpen(true)
+  }, [aiFailed])
+
+  const shownDomain = ai?.domain || aiDomain
+  const signupHref = `/signup?from=ai-check&site=${encodeURIComponent(shownDomain)}&callbackUrl=${encodeURIComponent(
+    `/business/dashboard/visibility?site=${shownDomain}`
+  )}`
+
+  function onCta(where: string) {
+    try {
+      localStorage.setItem(
+        "itg_geo_handoff",
+        JSON.stringify({ site: shownDomain, named: ai?.summary?.named ?? null, of: ai?.summary?.of ?? null, at: Date.now() })
+      )
+    } catch {}
+    track("geo_cta_click", { where, domain: shownDomain, named: ai?.summary?.named, of: ai?.summary?.of })
+  }
+
+  async function startTeaser(target: string) {
+    const token = ++aiToken.current
+    const t0 = Date.now()
+    setAi(null)
+    setAiOn(true)
+    setAiStart(t0)
+    setElapsed(0)
+    setPillDone(false)
+    const show = (v: TeaserView) => {
+      if (aiToken.current === token) setAi(v)
+    }
+    let v: TeaserView
+    try {
+      const res = await fetch("/api/geo/teaser", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: target }),
+      })
+      v = (await res.json()) as TeaserView
+      if (!v?.status) v = { status: "failed", error: "check_failed" }
+    } catch {
+      v = { status: "failed", error: "check_failed" }
+    }
+    show(v)
+    while (aiToken.current === token && v.status === "running" && v.id) {
+      if (Date.now() - t0 > TEASER_GIVE_UP_MS) {
+        v = { ...v, status: "failed", error: "check_failed" }
+        show(v)
+        break
+      }
+      await new Promise((r) => setTimeout(r, 2000))
+      try {
+        const res = await fetch(`/api/geo/teaser?id=${v.id}`, { cache: "no-store" })
+        const next = (await res.json()) as TeaserView
+        if (next?.status) v = { ...next, id: next.id ?? v.id }
+      } catch {
+        // A dropped poll is not a failed check; ask again.
+      }
+      show(v)
+    }
+    if (aiToken.current !== token) return
+    if (v.status === "done") {
+      track("geo_teaser_done", { domain: v.domain, named: v.summary?.named, of: v.summary?.of, ms: Date.now() - t0 })
+    } else {
+      track("geo_teaser_failed", { domain: v.domain ?? bareDomain(target), error: v.error, ms: Date.now() - t0 })
+    }
+  }
 
   async function requestReport(e: React.FormEvent) {
     e.preventDefault()
@@ -70,12 +197,18 @@ export default function AuditForm() {
     }
   }
 
-  async function run(e: React.FormEvent) {
-    e.preventDefault()
+  async function run(e?: React.FormEvent) {
+    e?.preventDefault()
     if (!url.trim() || busy) return
     setBusy(true)
     setError("")
     setData(null)
+    setBOpen(false)
+    setAiDomain(bareDomain(url))
+    track("geo_check_start", { domain: bareDomain(url) })
+    void startTeaser(url)
+    // One scroll, to the answers, and never again: the page must not jump while people read.
+    setTimeout(() => aiRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 120)
     try {
       const res = await fetch("/api/business/audit", {
         method: "POST",
@@ -84,15 +217,18 @@ export default function AuditForm() {
       })
       const j = (await res.json()) as Audit & { error?: string }
       if (!res.ok || j.error) setError(j.error ?? "That check did not complete. Try again.")
-      else {
-        setData(j)
-        setTimeout(() => resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 120)
-      }
+      else setData(j)
     } catch {
       setError("That check did not complete. Try again.")
     } finally {
       setBusy(false)
     }
+  }
+
+  function otherUrl() {
+    urlRef.current?.focus()
+    urlRef.current?.select()
+    urlRef.current?.scrollIntoView({ behavior: "smooth", block: "center" })
   }
 
   // An unreachable result carries only { site, unreachable } — reading robots/liveFetch off it
@@ -105,12 +241,14 @@ export default function AuditForm() {
         ]
       : []
   const answers = data?.surface.answerPages ?? 0
+  const showEmailCapture = aiFailed
 
   return (
     <div className="max-w-2xl mx-auto text-left">
       <form onSubmit={run} className="bg-white border border-black/10 rounded-2xl p-4 sm:p-5 shadow-lg shadow-violet-600/5">
         <div className="flex flex-col sm:flex-row gap-3">
           <input
+            ref={urlRef}
             type="text"
             value={url}
             onChange={(e) => setUrl(e.target.value)}
@@ -120,10 +258,10 @@ export default function AuditForm() {
           />
           <button
             type="submit"
-            disabled={busy || url.trim().length < 3}
+            disabled={busy || aiRunning || url.trim().length < 3}
             className="px-7 py-3.5 rounded-xl bg-violet-600 hover:bg-violet-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-base font-semibold transition-colors flex items-center justify-center gap-2 whitespace-nowrap"
           >
-            {busy ? (
+            {busy || aiRunning ? (
               <>
                 <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                 Checking…
@@ -138,7 +276,7 @@ export default function AuditForm() {
             type="text"
             value={competitor}
             onChange={(e) => setCompetitor(e.target.value)}
-            placeholder="competitor.com \u2014 optional, but this is the part that stings"
+            placeholder="competitor.com — optional, but this is the part that stings"
             aria-label="A competitor's website"
             className="w-full rounded-xl border border-black/15 bg-white px-4 py-3 text-sm text-[#1b1916] placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-400"
           />
@@ -146,8 +284,22 @@ export default function AuditForm() {
         {error && <p className="text-sm text-red-600 mt-3">{error}</p>}
       </form>
 
+      {aiOn && (
+        <div ref={aiRef} className="mt-5 scroll-mt-24">
+          <AiAnswers
+            view={ai}
+            domain={aiDomain}
+            elapsed={elapsed}
+            signupHref={signupHref}
+            onCta={onCta}
+            onRetry={() => void run()}
+            onOtherUrl={otherUrl}
+          />
+        </div>
+      )}
+
       {data?.unreachable && (
-        <div ref={resultRef} className="mt-5 scroll-mt-24 bg-white border border-black/10 rounded-2xl overflow-hidden">
+        <div className="mt-5 bg-white border border-black/10 rounded-2xl overflow-hidden">
           <div className="px-5 py-6 text-center bg-red-50 border-b border-red-200">
             <div className="text-3xl mb-2">🚧</div>
             <div className="font-extrabold text-base sm:text-lg leading-snug">
@@ -161,7 +313,7 @@ export default function AuditForm() {
             </p>
             <a
               href="#apply"
-              className="block w-full text-center rounded-xl bg-violet-600 hover:bg-violet-500 text-white px-6 py-3.5 text-sm font-semibold"
+              className="block w-full text-center rounded-xl border border-black/10 bg-white hover:bg-[#f8f7f6] text-[#1b1916] px-6 py-3.5 text-sm font-semibold"
             >
               Talk to us about it — $499/mo →
             </a>
@@ -170,14 +322,17 @@ export default function AuditForm() {
       )}
 
       {data && !data.unreachable && (
-        <div ref={resultRef} className="mt-5 scroll-mt-24 bg-white border border-black/10 rounded-2xl overflow-hidden">
+        <div className="mt-5 bg-white border border-black/10 rounded-2xl overflow-hidden">
+          <div className="px-5 pt-4">
+            <p className="text-[11px] font-bold uppercase tracking-wide text-slate-500">Can AI crawlers read your site?</p>
+          </div>
           {/* Verdict */}
           <div
-            className={`px-5 py-5 text-center border-b ${
+            className={`mx-4 mt-3 rounded-xl px-5 py-5 text-center border ${
               blocked.length ? "bg-red-50 border-red-200" : "bg-amber-50 border-amber-200"
             }`}
           >
-            <div className="text-3xl mb-1">{blocked.length ? "\u26d4" : "\u26a0\ufe0f"}</div>
+            <div className="text-3xl mb-1">{blocked.length ? "⛔" : "⚠️"}</div>
             <div className="font-extrabold text-base sm:text-lg leading-snug">
               {blocked.length ? (
                 <>You are turning away {blocked.join(", ")}</>
@@ -194,7 +349,7 @@ export default function AuditForm() {
           <div className="grid grid-cols-2 gap-2.5 p-4">
             <div className="bg-[#f8f7f6] rounded-xl p-4 text-center">
               <div className="text-3xl sm:text-4xl font-extrabold tracking-tight text-[#1b1916]">
-                {data.surface.isFloor ? "\u2265" : ""}
+                {data.surface.isFloor ? "≥" : ""}
                 {data.surface.urlCount.toLocaleString()}
               </div>
               <div className="text-[10px] sm:text-xs text-slate-600 mt-1 leading-tight">
@@ -209,166 +364,209 @@ export default function AuditForm() {
             </div>
           </div>
 
-          <div className="px-5 pb-1">
-            <p className="text-sm text-slate-700 leading-relaxed">
-              Assistants do not rank pages. They pick one and quote it, and the one they pick already contains the
-              answer. {answers === 0 ? "You have none of those." : `You have ${answers}.`} Everything else on your site
-              is a page about you, and nobody asks a question your brochure is the answer to.
-            </p>
-          </div>
-
-          {data.rival && (
-            <div className="px-4 pb-4">
-              <div className="rounded-xl border-2 border-red-200 overflow-hidden">
-                <div className="px-4 py-2.5 bg-red-600 text-white text-[11px] font-bold tracking-wide uppercase">
-                  Pages that answer a question
-                </div>
-                <div className="divide-y divide-black/[0.07]">
-                  <div className="flex items-center justify-between px-4 py-3.5">
-                    <span className="text-sm font-semibold truncate mr-3">{data.site}</span>
-                    <span className={`font-extrabold text-2xl tabular-nums shrink-0 ${answers === 0 ? "text-red-600" : ""}`}>
-                      {answers}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between px-4 py-3.5 bg-[#f8f7f6]">
-                    <span className="text-sm font-semibold truncate mr-3">{data.rival.site}</span>
-                    <span className="font-extrabold text-2xl tabular-nums shrink-0">{data.rival.answerPages}</span>
-                  </div>
-                </div>
-              </div>
-              <p className="text-[11px] text-slate-500 leading-relaxed mt-2.5">
-                {data.rival.partial && data.rival.answerPages === 0 ? (
-                  <>
-                    Their sitemap is split across more files than we read in one pass, so this is a sample, not their
-                    total. The full count is in the report.
-                  </>
-                ) : data.rival.answerPages > answers ? (
-                  <>
-                    That is {data.rival.answerPages - answers} question{data.rival.answerPages - answers === 1 ? "" : "s"}{" "}
-                    an assistant can answer by quoting them and not you
-                    {data.rival.perMonth ? <>, and they are adding about {data.rival.perMonth} a month</> : null}. Both
-                    numbers come from your own public sitemaps.
-                  </>
-                ) : (
-                  <>
-                    You are ahead of them on this one. The gap closes in whichever direction someone keeps publishing \u2014
-                    both numbers come from public sitemaps, and theirs is not fixed.
-                  </>
-                )}
-              </p>
-            </div>
-          )}
-
-          {/* Ninety days, with and without */}
-          <div className="p-4">
-            <div className="rounded-xl border border-black/10 overflow-hidden">
-              <div className="px-4 py-2.5 bg-[#1b1916] text-white text-[11px] font-bold tracking-wide uppercase">
-                Answer pages you will own
-              </div>
-              <div className="divide-y divide-black/[0.07]">
-                <div className="flex items-center justify-between px-4 py-3">
-                  <span className="text-sm text-slate-600">Today</span>
-                  <span className="font-extrabold text-lg tabular-nums">{answers}</span>
-                </div>
-                <div className="flex items-center justify-between px-4 py-3">
-                  <span className="text-sm text-slate-600">In 90 days, if nothing changes</span>
-                  <span className="font-extrabold text-lg tabular-nums text-slate-400">{answers}</span>
-                </div>
-                <div className="flex items-center justify-between px-4 py-3 bg-violet-50">
-                  <span className="text-sm font-semibold text-violet-900">In 90 days with us</span>
-                  <span className="font-extrabold text-lg tabular-nums text-violet-700">{answers + 36}</span>
-                </div>
-              </div>
-            </div>
-            <p className="text-[11px] text-slate-500 leading-relaxed mt-2.5">
-              Twelve a month on your own domain \u2014 that is the arithmetic, not a forecast. The middle row is the one
-              that costs you: the crawlers come back either way, and on the next pass they find whatever is there.
-            </p>
-          </div>
-
-          {/* What we measured ourselves */}
-          <div className="px-4 pb-4">
-            <div className="rounded-xl bg-[#f8f7f6] p-4">
-              <p className="text-[11px] font-bold uppercase tracking-wide text-slate-500 mb-2">From our own server logs</p>
-              <p className="text-sm text-slate-700 leading-relaxed">
-                On a site we run, a 190,000-page catalogue took <b>489,000 ClaudeBot requests</b> in two weeks.
-                Googlebot made <b>1,100</b>. The AI crawlers are the ones showing up now \u2014 and they show up for
-                volume, not for markup.
-              </p>
-            </div>
-          </div>
-
-          {/* Per-bot access */}
-          <div className="px-4 pb-4 space-y-2">
+          {/* Bots, at a glance */}
+          <div className="px-4 pb-4 flex flex-wrap gap-2">
             {data.robots.bots.map((b) => {
               const live = data.liveFetch.find((l) => l.bot === b.bot)
               const tone: Tone = b.verdict === "blocked" || live?.blocked ? "bad" : b.verdict === "allowed" ? "good" : "warn"
-              const text =
-                b.verdict === "blocked"
-                  ? "Blocked in robots.txt"
-                  : live?.blocked
-                  ? `Server refuses it (HTTP ${live.status})`
-                  : b.verdict === "allowed"
-                  ? "Allowed"
-                  : "Wildcard rule only"
               return (
-                <div key={b.bot} className="flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl bg-[#f8f7f6]">
-                  <span className="flex items-center gap-2.5 min-w-0">
-                    <span className={`w-2 h-2 rounded-full shrink-0 ${DOT[tone]}`} />
-                    <span className="font-semibold text-sm truncate">{b.bot}</span>
-                  </span>
-                  <span className={`shrink-0 text-[11px] font-bold px-2.5 py-1 rounded-full border ${TONE[tone]}`}>{text}</span>
-                </div>
+                <span key={b.bot} className={`inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full border ${TONE[tone]}`}>
+                  <span className={`w-1.5 h-1.5 rounded-full ${DOT[tone]}`} />
+                  {b.bot}
+                </span>
               )
             })}
           </div>
 
-          <div className="px-5 pb-5">
-            <p className="text-[11px] text-slate-500 leading-relaxed mb-4">
-              We cannot read your server logs — this shows whether they are allowed in and whether there is enough to
-              hold them, not who visited.
-            </p>
-            {reportSent ? (
-              <div className="rounded-xl bg-green-50 border border-green-200 p-4 text-center mb-3">
-                <p className="text-sm font-semibold text-green-800">On its way.</p>
-                <p className="text-xs text-green-700 mt-1 leading-relaxed">
-                  You will get the full findings and the fix list, written by a person, within a day.
+          <div className="px-4 pb-4">
+            <button
+              type="button"
+              onClick={() => setBOpen((o) => !o)}
+              className="w-full text-sm font-semibold text-violet-700 hover:text-violet-600 py-2"
+              aria-expanded={bOpen}
+            >
+              {bOpen ? "Hide the details ▴" : "Show the 90-day projection ▾"}
+            </button>
+          </div>
+
+          {bOpen && (
+            <>
+              <div className="px-5 pb-1">
+                <p className="text-sm text-slate-700 leading-relaxed">
+                  Assistants do not rank pages. They pick one and quote it, and the one they pick already contains the
+                  answer. {answers === 0 ? "You have none of those." : `You have ${answers}.`} Everything else on your site
+                  is a page about you, and nobody asks a question your brochure is the answer to.
                 </p>
               </div>
-            ) : (
-              <form onSubmit={requestReport} className="mb-4">
-                <p className="text-sm font-semibold mb-1">Want the 90 questions we would write first?</p>
-                <p className="text-xs text-slate-500 mb-3 leading-relaxed">
-                  The actual questions your buyers ask, ranked, with the ones your competitor already owns marked \u2014 plus what to change on the site itself.
-                </p>
-                <div className="flex flex-col sm:flex-row gap-2">
-                  <input
-                    type="email"
-                    value={reportEmail}
-                    onChange={(e) => setReportEmail(e.target.value)}
-                    placeholder="you@company.com"
-                    aria-label="Email for the full report"
-                    className="flex-1 rounded-xl border border-black/15 bg-white px-4 py-3 text-sm text-[#1b1916] placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-400"
-                  />
-                  <button
-                    type="submit"
-                    disabled={reportBusy || !reportEmail.includes("@")}
-                    className="px-5 py-3 rounded-xl bg-[#1b1916] hover:bg-[#33302c] disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold transition-colors whitespace-nowrap"
-                  >
-                    {reportBusy ? "Sending…" : "Email it to me"}
-                  </button>
+
+              {data.rival && (
+                <div className="px-4 pt-3 pb-4">
+                  <div className="rounded-xl border-2 border-red-200 overflow-hidden">
+                    <div className="px-4 py-2.5 bg-red-600 text-white text-[11px] font-bold tracking-wide uppercase">
+                      Pages that answer a question
+                    </div>
+                    <div className="divide-y divide-black/[0.07]">
+                      <div className="flex items-center justify-between px-4 py-3.5">
+                        <span className="text-sm font-semibold truncate mr-3">{data.site}</span>
+                        <span className={`font-extrabold text-2xl tabular-nums shrink-0 ${answers === 0 ? "text-red-600" : ""}`}>
+                          {answers}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between px-4 py-3.5 bg-[#f8f7f6]">
+                        <span className="text-sm font-semibold truncate mr-3">{data.rival.site}</span>
+                        <span className="font-extrabold text-2xl tabular-nums shrink-0">{data.rival.answerPages}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <p className="text-[11px] text-slate-500 leading-relaxed mt-2.5">
+                    {data.rival.partial && data.rival.answerPages === 0 ? (
+                      <>
+                        Their sitemap is split across more files than we read in one pass, so this is a sample, not their
+                        total. The full count is in the report.
+                      </>
+                    ) : data.rival.answerPages > answers ? (
+                      <>
+                        That is {data.rival.answerPages - answers} question{data.rival.answerPages - answers === 1 ? "" : "s"}{" "}
+                        an assistant can answer by quoting them and not you
+                        {data.rival.perMonth ? <>, and they are adding about {data.rival.perMonth} a month</> : null}. Both
+                        numbers come from your own public sitemaps.
+                      </>
+                    ) : (
+                      <>
+                        You are ahead of them on this one. The gap closes in whichever direction someone keeps publishing —
+                        both numbers come from public sitemaps, and theirs is not fixed.
+                      </>
+                    )}
+                  </p>
                 </div>
-              </form>
-            )}
+              )}
+
+              {/* Ninety days, with and without */}
+              <div className="p-4">
+                <div className="rounded-xl border border-black/10 overflow-hidden">
+                  <div className="px-4 py-2.5 bg-[#1b1916] text-white text-[11px] font-bold tracking-wide uppercase">
+                    Answer pages you will own
+                  </div>
+                  <div className="divide-y divide-black/[0.07]">
+                    <div className="flex items-center justify-between px-4 py-3">
+                      <span className="text-sm text-slate-600">Today</span>
+                      <span className="font-extrabold text-lg tabular-nums">{answers}</span>
+                    </div>
+                    <div className="flex items-center justify-between px-4 py-3">
+                      <span className="text-sm text-slate-600">In 90 days, if nothing changes</span>
+                      <span className="font-extrabold text-lg tabular-nums text-slate-400">{answers}</span>
+                    </div>
+                    <div className="flex items-center justify-between px-4 py-3 bg-violet-50">
+                      <span className="text-sm font-semibold text-violet-900">In 90 days with us</span>
+                      <span className="font-extrabold text-lg tabular-nums text-violet-700">{answers + 36}</span>
+                    </div>
+                  </div>
+                </div>
+                <p className="text-[11px] text-slate-500 leading-relaxed mt-2.5">
+                  Twelve a month on your own domain — that is the arithmetic, not a forecast. The middle row is the one
+                  that costs you: the crawlers come back either way, and on the next pass they find whatever is there.
+                </p>
+              </div>
+
+              {/* What we measured ourselves */}
+              <div className="px-4 pb-4">
+                <div className="rounded-xl bg-[#f8f7f6] p-4">
+                  <p className="text-[11px] font-bold uppercase tracking-wide text-slate-500 mb-2">From our own server logs</p>
+                  <p className="text-sm text-slate-700 leading-relaxed">
+                    On a site we run, a 190,000-page catalogue took <b>489,000 ClaudeBot requests</b> in two weeks.
+                    Googlebot made <b>1,100</b>. The AI crawlers are the ones showing up now — and they show up for
+                    volume, not for markup.
+                  </p>
+                </div>
+              </div>
+
+              {/* Per-bot access */}
+              <div className="px-4 pb-4 space-y-2">
+                {data.robots.bots.map((b) => {
+                  const live = data.liveFetch.find((l) => l.bot === b.bot)
+                  const tone: Tone = b.verdict === "blocked" || live?.blocked ? "bad" : b.verdict === "allowed" ? "good" : "warn"
+                  const text =
+                    b.verdict === "blocked"
+                      ? "Blocked in robots.txt"
+                      : live?.blocked
+                      ? `Server refuses it (HTTP ${live.status})`
+                      : b.verdict === "allowed"
+                      ? "Allowed"
+                      : "Wildcard rule only"
+                  return (
+                    <div key={b.bot} className="flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl bg-[#f8f7f6]">
+                      <span className="flex items-center gap-2.5 min-w-0">
+                        <span className={`w-2 h-2 rounded-full shrink-0 ${DOT[tone]}`} />
+                        <span className="font-semibold text-sm truncate">{b.bot}</span>
+                      </span>
+                      <span className={`shrink-0 text-[11px] font-bold px-2.5 py-1 rounded-full border ${TONE[tone]}`}>{text}</span>
+                    </div>
+                  )
+                })}
+              </div>
+
+              <div className="px-5 pb-2">
+                <p className="text-[11px] text-slate-500 leading-relaxed">
+                  We cannot read your server logs — this shows whether they are allowed in and whether there is enough to
+                  hold them, not who visited.
+                </p>
+              </div>
+            </>
+          )}
+
+          <div className="px-5 pt-2 pb-5">
+            {showEmailCapture &&
+              (reportSent ? (
+                <div className="rounded-xl bg-green-50 border border-green-200 p-4 text-center mb-3">
+                  <p className="text-sm font-semibold text-green-800">On its way.</p>
+                  <p className="text-xs text-green-700 mt-1 leading-relaxed">
+                    You will get the full findings and the fix list, written by a person, within a day.
+                  </p>
+                </div>
+              ) : (
+                <form onSubmit={requestReport} className="mb-4">
+                  <p className="text-sm font-semibold mb-1">Want the 90 questions we would write first?</p>
+                  <p className="text-xs text-slate-500 mb-3 leading-relaxed">
+                    The actual questions your buyers ask, ranked, with the ones your competitor already owns marked — plus what to change on the site itself.
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <input
+                      type="email"
+                      value={reportEmail}
+                      onChange={(e) => setReportEmail(e.target.value)}
+                      placeholder="you@company.com"
+                      aria-label="Email for the full report"
+                      className="flex-1 rounded-xl border border-black/15 bg-white px-4 py-3 text-sm text-[#1b1916] placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-400"
+                    />
+                    <button
+                      type="submit"
+                      disabled={reportBusy || !reportEmail.includes("@")}
+                      className="px-5 py-3 rounded-xl bg-[#1b1916] hover:bg-[#33302c] disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold transition-colors whitespace-nowrap"
+                    >
+                      {reportBusy ? "Sending…" : "Email it to me"}
+                    </button>
+                  </div>
+                </form>
+              ))}
 
             <a
               href="#apply"
-              className="block w-full text-center rounded-xl bg-violet-600 hover:bg-violet-500 text-white px-6 py-3.5 text-sm font-semibold"
+              className="block w-full text-center rounded-xl border border-black/10 bg-white hover:bg-[#f8f7f6] text-[#1b1916] px-6 py-3.5 text-sm font-semibold"
             >
               Start the 90 days — $499/mo →
             </a>
           </div>
         </div>
+      )}
+
+      {aiDone && !aiInView && !pillDone && (
+        <button
+          type="button"
+          onClick={() => aiRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })}
+          className="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 rounded-full bg-[#1b1916] text-white text-sm font-semibold px-5 py-3 shadow-xl"
+        >
+          Your AI answers are ready ↑
+        </button>
       )}
     </div>
   )

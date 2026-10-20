@@ -58,6 +58,8 @@ export async function GET(req: NextRequest) {
           ),
           // linkedin_accounts.user_id is TEXT in prod (schema drift) -> cast to avoid text=uuid error
           sql`NOT EXISTS (SELECT 1 FROM linkedin_accounts la WHERE la.user_id = ${users.id}::text)`,
+          // Free AI-visibility accounts came for their report, not for LinkedIn: no connect nudge.
+          sql`NOT EXISTS (SELECT 1 FROM geo_follows gf WHERE gf.user_id = ${users.id}::text)`,
           notExists(
             db
               .select({ id: twitterAccounts.id })

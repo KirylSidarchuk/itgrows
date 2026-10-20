@@ -11,13 +11,17 @@ function SignupForm() {
   const searchParams = useSearchParams()
   const callbackUrl = searchParams.get("callbackUrl") ?? "/cabinet"
   const planParam = searchParams.get("plan")
+  // Arriving from the free AI check on /business: this account is for that site's report, so the
+  // page talks about the report, not about the LinkedIn trial.
+  const fromAiCheck = searchParams.get("from") === "ai-check"
+  const aiSite = (searchParams.get("site") ?? "").slice(0, 100)
 
   // Funnel step events (page view -> oauth click / email submit -> complete) so we can see
   // exactly where /signup loses people instead of guessing.
   const sgTrack = (event: string, props?: Record<string, unknown>) => {
     try { navigator.sendBeacon("/api/track", JSON.stringify({ event, path: "/signup", props, anon_id: localStorage.getItem("itg_anon") })) } catch {}
   }
-  useEffect(() => { sgTrack("signup_view", { plan: planParam ?? undefined }) // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { sgTrack("signup_view", { plan: planParam ?? undefined, from: searchParams.get("from") ?? undefined }) // eslint-disable-line react-hooks/exhaustive-deps
   }, [])
 
   const [name, setName] = useState("")
@@ -35,6 +39,16 @@ function SignupForm() {
   // Warm the signup with the posts the visitor just generated on the landing (activation fix):
   // the same localStorage handoff the cabinet reads, so signup feels like "finish what I started".
   const [handoff, setHandoff] = useState<{ posts: string[]; images?: (string | null)[]; n: number } | null>(null)
+  const [aiQuick, setAiQuick] = useState<{ named: number; of: number } | null>(null)
+  useEffect(() => {
+    if (!fromAiCheck) return
+    try {
+      const h = JSON.parse(localStorage.getItem("itg_geo_handoff") ?? "null") as { site?: string; named?: number | null; of?: number | null } | null
+      if (h && h.site === aiSite && typeof h.named === "number" && typeof h.of === "number" && h.of > 0) {
+        setAiQuick({ named: h.named, of: h.of })
+      }
+    } catch { /* ignore */ }
+  }, [fromAiCheck, aiSite])
   useEffect(() => {
     try {
       const raw = localStorage.getItem("itgrows_ghost_handoff")
@@ -318,7 +332,12 @@ function SignupForm() {
               ItGrows.ai
             </span>
           </Link>
-          {handoff ? (
+          {fromAiCheck ? (
+            <>
+              <h1 className="text-2xl font-bold text-[#1b1916] mt-4">Your full AI report{aiSite ? <> for {aiSite}</> : null}</h1>
+              <p className="text-slate-500 text-sm mt-1">Free, no card. We&apos;ll put 20 buyer questions to ChatGPT, Claude, Gemini and Perplexity, 3 times each, then re-measure every week and email you the results.</p>
+            </>
+          ) : handoff ? (
             <>
               <h1 className="text-2xl font-bold text-[#1b1916] mt-4">One step left — claim your posts</h1>
               <p className="text-slate-500 text-sm mt-1">Your {handoff.n} post{handoff.n > 1 ? "s are" : " is"} saved. Creating an account is <strong>free</strong> — and so is your 14-day trial. No credit card required.</p>
@@ -331,7 +350,12 @@ function SignupForm() {
           )}
         </div>
         <div className="bg-white border border-black/10 rounded-2xl p-8">
-          {handoff && (
+          {fromAiCheck && aiQuick && (
+            <div className="mb-5 rounded-xl border border-violet-200 bg-violet-50 px-4 py-3 text-sm text-[#1b1916]">
+              <span className="text-slate-600">Quick check:</span> <strong>named in {aiQuick.named} of {aiQuick.of} answers</strong>
+            </div>
+          )}
+          {handoff && !fromAiCheck && (
             <div className="mb-5 rounded-xl border border-violet-200 bg-violet-50 p-3 flex gap-3 items-start">
               {handoff.images?.[0] && (
                 // eslint-disable-next-line @next/next/no-img-element
@@ -376,12 +400,12 @@ function SignupForm() {
               disabled={loading}
               className="w-full py-3 bg-violet-600 hover:bg-violet-500 text-white rounded-xl text-sm font-semibold transition-colors disabled:opacity-50"
             >
-              {loading ? "Sending code..." : "Continue with email"}
+              {loading ? "Sending code..." : fromAiCheck ? "Email me a code" : "Continue with email"}
             </button>
           </form>
           <p className="text-center text-sm text-slate-500 mt-6">
             Already have an account?{" "}
-            <Link href="/login" className="text-violet-600 hover:underline font-medium">Sign in</Link>
+            <Link href={fromAiCheck ? `/login?callbackUrl=${encodeURIComponent(callbackUrl)}` : "/login"} className="text-violet-600 hover:underline font-medium">Sign in</Link>
           </p>
         </div>
         <p className="text-center text-xs text-slate-400 mt-6">

@@ -58,7 +58,14 @@ export default function DashboardPage() {
       })
       .then((data: ProfileData) => {
         if (data.user && !data.user.onboardingCompleted) {
-          router.replace("/business/dashboard/onboarding")
+          // Free AI-visibility accounts never went through the publishing onboarding: their home
+          // is the report.
+          fetch("/api/geo/report")
+            .then((r) => (r.ok ? r.json() : null))
+            .catch(() => null)
+            .then((geo: { sites?: unknown[] } | null) => {
+              router.replace(geo?.sites?.length ? "/business/dashboard/visibility" : "/business/dashboard/onboarding")
+            })
         }
         if (data.user?.subscriptionStatus) {
           setSubscriptionStatus(data.user.subscriptionStatus)
