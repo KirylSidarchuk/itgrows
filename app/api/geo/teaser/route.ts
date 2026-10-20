@@ -88,12 +88,7 @@ function view(run: PublicRun) {
 }
 
 async function relay(status: number, data: Partial<PublicRun> & { error?: string }) {
-  if (status === 200 || status === 202) {
-    if (data.status === "running" && !data.summary && !data.questions) {
-      return NextResponse.json({ id: data.run_id, domain: data.domain, status: "running", stage: "reading", questions: [] })
-    }
-    return NextResponse.json(view(data as PublicRun))
-  }
+  if (status === 200 || status === 202) return NextResponse.json(view(data as PublicRun))
   return NextResponse.json({ status: "failed", error: data.error ?? "unavailable" }, { status: status >= 400 && status < 600 ? status : 502 })
 }
 
