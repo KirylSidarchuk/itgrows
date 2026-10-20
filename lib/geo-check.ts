@@ -1,3 +1,5 @@
+import { createHmac } from "crypto"
+
 // The site check runs on the VM (geo_check/service.py, behind nginx at blogs.itgrows.ai/geo-api):
 // it reads a site, works out what its buyers ask, and puts those questions to the assistants. The
 // app only relays, trims what a stranger may see, and reads results back for signed-in owners.
@@ -35,6 +37,8 @@ export interface RunSummary {
   of: number
   engines: Record<string, { named: number; of: number }>
   named_instead: { name: string; count: number }[]
+  own_cited?: number
+  sources?: { domain: string; count: number; type: string }[]
 }
 
 export interface PublicRun {
@@ -92,4 +96,16 @@ export function vmAuthorized(header: string | null): boolean {
   let diff = 0
   for (let i = 0; i < given.length; i++) diff |= given.charCodeAt(i) ^ TOKEN.charCodeAt(i)
   return diff === 0
+}
+
+// One-click unsubscribe from the weekly email: the link carries the follow id and a signature, so
+// nobody needs to sign in to stop the mail, and nobody can stop someone else's.
+
+export function unsubscribeToken(followId: string) {
+  const secret = process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET ?? TOKEN
+  return createHmac("sha256", secret).update(`geo-weekly:${followId}`).digest("base64url").slice(0, 32)
+}
+
+export function unsubscribeUrl(followId: string) {
+  return `https://www.itgrows.ai/api/geo/unsubscribe?f=${followId}&t=${unsubscribeToken(followId)}`
 }

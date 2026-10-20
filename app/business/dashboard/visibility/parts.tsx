@@ -26,6 +26,20 @@ export interface Summary {
   named_instead: { name: string; count: number }[]
   own_cited?: number
   sources?: { domain: string; count: number; type: string }[]
+  previous?: { kind: string; finished_at: string; named: number; of: number }
+  changes?: Change[]
+}
+export type Change =
+  | { type: "new"; engine: string; q: string }
+  | { type: "lost"; engine: string; q: string }
+  | { type: "rival"; name: string; count: number }
+export interface Report {
+  kind: string
+  finishedAt: string
+  engines: string[]
+  samples: number
+  summary: Summary
+  rows: Row[]
 }
 export interface SiteReport {
   domain: string
@@ -46,8 +60,9 @@ export interface SiteReport {
     progress: { stage?: string; done?: number; total?: number } | null
   } | null
   failed: boolean
-  latest: { kind: string; finishedAt: string; engines: string[]; samples: number; summary: Summary; rows: Row[] } | null
-  history: { kind: string; finishedAt: string; samples: number; questions: number; summary: Summary }[]
+  latest: Report | null
+  baseline: Report | null
+  history: { kind: string; finishedAt: string; samples: number; questions: number; named: number; of: number }[]
   teaser: { engines: string[]; summary: Summary; rows: Row[]; finishedAt: string } | null
 }
 export interface Audit {
@@ -146,8 +161,8 @@ function Tile({ engine, named, of, linked, asking }: { engine: string; named?: n
   )
 }
 
-export function Hero({ site }: { site: SiteReport }) {
-  const l = site.latest!
+export function Hero({ report }: { report: Report }) {
+  const l = report
   const s = l.summary
   const engines = ENGINES.filter((e) => s.engines[e])
   const cited = citedByEngine(l.rows)
@@ -213,6 +228,128 @@ export function FirstLook({ site }: { site: SiteReport }) {
           )
         )}
       </div>
+    </section>
+  )
+}
+
+// ── the weekly view ──────────────────────────────────────────────────────────────────────────
+
+/** Weekly checks measured the same way as the latest one, oldest first. */
+function sameBasis(site: SiteReport) {
+  const l = site.latest!
+  return site.history.filter((h) => h.kind === "weekly" && h.samples === l.samples && h.questions === l.rows.length)
+}
+
+export function WeeklyHero({ site, onShowBaseline }: { site: SiteReport; onShowBaseline?: () => void }) {
+  const l = site.latest!
+  const s = l.summary
+  const weeks = sameBasis(site)
+  const last4 = weeks.slice(-4)
+  const avg = last4.length === 4 ? last4.reduce((n, w) => n + w.named, 0) / 4 : null
+  const prev8 = weeks.slice(-8, -4)
+  const avgPrev = prev8.length === 4 ? prev8.reduce((n, w) => n + w.named, 0) / 4 : null
+  const avgTone = avg !== null && avgPrev !== null && weeks.length >= 8 ? (avg > avgPrev ? "bg-green-50 text-green-800" : avg < avgPrev ? "bg-amber-50 text-amber-800" : "") : ""
+  const prev = s.previous
+  const shown = weeks.slice(-12)
+  const max = Math.max(1, ...shown.map((w) => w.of))
+  const engines = ENGINES.filter((e) => s.engines[e])
+  const free = site.plan !== "paid"
+  return (
+    <section className={card}>
+      <div className="flex items-start justify-between gap-3 flex-wrap">
+        <p className={label}>This week</p>
+        <span className="text-[11px] font-semibold text-slate-600 bg-[#f8f7f6] rounded-full px-2.5 py-1">Weekly check · {fmtDate(l.finishedAt)}</span>
+      </div>
+      <div className="mt-3 flex items-baseline gap-2 flex-wrap">
+        <span className="text-5xl sm:text-6xl font-extrabold tracking-tight text-violet-600 tabular-nums">{s.named}</span>
+        <span className="text-xl font-bold text-slate-400">of {s.of} answers named you this week</span>
+      </div>
+      <div className="mt-3 flex flex-wrap gap-2">
+        {prev && (
+          <span className="text-xs font-semibold text-slate-700 bg-[#f8f7f6] rounded-full px-3 py-1.5">
+            {prev.kind === "baseline" ? "Day 0, same questions" : "Last week"}: {prev.named}
+          </span>
+        )}
+        {avg !== null && (
+          <span className={`text-xs font-semibold rounded-full px-3 py-1.5 ${avgTone || "bg-[#f8f7f6] text-slate-700"}`}>
+            4-week average: {avg.toFixed(1).replace(/\.0$/, "")}
+          </span>
+        )}
+      </div>
+      {shown.length > 1 && (
+        <div className="mt-5 flex items-end gap-1.5 h-24" aria-label="Answers that named you, week by week">
+          {shown.map((w, i) => (
+            <div key={i} className={`flex-1 flex flex-col items-center justify-end h-full ${i < shown.length - 8 ? "hidden sm:flex" : ""}`}>
+              <span className="text-[10px] text-slate-500 tabular-nums mb-0.5">{w.named}</span>
+              <div className="w-full rounded-t bg-violet-500/80" style={{ height: `${Math.max(3, (w.named / max) * 100)}%` }} />
+            </div>
+          ))}
+        </div>
+      )}
+      <p className="text-xs text-slate-500 mt-3 leading-relaxed">
+        One week is noise: answers vary between asks. The 4-week average is the signal.
+        {weeks.length < 4 && ` Trend appears after 4 checks (${weeks.length} of 4).`}
+      </p>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 mt-4">
+        {engines.map((e) => (
+          <Tile key={e} engine={e} named={s.engines[e].named} of={s.engines[e].of} />
+        ))}
+      </div>
+      {free && (
+        <p className="text-xs text-slate-500 mt-3">
+          Free plan: {l.rows.length} questions × {engines.length} assistants, {l.samples} ask each ·{" "}
+          {onShowBaseline && (
+            <button type="button" onClick={onShowBaseline} className="text-violet-700 font-semibold hover:underline">
+              View day-0 report
+            </button>
+          )}
+          {onShowBaseline && " · "}
+          <a href="/business#pricing" className="text-violet-700 font-semibold hover:underline">
+            Compare plans
+          </a>
+        </p>
+      )}
+    </section>
+  )
+}
+
+export function WhatChanged({ changes }: { changes: Change[] }) {
+  const list = changes.slice(0, 5)
+  return (
+    <section className={card}>
+      <h2 className="font-bold text-lg">What changed this week</h2>
+      {list.length === 0 ? (
+        <p className="text-sm text-slate-600 mt-3">No changes since last week.</p>
+      ) : (
+        <ul className="mt-3 space-y-2.5">
+          {list.map((c, i) => (
+            <li key={i} className="flex gap-3 text-sm leading-snug">
+              <span
+                className={`shrink-0 mt-0.5 w-5 h-5 rounded-full text-[11px] font-bold flex items-center justify-center ${
+                  c.type === "new" ? "bg-violet-100 text-violet-700" : c.type === "lost" ? "bg-slate-100 text-slate-600" : "bg-slate-100 text-slate-600"
+                }`}
+              >
+                {c.type === "new" ? "+" : c.type === "lost" ? "−" : "•"}
+              </span>
+              <span>
+                {c.type === "new" ? (
+                  <>
+                    <b>New:</b> {LABEL[c.engine]} named you for “{c.q}”
+                  </>
+                ) : c.type === "lost" ? (
+                  <>
+                    <b>Lost:</b> {LABEL[c.engine]} no longer names you for “{c.q}”
+                  </>
+                ) : (
+                  <>
+                    <b>New name instead of you:</b> {c.name} ({c.count})
+                  </>
+                )}
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
     </section>
   )
 }
@@ -593,7 +730,8 @@ interface Step {
 
 export function nextSteps(site: SiteReport, audit: Audit | "failed" | undefined): Step[] {
   const out: Step[] = []
-  const l = site.latest
+  // Steps come from the fullest report: a free site's weekly check is only five questions.
+  const l = site.baseline && site.latest && site.latest.rows.length < site.baseline.rows.length ? site.baseline : site.latest
   const s = l?.summary
   if (audit && audit !== "failed" && !audit.unreachable) {
     const blocked = [

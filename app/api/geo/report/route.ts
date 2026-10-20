@@ -43,6 +43,12 @@ export async function GET() {
     const latest = latestId
       ? rows(await db.execute(sql`SELECT results FROM geo_runs WHERE id = ${latestId}::uuid`))[0]
       : null
+    // A free site's weekly check is five questions; the full picture stays the day-0 report.
+    const base = done.find((r) => r.kind === "baseline")
+    const baseRows =
+      base && base.id !== latestId
+        ? rows(await db.execute(sql`SELECT results FROM geo_runs WHERE id = ${base.id as string}::uuid`))[0]
+        : null
     const teaser =
       rows(
         await db.execute(sql`
@@ -78,10 +84,24 @@ export async function GET() {
         summary: done[0].summary,
         rows: latest?.results ?? [],
       },
+      baseline:
+        base && base.id !== latestId
+          ? {
+              kind: base.kind,
+              finishedAt: base.finished_at,
+              engines: base.engines,
+              samples: base.samples,
+              summary: base.summary,
+              rows: baseRows?.results ?? [],
+            }
+          : null,
       history: done
         .slice()
         .reverse()
-        .map((r) => ({ kind: r.kind, finishedAt: r.finished_at, samples: r.samples, questions: r.n_questions, summary: r.summary })),
+        .map((r) => {
+          const s = (r.summary ?? {}) as { named?: number; of?: number }
+          return { kind: r.kind, finishedAt: r.finished_at, samples: r.samples, questions: r.n_questions, named: s.named ?? 0, of: s.of ?? 0 }
+        }),
       teaser: teaser && {
         engines: teaser.engines,
         summary: teaser.summary,

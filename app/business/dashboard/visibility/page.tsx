@@ -12,6 +12,8 @@ import {
   Pending,
   PlanCard,
   Sources,
+  WeeklyHero,
+  WhatChanged,
   WhereNamed,
   card,
   fmtDate,
@@ -55,6 +57,7 @@ export default function VisibilityPage() {
   const [showAdd, setShowAdd] = useState(false)
   const [followErr, setFollowErr] = useState<{ domain: string; error: string } | null>(null)
   const [audits, setAudits] = useState<Record<string, Audit | "failed">>({})
+  const [showBase, setShowBase] = useState(false)
   const started = useRef(false)
 
   const load = useCallback(async () => {
@@ -218,12 +221,44 @@ export default function VisibilityPage() {
 
           {site.latest ? (
             <>
-              <Hero site={site} />
-              <div className="grid xl:grid-cols-2 gap-5">
-                <NamedInstead summary={site.latest.summary} you={site.business || site.domain} />
-                <Sources summary={site.latest.summary} />
-              </div>
-              <WhereNamed rows={site.latest.rows} engines={site.latest.engines} samples={site.latest.samples} asked={site.latest.finishedAt} />
+              {site.latest.kind === "weekly" ? (
+                <>
+                  <WeeklyHero site={site} onShowBaseline={site.baseline ? () => setShowBase((v) => !v) : undefined} />
+                  <WhatChanged changes={site.latest.summary.changes ?? []} />
+                  {site.baseline && site.latest.rows.length < site.baseline.rows.length && (
+                    <WhereNamed
+                      rows={site.latest.rows}
+                      engines={site.latest.engines}
+                      samples={site.latest.samples}
+                      asked={site.latest.finishedAt}
+                      title="This week's questions"
+                    />
+                  )}
+                </>
+              ) : (
+                <Hero report={site.latest} />
+              )}
+              {(() => {
+                // The detailed cards come from the fullest report: this week's for a paid site, the
+                // day-0 report for a free one (its weekly check is five questions).
+                const full = site.baseline && site.latest.rows.length < site.baseline.rows.length ? site.baseline : site.latest
+                const fromDay0 = full !== site.latest
+                return (
+                  <>
+                    {fromDay0 && (
+                      <p className="text-xs font-semibold text-slate-600 px-1">
+                        From your day-0 report · {fmtDate(full.finishedAt)} · 20 questions × 4 assistants, 3 asks each
+                      </p>
+                    )}
+                    {fromDay0 && showBase && <Hero report={full} />}
+                    <div className="grid xl:grid-cols-2 gap-5">
+                      <NamedInstead summary={full.summary} you={site.business || site.domain} />
+                      <Sources summary={full.summary} />
+                    </div>
+                    <WhereNamed rows={full.rows} engines={full.engines} samples={full.samples} asked={full.finishedAt} />
+                  </>
+                )
+              })()}
               <div className="grid xl:grid-cols-2 gap-5">
                 <Crawlers audit={audit} />
                 <NextSteps key={site.domain} domain={site.domain} steps={nextSteps(site, audit)} ready />
