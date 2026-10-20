@@ -5,6 +5,7 @@
 // such and left out of the totals — it never counts as "not named"; nothing is projected.
 
 import { useEffect, useState } from "react"
+import { ENGINE_ICONS } from "../../engine-icons"
 
 export interface EngineAnswer {
   named: number
@@ -80,6 +81,32 @@ export const ENGINES = ["chatgpt", "claude", "gemini", "perplexity"]
 export const LABEL: Record<string, string> = { chatgpt: "ChatGPT", claude: "Claude", gemini: "Gemini", perplexity: "Perplexity" }
 
 export const card = "rounded-2xl bg-white/90 border border-white shadow-sm p-5 sm:p-6"
+
+const ICON: Record<string, string> = Object.fromEntries(ENGINE_ICONS.map((i) => [i.label, i.d]))
+
+function EngineMark({ engine, className = "w-4 h-4" }: { engine: string; className?: string }) {
+  const d = ICON[LABEL[engine]]
+  if (!d) return null
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="currentColor" aria-hidden>
+      <path d={d} />
+    </svg>
+  )
+}
+
+/** Answers arrive as markdown; quoted on a card they should read as plain sentences. */
+export function plain(s: string) {
+  return s
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+    .replace(/\[\d+\]/g, "")
+    .replace(/\*\*|__|`/g, "")
+    .replace(/(^|\s)[*_](\S)/g, "$1$2")
+    .replace(/(\S)[*_](?=\s|$|[.,;:!?])/g, "$1")
+    .replace(/#{1,6}\s+/g, "")
+    .replace(/\s+[-•]\s+/g, " · ")
+    .replace(/\s+/g, " ")
+    .trim()
+}
 const label = "text-[11px] font-bold uppercase tracking-wide text-slate-500"
 
 export function fmtDate(iso?: string | null) {
@@ -143,7 +170,10 @@ export function Banner({ pending }: { pending: NonNullable<SiteReport["pending"]
 function Tile({ engine, named, of, linked, asking }: { engine: string; named?: number; of?: number; linked?: number; asking?: boolean }) {
   return (
     <div className="rounded-xl bg-[#f8f7f6] px-3.5 py-3">
-      <div className={label}>{LABEL[engine]}</div>
+      <div className={`${label} flex items-center gap-1.5`}>
+        <EngineMark engine={engine} className="w-3.5 h-3.5 text-slate-600" />
+        {LABEL[engine]}
+      </div>
       {asking ? (
         <div className="text-sm font-semibold text-slate-400 mt-1">Asking…</div>
       ) : of ? (
@@ -193,7 +223,7 @@ export function Hero({ report }: { report: Report }) {
       </div>
       {snip && (
         <figure className="mt-4 rounded-xl border border-violet-100 bg-violet-50/60 p-4">
-          <blockquote className="text-sm text-slate-800 leading-relaxed">“{snip.text}”</blockquote>
+          <blockquote className="text-sm text-slate-800 leading-relaxed">“{plain(snip.text)}”</blockquote>
           <figcaption className="text-xs text-slate-500 mt-2">
             {LABEL[snip.e]}, asked “{snip.q}”
           </figcaption>
@@ -508,7 +538,7 @@ function Drawer({ row, engines, samples, asked, onClose }: { row: Row; engines: 
                         : `Not named in ${a.samples} ask${a.samples === 1 ? "" : "s"}`}
                   </span>
                 </div>
-                {a.snippet && <p className="text-sm text-slate-700 mt-2 leading-relaxed">“{a.snippet}”</p>}
+                {a.snippet && <p className="text-sm text-slate-700 mt-2 leading-relaxed">“{plain(a.snippet)}”</p>}
                 {a.named_instead.length > 0 && (
                   <div className="mt-2.5">
                     <p className="text-[11px] font-bold uppercase tracking-wide text-slate-500 mb-1">{a.named ? "Also named" : "Named instead"}</p>
@@ -580,8 +610,9 @@ export function WhereNamed({
       <div className="mt-4 sticky top-14 lg:top-0 z-10 bg-white/95 backdrop-blur flex justify-end py-1.5 border-b border-black/5">
         <div className="flex gap-0">
           {cols.map((e) => (
-            <span key={e} className="w-11 sm:w-16 text-center text-[10px] font-bold uppercase tracking-wide text-slate-500">
-              {LABEL[e].slice(0, 5)}
+            <span key={e} title={LABEL[e]} className="w-11 sm:w-20 flex flex-col items-center gap-0.5 text-slate-600">
+              <EngineMark engine={e} />
+              <span className="hidden sm:block text-[10px] font-semibold">{LABEL[e]}</span>
             </span>
           ))}
         </div>
@@ -627,7 +658,7 @@ export function WhereNamed({
                         </span>
                         <span className="flex self-end sm:self-auto">
                           {cols.map((e) => (
-                            <span key={e} className="w-11 sm:w-16 flex justify-center">
+                            <span key={e} className="w-11 sm:w-20 flex justify-center">
                               <Dot a={r.engines[e]} />
                             </span>
                           ))}
@@ -775,7 +806,7 @@ export function nextSteps(site: SiteReport, audit: Audit | "failed" | undefined)
   }
   if (s?.sources?.length) {
     const media = s.sources.find((x) => x.type === "roundup")
-    if (media) out.push({ id: `media:${media.domain}`, title: `Get mentioned on ${media.domain}`, why: `Cited in ${media.count} answers for your questions.` })
+    if (media) out.push({ id: `media:${media.domain}`, title: `Pitch an expert quote to ${media.domain}`, why: `Cited in ${media.count} answers for your questions.` })
   }
   return out.slice(0, 5)
 }

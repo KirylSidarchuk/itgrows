@@ -40,6 +40,20 @@ export interface TeaserView {
 }
 
 const LABEL: Record<string, string> = { chatgpt: "ChatGPT", claude: "Claude", gemini: "Gemini", perplexity: "Perplexity" }
+
+/** Answers arrive as markdown; quoted on a card they should read as plain sentences. */
+function plain(s: string) {
+  return s
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+    .replace(/\[\d+\]/g, "")
+    .replace(/\*\*|__|`/g, "")
+    .replace(/(^|\s)[*_](\S)/g, "$1$2")
+    .replace(/(\S)[*_](?=\s|$|[.,;:!?])/g, "$1")
+    .replace(/#{1,6}\s+/g, "")
+    .replace(/\s+[-•]\s+/g, " · ")
+    .replace(/\s+/g, " ")
+    .trim()
+}
 const LANG: Record<string, string> = {
   en: "English", de: "German", fr: "French", es: "Spanish", it: "Italian", nl: "Dutch", pl: "Polish",
   pt: "Portuguese", sv: "Swedish", da: "Danish", no: "Norwegian", fi: "Finnish", cs: "Czech", tr: "Turkish",
@@ -130,7 +144,7 @@ function EnginePanel({ engine, a, domain }: { engine: string; a: TeaserEngine; d
       </div>
       {!a.failed && (
         <>
-          {a.snippet && <p className="text-sm text-slate-700 mt-2 leading-relaxed">“{a.snippet}”</p>}
+          {a.snippet && <p className="text-sm text-slate-700 mt-2 leading-relaxed">“{plain(a.snippet)}”</p>}
           <p className="text-[13px] text-slate-700 mt-2 leading-relaxed">
             {names.length ? (
               <>
