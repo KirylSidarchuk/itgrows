@@ -54,8 +54,8 @@ const STEPS = [
     d: "Every article waits in a queue — edit it, or kill it. Nothing reaches your domain without you. Then it goes live on your own blog, with a cover image.",
   },
   {
-    t: "You see who came",
-    d: "A monthly report read from the server log: which engines crawled you, and which fetched your pages while answering somebody.",
+    t: "You see where you're named",
+    d: "Every week we put your buyers' questions to ChatGPT, Claude, Gemini and Perplexity and count the answers that name you. Once a month, the server log: which engines crawled you, and which fetched your pages while answering somebody.",
   },
 ]
 
@@ -66,11 +66,42 @@ const RUNGS = [
   { i: "⭐", t: "Authority", w: "Month 3+", d: "A default reference for your topic" },
 ]
 
+// Outcomes, as the clients report them. Kiryl, 2026-10-21: FreightSizer's two B2B customers in a
+// month both came from ChatGPT; MagiScan gets hundreds of installs a month from the assistants;
+// appslift (same engine, installed separately) gets 2-5 leads a month from ChatGPT and the others.
+const CASES = [
+  {
+    kind: "B2B SaaS · freight dimensioning",
+    site: "freightsizer.ai",
+    url: "https://freightsizer.ai",
+    n: "2",
+    l: "new B2B customers in one month",
+    d: "Both came from ChatGPT.",
+  },
+  {
+    kind: "iOS app · 3D scanning",
+    site: "magiscan.app",
+    url: "https://magiscan.app",
+    n: "Hundreds",
+    l: "of installs a month from AI assistants",
+    d: "From people who came from ChatGPT, Claude and Gemini.",
+  },
+  {
+    kind: "B2B service · app store optimisation",
+    site: "appslift.com",
+    url: "https://appslift.com",
+    n: "2–5",
+    l: "leads a month from AI assistants",
+    d: "Every month, steadily — from ChatGPT and the others.",
+  },
+]
+
 const INCLUDED = [
   "Site setup — free when you start",
   "Up to 12 articles a month, on your domain",
   "An original cover image for every one",
   "Blog hosting — one DNS record",
+  "Weekly check: your buyers' questions × 4 assistants",
   "Monthly evidence report from the server log",
   "Approval queue, full veto",
   "A human who knows your account",
@@ -83,7 +114,7 @@ const FAQS = [
   },
   {
     q: "What can you actually prove?",
-    a: "Two things, both from a server log. That indexing crawlers fetched your pages — which, what, when. And that assistants retrieved specific articles while answering somebody live: ChatGPT-User, OAI-SearchBot and Perplexity-User only appear mid-conversation. We cannot prove how often you are chosen across every question in your field, or that an answer quoted you word for word.",
+    a: "Three things. Whether the assistants name you: every week we put the same questions your buyers ask to ChatGPT, Claude, Gemini and Perplexity, several times each, and count the answers that name you and the sites they cite. And, from a server log, that crawlers fetched your pages and that assistants retrieved specific articles while answering somebody live — ChatGPT-User, OAI-SearchBot and Perplexity-User only appear mid-conversation. Nobody can measure every question anyone might ask; we measure the ones your buyers do.",
   },
   {
     q: "How is this different from an SEO agency?",
@@ -150,6 +181,7 @@ export default function BusinessPage() {
             <span>ItGrows.ai</span>
           </Link>
           <div className="hidden md:flex items-center gap-7">
+            <a href="#cases" className="text-sm text-slate-600 hover:text-[#1b1916] font-medium">Cases</a>
             <a href="#proof" className="text-sm text-slate-600 hover:text-[#1b1916] font-medium">Proof</a>
             <a href="#how" className="text-sm text-slate-600 hover:text-[#1b1916] font-medium">How</a>
             <a href="#pricing" className="text-sm text-slate-600 hover:text-[#1b1916] font-medium">Pricing</a>
@@ -204,6 +236,72 @@ export default function BusinessPage() {
         </div>
       </section>
 
+      {/* Cases: what being named brought, then the crawler evidence underneath */}
+      <section id="cases" className="px-4 sm:px-6 py-16 sm:py-24 scroll-mt-20" style={{ backgroundColor: "#1b1916" }}>
+        <div className="max-w-5xl mx-auto text-center">
+          <div className="inline-block text-[11px] uppercase tracking-[0.2em] font-bold text-violet-300 border border-violet-400/40 rounded-full px-4 py-1.5 mb-6">
+            Cases
+          </div>
+          <h2 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-white mb-10 sm:mb-12">What being named brings</h2>
+
+          <div className="grid md:grid-cols-3 gap-4 sm:gap-5 text-left mb-16 sm:mb-20">
+            {CASES.map((c) => (
+              <a
+                key={c.site}
+                href={c.url}
+                target="_blank"
+                rel="noopener"
+                className="group block rounded-2xl bg-white/[0.06] border border-white/10 hover:bg-white/[0.09] transition-colors p-6 sm:p-8"
+              >
+                <p className="text-[11px] uppercase tracking-wide font-bold text-slate-400">{c.kind}</p>
+                <p className="text-xl sm:text-2xl font-extrabold text-white group-hover:text-violet-300 transition-colors mt-1">
+                  {c.site} ↗
+                </p>
+                <div className="mt-6 text-4xl sm:text-5xl font-extrabold tracking-tighter bg-gradient-to-r from-violet-400 to-cyan-300 bg-clip-text text-transparent">
+                  {c.n}
+                </div>
+                <p className="text-base sm:text-lg font-semibold text-white mt-2 leading-snug">{c.l}</p>
+                <p className="text-sm text-slate-400 mt-2 leading-relaxed">{c.d}</p>
+              </a>
+            ))}
+          </div>
+
+          <p className="text-slate-400 text-sm sm:text-base mb-2">International edtech platform</p>
+          <a
+            href="https://www.pickaclass.com"
+            target="_blank"
+            rel="noopener"
+            className="inline-block text-3xl sm:text-5xl font-extrabold tracking-tight text-white hover:text-violet-300 transition-colors mb-12"
+          >
+            pickaclass.com ↗
+          </a>
+
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+            {[
+              { n: "19.1M", l: "AI crawls", s: "in two weeks" },
+              { n: "1,919", l: "live retrievals", s: "assistants mid-answer" },
+              { n: "1,890", l: "different pages", s: "reached for" },
+              { n: "~11,000", l: "organic visits", s: "every month" },
+            ].map((m) => (
+              <div key={m.l} className="rounded-2xl bg-white/[0.06] border border-white/10 p-5 sm:p-7">
+                <div className="text-3xl sm:text-5xl font-extrabold tracking-tighter bg-gradient-to-r from-violet-400 to-cyan-300 bg-clip-text text-transparent">
+                  {m.n}
+                </div>
+                <div className="text-sm sm:text-base font-semibold text-white mt-2 leading-tight">{m.l}</div>
+                <div className="text-[11px] sm:text-xs text-slate-400 mt-1 leading-tight">{m.s}</div>
+              </div>
+            ))}
+          </div>
+
+          <p className="text-slate-400 text-xs sm:text-sm mt-10 max-w-2xl mx-auto leading-relaxed">
+            Counted from the server log. This is <strong className="text-slate-300">fifteen days</strong> — as far back
+            as the logs are kept, not as far back as the engine has been running. A retrieval proves an assistant
+            reached for the page, not that the answer quoted it. It is still the closest thing to evidence this
+            category has.
+          </p>
+        </div>
+      </section>
+
       {/* Proof — chart first, one line of prose */}
       <section id="proof" className="px-4 sm:px-6 py-14 sm:py-20 scroll-mt-20" style={{ backgroundColor: "#ebe9e5" }}>
         <div className="max-w-3xl mx-auto">
@@ -243,48 +341,6 @@ export default function BusinessPage() {
             ))}
           </div>
 
-        </div>
-      </section>
-
-      {/* The case, given the whole width it deserves */}
-      <section className="px-4 sm:px-6 py-16 sm:py-24" style={{ backgroundColor: "#1b1916" }}>
-        <div className="max-w-5xl mx-auto text-center">
-          <div className="inline-block text-[11px] uppercase tracking-[0.2em] font-bold text-violet-300 border border-violet-400/40 rounded-full px-4 py-1.5 mb-6">
-            Latest case
-          </div>
-          <p className="text-slate-400 text-sm sm:text-base mb-2">International edtech platform</p>
-          <a
-            href="https://www.pickaclass.com"
-            target="_blank"
-            rel="noopener"
-            className="inline-block text-3xl sm:text-5xl font-extrabold tracking-tight text-white hover:text-violet-300 transition-colors mb-12"
-          >
-            pickaclass.com ↗
-          </a>
-
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-            {[
-              { n: "19.1M", l: "AI crawls", s: "in two weeks" },
-              { n: "1,919", l: "live retrievals", s: "assistants mid-answer" },
-              { n: "1,890", l: "different pages", s: "reached for" },
-              { n: "~11,000", l: "organic visits", s: "every month" },
-            ].map((m) => (
-              <div key={m.l} className="rounded-2xl bg-white/[0.06] border border-white/10 p-5 sm:p-7">
-                <div className="text-3xl sm:text-5xl font-extrabold tracking-tighter bg-gradient-to-r from-violet-400 to-cyan-300 bg-clip-text text-transparent">
-                  {m.n}
-                </div>
-                <div className="text-sm sm:text-base font-semibold text-white mt-2 leading-tight">{m.l}</div>
-                <div className="text-[11px] sm:text-xs text-slate-400 mt-1 leading-tight">{m.s}</div>
-              </div>
-            ))}
-          </div>
-
-          <p className="text-slate-400 text-xs sm:text-sm mt-10 max-w-2xl mx-auto leading-relaxed">
-            Counted from the server log. This is <strong className="text-slate-300">fifteen days</strong> — as far back
-            as the logs are kept, not as far back as the engine has been running. A retrieval proves an assistant
-            reached for the page, not that the answer quoted it. It is still the closest thing to evidence this
-            category has.
-          </p>
         </div>
       </section>
 
