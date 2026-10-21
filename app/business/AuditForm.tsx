@@ -16,7 +16,6 @@ interface Audit {
   llmsTxt: boolean
   structuredData: { count: number; types: string[] }
   serverRenderedWords: number
-  rival: { site: string; urlCount: number; answerPages: number; perMonth: number | null; partial: boolean } | null
 }
 
 const TONE = {
@@ -57,7 +56,6 @@ function bareDomain(raw: string) {
 
 export default function AuditForm() {
   const [url, setUrl] = useState("")
-  const [competitor, setCompetitor] = useState("")
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState("")
   const [data, setData] = useState<Audit | null>(null)
@@ -213,7 +211,7 @@ export default function AuditForm() {
       const res = await fetch("/api/business/audit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url, competitor }),
+        body: JSON.stringify({ url }),
       })
       const j = (await res.json()) as Audit & { error?: string }
       if (!res.ok || j.error) setError(j.error ?? "That check did not complete. Try again.")
@@ -270,16 +268,6 @@ export default function AuditForm() {
               "Check my site →"
             )}
           </button>
-        </div>
-        <div className="mt-2.5">
-          <input
-            type="text"
-            value={competitor}
-            onChange={(e) => setCompetitor(e.target.value)}
-            placeholder="competitor.com — optional, but this is the part that stings"
-            aria-label="A competitor's website"
-            className="w-full rounded-xl border border-black/15 bg-white px-4 py-3 text-sm text-[#1b1916] placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-400"
-          />
         </div>
         {error && <p className="text-sm text-red-600 mt-3">{error}</p>}
       </form>
@@ -399,48 +387,6 @@ export default function AuditForm() {
                 </p>
               </div>
 
-              {data.rival && (
-                <div className="px-4 pt-3 pb-4">
-                  <div className="rounded-xl border-2 border-red-200 overflow-hidden">
-                    <div className="px-4 py-2.5 bg-red-600 text-white text-[11px] font-bold tracking-wide uppercase">
-                      Pages that answer a question
-                    </div>
-                    <div className="divide-y divide-black/[0.07]">
-                      <div className="flex items-center justify-between px-4 py-3.5">
-                        <span className="text-sm font-semibold truncate mr-3">{data.site}</span>
-                        <span className={`font-extrabold text-2xl tabular-nums shrink-0 ${answers === 0 ? "text-red-600" : ""}`}>
-                          {answers}
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between px-4 py-3.5 bg-[#f8f7f6]">
-                        <span className="text-sm font-semibold truncate mr-3">{data.rival.site}</span>
-                        <span className="font-extrabold text-2xl tabular-nums shrink-0">{data.rival.answerPages}</span>
-                      </div>
-                    </div>
-                  </div>
-                  <p className="text-[11px] text-slate-500 leading-relaxed mt-2.5">
-                    {data.rival.partial && data.rival.answerPages === 0 ? (
-                      <>
-                        Their sitemap is split across more files than we read in one pass, so this is a sample, not their
-                        total. The full count is in the report.
-                      </>
-                    ) : data.rival.answerPages > answers ? (
-                      <>
-                        That is {data.rival.answerPages - answers} question{data.rival.answerPages - answers === 1 ? "" : "s"}{" "}
-                        an assistant can answer by quoting them and not you
-                        {data.rival.perMonth ? <>, and they are adding about {data.rival.perMonth} a month</> : null}. Both
-                        numbers come from your own public sitemaps.
-                      </>
-                    ) : (
-                      <>
-                        You are ahead of them on this one. The gap closes in whichever direction someone keeps publishing —
-                        both numbers come from public sitemaps, and theirs is not fixed.
-                      </>
-                    )}
-                  </p>
-                </div>
-              )}
-
               {/* Ninety days, with and without */}
               <div className="p-4">
                 <div className="rounded-xl border border-black/10 overflow-hidden">
@@ -527,7 +473,7 @@ export default function AuditForm() {
                 <form onSubmit={requestReport} className="mb-4">
                   <p className="text-sm font-semibold mb-1">Want the 90 questions we would write first?</p>
                   <p className="text-xs text-slate-500 mb-3 leading-relaxed">
-                    The actual questions your buyers ask, ranked, with the ones your competitor already owns marked — plus what to change on the site itself.
+                    The actual questions your buyers ask, ranked, with the ones other businesses already own marked — plus what to change on the site itself.
                   </p>
                   <div className="flex flex-col sm:flex-row gap-2">
                     <input
