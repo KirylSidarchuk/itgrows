@@ -174,7 +174,8 @@ export default async function BusinessBlogPostPage({ params }: { params: Promise
             lang={post.lang ?? "en"}
             className="article-content"
             dangerouslySetInnerHTML={{
-              __html: sanitizeHtml(post.content, {
+              // The stored article starts with its own <h1>; the page already renders the title as one.
+              __html: sanitizeHtml(post.content.replace(/^\s*<h1[^>]*>[\s\S]*?<\/h1>/i, ""), {
                 allowedTags: sanitizeHtml.defaults.allowedTags.concat([
                   "img", "h1", "h2", "h3", "table", "thead", "tbody", "tr", "th", "td",
                 ]),
