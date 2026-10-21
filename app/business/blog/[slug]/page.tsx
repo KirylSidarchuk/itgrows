@@ -191,18 +191,26 @@ export default async function BusinessBlogPostPage({ params }: { params: Promise
           {/* The reason this blog exists. */}
           <div className="mt-12 rounded-2xl bg-white border-2 border-violet-200 p-6 sm:p-8 text-center">
             <h2 className="text-xl sm:text-2xl font-extrabold mb-2 tracking-tight">
-              Can the answer engines even reach your site?
+              Does ChatGPT name your business?
             </h2>
             <p className="text-slate-600 text-sm sm:text-base mb-6 max-w-lg mx-auto leading-relaxed">
-              Enter your domain and see which crawlers are allowed in, how many pages they can find, and what is
-              missing. Free, no signup.
+              Enter your site: we ask ChatGPT and Perplexity five questions your buyers ask and show who they name
+              instead of you. Free, about 30 seconds.
             </p>
-            <Link
-              href="/business"
-              className="inline-block rounded-xl bg-violet-600 hover:bg-violet-500 text-white px-8 py-3.5 text-sm font-semibold shadow-lg shadow-violet-600/30 transition-colors"
-            >
-              Check my site →
-            </Link>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <Link
+                href="/business/ai-visibility-checker"
+                className="inline-block rounded-xl bg-violet-600 hover:bg-violet-500 text-white px-8 py-3.5 text-sm font-semibold shadow-lg shadow-violet-600/30 transition-colors"
+              >
+                Check my AI visibility →
+              </Link>
+              <Link
+                href="/business/ai-crawler-checker"
+                className="inline-block rounded-xl border border-black/10 bg-white hover:bg-[#f8f7f6] px-8 py-3.5 text-sm font-semibold transition-colors"
+              >
+                Am I blocking AI crawlers?
+              </Link>
+            </div>
           </div>
 
           {related.length > 0 && (

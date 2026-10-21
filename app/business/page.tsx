@@ -247,6 +247,13 @@ export default function BusinessPage() {
             So that when someone asks about your field, they name you. Check your own site first — free, no signup.
           </p>
           <AuditForm />
+          <p className="text-xs text-slate-500 mt-3">
+            Free tools: <Link href="/business/ai-visibility-checker" className="text-violet-700 hover:underline">AI visibility checker</Link>
+            {" · "}
+            <Link href="/business/ai-crawler-checker" className="text-violet-700 hover:underline">AI crawler checker</Link>
+            {" · "}
+            <Link href="/business/blog" className="text-violet-700 hover:underline">Guides</Link>
+          </p>
 
           {/* The headline names four; we watch all of these. Every one appears in our own logs. */}
           <div className="mt-10">

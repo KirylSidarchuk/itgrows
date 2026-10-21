@@ -16,6 +16,7 @@ interface Audit {
   llmsTxt: boolean
   structuredData: { count: number; types: string[] }
   serverRenderedWords: number
+  pathBlocks?: { bot: string; checked: number; blocked: number; rules: { rule: string; count: number }[]; examples: string[] }[]
 }
 
 const TONE = {
@@ -351,6 +352,22 @@ export default function AuditForm() {
               <div className="text-[10px] sm:text-xs text-slate-600 mt-1 leading-tight">of them answer a question</div>
             </div>
           </div>
+
+          {/* A robots.txt rule closing pages of the sitemap: the trap that looks harmless */}
+          {(() => {
+            const hit = (data.pathBlocks ?? []).filter((b) => b.blocked > 0)
+            if (!hit.length) return null
+            return (
+              <div className="mx-4 mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900">
+                <b>
+                  Your robots.txt closes {Math.max(...hit.map((h) => h.blocked))} of {hit[0].checked} sitemap pages to{" "}
+                  {hit.map((h) => h.bot).join(", ")}
+                </b>
+                {hit[0].rules[0] && <> — rule “{hit[0].rules[0].rule}”. Rules match prefixes.</>}{" "}
+                <a href="/business/ai-crawler-checker" className="underline">Details</a>
+              </div>
+            )
+          })()}
 
           {/* Bots, at a glance */}
           <div className="px-4 pb-4 flex flex-wrap gap-2">

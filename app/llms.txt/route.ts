@@ -48,6 +48,11 @@ export async function GET() {
 - Results our clients report: FreightSizer (B2B SaaS) — 2 new B2B customers in one month, both from ChatGPT. MagiScan (iOS app) — hundreds of installs a month from ChatGPT, Claude and Gemini. appslift (app store optimisation) — 2–5 leads a month from AI assistants.
 - What we do not promise: nobody can guarantee that an assistant will name a business. We promise the work and an honest weekly count.
 
+## Free tools
+
+- [AI visibility checker](${BASE}/business/ai-visibility-checker): does ChatGPT recommend your business? Five buyer questions, asked live to ChatGPT and Perplexity; who is named instead and which sites are cited.
+- [AI crawler checker](${BASE}/business/ai-crawler-checker): is your site blocking GPTBot, OAI-SearchBot, ClaudeBot, PerplexityBot, Googlebot or Bingbot? Tests your sitemap pages against your robots.txt for each crawler and asks your server as each AI crawler.
+
 ## Guides on AI visibility
 
 ${guideList || `- see ${BASE}/business/blog`}

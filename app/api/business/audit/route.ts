@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db"
 import { sql } from "drizzle-orm"
+import { parseRobots, rulesFor, sitemapsIn, verdict } from "@/lib/robots"
 
 // The audit that runs from nothing but a URL.
 //
@@ -261,7 +262,55 @@ export async function POST(req: NextRequest) {
     }
   }
 
+  // No /sitemap.xml: many sites declare theirs only in robots.txt (WordPress plugins name them
+  // page-sitemap.xml, post-sitemap.xml and so on). Read those before reporting "no sitemap".
+  if (urlCount === 0 && robotsRes.status === 200) {
+    const declared = sitemapsIn(robotsRes.text).slice(0, 6)
+    if (declared.length) {
+      const bodies = await Promise.all(declared.map(async (u) => (await grab(u, HUMAN_UA, 8000)).text))
+      const firstLevel = bodies.flatMap((b) => [...b.matchAll(/<loc>\s*([^<]+?)\s*<\/loc>/g)].map((m) => m[1]))
+      const nested = firstLevel.filter((u) => /\.xml($|\?)/i.test(u))
+      if (nested.length) {
+        const more = await Promise.all(pickChildren(nested, 6).map(async (c) => (await grab(c, HUMAN_UA, 8000)).text))
+        locs = [...firstLevel.filter((u) => !/\.xml($|\?)/i.test(u)), ...more.flatMap((b) => [...b.matchAll(/<loc>\s*([^<]+?)\s*<\/loc>/g)].map((m) => m[1]))]
+        partial = true
+      } else {
+        locs = firstLevel
+      }
+      urlCount = locs.length
+      if (urlCount) sitemapKind = nested.length ? "index" : "urlset"
+    }
+  }
+
   const answerPages = countAnswers(locs)
+
+  // Which of the site's own pages each crawler may fetch. A rule like "Disallow: /b" closes /blog
+  // and /business too; this finds such rules by testing real URLs, not by reading the rules.
+  const groups = robotsRes.status === 200 ? parseRobots(robotsRes.text) : []
+  const sampleUrls = [origin + "/", ...locs.filter((u) => !/\.xml($|\?)/i.test(u)).slice(0, 400)]
+  const PATH_BOTS = ["GPTBot", "OAI-SearchBot", "ChatGPT-User", "ClaudeBot", "Claude-SearchBot", "PerplexityBot", "Googlebot", "Bingbot"]
+  const pathBlocks = PATH_BOTS.map((bot) => {
+    const rules = rulesFor(groups, bot)
+    const blocked: { url: string; rule: string }[] = []
+    for (const u of sampleUrls) {
+      try {
+        const p = new URL(u)
+        const v = verdict(rules, p.pathname + p.search)
+        if (!v.allowed) blocked.push({ url: u, rule: `Disallow: ${v.rule?.path ?? ""}` })
+      } catch {
+        // not a URL; skip
+      }
+    }
+    const byRule = new Map<string, number>()
+    for (const b of blocked) byRule.set(b.rule, (byRule.get(b.rule) ?? 0) + 1)
+    return {
+      bot,
+      checked: sampleUrls.length,
+      blocked: blocked.length,
+      rules: [...byRule.entries()].sort((a, b) => b[1] - a[1]).slice(0, 3).map(([rule, count]) => ({ rule, count })),
+      examples: blocked.slice(0, 3).map((b) => b.url),
+    }
+  })
 
   // JSON-LD on the homepage is a weak signal — marketing homepages often have none while every
   // article has plenty. Sample a real content URL from the sitemap too.
@@ -299,6 +348,7 @@ export async function POST(req: NextRequest) {
     surface: { urlCount, sitemapKind, isFloor: partial, answerPages, partial },
     rival,
     llmsTxt: llmsStatus === 200,
+    pathBlocks,
     structuredData: { count: jsonLdTypes.length, types: uniqueTypes },
     serverRenderedWords: textOnly.split(" ").filter(Boolean).length,
   }
