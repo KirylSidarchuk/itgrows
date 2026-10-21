@@ -15,7 +15,9 @@ const PRIVATE = [
   "/personal/welcome",
   "/subscribe-discount",
   "/aso",
-  "/b",
+  // Not "/b": robots rules are prefixes, and "/b" also closed /blog, /business and every
+  // /business/blog article to every crawler from 11 Aug to 21 Oct 2026. /b only redirects to /.
+  "/b$",
 ]
 
 // The assistants people now ask instead of searching. A wildcard rule already permits them,
