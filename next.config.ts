@@ -12,6 +12,7 @@ const nextConfig: NextConfig = {
       // the pretty URL. The dot cannot be part of a path segment in the app directory, so the
       // suffix is stripped here and handled by a normal route handler.
       { source: "/blog/:slug.md", destination: "/blog-md/:slug" },
+      { source: "/business/blog/:slug.md", destination: "/business-blog-md/:slug" },
     ]
   },
 };

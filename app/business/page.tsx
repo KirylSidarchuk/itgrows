@@ -139,12 +139,46 @@ function jsonLd() {
     "@context": "https://schema.org",
     "@graph": [
       {
+        "@type": "Organization",
+        "@id": "https://www.itgrows.ai/#organization",
+        name: "ItGrows",
+        alternateName: "ItGrows.ai",
+        url: "https://www.itgrows.ai",
+        logo: "https://www.itgrows.ai/logo.jpg",
+        email: "kiryl@itgrows.ai",
+        description:
+          "ItGrows makes businesses visible in AI answers: articles on the client's own domain that answer buyers' questions, fixes for AI crawler access and indexing, and a weekly measurement of whether ChatGPT, Claude, Gemini and Perplexity name the business. It also drafts LinkedIn and X posts in a founder's own voice.",
+        knowsAbout: [
+          "Generative engine optimization",
+          "AI visibility",
+          "Answer engine optimization",
+          "ChatGPT search",
+          "Perplexity",
+          "Claude",
+          "Google Gemini",
+          "AI crawlers",
+          "llms.txt",
+          "IndexNow",
+        ],
+      },
+      {
+        "@type": "WebApplication",
+        name: "ItGrows AI visibility check",
+        url: "https://www.itgrows.ai/business",
+        applicationCategory: "BusinessApplication",
+        operatingSystem: "Web",
+        description:
+          "Free check of whether ChatGPT and Perplexity name a business when its buyers ask: five buyer questions generated from the site, answered live with web search, with the businesses named instead and the sites cited.",
+        offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+        provider: { "@id": "https://www.itgrows.ai/#organization" },
+      },
+      {
         "@type": "Service",
-        name: "ItGrows for Business — GEO engine",
+        name: "ItGrows for Business — AI visibility (GEO)",
         serviceType: "Generative engine optimisation and content publishing",
         description:
-          "Research-grade articles published to a customer's own domain, structured so AI assistants can quote them, with server-side measurement of answer-engine activity.",
-        provider: { "@type": "Organization", name: "ItGrows", url: "https://www.itgrows.ai" },
+          "Articles published to a customer's own domain that answer the questions buyers ask AI assistants, fixes for crawler access and indexing, and a weekly measurement across ChatGPT, Claude, Gemini and Perplexity of whether the business is named.",
+        provider: { "@id": "https://www.itgrows.ai/#organization" },
         offers: {
           "@type": "Offer",
           price: "499",

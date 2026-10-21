@@ -88,6 +88,12 @@ export const blogPosts = pgTable("blog_posts", {
   keywords: jsonb("keywords").notNull().default([]),
   coverImageUrl: text("cover_image_url"),
   publishedAt: timestamp("published_at").notNull().defaultNow(),
+  // Set when an article is rewritten in place: shown as "Updated" and used as dateModified.
+  updatedAt: timestamp("updated_at"),
+  // Set when an article was merged into another: its URL answers with a permanent redirect there.
+  redirectTo: text("redirect_to"),
+  // Language of the article; null means English.
+  lang: text("lang"),
 }, (t) => [index("blog_posts_user_id_idx").on(t.userId), index("blog_posts_site_slug_idx").on(t.siteSlug)])
 
 export const scheduledPosts = pgTable("scheduled_posts", {

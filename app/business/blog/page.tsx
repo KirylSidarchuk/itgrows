@@ -3,7 +3,7 @@ import Link from "next/link"
 import { noteCrawler } from "@/lib/crawler-log"
 import { db } from "@/lib/db"
 import { blogPosts } from "@/lib/db/schema"
-import { desc, eq } from "drizzle-orm"
+import { desc, eq, and, isNull } from "drizzle-orm"
 
 // revalidate 0 rather than a static build: a prerendered page never executes on request, so the
 // crawler telemetry below would record nothing — which is how the first attempt at measuring this
@@ -30,7 +30,7 @@ export default async function BusinessBlogPage() {
   const posts = await db
     .select()
     .from(blogPosts)
-    .where(eq(blogPosts.siteSlug, "itgrows-business"))
+    .where(and(eq(blogPosts.siteSlug, "itgrows-business"), isNull(blogPosts.redirectTo)))
     .orderBy(desc(blogPosts.publishedAt))
 
   return (

@@ -1,11 +1,11 @@
 import { db } from "@/lib/db"
 import { blogPosts } from "@/lib/db/schema"
-import { desc, eq } from "drizzle-orm"
+import { and, desc, eq, isNull } from "drizzle-orm"
 import { noteCrawler } from "@/lib/crawler-log"
 
-// /llms.txt — the emerging convention for telling an assistant what a site is and where its
-// substance lives, in one fetch, without it having to infer any of that from marketing pages.
-// Generated from the database so newly published articles appear the day they go live.
+// /llms.txt — what ItGrows is and where its substance lives, in one fetch. Generated from the
+// database so newly published articles appear the day they go live. AI visibility comes first:
+// it is what we want an assistant to know us for.
 
 const BASE = "https://www.itgrows.ai"
 
@@ -13,59 +13,59 @@ const BASE = "https://www.itgrows.ai"
 // reaches the server, so crawler visits would be invisible.
 export const dynamic = "force-dynamic"
 
+async function articles(siteSlug: string, limit: number) {
+  try {
+    return await db
+      .select({ slug: blogPosts.slug, title: blogPosts.title, description: blogPosts.metaDescription })
+      .from(blogPosts)
+      .where(and(eq(blogPosts.siteSlug, siteSlug), isNull(blogPosts.redirectTo)))
+      .orderBy(desc(blogPosts.publishedAt))
+      .limit(limit)
+  } catch {
+    return [] // a database hiccup must not turn this into a 500 — serve the static part
+  }
+}
+
 export async function GET() {
   void noteCrawler("/llms.txt")
-  let articles: { slug: string; title: string | null }[] = []
-  try {
-    articles = await db
-      .select({ slug: blogPosts.slug, title: blogPosts.title })
-      .from(blogPosts)
-      .where(eq(blogPosts.siteSlug, "itgrows"))
-      .orderBy(desc(blogPosts.publishedAt))
-      .limit(100)
-  } catch {
-    // A database hiccup must not turn this into a 500 — serve the static part.
-  }
+  const [guides, posts] = await Promise.all([articles("itgrows-business", 200), articles("itgrows", 100)])
 
-  const list = articles
-    .map((a) => `- [${a.title ?? a.slug}](${BASE}/blog/${a.slug}) — also as markdown: ${BASE}/blog/${a.slug}.md`)
+  const guideList = guides
+    .map((a) => `- [${a.title}](${BASE}/business/blog/${a.slug}) (markdown: ${BASE}/business/blog/${a.slug}.md)${a.description ? `: ${a.description}` : ""}`)
     .join("\n")
+  const postList = posts.map((a) => `- [${a.title}](${BASE}/blog/${a.slug}) (markdown: ${BASE}/blog/${a.slug}.md)`).join("\n")
 
-  const body = `# itgrows.ai
+  const body = `# ItGrows
 
-> ItGrows writes and publishes LinkedIn and X posts in your own voice, on topics you choose. Built for founders, executives and consultants who are building their own authority while running everything else themselves.
+> ItGrows makes businesses visible in AI answers. We publish answer-shaped articles on a company's own domain, fix what stops AI crawlers and search indexes from reading the site, and measure every week whether ChatGPT, Claude, Gemini and Perplexity name the business. A free AI visibility check is at ${BASE}/business. ItGrows also drafts LinkedIn and X posts in a founder's own voice.
 
-## What it does
+## AI visibility (generative engine optimization, GEO)
 
-- You set the topics; the system drafts each post in your voice and publishes on your schedule.
-- You approve or edit anything before it goes out — nothing publishes without you.
-- Publishes to a LinkedIn personal profile, a LinkedIn Company Page, and X, via the official APIs.
-- Generates an original image for every post.
+- What it is: getting a business named, and its pages cited, when buyers ask AI assistants the questions of its field.
+- How it works: we put the questions a business's buyers ask to ChatGPT, Claude, Gemini and Perplexity, several times each, and record who is named and which sites are cited. Then we publish articles on the client's own domain that answer those questions, fix crawler access and indexing (robots.txt, sitemaps, Bing and Google, IndexNow), and re-measure every week.
+- Free check: ${BASE}/business puts five buyer questions to ChatGPT and Perplexity in about 30 seconds. A free account gets the full report (20 questions × 4 assistants × 3 asks) and a weekly re-check.
+- Price: $499 a month, month to month.
+- Results our clients report: FreightSizer (B2B SaaS) — 2 new B2B customers in one month, both from ChatGPT. MagiScan (iOS app) — hundreds of installs a month from ChatGPT, Claude and Gemini. appslift (app store optimisation) — 2–5 leads a month from AI assistants.
+- What we do not promise: nobody can guarantee that an assistant will name a business. We promise the work and an honest weekly count.
 
-## Pricing
+## Guides on AI visibility
 
-- **Personal — $49/mo:** one platform account (LinkedIn or X).
-- **Duo — $99/mo:** any two accounts.
-- **All-in — $199/mo:** LinkedIn personal + Company Page + X personal + X company.
-- **Business — $499/mo:** the GEO engine — up to 12 articles a month published to your own domain, structured so AI assistants can quote them, with a monthly report of which answer engines crawled and retrieved them.
-- 14-day free trial, no credit card required. Cancel any time.
+${guideList || `- see ${BASE}/business/blog`}
 
-## Discoverable content
+## LinkedIn and X ghostwriting
 
-- [${BASE}/sitemap.xml](${BASE}/sitemap.xml) — full URL list
-- [${BASE}/blog](${BASE}/blog) — articles on LinkedIn authority, ghostwriting alternatives and thought-leadership content
-- [${BASE}/company](${BASE}/company) — LinkedIn Company Page publishing
-- [${BASE}/business](${BASE}/business) — GEO engine for businesses: articles published to your own domain, structured for AI assistants, with measured crawler evidence
-- [${BASE}/reddit](${BASE}/reddit) — Reddit planner (closed beta): from your site and goal, 3–5 Reddit actions a day with replies written; you post from your own account, the next day it checks whether the comment stayed up
+- ItGrows drafts LinkedIn and X posts in your own voice, on topics you choose, and publishes them on your schedule after you approve them — to a LinkedIn profile, a LinkedIn Company Page and X, via the official APIs.
+- Pricing: Personal $49/mo (one account), Duo $99/mo (two), All-in $199/mo (LinkedIn personal + Company Page + X personal + X company). 14-day free trial, no credit card.
+- ${BASE}/ · ${BASE}/company · ${BASE}/personal
+- Reddit planner (closed beta): ${BASE}/reddit
 
-## Markdown alternates
+## Articles on LinkedIn, X and Reddit
 
-Every article has a clean markdown version for LLM context at:
-\`${BASE}/blog/{slug}.md\` — title, summary and body without navigation or markup.
+${postList || `- see ${BASE}/blog`}
 
-## Articles
+## Full URL list
 
-${list || `- see ${BASE}/blog`}
+- ${BASE}/sitemap.xml
 
 ## Do not crawl (private)
 
@@ -79,9 +79,6 @@ kiryl@itgrows.ai
 `
 
   return new Response(body, {
-    headers: {
-      "Content-Type": "text/plain; charset=utf-8",
-      "Cache-Control": "public, max-age=3600, s-maxage=3600",
-    },
+    headers: { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "public, max-age=3600, s-maxage=3600" },
   })
 }

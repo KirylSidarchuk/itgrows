@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation"
+import { notFound, permanentRedirect } from "next/navigation"
 import { noteCrawler } from "@/lib/crawler-log"
 import Link from "next/link"
 import { db } from "@/lib/db"
@@ -148,6 +148,7 @@ export default async function BlogPostPage({
   if (!post) {
     notFound()
   }
+  if (post.redirectTo) permanentRedirect(post.redirectTo)
 
   const articleSchema = {
     "@context": "https://schema.org",

@@ -1,6 +1,6 @@
 import { db } from "@/lib/db"
 import { blogPosts } from "@/lib/db/schema"
-import { desc, eq } from "drizzle-orm"
+import { and, desc, eq, isNull } from "drizzle-orm"
 import type { MetadataRoute } from "next"
 
 // Always reflect the DB so cron-published posts hit the sitemap immediately
@@ -11,15 +11,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Only OUR marketing posts (siteSlug="itgrows") belong in itgrows.ai's sitemap —
   // client-site posts live under their own domains, not here.
   const posts = await db
-    .select({ slug: blogPosts.slug, publishedAt: blogPosts.publishedAt })
+    .select({ slug: blogPosts.slug, publishedAt: blogPosts.publishedAt, updatedAt: blogPosts.updatedAt })
     .from(blogPosts)
-    .where(eq(blogPosts.siteSlug, "itgrows"))
+    .where(and(eq(blogPosts.siteSlug, "itgrows"), isNull(blogPosts.redirectTo)))
     .orderBy(desc(blogPosts.publishedAt))
 
   const businessPosts = await db
-    .select({ slug: blogPosts.slug, publishedAt: blogPosts.publishedAt })
+    .select({ slug: blogPosts.slug, publishedAt: blogPosts.publishedAt, updatedAt: blogPosts.updatedAt })
     .from(blogPosts)
-    .where(eq(blogPosts.siteSlug, "itgrows-business"))
+    .where(and(eq(blogPosts.siteSlug, "itgrows-business"), isNull(blogPosts.redirectTo)))
     .orderBy(desc(blogPosts.publishedAt))
 
   // Every public marketing page belongs here. Only the home page and the blog index were
@@ -37,7 +37,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: "https://www.itgrows.ai/reddit", lastModified: new Date(), changeFrequency: "weekly", priority: 0.8 },
     ...businessPosts.map((post) => ({
       url: `https://www.itgrows.ai/business/blog/${post.slug}`,
-      lastModified: post.publishedAt,
+      lastModified: post.updatedAt ?? post.publishedAt,
       changeFrequency: "weekly" as const,
       priority: 0.7,
     })),
@@ -47,7 +47,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const postRoutes: MetadataRoute.Sitemap = posts.map((post) => ({
     url: `https://www.itgrows.ai/blog/${post.slug}`,
-    lastModified: post.publishedAt,
+    lastModified: post.updatedAt ?? post.publishedAt,
     changeFrequency: "monthly" as const,
     priority: 0.8,
   }))

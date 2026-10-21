@@ -1,9 +1,9 @@
-import { notFound } from "next/navigation"
+import { notFound, permanentRedirect } from "next/navigation"
 import { noteCrawler } from "@/lib/crawler-log"
 import Link from "next/link"
 import { db } from "@/lib/db"
 import { blogPosts } from "@/lib/db/schema"
-import { and, desc, eq, ne } from "drizzle-orm"
+import { and, desc, eq, isNull, ne } from "drizzle-orm"
 import sanitizeHtml from "sanitize-html"
 import type { Metadata } from "next"
 
@@ -24,20 +24,24 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     .select()
     .from(blogPosts)
     .where(and(eq(blogPosts.slug, slug), eq(blogPosts.siteSlug, SITE_SLUG)))
-  if (!post) return {}
+  if (!post || post.redirectTo) return {}
 
   const imageUrl = `${BASE}/api/blog/image/${post.id}`
   return {
     title: post.title,
     description: post.metaDescription || post.title,
     keywords: Array.isArray(post.keywords) ? (post.keywords as string[]).join(", ") : undefined,
-    alternates: { canonical: `${BASE}/business/blog/${slug}` },
+    alternates: {
+      canonical: `${BASE}/business/blog/${slug}`,
+      types: { "text/markdown": `${BASE}/business/blog/${slug}.md` },
+    },
     openGraph: {
       title: post.title,
       description: post.metaDescription || post.title,
       url: `${BASE}/business/blog/${slug}`,
       type: "article",
       publishedTime: post.publishedAt.toISOString(),
+      ...(post.updatedAt ? { modifiedTime: post.updatedAt.toISOString() } : {}),
       images: post.coverImageUrl ? [{ url: imageUrl, width: 1200, height: 630, alt: post.title }] : [],
     },
     twitter: {
@@ -59,13 +63,14 @@ export default async function BusinessBlogPostPage({ params }: { params: Promise
     .where(and(eq(blogPosts.slug, slug), eq(blogPosts.siteSlug, SITE_SLUG)))
 
   if (!post) notFound()
+  if (post.redirectTo) permanentRedirect(post.redirectTo)
 
   // Siblings for the footer. The generator links inline where it fits; this guarantees every
   // article has outbound paths into the cluster even when it did not.
   const related = await db
     .select({ slug: blogPosts.slug, title: blogPosts.title, id: blogPosts.id })
     .from(blogPosts)
-    .where(and(eq(blogPosts.siteSlug, SITE_SLUG), ne(blogPosts.slug, slug)))
+    .where(and(eq(blogPosts.siteSlug, SITE_SLUG), ne(blogPosts.slug, slug), isNull(blogPosts.redirectTo)))
     .orderBy(desc(blogPosts.publishedAt))
     .limit(4)
 
@@ -75,8 +80,16 @@ export default async function BusinessBlogPostPage({ params }: { params: Promise
     headline: post.title,
     description: post.metaDescription || post.title,
     datePublished: post.publishedAt.toISOString(),
-    dateModified: post.publishedAt.toISOString(),
-    publisher: { "@type": "Organization", name: "ItGrows.ai", url: BASE },
+    dateModified: (post.updatedAt ?? post.publishedAt).toISOString(),
+    inLanguage: post.lang ?? "en",
+    author: { "@type": "Organization", "@id": `${BASE}/#organization`, name: "ItGrows", url: `${BASE}/business` },
+    publisher: {
+      "@type": "Organization",
+      "@id": `${BASE}/#organization`,
+      name: "ItGrows",
+      url: BASE,
+      logo: { "@type": "ImageObject", url: `${BASE}/logo.jpg` },
+    },
     mainEntityOfPage: { "@type": "WebPage", "@id": `${BASE}/business/blog/${slug}` },
     ...(post.coverImageUrl ? { image: `${BASE}/api/blog/image/${post.id}` } : {}),
   }
@@ -148,11 +161,17 @@ export default async function BusinessBlogPostPage({ params }: { params: Promise
 
           <p className="text-[#1b1916]/60 text-sm mb-10">
             {formatDate(post.publishedAt)}
+            {post.updatedAt && (
+              <>
+                <span className="mx-2 opacity-40">·</span>Updated {formatDate(post.updatedAt)}
+              </>
+            )}
             <span className="mx-2 opacity-40">·</span>
             {readingTimeMin} min read
           </p>
 
           <div
+            lang={post.lang ?? "en"}
             className="article-content"
             dangerouslySetInnerHTML={{
               __html: sanitizeHtml(post.content, {
