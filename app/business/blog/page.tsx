@@ -11,10 +11,16 @@ import { desc, eq, and, isNull } from "drizzle-orm"
 export const revalidate = 0
 
 export const metadata: Metadata = {
-  title: "AI visibility — how to get your business named by ChatGPT | ItGrows",
+  title: "AI visibility guides: get named by ChatGPT | ItGrows",
   description:
     "A working series on generative engine optimisation: how AI assistants find, read and cite a business, and how to tell whether yours is visible at all.",
   alternates: { canonical: "https://www.itgrows.ai/business/blog" },
+  openGraph: {
+    title: "AI visibility guides: how to get your business named by ChatGPT",
+    description: "How ChatGPT, Claude, Gemini and Perplexity find, read and cite a business, from our own weekly measurements.",
+    url: "https://www.itgrows.ai/business/blog",
+    type: "website",
+  },
 }
 
 function stripHtml(html: string): string {

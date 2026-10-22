@@ -7,7 +7,7 @@ import { ENGINE_ICONS } from "./engine-icons"
 // Server-rendered on purpose. This page sells machine legibility, so it has to be legible to a
 // machine itself: the substance is in the HTML, not assembled by script after arrival.
 export const metadata: Metadata = {
-  title: "Make your site visible to ChatGPT, Claude, Perplexity, Gemini and the rest | ItGrows",
+  title: "Get named by ChatGPT, Claude, Gemini & Perplexity | ItGrows",
   description:
     "We publish research-grade articles to your own domain, shaped so AI assistants can quote them — and show you which answer engines actually visited. Free check, then $499/mo.",
   alternates: { canonical: "https://www.itgrows.ai/business" },

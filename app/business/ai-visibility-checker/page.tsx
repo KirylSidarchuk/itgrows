@@ -7,7 +7,7 @@ import Faq, { faqSchema, type QA } from "../_tools/Faq"
 const URL = "https://www.itgrows.ai/business/ai-visibility-checker"
 
 export const metadata: Metadata = {
-  title: "Free AI visibility checker: does ChatGPT recommend your business? | ItGrows",
+  title: "Free AI visibility checker: does ChatGPT name you? | ItGrows",
   description:
     "Enter your website: we ask ChatGPT and Perplexity five questions your buyers ask and show whether they name you, who they name instead and which sites they cite. Free.",
   alternates: { canonical: URL },

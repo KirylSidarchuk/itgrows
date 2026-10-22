@@ -49,6 +49,11 @@ export async function GET(_req: Request, { params }: { params: Promise<{ slug: s
     .join("\n")
 
   return new Response(body, {
-    headers: { "Content-Type": "text/markdown; charset=utf-8", "Cache-Control": "public, max-age=3600, s-maxage=3600" },
+    headers: {
+      "Content-Type": "text/markdown; charset=utf-8",
+      "Cache-Control": "public, max-age=3600, s-maxage=3600",
+      // The HTML article is the page to index; this is its plain-text copy.
+      Link: `<https://www.itgrows.ai/business/blog/${slug}>; rel="canonical"`,
+    },
   })
 }

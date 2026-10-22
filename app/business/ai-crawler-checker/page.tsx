@@ -7,7 +7,7 @@ import CrawlerChecker from "./CrawlerChecker"
 const URL = "https://www.itgrows.ai/business/ai-crawler-checker"
 
 export const metadata: Metadata = {
-  title: "AI crawler checker: is your site blocking GPTBot, ClaudeBot or PerplexityBot? | ItGrows",
+  title: "AI crawler checker: is your site blocking GPTBot? | ItGrows",
   description:
     "Free check of your robots.txt and server for GPTBot, OAI-SearchBot, ClaudeBot, PerplexityBot, Googlebot and Bingbot, including rules that quietly close pages in your sitemap.",
   alternates: { canonical: URL },

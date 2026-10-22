@@ -57,6 +57,8 @@ export async function GET(
     headers: {
       "Content-Type": "text/markdown; charset=utf-8",
       "Cache-Control": "public, max-age=3600, s-maxage=3600",
+      // The HTML article is the page to index; this is its plain-text copy.
+      Link: `<https://www.itgrows.ai/blog/${slug}>; rel="canonical"`,
     },
   })
 }
