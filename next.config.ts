@@ -10,6 +10,13 @@ const nextConfig: NextConfig = {
   // Not permanent, so a page can come back at one of these paths later.
   async redirects() {
     const D = "/business/dashboard"
+    const AD_CLICK = [
+      { type: "query" as const, key: "gclid" },
+      { type: "query" as const, key: "gbraid" },
+      { type: "query" as const, key: "wbraid" },
+      { type: "query" as const, key: "gad_source" },
+      { type: "query" as const, key: "utm_medium", value: "cpc" },
+    ]
     return [
       // Ad clicks are for the LinkedIn/X product, which left "/" for /personal on 22 Oct 2026.
       { source: "/", has: [{ type: "query", key: "gclid" }], destination: "/personal", permanent: false },
@@ -17,6 +24,10 @@ const nextConfig: NextConfig = {
       { source: "/", has: [{ type: "query", key: "wbraid" }], destination: "/personal", permanent: false },
       { source: "/", has: [{ type: "query", key: "gad_source" }], destination: "/personal", permanent: false },
       { source: "/", has: [{ type: "query", key: "utm_medium", value: "cpc" }], destination: "/personal", permanent: false },
+      // /business merged into "/" on 22 Oct 2026 (owner's decision). Only the exact path: /business/* stays.
+      // An ad click (the AI-visibility ads land on /business) is not redirected: "/" would send it on to
+      // /personal by the rules above. It is served the page of "/" in place instead (rewrites below).
+      { source: "/business", missing: AD_CLICK, destination: "/", permanent: true },
       { source: `${D}/tasks`, destination: `${D}/visibility`, permanent: false },
       { source: `${D}/onboarding`, destination: `${D}/visibility`, permanent: false },
       { source: `${D}/new-task`, destination: `${D}/articles`, permanent: false },
@@ -30,13 +41,19 @@ const nextConfig: NextConfig = {
     ]
   },
   async rewrites() {
-    return [
-      // Serve a clean markdown alternate for each article at /blog/{slug}.md without giving up
-      // the pretty URL. The dot cannot be part of a path segment in the app directory, so the
-      // suffix is stripped here and handled by a normal route handler.
-      { source: "/blog/:slug.md", destination: "/blog-md/:slug" },
-      { source: "/business/blog/:slug.md", destination: "/business-blog-md/:slug" },
-    ]
+    return {
+      // /business reaches here only as an ad click (every other visit is redirected to "/" above):
+      // it gets the AI-visibility page of "/" at its own address, with the ad's query kept.
+      beforeFiles: [{ source: "/business", destination: "/" }],
+      afterFiles: [
+        // Serve a clean markdown alternate for each article at /blog/{slug}.md without giving up
+        // the pretty URL. The dot cannot be part of a path segment in the app directory, so the
+        // suffix is stripped here and handled by a normal route handler.
+        { source: "/blog/:slug.md", destination: "/blog-md/:slug" },
+        { source: "/business/blog/:slug.md", destination: "/business-blog-md/:slug" },
+      ],
+      fallback: [],
+    }
   },
 };
 

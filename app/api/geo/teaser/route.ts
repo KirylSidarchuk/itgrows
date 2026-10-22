@@ -7,7 +7,7 @@ import { geoCheck, clientIp, type PublicRun, type ResultRow } from "@/lib/geo-ch
 //
 // A stranger gets two answers in full. For the other three only the question leaves the server, so
 // the blur on the page hides nothing devtools could lift. The full answers, and the other two
-// assistants, are what the free account is for.
+// assistants, are what the account and the detailed report are for.
 
 export const dynamic = "force-dynamic"
 export const maxDuration = 30

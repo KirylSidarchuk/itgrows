@@ -3,9 +3,20 @@
 // The pieces of the AI-visibility page. Rules that hold on every card: counts, never percentages or
 // scores; "you" is violet, everyone else slate; an assistant that could not be checked is shown as
 // such and left out of the totals — it never counts as "not named"; nothing is projected.
+//
+// The detailed report is paid for. Until it is, the server sends a preview (access "preview"): the
+// counts, the questions of the quick check with their answers, the rest as the question alone
+// ("locked" rows), three names given instead and how many sites are quoted. Nothing hidden reaches
+// the browser, so a locked row is drawn as a placeholder, never as data.
+//
+// What is sold, said the same way on every page: the report is the diagnosis plus the plan of what
+// WE do about it; the plan is us doing that work. The report never teaches how to do it yourself:
+// a step says what we do, why (the evidence) and what it should change — no how-to, no guides.
+// Clients on the plan, and clients we set up by hand (site.client), read every step as "We're on it".
 
-import { useEffect, useState } from "react"
+import { Fragment, useEffect, useState, type ReactNode } from "react"
 import { ENGINE_ICONS } from "../../engine-icons"
+import { CREDIT_DAYS, GEO_PRICES, REPORT_SITES, SAMPLE_PATH, type GeoInterval } from "@/lib/geo-pricing"
 
 export interface EngineAnswer {
   named: number
@@ -18,7 +29,10 @@ export interface EngineAnswer {
 }
 export interface Row {
   q: string
-  engines: Record<string, EngineAnswer>
+  /** Absent on a locked row: the preview sends only the question. */
+  engines?: Record<string, EngineAnswer>
+  /** Preview: the answers to this question are in the full report only. */
+  locked?: boolean
 }
 export interface Summary {
   named: number
@@ -29,6 +43,10 @@ export interface Summary {
   sources?: { domain: string; count: number; type: string }[]
   previous?: { kind: string; finished_at: string; named: number; of: number }
   changes?: Change[]
+  /** Preview: how many names given instead are left out of named_instead. */
+  rivalsMore?: number
+  /** Preview: how many cited sites the full report lists (sources is then empty). */
+  sourcesMore?: number
 }
 export type Change =
   | { type: "new"; engine: string; q: string }
@@ -50,6 +68,13 @@ export interface SiteReport {
   offering: string | null
   plan: string
   followedAt: string
+  /** "preview" until the report is bought or the site is on the plan. Absent means full. */
+  access?: "full" | "preview"
+  /** A client we set up by hand (geo_clients) who owns this domain: read like a site on the plan. */
+  client?: boolean
+  /** creditUntil: the report's price comes off the first plan payment until then. */
+  research?: { paidAt: string | null; creditUntil: string | null }
+  planInterval?: GeoInterval | null
   pending: {
     kind: string
     status: string
@@ -116,13 +141,57 @@ export function fmtDate(iso?: string | null) {
 
 function citedByEngine(rows: Row[]) {
   const out: Record<string, number> = {}
-  for (const r of rows) for (const [e, a] of Object.entries(r.engines)) if (a.cited > 0) out[e] = (out[e] ?? 0) + 1
+  for (const r of rows) for (const [e, a] of Object.entries(r.engines ?? {})) if (a.cited > 0) out[e] = (out[e] ?? 0) + 1
   return out
 }
 
 function firstSnippet(rows: Row[], engines: string[]) {
-  for (const r of rows) for (const e of engines) if (r.engines[e]?.snippet) return { e, q: r.q, text: r.engines[e].snippet }
+  for (const r of rows)
+    for (const e of engines) {
+      const a = r.engines?.[e]
+      if (a?.snippet) return { e, q: r.q, text: a.snippet }
+    }
   return null
+}
+
+/** Questions of a report whose answers are in the full report only. */
+export const lockedCount = (rows: Row[]) => rows.filter((r) => r.locked).length
+
+/** A preview site: its detailed report is not bought and it is not on the plan. */
+export const isPreview = (site: SiteReport) => site.access === "preview"
+
+/** We do the work for this site: it is on the plan, or a client we set up by hand. No unlock, no
+ *  offer of the plan; every step reads "We're on it". */
+export const onPlan = (site: SiteReport) => site.plan === "paid" || site.client === true
+
+/** The report the detailed cards come from: a weekly check of five questions is not the full
+ *  picture, so the day-0 report stays it. */
+export function fullReport(site: SiteReport) {
+  return site.baseline && site.latest && site.latest.rows.length < site.baseline.rows.length ? site.baseline : site.latest
+}
+
+function Lock({ className = "w-3.5 h-3.5" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 16 16" className={className} fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
+      <rect x="3" y="7" width="10" height="7" rx="1.5" />
+      <path d="M5.5 7V5a2.5 2.5 0 015 0v2" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+/** Grey bars standing in for data the preview does not have. Decorative only. */
+function Placeholder({ lines = 3 }: { lines?: number }) {
+  const widths = ["w-3/4", "w-1/2", "w-2/3", "w-5/12"]
+  return (
+    <div aria-hidden className="space-y-2.5 blur-[2px] select-none">
+      {Array.from({ length: lines }, (_, i) => (
+        <div key={i} className="flex items-center gap-3">
+          <div className={`h-2.5 rounded-full bg-slate-200 ${widths[i % widths.length]}`} />
+          <div className="ml-auto h-2.5 w-6 rounded-full bg-slate-200" />
+        </div>
+      ))}
+    </div>
+  )
 }
 
 // ── banner while the full report runs ─────────────────────────────────────────────────────────
@@ -195,6 +264,8 @@ export function Hero({ report }: { report: Report }) {
   const l = report
   const s = l.summary
   const engines = ENGINES.filter((e) => s.engines[e])
+  // In a preview most rows carry no answers, so the per-assistant link count would undercount.
+  const partial = lockedCount(l.rows) > 0
   const cited = citedByEngine(l.rows)
   const skipped = engines.filter((e) => !s.engines[e].of)
   const snip = firstSnippet(l.rows, engines)
@@ -218,7 +289,7 @@ export function Hero({ report }: { report: Report }) {
       </p>
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 mt-4">
         {engines.map((e) => (
-          <Tile key={e} engine={e} named={s.engines[e].named} of={s.engines[e].of} linked={cited[e] ?? 0} />
+          <Tile key={e} engine={e} named={s.engines[e].named} of={s.engines[e].of} linked={partial ? undefined : (cited[e] ?? 0)} />
         ))}
       </div>
       {snip && (
@@ -230,7 +301,7 @@ export function Hero({ report }: { report: Report }) {
         </figure>
       )}
       {l.kind !== "weekly" && (
-        <p className="text-xs text-slate-500 mt-3">This is your starting point. Every weekly check is compared with it.</p>
+        <p className="text-xs text-slate-500 mt-3">This is the starting point every weekly check on the plan is compared with.</p>
       )}
     </section>
   )
@@ -270,7 +341,7 @@ function sameBasis(site: SiteReport) {
   return site.history.filter((h) => h.kind === "weekly" && h.samples === l.samples && h.questions === l.rows.length)
 }
 
-export function WeeklyHero({ site, onShowBaseline }: { site: SiteReport; onShowBaseline?: () => void }) {
+export function WeeklyHero({ site, onShowBaseline, readOnly }: { site: SiteReport; onShowBaseline?: () => void; readOnly?: boolean }) {
   const l = site.latest!
   const s = l.summary
   const weeks = sameBasis(site)
@@ -283,7 +354,8 @@ export function WeeklyHero({ site, onShowBaseline }: { site: SiteReport; onShowB
   const shown = weeks.slice(-12)
   const max = Math.max(1, ...shown.map((w) => w.of))
   const engines = ENGINES.filter((e) => s.engines[e])
-  const free = site.plan !== "paid"
+  // Not on the plan: this week's check is a short one, so say how short and where the full picture is.
+  const short = !onPlan(site) && !readOnly
   return (
     <section className={card}>
       <div className="flex items-start justify-between gap-3 flex-wrap">
@@ -325,18 +397,17 @@ export function WeeklyHero({ site, onShowBaseline }: { site: SiteReport; onShowB
           <Tile key={e} engine={e} named={s.engines[e].named} of={s.engines[e].of} />
         ))}
       </div>
-      {free && (
+      {short && (
         <p className="text-xs text-slate-500 mt-3">
-          Free plan: {l.rows.length} questions × {engines.length} assistants, {l.samples} ask each ·{" "}
+          This check: {l.rows.length} questions × {engines.length} assistants, {l.samples} ask{l.samples === 1 ? "" : "s"} each.
           {onShowBaseline && (
-            <button type="button" onClick={onShowBaseline} className="text-violet-700 font-semibold hover:underline">
-              View day-0 report
-            </button>
+            <>
+              {" "}
+              <button type="button" onClick={onShowBaseline} className="text-violet-700 font-semibold hover:underline">
+                View day-0 report
+              </button>
+            </>
           )}
-          {onShowBaseline && " · "}
-          <a href="/business#pricing" className="text-violet-700 font-semibold hover:underline">
-            Compare plans
-          </a>
         </p>
       )}
     </section>
@@ -389,6 +460,7 @@ export function WhatChanged({ changes }: { changes: Change[] }) {
 export function NamedInstead({ summary, you, firstLook }: { summary: Summary; you: string; firstLook?: boolean }) {
   const top = summary.named_instead.slice(0, 8)
   const max = Math.max(summary.named, ...top.map((r) => r.count), 1)
+  const more = summary.rivalsMore ?? 0
   return (
     <section className={card}>
       <h2 className="font-bold text-lg">Named instead of you{firstLook ? " (first look)" : ""}</h2>
@@ -421,34 +493,58 @@ export function NamedInstead({ summary, you, firstLook }: { summary: Summary; yo
           ))}
         </ul>
       )}
+      {more > 0 && <LockedMore text={`and ${more} more named instead of you`} />}
     </section>
+  )
+}
+
+/** The line under a cut list in a preview: how much more the full report has. */
+function LockedMore({ text }: { text: string }) {
+  return (
+    <div className="mt-4">
+      <Placeholder lines={2} />
+      <p className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm">
+        <span className="inline-flex items-center gap-1.5 font-semibold text-slate-700">
+          <Lock className="w-3.5 h-3.5 text-violet-600" />
+          {text}
+        </span>
+        <span className="text-slate-500">— in the full report.</span>
+        <a href="#unlock" className="font-semibold text-violet-700 hover:underline">
+          Unlock
+        </a>
+      </p>
+    </div>
   )
 }
 
 // ── which sites the assistants rely on ────────────────────────────────────────────────────────
 
-const TYPE: Record<string, { tag: string; action: string }> = {
-  directory: { tag: "Directory & reviews", action: "Check your profile here is complete and current." },
-  competitor: { tag: "Competitor", action: "They answer this on their own site. Publish your own answer." },
-  roundup: { tag: "Media & guides", action: "A mention or an expert quote here is worth pursuing." },
-  marketplace: { tag: "Marketplace", action: "Your listing here: description and reviews." },
-  community: { tag: "Community", action: "Assistants read these discussions. Take part where you can genuinely help." },
-  video: { tag: "Video", action: "A video that answers these questions can be cited too." },
-  official: { tag: "Official", action: "An authority, not a rival. Cite it in your own pages." },
-  reference: { tag: "Reference", action: "Nothing to do here directly." },
+// What each kind of quoted site is. What we do about the ones that matter is in "Your plan".
+const TYPE: Record<string, { tag: string; what: string }> = {
+  directory: { tag: "Directory & reviews", what: "A directory with reviews: the assistants read the profiles here." },
+  competitor: { tag: "Competitor", what: "A competitor answering your buyers' question on its own site." },
+  roundup: { tag: "Media & guides", what: "An article or guide that lists providers." },
+  marketplace: { tag: "Marketplace", what: "A marketplace: the assistants read the listings here." },
+  community: { tag: "Community", what: "Discussions the assistants read." },
+  video: { tag: "Video", what: "A video that answers these questions." },
+  official: { tag: "Official", what: "An authority, not a rival." },
+  reference: { tag: "Reference", what: "A reference work." },
 }
 
 export function Sources({ summary }: { summary: Summary }) {
   const list = (summary.sources ?? []).slice(0, 10)
   const own = summary.own_cited ?? 0
+  const hidden = summary.sourcesMore ?? 0
   return (
     <section className={card}>
       <h2 className="font-bold text-lg">Sites the assistants rely on</h2>
-      <p className="text-xs text-slate-500 mt-1">Cited as sources for your questions. This is where to be present.</p>
+      <p className="text-xs text-slate-500 mt-1">Cited as sources for your questions: what the assistants read before they answer.</p>
       <div className={`mt-4 rounded-xl px-4 py-3 text-sm font-semibold ${own ? "bg-violet-50 text-violet-800" : "bg-[#f8f7f6] text-slate-700"}`}>
         {own ? `Your site: cited in ${own} answer${own === 1 ? "" : "s"}` : "Your site isn't cited yet."}
       </div>
-      {list.length === 0 ? (
+      {hidden > 0 ? (
+        <LockedMore text={`${hidden} source${hidden === 1 ? "" : "s"} the assistants quote`} />
+      ) : list.length === 0 ? (
         <p className="text-sm text-slate-600 mt-4">The assistants cited no sources for these questions.</p>
       ) : (
         <ul className="mt-3 divide-y divide-black/[0.06]">
@@ -469,7 +565,7 @@ export function Sources({ summary }: { summary: Summary }) {
                   {s.count} answer{s.count === 1 ? "" : "s"}
                 </span>
               </div>
-              {TYPE[s.type] && <p className="text-xs text-slate-500 mt-0.5">{TYPE[s.type].action}</p>}
+              {TYPE[s.type] && <p className="text-xs text-slate-500 mt-0.5">{TYPE[s.type].what}</p>}
             </li>
           ))}
         </ul>
@@ -524,7 +620,7 @@ function Drawer({ row, engines, samples, asked, onClose }: { row: Row; engines: 
         </div>
         <div className="p-5 space-y-3">
           {engines.map((e) => {
-            const a = row.engines[e]
+            const a = row.engines?.[e]
             if (!a) return null
             return (
               <div key={e} className="rounded-xl bg-[#f8f7f6] p-4">
@@ -581,17 +677,26 @@ export function WhereNamed({
   samples,
   asked,
   title = "Where you're named",
+  unlock,
 }: {
   rows: Row[]
   engines: string[]
   samples: number
   asked?: string
   title?: string
+  /** Preview: shown where the locked questions start. */
+  unlock?: ReactNode
 }) {
   const [openRow, setOpenRow] = useState<Row | null>(null)
   const grouped = rows.length === 20
   const groups = grouped ? GROUPS.map((g) => ({ ...g, rows: rows.slice(g.from, g.to) })) : [{ from: 0, to: rows.length, title: "", rows }]
-  const [open, setOpen] = useState<Record<number, boolean>>({ 0: true })
+  const firstLocked = rows.findIndex((r) => r.locked)
+  // The group where the locked questions start is open, so the unlock panel is in view. Collapsed,
+  // that group still shows the panel under its title: every "#unlock" link on the page lands on it.
+  const [open, setOpen] = useState<Record<number, boolean>>(() => {
+    const at = grouped && firstLocked >= 0 ? groups.findIndex((g) => firstLocked < g.to) : 0
+    return { 0: true, [at]: true }
+  })
   const cols = ENGINES.filter((e) => engines.includes(e))
 
   return (
@@ -599,7 +704,7 @@ export function WhereNamed({
       <h2 className="font-bold text-lg">{title}</h2>
       <p className="text-xs text-slate-500 mt-1 leading-relaxed">
         {samples > 1 ? `Darker dot = named in more of the ${samples} asks.` : "Filled dot = named."} Link mark = linked your site. Tap a
-        question for the answers.
+        question for the answers.{firstLocked >= 0 && " Questions with a lock are answered in the full report."}
       </p>
       <div className="flex items-center gap-4 text-[11px] text-slate-500 mt-2">
         <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-violet-600" /> named</span>
@@ -619,30 +724,59 @@ export function WhereNamed({
       </div>
 
       {groups.map((g, gi) => {
-        const pairs = g.rows.reduce((n, r) => n + cols.filter((e) => (r.engines[e]?.samples ?? 0) > 0).length, 0)
-        const named = g.rows.reduce((n, r) => n + cols.filter((e) => (r.engines[e]?.named ?? 0) > 0).length, 0)
+        const pairs = g.rows.reduce((n, r) => n + cols.filter((e) => (r.engines?.[e]?.samples ?? 0) > 0).length, 0)
+        const named = g.rows.reduce((n, r) => n + cols.filter((e) => (r.engines?.[e]?.named ?? 0) > 0).length, 0)
+        const locked = lockedCount(g.rows)
         const isOpen = !grouped || open[gi]
+        const holdsUnlock = Boolean(unlock) && firstLocked >= g.from && firstLocked < g.to
         return (
           <div key={gi} className="mt-2">
             {grouped && (
               <button
                 type="button"
                 onClick={() => setOpen((o) => ({ ...o, [gi]: !o[gi] }))}
-                className="w-full flex items-center justify-between py-2.5 text-sm font-semibold"
+                className="w-full flex items-center justify-between gap-3 py-2.5 text-left text-sm font-semibold"
                 aria-expanded={isOpen}
               >
                 <span>
                   {isOpen ? "▾" : "▸"} {g.title}
                 </span>
-                <span className="text-slate-500 font-medium tabular-nums">
-                  {named} of {pairs}
-                </span>
+                {locked ? (
+                  <span className="shrink-0 inline-flex items-center gap-1.5 text-slate-500 font-medium tabular-nums whitespace-nowrap">
+                    <Lock className="w-3 h-3" />
+                    {locked === g.rows.length ? "In the full report" : `${g.rows.length - locked} of ${g.rows.length} shown`}
+                  </span>
+                ) : (
+                  <span className="text-slate-500 font-medium tabular-nums">
+                    {named} of {pairs}
+                  </span>
+                )}
               </button>
             )}
+            {holdsUnlock && !isOpen && <div className="py-4">{unlock}</div>}
             {isOpen && (
               <ul className="divide-y divide-black/[0.05]">
                 {g.rows.map((r, i) => {
-                  const instead = cols.flatMap((e) => r.engines[e]?.named_instead ?? []).filter((n, k, arr) => arr.indexOf(n) === k)
+                  if (r.locked)
+                    return (
+                      <Fragment key={i}>
+                        {unlock && g.from + i === firstLocked && <li className="py-4">{unlock}</li>}
+                        <li className="py-3 px-1 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                          <span className="flex-1 min-w-0 text-sm leading-snug line-clamp-2 text-slate-600">
+                            <Lock className="inline w-3 h-3 mr-1.5 -mt-0.5 text-slate-400" />
+                            {r.q}
+                          </span>
+                          <span className="flex self-end sm:self-auto" aria-label="Answers in the full report">
+                            {cols.map((e) => (
+                              <span key={e} className="w-11 sm:w-20 flex justify-center">
+                                <span aria-hidden className="block w-4 h-4 rounded-full bg-slate-200 blur-[2px]" />
+                              </span>
+                            ))}
+                          </span>
+                        </li>
+                      </Fragment>
+                    )
+                  const instead = cols.flatMap((e) => r.engines?.[e]?.named_instead ?? []).filter((n, k, arr) => arr.indexOf(n) === k)
                   return (
                     <li key={i}>
                       <button
@@ -659,7 +793,7 @@ export function WhereNamed({
                         <span className="flex self-end sm:self-auto">
                           {cols.map((e) => (
                             <span key={e} className="w-11 sm:w-20 flex justify-center">
-                              <Dot a={r.engines[e]} />
+                              <Dot a={r.engines?.[e]} />
                             </span>
                           ))}
                         </span>
@@ -699,8 +833,9 @@ export function Crawlers({ audit }: { audit: Audit | "failed" | undefined }) {
           crawlers the same way.
         </p>
       ) : (
-        <>
-          <ul className="mt-4 space-y-2">
+        // Full width on the page: the crawlers and the numbers side by side on a wide screen.
+        <div className="mt-4 grid lg:grid-cols-2 gap-x-8 gap-y-4 items-start">
+          <ul className="space-y-2">
             {audit.robots.bots.map((b) => {
               const live = audit.liveFetch.find((l) => l.bot === b.bot)
               const bad = b.verdict === "blocked" || live?.blocked
@@ -729,7 +864,7 @@ export function Crawlers({ audit }: { audit: Audit | "failed" | undefined }) {
               )
             })}
           </ul>
-          <dl className="mt-4 grid grid-cols-2 gap-x-4 gap-y-2.5 text-sm">
+          <dl className="grid grid-cols-2 gap-x-4 gap-y-2.5 text-sm">
             <dt className="text-slate-500">Pages in your sitemap</dt>
             <dd className="font-semibold text-right tabular-nums">
               {audit.surface.sitemapKind === "none" ? "No sitemap" : `${audit.surface.isFloor ? "≥" : ""}${audit.surface.urlCount.toLocaleString()}`}
@@ -745,62 +880,42 @@ export function Crawlers({ audit }: { audit: Audit | "failed" | undefined }) {
             <dt className="text-slate-500">llms.txt (optional)</dt>
             <dd className="font-semibold text-right">{audit.llmsTxt ? "Yes" : "No"}</dd>
           </dl>
-        </>
+        </div>
       )}
     </section>
   )
 }
 
-// ── what to do next ───────────────────────────────────────────────────────────────────────────
+// ── your plan ─────────────────────────────────────────────────────────────────────────────────
 
+/** One step of the plan: what we do, why (the evidence from the report or the crawler check) and
+ *  what it should change. Never how to do it yourself. */
 export interface Step {
   id: string
+  /** fix: crawler access and indexing; write: an article we publish; place: a site the assistants quote. */
+  kind: "fix" | "write" | "place"
+  tag: string
   title: string
-  /** The evidence from the report or the crawler check. */
+  /** What we do. */
+  we: string
+  /** The evidence: who was named instead, what is broken. */
   why: string
-  /** Concrete sub-steps, shown behind "How to do it". */
-  how: string[]
-  /** What we look at afterwards to see whether it moved anything. */
-  check: string
-  guide?: string
-  /** Free accounts: where to ask us to write the page. */
-  write?: string
+  /** What it should change and where that shows. Never a promise of being named. */
+  change: string
+  /** Only what needs the owner's own login or approval. */
+  you?: string
   optional?: boolean
-  /** Verified by the crawler check on this page rather than by the weekly check. */
-  audit?: boolean
-  /** False when the free weekly check does not ask this step's question. */
-  weekly?: boolean
-  /** The newest measurement of what this step should move; `news` when it is newer than `why`. */
-  now?: { at: string; text: string; news: boolean }
-  /** Already fixed: listed only to confirm a step the owner marked done. */
-  resolved?: boolean
-}
-
-const GUIDES: Record<string, string> = {
-  "is-your-website-blocking-ai-crawlers": "Is my website blocking AI crawlers?",
-  "how-to-allow-gptbot-in-robots-txt": "How to allow GPTBot and other AI crawlers in robots.txt",
-  "gptbot-blocked-by-cloudflare": "How to fix GPTBot being blocked by Cloudflare",
-  "does-chatgpt-read-javascript-websites": "Does ChatGPT read websites built with JavaScript?",
-  "how-local-businesses-get-recommended-by-chatgpt": "How local businesses get recommended by AI assistants",
-  "how-to-get-your-business-recommended-by-chatgpt": "How to get the assistants to recommend you",
-  "how-ai-crawlers-find-your-website": "How AI crawlers find a website's pages",
-  "schema-markup-for-ai-search": "Does schema markup help with AI search?",
 }
 
 const andList = (xs: string[]) => (xs.length <= 1 ? xs.join("") : `${xs.slice(0, -1).join(", ")} and ${xs[xs.length - 1]}`)
 const answers = (n: number) => `${n} answer${n === 1 ? "" : "s"}`
-
-/** The assistants that named the business for one question. */
-function namedBy(row: Row) {
-  return ENGINES.filter((e) => (row.engines[e]?.samples ?? 0) > 0 && row.engines[e].named > 0).map((e) => LABEL[e])
-}
 
 /** Answers (question x assistant) that cite a domain, and how many of them name the business. */
 function citing(rows: Row[], domain: string) {
   let n = 0
   let named = 0
   for (const r of rows)
-    for (const a of Object.values(r.engines))
+    for (const a of Object.values(r.engines ?? {}))
       if ((a.sources ?? []).includes(domain)) {
         n++
         if (a.named > 0) named++
@@ -808,80 +923,31 @@ function citing(rows: Row[], domain: string) {
   return { n, named }
 }
 
-function questionNow(row: Row | undefined) {
-  if (!row) return null
-  const by = namedBy(row)
-  return by.length ? `${andList(by)} named you.` : "No assistant named you yet."
-}
+const ARTICLE_YOU = "Nothing to do. You see every article 2 days before it goes live, and can edit or stop it."
+const HOSTING_YOU = "Access to your hosting or CDN settings, or a word to your developer."
+const ADMIN_YOU = "Access to your site's admin, or a word to your developer."
 
-function domainNow(rows: Row[], domain: string) {
-  const c = citing(rows, domain)
-  // Out of how many: a free weekly check is 5 questions, so its count is not comparable to the day-0 one.
-  const of = rows.reduce((n, r) => n + ENGINES.filter((e) => (r.engines[e]?.samples ?? 0) > 0).length, 0)
-  return c.n
-    ? `${domain} was cited in ${c.n} of ${answers(of)}; you were named in ${c.named ? `${c.named} of those ${c.n}` : "none of them"}.`
-    : `${domain} wasn't cited in any of ${answers(of)} this time.`
-}
-
-/** The questions the weekly check asks again; null when it asks all of them. Mirrors geo_check/weekly.py. */
-function weeklyQuestions(site: SiteReport, full: Report): Set<string> | null {
-  if (site.plan === "paid") return null
-  const w = site.latest?.kind === "weekly" ? site.latest : null
-  if (w) return w.rows.length < full.rows.length ? new Set(w.rows.map((r) => r.q)) : null
-  const all = new Set(full.rows.map((r) => r.q))
-  const teaser = (site.teaser?.rows ?? []).map((r) => r.q).filter((q) => all.has(q))
-  if (teaser.length) return new Set(teaser.slice(0, 5))
-  return new Set([0, 1, 2, 8, 9].map((i) => full.rows[i]?.q).filter((q): q is string => Boolean(q)))
-}
-
-export function nextSteps(site: SiteReport, audit: Audit | "failed" | undefined): Step[] {
-  // Steps come from the fullest report: a free site's weekly check is only five questions.
-  const l = site.baseline && site.latest && site.latest.rows.length < site.baseline.rows.length ? site.baseline : site.latest
+export function planSteps(site: SiteReport, audit: Audit | "failed" | undefined): Step[] {
+  // Steps come from the fullest report. A preview keeps to the few steps its open questions support;
+  // the full report lists every step, so it is always a superset of what the preview showed.
+  const l = fullReport(site)
   if (!l) return []
+  const preview = isPreview(site)
   const s = l.summary
-  const host = site.domain.split("#")[0]
-  const free = site.plan !== "paid"
-  const write = free ? `/business/dashboard/plan?site=${encodeURIComponent(site.domain)}` : undefined
-  const weekly = weeklyQuestions(site, l)
-  // A free site's newest weekly check, when it is newer than the report the steps come from.
-  const w = site.latest && site.latest !== l && site.latest.kind === "weekly" ? site.latest : null
-  const newest = w ?? l
-  const partNote = weekly
-    ? ` Your free weekly check asks ${weekly.size} of your ${l.rows.length} questions, so it sees part of this.`
-    : ""
-  const generalGuide = site.city ? "how-local-businesses-get-recommended-by-chatgpt" : "how-to-get-your-business-recommended-by-chatgpt"
-  const qNow = (q: string): Step["now"] => {
-    const row = newest.rows.find((r) => r.q === q)
-    const text = questionNow(row)
-    return text ? { at: newest.finishedAt, text, news: Boolean(w) } : undefined
-  }
-  const dNow = (d: string): Step["now"] => ({ at: newest.finishedAt, text: domainNow(newest.rows, d), news: Boolean(w) })
-  const qCheck = (q: string, what: string) =>
-    !weekly || weekly.has(q)
-      ? what
-      : `${what} Note: your free weekly check asks ${weekly.size} other questions; this one is asked again only on the paid plan.`
-
   const ok = audit && audit !== "failed" ? audit : null
   const crawlers: Step[] = []
   const tech: { ssr?: Step; sitemap?: Step; schema?: Step; llms?: Step } = {}
-  const resolved: Step[] = []
-  const fixed = (id: string, title: string) => resolved.push({ id, title, why: "", how: [], check: "", audit: true, resolved: true })
-  const lastHow = "Mark this step done, then press Check again here."
 
   if (ok?.unreachable) {
     crawlers.push({
       id: "crawlers",
+      kind: "fix",
+      tag: "Fix",
       title: "Let AI crawlers past your bot protection",
+      we: "We find what turns the crawlers away and fix it, with you or your developer.",
       why: "Your site gave our check no answer at all, neither as a browser nor as GPTBot, ClaudeBot or PerplexityBot. That is usually bot protection (or the site was down at that moment), and bot protection stops AI crawlers the same way.",
-      how: [
-        "Open your site from a phone on mobile data. If it loads, look at bot protection: we got no answer even as a normal browser.",
-        "On Cloudflare: check “Block AI bots”, Bot Fight Mode and AI Crawl Control, and allow GPTBot, ClaudeBot and PerplexityBot.",
-        "Elsewhere (Sucuri, Wordfence, your host's firewall): look for rules that block automated visitors or bots by user agent.",
-        lastHow,
-      ],
-      check: "Whether the crawler check on this page can read your site again.",
-      guide: "gptbot-blocked-by-cloudflare",
-      audit: true,
+      change: "The assistants' crawlers can read your pages again; the crawler check on this page shows it.",
+      you: HOSTING_YOU,
     })
   } else if (ok) {
     const inRobots = ok.robots.bots.filter((b) => b.verdict === "blocked").map((b) => b.bot)
@@ -893,149 +959,108 @@ export function nextSteps(site: SiteReport, audit: Audit | "failed" | undefined)
         inRobots.length ? `${andList(inRobots)} ${inRobots.length === 1 ? "is" : "are"} blocked in your robots.txt` : "",
         live.length ? `${inRobots.length ? "our" : "Our"} visit as ${andList(live.map((b) => b.bot))} got ${andList(codes)} from your server` : "",
       ].filter(Boolean)
-      const robotsHow = [
-        `Open https://${host}/robots.txt and find the rule that blocks them: a “User-agent: ${inRobots[0]}” or “User-agent: *” group with “Disallow: /”.`,
-        `Add a group for each crawler you want in: “User-agent: ${inRobots[0]}” on one line, “Allow: /” on the next.`,
-      ]
-      const cdnHow = "On Cloudflare: check “Block AI bots”, the managed robots.txt and AI Crawl Control, and allow the crawlers you want."
-      const liveHow = [
-        `Your server or CDN answers ${andList(live.map((b) => b.bot))} with ${andList(codes)}. That is bot protection, not robots.txt.`,
-        cdnHow,
-        "Elsewhere (Sucuri, Wordfence, your host's firewall): look for rules that block bots by user agent.",
-      ]
       crawlers.push({
         id: "crawlers",
+        kind: "fix",
+        tag: "Fix",
         title: `Let ${andList(blocked)} in`,
+        we: "We find the rule that turns them away and fix it, with you or your developer.",
         why: `${why.join("; ")}. While they are turned away, these assistants can't read your pages to quote them.`,
-        how: inRobots.length ? [...robotsHow, live.length ? liveHow[0] : "", cdnHow, lastHow].filter(Boolean) : [...liveHow, lastHow],
-        check: `Whether the crawler check on this page shows ${andList(blocked)} as allowed.`,
-        guide: inRobots.length ? "how-to-allow-gptbot-in-robots-txt" : "gptbot-blocked-by-cloudflare",
-        audit: true,
+        change: `The crawler check on this page shows ${andList(blocked)} as allowed, so these assistants can read your pages.`,
+        you: HOSTING_YOU,
       })
-    } else fixed("crawlers", `The crawler check no longer finds ${andList(ok.robots.bots.map((b) => b.bot))} blocked.`)
+    }
 
     if (ok.serverRenderedWords < 200)
       tech.ssr = {
         id: "ssr",
+        kind: "fix",
+        tag: "Fix",
         title: "Make your pages readable without JavaScript",
+        we: "We work out with your developer how to serve the text in the page's HTML itself.",
         why: `Only ${ok.serverRenderedWords} words of the page we sampled reach crawlers in the raw HTML. The rest needs JavaScript, which AI crawlers often don't run.`,
-        how: [
-          "Open a page of your site, choose View source, and search for a sentence from its main text. If it isn't there, crawlers don't see it either.",
-          "If the site is built with React, Vue or Angular, switch on server-side rendering or pre-rendering (Next.js, Nuxt, or a prerender service).",
-          "On a site builder, keep the text in text blocks, not in images, sliders or embedded widgets.",
-          lastHow,
-        ],
-        check: "The words readable without JavaScript, on the crawler check on this page. They should go well above 200.",
-        guide: "does-chatgpt-read-javascript-websites",
-        audit: true,
+        change: "Crawlers that don't run JavaScript get your text. The crawler check on this page should count well over 200 words.",
+        you: "A word to your developer, or access to your site builder.",
       }
-    else fixed("ssr", `${ok.serverRenderedWords.toLocaleString()} words of the page we sampled are readable without JavaScript now.`)
 
     if (ok.surface.sitemapKind === "none")
       tech.sitemap = {
         id: "sitemap",
+        kind: "fix",
+        tag: "Fix",
         title: "Publish a sitemap",
+        we: "We set up the sitemap and submit it to Google and Bing.",
         why: "It is one of the main ways crawlers find your pages, and we found none at /sitemap.xml or in your robots.txt.",
-        how: [
-          "Most site builders make one: WordPress (Yoast, Rank Math or the built-in /wp-sitemap.xml), Wix, Squarespace and Shopify at /sitemap.xml. Switch it on if it's off.",
-          `Add the line “Sitemap: https://${host}/sitemap.xml” (or wherever yours is) to your robots.txt.`,
-          "Submit it in Google Search Console and Bing Webmaster Tools: assistants also find pages through those search indexes.",
-          lastHow,
-        ],
-        check: "Whether the crawler check on this page finds your sitemap and counts its pages.",
-        guide: "how-ai-crawlers-find-your-website",
-        audit: true,
+        change: "Crawlers and the search indexes the assistants use find all your pages; the crawler check on this page counts them.",
+        you: "Access to your site's admin, and to Google Search Console and Bing Webmaster Tools.",
       }
-    else fixed("sitemap", `Your sitemap is found now: ${ok.surface.isFloor ? "at least " : ""}${ok.surface.urlCount.toLocaleString()} pages.`)
 
     if (ok.structuredData.count === 0)
       tech.schema = {
         id: "schema",
+        kind: "fix",
+        tag: "Fix",
         title: site.city ? "Add LocalBusiness and FAQ markup" : "Add Organization and FAQ markup",
+        we: "We write the markup and add it to your pages.",
         why: "We found no structured data (JSON-LD) on the page we sampled. It helps at the margins: it states who you are, where, and what you offer in a form machines read without guessing.",
-        how: [
-          site.city
-            ? "Add a LocalBusiness block in JSON-LD (or a closer type, such as Dentist or LegalService) with your name, address, phone, opening hours, website and logo."
-            : "Add an Organization block in JSON-LD with your name, website, logo, contact details and the profiles that are yours.",
-          "On pages that answer questions, add FAQPage markup that matches the questions and answers visible on the page.",
-          "On WordPress, Yoast or Rank Math add most of this. Other builders have a field for custom code in the page head.",
-          "Test a page with Google's Rich Results Test or the Schema.org validator, then press Check again here.",
-        ],
-        check: "Whether the crawler check on this page lists the structured data it finds.",
-        guide: "schema-markup-for-ai-search",
-        audit: true,
+        change: "Machines read who you are and what you offer without guessing; the crawler check on this page lists the markup it finds.",
+        you: ADMIN_YOU,
       }
-    else fixed("schema", `Structured data found now: ${ok.structuredData.types.slice(0, 3).join(", ") || "yes"}.`)
 
     if (!ok.llmsTxt)
       tech.llms = {
         id: "llms",
+        kind: "fix",
+        tag: "Fix",
         title: "Add an llms.txt file",
-        why: "We found none at /llms.txt. It is a proposed convention, not a standard, and there is little evidence the assistants rely on it yet. Cheap to add; do it after everything above.",
-        how: [
-          `Create a plain text file at https://${host}/llms.txt.`,
-          "Start with “# ” and your business name, then one line on what you do, for whom and where.",
-          "List your key pages as links with one line each: services, prices, contact, and the pages that answer common questions.",
-          "Update it when those pages change.",
-        ],
-        check: "Whether the crawler check on this page shows llms.txt as Yes.",
+        we: "We write the file and put it on your site.",
+        why: "We found none at /llms.txt. It is a proposed convention, not a standard, and there is little evidence the assistants rely on it yet. Cheap to add, so it comes last.",
+        change: "The crawler check on this page shows llms.txt as Yes.",
+        you: ADMIN_YOU,
         optional: true,
-        audit: true,
       }
-    else fixed("llms", "llms.txt found on your site now.")
   }
 
   // Content gaps: questions where the assistants named others and nobody named you.
   const gaps = l.rows
     .map((r, i) => {
-      const checked = ENGINES.filter((e) => (r.engines[e]?.samples ?? 0) > 0)
-      if (!checked.length || checked.some((e) => r.engines[e].named > 0)) return null
-      const others = checked.filter((e) => (r.engines[e].named_instead ?? []).length > 0)
+      const eng = r.engines
+      if (!eng) return null
+      const checked = ENGINES.filter((e) => (eng[e]?.samples ?? 0) > 0)
+      if (!checked.length || checked.some((e) => eng[e].named > 0)) return null
+      const others = checked.filter((e) => (eng[e].named_instead ?? []).length > 0)
       if (!others.length) return null
       const tally = new Map<string, { name: string; n: number }>()
       for (const e of others)
-        for (const name of new Set(r.engines[e].named_instead)) {
+        for (const name of new Set(eng[e].named_instead)) {
           const k = name.toLowerCase()
           const t = tally.get(k) ?? { name, n: 0 }
           t.n++
           tally.set(k, t)
         }
       const names = [...tally.values()].sort((a, b) => b.n - a.n).map((t) => t.name)
-      return { q: r.q, i, checked: checked.length, others, names, covered: !weekly || weekly.has(r.q) }
+      return { q: r.q, i, checked: checked.length, others, names }
     })
     .filter((g): g is NonNullable<typeof g> => g !== null)
-    .sort(
-      (a, b) =>
-        b.others.length - a.others.length || Number(b.covered) - Number(a.covered) || b.names.length - a.names.length || a.i - b.i
-    )
-    .slice(0, 2)
+    .sort((a, b) => b.others.length - a.others.length || b.names.length - a.names.length || a.i - b.i)
+    .slice(0, preview ? 2 : undefined)
   const used = new Set(gaps.map((g) => g.q))
   const content: Step[] = gaps.map((g) => {
     const top = g.names.slice(0, 3)
     return {
       id: `gap:${g.q}`,
-      title: `Publish a page that answers “${g.q}”`,
+      kind: "write",
+      tag: "Article",
+      title: `A page that answers “${g.q}”`,
+      we: "We research and write the article, and publish it on your site.",
       why: `${g.checked === 1 ? "The assistant we could check didn't name you" : `None of the ${g.checked} assistants named you`} for it. ${andList(g.others.map((e) => LABEL[e]))} named ${andList(g.names.length > 3 ? [...top, "others"] : top)} instead.`,
-      how: [
-        "A direct answer first: make the question the page's heading and answer it in the first two or three sentences.",
-        "Then compare the options honestly, yours included: what each costs, who it suits, where it falls short.",
-        "Add what only you have: your prices, numbers from your own work, real cases, who does the work.",
-        "Cite your sources, date the page, and link to it from your main pages so crawlers find it.",
-      ],
-      check: qCheck(g.q, "Whether the assistants' answers to this question start naming you."),
-      guide: generalGuide,
-      write,
-      weekly: g.covered,
-      now: qNow(g.q),
+      change: "The assistants get a page of yours that answers this question directly. The weekly check shows whether their answers start naming you.",
+      you: ARTICLE_YOU,
     }
   })
-  // Confirmed for a site whose steps come from this week's report: the question names you now.
-  if (l.kind === "weekly")
-    for (const r of l.rows) {
-      const by = namedBy(r)
-      if (by.length) resolved.push({ id: `gap:${r.q}`, title: `“${r.q}”: ${andList(by)} named you in the check of ${fmtDate(l.finishedAt)}.`, why: "", how: [], check: "", resolved: true })
-    }
 
+  // The places the assistants quote instead of you: we prepare everything; from the owner only
+  // what needs their own login or approval.
   const listings: Step[] = []
   const rivals: Step[] = []
   const media: Step[] = []
@@ -1044,28 +1069,20 @@ export function nextSteps(site: SiteReport, audit: Audit | "failed" | undefined)
     if (dir) {
       const c = citing(l.rows, dir.domain)
       const market = dir.type === "marketplace"
+      const what = market ? "listing" : "profile"
       listings.push({
         id: `dir:${dir.domain}`,
-        title: `Check your ${market ? "listing" : "profile"} on ${dir.domain}`,
-        why: c.n
-          ? `Cited in ${c.n} of ${s.of} answers to your questions; you're named in ${c.named ? `${c.named} of those ${c.n}` : "none of them"}.`
-          : `Cited in ${dir.count} of ${s.of} answers to your questions.`,
-        how: market
-          ? [
-              `Find your listing on ${dir.domain}, or create one.`,
-              "Write the description the way buyers ask: what you do, for whom, at what price.",
-              "Ask recent customers for an honest review there.",
-              "Link the listing to your website.",
-            ]
-          : [
-              `Search ${dir.domain} for your business and claim the profile, or create one if there is none.`,
-              "Fill in every field exactly as on your site: name, address, phone, hours, services, prices where allowed, photos.",
-              "Ask recent customers for an honest review there, and reply to the reviews you already have.",
-              "Link the profile to your website.",
-            ],
-        check: `Whether the answers that cite ${dir.domain} start naming you.${partNote}`,
-        guide: generalGuide,
-        now: dNow(dir.domain),
+        kind: "place",
+        tag: market ? "Listing" : "Profile",
+        title: `Your ${what} on ${dir.domain}`,
+        we: `We prepare the ${what}: the text and every field, matching your site.`,
+        why: `${market ? "A marketplace" : "A directory with reviews"} the assistants quote: ${
+          c.n
+            ? `cited in ${c.n} of ${s.of} answers to your questions; you're named in ${c.named ? `${c.named} of those ${c.n}` : "none of them"}.`
+            : `cited in ${dir.count} of ${s.of} answers to your questions.`
+        }`,
+        change: `The answers that quote ${dir.domain} find a complete, current ${what} of yours there.`,
+        you: `Signing in to ${dir.domain} to claim the ${what} (it has to be your own login), and approving the text.`,
       })
     }
     const rival = s.sources.find((x) => x.type === "competitor")
@@ -1073,52 +1090,43 @@ export function nextSteps(site: SiteReport, audit: Audit | "failed" | undefined)
       let best: { q: string; n: number; named: number } | null = null
       for (const r of l.rows) {
         if (used.has(r.q)) continue
-        const cite = Object.values(r.engines).filter((a) => (a.sources ?? []).includes(rival.domain))
+        const cite = Object.values(r.engines ?? {}).filter((a) => (a.sources ?? []).includes(rival.domain))
         if (cite.length && (!best || cite.length > best.n)) best = { q: r.q, n: cite.length, named: cite.filter((a) => a.named > 0).length }
       }
-      if (best) {
-        const covered = !weekly || weekly.has(best.q)
+      if (best)
         rivals.push({
           id: `answer:${rival.domain}`,
-          title: `Publish a better answer than ${rival.domain} to “${best.q}”`,
-          why: `${rival.domain} is cited for it in ${answers(best.n)}; you're named in ${best.named ? `${best.named} of them` : "none of them"}.`,
-          how: [
-            `Open ${rival.domain} and find their page on this question: that is what the assistants quote.`,
-            "Write yours to answer it more directly and completely: the answer first, then your prices, process and real cases.",
-            "Cite your sources and date the page.",
-            "Link to it from your homepage or service pages, and make sure it is in your sitemap.",
-          ],
-          check: qCheck(best.q, "Whether the answers to this question start citing your site or naming you."),
-          guide: generalGuide,
-          write,
-          weekly: covered,
-          now: qNow(best.q),
+          kind: "write",
+          tag: "Article",
+          title: `A fuller answer than ${rival.domain} to “${best.q}”`,
+          we: "We research and write the article, and publish it on your site.",
+          why: `${rival.domain}, a competitor's site, is cited for it in ${answers(best.n)}; you're named in ${best.named ? `${best.named} of them` : "none of them"}.`,
+          change: "The assistants get a fuller answer of yours to quote for this question. The weekly check shows whether they start citing your site or naming you.",
+          you: ARTICLE_YOU,
         })
-      }
     }
     const m = s.sources.find((x) => x.type === "roundup")
     if (m) {
       const c = citing(l.rows, m.domain)
       media.push({
         id: `media:${m.domain}`,
-        title: `Pitch an expert quote to ${m.domain}`,
-        why: c.n
-          ? `Cited in ${answers(c.n)} for your questions; you're named in ${c.named ? `${c.named} of them` : "none of them"}.`
-          : `Cited in ${answers(m.count)} for your questions.`,
-        how: [
-          `Find the article on ${m.domain} that covers your service: search the site for it and your city or market.`,
-          "Write to its author or editor with something they can use: a fact, a number from your own work, a short expert quote.",
-          "If they publish lists of providers, ask what it takes to be considered, and send what they ask for.",
-        ],
-        check: `Whether the answers that cite ${m.domain} start naming you.${partNote}`,
-        guide: "how-to-get-your-business-recommended-by-chatgpt",
-        now: dNow(m.domain),
+        kind: "place",
+        tag: "Media",
+        title: `An expert quote on ${m.domain}`,
+        we: `We find the article on ${m.domain} that covers your service and its editor, and write the letter to the editor.`,
+        why: `A media site or guide the assistants quote: ${
+          c.n
+            ? `cited in ${answers(c.n)} for your questions; you're named in ${c.named ? `${c.named} of them` : "none of them"}.`
+            : `cited in ${answers(m.count)} for your questions.`
+        }`,
+        change: `If the editor uses it, the answers that quote ${m.domain} find you mentioned there.`,
+        you: "Approving the letter: it goes out from your address.",
       })
     }
   }
 
   // Ordered by impact; the crawler-check steps are left out while the check is still running.
-  const ordered = [
+  return [
     ...crawlers,
     ...content,
     ...listings,
@@ -1128,265 +1136,140 @@ export function nextSteps(site: SiteReport, audit: Audit | "failed" | undefined)
     ...(tech.schema ? [tech.schema] : []),
     ...media,
     ...(tech.llms ? [tech.llms] : []),
-  ].slice(0, 6)
-  const shown = new Set(ordered.map((x) => x.id))
-  return [...ordered, ...resolved.filter((r) => !shown.has(r.id))]
+  ].slice(0, preview ? 6 : undefined)
 }
 
-function CheckMark({ className = "w-3.5 h-3.5" }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 16 16" className={className} fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden>
-      <path d="M3.5 8.5l3 3 6-7" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
+/** Who reads the plan: an account not on it (the offer, "Start the plan"), a client on the plan or
+ *  set up by hand ("We're on it"), or a visitor of the public sample (read-only; the plan's prices
+ *  are on the home page). */
+export type PlanMode = "offer" | "client" | "sample"
+
+const PLAN_HOME = "/#geo-pricing"
+
+const TAG_TONE: Record<Step["kind"], string> = {
+  fix: "text-amber-800 bg-amber-50",
+  write: "text-violet-700 bg-violet-50",
+  place: "text-slate-600 bg-[#f8f7f6]",
 }
 
-function doneNote(step: Step, doneAt: string) {
-  const d = fmtDate(doneAt)
-  if (step.audit) return `Done on ${d}. Our last crawler check still found this. Press Check again once the change is live.`
-  if (step.now && new Date(step.now.at) > new Date(doneAt)) return `Done on ${d}. Weekly check of ${fmtDate(step.now.at)}: ${step.now.text}`
-  if (step.weekly === false) return `Done on ${d}. Your free weekly check doesn't ask this question, so its effect won't show here.`
-  return `Done on ${d} — the next weekly check will show whether it moved anything.`
-}
-
-function StepItem({
-  n,
-  step,
-  doneAt,
-  loaded,
-  busy,
-  failed,
-  onMark,
-  onRecheck,
-}: {
-  n: number
-  step: Step
-  doneAt?: string
-  loaded: boolean
-  busy: boolean
-  failed: boolean
-  onMark: (done: boolean) => void
-  onRecheck: () => void
-}) {
-  const [open, setOpen] = useState(false)
-  const line = "text-sm text-slate-600 leading-relaxed"
+function PlanStep({ n, step, client }: { n: number; step: Step; client: boolean }) {
+  const line = "text-sm text-slate-600 leading-relaxed mt-1 break-words"
   const lead = "font-semibold text-[#1b1916]"
+  const chip = "text-[10px] font-bold uppercase tracking-wide rounded-full px-2 py-0.5"
   return (
-    <li className={`rounded-xl border p-4 ${doneAt ? "border-transparent bg-[#f8f7f6]" : "border-black/[0.07] bg-white"}`}>
+    <li className="rounded-xl border border-black/[0.07] bg-white p-4">
       <div className="flex gap-3">
-        <span
-          className={`shrink-0 mt-px w-6 h-6 rounded-full grid place-items-center text-xs font-bold ${
-            doneAt ? "bg-green-600 text-white" : "bg-violet-50 text-violet-700"
-          }`}
-        >
-          {doneAt ? <CheckMark /> : n}
-        </span>
+        <span className="shrink-0 mt-px w-6 h-6 rounded-full grid place-items-center text-xs font-bold bg-violet-50 text-violet-700">{n}</span>
         <div className="min-w-0 flex-1">
-          <p className={`text-sm font-semibold leading-snug break-words ${doneAt ? "text-slate-600" : ""}`}>
-            {step.title}
-            {step.optional && (
-              <span className="ml-2 align-middle text-[10px] font-bold uppercase tracking-wide text-slate-500 bg-[#f8f7f6] rounded-full px-2 py-0.5">
-                Optional
-              </span>
-            )}
-          </p>
-          {doneAt ? (
-            <p className={`${line} mt-1.5`}>{doneNote(step, doneAt)}</p>
-          ) : (
-            <>
-              <p className={`${line} mt-1.5`}>
-                <span className={lead}>Why: </span>
-                {step.why}
-              </p>
-              {step.now?.news && (
-                <p className={`${line} mt-1`}>
-                  <span className={lead}>Weekly check, {fmtDate(step.now.at)}: </span>
-                  {step.now.text}
-                </p>
-              )}
-              <p className={`${line} mt-1`}>
-                <span className={lead}>What we will check: </span>
-                {step.check}
-              </p>
-              {step.how.length > 0 && (
-                <div className="mt-2">
-                  <button
-                    type="button"
-                    aria-expanded={open}
-                    onClick={() => setOpen((v) => !v)}
-                    className="inline-flex items-center gap-1 text-sm font-semibold text-violet-700 hover:underline"
-                  >
-                    <svg viewBox="0 0 16 16" className={`w-3.5 h-3.5 transition-transform ${open ? "rotate-90" : ""}`} fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
-                      <path d="M6 3.5l4.5 4.5L6 12.5" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                    How to do it
-                  </button>
-                  {open && (
-                    <ol className="mt-2 space-y-1.5 list-decimal pl-5 text-sm text-slate-700 leading-relaxed marker:text-slate-400 break-words">
-                      {step.how.map((h) => (
-                        <li key={h}>{h}</li>
-                      ))}
-                    </ol>
-                  )}
-                </div>
-              )}
-            </>
-          )}
-          <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">
-            {doneAt ? (
-              <>
-                {step.audit && (
-                  <button type="button" onClick={onRecheck} className="rounded-lg bg-violet-600 hover:bg-violet-500 text-white px-3.5 py-2 text-sm font-semibold">
-                    Check again
-                  </button>
-                )}
-                <button type="button" onClick={() => onMark(false)} disabled={busy} className="text-sm font-semibold text-slate-600 hover:underline disabled:opacity-50">
-                  {busy ? "Saving…" : "Undo"}
-                </button>
-              </>
-            ) : (
-              <>
-                <button
-                  type="button"
-                  onClick={() => onMark(true)}
-                  disabled={!loaded || busy}
-                  className="rounded-lg bg-violet-600 hover:bg-violet-500 disabled:opacity-50 text-white px-3.5 py-2 text-sm font-semibold"
-                >
-                  {busy ? "Saving…" : "Mark as done"}
-                </button>
-                {step.guide && GUIDES[step.guide] && (
-                  <a href={`/business/blog/${step.guide}`} target="_blank" rel="noopener" className="text-sm font-semibold text-violet-700 hover:underline">
-                    Guide: {GUIDES[step.guide]}
-                  </a>
-                )}
-                {step.write && (
-                  <a href={step.write} className="text-sm font-semibold text-slate-600 hover:text-[#1b1916] hover:underline">
-                    Have us write it
-                  </a>
-                )}
-              </>
-            )}
+          <div className="flex flex-wrap items-center gap-1.5">
+            <span className={`${chip} ${TAG_TONE[step.kind]}`}>{step.tag}</span>
+            {step.optional && <span className={`${chip} text-slate-500 bg-[#f8f7f6]`}>Optional</span>}
+            {client && <span className={`${chip} text-green-800 bg-green-50 border border-green-200`}>We&apos;re on it</span>}
           </div>
-          {failed && <p className="text-xs text-red-700 mt-2">That didn&apos;t save. Try again in a moment.</p>}
+          <p className="mt-1.5 text-sm font-semibold leading-snug break-words">{step.title}</p>
+          <p className={`${line} mt-1.5`}>
+            <span className={lead}>We do: </span>
+            {step.we}
+          </p>
+          <p className={line}>
+            <span className={lead}>Why: </span>
+            {step.why}
+          </p>
+          <p className={line}>
+            <span className={lead}>What it should change: </span>
+            {step.change}
+          </p>
+          {step.you && (
+            <p className={line}>
+              <span className={lead}>From you: </span>
+              {step.you}
+            </p>
+          )}
         </div>
       </div>
     </li>
   )
 }
 
-export function NextSteps({ domain, steps, ready }: { domain: string; steps: Step[]; ready: boolean }) {
-  // "Done" lives on the server, per user and site; the parent keys this card by domain.
-  const [done, setDone] = useState<Record<string, string>>({})
-  const [loaded, setLoaded] = useState(false)
-  const [busy, setBusy] = useState<string | null>(null)
-  const [failed, setFailed] = useState<string | null>(null)
-
-  useEffect(() => {
-    if (!ready) return
-    let gone = false
-    fetch(`/api/geo/steps?domain=${encodeURIComponent(domain)}`, { cache: "no-store" })
-      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
-      .then((list: { step_id: string; done_at: string }[]) => {
-        if (!gone) setDone(Object.fromEntries(list.map((d) => [d.step_id, d.done_at])))
-      })
-      .catch(() => {})
-      .finally(() => {
-        if (!gone) setLoaded(true)
-      })
-    return () => {
-      gone = true
-    }
-  }, [domain, ready])
-
-  const mark = async (id: string, value: boolean) => {
-    setBusy(id)
-    setFailed(null)
-    try {
-      const r = await fetch("/api/geo/steps", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ domain, step_id: id, done: value }),
-      })
-      const j = (await r.json().catch(() => ({}))) as { done_at?: string | null }
-      if (!r.ok || (value && !j.done_at)) throw new Error(String(r.status))
-      setDone((d) => {
-        const next = { ...d }
-        if (value && j.done_at) next[id] = j.done_at
-        else delete next[id]
-        return next
-      })
-    } catch {
-      setFailed(id)
-    } finally {
-      setBusy((b) => (b === id ? null : b))
-    }
-  }
-
-  // The crawler check is cached for an hour in this tab; drop it so the reload runs it again.
-  const recheck = () => {
-    try {
-      sessionStorage.removeItem(`itg_geo_audit_${domain}`)
-    } catch {}
-    // ?site= brings the page back to this site; it strips "#…", so such domains reload as they are.
-    if (domain.includes("#")) window.location.reload()
-    else window.location.assign(`${window.location.pathname}?site=${encodeURIComponent(domain)}`)
-  }
-
-  const active = steps.filter((st) => !st.resolved)
-  const confirmed = steps.filter((st) => st.resolved && done[st.id])
-  const doneCount = active.filter((st) => done[st.id]).length
-
+/** The end of the report: what we do for the site, step by step. One button, "Start the plan", for an
+ *  account not on it; "We're on it" on every step for a client. */
+export function YourPlan({ site, steps, ready, mode }: { site: SiteReport; steps: Step[]; ready: boolean; mode: PlanMode }) {
+  const client = mode === "client"
+  const sample = mode === "sample"
+  const more = mode === "offer" ? lockedSteps(site) : null
+  const credit = mode === "offer" ? (site.research?.creditUntil ?? null) : null
+  const planHref = sample ? PLAN_HOME : `/business/dashboard/plan?site=${encodeURIComponent(site.domain)}`
+  const p = GEO_PRICES
   return (
-    <section className={card}>
-      <div className="flex items-baseline justify-between gap-3">
-        <h2 className="font-bold text-lg">Next steps</h2>
-        {ready && active.length > 0 && loaded && (
-          <span className="shrink-0 text-xs font-semibold text-slate-500 tabular-nums">
-            {doneCount} of {active.length} done
-          </span>
-        )}
-      </div>
+    <section id="your-plan" className={`${card} scroll-mt-24`}>
+      <h2 className="font-bold text-lg">Your plan</h2>
       {!ready ? (
         <p className="text-sm text-slate-500 mt-3">Fills in when your full report is ready.</p>
-      ) : active.length === 0 && confirmed.length === 0 ? (
-        <p className="text-sm text-slate-600 mt-3">Nothing urgent stands out. Keep an eye on the weekly checks.</p>
       ) : (
         <>
-          {active.length > 0 && (
-            <>
-              <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-                Most important first. Each step says what we check afterwards, so you can see whether it moved anything.
-              </p>
-              <ol className="mt-4 space-y-3">
-                {active.map((st, i) => (
-                  <StepItem
-                    key={st.id}
-                    n={i + 1}
-                    step={st}
-                    doneAt={done[st.id]}
-                    loaded={loaded}
-                    busy={busy === st.id}
-                    failed={failed === st.id}
-                    onMark={(v) => mark(st.id, v)}
-                    onRecheck={recheck}
-                  />
-                ))}
-              </ol>
-            </>
+          <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+            {client
+              ? `What we do for ${site.domain}, most important first. Each step says why and what it should change; the weekly check shows whether it did.`
+              : sample
+                ? `What we would do for ${site.domain}, most important first: why, from the report, and what it should change.`
+                : `What we do for ${site.domain} on the plan, most important first: why, from your report, and what it should change.`}
+          </p>
+          {steps.length === 0 && !more && <p className="text-sm text-slate-600 mt-4">Nothing in this report stands out as urgent.</p>}
+          {steps.length > 0 && (
+            <ol className="mt-4 space-y-3">
+              {steps.map((st, i) => (
+                <PlanStep key={st.id} n={i + 1} step={st} client={client} />
+              ))}
+            </ol>
           )}
-          {confirmed.length > 0 && (
-            <div className="mt-4 rounded-xl bg-green-50 border border-green-200 px-4 py-3">
-              <p className="text-[11px] font-bold uppercase tracking-wide text-green-800">Done and confirmed</p>
-              <ul className="mt-1.5 space-y-1.5">
-                {confirmed.map((st) => (
-                  <li key={st.id} className="flex gap-2 text-sm text-green-900 leading-snug">
-                    <CheckMark className="w-3.5 h-3.5 mt-0.5 shrink-0" />
-                    <span className="min-w-0 break-words">
-                      {st.title} <span className="text-green-800/70">Marked done {fmtDate(done[st.id])}.</span>
-                    </span>
-                  </li>
-                ))}
-              </ul>
+          {more && (
+            <div className="mt-3 rounded-xl border border-dashed border-violet-200 bg-violet-50/60 p-4 flex gap-3">
+              <Lock className="w-4 h-4 mt-0.5 shrink-0 text-violet-600" />
+              <p className="text-sm text-slate-700 leading-relaxed">
+                <span className="font-semibold text-[#1b1916]">More of your plan is in the full report ({p.research.label}):</span> the steps
+                that come from your other {more.questions} questions{more.sources > 0 && ` and the ${more.sources} sites the assistants quote`}.{" "}
+                <a href="#unlock" className="font-semibold text-violet-700 hover:underline">
+                  Unlock
+                </a>
+              </p>
+            </div>
+          )}
+          {client ? (
+            <a href="/business/dashboard/articles" className="mt-4 inline-block text-sm font-semibold text-violet-700 hover:underline">
+              Your articles →
+            </a>
+          ) : (
+            <div className="mt-5 rounded-xl bg-[#1b1916] text-white p-5 sm:p-6">
+              <p className="font-extrabold text-lg">We do all of this on the plan</p>
+              <p className="text-sm text-white/80 mt-1.5 leading-relaxed">
+                The articles, the fixes and the places the assistants quote, for {sample ? "your site" : site.domain}; and every week all 20
+                questions put to all 4 assistants, 3 times each, so you see what moved.{isPreview(site) && " The full report comes with it."}
+              </p>
+              <p className="text-sm text-white/60 mt-2 leading-relaxed">
+                No one can promise that assistants will name you. We promise the work and an honest weekly count.
+              </p>
+              <div className="mt-4 flex flex-col sm:flex-row sm:items-center gap-3">
+                <p className="flex-1 text-sm text-white/80">
+                  <b className="text-white tabular-nums">{p.month.label}</b> a month plus a one-time {p.setup.label} setup. The setup is free with
+                  3 months upfront (<b className="text-white tabular-nums">{p.quarter.label}</b>) or a year (<b className="text-white tabular-nums">{p.year.label}</b>, 20% off).
+                </p>
+                <a
+                  href={planHref}
+                  className="w-full sm:w-auto inline-flex justify-center rounded-xl bg-white text-[#1b1916] hover:bg-violet-50 px-5 py-3 text-sm font-bold"
+                >
+                  {sample ? "See the plan" : "Start the plan"}
+                </a>
+              </div>
+              {!sample && (
+                <a href={SAMPLE_PATH} target="_blank" rel="noopener" className="mt-3 inline-block text-sm font-semibold text-violet-200 hover:text-white hover:underline">
+                  See a real report →
+                </a>
+              )}
+              {credit && (
+                <p className="text-sm text-violet-200 mt-3">
+                  Your {p.research.label} report comes off the first payment if you start by {fmtDate(credit)}.
+                </p>
+              )}
             </div>
           )}
         </>
@@ -1395,7 +1278,269 @@ export function NextSteps({ domain, steps, ready }: { domain: string; steps: Ste
   )
 }
 
-// ── placeholders and the plan ─────────────────────────────────────────────────────────────────
+// ── the paid report: preview, unlock, credit ──────────────────────────────────────────────────
+
+function beacon(event: string, props: Record<string, unknown>) {
+  try {
+    navigator.sendBeacon("/api/track", JSON.stringify({ event, path: window.location.pathname, props, anon_id: localStorage.getItem("itg_anon") }))
+  } catch {}
+}
+
+/** Stripe Checkout for one site's detailed report. A site not followed yet is followed on payment. */
+const CHECKOUT_ERRORS: Record<string, string> = {
+  limit_user: "An account follows up to 3 sites, so this one can't be added. Nothing was charged.",
+  unreachable: "We couldn't open that site. Check the address; nothing was charged.",
+  invalid_domain: "That doesn't look like a website address. Nothing was charged.",
+  questions_failed: "We couldn't read enough on that site to work out what its buyers ask. Nothing was charged.",
+  limit_reads: "That's a lot of new sites for one day. Try again tomorrow; nothing was charged.",
+  payment_processing: "Your payment for this report is in. It unlocks within a few minutes; refresh the page shortly.",
+  slow: "Reading the site is taking longer than usual. Nothing was charged; try again in a few minutes.",
+}
+
+// A site not followed yet is read first (about a minute), so the payment never waits on it.
+const PREPARE_POLL_MS = 5_000
+const PREPARE_WAIT_MS = 3 * 60 * 1000
+
+export function UnlockButton({ domain, where, label }: { domain: string; where: string; label?: string }) {
+  const [busy, setBusy] = useState(false)
+  const [preparing, setPreparing] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  async function go() {
+    setBusy(true)
+    setError(null)
+    beacon("geo_research_checkout", { domain, where })
+    const deadline = Date.now() + PREPARE_WAIT_MS
+    try {
+      for (;;) {
+        const r = await fetch("/api/geo/research-checkout", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ domain }),
+        })
+        const j = (await r.json().catch(() => ({}))) as { url?: string; error?: string; preparing?: boolean }
+        if (j.url) {
+          window.location.href = j.url
+          return
+        }
+        if (!j.preparing) {
+          setError(j.error === "already_unlocked" ? "already" : r.status === 401 ? "signin" : (j.error ?? "failed"))
+          break
+        }
+        if (Date.now() > deadline) {
+          setError("slow")
+          break
+        }
+        setPreparing(true)
+        await new Promise((done) => setTimeout(done, PREPARE_POLL_MS))
+      }
+    } catch {
+      setError("failed")
+    }
+    setPreparing(false)
+    setBusy(false)
+  }
+
+  return (
+    <div className="min-w-0">
+      <button
+        type="button"
+        onClick={go}
+        disabled={busy}
+        className="w-full sm:w-auto rounded-xl bg-violet-600 hover:bg-violet-500 disabled:opacity-60 text-white px-5 py-3 text-sm font-bold"
+      >
+        {preparing ? `Reading ${domain}…` : busy ? "Opening checkout…" : (label ?? `Unlock the full report — ${GEO_PRICES.research.label}`)}
+      </button>
+      {preparing && (
+        <p className="text-sm text-slate-600 mt-2">
+          First we read {domain} and work out what its buyers ask, about a minute. Checkout opens by itself; nothing is charged until
+          you pay there.
+        </p>
+      )}
+      {error === "already" && (
+        <p className="text-sm text-slate-700 mt-2">
+          This report is already unlocked.{" "}
+          <a href={`/business/dashboard/visibility?site=${encodeURIComponent(domain)}`} className="font-semibold text-violet-700 hover:underline">
+            Show it
+          </a>
+        </p>
+      )}
+      {error === "signin" && (
+        <p className="text-sm text-red-700 mt-2">
+          You&apos;re signed out.{" "}
+          <a href="/login?callbackUrl=/business/dashboard/visibility" className="font-semibold underline">
+            Sign in
+          </a>{" "}
+          and try again.
+        </p>
+      )}
+      {error && error !== "already" && error !== "signin" && (
+        <p className={`text-sm mt-2 ${error === "payment_processing" ? "text-slate-700" : "text-red-700"}`}>
+          {CHECKOUT_ERRORS[error] ?? "Checkout didn't open, and nothing was charged. Try again in a minute."}
+        </p>
+      )}
+    </div>
+  )
+}
+
+/** The one unlock panel, placed where the locked questions start. */
+export function UnlockPanel({ domain, report }: { domain: string; report: Report }) {
+  const s = report.summary
+  const questions = report.rows.length
+  const engines = report.engines.length
+  const rivals = s.named_instead.length + (s.rivalsMore ?? 0)
+  const sources = s.sourcesMore ?? 0
+  const inside = [
+    `All ${questions} questions, with what each of the ${engines} assistants answered`,
+    rivals ? `The ${rivals} businesses named instead of you, and how often` : "Who the assistants name instead of you",
+    sources ? `The ${sources} sites the assistants quote most` : "The sites the assistants quote",
+    "Your plan: what we do for your site, step by step, and why",
+  ]
+  return (
+    <div id="unlock" className="scroll-mt-24 rounded-2xl border border-violet-200 bg-gradient-to-b from-violet-50 to-white p-5 sm:p-6">
+      <p className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wide text-violet-700">
+        <Lock className="w-3.5 h-3.5" />
+        Below this line: the full report
+      </p>
+      <h3 className="mt-2 text-xl font-extrabold tracking-tight">
+        See the full report — {questions * engines * report.samples} answers
+      </h3>
+      <ul className="mt-3 space-y-1.5 text-sm text-slate-700">
+        {inside.map((i) => (
+          <li key={i} className="flex gap-2">
+            <span className="text-violet-600 shrink-0">✓</span>
+            {i}
+          </li>
+        ))}
+      </ul>
+      <p className="mt-4 flex items-baseline gap-x-2 flex-wrap">
+        <span className="text-2xl font-extrabold tabular-nums">{GEO_PRICES.research.label}</span>
+        <span className="text-sm text-slate-600">one payment, for {domain}</span>
+      </p>
+      <p className="text-sm text-slate-600 mt-1">Comes off your first plan payment if you start the plan within {CREDIT_DAYS} days.</p>
+      <div className="mt-4 flex flex-col sm:flex-row sm:items-center gap-3">
+        <UnlockButton domain={domain} where="panel" />
+        <a href={SAMPLE_PATH} target="_blank" rel="noopener" className="text-center sm:text-left text-sm font-semibold text-violet-700 hover:underline">
+          See a real report
+        </a>
+      </div>
+    </div>
+  )
+}
+
+/** Says openly, right under the headline, that this is a preview and what the rest costs. */
+export function PreviewNote({ report }: { report: Report }) {
+  const shown = report.rows.length - lockedCount(report.rows)
+  const all = report.rows.length
+  return (
+    <div className="rounded-2xl bg-white/80 border border-violet-200 px-4 py-3 flex flex-col sm:flex-row sm:items-center gap-x-4 gap-y-1.5 text-sm text-slate-700">
+      <p className="flex-1 flex gap-2 leading-relaxed">
+        <Lock className="w-4 h-4 mt-0.5 shrink-0 text-violet-600" />
+        <span>
+          The totals and the {shown} question{shown === 1 ? "" : "s"} from your quick check are open. The full report — all {all} questions,
+          every assistant, who is named instead, which sources they quote, and your plan — is {GEO_PRICES.research.label}.
+        </span>
+      </p>
+      <a href="#unlock" className="shrink-0 pl-6 sm:pl-0 font-semibold text-violet-700 hover:underline">
+        What&apos;s in it ↓
+      </a>
+    </div>
+  )
+}
+
+/** While the report's price still comes off the first plan payment. */
+export function CreditNote({ site }: { site: SiteReport }) {
+  const until = site.research?.creditUntil
+  if (!until || onPlan(site)) return null
+  return (
+    <a
+      href={`/business/dashboard/plan?site=${encodeURIComponent(site.domain)}`}
+      className="inline-flex items-center gap-1.5 rounded-full bg-violet-50 border border-violet-200 px-3.5 py-1.5 text-xs font-semibold text-violet-800 hover:bg-violet-100"
+    >
+      {GEO_PRICES.research.label} comes off your first plan payment until {fmtDate(until)} →
+    </a>
+  )
+}
+
+/** The report from the headline down to the questions; the cabinet and the public sample share it.
+ *  A preview puts the questions first, so the unlock panel sits where the locked part starts. */
+export function ReportSections({
+  site,
+  showBase,
+  onToggleBase,
+  readOnly,
+}: {
+  site: SiteReport
+  showBase?: boolean
+  onToggleBase?: () => void
+  readOnly?: boolean
+}) {
+  const latest = site.latest
+  const full = fullReport(site)
+  if (!latest || !full) return null
+  const fromDay0 = full !== latest
+  const preview = !readOnly && !onPlan(site) && isPreview(site) && lockedCount(full.rows) > 0
+  const you = site.business || site.domain
+  const rivalsAndSources = (
+    <div className="grid xl:grid-cols-2 gap-5">
+      <NamedInstead summary={full.summary} you={you} />
+      <Sources summary={full.summary} />
+    </div>
+  )
+  const questions = (
+    <WhereNamed
+      rows={full.rows}
+      engines={full.engines}
+      samples={full.samples}
+      asked={full.finishedAt}
+      unlock={preview ? <UnlockPanel domain={site.domain} report={full} /> : undefined}
+    />
+  )
+  return (
+    <>
+      {latest.kind === "weekly" ? (
+        <>
+          <WeeklyHero site={site} onShowBaseline={site.baseline ? onToggleBase : undefined} readOnly={readOnly} />
+          <WhatChanged changes={latest.summary.changes ?? []} />
+          {fromDay0 && (
+            <WhereNamed rows={latest.rows} engines={latest.engines} samples={latest.samples} asked={latest.finishedAt} title="This week's questions" />
+          )}
+        </>
+      ) : (
+        <Hero report={latest} />
+      )}
+      {preview && <PreviewNote report={full} />}
+      {fromDay0 && (
+        <p className="text-xs font-semibold text-slate-600 px-1">
+          From {readOnly ? "the" : "your"} day-0 report · {fmtDate(full.finishedAt)} · {full.rows.length} questions × {full.engines.length} assistants,{" "}
+          {full.samples} asks each
+        </p>
+      )}
+      {fromDay0 && showBase && <Hero report={full} />}
+      {preview ? (
+        <>
+          {questions}
+          {rivalsAndSources}
+        </>
+      ) : (
+        <>
+          {rivalsAndSources}
+          {questions}
+        </>
+      )}
+    </>
+  )
+}
+
+/** Preview: what the locked part of the report would add to the plan. */
+function lockedSteps(site: SiteReport) {
+  const full = fullReport(site)
+  if (!full || !isPreview(site)) return null
+  const questions = lockedCount(full.rows)
+  return questions ? { questions, sources: full.summary.sourcesMore ?? 0 } : null
+}
+
+// ── placeholders and adding a site ────────────────────────────────────────────────────────────
 
 export function Pending({ title }: { title: string }) {
   return (
@@ -1410,51 +1555,41 @@ export function Pending({ title }: { title: string }) {
   )
 }
 
-export function PlanCard({ domain }: { domain: string }) {
-  return (
-    <section className="rounded-2xl bg-[#1b1916] text-white p-6 sm:p-7">
-      <h2 className="font-extrabold text-xl">Want us to do this for you?</h2>
-      <p className="text-sm text-white/80 mt-2 leading-relaxed">
-        On the paid plan we publish articles on {domain} that answer these questions, fix what blocks AI crawlers, and check
-        all 20 questions with all 4 assistants, 3 times each, every week.
-      </p>
-      <p className="text-sm text-white/60 mt-2 leading-relaxed">
-        No one can promise that assistants will name you. We promise the work and an honest weekly count.
-      </p>
-      <div className="mt-5 flex flex-col sm:flex-row sm:items-center gap-3">
-        <span className="text-lg font-bold">$499 / month</span>
-        <a href={`/business/dashboard/plan?site=${encodeURIComponent(domain)}`} className="sm:ml-auto inline-flex justify-center rounded-xl bg-white text-[#1b1916] hover:bg-violet-50 px-5 py-3 text-sm font-semibold">
-          See the paid plan
-        </a>
-      </div>
-    </section>
-  )
-}
-
 const FOLLOW_ERRORS: Record<string, string> = {
-  limit_user: "The free plan follows up to 3 sites.",
+  limit_user: "An account follows up to 3 sites.",
   unreachable: "We couldn't open that site. If our check can't, AI crawlers may not either.",
   questions_failed: "We couldn't read enough text on that site to work out what its buyers ask.",
   invalid_url: "That doesn't look like a website address. Enter it like yourcompany.com.",
 }
+
+// The account's own report, and what another site's costs; said the same way wherever it comes up.
+const reportSites = REPORT_SITES === 1 ? "one site" : `${REPORT_SITES} sites`
+const REPORT_LIMIT = `Your account includes the report for ${reportSites}; for another site the report is ${GEO_PRICES.research.label}.`
 
 export function AddSite({
   onAdd,
   busy,
   error,
   first,
+  reportUsed,
 }: {
   onAdd: (site: string) => void
   busy: boolean
   error: { domain: string; error: string } | null
   first?: boolean
+  /** The account's report site is taken: another site's report is paid for. */
+  reportUsed?: boolean
 }) {
   const [v, setV] = useState("")
+  // /api/geo/follow refuses a site past the account's report (402 "report_limit"), naming the domain
+  // as the server spells it: its report is bought instead, and the purchase follows it.
+  const limit = error?.error === "report_limit" ? error.domain : null
   return (
     <section className={card}>
       <h2 className="font-bold text-lg">{first ? "See what AI assistants say about you" : "Add a site"}</h2>
       <p className="text-sm text-slate-600 mt-1 leading-relaxed">
         We put 20 questions your buyers ask to ChatGPT, Claude, Gemini and Perplexity, 3 times each. About 10 minutes.
+        {reportUsed && ` ${REPORT_LIMIT}`}
       </p>
       <form
         onSubmit={(e) => {
@@ -1478,10 +1613,26 @@ export function AddSite({
           {busy ? "Starting…" : "Run my report"}
         </button>
       </form>
-      {error && (
-        <p className="text-sm text-red-700 mt-3">
-          {error.domain}: {FOLLOW_ERRORS[error.error] ?? "That didn't work. Try again in a minute."}
-        </p>
+      {limit ? (
+        <div className="mt-4 rounded-xl border border-violet-200 bg-violet-50/70 p-4">
+          <p className="font-semibold">{REPORT_LIMIT}</p>
+          <p className="text-sm text-slate-700 mt-1 leading-relaxed">
+            For {limit}: 20 questions its buyers ask, put to 4 assistants 3 times each, all of it open, with your plan. One payment; it comes
+            off your first plan payment if you start the plan within {CREDIT_DAYS} days.
+          </p>
+          <div className="mt-3 flex flex-col sm:flex-row sm:items-center gap-3">
+            <UnlockButton domain={limit} where="second_site" label={`Get the report for ${limit} — ${GEO_PRICES.research.label}`} />
+            <a href={SAMPLE_PATH} target="_blank" rel="noopener" className="text-center sm:text-left text-sm font-semibold text-violet-700 hover:underline">
+              See a real report
+            </a>
+          </div>
+        </div>
+      ) : (
+        error && (
+          <p className="text-sm text-red-700 mt-3">
+            {error.domain}: {FOLLOW_ERRORS[error.error] ?? "That didn't work. Try again in a minute."}
+          </p>
+        )
       )}
     </section>
   )

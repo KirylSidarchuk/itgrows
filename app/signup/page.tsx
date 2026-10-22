@@ -5,16 +5,19 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { signIn } from "next-auth/react"
 import Link from "next/link"
 import OAuthButtons from "@/components/auth/OAuthButtons"
+import { CREDIT_DAYS, GEO_PRICES } from "@/lib/geo-pricing"
 
 function SignupForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const callbackUrl = searchParams.get("callbackUrl") ?? "/cabinet"
   const planParam = searchParams.get("plan")
-  // Arriving from the free AI check on /business: this account is for that site's report, so the
+  // Arriving from the quick AI check on "/": this account is for that site's report, so the
   // page talks about the report, not about the LinkedIn trial.
   const fromAiCheck = searchParams.get("from") === "ai-check"
   const aiSite = (searchParams.get("site") ?? "").slice(0, 100)
+  // "Start the plan" on the pricing block: the same account, headed for the plan rather than the report.
+  const aiForPlan = fromAiCheck && callbackUrl.startsWith("/business/dashboard/plan")
 
   // Funnel step events (page view -> oauth click / email submit -> complete) so we can see
   // exactly where /signup loses people instead of guessing.
@@ -147,8 +150,9 @@ function SignupForm() {
         return
       }
       // Google Ads: Sign-up conversion (primary optimization goal)
-      if (typeof window !== "undefined" && typeof (window as any).gtag === "function") {
-        (window as any).gtag("event", "conversion", { send_to: "AW-18160234884/SQ7pCN7Sk8gcEITjvNND" })
+      if (typeof window !== "undefined") {
+        const w = window as unknown as { gtag?: (...args: unknown[]) => void }
+        w.gtag?.("event", "conversion", { send_to: "AW-18160234884/SQ7pCN7Sk8gcEITjvNND" })
       }
       sgTrack("signup_complete", { via: "pin", plan: planParam ?? undefined })
       // If the visitor picked a plan on the pricing card before registering, resume that checkout
@@ -332,10 +336,15 @@ function SignupForm() {
               ItGrows.ai
             </span>
           </Link>
-          {fromAiCheck ? (
+          {aiForPlan ? (
             <>
-              <h1 className="text-2xl font-bold text-[#1b1916] mt-4">Your full AI report{aiSite ? <> for {aiSite}</> : null}</h1>
-              <p className="text-slate-500 text-sm mt-1">Free, no card. We&apos;ll put 20 buyer questions to ChatGPT, Claude, Gemini and Perplexity, 3 times each, then re-measure every week and email you the results.</p>
+              <h1 className="text-2xl font-bold text-[#1b1916] mt-4">Start the AI visibility plan</h1>
+              <p className="text-slate-500 text-sm mt-1">First your account, then your site: the plan is built from its report. Then you choose how to pay: {GEO_PRICES.month.label} a month plus a one-time {GEO_PRICES.setup.label} setup, or {GEO_PRICES.quarter.label} for 3 months upfront or {GEO_PRICES.year.label} for a year with the setup free.</p>
+            </>
+          ) : fromAiCheck ? (
+            <>
+              <h1 className="text-2xl font-bold text-[#1b1916] mt-4">Your detailed AI report{aiSite ? <> for {aiSite}</> : null}</h1>
+              <p className="text-slate-500 text-sm mt-1">No card to create the account. We put 20 buyer questions to ChatGPT, Claude, Gemini and Perplexity, 3 times each; you see the totals and the 5 questions of the quick check. The whole report is {GEO_PRICES.research.label}, one payment, and comes off your first plan payment if you start the plan within {CREDIT_DAYS} days.</p>
             </>
           ) : handoff ? (
             <>
@@ -430,8 +439,10 @@ function SignupShell() {
           <span className="text-2xl font-bold bg-gradient-to-r from-violet-600 to-pink-500 bg-clip-text text-transparent">
             ItGrows.ai
           </span>
-          <h1 className="text-2xl font-bold text-[#1b1916] mt-4">Create your free account</h1>
-          <p className="text-slate-500 text-sm mt-1">✓ Free account · No credit card required — not even for the 14-day trial.</p>
+          {/* Shared by every variant (the LinkedIn/X trial and the AI-visibility report), so it says only
+              what is true of both; the page itself says the rest once it loads. */}
+          <h1 className="text-2xl font-bold text-[#1b1916] mt-4">Create your account</h1>
+          <p className="text-slate-500 text-sm mt-1">No credit card required.</p>
         </div>
         <div className="bg-white border border-black/10 rounded-2xl p-8">
           <div className="space-y-3">

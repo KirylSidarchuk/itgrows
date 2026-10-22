@@ -1,7 +1,9 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
+import Link from "next/link"
 import AiAnswers, { type TeaserView } from "./AiAnswers"
+import { GEO_PRICES } from "@/lib/geo-pricing"
 
 type Verdict = "blocked" | "allowed" | "wildcard" | "none"
 
@@ -102,7 +104,8 @@ export default function AuditForm() {
     if (aiDone && aiInView) setPillDone(true)
   }, [aiDone, aiInView])
 
-  // When the answers fail, the crawler check is all there is: open it, and offer the email report.
+  // When the answers fail, the crawler check is all there is: open it, and offer a person's reply by
+  // email. Not a free report: the detailed one is paid (lib/geo-pricing.ts).
   useEffect(() => {
     if (aiFailed) setBOpen(true)
   }, [aiFailed])
@@ -300,12 +303,12 @@ export default function AuditForm() {
               Not a typo — we tried as a browser and as three different crawlers, and got nothing back. That is almost
               always bot protection. It stops the answer engines exactly the same way.
             </p>
-            <a
-              href="/business#apply"
+            <Link
+              href="/#apply"
               className="block w-full text-center rounded-xl border border-black/10 bg-white hover:bg-[#f8f7f6] text-[#1b1916] px-6 py-3.5 text-sm font-semibold"
             >
-              Talk to us about it — $499/mo →
-            </a>
+              Talk to us about fixing it →
+            </Link>
           </div>
         </div>
       )}
@@ -481,16 +484,16 @@ export default function AuditForm() {
             {showEmailCapture &&
               (reportSent ? (
                 <div className="rounded-xl bg-green-50 border border-green-200 p-4 text-center mb-3">
-                  <p className="text-sm font-semibold text-green-800">On its way.</p>
+                  <p className="text-sm font-semibold text-green-800">Got it.</p>
                   <p className="text-xs text-green-700 mt-1 leading-relaxed">
-                    You will get the full findings and the fix list, written by a person, within a day.
+                    A person will look at what stopped the check and write back within a day.
                   </p>
                 </div>
               ) : (
                 <form onSubmit={requestReport} className="mb-4">
-                  <p className="text-sm font-semibold mb-1">Want the 90 questions we would write first?</p>
+                  <p className="text-sm font-semibold mb-1">Want a person to look at it?</p>
                   <p className="text-xs text-slate-500 mb-3 leading-relaxed">
-                    The actual questions your buyers ask, ranked, with the ones other businesses already own marked — plus what to change on the site itself.
+                    The live check of the assistants didn&apos;t finish for this site. Leave your email: we look at what got in the way and write back within a day.
                   </p>
                   <div className="flex flex-col sm:flex-row gap-2">
                     <input
@@ -498,7 +501,7 @@ export default function AuditForm() {
                       value={reportEmail}
                       onChange={(e) => setReportEmail(e.target.value)}
                       placeholder="you@company.com"
-                      aria-label="Email for the full report"
+                      aria-label="Your email"
                       className="flex-1 rounded-xl border border-black/15 bg-white px-4 py-3 text-sm text-[#1b1916] placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-400"
                     />
                     <button
@@ -506,18 +509,18 @@ export default function AuditForm() {
                       disabled={reportBusy || !reportEmail.includes("@")}
                       className="px-5 py-3 rounded-xl bg-[#1b1916] hover:bg-[#33302c] disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold transition-colors whitespace-nowrap"
                     >
-                      {reportBusy ? "Sending…" : "Email it to me"}
+                      {reportBusy ? "Sending…" : "Write to me"}
                     </button>
                   </div>
                 </form>
               ))}
 
-            <a
-              href="/business#apply"
+            <Link
+              href="/#geo-pricing"
               className="block w-full text-center rounded-xl border border-black/10 bg-white hover:bg-[#f8f7f6] text-[#1b1916] px-6 py-3.5 text-sm font-semibold"
             >
-              Start the 90 days — $499/mo →
-            </a>
+              Have us fix it — see the plan →
+            </Link>
           </div>
         </div>
       )}

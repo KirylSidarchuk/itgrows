@@ -4,7 +4,7 @@ export async function GET() {
 /**
  * Plugin Name: itgrows.ai Publisher
  * Description: Allows itgrows.ai to publish SEO articles to your WordPress blog
- * Version: 2.0
+ * Version: 2.1
  * Author: itgrows.ai
  */
 
@@ -32,7 +32,7 @@ function itgrows_settings_page() {
     echo '<h1>itgrows.ai Publisher</h1>';
     echo '<p>Copy this token and paste it in your itgrows.ai dashboard:</p>';
     echo '<input type="text" value="' . esc_attr($token) . '" style="width:400px;font-family:monospace;padding:8px;" readonly onclick="this.select()" />';
-    echo '<p><a href="https://itgrows.ai/dashboard/settings">Go to itgrows.ai Settings &rarr;</a></p>';
+    echo '<p><a href="https://www.itgrows.ai/business/dashboard/settings">Go to itgrows.ai Settings &rarr;</a></p>';
     echo '</div>';
 }
 
@@ -77,9 +77,13 @@ function itgrows_publish_post($request) {
         'post_title'   => sanitize_text_field($params['title'] ?? ''),
         'post_content' => wp_kses_post($params['content'] ?? ''),
         'post_excerpt' => $meta_desc,
-        'post_status'  => 'publish',
+        // Sites whose owner approves every article get it as a draft.
+        'post_status'  => (($params['status'] ?? '') === 'draft') ? 'draft' : 'publish',
         'post_type'    => 'post',
     );
+    if (!empty($params['slug'])) {
+        $post_data['post_name'] = sanitize_title($params['slug']);
+    }
 
     $post_id = wp_insert_post($post_data);
 
@@ -104,10 +108,19 @@ function itgrows_publish_post($request) {
         wp_set_post_tags($post_id, $tags, false);
     }
 
-    // Featured image from coverImageUrl (base64 data URL)
+    // Featured image: a normal image URL (what is sent since Oct 2026) is downloaded into the media
+    // library; an older inline data URL is still accepted.
     if (!empty($params['coverImageUrl'])) {
         $image_url = $params['coverImageUrl'];
-        if (strpos($image_url, 'data:image') === 0) {
+        if (strpos($image_url, 'http') === 0) {
+            require_once(ABSPATH . 'wp-admin/includes/media.php');
+            require_once(ABSPATH . 'wp-admin/includes/file.php');
+            require_once(ABSPATH . 'wp-admin/includes/image.php');
+            $attach_id = media_sideload_image(esc_url_raw($image_url), $post_id, sanitize_text_field($params['title'] ?? ''), 'id');
+            if (!is_wp_error($attach_id)) {
+                set_post_thumbnail($post_id, $attach_id);
+            }
+        } elseif (strpos($image_url, 'data:image') === 0) {
             preg_match('/data:([^;]+);base64,(.+)/', $image_url, $matches);
             if (count($matches) === 3) {
                 $mime_type  = $matches[1];

@@ -4,9 +4,11 @@ import { db } from "@/lib/db"
 import { blogPosts, connectedSites, scheduledPosts } from "@/lib/db/schema"
 import { geoRole } from "@/lib/geo-role"
 import { and, asc, desc, eq, sql } from "drizzle-orm"
+import { reviewState, utcToday } from "./_shared"
 
 // The articles we plan and publish for the signed-in client, newest first, with the site each one
-// goes to. Only what the "Your articles" page shows: never the article text, tokens or passwords.
+// goes to. Only what the "Your articles" list shows: never the article text, tokens or passwords.
+// The text of one article, and what the client can do with it, is at /api/geo/articles/<id>.
 
 export const dynamic = "force-dynamic"
 
@@ -27,10 +29,19 @@ interface ArticleItem {
   publishedAt: string | null
   publishedUrl: string | null
   language: string
-  /** Why a planned article was dropped, when we know: "duplicate" = same topic as one already out. */
-  note: "duplicate" | null
+  /** Why a planned article was dropped, when we know: "duplicate" = same topic as one already out;
+   *  "stopped" = the client stopped it. */
+  note: "duplicate" | "stopped" | null
   /** Sent as a WordPress draft and not live yet, as far as we can tell. */
   awaitingApproval: boolean
+  /** Written and waiting for its date: the client can open, edit, publish now or stop it. */
+  review: boolean
+  /** The day it goes live if nothing is done. */
+  liveDate: string
+  /** Stopped by the client and its date has not come yet: the stop can be taken back. */
+  canUndo: boolean
+  /** The client changed the title, description or text. */
+  edited: boolean
   site: ArticleSite | null
 }
 
@@ -76,7 +87,6 @@ export async function GET() {
         url: connectedSites.url,
         platform: connectedSites.platform,
         isDefault: connectedSites.isDefault,
-        hasWpPassword: sql<boolean>`(coalesce(${connectedSites.wpUsername}, '') <> '' AND coalesce(${connectedSites.wpAppPassword}, '') <> '')`,
         publishStatus: sql<string | null>`${connectedSites.siteProfile}->>'publishStatus'`,
       })
       .from(connectedSites)
@@ -91,8 +101,8 @@ export async function GET() {
           name: s.name,
           url: s.url,
           platform: s.platform,
-          // Drafts are made only on the application-password path, as the publishing cron does.
-          draft: s.platform === "wordpress" && Boolean(s.hasWpPassword) && s.publishStatus === "draft",
+          // The publisher makes drafts on both WordPress paths (application password and plugin).
+          draft: s.platform === "wordpress" && s.publishStatus === "draft",
         },
       ])
     )
@@ -109,8 +119,14 @@ export async function GET() {
         status: scheduledPosts.status,
         publishedAt: scheduledPosts.publishedAt,
         publishedUrl: scheduledPosts.publishedUrl,
+        publishError: scheduledPosts.publishError,
         language: scheduledPosts.language,
         skippedAsDuplicate: sql<boolean>`(${scheduledPosts.status} = 'skipped' AND coalesce(${scheduledPosts.publishError}, '') LIKE 'duplicate topic%')`,
+        // A finished article from the writer on the VM (what lib/publish-post.ts publishes as is).
+        prepared: sql<boolean>`(${scheduledPosts.articleData}->>'preparedBy' = 'vm-writer'
+          AND coalesce(${scheduledPosts.articleData}->>'title', '') <> ''
+          AND coalesce(${scheduledPosts.articleData}->>'content', '') <> '')`,
+        edited: sql<boolean>`(${scheduledPosts.articleData}->>'editedAt' IS NOT NULL)`,
         // The only site reference a row can carry: the copy it left on a blog we serve.
         siteId: blogPosts.siteId,
       })
@@ -119,9 +135,11 @@ export async function GET() {
       .where(eq(scheduledPosts.userId, userId))
       .orderBy(desc(scheduledPosts.scheduledDate), desc(scheduledPosts.createdAt))
 
+    const today = utcToday()
     const articles: ArticleItem[] = posts.map((p) => {
       const site = (p.siteId ? siteInfo.get(p.siteId) : undefined) ?? defaultSite
       const publishedUrl = webUrl(p.publishedUrl)
+      const state = reviewState(p, Boolean(p.prepared), Boolean(site?.draft), today)
       return {
         id: p.id,
         scheduledDate: p.scheduledDate,
@@ -130,9 +148,13 @@ export async function GET() {
         publishedAt: p.publishedAt ? p.publishedAt.toISOString() : null,
         publishedUrl,
         language: p.language,
-        note: p.skippedAsDuplicate ? "duplicate" : null,
+        note: p.skippedAsDuplicate ? "duplicate" : state.stopped ? "stopped" : null,
         // A draft site's article is waiting until it has a live address of its own.
         awaitingApproval: p.status === "published" && Boolean(site?.draft) && (!publishedUrl || draftPostId(publishedUrl) !== null),
+        review: state.review,
+        liveDate: state.liveDate,
+        canUndo: state.canUndo,
+        edited: Boolean(p.edited),
         site,
       }
     })

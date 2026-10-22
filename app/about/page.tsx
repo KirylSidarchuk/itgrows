@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import Link from "next/link"
 import { ENTITY_ABOUT, ORGANIZATION } from "@/lib/entity"
+import { GEO_PRICES } from "@/lib/geo-pricing"
 
 export const metadata: Metadata = {
   title: "About ItGrows: AI visibility and LinkedIn ghostwriting",
@@ -21,7 +22,7 @@ export default function AboutPage() {
         ))}
         <h2 className="text-xl font-bold mt-10">Products</h2>
         <ul className="mt-3 space-y-2 text-slate-700">
-          <li><Link href="/business" className="text-violet-700 font-semibold">AI visibility for businesses</Link> — answer pages, crawler fixes, a weekly check of four assistants. $499 a month; free check and report.</li>
+          <li><Link href="/" className="text-violet-700 font-semibold">AI visibility for businesses</Link> — answer pages, crawler fixes, a weekly check of four assistants. {GEO_PRICES.month.label} a month plus a one-time {GEO_PRICES.setup.label} setup (free with 3 months or a year); the detailed report {GEO_PRICES.research.label}; a 30-second check with no signup.</li>
           <li><Link href="/personal" className="text-violet-700 font-semibold">LinkedIn &amp; X posts</Link> — drafts in your own voice, published after your approval. From $49 a month.</li>
         </ul>
         <h2 className="text-xl font-bold mt-10">Contact</h2>

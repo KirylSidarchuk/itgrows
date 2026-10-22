@@ -9,10 +9,10 @@ const URL = "https://www.itgrows.ai/business/ai-crawler-checker"
 export const metadata: Metadata = {
   title: "AI crawler checker: is your site blocking GPTBot? | ItGrows",
   description:
-    "Free check of your robots.txt and server for GPTBot, OAI-SearchBot, ClaudeBot, PerplexityBot, Googlebot and Bingbot, including rules that quietly close pages in your sitemap.",
+    "Check your robots.txt and server for GPTBot, OAI-SearchBot, ClaudeBot, PerplexityBot, Googlebot and Bingbot, including rules that quietly close pages in your sitemap.",
   alternates: { canonical: URL },
   openGraph: {
-    title: "Is your site blocking AI crawlers? Free check",
+    title: "Is your site blocking AI crawlers? Check it in seconds",
     description: "We test the pages in your sitemap against your robots.txt for each AI crawler, and ask your server as each one.",
     url: URL,
     type: "website",
@@ -49,7 +49,7 @@ export default function AiCrawlerCheckerPage() {
         applicationCategory: "DeveloperApplication",
         operatingSystem: "Web",
         description:
-          "Free check of robots.txt and server responses for AI crawlers (GPTBot, OAI-SearchBot, ChatGPT-User, ClaudeBot, PerplexityBot) and search crawlers (Googlebot, Bingbot), testing the site's own sitemap pages against its rules.",
+          "A check of robots.txt and server responses for AI crawlers (GPTBot, OAI-SearchBot, ChatGPT-User, ClaudeBot, PerplexityBot) and search crawlers (Googlebot, Bingbot), testing the site's own sitemap pages against its rules.",
         offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
         provider: { "@id": "https://www.itgrows.ai/#organization" },
       },
@@ -61,7 +61,7 @@ export default function AiCrawlerCheckerPage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />
       <main className="px-4 sm:px-6 pt-10 sm:pt-14">
         <div className="max-w-3xl mx-auto text-center">
-          <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-violet-700">Free AI crawler check</p>
+          <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-violet-700">AI crawler check · no signup</p>
           <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight mt-3">Is your site blocking AI crawlers?</h1>
           <p className="text-base sm:text-lg text-slate-600 mt-4 max-w-2xl mx-auto">
             Enter your site. We read your robots.txt the way crawlers do, test the pages in your sitemap against it for
@@ -93,7 +93,7 @@ export default function AiCrawlerCheckerPage() {
             </li>
             <li>
               Everything open: the next question is whether the assistants name you. Run the{" "}
-              <Link className="text-violet-700 underline" href="/business/ai-visibility-checker">free AI visibility check</Link>.
+              <Link className="text-violet-700 underline" href="/business/ai-visibility-checker">AI visibility check</Link>.
             </li>
           </ul>
 

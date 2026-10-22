@@ -1,7 +1,7 @@
 import Link from "next/link"
 
-// The footer of the public pages ("/", /business). Short on purpose: what ItGrows is in one line,
-// then the way around the site. The long description lives on /about.
+// The footer of the public pages ("/"; /business redirects there). Short on purpose: what ItGrows is
+// in one line, then the way around the site. The long description lives on /about.
 
 const COLUMNS: { title: string; links: { href: string; label: string }[] }[] = [
   {
@@ -9,7 +9,7 @@ const COLUMNS: { title: string; links: { href: string; label: string }[] }[] = [
     links: [
       { href: "/#geo-check", label: "Check your site" },
       { href: "/#geo-pricing", label: "Pricing" },
-      { href: "/business", label: "For businesses" },
+      { href: "/business/sample-report", label: "A real report" },
       { href: "/business/blog", label: "Guides" },
     ],
   },

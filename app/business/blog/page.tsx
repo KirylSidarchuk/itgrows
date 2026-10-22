@@ -52,7 +52,7 @@ export default async function BusinessBlogPage() {
             <Link href="/business/blog" className="text-[#1b1916] font-medium">AI visibility</Link>
             <Link href="/blog" className="hover:text-[#1b1916] transition-colors">Blog</Link>
           </div>
-          <Link href="/business#apply" className="rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-sm font-semibold px-4 py-2.5 transition-colors">
+          <Link href="/#apply" className="rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-sm font-semibold px-4 py-2.5 transition-colors">
             Request access
           </Link>
         </div>
@@ -74,7 +74,7 @@ export default async function BusinessBlogPage() {
             href="/business"
             className="inline-block rounded-xl bg-violet-600 hover:bg-violet-500 text-white px-7 py-3.5 text-sm font-semibold shadow-lg shadow-violet-600/30 transition-colors"
           >
-            Check your site free →
+            Check your site →
           </Link>
         </div>
       </section>

@@ -3,7 +3,12 @@
 // Card A of the free check: what ChatGPT and Perplexity answer when this business's buyers ask.
 // While it runs it shows real progress from the VM (stage, the questions as soon as they exist,
 // answers in per assistant). The result shows two answers in full; the other three arrive as their
-// question only — there is no answer data in the page to un-blur — behind the free-account offer.
+// question only — there is no answer data in the page to un-blur — behind the account offer. The
+// offer says what it costs: the account shows the detailed report's totals and the quick check's
+// questions; the whole report is paid (lib/geo-pricing.ts), with a real one a click away. Nothing
+// here is called free: the quick check is the one free thing, and it is described, not labelled.
+
+import { CREDIT_DAYS, GEO_PRICES, SAMPLE_PATH } from "@/lib/geo-pricing"
 
 export interface TeaserEngine {
   named: boolean
@@ -279,18 +284,31 @@ function Result({ view, signupHref, onCta }: { view: TeaserView; signupHref: str
         <div className="relative z-10 -mt-8 rounded-2xl bg-white border border-black/10 shadow-lg shadow-violet-600/10 p-5">
           <p className="font-extrabold text-lg leading-snug">{all ? "Do Claude and Gemini agree?" : "Want to see what all of them say?"}</p>
           <p className="text-sm text-slate-600 mt-1.5 leading-relaxed">
-            Register free for the full report: 20 buyer questions to ChatGPT, Claude, Gemini and Perplexity, 3 times each —
-            who gets named and which sources they cite. Then a fresh measurement every week by email.
+            Create an account and we build the detailed report for {domain}: 20 buyer questions to ChatGPT, Claude, Gemini
+            and Perplexity, 3 times each — who gets named, which sites they quote, and our plan for your site.
+          </p>
+          <p className="text-sm text-[#1b1916] mt-2 leading-relaxed">
+            You see its totals and these 5 questions. The whole report is <b>{GEO_PRICES.research.label}</b>, one payment. If you
+            then want us to do the work, the {GEO_PRICES.research.label} comes off your first plan payment within {CREDIT_DAYS} days.
           </p>
           <a
             href={signupHref}
             onClick={() => onCta("overlay")}
-            className="mt-4 flex items-center justify-center w-full h-12 rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-base font-semibold transition-colors"
+            className="mt-4 flex items-center justify-center w-full min-h-12 px-4 py-2 rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-base font-semibold text-center transition-colors"
           >
-            See the full report — free
+            Create account — build my report
+          </a>
+          <a
+            href={SAMPLE_PATH}
+            target="_blank"
+            rel="noopener"
+            onClick={() => onCta("sample")}
+            className="mt-2.5 block text-center text-sm font-semibold text-violet-700 hover:underline"
+          >
+            See a real report →
           </a>
           <p className="text-xs text-slate-500 mt-2.5 text-center leading-relaxed">
-            Google or LinkedIn in one click, or a code by email. No card. Unsubscribe from the weekly email anytime.
+            Google or LinkedIn in one click, or a code by email. No card to create the account.
           </p>
         </div>
 
@@ -306,14 +324,14 @@ function Result({ view, signupHref, onCta }: { view: TeaserView; signupHref: str
                 <div className="h-2.5 w-11/12 rounded bg-slate-200 mt-2.5" />
                 <div className="h-2.5 w-3/4 rounded bg-slate-200 mt-1.5" />
               </div>
-              <p className="text-xs text-slate-500 mt-1.5">ChatGPT · Perplexity — answered, in your free report</p>
+              <p className="text-xs text-slate-500 mt-1.5">ChatGPT · Perplexity — answered, in your detailed report</p>
             </a>
           ))}
         </div>
       </div>
 
       <p className="px-5 sm:px-6 pb-5 text-xs text-slate-500 leading-relaxed">
-        {askedAt(view.finishedAt)}, web search on. Answers vary between runs — the full report asks each question 3 times.
+        {askedAt(view.finishedAt)}, web search on. Answers vary between runs — the detailed report asks each question 3 times.
       </p>
     </div>
   )
@@ -368,9 +386,9 @@ function Failed({
     return box(
       amber,
       "You've used today's 3 checks",
-      "Each check asks ChatGPT and Perplexity live, so we limit it per visitor. A free account runs the full report: 20 questions, 4 assistants.",
+      `Each check asks ChatGPT and Perplexity live, so we limit it per visitor. Create an account and we build the detailed report for your site: 20 questions, 4 assistants, with its totals open. The whole report is ${GEO_PRICES.research.label}.`,
       <>
-        {primary("Create free account", () => onCta("limit"), signupHref)}
+        {primary("Create account", () => onCta("limit"), signupHref)}
         <span className="text-sm text-slate-500">Or check again tomorrow</span>
       </>
     )
@@ -379,7 +397,7 @@ function Failed({
       amber,
       "Live checks are full for today",
       "We run a fixed number of live checks a day, and today's are used up. Your crawler check below is done.",
-      primary("Create free account", () => onCta("busy"), signupHref),
+      primary("Create account", () => onCta("busy"), signupHref),
       "Your report waits in the queue; we'll email you when it's ready."
     )
   if (e === "unreachable") {

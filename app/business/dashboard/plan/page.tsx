@@ -2,99 +2,395 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
-import { card, fmtDate, type SiteReport } from "../visibility/parts"
+import { card, fmtDate, fullReport, onPlan, type Row, type SiteReport } from "../visibility/parts"
+import { GEO_PRICES, REPORT_SITES, SAMPLE_PATH, firstPaymentCents, usd } from "@/lib/geo-pricing"
 
-// The paid plan, for one site, built from that site's own report: the questions where others are
-// named and it is not become the first articles; the directories and media the assistants cite
-// become the places to be present. One button: Stripe Checkout, $499 a month, month to month.
+// The plan, for one site, and its billing. It is a service, not a guide: the page says who does
+// what before it asks for money — we write, publish, fix indexing, prepare the places the
+// assistants quote and measure; from the client only what needs their own login or approval. What
+// we would do first is read from the site's own report: the questions where others are named and
+// it is not become the first articles; the directories, marketplaces, media and discussions the
+// assistants cite become the places we prepare.
+//
+// Three ways to pay, all from lib/geo-pricing.ts: by the month plus the one-time setup, 3 months
+// upfront, or a year (both with the setup free). A choice made
+// on the pricing block arrives as ?interval= (through sign-up, and kept for a day in case the site
+// has to be added first): the page opens on it and marks it. An account without a site enters it
+// here: it is followed (/api/geo/follow) and checkout opens for the chosen interval.
+//
+// A site on the plan, or of a client we set up by hand (site.client), shows "Plan & billing": the
+// plan, the places with "We're on it", and Manage subscription (/api/geo/portal: cancel at the end
+// of the paid period, card, invoices).
 
-const INCLUDED = [
-  "Articles on your own domain that answer the questions your buyers ask, with sources, in your language",
-  "Crawler and indexing fixes: robots.txt, sitemaps, Bing and Google, IndexNow",
-  "All 20 questions to ChatGPT, Claude, Gemini and Perplexity, 3 asks each, every week",
-  "A monthly report read by a person before it reaches you",
-  "Nothing is published without your approval",
+type Interval = "month" | "quarter" | "year"
+
+const P = GEO_PRICES
+
+const WE_DO = [
+  "Write articles that answer the questions your buyers ask, with sources, in your language, and publish them on your domain",
+  "Fix crawler access and indexing: robots.txt, sitemaps, Bing and Google, IndexNow",
+  "Prepare your profiles and listings on the sites the assistants quote, and the letters to their editors",
+  "Put all 20 questions to ChatGPT, Claude, Gemini and Perplexity, 3 asks each, every week",
+  "A monthly report, read by a person before it reaches you",
 ]
 
+const ARTICLES_YOU = "You see every article 2 days before it goes live, and can edit or stop it."
+
+const YOU_DO = [
+  ARTICLES_YOU,
+  "Once, at the start: one DNS record for the blog (or one rule your developer adds), and a link to the blog in your site's menu. We give you the exact lines.",
+  "What needs your own login or approval on the sites the assistants quote: claiming a profile, approving a letter.",
+]
+
+const BILLED: Record<string, string> = {
+  month: `${P.month.label} a month`,
+  quarter: `${P.quarter.label} every 3 months`,
+  year: `${P.year.label} a year`,
+}
+
+const INTERVALS: Interval[] = ["month", "quarter", "year"]
+const CHOICE_KEY = "itg_geo_interval"
+const CHOICE_TTL_MS = 86_400_000
+
+/** The billing period chosen on the pricing block: from the address, else remembered from it. */
+function chosenInterval(params: URLSearchParams): Interval | null {
+  let v = params.get("interval")
+  try {
+    if (v) localStorage.setItem(CHOICE_KEY, JSON.stringify({ v, at: Date.now() }))
+    else {
+      const c = JSON.parse(localStorage.getItem(CHOICE_KEY) ?? "null") as { v?: string; at?: number } | null
+      if (c?.v && Date.now() - (c.at ?? 0) < CHOICE_TTL_MS) v = c.v
+    }
+  } catch {}
+  return INTERVALS.includes(v as Interval) ? (v as Interval) : null
+}
+
+// The places the assistants quote instead of the client, by the type lib/geo_check gives a source.
+// We prepare everything; from the client only what needs their own login or approval.
+const PLACE: Record<string, { tag: string; what: string; we: string; you: string }> = {
+  directory: {
+    tag: "Directory & reviews",
+    what: "A directory with reviews: the assistants read the profiles here.",
+    we: "We prepare your profile: the text and every field, matching your site.",
+    you: "Signing in to claim the profile (it has to be your own login), and approving the text.",
+  },
+  marketplace: {
+    tag: "Marketplace",
+    what: "A marketplace: the assistants read the listings here.",
+    we: "We prepare your listing: the text and every field, matching your site.",
+    you: "Signing in to open the listing (it has to be your own login), and approving the text.",
+  },
+  roundup: {
+    tag: "Media & guides",
+    what: "An article or guide that lists providers.",
+    we: "We find the article that covers your service and its editor, and write the letter to the editor.",
+    you: "Approving the letter: it goes out from your address.",
+  },
+  community: {
+    tag: "Community",
+    what: "Discussions the assistants read.",
+    we: "We prepare the answers for the discussions where your buyers ask these questions.",
+    you: "Posting them from your own account (it has to be your login).",
+  },
+}
+const MAX_PLACES = 6
+
+const REPORT_LIMIT = `Your account includes the report for ${REPORT_SITES === 1 ? "one site" : `${REPORT_SITES} sites`}; for another site the report is ${P.research.label}.`
+
+const FOLLOW_ERRORS: Record<string, string> = {
+  invalid_url: "That doesn't look like a website address. Enter it like yourcompany.com.",
+  unreachable: "We couldn't open that site. Check the address, or write to us.",
+  questions_failed: "We couldn't read enough text on that site. Write to us and we set it up with you.",
+  limit_user: "An account follows up to 3 sites.",
+  limit_reads: "That's a lot of new sites for one day. Try again tomorrow, or write to us.",
+  report_limit: REPORT_LIMIT,
+}
+
+const CHECKOUT_FAILED = "Checkout did not open. Try again in a minute."
+
 function plan(site: SiteReport) {
-  const full = site.baseline && site.latest && site.latest.rows.length < site.baseline.rows.length ? site.baseline : site.latest
-  if (!full) return { questions: [] as string[], places: [] as { domain: string; count: number }[] }
+  const full = fullReport(site)
+  if (!full) return { questions: [] as string[], places: [] as { domain: string; count: number; type: string }[], placesMore: 0 }
+  // In the preview, rows past the quick check's arrive locked, without answers.
+  const answers = (r: Row) => Object.values(r.engines ?? {})
   const questions = full.rows
-    .filter((r) => Object.values(r.engines).every((a) => !a.named) && Object.values(r.engines).some((a) => a.named_instead.length))
+    .filter((r) => !r.locked && answers(r).length)
+    .filter((r) => answers(r).every((a) => !a.named) && answers(r).some((a) => a.named_instead.length))
     .map((r) => r.q)
     .slice(0, 5)
-  const places = (full.summary.sources ?? [])
-    .filter((s) => ["directory", "roundup", "marketplace", "community"].includes(s.type))
-    .slice(0, 3)
-  return { questions, places }
+  const own = (d: string) => d === site.domain || d.endsWith(`.${site.domain}`)
+  const places = (full.summary.sources ?? []).filter((s) => PLACE[s.type] && !own(s.domain)).slice(0, MAX_PLACES)
+  return { questions, places, placesMore: full.summary.sourcesMore ?? 0 }
+}
+
+function Places({
+  site,
+  places,
+  placesMore,
+  working,
+}: {
+  site: SiteReport
+  places: { domain: string; count: number; type: string }[]
+  placesMore: number
+  /** On the plan: every place reads "We're on it". */
+  working: boolean
+}) {
+  if (!places.length && !placesMore) return null
+  const lead = "font-semibold text-[#1b1916]"
+  const chip = "text-[10px] font-bold uppercase tracking-wide rounded-full px-2 py-0.5"
+  return (
+    <section className={card}>
+      <h2 className="font-bold text-lg">The places the assistants quote instead of you</h2>
+      <p className="text-sm text-slate-600 mt-1 leading-relaxed">
+        We prepare everything (profile text, the letter to the editor...); from you only what needs your own login or approval.
+      </p>
+      {places.length > 0 ? (
+        <ul className="mt-4 space-y-3">
+          {places.map((p) => {
+            const t = PLACE[p.type]
+            return (
+              <li key={p.domain} className="rounded-xl border border-black/[0.07] bg-white p-4">
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <a href={`https://${p.domain}`} target="_blank" rel="noopener noreferrer nofollow" className="text-sm font-semibold break-all hover:text-violet-700">
+                    {p.domain}
+                  </a>
+                  <span className={`${chip} text-slate-600 bg-[#f8f7f6]`}>{t.tag}</span>
+                  {working && <span className={`${chip} text-green-800 bg-green-50 border border-green-200`}>We&apos;re on it</span>}
+                </div>
+                <p className="text-xs text-slate-500 mt-1">
+                  {t.what} Cited in {p.count} answer{p.count === 1 ? "" : "s"} to your buyers&apos; questions.
+                </p>
+                <p className="text-sm text-slate-600 leading-relaxed mt-2">
+                  <span className={lead}>We do: </span>
+                  {t.we}
+                </p>
+                <p className="text-sm text-slate-600 leading-relaxed mt-1">
+                  <span className={lead}>From you: </span>
+                  {t.you}
+                </p>
+              </li>
+            )
+          })}
+        </ul>
+      ) : (
+        <p className="mt-4 rounded-xl border border-dashed border-violet-200 bg-violet-50/60 px-4 py-3 text-sm text-slate-700">
+          The {placesMore} site{placesMore === 1 ? "" : "s"} the assistants quote for your questions {placesMore === 1 ? "is" : "are"} listed in your
+          full report; the plan covers them.{" "}
+          <Link href={`/business/dashboard/visibility?site=${encodeURIComponent(site.domain)}`} className="font-semibold text-violet-700 hover:underline">
+            Open the report
+          </Link>
+        </p>
+      )}
+    </section>
+  )
+}
+
+function Choice({
+  title,
+  lines,
+  cta,
+  busyText,
+  disabled,
+  picked,
+  onClick,
+}: {
+  title: string
+  lines: React.ReactNode[]
+  cta: string
+  /** Set while this option is opening checkout. */
+  busyText: string | null
+  disabled: boolean
+  /** The option chosen on the pricing block. */
+  picked: boolean
+  onClick: () => void
+}) {
+  return (
+    <div
+      className={`rounded-xl p-4 sm:p-5 flex flex-col border ${
+        picked ? "bg-white/[0.1] border-violet-300 ring-2 ring-violet-400/50" : "bg-white/[0.06] border-white/15"
+      }`}
+    >
+      {picked && <p className="text-[11px] font-bold uppercase tracking-wide text-violet-300 mb-1">Your choice</p>}
+      <p className="font-extrabold text-lg leading-snug">{title}</p>
+      <div className="mt-1.5 space-y-0.5 text-sm text-white/70 flex-1">
+        {lines.map((l, i) => <p key={i}>{l}</p>)}
+      </div>
+      <button type="button" onClick={onClick} disabled={disabled}
+        className="mt-4 rounded-xl bg-white text-[#1b1916] hover:bg-violet-50 disabled:opacity-60 px-5 py-3 text-sm font-bold">
+        {busyText ?? cta}
+      </button>
+    </div>
+  )
+}
+
+/** Manage subscription: a Stripe Billing Portal session from /api/geo/portal. */
+function ManageSubscription() {
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState("")
+  async function open() {
+    setBusy(true)
+    setError("")
+    try {
+      const r = await fetch("/api/geo/portal", { method: "POST" })
+      const j = (await r.json().catch(() => ({}))) as { url?: string; error?: string }
+      if (j.url) {
+        window.location.assign(j.url)
+        return
+      }
+      setError(
+        j.error === "no_billing" || j.error === "no_plan"
+          ? "We couldn't find your billing yet. If you've just paid, try again in a few minutes, or write to us."
+          : "The billing page did not open. Try again in a minute, or write to us.",
+      )
+    } catch {
+      setError("The billing page did not open. Try again in a minute, or write to us.")
+    }
+    setBusy(false)
+  }
+  return (
+    <div>
+      <button type="button" onClick={open} disabled={busy}
+        className="rounded-xl bg-violet-600 hover:bg-violet-500 disabled:opacity-60 text-white px-5 py-3 text-sm font-semibold">
+        {busy ? "Opening…" : "Manage subscription"}
+      </button>
+      <p className="text-xs text-slate-500 mt-2">Cancel at the end of the paid period, change your card, download invoices.</p>
+      {error && <p className="text-sm text-red-700 mt-2">{error}</p>}
+    </div>
+  )
+}
+
+/** The signed-in account's sites, each cut to what it has paid for (lib/geo-report.ts). */
+async function loadSites(): Promise<SiteReport[]> {
+  const r = await fetch("/api/geo/report", { cache: "no-store" })
+  const j = (r.ok ? await r.json() : { sites: [] }) as { sites?: SiteReport[] }
+  return j.sites ?? []
 }
 
 export default function PlanPage() {
   const [sites, setSites] = useState<SiteReport[] | null>(null)
   const [domain, setDomain] = useState("")
   const [justPaid, setJustPaid] = useState(false)
-  const [busy, setBusy] = useState(false)
+  const [busy, setBusy] = useState<{ interval: Interval; stage: "follow" | "checkout" } | null>(null)
   const [error, setError] = useState("")
+  const [picked, setPicked] = useState<Interval | null>(null)
+  // An account without a site enters it here.
+  const [newSite, setNewSite] = useState("")
 
   useEffect(() => {
     const p = new URLSearchParams(window.location.search)
-    fetch("/api/geo/report", { cache: "no-store" })
-      .then((r) => (r.ok ? r.json() : { sites: [] }))
-      .then((j: { sites?: SiteReport[] }) => {
-        const list = j.sites ?? []
+    const chosen = chosenInterval(p)
+    loadSites()
+      .then((list) => {
+        if (chosen) setPicked(chosen)
         setJustPaid(p.get("paid") === "1")
         setSites(list)
-        setDomain(p.get("site") || list[0]?.domain || "")
+        const asked = p.get("site")
+        setDomain(asked && list.some((s) => s.domain === asked) ? asked : (list[0]?.domain ?? ""))
+        if (!list.length && asked) setNewSite(asked)
       })
       .catch(() => setSites([]))
   }, [])
 
-  async function start() {
-    setBusy(true)
+  async function start(interval: Interval) {
     setError("")
+    let target = domain
+    const adding = !sites?.some((s) => s.domain === domain)
     try {
+      if (adding) {
+        setBusy({ interval, stage: "follow" })
+        const r = await fetch("/api/geo/follow", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ site: newSite.trim() }),
+        })
+        const j = (await r.json().catch(() => ({}))) as { domain?: string; error?: string }
+        if (!r.ok || !j.domain) {
+          setError(FOLLOW_ERRORS[j.error ?? ""] ?? "That didn't work. Try again in a minute, or write to us.")
+          setBusy(null)
+          return
+        }
+        target = j.domain
+      }
+      setBusy({ interval, stage: "checkout" })
       const r = await fetch("/api/geo/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ domain }),
+        body: JSON.stringify({ domain: target, interval }),
       })
       const j = (await r.json().catch(() => ({}))) as { url?: string; error?: string }
       if (j.url) {
-        window.location.href = j.url
+        window.location.assign(j.url)
         return
       }
-      setError(j.error === "already_paid" ? "This site is already on the paid plan." : "Checkout did not open. Try again in a minute.")
+      setError(
+        j.error === "already_paid"
+          ? "This site is already on the plan."
+          : j.error === "not_followed"
+            ? "Add this site to the AI visibility report first."
+            : CHECKOUT_FAILED,
+      )
     } catch {
-      setError("Checkout did not open. Try again in a minute.")
+      setError(CHECKOUT_FAILED)
     }
-    setBusy(false)
+    // A site added on the way stays added: show it as the page's site from now on.
+    if (adding && target) {
+      const list = await loadSites().catch(() => null)
+      if (list?.some((s) => s.domain === target)) {
+        setSites(list)
+        setDomain(target)
+      }
+    }
+    setBusy(null)
   }
 
   if (sites === null) return <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10"><div className="h-48 rounded-2xl bg-white/60 animate-pulse" /></div>
 
-  const site = sites.find((s) => s.domain === domain)
-  if (!site) {
-    return (
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        <section className={card}>
-          <h1 className="text-2xl font-extrabold">Articles written for you</h1>
-          <p className="text-sm text-slate-600 mt-2">Add your site to the AI visibility report first; the plan is built from it.</p>
-          <Link href="/business/dashboard/visibility" className="inline-block mt-4 rounded-xl bg-violet-600 text-white px-5 py-3 text-sm font-semibold">Open the report</Link>
-        </section>
-      </div>
-    )
-  }
+  const site = sites.find((s) => s.domain === domain) ?? null
+  const working = site ? onPlan(site) : false
+  const paid = site?.plan === "paid"
+  const { questions, places, placesMore } = site ? plan(site) : { questions: [], places: [], placesMore: 0 }
+  const named = site?.latest?.summary.named
+  const of = site?.latest?.summary.of
+  // Set by the server only while the credit can still be used: bought, not yet credited, not expired.
+  const creditUntil = site?.research?.creditUntil ?? null
+  const credit = !!creditUntil
+  const forSite = site?.domain ?? (newSite.trim() || "your site")
 
-  const paid = site.plan === "paid"
-  const { questions, places } = plan(site)
-  const named = site.latest?.summary.named
-  const of = site.latest?.summary.of
+  const busyText = (i: Interval) =>
+    busy?.interval === i ? (busy.stage === "follow" ? "Reading your site… up to a minute" : "Opening checkout…") : null
+  const firstPayment = (i: Interval) =>
+    credit ? (
+      <>
+        First payment <s className="text-white/40">{usd(firstPaymentCents(i, false))}</s>{" "}
+        <b className="text-white">{usd(firstPaymentCents(i, true))}</b>
+      </>
+    ) : (
+      <>First payment {usd(firstPaymentCents(i, false))}</>
+    )
+  const choice = (i: Interval, title: string, lines: React.ReactNode[], cta: string) => (
+    <Choice
+      key={i}
+      title={title}
+      lines={lines.filter(Boolean)}
+      cta={cta}
+      busyText={busyText(i)}
+      disabled={busy !== null || (!site && newSite.trim().length < 3)}
+      picked={picked === i}
+      onClick={() => start(i)}
+    />
+  )
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-10 space-y-5">
       <header>
-        <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">Articles written for you</h1>
-        <p className="text-sm text-slate-600 mt-1">{[site.business, site.domain].filter(Boolean).join(" · ")}</p>
+        <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">{working ? "Plan & billing" : "Articles written for you"}</h1>
+        {site && <p className="text-sm text-slate-600 mt-1">{[site.business, site.domain].filter(Boolean).join(" · ")}</p>}
+        {!working && (
+          <p className="text-sm text-[#1b1916] mt-2 max-w-2xl">
+            We do this for you: on the plan we write, publish and measure for {forSite}. {ARTICLES_YOU} The report shows where you are
+            missing; the plan is us doing the work.
+          </p>
+        )}
         {sites.length > 1 && (
           <div className="mt-3 flex flex-wrap gap-2">
             {sites.map((s) => (
@@ -107,62 +403,144 @@ export default function PlanPage() {
         )}
       </header>
 
-      {(paid || justPaid) ? (
-        <section className="rounded-2xl bg-green-50 border border-green-200 p-6">
-          <h2 className="font-extrabold text-lg text-green-900">{justPaid && !paid ? "Payment received — setting things up" : "You are on the paid plan"}</h2>
-          <ol className="mt-3 space-y-2 text-sm text-green-900 list-decimal pl-5">
-            <li>Within one business day we email you to connect publishing to {site.domain} (WordPress, a webhook, or a blog we host).</li>
-            <li>You approve the first article topics; nothing is published without you.</li>
-            <li>Your weekly check becomes the full one: 20 questions, 4 assistants, 3 asks.</li>
-          </ol>
-          <div className="mt-4 flex flex-wrap gap-3">
-            <Link href="/business/dashboard/settings" className="rounded-xl bg-white border border-green-200 px-4 py-2.5 text-sm font-semibold">Your website</Link>
-            <Link href="/business/dashboard/support" className="rounded-xl bg-white border border-green-200 px-4 py-2.5 text-sm font-semibold">Write to us</Link>
-          </div>
-        </section>
-      ) : (
+      {site && (working || justPaid) ? (
         <>
-          <section className={card}>
-            <p className="text-[11px] font-bold uppercase tracking-wide text-slate-500">Where you stand</p>
-            <p className="mt-2 text-lg font-bold">
-              {named !== undefined ? <>Named in {named} of {of} answers{site.latest ? <> · {fmtDate(site.latest.finishedAt)}</> : null}.</> : <>Your report is still being built.</>}
-            </p>
-            {questions.length > 0 && (
-              <>
-                <h2 className="font-bold mt-5">The first articles we would write</h2>
-                <p className="text-xs text-slate-500 mt-1">Questions where the assistants named others and not you.</p>
-                <ol className="mt-3 space-y-2 list-decimal pl-5 text-sm">
-                  {questions.map((q) => <li key={q}>{q}</li>)}
-                </ol>
-              </>
+          <section className="rounded-2xl bg-green-50 border border-green-200 p-6">
+            <h2 className="font-extrabold text-lg text-green-900">{justPaid && !working ? "Payment received — setting things up" : "Your plan is active"}</h2>
+            {site.client && !paid ? (
+              <p className="mt-2 text-sm text-green-900">
+                We&apos;re on it for {site.domain}: the articles, the fixes and the places below. {ARTICLES_YOU}
+              </p>
+            ) : (
+              <ol className="mt-3 space-y-2 text-sm text-green-900 list-decimal pl-5">
+                <li>Within one business day we email you to connect publishing to {site.domain}: a blog we host at blog.{site.domain} or {site.domain}/blog, or your WordPress.</li>
+                <li>{ARTICLES_YOU} Each one is ready 2 days before its date and we email you; untouched, it goes live on the date.</li>
+                <li>Your weekly check becomes the full one: 20 questions, 4 assistants, 3 asks.</li>
+              </ol>
             )}
-            {places.length > 0 && (
+            <div className="mt-4 flex flex-wrap gap-3">
+              <Link href="/business/dashboard/articles" className="rounded-xl bg-white border border-green-200 px-4 py-2.5 text-sm font-semibold">Your articles</Link>
+              <Link href="/business/dashboard/settings" className="rounded-xl bg-white border border-green-200 px-4 py-2.5 text-sm font-semibold">Your website</Link>
+              <Link href="/business/dashboard/support" className="rounded-xl bg-white border border-green-200 px-4 py-2.5 text-sm font-semibold">Write to us</Link>
+            </div>
+          </section>
+
+          <section className={card}>
+            <h2 className="font-bold text-lg">Billing</h2>
+            {paid ? (
               <>
-                <h2 className="font-bold mt-5">Where we would get you present</h2>
-                <ul className="mt-2 space-y-1 text-sm">
-                  {places.map((p) => <li key={p.domain}><b>{p.domain}</b> <span className="text-slate-500">— cited in {p.count} answers about your field</span></li>)}
-                </ul>
+                <p className="text-sm text-slate-600 mt-1">
+                  AI visibility for {site.domain}
+                  {site.planInterval && BILLED[site.planInterval] ? <>: <b className="text-[#1b1916]">{BILLED[site.planInterval]}</b></> : null}.
+                </p>
+                <div className="mt-4">
+                  <ManageSubscription />
+                </div>
               </>
+            ) : site.client ? (
+              <p className="text-sm text-slate-600 mt-1">
+                Billing for {site.domain} is arranged with us directly.{" "}
+                <Link href="/business/dashboard/support" className="font-semibold text-violet-700 hover:underline">Write to us</Link> about it.
+              </p>
+            ) : (
+              <p className="text-sm text-slate-600 mt-1">Your subscription shows here within a few minutes of payment; reload the page then.</p>
             )}
           </section>
 
+          <Places site={site} places={places} placesMore={placesMore} working />
+        </>
+      ) : (
+        <>
+          {site ? (
+            <section className={card}>
+              <p className="text-[11px] font-bold uppercase tracking-wide text-slate-500">Where you stand</p>
+              <p className="mt-2 text-lg font-bold">
+                {named !== undefined ? <>Named in {named} of {of} answers{site.latest ? <> · {fmtDate(site.latest.finishedAt)}</> : null}.</> : <>Your report is still being built.</>}
+              </p>
+              {questions.length > 0 && (
+                <>
+                  <h2 className="font-bold mt-5">The first articles we would write for you</h2>
+                  <p className="text-xs text-slate-500 mt-1">Questions where the assistants named others and not you.</p>
+                  <ol className="mt-3 space-y-2 list-decimal pl-5 text-sm">
+                    {questions.map((q) => <li key={q}>{q}</li>)}
+                  </ol>
+                </>
+              )}
+            </section>
+          ) : (
+            <section className={card}>
+              <h2 className="font-bold text-lg">Your website</h2>
+              <p className="text-sm text-slate-600 mt-1 leading-relaxed">
+                Enter your website, then choose how you pay. Your full AI visibility report comes with the plan; we start building it as soon as
+                your site is added.
+              </p>
+              <input
+                value={newSite}
+                onChange={(e) => setNewSite(e.target.value)}
+                disabled={busy !== null}
+                placeholder="yourcompany.com"
+                aria-label="Your website address"
+                className="mt-4 w-full rounded-xl border border-black/15 bg-white px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-violet-400"
+              />
+            </section>
+          )}
+
+          {site && <Places site={site} places={places} placesMore={placesMore} working={false} />}
+
           <section className="rounded-2xl bg-[#1b1916] text-white p-6 sm:p-7">
-            <h2 className="font-extrabold text-xl">What the plan includes</h2>
-            <ul className="mt-4 space-y-2 text-sm text-white/85">
-              {INCLUDED.map((i) => <li key={i} className="flex gap-2"><span className="text-violet-300">✓</span>{i}</li>)}
-            </ul>
-            <p className="text-sm text-white/60 mt-4">No one can promise that assistants will name you. We promise the work and an honest weekly count.</p>
-            <div className="mt-6 flex flex-col sm:flex-row sm:items-center gap-3">
+            <div className="grid sm:grid-cols-2 gap-6">
               <div>
-                <span className="text-2xl font-extrabold">$499</span> <span className="text-white/70">/ month, month to month</span>
+                <h2 className="font-extrabold text-xl">What we do</h2>
+                <ul className="mt-3 space-y-2 text-sm text-white/85">
+                  {WE_DO.map((i) => <li key={i} className="flex gap-2"><span className="text-violet-300">✓</span>{i}</li>)}
+                </ul>
               </div>
-              <button type="button" onClick={start} disabled={busy}
-                className="sm:ml-auto rounded-xl bg-white text-[#1b1916] hover:bg-violet-50 disabled:opacity-60 px-6 py-3.5 text-sm font-bold">
-                {busy ? "Opening checkout…" : `Start for ${site.domain} — $499/month`}
-              </button>
+              <div>
+                <h2 className="font-extrabold text-xl">What you do</h2>
+                <ul className="mt-3 space-y-2 text-sm text-white/85">
+                  {YOU_DO.map((i) => <li key={i} className="flex gap-2"><span className="text-violet-300">→</span>{i}</li>)}
+                </ul>
+              </div>
             </div>
+            <p className="text-sm text-white/60 mt-5">No one can promise that assistants will name you. We promise the work and an honest weekly count.</p>
+
+            <h2 className="mt-6 font-extrabold text-xl break-all">Start for {forSite}</h2>
+
+            <div className="mt-4 grid gap-3 sm:grid-cols-3">
+              {choice(
+                "month",
+                `${P.month.label} a month + ${P.setup.label} setup`,
+                [firstPayment("month"), `Billed monthly. The ${P.setup.label} setup is one-time: your site and its indexes made ready, with a launch report.`],
+                "Start monthly",
+              )}
+              {choice(
+                "quarter",
+                `${P.quarter.label} for 3 months upfront`,
+                [firstPayment("quarter"), `${P.quarter.perMonth} a month, billed every 3 months. Setup free.`],
+                "Pay 3 months",
+              )}
+              {choice(
+                "year",
+                `${P.year.label} for a year`,
+                [firstPayment("year"), `${P.year.perMonth} a month, 20% off. Setup free.`],
+                "Pay a year",
+              )}
+            </div>
+
+            {credit && (
+              <p className="mt-4 rounded-xl bg-violet-500/20 border border-violet-300/30 px-4 py-2.5 text-sm text-violet-100">
+                Your {P.research.label} report comes off the first payment (until {fmtDate(creditUntil)}).
+              </p>
+            )}
             {error && <p className="text-sm text-red-300 mt-3">{error}</p>}
-            <p className="text-xs text-white/50 mt-3">Secure payment by Stripe. Cancel any time from the billing portal.</p>
+            <p className="mt-4 text-sm">
+              <Link href={SAMPLE_PATH} className="font-semibold text-violet-200 hover:text-white hover:underline">
+                See a real report →
+              </Link>
+            </p>
+            <p className="text-xs text-white/50 mt-3">
+              Secure payment by Stripe. Cancel any time with Manage subscription, on this page once your plan is active.
+            </p>
           </section>
         </>
       )}

@@ -5,12 +5,13 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { signOut } from "next-auth/react"
 
-// The AI-visibility cabinet. Two menus: a free account sees its report and the paid plan; a client
-// we publish for sees its articles, the report and its website. Everything else lives in the footer.
+// The AI-visibility cabinet. Two menus: an account without the plan sees its report and the plan; a
+// client (a paying account, or one we set up by hand: lib/geo-role.ts) sees its articles, the report,
+// its website, and Plan & billing (Manage subscription). Everything else lives in the footer.
 
 type Item = { href: string; label: string; icon: keyof typeof ICONS }
 
-const FREE: Item[] = [
+const PROSPECT: Item[] = [
   { href: "/business/dashboard/visibility", label: "AI visibility report", icon: "search" },
   { href: "/business/dashboard/plan", label: "Articles written for you", icon: "pen" },
 ]
@@ -19,12 +20,14 @@ const CLIENT: Item[] = [
   { href: "/business/dashboard/articles", label: "Your articles", icon: "file" },
   { href: "/business/dashboard/visibility", label: "AI visibility report", icon: "search" },
   { href: "/business/dashboard/settings", label: "Your website", icon: "globe" },
+  { href: "/business/dashboard/plan", label: "Plan & billing", icon: "card" },
 ]
 
 const ICONS = {
   search: "M11 4a7 7 0 105.2 11.7L20 19.5M11 4a7 7 0 010 14",
   pen: "M4 20h4L19 9a2.8 2.8 0 00-4-4L4 16v4zM13.5 6.5l4 4",
   file: "M7 3h7l5 5v13H7zM14 3v5h5M10 13h6M10 17h6",
+  card: "M3 6h18v12H3zM3 10h18M7 15h4",
   globe: "M12 3a9 9 0 100 18 9 9 0 000-18zM3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3",
   mail: "M4 6h16v12H4zM4 7l8 6 8-6",
   arrow: "M14 5h5v5M19 5l-8 8M10 5H5v14h14v-5",
@@ -44,7 +47,7 @@ const glass = { background: "rgba(255,255,255,0.60)", WebkitBackdropFilter: "blu
 export default function BusinessSidebar({ client = false, hasLinkedin = false }: { client?: boolean; hasLinkedin?: boolean }) {
   const pathname = usePathname()
   const [open, setOpen] = useState(false)
-  const items = client ? CLIENT : FREE
+  const items = client ? CLIENT : PROSPECT
 
   const row = (active: boolean) =>
     `flex items-center gap-3 px-4 py-3 rounded-2xl text-[15px] font-medium transition-all ${

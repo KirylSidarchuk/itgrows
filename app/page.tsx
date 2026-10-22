@@ -4,14 +4,19 @@ import { db } from "@/lib/db"
 import { blogPosts } from "@/lib/db/schema"
 import { and, desc, eq, isNull } from "drizzle-orm"
 import AuditForm from "./business/AuditForm"
+import LeadForm from "./business/LeadForm"
 import HashForward from "./_home/HashForward"
 import SignIn from "./_home/SignIn"
 import SiteFooter from "./_home/SiteFooter"
 import { ENTITY_ABOUT, OG_GEO, ORGANIZATION } from "@/lib/entity"
 import { FoundOnSites, GEO_INCLUDED, VersusArticles, WorkSystem } from "./business/GeoSections"
+import PricingPlans from "./business/PricingPlans"
+import { CREDIT_DAYS, GEO_PRICES, SAMPLE_PATH } from "@/lib/geo-pricing"
 
 // The front door says what ItGrows is first: AI visibility for companies. The LinkedIn/X product
-// lives at /personal, one click away from here and from the sign-in menu.
+// lives at /personal, one click away from here and from the sign-in menu. Since 22 Oct 2026 this is
+// also the AI-visibility page: /business redirects here (next.config.ts), so its request form (#apply)
+// and its questions live on this page.
 
 const BASE = "https://www.itgrows.ai"
 
@@ -20,7 +25,7 @@ export const revalidate = 3600
 export const metadata: Metadata = {
   title: "AI visibility for businesses: get named by ChatGPT | ItGrows",
   description:
-    "ItGrows makes companies visible in AI answers and drafts LinkedIn and X posts for founders. Check your site in about 30 seconds.",
+    "ItGrows makes companies visible in AI answers and drafts LinkedIn and X posts for founders. Check your site in about 30 seconds, no signup.",
   alternates: { canonical: `${BASE}/` },
   openGraph: {
     title: "Get your company named by ChatGPT, Claude, Gemini and Perplexity",
@@ -44,6 +49,8 @@ const CASES = [
   { site: "appslift.com", kind: "App store optimisation", n: "2–5", l: "leads a month from AI assistants" },
 ]
 
+const R = GEO_PRICES.research
+
 const FAQ = [
   { q: "What is ItGrows?", a: ENTITY_ABOUT[0] },
   {
@@ -51,10 +58,44 @@ const FAQ = [
     a: "Both, as two products. For companies, ItGrows is an AI visibility (GEO) service. For founders and experts, it drafts LinkedIn and X posts in their own voice; that product is at itgrows.ai/personal.",
   },
   { q: "Which assistants do you measure?", a: "ChatGPT, Claude, Gemini and Perplexity, through their own APIs with web search on, three asks per question, because their answers vary." },
-  { q: "Can you guarantee that ChatGPT will name us?", a: "No. No assistant sells organic placement or publishes how it chooses. We do the work that makes you findable and quotable, and we show you every week what changed." },
+  { q: "Can you guarantee that ChatGPT will name us?", a: "No, and distrust anyone who does. No assistant sells organic placement or publishes how it chooses. We do the work that makes you findable and quotable, and we show you every week what changed." },
+  {
+    q: "What can you actually prove?",
+    a: "Three things. Whether the assistants name you: every week we put the same questions your buyers ask to ChatGPT, Claude, Gemini and Perplexity, several times each, and count the answers that name you and the sites they cite. And, for blogs we host, from the server log, that crawlers fetched your pages and that assistants retrieved specific articles while answering somebody live — ChatGPT-User, OAI-SearchBot and Perplexity-User only appear mid-conversation. Nobody can measure every question anyone might ask; we measure the ones your buyers do.",
+  },
+  {
+    q: "How is this different from an SEO agency?",
+    a: "An SEO agency optimises for one index and counts rankings. Each assistant searches a different index — Bing, Brave, Google or its own — and we count the answers, not the rankings. We publish rather than advise; where a fix needs your developer, we give exact instructions and check that it worked.",
+  },
+  {
+    q: "Is this AI blog spam on my domain?",
+    a: "That is the right thing to fear — most of this category is exactly that. Two things stop it, neither magic: you define the positions, and you see every article 2 days before it goes live, and can edit or stop it. If you would not put your name on it, it does not go out.",
+  },
+  {
+    q: "How long before anything happens?",
+    a: "Once a page is in the right indexes, crawlers usually arrive within a week or two, and we test findability every week so a gap is caught. Becoming a source an assistant reaches for repeatedly takes months and a body of work. If you need attributable revenue this quarter, buy ads — we will say so on the call rather than after your third invoice.",
+  },
+  {
+    q: "Do you give us a guide to do it ourselves, or do the work?",
+    a: `We do the work. The detailed report (${R.label}) is the diagnosis and our plan: where you stand in all four assistants, who is named instead of you, and what we will do about it, step by step. On the plan we do that work: we publish answer pages on your domain, fix crawler access and indexing, and measure every week. The report's price comes off the plan within ${CREDIT_DAYS} days.`,
+  },
+  {
+    q: "What does the detailed report cost?",
+    a: `${R.label}, one payment per site. The quick check on this page needs no signup and takes about 30 seconds: 5 questions to ChatGPT and Perplexity. Create an account and we build the detailed report for your site — 20 questions to ChatGPT, Claude, Gemini and Perplexity, 3 asks each — with its totals and the 5 questions of the quick check open. The whole report is ${R.label}: every answer, everyone named instead of you, the sites the assistants quote, and our plan for your site. If you start the plan within ${CREDIT_DAYS} days, the ${R.label} comes off your first payment. A real one: itgrows.ai${SAMPLE_PATH}.`,
+  },
+  {
+    q: "What does the plan cost?",
+    a: `${GEO_PRICES.month.label} a month, month to month, plus a one-time ${GEO_PRICES.setup.label} setup: your site and its indexes made ready, delivered as a launch report. The setup is free when you pay ${GEO_PRICES.quarter.label} for 3 months upfront or ${GEO_PRICES.year.label} for a year (${GEO_PRICES.year.perMonth} a month, 20% off). The detailed report is included.`,
+  },
+  {
+    q: "Who is this wrong for?",
+    a: `Anyone without real expertise to publish — the engine amplifies a point of view, it cannot invent one. Anyone needing a signed guarantee. And anyone who wants the work done for the price of a software tool: at ${GEO_PRICES.month.label} a month the plan is priced against a fractional content hire. To see the full picture before deciding, the ${R.label} report shows where you stand and what we will do, and its price comes off the plan.`,
+  },
   { q: "Will this send us traffic from ChatGPT?", a: "Often little: assistants usually answer in place. We count whether you are named and cited. Some clients report customers, installs and leads that came from assistants." },
   { q: "I use ItGrows for LinkedIn. Where is my cabinet?", a: "Where it always was: Sign in, then LinkedIn & X cabinet. Nothing changed for your posts, plan or billing." },
 ]
+
+const price = (cents: number) => (cents / 100).toFixed(2)
 
 async function guides() {
   try {
@@ -76,6 +117,35 @@ export default async function Home() {
     "@graph": [
       ORGANIZATION,
       { "@type": "WebSite", "@id": `${BASE}/#website`, url: `${BASE}/`, name: "ItGrows", publisher: { "@id": ORGANIZATION["@id"] } },
+      {
+        "@type": "WebApplication",
+        name: "ItGrows AI visibility check",
+        url: `${BASE}/`,
+        applicationCategory: "BusinessApplication",
+        operatingSystem: "Web",
+        description:
+          "A 30-second check of whether ChatGPT and Perplexity name a business when its buyers ask: five buyer questions generated from the site, answered live with web search, with the businesses named instead and the sites cited. No signup.",
+        provider: { "@id": ORGANIZATION["@id"] },
+      },
+      {
+        "@type": "Service",
+        name: "ItGrows — AI visibility (GEO)",
+        serviceType: "Generative engine optimisation and content publishing",
+        description:
+          "Articles published to a customer's own domain that answer the questions buyers ask AI assistants, fixes for crawler access and indexing, and a weekly measurement across ChatGPT, Claude, Gemini and Perplexity of whether the business is named.",
+        provider: { "@id": ORGANIZATION["@id"] },
+        offers: [
+          { "@type": "Offer", name: "Detailed AI visibility report", price: price(R.cents), priceCurrency: "USD", url: `${BASE}/#geo-pricing` },
+          {
+            "@type": "Offer",
+            name: "AI visibility plan, monthly",
+            price: price(GEO_PRICES.month.cents),
+            priceCurrency: "USD",
+            url: `${BASE}/#geo-pricing`,
+            priceSpecification: { "@type": "UnitPriceSpecification", price: price(GEO_PRICES.month.cents), priceCurrency: "USD", unitText: "MONTH" },
+          },
+        ],
+      },
       { "@type": "FAQPage", mainEntity: FAQ.map((f) => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })) },
     ],
   }
@@ -149,7 +219,7 @@ export default async function Home() {
               </a>
             ))}
           </div>
-          <p className="text-center text-xs text-slate-500 mt-6">As reported by the clients. <Link href="/business#cases" className="underline">Cases and evidence →</Link></p>
+          <p className="text-center text-xs text-slate-500 mt-6">As reported by the clients.</p>
         </div>
       </section>
 
@@ -160,32 +230,35 @@ export default async function Home() {
       <VersusArticles id="geo-versus" />
 
       <section id="geo-pricing" className="px-4 sm:px-6 py-14 sm:py-20 scroll-mt-20">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-center">One plan, month to month</h2>
-          <div className="grid md:grid-cols-2 gap-4 mt-10">
-            <div className="rounded-2xl bg-white border border-black/10 p-6">
-              <p className="font-bold text-lg">Quick check</p>
-              <p className="text-sm text-slate-500 mt-2">No signup · about 30 seconds</p>
-              <ul className="mt-4 space-y-2 text-sm text-slate-700">
-                <li>✓ Five questions your buyers ask</li>
-                <li>✓ Answered live by ChatGPT and Perplexity</li>
-                <li>✓ Who they name instead of you</li>
-              </ul>
-              <a href="#geo-check" className="mt-6 block text-center rounded-xl border border-black/10 px-5 py-3 text-sm font-semibold">Check my site</a>
-            </div>
-            <div className="rounded-2xl bg-[#1b1916] text-white p-6">
-              <p className="font-bold text-lg">Done for you</p>
-              <p className="text-3xl font-extrabold mt-2">$499<span className="text-base text-white/60 font-semibold"> / month</span></p>
-              <ul className="mt-4 space-y-2 text-sm text-white/85">
-                {GEO_INCLUDED.map((f) => (
-                  <li key={f}>✓ {f}</li>
-                ))}
-              </ul>
-              <Link href="/signup?from=ai-check&callbackUrl=%2Fbusiness%2Fdashboard%2Fplan" className="mt-6 block text-center rounded-xl bg-white text-[#1b1916] px-5 py-3 text-sm font-semibold">Start the plan</Link>
-            </div>
+        <PricingPlans checkHref="#geo-check" planHref="#apply" planLabel="Or talk to us first →" included={GEO_INCLUDED} />
+        <p className="text-center text-xs text-slate-500 mt-2">LinkedIn &amp; X ghostwriting: Personal $49 · Duo $99 · All-in $199 — <Link href="/personal#pricing" className="underline">see plans</Link></p>
+      </section>
+
+      {/* The request form: talking to us before paying (it was the heart of /business) */}
+      <section id="apply" className="px-4 sm:px-6 py-14 sm:py-20 scroll-mt-20" style={{ backgroundColor: "#ebe9e5" }}>
+        <div className="max-w-xl mx-auto">
+          <h2 className="text-2xl sm:text-4xl font-extrabold mb-3 tracking-tight text-center">Request access</h2>
+          <p className="text-slate-600 text-center mb-8 text-sm sm:text-base">
+            Tell us about your site. We reply within a day. If it does not fit, we will say so.
+          </p>
+          <LeadForm />
+        </div>
+      </section>
+
+      <section id="geo-faq" className="px-4 sm:px-6 py-14 sm:py-20 scroll-mt-20">
+        <div className="max-w-3xl mx-auto">
+          <h2 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-center mb-8">Questions</h2>
+          <div className="space-y-2.5">
+            {FAQ.map((f) => (
+              <details key={f.q} className="bg-white border border-black/10 rounded-2xl overflow-hidden group">
+                <summary className="cursor-pointer list-none [&::-webkit-details-marker]:hidden px-5 py-4 font-semibold text-sm sm:text-base flex items-center justify-between gap-4">
+                  <h3>{f.q}</h3>
+                  <span className="text-violet-600 text-xl shrink-0 leading-none transition-transform group-open:rotate-45" aria-hidden>+</span>
+                </summary>
+                <p className="px-5 pb-5 text-sm text-slate-600 leading-relaxed">{f.a}</p>
+              </details>
+            ))}
           </div>
-          <p className="text-center text-sm text-slate-500 mt-5">No one can guarantee that an assistant will name a business. We measure and show you every week.</p>
-          <p className="text-center text-xs text-slate-500 mt-2">LinkedIn &amp; X ghostwriting: Personal $49 · Duo $99 · All-in $199 — <Link href="/personal#pricing" className="underline">see plans</Link></p>
         </div>
       </section>
 
@@ -195,36 +268,33 @@ export default async function Home() {
           <div className="grid md:grid-cols-3 gap-4 mt-10">
             <Link href="/business/ai-visibility-checker" className="rounded-2xl bg-white border border-black/10 p-5 hover:border-violet-300">
               <p className="font-bold">AI visibility checker</p>
-              <p className="text-sm text-slate-600 mt-2">Does ChatGPT name your business? Five of your buyers&apos; questions, answered live.</p>
+              <p className="text-sm text-slate-600 mt-2">Does ChatGPT name your business? Five of your buyers&apos; questions, answered live. No signup.</p>
             </Link>
             <Link href="/business/ai-crawler-checker" className="rounded-2xl bg-white border border-black/10 p-5 hover:border-violet-300">
               <p className="font-bold">AI crawler checker</p>
               <p className="text-sm text-slate-600 mt-2">Can GPTBot, ClaudeBot and PerplexityBot read your pages? Including robots.txt rules that block more than you meant.</p>
             </Link>
-            <Link href="/signup?from=ai-check&callbackUrl=%2Fbusiness%2Fdashboard%2Fvisibility" className="rounded-2xl bg-white border border-black/10 p-5 hover:border-violet-300">
-              <p className="font-bold">Detailed report</p>
-              <p className="text-sm text-slate-600 mt-2">20 questions × ChatGPT, Claude, Gemini and Perplexity × 3 asks: who is named, who is quoted instead, and the plan. After sign-up.</p>
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      <section id="geo-faq" className="px-4 sm:px-6 py-14 scroll-mt-20">
-        <div className="max-w-3xl mx-auto">
-          <h2 className="text-2xl sm:text-4xl font-extrabold tracking-tight">Questions</h2>
-          <div className="mt-8 space-y-6">
-            {FAQ.map((f) => (
-              <div key={f.q}>
-                <h3 className="font-bold">{f.q}</h3>
-                <p className="text-slate-700 mt-1 leading-relaxed">{f.a}</p>
-              </div>
-            ))}
+            <div className="rounded-2xl bg-white border border-black/10 p-5 flex flex-col">
+              <p className="font-bold">Detailed report · {R.label}</p>
+              <p className="text-sm text-slate-600 mt-2">
+                20 questions × ChatGPT, Claude, Gemini and Perplexity × 3 asks: who is named, who is quoted instead, and our plan for
+                your site. Built when you create an account; the totals are open.
+              </p>
+              <p className="mt-auto pt-3 text-sm font-semibold flex flex-wrap gap-x-4 gap-y-1">
+                <Link href="/signup?from=ai-check&callbackUrl=%2Fbusiness%2Fdashboard%2Fvisibility" className="text-violet-700 hover:underline">
+                  Create account →
+                </Link>
+                <Link href={SAMPLE_PATH} className="text-violet-700 hover:underline">
+                  See a real report →
+                </Link>
+              </p>
+            </div>
           </div>
         </div>
       </section>
 
       {latest.length > 0 && (
-        <section className="px-4 sm:px-6 py-14" style={{ backgroundColor: "#ebe9e5" }}>
+        <section className="px-4 sm:px-6 py-14">
           <div className="max-w-5xl mx-auto">
             <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight">Guides on AI visibility</h2>
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">

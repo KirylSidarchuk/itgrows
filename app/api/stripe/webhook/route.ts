@@ -5,8 +5,11 @@ import { users, linkedinAccounts } from "@/lib/db/schema"
 import { eq, sql } from "drizzle-orm"
 import { sendEmail } from "@/lib/email"
 import { subscriptionActivatedEmail, paymentFailedEmail, subscriptionCancelledEmail } from "@/lib/email-templates"
-import { GEO_PLAN, notifyOwner, syncGeoSubscription } from "@/lib/geo-business"
+import { GEO_PLAN, GEO_RESEARCH, geoPlanCheckoutCompleted, notifyOwner, syncGeoSubscription, unlockGeoResearch } from "@/lib/geo-business"
 import { sendOwner } from "@/lib/telegram"
+
+// A bought AI-visibility report for a site nobody followed yet waits for the VM to follow it.
+export const maxDuration = 60
 
 function getStripe() {
   const key = process.env.STRIPE_SECRET_KEY
@@ -66,6 +69,12 @@ export async function POST(req: NextRequest) {
       case "checkout.session.completed": {
         const session = event.data.object as Stripe.Checkout.Session
 
+        // A bought AI-visibility report: a one-time payment that never touches a subscription.
+        if (session.metadata?.plan === GEO_RESEARCH) {
+          if (session.payment_status === "paid") await unlockGeoResearch(session, event.created)
+          break
+        }
+
         if (session.subscription) {
           const subscription = await stripe.subscriptions.retrieve(
             session.subscription as string
@@ -74,13 +83,9 @@ export async function POST(req: NextRequest) {
           const plan = subscription.metadata?.plan ?? session.metadata?.plan
           const organizationId = subscription.metadata?.organizationId ?? session.metadata?.organizationId
 
-          // ItGrows for Business (AI visibility, $499/mo): its own state, never the LinkedIn/X plan.
+          // ItGrows for Business (AI visibility plan): its own state, never the LinkedIn/X plan.
           if (plan === GEO_PLAN) {
-            await syncGeoSubscription(subscription, event.type)
-            const [buyer] = userId
-              ? await db.select({ email: users.email, name: users.name }).from(users).where(eq(users.id, userId)).limit(1)
-              : []
-            await notifyOwner(`💳 GEO $499/мес оплачен!\n👤 ${buyer?.name ?? ""} ${buyer?.email ?? ""}\n🌐 ${subscription.metadata?.domain ?? "?"}\nДальше: подключить сайт клиента и поставить статьи.`)
+            await geoPlanCheckoutCompleted(session, subscription, event.type)
             break
           }
 
@@ -161,6 +166,13 @@ export async function POST(req: NextRequest) {
         break
       }
 
+      // A report paid by a delayed method (bank debit) is unlocked when the money arrives.
+      case "checkout.session.async_payment_succeeded": {
+        const session = event.data.object as Stripe.Checkout.Session
+        if (session.metadata?.plan === GEO_RESEARCH) await unlockGeoResearch(session, event.created)
+        break
+      }
+
       case "invoice.paid": {
         const invoice = event.data.object as Stripe.Invoice
         const amount = (invoice as unknown as { amount_paid?: number }).amount_paid ?? 0
@@ -195,6 +207,11 @@ export async function POST(req: NextRequest) {
         const subscription = event.data.object as Stripe.Subscription
         if (subscription.metadata?.plan === GEO_PLAN) {
           await syncGeoSubscription(subscription, event.type)
+          const prev = (event.data as unknown as { previous_attributes?: { cancel_at_period_end?: boolean } }).previous_attributes
+          if (subscription.cancel_at_period_end === true && prev?.cancel_at_period_end === false) {
+            const endsAt = subscription.cancel_at ? new Date(subscription.cancel_at * 1000).toISOString().slice(0, 10) : "?"
+            await notifyOwner(`❌ GEO-подписка отменяется: ${subscription.metadata?.domain ?? "?"}, до ${endsAt}`)
+          }
           break
         }
 
@@ -376,11 +393,24 @@ export async function POST(req: NextRequest) {
         {
           // The failed-payment email below is written for the LinkedIn/X plans; a GEO customer
           // gets Stripe's own notice, and Kiryl a message.
-          const failedSubId = (invoice as unknown as { subscription?: string }).subscription
+          type Meta = Record<string, string> | null
+          const inv = invoice as unknown as {
+            subscription?: string
+            subscription_details?: { metadata?: Meta }
+            parent?: { subscription_details?: { subscription?: string; metadata?: Meta } }
+          }
+          // Newer Stripe API versions carry the subscription under parent.subscription_details.
+          const failedSubId = inv.subscription ?? inv.parent?.subscription_details?.subscription
           if (failedSubId) {
-            const failedSub = await stripe.subscriptions.retrieve(failedSubId).catch(() => null)
-            if (failedSub?.metadata?.plan === GEO_PLAN) {
-              await notifyOwner(`⚠️ GEO $499: платёж не прошёл — ${failedSub.metadata?.domain ?? "?"}`)
+            // The invoice carries a copy of the subscription's metadata; without it, ask Stripe. A
+            // failed lookup throws, so the event is answered 500 and Stripe sends it again, rather
+            // than an unknown subscription being treated as a LinkedIn/X one.
+            const failedMeta =
+              inv.parent?.subscription_details?.metadata ??
+              inv.subscription_details?.metadata ??
+              (await stripe.subscriptions.retrieve(failedSubId)).metadata
+            if (failedMeta?.plan === GEO_PLAN) {
+              await notifyOwner(`⚠️ GEO: платёж не прошёл — ${failedMeta.domain ?? "?"}`)
               break
             }
           }

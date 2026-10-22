@@ -1,6 +1,6 @@
 "use client"
 
-import { Suspense, useEffect, useState } from "react"
+import { Suspense, useCallback, useEffect, useRef, useState } from "react"
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
@@ -97,6 +97,142 @@ function WpPluginSteps({ last }: { last: string }) {
   )
 }
 
+// ─── Blog under the main domain (yourdomain.com/blog) ─────────────────────────
+
+// How blog-service (/root/blog-service/server.js on the VM) serves a hosted blog under a client's
+// own path: it finds the blog by the X-Forwarded-Host header (else Host) matching
+// connected_sites.blog_domain, and reads the path from the root, so the proxy strips the prefix:
+// /blog/<slug> must arrive as /<slug>. With blog_public_url set, canonical tags, links, the sitemap
+// and llms.txt all use that address. The proxy goes to https://blogs.itgrows.ai (valid certificate,
+// no DNS change for the client) and names the blog in X-Forwarded-Host; a plain Next.js rewrite can
+// forward the client's own domain in that header, which matches no blog, hence a route handler.
+const BLOG_ORIGIN = "https://blogs.itgrows.ai"
+
+/** The bare host the API stores as blog_domain (app/api/sites strips scheme and path the same way). */
+function bareHost(v: string) {
+  return v.trim().replace(/^https?:\/\//i, "").replace(/\/.*$/, "").toLowerCase()
+}
+
+/** blog_public_url as blog-service needs it: absolute, no trailing slash. */
+function publicBlogUrl(v: string) {
+  const t = v.trim().replace(/\/+$/, "")
+  if (!t) return ""
+  return /^https?:\/\//i.test(t) ? t : `https://${t}`
+}
+
+function blogPath(publicUrl: string) {
+  try {
+    return new URL(publicUrl).pathname.replace(/\/+$/, "") || "/blog"
+  } catch {
+    return "/blog"
+  }
+}
+
+type ProxyKind = "nginx" | "cloudflare" | "nextjs"
+
+const PROXY_LABEL: Record<ProxyKind, string> = { nginx: "nginx", cloudflare: "Cloudflare", nextjs: "Next.js / Vercel" }
+
+function proxySnippet(kind: ProxyKind, publicUrl: string, blogHost: string) {
+  const path = blogPath(publicUrl)
+  let host = ""
+  try {
+    host = new URL(publicUrl).host
+  } catch {}
+  if (kind === "nginx") {
+    return `# ${host}${path} -> your itgrows blog. Inside the server { } block for ${host}.
+location = ${path} { return 301 ${path}/; }
+location ${path}/ {
+    proxy_pass ${BLOG_ORIGIN}/;
+    proxy_set_header Host blogs.itgrows.ai;
+    proxy_set_header X-Forwarded-Host ${blogHost};
+    proxy_ssl_server_name on;
+}`
+  }
+  if (kind === "cloudflare") {
+    return `// Cloudflare Worker on the route  ${host}${path}*
+export default {
+  async fetch(request) {
+    const url = new URL(request.url)
+    const rest = url.pathname.slice("${path}".length)
+    if (rest && !rest.startsWith("/")) return fetch(request) // e.g. ${path}ging: not the blog
+    return fetch("${BLOG_ORIGIN}" + (rest || "/") + url.search, {
+      headers: {
+        "X-Forwarded-Host": "${blogHost}",
+        "User-Agent": request.headers.get("User-Agent") || "",
+      },
+    })
+  },
+}`
+  }
+  return `// app${path}/[[...path]]/route.ts (App Router)
+export async function GET(req: Request) {
+  const url = new URL(req.url)
+  const rest = url.pathname.slice("${path}".length) || "/"
+  const res = await fetch("${BLOG_ORIGIN}" + rest + url.search, {
+    headers: {
+      "X-Forwarded-Host": "${blogHost}",
+      "User-Agent": req.headers.get("user-agent") ?? "",
+    },
+    cache: "no-store",
+  })
+  return new Response(res.body, {
+    status: res.status,
+    headers: { "Content-Type": res.headers.get("content-type") ?? "text/html; charset=utf-8" },
+  })
+}`
+}
+
+function CodeBlock({ code }: { code: string }) {
+  return (
+    <div className="relative">
+      <pre className="rounded-lg bg-[#1b1916] text-white/90 text-xs leading-relaxed p-3 pr-20 overflow-x-auto"><code>{code}</code></pre>
+      <div className="absolute top-2 right-2">
+        <CopyButton text={code} label="Copy" />
+      </div>
+    </div>
+  )
+}
+
+/** What the client's developer adds so the hosted blog shows at yourdomain.com/blog. */
+function ProxySteps({ publicUrl, blogHost }: { publicUrl: string; blogHost: string }) {
+  const [kind, setKind] = useState<ProxyKind>("nginx")
+  const sitemap = `Sitemap: ${publicUrl}/sitemap.xml`
+  return (
+    <div className="rounded-xl bg-[#ebe9e5] border border-black/10 p-4 space-y-3 text-sm">
+      <p className="text-[#1b1916] font-semibold">For your developer, once</p>
+      <ol className="list-decimal pl-5 space-y-3 text-slate-700">
+        <li>
+          One proxy rule: <code className="bg-white/60 px-1 rounded text-violet-700">{blogPath(publicUrl)}/…</code> is served from our
+          server, with the prefix removed and the blog named in <code className="bg-white/60 px-1 rounded">X-Forwarded-Host</code>.
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            {(Object.keys(PROXY_LABEL) as ProxyKind[]).map((k) => (
+              <button key={k} type="button" onClick={() => setKind(k)}
+                className={`rounded-full px-3 py-1 text-xs font-semibold ${kind === k ? "bg-violet-600 text-white" : "bg-white text-slate-700 border border-black/10"}`}>
+                {PROXY_LABEL[k]}
+              </button>
+            ))}
+          </div>
+          <div className="mt-2">
+            <CodeBlock code={proxySnippet(kind, publicUrl, blogHost)} />
+          </div>
+        </li>
+        <li>
+          One line in your site&apos;s robots.txt, so Bing and Google find the blog&apos;s sitemap:
+          <div className="mt-2">
+            <CodeBlock code={sitemap} />
+          </div>
+        </li>
+        <li>A link to the blog in your site&apos;s menu.</li>
+      </ol>
+      <p className="text-xs text-slate-600">
+        Then <a href={`${publicUrl}/`} target="_blank" rel="noopener noreferrer" className="text-violet-700 underline break-all">{publicUrl}/</a> shows
+        your blog, and every article&apos;s canonical tag and sitemap entry use this address. Stuck?{" "}
+        <Link href="/business/dashboard/support" className="font-semibold text-violet-700 underline">Write to us</Link> and we sort it out with your developer.
+      </p>
+    </div>
+  )
+}
+
 // ─── Add-site wizard ──────────────────────────────────────────────────────────
 
 const SAVE_FAILED = "That did not save. Try again, or write to us and we will connect it."
@@ -115,7 +251,9 @@ function AddSiteWizard({ onSaved, onCancel, isFirstSite }: AddSiteWizardProps) {
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState("")
 
-  // Blog domain (CNAME flow)
+  // Hosted blog: at blog.<domain> (one DNS record) or under the main domain at <domain>/blog
+  // (a proxy rule on the client's side). Both are the same blog on blog-service.
+  const [blogMode, setBlogMode] = useState<"subdomain" | "subdirectory">("subdomain")
   const [blogDomain, setBlogDomain] = useState("")
   const [blogPublicUrl, setBlogPublicUrl] = useState("")
 
@@ -146,12 +284,15 @@ function AddSiteWizard({ onSaved, onCancel, isFirstSite }: AddSiteWizardProps) {
 
   const siteSlug = generateSiteSlug(derivedName, normalUrl)
 
+  // www.example.com should suggest blog.example.com, not blog.www.example.com.
+  const rootDomain = derivedDomain.replace(/^www\./i, "")
+
   // Pre-fill blog domain when we reach cname step
   useEffect(() => {
-    if (step === "cname" && !blogDomain && derivedDomain) {
-      setBlogDomain(`blog.${derivedDomain}`)
+    if (step === "cname" && !blogDomain && rootDomain) {
+      setBlogDomain(`blog.${rootDomain}`)
     }
-  }, [step, blogDomain, derivedDomain])
+  }, [step, blogDomain, rootDomain])
 
   // ── Step 1: detect platform ───────────────────────────────────────────────
   const handleAnalyze = async () => {
@@ -225,6 +366,9 @@ function AddSiteWizard({ onSaved, onCancel, isFirstSite }: AddSiteWizardProps) {
     })
   }
 
+  // blog_public_url only for the main-domain blog; blog.<domain> serves at its own root.
+  const publicUrl = blogMode === "subdirectory" ? publicBlogUrl(blogPublicUrl) : ""
+
   const handleConnectCname = async () => {
     return saveSite({
       name: derivedName,
@@ -233,8 +377,13 @@ function AddSiteWizard({ onSaved, onCancel, isFirstSite }: AddSiteWizardProps) {
       siteToken: generatedToken,
       siteSlug,
       blogDomain: blogDomain.trim(),
-      blogPublicUrl: blogPublicUrl.trim() || undefined,
+      blogPublicUrl: publicUrl || undefined,
     })
+  }
+
+  const chooseBlogMode = (m: "subdomain" | "subdirectory") => {
+    setBlogMode(m)
+    if (m === "subdirectory" && !blogPublicUrl.trim()) setBlogPublicUrl(`https://${derivedDomain}/blog`)
   }
 
   // ── Detection badge ───────────────────────────────────────────────────────
@@ -335,6 +484,10 @@ function AddSiteWizard({ onSaved, onCancel, isFirstSite }: AddSiteWizardProps) {
 
         <WpPluginSteps last="Paste the Site Token in the field below" />
 
+        <p className="text-slate-600 text-xs">
+          For assistants to find the articles on your WordPress: your sitemap listed in robots.txt, an IndexNow plugin switched on, and the blog linked from your menu.
+        </p>
+
         <div className="space-y-2">
           <Label className="text-slate-700 text-sm">Site Token (from WP Admin)</Label>
           <Input
@@ -374,79 +527,138 @@ function AddSiteWizard({ onSaved, onCancel, isFirstSite }: AddSiteWizardProps) {
   }
 
   // ─────────────────────────────────────────────────────────────────────────
-  // CNAME (custom / Next.js / PHP / OctoberCMS / unknown)
+  // HOSTED BLOG (custom / Next.js / PHP / OctoberCMS / Shopify / Webflow / unknown)
   // ─────────────────────────────────────────────────────────────────────────
+  // What makes a blog findable is the same either way: one address per article, linked from the
+  // main site, in a sitemap Bing and Google read. Our hosted blog does that itself; the choice is
+  // only where it shows. blog.<domain> is the default (FreightSizer runs on blog.freightsizer.ai).
   if (step === "cname") {
+    const sub = blogMode === "subdomain"
+    const host = bareHost(blogDomain) || `blog.${rootDomain}`
+    const cnameName = host.endsWith(`.${rootDomain}`) ? host.slice(0, -(rootDomain.length + 1)) : host
+    const options = [
+      {
+        mode: "subdomain" as const,
+        title: `blog.${rootDomain} — we host it`,
+        badge: "Recommended to start",
+        text: "One DNS record on your side. We handle HTTPS, the sitemap, IndexNow pings to Bing on every new article, and the article markup. FreightSizer's blog runs this way, at blog.freightsizer.ai.",
+      },
+      {
+        mode: "subdirectory" as const,
+        title: `${derivedDomain}/blog — the same blog under your main domain`,
+        badge: "",
+        text: "No DNS change. Your developer adds one proxy rule to your site; links, canonical tags and the sitemap then use your main domain.",
+      },
+    ]
     return (
       <div className="space-y-5 pt-4 border-t border-black/10">
         <DetectionBadge />
         <div>
-          <h3 className="text-[#1b1916] font-semibold text-base mb-1">Set up your blog</h3>
+          <h3 className="text-[#1b1916] font-semibold text-base mb-1">Where your blog lives</h3>
           <p className="text-slate-600 text-xs">
-            We&apos;ll create a blog at <strong>blog.{derivedDomain}</strong>. Just add one DNS record.
+            We write and publish the articles on the plan; this only decides their address. Assistants find articles that have one
+            address, are linked from your main site and sit in a sitemap Bing and Google read — both options give you that.
           </p>
         </div>
 
-        <div className="rounded-xl bg-[#ebe9e5] border border-black/10 p-5 space-y-3">
-          <p className="text-[#1b1916] font-semibold text-sm">Add this DNS record to your domain registrar:</p>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm border-collapse">
-              <thead>
-                <tr className="text-slate-500 text-xs uppercase tracking-wide">
-                  <th className="text-left pb-2 pr-6 font-semibold">Type</th>
-                  <th className="text-left pb-2 pr-6 font-semibold">Name</th>
-                  <th className="text-left pb-2 font-semibold">Value</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td className="pr-6 py-1 font-mono text-violet-700 font-bold">CNAME</td>
-                  <td className="pr-6 py-1 font-mono text-[#1b1916]">blog</td>
-                  <td className="py-1 font-mono text-[#1b1916] text-xs">blogs.itgrows.ai</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-          <p className="text-slate-500 text-xs">
-            This will create your blog at <code className="bg-white/60 px-1 rounded text-violet-700">blog.{derivedDomain}</code>. Changes take effect in 5–30 minutes.
-          </p>
+        <div className="grid gap-3" role="radiogroup" aria-label="Where your blog lives">
+          {options.map((o) => (
+            <button
+              key={o.mode}
+              type="button"
+              role="radio"
+              aria-checked={blogMode === o.mode}
+              onClick={() => chooseBlogMode(o.mode)}
+              className={`text-left rounded-xl border p-4 transition-colors ${
+                blogMode === o.mode ? "border-violet-500 bg-violet-50 ring-1 ring-violet-500" : "border-black/10 bg-white hover:bg-[#f4f3f1]"
+              }`}
+            >
+              <span className="flex flex-wrap items-center gap-2">
+                <span className={`h-4 w-4 shrink-0 rounded-full border-2 ${blogMode === o.mode ? "border-violet-600 bg-violet-600 ring-2 ring-inset ring-white" : "border-slate-400"}`} />
+                <span className="font-semibold text-sm text-[#1b1916] break-all">{o.title}</span>
+                {o.badge && <span className="rounded-full bg-violet-100 border border-violet-300 px-2 py-0.5 text-[11px] font-semibold text-violet-700">{o.badge}</span>}
+              </span>
+              <span className="block mt-1.5 pl-6 text-xs text-slate-600">{o.text}</span>
+            </button>
+          ))}
         </div>
 
-        <div className="space-y-2">
-          <Label className="text-slate-700 text-sm font-medium">Your blog URL after DNS:</Label>
-          <Input
-            placeholder={`blog.${derivedDomain}`}
-            value={blogDomain}
-            onChange={(e) => setBlogDomain(e.target.value)}
-            className="bg-[#ebe9e5] border-black/10 text-[#1b1916] placeholder:text-slate-500 focus:border-violet-500 text-sm font-mono"
-          />
-          <p className="text-slate-500 text-xs">Pre-filled with the suggested subdomain — change if needed</p>
-        </div>
+        {sub ? (
+          <>
+            <div className="rounded-xl bg-[#ebe9e5] border border-black/10 p-5 space-y-3">
+              <p className="text-[#1b1916] font-semibold text-sm">Add this DNS record where you manage your domain:</p>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm border-collapse">
+                  <thead>
+                    <tr className="text-slate-500 text-xs uppercase tracking-wide">
+                      <th className="text-left pb-2 pr-6 font-semibold">Type</th>
+                      <th className="text-left pb-2 pr-6 font-semibold">Name</th>
+                      <th className="text-left pb-2 font-semibold">Value</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td className="pr-6 py-1 font-mono text-violet-700 font-bold">CNAME</td>
+                      <td className="pr-6 py-1 font-mono text-[#1b1916]">{cnameName}</td>
+                      <td className="py-1 font-mono text-[#1b1916] text-xs">blogs.itgrows.ai</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <p className="text-slate-500 text-xs">
+                Your blog will be at <code className="bg-white/60 px-1 rounded text-violet-700">{host}</code>. Then add a link to it in
+                your site&apos;s menu — that is how assistants and search engines get from your site to the articles.
+              </p>
+            </div>
 
-        <div className="space-y-2">
-          <Label className="text-slate-700 text-sm font-medium">
-            Custom blog URL <span className="text-slate-400 font-normal">(optional — if using subdirectory proxy)</span>
-          </Label>
-          <Input
-            placeholder={`https://${derivedDomain}/blog`}
-            value={blogPublicUrl}
-            onChange={(e) => setBlogPublicUrl(e.target.value)}
-            className="bg-[#ebe9e5] border-black/10 text-[#1b1916] placeholder:text-slate-500 focus:border-violet-500 text-sm font-mono"
-          />
-          <p className="text-slate-500 text-xs">
-            e.g. <code className="bg-white/60 px-1 rounded text-violet-700">https://yourdomain.com/blog</code> — leave empty if using <code className="bg-white/60 px-1 rounded text-violet-700">blog.yourdomain.com</code>. Used for correct canonical tags and sitemap URLs.
-          </p>
-        </div>
+            <div className="space-y-2">
+              <Label className="text-slate-700 text-sm font-medium">Blog address</Label>
+              <Input
+                placeholder={`blog.${rootDomain}`}
+                value={blogDomain}
+                onChange={(e) => setBlogDomain(e.target.value)}
+                className="bg-[#ebe9e5] border-black/10 text-[#1b1916] placeholder:text-slate-500 focus:border-violet-500 text-sm font-mono"
+              />
+              <p className="text-slate-500 text-xs">Pre-filled with the suggested subdomain — change it if you want another.</p>
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="space-y-2">
+              <Label className="text-slate-700 text-sm font-medium">Blog address on your site</Label>
+              <Input
+                placeholder={`https://${derivedDomain}/blog`}
+                value={blogPublicUrl}
+                onChange={(e) => setBlogPublicUrl(e.target.value)}
+                className="bg-[#ebe9e5] border-black/10 text-[#1b1916] placeholder:text-slate-500 focus:border-violet-500 text-sm font-mono"
+              />
+              <p className="text-slate-500 text-xs">Canonical tags, links and the sitemap use this address.</p>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-slate-700 text-sm font-medium">Blog name on our side</Label>
+              <Input
+                placeholder={`blog.${rootDomain}`}
+                value={blogDomain}
+                onChange={(e) => setBlogDomain(e.target.value)}
+                className="bg-[#ebe9e5] border-black/10 text-[#1b1916] placeholder:text-slate-500 focus:border-violet-500 text-sm font-mono"
+              />
+              <p className="text-slate-500 text-xs">Your proxy sends this name so our server knows which blog to show. It needs no DNS record.</p>
+            </div>
+
+            {publicUrl && <ProxySteps publicUrl={publicUrl} blogHost={host} />}
+          </>
+        )}
 
         {saveError && <p className="text-red-500 text-sm">{saveError}</p>}
 
         <div className="flex gap-3 pt-1">
           <Button
             onClick={async () => { const ok = await handleConnectCname(); if (ok) setStep("done") }}
-            disabled={!blogDomain.trim() || saving}
+            disabled={!blogDomain.trim() || (!sub && !publicUrl) || saving}
             className="bg-violet-600 hover:bg-violet-500 text-white"
           >
-            {saving ? "Saving..." : "I've added the DNS record"}
+            {saving ? "Saving..." : sub ? "I've added the DNS record" : "Save — my developer adds the rule"}
           </Button>
           <BackButton onClick={() => setStep("url")} />
         </div>
@@ -458,7 +670,8 @@ function AddSiteWizard({ onSaved, onCancel, isFirstSite }: AddSiteWizardProps) {
   // DONE
   // ─────────────────────────────────────────────────────────────────────────
   if (step === "done") {
-    const displayDomain = blogDomain.trim()
+    const sub = blogMode === "subdomain"
+    const displayDomain = sub ? blogDomain.trim() : publicUrl
     return (
       <div className="space-y-5 pt-4 border-t border-black/10">
         <div className="text-center py-4">
@@ -467,10 +680,14 @@ function AddSiteWizard({ onSaved, onCancel, isFirstSite }: AddSiteWizardProps) {
           <p className="text-slate-600 text-sm mb-4">
             Your blog will be at:
           </p>
-          <div className="inline-block bg-violet-50 border border-violet-200 rounded-xl px-5 py-3 font-mono text-violet-700 text-sm font-semibold">
+          <div className="inline-block bg-violet-50 border border-violet-200 rounded-xl px-5 py-3 font-mono text-violet-700 text-sm font-semibold break-all">
             {displayDomain}
           </div>
-          <p className="text-slate-500 text-xs mt-3">DNS changes can take up to 24 hours to propagate.</p>
+          <p className="text-slate-500 text-xs mt-3">
+            {sub
+              ? "DNS changes can take up to 24 hours to propagate. Remember the link to the blog in your site's menu."
+              : "It shows there once your developer adds the proxy rule. The rule stays on your website's card on this page."}
+          </p>
         </div>
         <Button
           onClick={onCancel}
@@ -519,20 +736,25 @@ function methodLabel(site: ConnectedSite) {
 }
 
 // POST /api/test-connection stores its result, and publish-scheduled refuses every article for a
-// plugin or webhook site whose stored check is not OK. Two of its checks test something publishing
-// does not use, so a click could stop articles that go through fine:
-// - WordPress with an application password: it asks for our plugin's status address, and those
-//   sites have no plugin (404 on firma-ausland.de).
-// - PHP / October CMS webhooks: it sends GET ?test=1, while articles go out as POST. MagiScan's
-//   webhook answers that GET with 404 and takes an article every day.
-// Until the route checks what publishing uses, these sites are not offered the check.
-const UNCHECKABLE_WEBHOOK = ["php", "october", "octobercms"]
-
-function checkable(site: ConnectedSite) {
-  const m = methodOf(site)
-  if (m === "wp_api") return false
-  if (m === "webhook" && UNCHECKABLE_WEBHOOK.includes(site.platform)) return false
-  return true
+// plugin or webhook site whose stored check is not OK. The route tests what publishing uses for
+// each method (the blog address, the WordPress login, the plugin, the webhook's server) without
+// sending an article, so every site is offered the check.
+async function checkConnection(id: string): Promise<{ ran: boolean; success: boolean; message: string }> {
+  try {
+    const res = await fetch("/api/test-connection", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ siteId: id }),
+    })
+    const data = (await res.json().catch(() => ({}))) as { success?: boolean; message?: string }
+    return {
+      ran: res.ok,
+      success: res.ok && data.success === true,
+      message: data.message || "The check did not run. Reload the page and try again.",
+    }
+  } catch {
+    return { ran: false, success: false, message: "The check did not run. Try again in a minute." }
+  }
 }
 
 function siteHref(url: string) {
@@ -544,6 +766,178 @@ function fmtWhen(iso: string) {
   if (Number.isNaN(d.getTime())) return ""
   return d.toLocaleString("en-GB", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })
 }
+
+// ─── Launch report ────────────────────────────────────────────────────────────
+
+// What the launch checked, fixed and set up for a site: GET /api/geo/launch, from
+// /root/geo_check/launch.py on the VM. The automatic items run again every day (cron 05:40 UTC)
+// and on "Check again"; the others we set as the work gets done. "na" items never reach here.
+type LaunchStatus = "ok" | "fixed" | "handed" | "you" | "todo" | "issue" | "tip"
+
+interface LaunchItem {
+  key: string
+  title: string
+  how: "auto" | "manual"
+  status: LaunchStatus
+  note: string | null
+  updated_at: string | null
+}
+
+const LAUNCH_PILL: Record<LaunchStatus, [string, string]> = {
+  ok: ["In order", "text-green-700 bg-green-50 border-green-200"],
+  fixed: ["Fixed by us", "text-emerald-800 bg-emerald-100 border-emerald-300"],
+  handed: ["With your developer", "text-sky-800 bg-sky-50 border-sky-200"],
+  you: ["Needs you", "text-amber-900 bg-amber-50 border-amber-300"],
+  todo: ["We're on it", "text-violet-700 bg-violet-50 border-violet-200"],
+  issue: ["Needs fixing", "text-red-700 bg-red-50 border-red-200"],
+  tip: ["Worth adding", "text-slate-600 bg-slate-100 border-slate-200"],
+}
+
+const known = (items: LaunchItem[] | undefined) => (items ?? []).filter((i) => Object.hasOwn(LAUNCH_PILL, i.status))
+
+/** The bare domain the launch API keys on, normalised as app/api/geo/launch does. */
+function domainOf(url: string) {
+  return url.trim().toLowerCase().replace(/^https?:\/\//, "").replace(/^www\./, "").split(/[/?#]/)[0]
+}
+
+function LaunchReport({ domain }: { domain: string }) {
+  // null while loading
+  const [items, setItems] = useState<LaunchItem[] | "failed" | null>(null)
+  const [hidden, setHidden] = useState(false)
+  const [checking, setChecking] = useState(false)
+  const [checked, setChecked] = useState<{ text: string; bad?: boolean } | null>(null)
+
+  useEffect(() => {
+    let live = true
+    fetch(`/api/geo/launch?site=${encodeURIComponent(domain)}`, { cache: "no-store" })
+      .then(async (r) => {
+        // Not one of this account's sites as the API sees it: nothing to show.
+        if (r.status === 404) {
+          if (live) setHidden(true)
+          return
+        }
+        if (!r.ok) throw new Error(String(r.status))
+        const data = (await r.json()) as { items?: LaunchItem[] }
+        if (live) setItems(known(data.items))
+      })
+      .catch(() => {
+        if (live) setItems("failed")
+      })
+    return () => {
+      live = false
+    }
+  }, [domain])
+
+  // The automatic checks fetch the site as eleven crawlers, so this can take most of a minute.
+  // The API answers {recent: true} with the stored items when it ran in the last few minutes.
+  const checkAgain = async () => {
+    setChecking(true)
+    setChecked(null)
+    try {
+      const r = await fetch("/api/geo/launch", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ site: domain }),
+      })
+      const data = (await r.json().catch(() => ({}))) as { items?: LaunchItem[]; recent?: boolean }
+      if (!r.ok || !Array.isArray(data.items)) throw new Error(String(r.status))
+      setItems(known(data.items))
+      setChecked({ text: data.recent ? "Checked a few minutes ago" : "Checked just now" })
+    } catch {
+      setChecked({ text: "The check did not run. Try again in a few minutes.", bad: true })
+    } finally {
+      setChecking(false)
+    }
+  }
+
+  if (hidden) return null
+
+  const list = Array.isArray(items) ? items : []
+  // "Worth adding" is optional, so it neither counts against the site nor in the total.
+  const counted = list.filter((i) => i.status !== "tip")
+  const inOrder = counted.filter((i) => i.status === "ok" || i.status === "fixed").length
+  const notRun = Array.isArray(items) && (list.length === 0 || list.every((i) => !i.updated_at))
+  const ready = Array.isArray(items) && !notRun
+  const pct = counted.length ? Math.round((inOrder / counted.length) * 100) : 0
+  const open = list.some((i) => i.status === "you" || i.status === "issue" || i.status === "handed")
+
+  return (
+    <section className={card}>
+      <p className={`${label} break-all`}>{domain}</p>
+      <h2 className="mt-1 font-extrabold text-lg text-[#1b1916]">
+        {ready ? `Ready for AI assistants: ${inOrder} of ${counted.length} in order` : "Ready for AI assistants"}
+      </h2>
+      <p className="mt-1 text-sm text-slate-600">
+        The launch report that comes with your launch: what we checked, fixed and set up so AI assistants and search engines can
+        reach and read your site. The automatic checks run again every day.
+      </p>
+
+      {ready && (
+        <div
+          className="mt-4 h-2 rounded-full bg-[#ebe9e5] overflow-hidden"
+          role="progressbar"
+          aria-label="Items in order"
+          aria-valuemin={0}
+          aria-valuemax={counted.length}
+          aria-valuenow={inOrder}
+        >
+          <div className="h-full rounded-full bg-green-600" style={{ width: `${pct}%` }} />
+        </div>
+      )}
+
+      {items === null ? (
+        <div className="mt-4 space-y-2">
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="h-10 rounded-xl bg-[#f8f7f6] animate-pulse" />
+          ))}
+        </div>
+      ) : items === "failed" ? (
+        <p className="mt-4 text-sm text-slate-600">The launch report did not load just now. Reload the page in a minute.</p>
+      ) : notRun ? (
+        <p className="mt-4 text-sm text-slate-600">The launch check has not run for this site yet.</p>
+      ) : (
+        <ul className="mt-4 space-y-2">
+          {list.map((i) => {
+            const [text, cls] = LAUNCH_PILL[i.status]
+            return (
+              <li key={i.key} className="rounded-xl bg-[#f8f7f6] px-3.5 py-2.5">
+                <div className="flex items-start justify-between gap-3">
+                  <span className="min-w-0 text-sm font-semibold text-[#1b1916]">{i.title}</span>
+                  <span className={`shrink-0 text-[11px] font-bold px-2.5 py-1 rounded-full border ${cls}`}>{text}</span>
+                </div>
+                {i.note && <p className="mt-1 text-xs text-slate-600 break-words">{i.note}</p>}
+              </li>
+            )
+          })}
+        </ul>
+      )}
+
+      {items !== null && (
+        <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-2">
+          <button
+            onClick={checkAgain}
+            disabled={checking}
+            className="rounded-xl bg-violet-600 hover:bg-violet-500 text-white px-4 py-2 text-sm font-semibold disabled:opacity-60"
+          >
+            {checking ? "Checking… up to a minute" : notRun ? "Run the check" : "Check again"}
+          </button>
+          {checked && <span className={`text-xs ${checked.bad ? "text-red-700" : "text-slate-600"}`}>{checked.text}</span>}
+          {open && !checking && (
+            <span className="text-xs text-slate-600">
+              A question about an item?{" "}
+              <Link href="/business/dashboard/support" className="font-semibold text-violet-700 underline">
+                Write to us
+              </Link>
+              .
+            </span>
+          )}
+        </div>
+      )}
+    </section>
+  )
+}
+
+// ─── Publishing connection ────────────────────────────────────────────────────
 
 function StatusPill({ ok }: { ok: boolean | null | undefined }) {
   if (ok === true)
@@ -568,9 +962,18 @@ function SiteCard({
 }) {
   const method = methodOf(site)
   const blogUrl = method === "hosted" ? site.blogPublicUrl || (site.blogDomain ? `https://${site.blogDomain}` : null) : null
+  // A hosted blog shown under the main domain keeps its proxy rule here, for the client's developer.
+  const proxied = (() => {
+    if (method !== "hosted" || !site.blogPublicUrl || !site.blogDomain) return null
+    const publicUrl = publicBlogUrl(site.blogPublicUrl)
+    try {
+      return new URL(publicUrl).host.toLowerCase() === site.blogDomain.toLowerCase() ? null : { publicUrl, blogHost: site.blogDomain }
+    } catch {
+      return null
+    }
+  })()
   const token = (method === "wp_plugin" || method === "webhook") && site.siteToken ? site.siteToken : null
   const fresh = test && !test.loading && test.message ? test : null
-  const canCheck = checkable(site)
   // A status we set by hand has no time; then the badge alone shows it.
   const when = site.lastCheckedAt ? fmtWhen(site.lastCheckedAt) : ""
 
@@ -579,21 +982,19 @@ function SiteCard({
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
-            <h2 className="font-extrabold text-lg text-[#1b1916] break-words">{site.name}</h2>
+            <h2 className="font-extrabold text-lg text-[#1b1916]">Publishing</h2>
             {showDefault && site.isDefault && (
               <span className="rounded-full bg-violet-100 border border-violet-300 px-2 py-0.5 text-xs font-semibold text-violet-700">
                 Default
               </span>
             )}
           </div>
-          <a
-            href={siteHref(site.url)}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-sm text-violet-700 hover:underline break-all"
-          >
-            {site.url}
-          </a>
+          <p className="text-sm text-slate-600 break-words">
+            How our articles reach {site.name !== site.url ? `${site.name}, ` : ""}
+            <a href={siteHref(site.url)} target="_blank" rel="noopener noreferrer" className="text-violet-700 hover:underline break-all">
+              {site.url}
+            </a>
+          </p>
         </div>
         <StatusPill ok={site.lastCheckOk} />
       </div>
@@ -641,9 +1042,9 @@ function SiteCard({
       ) : (
         site.lastCheckOk === false && (
           <p className="mt-4 rounded-xl border bg-red-50 border-red-200 px-4 py-2.5 text-sm text-red-800">
-            The last check did not pass. {canCheck ? "Check again, or " : ""}
+            The last check did not pass. Check the connection again, or{" "}
             <Link href="/business/dashboard/support" className="font-semibold underline">
-              {canCheck ? "write to us" : "Write to us"}
+              write to us
             </Link>{" "}
             and we will fix it.
           </p>
@@ -665,6 +1066,15 @@ function SiteCard({
         </div>
       )}
 
+      {proxied && (
+        <details className="mt-3 text-sm">
+          <summary className="cursor-pointer font-semibold text-violet-700">The proxy rule for your developer</summary>
+          <div className="mt-3">
+            <ProxySteps publicUrl={proxied.publicUrl} blogHost={proxied.blogHost} />
+          </div>
+        </details>
+      )}
+
       {method === "wp_plugin" && (
         <details className="mt-3 text-sm">
           <summary className="cursor-pointer font-semibold text-violet-700">How to install the plugin</summary>
@@ -675,21 +1085,13 @@ function SiteCard({
       )}
 
       <div className="mt-5 flex flex-wrap items-center gap-2">
-        {canCheck ? (
-          <button
-            onClick={onCheck}
-            disabled={test?.loading}
-            className="rounded-xl bg-violet-600 hover:bg-violet-500 text-white px-4 py-2 text-sm font-semibold disabled:opacity-60"
-          >
-            {test?.loading ? "Checking…" : "Check again"}
-          </button>
-        ) : (
-          <p className="text-xs text-slate-600">
-            {method === "wp_api"
-              ? "WordPress checks this connection each time we publish an article."
-              : "Your site checks this connection each time we send an article."}
-          </p>
-        )}
+        <button
+          onClick={onCheck}
+          disabled={test?.loading}
+          className="rounded-xl border border-violet-500/40 bg-white text-violet-700 hover:bg-violet-50 px-4 py-2 text-sm font-semibold disabled:opacity-60"
+        >
+          {test?.loading ? "Checking…" : "Check the connection"}
+        </button>
         {showDefault && !site.isDefault && (
           <button
             onClick={onSetDefault}
@@ -713,6 +1115,21 @@ function SettingsContent() {
   const [loadError, setLoadError] = useState(false)
   const [notice, setNotice] = useState("")
   const [testStatuses, setTestStatuses] = useState<Record<string, TestStatus>>({})
+  const rechecked = useRef(false)
+  // Sites on the plan (geo_follows.plan = paid, via /api/geo/report). One without a connected
+  // website yet still shows its launch report, and when we connect publishing.
+  const [planDomains, setPlanDomains] = useState<string[]>([])
+
+  const runCheck = useCallback(async (id: string) => {
+    setTestStatuses((prev) => ({ ...prev, [id]: { loading: true } }))
+    const r = await checkConnection(id)
+    setTestStatuses((prev) => ({ ...prev, [id]: { loading: false, success: r.success, message: r.message } }))
+    // A check that ran is stored by the server, so the card shows it too.
+    if (r.ran) {
+      const at = new Date().toISOString()
+      setSites((prev) => prev.map((s) => (s.id === id ? { ...s, lastCheckOk: r.success, lastCheckedAt: at } : s)))
+    }
+  }, [])
 
   useEffect(() => {
     fetch("/api/sites", { cache: "no-store" })
@@ -720,9 +1137,26 @@ function SettingsContent() {
         if (!r.ok) throw new Error(String(r.status))
         return r.json()
       })
-      .then((data: { sites?: ConnectedSite[] }) => setSites(data.sites ?? []))
+      .then((data: { sites?: ConnectedSite[] }) => {
+        const list = data.sites ?? []
+        setSites(list)
+        // A stored "Problem" can be stale: the old check failed on bare addresses ("itgrows.ai")
+        // and tested things publishing does not use. A failed site is checked again once on open.
+        if (rechecked.current) return
+        rechecked.current = true
+        list.filter((x) => x.lastCheckOk === false).forEach((x) => void runCheck(x.id))
+      })
       .catch(() => setLoadError(true))
       .finally(() => setLoading(false))
+  }, [runCheck])
+
+  useEffect(() => {
+    fetch("/api/geo/report", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : { sites: [] }))
+      .then((data: { sites?: { domain?: string; plan?: string }[] }) =>
+        setPlanDomains((data.sites ?? []).filter((s) => s.plan === "paid" && s.domain).map((s) => s.domain as string))
+      )
+      .catch(() => {})
   }, [])
 
   const handleSaved = (newSite: ConnectedSite) => {
@@ -750,37 +1184,13 @@ function SettingsContent() {
     setSites((prev) => prev.map((s) => ({ ...s, isDefault: s.id === site.id })))
   }
 
-  const handleTestConnection = async (id: string) => {
-    setTestStatuses((prev) => ({ ...prev, [id]: { loading: true } }))
-    try {
-      const res = await fetch("/api/test-connection", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ siteId: id }),
-      })
-      const data = await res.json() as { success?: boolean; message?: string }
-      setTestStatuses((prev) => ({
-        ...prev,
-        [id]: {
-          loading: false,
-          success: res.ok && data.success === true,
-          message: data.message || "The check did not run. Reload the page and try again.",
-        },
-      }))
-      // A 200 is a check that ran; the server stores its result, so the card shows it too.
-      if (res.ok) {
-        const at = new Date().toISOString()
-        setSites((prev) => prev.map((s) => (s.id === id ? { ...s, lastCheckOk: data.success === true, lastCheckedAt: at } : s)))
-      }
-    } catch {
-      setTestStatuses((prev) => ({
-        ...prev,
-        [id]: { loading: false, success: false, message: "The check did not run. Try again in a minute." },
-      }))
-    }
-  }
-
   const several = sites.length > 1
+  // One launch report per domain, above the first of its sites.
+  const firstOfDomain = new Set(
+    sites.filter((s, i) => sites.findIndex((t) => domainOf(t.url) === domainOf(s.url)) === i).map((s) => s.id)
+  )
+  const connected = new Set(sites.map((s) => domainOf(s.url)))
+  const planOnly = loading || loadError ? [] : planDomains.filter((d) => !connected.has(d))
 
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-10 space-y-5">
@@ -788,8 +1198,8 @@ function SettingsContent() {
         <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#1b1916]">Your website</h1>
         <p className="text-sm text-slate-600 mt-1">
           {several
-            ? "Where we publish your articles. New articles go to the website marked Default."
-            : "Where we publish your articles."}
+            ? "How ready each site is for AI assistants, and where we publish your articles. New articles go to the website marked Default."
+            : "How ready your site is for AI assistants, and where we publish your articles."}
         </p>
       </header>
 
@@ -807,7 +1217,19 @@ function SettingsContent() {
 
       {notice && <p className="rounded-xl border bg-red-50 border-red-200 px-4 py-2.5 text-sm text-red-800">{notice}</p>}
 
-      {!loading && !loadError && sites.length === 0 && !showWizard && (
+      {planOnly.map((d) => (
+        <div key={d} className="space-y-3">
+          <LaunchReport domain={d} />
+          <section className={card}>
+            <h2 className="font-extrabold text-lg text-[#1b1916]">Publishing</h2>
+            <p className="mt-1 text-sm text-slate-600 break-words">
+              Your plan is active; we email you within one business day to connect publishing.
+            </p>
+          </section>
+        </div>
+      ))}
+
+      {!loading && !loadError && sites.length === 0 && planOnly.length === 0 && !showWizard && (
         <section className={card}>
           <p className="text-[#1b1916]">
             We connect your website when your paid plan starts.{" "}
@@ -826,17 +1248,19 @@ function SettingsContent() {
       )}
 
       {sites.map((site) => (
-        <SiteCard
-          key={site.id}
-          site={site}
-          showDefault={several}
-          test={testStatuses[site.id]}
-          onCheck={() => handleTestConnection(site.id)}
-          onSetDefault={() => handleSetDefault(site)}
-        />
+        <div key={site.id} className="space-y-3">
+          {firstOfDomain.has(site.id) && domainOf(site.url) && <LaunchReport domain={domainOf(site.url)} />}
+          <SiteCard
+            site={site}
+            showDefault={several}
+            test={testStatuses[site.id]}
+            onCheck={() => void runCheck(site.id)}
+            onSetDefault={() => handleSetDefault(site)}
+          />
+        </div>
       ))}
 
-      {!loading && !loadError && sites.length > 0 && !showWizard && (
+      {!loading && !loadError && (sites.length > 0 || planOnly.length > 0) && !showWizard && (
         <button
           onClick={() => setShowWizard(true)}
           className="rounded-xl border border-black/15 bg-white/80 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-white"

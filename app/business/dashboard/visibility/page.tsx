@@ -1,35 +1,43 @@
 "use client"
 
 import { useCallback, useEffect, useRef, useState } from "react"
+import { REPORT_SITES } from "@/lib/geo-pricing"
 import {
   AddSite,
   Banner,
+  CreditNote,
   Crawlers,
   FirstLook,
-  Hero,
   NamedInstead,
-  NextSteps,
   Pending,
-  PlanCard,
-  Sources,
-  WeeklyHero,
-  WhatChanged,
+  ReportSections,
   WhereNamed,
+  YourPlan,
   card,
   fmtDate,
-  nextSteps,
+  isPreview,
+  onPlan,
+  planSteps,
   type Audit,
   type SiteReport,
 } from "./parts"
 
-// The AI-visibility report: where a free account lands after the check on /business, and where a
-// paying client sees the weekly count. Arriving with ?site= (or the check's handoff) follows that
-// site, which queues the day-0 report on the VM; the page then follows it to completion.
+// The AI-visibility report: where a new account lands after the quick check on the site, and where
+// a client sees the weekly count. Arriving with ?site= (or the check's handoff) follows that site,
+// which queues the day-0 report on the VM; the page then follows it to completion.
+//
+// The detailed report is a preview until it is bought or the site is on the plan (see parts.tsx).
+// Stripe brings the buyer back with ?site=…&unlocked=1; the webhook may land a few seconds later, so
+// the page asks again until the site reads as unlocked. A site past the account's report is refused
+// by /api/geo/follow with "report_limit" (402); its report can be bought instead, and the purchase
+// follows it. The report ends with "Your plan": what we do, never how to do it yourself.
 
-// Same conversion the email report on /business fires: a visitor of the free check left a way to
-// reach them. Fired once per site per browser, when the follow succeeds.
+// Same conversion the email report fires: a visitor of the quick check left a way to reach them.
+// Fired once per site per browser, when the follow succeeds.
 const REPORT_CONVERSION = "AW-18160234884/GnV1COO4h-AcEITjvNND"
 const AUDIT_TTL_MS = 60 * 60 * 1000
+const UNLOCK_POLL_MS = 3_000
+const UNLOCK_WAIT_MS = 2 * 60 * 1000
 
 function bare(raw: string) {
   return raw
@@ -58,6 +66,9 @@ export default function VisibilityPage() {
   const [followErr, setFollowErr] = useState<{ domain: string; error: string } | null>(null)
   const [audits, setAudits] = useState<Record<string, Audit | "failed">>({})
   const [showBase, setShowBase] = useState(false)
+  // Back from Stripe with a bought report: which site, since when, and whether it is taking long.
+  const [unlocking, setUnlocking] = useState<{ domain: string; since: number } | null>(null)
+  const [unlockSlow, setUnlockSlow] = useState(false)
   const started = useRef(false)
 
   const load = useCallback(async () => {
@@ -86,9 +97,11 @@ export default function VisibilityPage() {
           body: JSON.stringify({ site }),
         })
         const j = (await r.json().catch(() => ({}))) as { domain?: string; status?: string; error?: string }
-        if (!r.ok || !j.domain) {
-          setFollowErr({ domain: bare(site), error: j.error ?? "unavailable" })
-          track("geo_follow_failed", { domain: bare(site), error: j.error })
+        if (!r.ok || !j.domain || j.error) {
+          // report_limit names the domain as the server spells it: the report is bought for that one.
+          const domain = (j.error === "report_limit" && j.domain) || bare(site)
+          setFollowErr({ domain, error: j.error ?? "unavailable" })
+          track("geo_follow_failed", { domain, error: j.error })
           return
         }
         setActive(j.domain)
@@ -116,6 +129,7 @@ export default function VisibilityPage() {
     ;(async () => {
       const params = new URLSearchParams(window.location.search)
       let site = bare(params.get("site") ?? "")
+      const unlocked = params.get("unlocked") === "1"
       if (!site) {
         try {
           const h = JSON.parse(localStorage.getItem("itg_geo_handoff") ?? "null") as { site?: string; at?: number } | null
@@ -123,9 +137,15 @@ export default function VisibilityPage() {
         } catch {}
       }
       const list = await load()
-      if (site && list && !list.some((s) => s.domain === site)) await follow(site)
+      if (site && unlocked) {
+        // A bought report: the webhook unlocks the site (and follows it, if it is a new one). Not
+        // following it from here, which the account's report limit would refuse in the meantime.
+        setActive(site)
+        setUnlocking({ domain: site, since: Date.now() })
+        track("geo_research_return", { domain: site })
+      } else if (site && list && !list.some((s) => s.domain === site)) await follow(site)
       else if (site) setActive(site)
-      if (params.has("site")) window.history.replaceState(null, "", window.location.pathname)
+      if (params.has("site") || unlocked) window.history.replaceState(null, "", window.location.pathname)
       try {
         localStorage.removeItem("itg_geo_handoff")
       } catch {}
@@ -140,6 +160,22 @@ export default function VisibilityPage() {
     const t = setInterval(load, 10_000)
     return () => clearInterval(t)
   }, [anyPending, load])
+
+  // After the purchase: ask again every few seconds until the site reads as unlocked.
+  const bought = unlocking ? sites?.find((s) => s.domain === unlocking.domain) : undefined
+  const unlockedNow = Boolean(bought && !isPreview(bought))
+  useEffect(() => {
+    if (!unlocking || unlockedNow) return
+    const t = setInterval(() => {
+      if (Date.now() - unlocking.since > UNLOCK_WAIT_MS) {
+        clearInterval(t)
+        setUnlockSlow(true)
+        return
+      }
+      load()
+    }, UNLOCK_POLL_MS)
+    return () => clearInterval(t)
+  }, [unlocking, unlockedNow, load])
 
   // The crawler check for the site on screen, cached for an hour in this tab.
   const domain = site?.domain
@@ -175,7 +211,11 @@ export default function VisibilityPage() {
   }
 
   const audit = site ? audits[site.domain] : undefined
-  const free = site ? site.plan !== "paid" : true
+  // On the plan, or a client we set up by hand: no unlock, no offer, every step "We're on it".
+  const client = site ? onPlan(site) : false
+  // The server's rule for a new site, as a hint before anyone types: sites neither bought nor on the
+  // plan (a client we set up by hand reads as unlocked everywhere, and has no limit).
+  const reportUsed = sites.filter(isPreview).length >= REPORT_SITES
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-10 space-y-5">
@@ -207,13 +247,51 @@ export default function VisibilityPage() {
             )}
           </div>
         )}
+        {site && (
+          <div className="mt-3 empty:hidden">
+            <CreditNote site={site} />
+          </div>
+        )}
       </header>
+
+      {unlocking &&
+        (unlockedNow ? (
+          <div className="rounded-2xl bg-green-50 border border-green-200 px-4 sm:px-5 py-3.5 flex items-start gap-3">
+            <p className="flex-1 text-sm text-green-900 leading-relaxed">
+              <b>Unlocked.</b>{" "}
+              {bought?.latest
+                ? `The full report for ${unlocking.domain} is below.`
+                : `Your report for ${unlocking.domain} is being built; all of it opens here when it's ready.`}
+            </p>
+            <button type="button" onClick={() => setUnlocking(null)} aria-label="Dismiss" className="text-xl leading-none text-green-800/60 hover:text-green-900">
+              ×
+            </button>
+          </div>
+        ) : unlockSlow ? (
+          <div className="rounded-2xl bg-amber-50 border border-amber-200 px-4 sm:px-5 py-3.5 text-sm text-amber-900 leading-relaxed">
+            <b>Not unlocked yet.</b> A payment can take a minute to confirm. Refresh this page shortly; if {unlocking.domain} is still
+            locked,{" "}
+            <a href="/business/dashboard/support" className="font-semibold underline">
+              write to us
+            </a>
+            .
+          </div>
+        ) : (
+          <div className="rounded-2xl bg-violet-50 border border-violet-200 px-4 sm:px-5 py-3.5 flex items-center gap-3 text-sm text-violet-900">
+            <span aria-hidden className="w-4 h-4 shrink-0 rounded-full border-2 border-violet-300 border-t-violet-700 animate-spin" />
+            <span>
+              <b>Thank you.</b> Unlocking the full report for {unlocking.domain}. This takes a few seconds.
+            </span>
+          </div>
+        ))}
 
       {loadFailed && (
         <div className={`${card} text-sm text-slate-700`}>We couldn&apos;t load your report just now. It retries on its own; you can also refresh.</div>
       )}
 
-      {(!site || showAdd) && <AddSite onAdd={follow} busy={adding} error={followErr} first={!site} />}
+      {(!site || showAdd || followErr) && (
+        <AddSite onAdd={follow} busy={adding} error={followErr} first={!site} reportUsed={Boolean(site) && reportUsed} />
+      )}
 
       {site && (
         <>
@@ -221,56 +299,18 @@ export default function VisibilityPage() {
 
           {site.latest ? (
             <>
-              {site.latest.kind === "weekly" ? (
-                <>
-                  <WeeklyHero site={site} onShowBaseline={site.baseline ? () => setShowBase((v) => !v) : undefined} />
-                  <WhatChanged changes={site.latest.summary.changes ?? []} />
-                  {site.baseline && site.latest.rows.length < site.baseline.rows.length && (
-                    <WhereNamed
-                      rows={site.latest.rows}
-                      engines={site.latest.engines}
-                      samples={site.latest.samples}
-                      asked={site.latest.finishedAt}
-                      title="This week's questions"
-                    />
-                  )}
-                </>
-              ) : (
-                <Hero report={site.latest} />
-              )}
-              {(() => {
-                // The detailed cards come from the fullest report: this week's for a paid site, the
-                // day-0 report for a free one (its weekly check is five questions).
-                const full = site.baseline && site.latest.rows.length < site.baseline.rows.length ? site.baseline : site.latest
-                const fromDay0 = full !== site.latest
-                return (
-                  <>
-                    {fromDay0 && (
-                      <p className="text-xs font-semibold text-slate-600 px-1">
-                        From your day-0 report · {fmtDate(full.finishedAt)} · 20 questions × 4 assistants, 3 asks each
-                      </p>
-                    )}
-                    {fromDay0 && showBase && <Hero report={full} />}
-                    <div className="grid xl:grid-cols-2 gap-5">
-                      <NamedInstead summary={full.summary} you={site.business || site.domain} />
-                      <Sources summary={full.summary} />
-                    </div>
-                    <WhereNamed rows={full.rows} engines={full.engines} samples={full.samples} asked={full.finishedAt} />
-                  </>
-                )
-              })()}
-              <div className="grid xl:grid-cols-2 gap-5">
-                <Crawlers audit={audit} />
-                <NextSteps key={site.domain} domain={site.domain} steps={nextSteps(site, audit)} ready />
-              </div>
-              {free && <PlanCard domain={site.domain} />}
+              {/* The detailed cards come from the fullest report: this week's on the plan, else the
+                  day-0 report (a short weekly check is five questions). */}
+              <ReportSections site={site} showBase={showBase} onToggleBase={() => setShowBase((v) => !v)} />
+              <Crawlers audit={audit} />
+              <YourPlan site={site} steps={planSteps(site, audit)} ready mode={client ? "client" : "offer"} />
             </>
           ) : (
             <>
               {site.failed && !site.pending && (
                 <section className="rounded-2xl bg-red-50 border border-red-200 p-5">
                   <p className="font-bold text-red-900">We couldn&apos;t finish your report for {site.domain}</p>
-                  <p className="text-sm text-red-900/80 mt-1">Something failed on our side or at one of the assistants. Starting it again is free.</p>
+                  <p className="text-sm text-red-900/80 mt-1">Something failed on our side or at one of the assistants. You can start it again.</p>
                   <button
                     type="button"
                     onClick={() => follow(site.domain)}
@@ -294,7 +334,7 @@ export default function VisibilityPage() {
               )}
               <div className="grid xl:grid-cols-2 gap-5">
                 <Crawlers audit={audit} />
-                <NextSteps key={site.domain} domain={site.domain} steps={[]} ready={false} />
+                <YourPlan site={site} steps={[]} ready={false} mode={client ? "client" : "offer"} />
               </div>
               <Pending title="Sites the assistants rely on" />
             </>

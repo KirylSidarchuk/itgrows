@@ -227,3 +227,86 @@ export function paymentFailedEmail(name: string): string {
     </div>
   `
 }
+
+export interface ReadyArticle {
+  title: string
+  /** The search description, shown under the title. */
+  description?: string | null
+  /** "2026-10-24": the day it goes live if nothing is done. */
+  liveDate: string
+  /** The article in "Your articles". */
+  url: string
+}
+
+/**
+ * Articles we have written for a client's site and will publish on their date: sent once per
+ * article (each run lists the ones that became ready), in the language of the client's site.
+ * WordPress draft sites never get it: they approve in WordPress (draftReadyEmail).
+ */
+export function articlesReadyEmail(name: string | null, siteName: string, articles: ReadyArticle[], language?: string): string {
+  const esc = (s: string) =>
+    s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;")
+  const de = (language ?? "").toLowerCase().startsWith("de")
+  const many = articles.length > 1
+  const day = (iso: string) => {
+    const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso)
+    if (!m) return iso
+    return new Date(Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3]))).toLocaleDateString(de ? "de-DE" : "en-GB", {
+      weekday: "long", day: "numeric", month: "long", year: "numeric", timeZone: "UTC",
+    })
+  }
+  const site = esc(siteName)
+  const who = name?.trim() ? esc(name.trim()) : ""
+  const t = de
+    ? {
+        head: many ? "Ihre nächsten Artikel sind fertig" : "Ihr nächster Artikel ist fertig",
+        hi: who ? `Guten Tag ${who},` : "Guten Tag,",
+        body: many
+          ? `die nächsten ${articles.length} Artikel für ${site} sind geschrieben und liegen für Sie zur Durchsicht bereit.`
+          : `der nächste Artikel für ${site} ist geschrieben und liegt für Sie zur Durchsicht bereit.`,
+        live: "Geht online am",
+        how: many
+          ? "In Ihrem Konto können Sie Titel, Beschreibung und Text bearbeiten, einen Artikel sofort veröffentlichen oder stoppen. Wenn Sie nichts tun, geht jeder an seinem Tag online."
+          : "In Ihrem Konto können Sie Titel, Beschreibung und Text bearbeiten, ihn sofort veröffentlichen oder stoppen. Wenn Sie nichts tun, geht er an diesem Tag online.",
+        cta: "Artikel öffnen →",
+        foot: "ItGrows.ai · Sie sehen jeden Artikel 2 Tage, bevor er online geht, und können ihn bearbeiten oder stoppen.",
+      }
+    : {
+        head: many ? "Your next articles are ready" : "Your next article is ready",
+        hi: who ? `Hi ${who},` : "Hi,",
+        body: many
+          ? `The next ${articles.length} articles for ${site} are written and ready for you to read.`
+          : `The next article for ${site} is written and ready for you to read.`,
+        live: "Goes live on",
+        how: many
+          ? "In your account you can edit the title, description and text, publish an article straight away, or stop it. If you do nothing, each one goes live on its date."
+          : "In your account you can edit the title, description and text, publish it straight away, or stop it. If you do nothing, it goes live on that date.",
+        cta: "Open the article →",
+        foot: "ItGrows.ai · You see every article 2 days before it goes live, and can edit or stop it.",
+      }
+  const items = articles
+    .map(
+      (a) => `
+        <div style="border: 1px solid #e5e7eb; border-radius: 10px; padding: 16px 18px; margin: 16px 0;">
+          <p style="color: #111827; font-size: 17px; font-weight: 600; margin: 0 0 6px;">${esc(a.title)}</p>
+          ${a.description ? `<p style="color: #6b7280; font-size: 14px; margin: 0 0 8px;">${esc(a.description)}</p>` : ""}
+          <p style="color: #374151; font-size: 14px; margin: 0 0 12px;">${t.live} <strong>${esc(day(a.liveDate))}</strong></p>
+          <a href="${esc(a.url)}" style="display: inline-block; background: #7c3aed; color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px;">${t.cta}</a>
+        </div>`,
+    )
+    .join("")
+  return `
+    <div style="${baseStyle}">
+      <div style="background: linear-gradient(135deg, #7c3aed, #a855f7); padding: 24px 32px; border-radius: 12px 12px 0 0;">
+        <h1 style="color: white; margin: 0; font-size: 20px;">${t.head}</h1>
+      </div>
+      <div style="padding: 32px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 12px 12px;">
+        <p style="color: #374151;">${t.hi}</p>
+        <p style="color: #374151;">${t.body}</p>
+        ${items}
+        <p style="color: #374151;">${t.how}</p>
+        <p style="color: #9ca3af; font-size: 12px; margin-top: 32px;">${t.foot}</p>
+      </div>
+    </div>
+  `
+}

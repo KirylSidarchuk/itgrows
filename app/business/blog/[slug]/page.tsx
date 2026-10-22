@@ -195,7 +195,7 @@ export default async function BusinessBlogPostPage({ params }: { params: Promise
             </h2>
             <p className="text-slate-600 text-sm sm:text-base mb-6 max-w-lg mx-auto leading-relaxed">
               Enter your site: we ask ChatGPT and Perplexity five questions your buyers ask and show who they name
-              instead of you. Free, about 30 seconds.
+              instead of you. No signup, about 30 seconds.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <Link

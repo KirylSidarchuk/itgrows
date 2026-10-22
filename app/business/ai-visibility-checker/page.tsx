@@ -3,16 +3,17 @@ import Link from "next/link"
 import AuditForm from "../AuditForm"
 import ToolShell from "../_tools/ToolShell"
 import Faq, { faqSchema, type QA } from "../_tools/Faq"
+import { GEO_PRICES } from "@/lib/geo-pricing"
 
 const URL = "https://www.itgrows.ai/business/ai-visibility-checker"
 
 export const metadata: Metadata = {
-  title: "Free AI visibility checker: does ChatGPT name you? | ItGrows",
+  title: "AI visibility checker: does ChatGPT name you? | ItGrows",
   description:
-    "Enter your website: we ask ChatGPT and Perplexity five questions your buyers ask and show whether they name you, who they name instead and which sites they cite. Free.",
+    "Enter your website: we ask ChatGPT and Perplexity five questions your buyers ask and show whether they name you, who they name instead and which sites they cite. No signup.",
   alternates: { canonical: URL },
   openGraph: {
-    title: "Does ChatGPT recommend your business? Free AI visibility check",
+    title: "Does ChatGPT recommend your business? AI visibility check",
     description: "Five buyer questions, asked live to ChatGPT and Perplexity. See who they name instead of you.",
     url: URL,
     type: "website",
@@ -21,8 +22,8 @@ export const metadata: Metadata = {
 
 const FAQ: QA[] = [
   {
-    q: "Is the AI visibility check free?",
-    a: "Yes. The check asks ChatGPT and Perplexity five questions and shows two answers in full. A free account shows all of them, adds Claude and Gemini (20 questions, three asks each) and re-checks every week.",
+    q: "Do I need an account for the check?",
+    a: `No. The check runs without signup, in about 30 seconds: it asks ChatGPT and Perplexity five questions and shows two answers in full. With an account we build the detailed report for your site (20 questions × 4 assistants × 3 asks): you see its totals and the answers to the check's five questions. The whole report is ${GEO_PRICES.research.label}, one payment.`,
   },
   {
     q: "Where do the questions come from?",
@@ -49,7 +50,7 @@ export default function AiVisibilityCheckerPage() {
         applicationCategory: "BusinessApplication",
         operatingSystem: "Web",
         description:
-          "Free check of whether ChatGPT and Perplexity name a business when its buyers ask: five buyer questions generated from the site, answered live with web search, with the businesses named instead and the sites cited.",
+          "A 30-second check of whether ChatGPT and Perplexity name a business when its buyers ask: five buyer questions generated from the site, answered live with web search, with the businesses named instead and the sites cited.",
         offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
         provider: { "@id": "https://www.itgrows.ai/#organization" },
       },
@@ -61,7 +62,7 @@ export default function AiVisibilityCheckerPage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />
       <main className="px-4 sm:px-6 pt-10 sm:pt-14">
         <div className="max-w-3xl mx-auto text-center">
-          <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-violet-700">Free AI visibility check</p>
+          <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-violet-700">AI visibility check · no signup</p>
           <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight mt-3">Does ChatGPT recommend your business?</h1>
           <p className="text-base sm:text-lg text-slate-600 mt-4 max-w-2xl mx-auto">
             Enter your site. We write five questions your buyers would ask and put them to ChatGPT and Perplexity, live,

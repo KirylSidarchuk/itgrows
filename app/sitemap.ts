@@ -38,7 +38,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: "https://www.itgrows.ai/personal", lastModified: D("2026-10-22"), changeFrequency: "weekly", priority: 0.9 },
     { url: "https://www.itgrows.ai/blog", lastModified: latestBlog, changeFrequency: "daily", priority: 0.9 },
     { url: "https://www.itgrows.ai/company", lastModified: D("2026-10-01"), changeFrequency: "weekly", priority: 0.9 },
-    { url: "https://www.itgrows.ai/business", lastModified: D("2026-10-22"), changeFrequency: "weekly", priority: 0.9 },
     { url: "https://www.itgrows.ai/business/blog", lastModified: latestGuide, changeFrequency: "weekly", priority: 0.8 },
     { url: "https://www.itgrows.ai/business/ai-visibility-checker", lastModified: D("2026-10-21"), changeFrequency: "weekly", priority: 0.9 },
     { url: "https://www.itgrows.ai/business/ai-crawler-checker", lastModified: D("2026-10-21"), changeFrequency: "weekly", priority: 0.9 },

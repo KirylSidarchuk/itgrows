@@ -1,4 +1,4 @@
-// The three blocks that say what the plan actually runs, shared by "/" and "/business".
+// The three blocks that say what the plan actually runs, on "/" (/business redirects there).
 // They describe work we do for the client on the plan, not steps for the reader to follow: each block
 // ends on "we do it", never on "how to". Built to be read in seconds; the detail sits in native
 // <details>, so it stays in the server-rendered HTML for crawlers.
@@ -9,9 +9,10 @@
 //  - findings = the 19 Oct audit of three client sites plus our own robots.txt (fixed 21 Oct)
 // What it deliberately does not say is how: which rules, which tests, which order.
 
+import { GEO_PRICES } from "@/lib/geo-pricing"
 
 // "See the plan" points at the pricing section of the page the block sits on: "/" prefixes its GEO
-// section ids with "geo-" (#geo-pricing), "/business" does not (#pricing).
+// section ids with "geo-" (#geo-pricing); a page without the prefix would use #pricing.
 const pricingAnchor = (id?: string) => (id?.startsWith("geo-") ? "#geo-pricing" : "#pricing")
 
 // Native disclosure without the browser's triangle (Safari draws it unless the marker is hidden).
@@ -78,7 +79,7 @@ const STAGES: { step: string; icon: keyof typeof ICONS; n: string; l: string; d:
     icon: "write",
     n: "3–5",
     l: "sources read and cited per article",
-    d: "Research on live search, and every source is read before it is cited. An editor pass checks each claim against your product facts and the sources, then automated checks go over the rest. A topic too close to one you already have is not written. Nothing goes live without your approval.",
+    d: "Research on live search, and every source is read before it is cited. An editor pass checks each claim against your product facts and the sources, then automated checks go over the rest. A topic too close to one you already have is not written. You see every article 2 days before it goes live, and can edit or stop it.",
   },
   {
     step: "Re-measure",
@@ -106,10 +107,12 @@ export function WorkSystem({ id = "how" }: { id?: string }) {
     <section id={id} className="px-4 sm:px-6 py-14 sm:py-20 scroll-mt-20">
       <div className="max-w-5xl mx-auto">
         <p className="text-[11px] uppercase tracking-[0.15em] font-bold text-violet-600 text-center mb-3">
-          What we run for you · $499 a month
+          What we run for you · {GEO_PRICES.month.label} a month
         </p>
         <h2 className="text-2xl sm:text-4xl font-extrabold mb-3 tracking-tight text-center">An article is the last step, not the product</h2>
-        <p className="text-slate-600 text-center mb-10 sm:mb-14 text-sm sm:text-base">Five stages. We do the work, every week; you approve what goes live.</p>
+        <p className="text-slate-600 text-center mb-10 sm:mb-14 text-sm sm:text-base">
+          Five stages. We do the work, every week. You see every article 2 days before it goes live, and can edit or stop it.
+        </p>
 
         <div className="relative">
           {/* The road: vertical on the phone, through the node centres on desktop */}
@@ -289,12 +292,13 @@ export function VersusArticles({ id }: { id?: string }) {
 }
 
 export const GEO_INCLUDED = [
-  "Site and index setup: tested as 11 crawlers, blockers fixed",
-  "Day 0: 240 answers from ChatGPT, Claude, Gemini and Perplexity",
+  "Setup: your site tested as 11 crawlers, blockers fixed, Bing and Google set up — one-time $499, free with 3 months or a year",
+  "Day 0: the full detailed report — 240 answers from ChatGPT, Claude, Gemini and Perplexity — included",
   "Every week: the same count against day 0, whether the assistants can find your articles, and who is quoted instead",
   "Up to 12 researched articles a month on your own domain, 3–5 sources each",
+  "The sites the assistants quote instead of you: we prepare the profiles and the letters to editors",
   "Blog hosting with the machine-readable layer built in — one DNS record",
-  "Approval queue, full veto",
+  "You see every article 2 days before it goes live, and can edit or stop it",
   "A monthly report in your language, read by a person first",
   "A human who knows your account",
 ]
