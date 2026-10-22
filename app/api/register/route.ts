@@ -5,6 +5,7 @@ import { eq } from "drizzle-orm"
 import bcrypt from "bcryptjs"
 import { Resend } from "resend"
 import crypto from "crypto"
+import { sendOwner } from "@/lib/telegram"
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
@@ -62,11 +63,7 @@ export async function POST(req: NextRequest) {
     })
 
     // Notify owner in Telegram
-    fetch(`https://api.telegram.org/bot8213146538:AAH9ceXiIQ62-ICZJlUFx0psyd2nYq1gN7g/sendMessage`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ chat_id: 372194458, text: `🆕 New user: ${name || ""} ${email.toLowerCase()} [${source || "unknown"}]`.trim() }),
-    }).catch(() => {})
+    void sendOwner(`🆕 New user: ${name || ""} ${email.toLowerCase()} [${source || "unknown"}]`.trim())
 
     return NextResponse.json({ success: true, userId: user.id, emailSent: true })
   } catch (err) {

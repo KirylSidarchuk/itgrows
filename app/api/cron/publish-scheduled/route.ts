@@ -8,19 +8,10 @@ import { publishToWordPress, canUseAppPassword } from "@/lib/wordpress-publish"
 import { slugBase } from "@/lib/slug"
 import { storeAndRecordImage } from "@/lib/image-store"
 import { extractFaq, faqJsonLd } from "@/lib/faq-schema"
+import { sendOwner } from "@/lib/telegram"
 
 export const runtime = "nodejs"
 export const maxDuration = 300
-
-async function notifyTelegram(message: string) {
-  try {
-    await fetch(`https://api.telegram.org/bot8213146538:AAH9ceXiIQ62-ICZJlUFx0psyd2nYq1gN7g/sendMessage`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ chat_id: "372194458", text: message }),
-    })
-  } catch { /* non-fatal */ }
-}
 
 export async function GET(req: NextRequest) {
   // Verify authorization — CRON_SECRET must be set and header must match
@@ -463,7 +454,7 @@ export async function GET(req: NextRequest) {
 
   if (errors.length > 0) {
     const errorList = errors.map(e => `• ${e.keyword}: ${e.error?.slice(0, 100)}`).join("\n")
-    await notifyTelegram(`⚠️ SEO Blog publish-scheduled failed (${today}):\n${errorList}\n\nPublished: ${processed.length - errors.length}, Failed: ${errors.length}`)
+    await sendOwner(`⚠️ SEO Blog publish-scheduled failed (${today}):\n${errorList}\n\nPublished: ${processed.length - errors.length}, Failed: ${errors.length}`)
   }
 
   return NextResponse.json({

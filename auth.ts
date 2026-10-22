@@ -8,6 +8,7 @@ import { users, emailPins } from "@/lib/db/schema"
 import { eq, and, gt, desc, sql } from "drizzle-orm"
 import bcrypt from "bcryptjs"
 import { cookies } from "next/headers"
+import { sendOwner } from "@/lib/telegram"
 
 // Retry a transient failure (dropped DB connection etc.) once before letting it
 // propagate — an uncaught throw here becomes /login?error=Configuration for the user.
@@ -22,17 +23,7 @@ async function withRetry<T>(fn: () => Promise<T>): Promise<T> {
 
 function notifyOwnerNewUser(email: string, via: string, gclid?: string) {
   // Best-effort Telegram ping about a new signup; never blocks auth.
-  fetch(
-    `https://api.telegram.org/bot8213146538:AAH9ceXiIQ62-ICZJlUFx0psyd2nYq1gN7g/sendMessage`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        chat_id: 372194458,
-        text: `\u{1F195} New user (${via}): ${email}${gclid ? `\n\u{1F3AF} Google Ads (gclid ${gclid.slice(0, 16)}\u2026)` : ""}`,
-      }),
-    }
-  ).catch(() => {})
+  void sendOwner(`\u{1F195} New user (${via}): ${email}${gclid ? `\n\u{1F3AF} Google Ads (gclid ${gclid.slice(0, 16)}\u2026)` : ""}`)
 }
 
 // OAuth providers are added only when their credentials exist, so a deploy that

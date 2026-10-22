@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { sendEmail } from "@/lib/email"
 import { checkIPRateLimit, getClientIP } from "@/lib/rate-limit"
+import { sendOwner } from "@/lib/telegram"
 
 export async function POST(req: NextRequest) {
   try {
@@ -39,14 +40,7 @@ export async function POST(req: NextRequest) {
     })
 
     // Also notify in Telegram so landing feedback is never lost if email delivery fails
-    fetch("https://api.telegram.org/bot8213146538:AAH9ceXiIQ62-ICZJlUFx0psyd2nYq1gN7g/sendMessage", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        chat_id: 372194458,
-        text: `💬 Landing feedback — ${feedbackType}\nFrom: ${fromLabel}\n\n${message.trim()}`,
-      }),
-    }).catch(() => {})
+    void sendOwner(`💬 Landing feedback — ${feedbackType}\nFrom: ${fromLabel}\n\n${message.trim()}`)
 
     return NextResponse.json({ ok: true })
   } catch (err) {

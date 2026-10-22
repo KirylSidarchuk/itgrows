@@ -1,6 +1,7 @@
 import Stripe from "stripe"
 import { db } from "@/lib/db"
 import { sql } from "drizzle-orm"
+import { sendOwner } from "@/lib/telegram"
 
 // ItGrows for Business — AI visibility, $499 a month, month to month. Kept apart from the LinkedIn/X
 // plans on purpose: it never touches users.subscriptionPlan or users.subscriptionStatus (those gate
@@ -56,9 +57,5 @@ export async function syncGeoSubscription(sub: Stripe.Subscription, event: strin
 }
 
 export async function notifyOwner(text: string) {
-  await fetch("https://api.telegram.org/bot8213146538:AAH9ceXiIQ62-ICZJlUFx0psyd2nYq1gN7g/sendMessage", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ chat_id: 372194458, text }),
-  }).catch(() => {})
+  await sendOwner(text)
 }

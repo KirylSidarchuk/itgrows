@@ -6,6 +6,7 @@ import { eq, sql } from "drizzle-orm"
 import { sendEmail } from "@/lib/email"
 import { subscriptionActivatedEmail, paymentFailedEmail, subscriptionCancelledEmail } from "@/lib/email-templates"
 import { GEO_PLAN, notifyOwner, syncGeoSubscription } from "@/lib/geo-business"
+import { sendOwner } from "@/lib/telegram"
 
 function getStripe() {
   const key = process.env.STRIPE_SECRET_KEY
@@ -98,14 +99,7 @@ export async function POST(req: NextRequest) {
               const [orgUser] = await db.select({ email: users.email, name: users.name })
                 .from(users).where(eq(users.id, userId)).limit(1)
               const orgName = subscription.metadata?.orgName ?? "Company page"
-              fetch("https://api.telegram.org/bot8213146538:AAH9ceXiIQ62-ICZJlUFx0psyd2nYq1gN7g/sendMessage", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  chat_id: 372194458,
-                  text: `💳 Новая подписка Company Page!\n👤 ${orgUser?.name ?? ""} ${orgUser?.email ?? ""}\n📦 Страница: ${orgName}\n💰 $99/мес`,
-                }),
-              }).catch(() => {})
+              void sendOwner(`💳 Новая подписка Company Page!\n👤 ${orgUser?.name ?? ""} ${orgUser?.email ?? ""}\n📦 Страница: ${orgName}\n💰 $99/мес`)
             }
             break
           }
@@ -161,14 +155,7 @@ export async function POST(req: NextRequest) {
           }
 
           // Notify owner in Telegram
-          fetch("https://api.telegram.org/bot8213146538:AAH9ceXiIQ62-ICZJlUFx0psyd2nYq1gN7g/sendMessage", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              chat_id: 372194458,
-              text: `💳 Новая подписка!\n👤 ${updatedUser?.name ?? ""} ${updatedUser?.email ?? ""}\n📦 План: ${plan ?? "personal"}\n${subscription.metadata?.gclid ? `🎯 из Google Ads (gclid ${subscription.metadata.gclid.slice(0, 16)}…)` : "🌱 органика/не реклама"}`,
-            }),
-          }).catch(() => {})
+          void sendOwner(`💳 Новая подписка!\n👤 ${updatedUser?.name ?? ""} ${updatedUser?.email ?? ""}\n📦 План: ${plan ?? "personal"}\n${subscription.metadata?.gclid ? `🎯 из Google Ads (gclid ${subscription.metadata.gclid.slice(0, 16)}…)` : "🌱 органика/не реклама"}`)
           } // end if (userId)
         } // end if (session.subscription)
         break
@@ -199,14 +186,7 @@ export async function POST(req: NextRequest) {
             uEmail = u?.email
           }
           console.log("[ads] real payment", { amount, plan, gclid, email: uEmail })
-          fetch("https://api.telegram.org/bot8213146538:AAH9ceXiIQ62-ICZJlUFx0psyd2nYq1gN7g/sendMessage", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              chat_id: 372194458,
-              text: `\ud83d\udcb0 \u0420\u0415\u0410\u041b\u042c\u041d\u0410\u042f \u041e\u041f\u041b\u0410\u0422\u0410 $${(amount / 100).toFixed(2)}\n\ud83d\udc64 ${uEmail ?? ""}\n\ud83d\udce6 ${plan ?? ""}\n\ud83c\udfaf gclid: ${gclid ?? "\u2014"}`,
-            }),
-          }).catch(() => {})
+          void sendOwner(`\ud83d\udcb0 \u0420\u0415\u0410\u041b\u042c\u041d\u0410\u042f \u041e\u041f\u041b\u0410\u0422\u0410 $${(amount / 100).toFixed(2)}\n\ud83d\udc64 ${uEmail ?? ""}\n\ud83d\udce6 ${plan ?? ""}\n\ud83c\udfaf gclid: ${gclid ?? "\u2014"}`)
         }
         break
       }
@@ -273,14 +253,7 @@ export async function POST(req: NextRequest) {
               .from(users).where(eq(users.stripeCustomerId, subscription.customer as string)).limit(1)
             const who = maybeUser?.email ?? (customer as Stripe.Customer).email ?? "(\u0430\u043a\u043a\u0430\u0443\u043d\u0442 \u0443\u0434\u0430\u043b\u0451\u043d)"
             const nm = maybeUser?.name ?? ""
-            fetch("https://api.telegram.org/bot8213146538:AAH9ceXiIQ62-ICZJlUFx0psyd2nYq1gN7g/sendMessage", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                chat_id: 372194458,
-                text: `${isTrial ? "\u274c \u041e\u0442\u043c\u0435\u043d\u0430 \u0422\u0420\u0418\u0410\u041b\u0410 (\u0434\u043e \u043e\u043f\u043b\u0430\u0442\u044b)" : "\u274c \u041e\u0442\u043c\u0435\u043d\u0430 \u043f\u043e\u0434\u043f\u0438\u0441\u043a\u0438"}\n\ud83d\udc64 ${nm} ${who}\n\ud83d\udce6 ${updPlan}\n\ud83d\udcc5 \u0434\u043e ${endsAt}${gclid ? `\n\ud83c\udfaf gclid: ${gclid}` : ""}`,
-              }),
-            }).catch(() => {})
+            void sendOwner(`${isTrial ? "\u274c \u041e\u0442\u043c\u0435\u043d\u0430 \u0422\u0420\u0418\u0410\u041b\u0410 (\u0434\u043e \u043e\u043f\u043b\u0430\u0442\u044b)" : "\u274c \u041e\u0442\u043c\u0435\u043d\u0430 \u043f\u043e\u0434\u043f\u0438\u0441\u043a\u0438"}\n\ud83d\udc64 ${nm} ${who}\n\ud83d\udce6 ${updPlan}\n\ud83d\udcc5 \u0434\u043e ${endsAt}${gclid ? `\n\ud83c\udfaf gclid: ${gclid}` : ""}`)
           }
         }
 
