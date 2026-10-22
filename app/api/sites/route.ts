@@ -3,6 +3,7 @@ import { auth } from "@/auth"
 import { db } from "@/lib/db"
 import { connectedSites } from "@/lib/db/schema"
 import { eq } from "drizzle-orm"
+import { publicSite } from "@/lib/public-site"
 
 
 export async function GET() {
@@ -10,7 +11,7 @@ export async function GET() {
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
   const sites = await db.select().from(connectedSites).where(eq(connectedSites.userId, session.user.id))
-  return NextResponse.json({ sites })
+  return NextResponse.json({ sites: sites.map(publicSite) })
 }
 
 export async function POST(req: NextRequest) {
@@ -85,5 +86,5 @@ export async function POST(req: NextRequest) {
     body: JSON.stringify({ siteUrl: body.url, siteId: site.id }),
   }).catch(() => {}) // fire and forget
 
-  return NextResponse.json({ site })
+  return NextResponse.json({ site: publicSite(site) })
 }

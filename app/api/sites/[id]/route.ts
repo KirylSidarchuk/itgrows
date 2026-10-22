@@ -3,6 +3,7 @@ import { auth } from "@/auth"
 import { db } from "@/lib/db"
 import { connectedSites } from "@/lib/db/schema"
 import { eq, and } from "drizzle-orm"
+import { publicSite } from "@/lib/public-site"
 
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await auth()
@@ -27,7 +28,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     .where(and(eq(connectedSites.id, id), eq(connectedSites.userId, session.user.id)))
     .returning()
 
-  return NextResponse.json({ site })
+  return NextResponse.json({ site: site ? publicSite(site) : null })
 }
 
 export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
