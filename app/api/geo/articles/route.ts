@@ -3,7 +3,7 @@ import { auth } from "@/auth"
 import { db } from "@/lib/db"
 import { blogPosts, connectedSites, scheduledPosts } from "@/lib/db/schema"
 import { geoRole } from "@/lib/geo-role"
-import { and, asc, desc, eq, sql } from "drizzle-orm"
+import { and, asc, desc, eq, gte, isNull, sql } from "drizzle-orm"
 import { reviewState, utcToday } from "./_shared"
 
 // The articles we plan and publish for the signed-in client, newest first, with the site each one
@@ -176,6 +176,46 @@ export async function GET() {
           .catch((e) => console.warn("[geo/articles] saving live link failed:", e instanceof Error ? e.message : e))
       })
     )
+
+    // Articles a writer put on the user's blog without the queue. Since 15 Oct 2026 our own blogs are
+    // written that way (own_geo_writer straight into blog_posts), so they never had a queue row and the
+    // list missed them. Pages merged into newer ones (redirect_to) are left out; an article the queue
+    // already lists (same title) is not repeated.
+    const listed = new Set(articles.map((a) => a.title.trim().toLowerCase()))
+    const direct = await db
+      .select({ slug: blogPosts.slug, title: blogPosts.title, siteSlug: blogPosts.siteSlug, siteId: blogPosts.siteId,
+                publishedAt: blogPosts.publishedAt, blogDomain: connectedSites.blogDomain })
+      .from(blogPosts)
+      .leftJoin(connectedSites, and(eq(connectedSites.id, blogPosts.siteId), eq(connectedSites.userId, userId)))
+      .where(and(eq(blogPosts.userId, userId), isNull(blogPosts.redirectTo), gte(blogPosts.publishedAt, new Date("2026-10-15T00:00:00Z"))))
+      .orderBy(desc(blogPosts.publishedAt))
+      .limit(200)
+    for (const b of direct) {
+      if (listed.has(b.title.trim().toLowerCase())) continue
+      const url =
+        b.siteSlug === "itgrows-business" ? `https://www.itgrows.ai/business/blog/${b.slug}`
+        : b.siteSlug === "itgrows" ? `https://www.itgrows.ai/blog/${b.slug}`
+        : b.blogDomain ? `https://${b.blogDomain.replace(/^https?:\/\//, "").replace(/\/$/, "")}/${b.slug}`
+        : null
+      const day = b.publishedAt.toISOString().slice(0, 10)
+      articles.push({
+        id: `blog:${b.slug}`,
+        scheduledDate: day,
+        title: b.title,
+        status: "published",
+        publishedAt: b.publishedAt.toISOString(),
+        publishedUrl: url,
+        language: "en",
+        note: null,
+        awaitingApproval: false,
+        review: false,
+        liveDate: day,
+        canUndo: false,
+        edited: false,
+        site: (b.siteId ? siteInfo.get(b.siteId) : undefined) ?? defaultSite,
+      })
+    }
+    articles.sort((x, y) => (y.publishedAt ?? y.scheduledDate).localeCompare(x.publishedAt ?? x.scheduledDate))
 
     // Someone without a site we publish to and no paid plan has no articles coming: the page says so
     // instead of promising any.
