@@ -5,13 +5,14 @@ import LeadForm from "./LeadForm"
 import { ENGINE_ICONS } from "./engine-icons"
 import { FoundOnSites, GEO_INCLUDED, VersusArticles, WorkSystem } from "./GeoSections"
 import { OG_GEO } from "@/lib/entity"
+import SiteFooter from "../_home/SiteFooter"
 
 // Server-rendered on purpose. This page sells machine legibility, so it has to be legible to a
 // machine itself: the substance is in the HTML, not assembled by script after arrival.
 export const metadata: Metadata = {
   title: "Get named by ChatGPT, Claude, Gemini & Perplexity | ItGrows",
   description:
-    "We get businesses named by ChatGPT, Claude, Gemini and Perplexity: answer pages on your domain, crawler fixes and a weekly check. Free check.",
+    "We get businesses named by ChatGPT, Claude, Gemini and Perplexity: answer pages on your domain, crawler fixes and a weekly check.",
   alternates: { canonical: "https://www.itgrows.ai/business" },
   openGraph: {
     title: "Make your site visible to ChatGPT, Claude, Perplexity, Gemini and the rest",
@@ -27,7 +28,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Make your site visible to ChatGPT, Claude, Perplexity, Gemini and the rest",
     description:
-      "Crawler and index fixes, answer pages on your own domain, and a weekly count of four assistants. Free check.",
+      "Crawler and index fixes, answer pages on your own domain, and a weekly count of four assistants.",
     images: [OG_GEO.url],
   },
 }
@@ -143,7 +144,7 @@ function jsonLd() {
         applicationCategory: "BusinessApplication",
         operatingSystem: "Web",
         description:
-          "Free check of whether ChatGPT and Perplexity name a business when its buyers ask: five buyer questions generated from the site, answered live with web search, with the businesses named instead and the sites cited.",
+          "A 30-second check of whether ChatGPT and Perplexity name a business when its buyers ask: five buyer questions generated from the site, answered live with web search, with the businesses named instead and the sites cited.",
         offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
         provider: { "@id": "https://www.itgrows.ai/#organization" },
       },
@@ -220,11 +221,11 @@ export default function BusinessPage() {
             </span>
           </h1>
           <p className="text-base sm:text-xl text-slate-600 max-w-2xl mx-auto mb-8">
-            So that when someone asks about your field, they name you. Check your own site first — free, no signup.
+            So that when someone asks about your field, they name you. Check your own site first — no signup, about 30 seconds.
           </p>
           <AuditForm />
           <p className="text-xs text-slate-500 mt-3">
-            Free tools: <Link href="/business/ai-visibility-checker" className="text-violet-700 hover:underline">AI visibility checker</Link>
+            Tools: <Link href="/business/ai-visibility-checker" className="text-violet-700 hover:underline">AI visibility checker</Link>
             {" · "}
             <Link href="/business/ai-crawler-checker" className="text-violet-700 hover:underline">AI crawler checker</Link>
             {" · "}
@@ -417,7 +418,7 @@ export default function BusinessPage() {
               </div>
               <p className="text-slate-500 text-sm mt-2">One plan. Month to month.</p>
               <p className="text-violet-700 text-sm font-semibold mt-3 bg-violet-50 border border-violet-200 rounded-full inline-block px-4 py-1.5">
-                Site setup free when you start
+                Site setup included
               </p>
             </div>
             <ul className="space-y-2.5 mb-7">
@@ -467,13 +468,7 @@ export default function BusinessPage() {
         </div>
       </section>
 
-      <footer className="border-t border-black/10 px-6 py-8 text-center text-slate-500 text-sm" style={{ backgroundColor: "#ebe9e5" }}>
-        <div className="max-w-6xl mx-auto">
-          © 2026 ItGrows.ai ·{" "}
-          <Link href="/privacy" className="hover:text-[#1b1916]">Privacy</Link>{" · "}
-          <Link href="/terms" className="hover:text-[#1b1916]">Terms</Link>
-        </div>
-      </footer>
+      <SiteFooter />
     </div>
   )
 }

@@ -289,7 +289,7 @@ export function VersusArticles({ id }: { id?: string }) {
 }
 
 export const GEO_INCLUDED = [
-  "Site and index setup: tested as 11 crawlers, blockers fixed — free when you start",
+  "Site and index setup: tested as 11 crawlers, blockers fixed",
   "Day 0: 240 answers from ChatGPT, Claude, Gemini and Perplexity",
   "Every week: the same count against day 0, whether the assistants can find your articles, and who is quoted instead",
   "Up to 12 researched articles a month on your own domain, 3–5 sources each",

@@ -6,6 +6,7 @@ import { and, desc, eq, isNull } from "drizzle-orm"
 import AuditForm from "./business/AuditForm"
 import HashForward from "./_home/HashForward"
 import SignIn from "./_home/SignIn"
+import SiteFooter from "./_home/SiteFooter"
 import { ENTITY_ABOUT, OG_GEO, ORGANIZATION } from "@/lib/entity"
 import { FoundOnSites, GEO_INCLUDED, VersusArticles, WorkSystem } from "./business/GeoSections"
 
@@ -19,11 +20,11 @@ export const revalidate = 3600
 export const metadata: Metadata = {
   title: "AI visibility for businesses: get named by ChatGPT | ItGrows",
   description:
-    "ItGrows makes companies visible in AI answers and drafts LinkedIn and X posts for founders. Free AI visibility check in about 30 seconds.",
+    "ItGrows makes companies visible in AI answers and drafts LinkedIn and X posts for founders. Check your site in about 30 seconds.",
   alternates: { canonical: `${BASE}/` },
   openGraph: {
     title: "Get your company named by ChatGPT, Claude, Gemini and Perplexity",
-    description: "Answer pages on your own domain, crawler and indexing fixes, and a weekly check of four assistants. Free check.",
+    description: "Answer pages on your own domain, crawler and indexing fixes, and a weekly check of four assistants.",
     url: `${BASE}/`,
     siteName: "ItGrows.ai",
     images: [OG_GEO],
@@ -32,7 +33,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Get your company named by ChatGPT, Claude, Gemini and Perplexity",
-    description: "Answer pages on your own domain, crawler and indexing fixes, and a weekly check of four assistants. Free check.",
+    description: "Answer pages on your own domain, crawler and indexing fixes, and a weekly check of four assistants.",
     images: [OG_GEO.url],
   },
 }
@@ -95,14 +96,14 @@ export default async function Home() {
             <a href="#geo-how" className="hover:text-[#1b1916]">How it works</a>
             <a href="#geo-results" className="hover:text-[#1b1916]">Results</a>
             <a href="#geo-pricing" className="hover:text-[#1b1916]">Pricing</a>
-            <a href="#geo-tools" className="hover:text-[#1b1916]">Free tools</a>
+            <a href="#geo-tools" className="hover:text-[#1b1916]">Tools</a>
             <Link href="/business/blog" className="hover:text-[#1b1916]">Guides</Link>
             <Link href="/personal" className="hover:text-[#1b1916]">LinkedIn &amp; X posts</Link>
           </div>
           <div className="flex items-center gap-4">
             <SignIn />
             <a href="#geo-check" className="hidden sm:inline-block rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-sm font-semibold px-4 py-2.5">
-              Check my site — free
+              Check my site
             </a>
           </div>
         </div>
@@ -119,7 +120,7 @@ export default async function Home() {
             We measure what four assistants answer about your field, fix what stops their crawlers and search indexes from reading your site, publish answer pages on your own domain, and count every week whether each one names you.
           </p>
           <AuditForm />
-          <p className="text-xs text-slate-500 mt-3">Free · no signup · about 30 seconds</p>
+          <p className="text-xs text-slate-500 mt-3">No signup · about 30 seconds</p>
         </div>
       </section>
 
@@ -163,12 +164,12 @@ export default async function Home() {
           <h2 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-center">One plan, month to month</h2>
           <div className="grid md:grid-cols-2 gap-4 mt-10">
             <div className="rounded-2xl bg-white border border-black/10 p-6">
-              <p className="font-bold text-lg">Free</p>
-              <p className="text-3xl font-extrabold mt-2">$0</p>
+              <p className="font-bold text-lg">Quick check</p>
+              <p className="text-sm text-slate-500 mt-2">No signup · about 30 seconds</p>
               <ul className="mt-4 space-y-2 text-sm text-slate-700">
-                <li>✓ The live check of ChatGPT and Perplexity</li>
-                <li>✓ Day-0 report: 20 questions × 4 assistants × 3 asks</li>
-                <li>✓ A weekly re-check by email</li>
+                <li>✓ Five questions your buyers ask</li>
+                <li>✓ Answered live by ChatGPT and Perplexity</li>
+                <li>✓ Who they name instead of you</li>
               </ul>
               <a href="#geo-check" className="mt-6 block text-center rounded-xl border border-black/10 px-5 py-3 text-sm font-semibold">Check my site</a>
             </div>
@@ -190,7 +191,7 @@ export default async function Home() {
 
       <section id="geo-tools" className="px-4 sm:px-6 py-14 scroll-mt-20" style={{ backgroundColor: "#ebe9e5" }}>
         <div className="max-w-5xl mx-auto">
-          <h2 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-center">Start free, no signup</h2>
+          <h2 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-center">Check your site</h2>
           <div className="grid md:grid-cols-3 gap-4 mt-10">
             <Link href="/business/ai-visibility-checker" className="rounded-2xl bg-white border border-black/10 p-5 hover:border-violet-300">
               <p className="font-bold">AI visibility checker</p>
@@ -201,8 +202,8 @@ export default async function Home() {
               <p className="text-sm text-slate-600 mt-2">Can GPTBot, ClaudeBot and PerplexityBot read your pages? Including robots.txt rules that block more than you meant.</p>
             </Link>
             <Link href="/signup?from=ai-check&callbackUrl=%2Fbusiness%2Fdashboard%2Fvisibility" className="rounded-2xl bg-white border border-black/10 p-5 hover:border-violet-300">
-              <p className="font-bold">Free account</p>
-              <p className="text-sm text-slate-600 mt-2">The full day-0 report — 20 questions, four assistants — and a weekly re-check.</p>
+              <p className="font-bold">Detailed report</p>
+              <p className="text-sm text-slate-600 mt-2">20 questions × ChatGPT, Claude, Gemini and Perplexity × 3 asks: who is named, who is quoted instead, and the plan. After sign-up.</p>
             </Link>
           </div>
         </div>
@@ -242,26 +243,7 @@ export default async function Home() {
         </section>
       )}
 
-      <footer className="border-t border-black/10 px-6 py-10 text-sm text-slate-600 bg-[#ebe9e5]">
-        <div className="max-w-5xl mx-auto grid md:grid-cols-[2fr_1fr] gap-8">
-          <div>
-            <p className="font-bold text-[#1b1916]">About ItGrows</p>
-            {ENTITY_ABOUT.map((p) => (
-              <p key={p} className="mt-2 leading-relaxed">{p}</p>
-            ))}
-          </div>
-          <ul className="space-y-1.5">
-            <li><Link href="/business" className="hover:text-[#1b1916]">AI visibility for businesses</Link></li>
-            <li><Link href="/personal" className="hover:text-[#1b1916]">LinkedIn &amp; X posts</Link></li>
-            <li><Link href="/company" className="hover:text-[#1b1916]">LinkedIn Company Pages</Link></li>
-            <li><Link href="/reddit" className="hover:text-[#1b1916]">Reddit planner (beta)</Link></li>
-            <li><Link href="/business/blog" className="hover:text-[#1b1916]">Guides</Link> · <Link href="/blog" className="hover:text-[#1b1916]">Blog</Link></li>
-            <li><Link href="/about" className="hover:text-[#1b1916]">About</Link> · <a href="/llms.txt" className="hover:text-[#1b1916]">llms.txt</a></li>
-            <li><Link href="/privacy" className="hover:text-[#1b1916]">Privacy</Link> · <Link href="/terms" className="hover:text-[#1b1916]">Terms</Link></li>
-            <li><a href="mailto:kiryl@itgrows.ai" className="hover:text-[#1b1916]">kiryl@itgrows.ai</a></li>
-          </ul>
-        </div>
-      </footer>
+      <SiteFooter />
     </div>
   )
 }
