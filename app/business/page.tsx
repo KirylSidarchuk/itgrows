@@ -3,6 +3,7 @@ import Link from "next/link"
 import AuditForm from "./AuditForm"
 import LeadForm from "./LeadForm"
 import { ENGINE_ICONS } from "./engine-icons"
+import { FoundOnSites, GEO_INCLUDED, VersusArticles, WorkSystem } from "./GeoSections"
 
 // Server-rendered on purpose. This page sells machine legibility, so it has to be legible to a
 // machine itself: the substance is in the HTML, not assembled by script after arrival.
@@ -13,7 +14,7 @@ export const metadata: Metadata = {
   alternates: { canonical: "https://www.itgrows.ai/business" },
   openGraph: {
     title: "Make your site visible to ChatGPT, Claude, Perplexity, Gemini and the rest",
-    description: "Articles on your own domain, shaped for answer engines, with measured evidence. $499/mo.",
+    description: "Crawler and index fixes, answer pages on your own domain, and a weekly count of four assistants. $499/mo.",
     url: "https://www.itgrows.ai/business",
     type: "website",
   },
@@ -23,7 +24,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Make your site visible to ChatGPT, Claude, Perplexity, Gemini and the rest",
     description:
-      "Articles published to your own domain, structured for answer engines, with measured evidence of who came. Free check.",
+      "Crawler and index fixes, answer pages on your own domain, and a weekly count of four assistants. Free check.",
   },
 }
 
@@ -38,25 +39,6 @@ const CRAWLERS = [
   { name: "Applebot", sub: "Apple Intelligence", hits: "2,655,555", n: 2655555, ai: true },
   { name: "Amazonbot", sub: "Amazon", hits: "1,170,268", n: 1170268, ai: true },
   { name: "Googlebot", sub: "Google Search", hits: "52,292", n: 52292, ai: false },
-]
-
-const STEPS = [
-  {
-    t: "We set it up, you set the topics",
-    d: "Free with your first month: robots.txt, llms.txt, whatever is blocking the engines, and a spec for your developer. Your part is an hour, once — the questions your buyers actually ask.",
-  },
-  {
-    t: "We write, shaped so AI can quote it",
-    d: "Up to 12 articles a month, researched and written for you. Direct answer first, every heading a real question, structure scored out of 100. You write nothing.",
-  },
-  {
-    t: "You approve, we publish",
-    d: "Every article waits in a queue — edit it, or kill it. Nothing reaches your domain without you. Then it goes live on your own blog, with a cover image.",
-  },
-  {
-    t: "You see where you're named",
-    d: "Every week we put your buyers' questions to ChatGPT, Claude, Gemini and Perplexity and count the answers that name you. Once a month, the server log: which engines crawled you, and which fetched your pages while answering somebody.",
-  },
 ]
 
 const RUNGS = [
@@ -94,17 +76,6 @@ const CASES = [
     l: "leads a month from AI assistants",
     d: "Every month, steadily — from ChatGPT and the others.",
   },
-]
-
-const INCLUDED = [
-  "Site setup — free when you start",
-  "Up to 12 articles a month, on your domain",
-  "An original cover image for every one",
-  "Blog hosting — one DNS record",
-  "Weekly check: your buyers' questions × 4 assistants",
-  "Monthly evidence report from the server log",
-  "Approval queue, full veto",
-  "A human who knows your account",
 ]
 
 const FAQS = [
@@ -218,6 +189,7 @@ export default function BusinessPage() {
             <a href="#cases" className="text-sm text-slate-600 hover:text-[#1b1916] font-medium">Cases</a>
             <a href="#proof" className="text-sm text-slate-600 hover:text-[#1b1916] font-medium">Proof</a>
             <a href="#how" className="text-sm text-slate-600 hover:text-[#1b1916] font-medium">How</a>
+            <a href="#versus" className="text-sm text-slate-600 hover:text-[#1b1916] font-medium">Compare</a>
             <a href="#pricing" className="text-sm text-slate-600 hover:text-[#1b1916] font-medium">Pricing</a>
             <Link href="/business/blog" className="text-sm text-slate-600 hover:text-[#1b1916] font-medium">Blog</Link>
           </div>
@@ -385,41 +357,14 @@ export default function BusinessPage() {
         </div>
       </section>
 
-      {/* How */}
-      <section id="how" className="px-4 sm:px-6 py-14 sm:py-20 scroll-mt-20">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-2xl sm:text-4xl font-extrabold mb-3 tracking-tight text-center">
-            We write and publish your articles
-          </h2>
-          <p className="text-slate-600 text-center mb-10 text-sm sm:text-base">
-            We set the site up once, free. After that the subscription is the writing and publishing.
-          </p>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {STEPS.map((s, i) => (
-              <div
-                key={s.t}
-                className="relative bg-white border border-black/10 rounded-2xl p-6 pt-8 overflow-hidden"
-              >
-                {/* The numeral is the ornament — large, pale, and behind the words. */}
-                <span
-                  aria-hidden="true"
-                  className="absolute -top-3 right-3 text-[76px] font-extrabold leading-none tracking-tighter text-violet-600/[0.07] select-none"
-                >
-                  {i + 1}
-                </span>
-                <div className="relative">
-                  <div className="w-8 h-[3px] rounded-full bg-gradient-to-r from-violet-500 to-cyan-400 mb-4" />
-                  <h3 className="font-bold text-base mb-2 leading-snug">{s.t}</h3>
-                  <p className="text-sm text-slate-600 leading-relaxed">{s.d}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      <FoundOnSites id="found" />
+
+      <WorkSystem id="how" />
+
+      <VersusArticles id="versus" />
 
       {/* Ladder */}
-      <section className="px-4 sm:px-6 py-14 sm:py-20" style={{ backgroundColor: "#ebe9e5" }}>
+      <section className="px-4 sm:px-6 py-14 sm:py-20">
         <div className="max-w-3xl mx-auto">
           <h2 className="text-2xl sm:text-4xl font-extrabold mb-3 tracking-tight text-center">Where this goes</h2>
           <p className="text-slate-600 text-center mb-12 text-sm sm:text-base">
@@ -451,14 +396,14 @@ export default function BusinessPage() {
           </div>
 
           <p className="text-center text-xs sm:text-sm text-slate-500 mt-10 max-w-xl mx-auto leading-relaxed">
-            Your monthly report shows the first two straight from the server log — which engines came, and which
-            fetched you mid-answer.
+            For blogs we host, the monthly report shows the first two straight from the server log — which engines
+            came, and which fetched you mid-answer.
           </p>
         </div>
       </section>
 
       {/* Pricing */}
-      <section id="pricing" className="px-4 sm:px-6 py-14 sm:py-20 scroll-mt-20">
+      <section id="pricing" className="px-4 sm:px-6 py-14 sm:py-20 scroll-mt-20 border-t border-black/5">
         <div className="max-w-xl mx-auto">
           <div className="bg-white border-2 border-violet-200 rounded-3xl p-7 sm:p-10 shadow-xl shadow-violet-600/5">
             <div className="text-center mb-7">
@@ -472,7 +417,7 @@ export default function BusinessPage() {
               </p>
             </div>
             <ul className="space-y-2.5 mb-7">
-              {INCLUDED.map((f) => (
+              {GEO_INCLUDED.map((f) => (
                 <li key={f} className="flex gap-3 text-sm text-slate-700 leading-relaxed">
                   <span className="text-violet-600 font-bold shrink-0">✓</span>
                   <span>{f}</span>

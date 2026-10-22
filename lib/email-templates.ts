@@ -204,7 +204,7 @@ export function subscriptionCancelledEmail(name: string): string {
         <p style="color: #374151;">Hi ${name},</p>
         <p style="color: #374151;">Your subscription has ended. Your content history is saved and you can resubscribe anytime.</p>
         <p style="color: #6b7280; font-size: 14px;">We hope to see you back soon. Your posts and brief will be waiting for you.</p>
-        <a href="https://itgrows.ai/#pricing" style="display: inline-block; background: #7c3aed; color: white; padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; margin-top: 16px;">Resubscribe →</a>
+        <a href="https://www.itgrows.ai/personal#pricing" style="display: inline-block; background: #7c3aed; color: white; padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; margin-top: 16px;">Resubscribe →</a>
         <p style="color: #9ca3af; font-size: 12px; margin-top: 32px;">ItGrows.ai · <a href="https://itgrows.ai" style="color: #9ca3af;">itgrows.ai</a></p>
       </div>
     </div>

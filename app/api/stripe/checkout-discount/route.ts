@@ -60,7 +60,7 @@ export async function POST(req: NextRequest) {
     line_items: [{ price: priceId, quantity: 1 }],
     mode: "subscription",
     success_url: "https://itgrows.ai/welcome?subscribed=1&session_id={CHECKOUT_SESSION_ID}",
-    cancel_url: "https://itgrows.ai/",
+    cancel_url: "https://www.itgrows.ai/personal",
     ...(email ? { customer_email: email } : {}),
     client_reference_id: userId,
     allow_promotion_codes: false,

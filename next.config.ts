@@ -6,6 +6,16 @@ const nextConfig: NextConfig = {
     // from these rather than downloading every full-size cover.
     remotePatterns: [{ protocol: "https", hostname: "blogs.itgrows.ai", pathname: "/images/**" }],
   },
+  async redirects() {
+    return [
+      // Ad clicks are for the LinkedIn/X product, which left "/" for /personal on 22 Oct 2026.
+      { source: "/", has: [{ type: "query", key: "gclid" }], destination: "/personal", permanent: false },
+      { source: "/", has: [{ type: "query", key: "gbraid" }], destination: "/personal", permanent: false },
+      { source: "/", has: [{ type: "query", key: "wbraid" }], destination: "/personal", permanent: false },
+      { source: "/", has: [{ type: "query", key: "gad_source" }], destination: "/personal", permanent: false },
+      { source: "/", has: [{ type: "query", key: "utm_medium", value: "cpc" }], destination: "/personal", permanent: false },
+    ]
+  },
   async rewrites() {
     return [
       // Serve a clean markdown alternate for each article at /blog/{slug}.md without giving up

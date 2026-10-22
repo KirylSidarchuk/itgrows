@@ -195,7 +195,7 @@ export default function CompanyPage() {
         <div className="relative max-w-4xl mx-auto">
           {/* Persona switcher */}
           <div className="inline-flex items-center gap-1 mb-6 p-1 rounded-full border border-violet-200 bg-white shadow-sm">
-            <Link href="/" className="px-4 py-1.5 rounded-full text-sm font-semibold text-slate-600 hover:text-[#1b1916] transition-colors">For me — Personal</Link>
+            <Link href="/personal" className="px-4 py-1.5 rounded-full text-sm font-semibold text-slate-600 hover:text-[#1b1916] transition-colors">For me — Personal</Link>
             <span className="px-4 py-1.5 rounded-full text-sm font-semibold bg-violet-600 text-white">For my company</span>
           </div>
           <h1 className="text-3xl sm:text-5xl md:text-6xl font-extrabold leading-tight mb-4 tracking-tight">
@@ -485,7 +485,7 @@ export default function CompanyPage() {
               <Button onClick={() => handleCompanyPlan("unlimited")} className="w-full bg-white border border-violet-300 text-violet-700 hover:bg-violet-50 py-3 rounded-xl font-semibold">Start free trial</Button>
             </div>
           </div>
-          <p className="text-sm text-slate-500 mt-8">14-day free trial · Cancel anytime · Want your team&apos;s personal accounts too? <Link href="/#pricing" className="text-violet-600 font-semibold hover:text-violet-500">See All-in &amp; personal plans →</Link></p>
+          <p className="text-sm text-slate-500 mt-8">14-day free trial · Cancel anytime · Want your team&apos;s personal accounts too? <Link href="/personal#pricing" className="text-violet-600 font-semibold hover:text-violet-500">See All-in &amp; personal plans →</Link></p>
         </div>
       </section>
 
