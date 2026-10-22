@@ -151,20 +151,49 @@ export function geoSubscriptionInterval(sub: Stripe.Subscription): GeoInterval |
   return isGeoInterval(meta) ? meta : null
 }
 
-/** Mirror a GEO subscription's state onto the follow it was bought for. */
-export async function syncGeoSubscription(sub: Stripe.Subscription, event: string) {
+/** The customer's live plan subscriptions for one site (active, trialing or past due): normally one
+ *  at most, as checkout refuses a second. Stripe's list without a status leaves out the cancelled. */
+export async function liveGeoSubscriptions(stripe: Stripe, customer: string, domain: string): Promise<Stripe.Subscription[]> {
+  const live: Stripe.Subscription[] = []
+  for await (const s of stripe.subscriptions.list({ customer, limit: 100 })) {
+    if (s.metadata?.plan === GEO_PLAN && s.metadata?.domain === domain && PAID.has(s.status)) live.push(s)
+  }
+  return live
+}
+
+/** Mirror a GEO subscription's state onto the follow it was bought for. What is written is the
+ *  subscription as Stripe has it now, not the event's copy: events come out of order and are retried,
+ *  and an old "active" must not put a cancelled customer back on the plan. A subscription that has
+ *  ended leaves the follow paid while another live one covers the same site. A failed lookup throws,
+ *  so Stripe sends the event again. */
+export async function syncGeoSubscription(eventSub: Stripe.Subscription, event: string) {
+  const stripe = stripeClient()
+  let sub: Stripe.Subscription
+  try {
+    sub = await stripe.subscriptions.retrieve(eventSub.id)
+  } catch (err) {
+    if ((err as { code?: string }).code !== "resource_missing") throw err
+    sub = { ...eventSub, status: "canceled" } // gone from Stripe: nothing is paid
+  }
   const userId = sub.metadata?.userId
   const domain = sub.metadata?.domain
   if (!userId || !domain) return
-  const paid = PAID.has(sub.status)
-  const interval = paid ? geoSubscriptionInterval(sub) : null
+  let current = sub
+  if (!PAID.has(sub.status)) {
+    const customer = typeof sub.customer === "string" ? sub.customer : sub.customer.id
+    const other = (await liveGeoSubscriptions(stripe, customer, domain)).find((s) => s.metadata?.userId === userId)
+    if (other) current = other
+  }
+  const paid = PAID.has(current.status)
+  const interval = paid ? geoSubscriptionInterval(current) : null
   await db.execute(sql`
     UPDATE geo_follows f SET plan = ${paid ? "paid" : "free"}, plan_interval = ${interval}
     FROM geo_sites s
     WHERE s.id = f.site_id AND f.user_id = ${userId} AND s.domain = ${domain}`)
+  const props = { domain, status: sub.status, interval, event, subscription: sub.id, ...(current !== sub ? { live: current.id } : {}) }
   await db
     .execute(sql`INSERT INTO analytics_events (user_id, event, path, props)
-      VALUES (${userId}, 'geo_subscription', '/stripe/webhook', ${JSON.stringify({ domain, status: sub.status, interval, event, subscription: sub.id })}::jsonb)`)
+      VALUES (${userId}, 'geo_subscription', '/stripe/webhook', ${JSON.stringify(props)}::jsonb)`)
     .catch(() => {})
 }
 

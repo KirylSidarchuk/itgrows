@@ -55,6 +55,19 @@ export type PublishOutcome =
       counted: boolean
     }
 
+/** The site every article of a user is published to, the one rule for the nightly publisher, "Publish
+ *  now" and the "Your articles" pages: the user's default site, else the oldest connected one. */
+export function pickPublishSite<T extends Pick<Site, "id" | "isDefault" | "createdAt">>(sites: readonly T[]): T | null {
+  const oldestFirst = [...sites].sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime() || a.id.localeCompare(b.id))
+  return oldestFirst.find((s) => s.isDefault) ?? oldestFirst[0] ?? null
+}
+
+/** The site this user's articles are published to (pickPublishSite over their connected sites). */
+export async function publishSiteFor(userId: string): Promise<Site | null> {
+  const sites = await db.select().from(connectedSites).where(eq(connectedSites.userId, userId))
+  return pickPublishSite(sites)
+}
+
 function generateSlug(t: string): string {
   return slugBase(t) + "-" + Math.random().toString(36).slice(2, 8)
 }
@@ -115,11 +128,7 @@ export async function publishScheduledPost(duePost: ScheduledPost, ctx: PublishC
 
     // Fetch site data for this user (cached)
     if (!(post.userId in ctx.siteCache)) {
-      const userSites = await db
-        .select()
-        .from(connectedSites)
-        .where(eq(connectedSites.userId, post.userId))
-      const defaultSite = userSites.find((s) => s.isDefault) ?? userSites[0] ?? null
+      const defaultSite = await publishSiteFor(post.userId)
       ctx.siteCache[post.userId] = defaultSite
       const rawProfile = defaultSite?.siteProfile as SiteProfile | null | undefined
       ctx.siteProfileCache[post.userId] = rawProfile ?? null
@@ -457,13 +466,8 @@ export async function scheduleNextBatchIfEmpty(userId: string, ctx: PublishConte
 
     // If no scheduled posts remain → auto-schedule next batch
     if (remainingScheduled.length === 0) {
-      // Find user's default connected site
-      const sites = await db
-        .select()
-        .from(connectedSites)
-        .where(eq(connectedSites.userId, userId))
-
-      const defaultSite = sites.find((s) => s.isDefault) ?? sites[0]
+      // The site the user's articles are published to
+      const defaultSite = await publishSiteFor(userId)
       if (defaultSite) {
         // Call batch scheduling endpoint (it has its own guard against duplicate scheduling)
         await fetch(`${ctx.baseUrl}/api/schedule/batch`, {

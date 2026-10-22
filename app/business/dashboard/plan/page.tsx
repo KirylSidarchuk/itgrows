@@ -19,8 +19,8 @@ import { GEO_PRICES, REPORT_SITES, SAMPLE_PATH, firstPaymentCents, usd } from "@
 // here: it is followed (/api/geo/follow) and checkout opens for the chosen interval.
 //
 // A site on the plan, or of a client we set up by hand (site.client), shows "Plan & billing": the
-// plan, the places with "We're on it", and Manage subscription (/api/geo/portal: cancel at the end
-// of the paid period, card, invoices).
+// plan, the places with "We're on it", Cancel plan (/api/geo/cancel: stops at the end of the paid
+// period, with undo) and Card and invoices (/api/geo/portal, which cannot cancel or switch plans).
 
 type Interval = "month" | "quarter" | "year"
 
@@ -223,7 +223,93 @@ function Choice({
   )
 }
 
-/** Manage subscription: a Stripe Billing Portal session from /api/geo/portal. */
+const CANCEL_FAILED = "That didn't go through. Try again in a minute, or write to us."
+
+/** Cancel plan, at the end of the paid period, and Keep my plan to undo it: /api/geo/cancel, which
+ *  touches only this site's plan subscription. Shows nothing while it loads, or when Stripe has no
+ *  live plan subscription for the site. */
+function CancelPlan({ domain }: { domain: string }) {
+  const [state, setState] = useState<{ cancelAt: string | null; periodEnd: string | null } | "loading" | "none">("loading")
+  const [confirming, setConfirming] = useState(false)
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState("")
+
+  useEffect(() => {
+    let current = true
+    fetch(`/api/geo/cancel?domain=${encodeURIComponent(domain)}`, { cache: "no-store" })
+      .then(async (r) => {
+        const j = (await r.json().catch(() => ({}))) as { cancelAt?: string | null; periodEnd?: string | null }
+        if (current) setState(r.status === 404 ? "none" : { cancelAt: j.cancelAt ?? null, periodEnd: j.periodEnd ?? null })
+      })
+      .catch(() => {
+        if (current) setState({ cancelAt: null, periodEnd: null })
+      })
+    return () => {
+      current = false
+    }
+  }, [domain])
+
+  async function send(undo: boolean) {
+    setBusy(true)
+    setError("")
+    try {
+      const r = await fetch("/api/geo/cancel", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ domain, undo }),
+      })
+      const j = (await r.json().catch(() => ({}))) as { cancelAt?: string | null; error?: string }
+      if (r.ok) {
+        setState((s) => ({ cancelAt: j.cancelAt ?? null, periodEnd: (typeof s === "object" ? s.periodEnd : null) ?? j.cancelAt ?? null }))
+        setConfirming(false)
+      } else {
+        setError(j.error === "no_subscription" ? "We couldn't find the subscription for this site. Write to us and we sort it out." : CANCEL_FAILED)
+      }
+    } catch {
+      setError(CANCEL_FAILED)
+    }
+    setBusy(false)
+  }
+
+  if (typeof state !== "object") return null
+  const secondary =
+    "rounded-xl bg-white border border-black/15 hover:bg-[#f8f7f6] disabled:opacity-60 px-4 py-2.5 text-sm font-semibold text-[#1b1916]"
+  return (
+    <div>
+      {state.cancelAt ? (
+        <>
+          <p className="text-sm font-semibold text-[#1b1916]">Cancels on {fmtDate(state.cancelAt)}</p>
+          <button type="button" onClick={() => send(true)} disabled={busy} className={`mt-3 ${secondary}`}>
+            {busy ? "Saving…" : "Keep my plan"}
+          </button>
+        </>
+      ) : confirming ? (
+        <div className="rounded-xl border border-black/[0.07] bg-[#f8f7f6] p-4" role="alertdialog" aria-label="Cancel plan">
+          <p className="text-sm text-[#1b1916]">
+            Your plan stays active until {state.periodEnd ? fmtDate(state.periodEnd) : "the end of the paid period"}, then stops. Cancel?
+          </p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <button type="button" onClick={() => send(false)} disabled={busy}
+              className="rounded-xl bg-red-600 hover:bg-red-500 disabled:opacity-60 text-white px-4 py-2.5 text-sm font-semibold">
+              {busy ? "Cancelling…" : "Yes, cancel"}
+            </button>
+            <button type="button" onClick={() => setConfirming(false)} disabled={busy} className={secondary}>
+              Keep my plan
+            </button>
+          </div>
+        </div>
+      ) : (
+        <button type="button" onClick={() => setConfirming(true)}
+          className="text-sm font-semibold text-slate-600 hover:text-red-700 hover:underline underline-offset-2">
+          Cancel plan
+        </button>
+      )}
+      {error && <p className="text-sm text-red-700 mt-2">{error}</p>}
+    </div>
+  )
+}
+
+/** Card and invoices: a Stripe Billing Portal session from /api/geo/portal (it cancels nothing). */
 function ManageSubscription() {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState("")
@@ -251,9 +337,9 @@ function ManageSubscription() {
     <div>
       <button type="button" onClick={open} disabled={busy}
         className="rounded-xl bg-violet-600 hover:bg-violet-500 disabled:opacity-60 text-white px-5 py-3 text-sm font-semibold">
-        {busy ? "Opening…" : "Manage subscription"}
+        {busy ? "Opening…" : "Card and invoices"}
       </button>
-      <p className="text-xs text-slate-500 mt-2">Cancel at the end of the paid period, change your card, download invoices.</p>
+      <p className="text-xs text-slate-500 mt-2">Change your card, download invoices.</p>
       {error && <p className="text-sm text-red-700 mt-2">{error}</p>}
     </div>
   )
@@ -433,8 +519,9 @@ export default function PlanPage() {
                   AI visibility for {site.domain}
                   {site.planInterval && BILLED[site.planInterval] ? <>: <b className="text-[#1b1916]">{BILLED[site.planInterval]}</b></> : null}.
                 </p>
-                <div className="mt-4">
+                <div className="mt-4 space-y-5">
                   <ManageSubscription />
+                  <CancelPlan key={site.domain} domain={site.domain} />
                 </div>
               </>
             ) : site.client ? (
@@ -539,7 +626,7 @@ export default function PlanPage() {
               </Link>
             </p>
             <p className="text-xs text-white/50 mt-3">
-              Secure payment by Stripe. Cancel any time with Manage subscription, on this page once your plan is active.
+              Secure payment by Stripe. Cancel any time on this page once your plan is active: it stops at the end of the paid period.
             </p>
           </section>
         </>

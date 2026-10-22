@@ -2,7 +2,7 @@ import sanitizeHtml from "sanitize-html"
 import { auth } from "@/auth"
 import { db } from "@/lib/db"
 import { connectedSites, scheduledPosts } from "@/lib/db/schema"
-import { and, asc, eq } from "drizzle-orm"
+import { and, eq } from "drizzle-orm"
 
 // What the "Your articles" endpoints share: who may touch a row (only its owner), which site an
 // article goes to (the one the publisher picks), when it can be reviewed, and the strict cleaning
@@ -39,15 +39,9 @@ export function preparedData(data: unknown): PreparedData | null {
 
 export type PublishSite = typeof connectedSites.$inferSelect
 
-/** The site every article of this user is published to, picked as the publisher picks it. */
-export async function publishSiteFor(userId: string): Promise<PublishSite | null> {
-  const sites = await db
-    .select()
-    .from(connectedSites)
-    .where(eq(connectedSites.userId, userId))
-    .orderBy(asc(connectedSites.createdAt))
-  return sites.find((s) => s.isDefault) ?? sites[0] ?? null
-}
+/** The site every article of this user is published to: the publisher's own function, so the two
+ *  can never pick differently (default site, else the oldest connected one). */
+export { publishSiteFor } from "@/lib/publish-post"
 
 /** A WordPress site whose owner approves each article in WordPress: we send drafts, not posts. */
 export function isDraftSite(site: Pick<PublishSite, "platform" | "siteProfile"> | null | undefined): boolean {

@@ -3,6 +3,7 @@ import { auth } from "@/auth"
 import { db } from "@/lib/db"
 import { blogPosts, connectedSites, scheduledPosts } from "@/lib/db/schema"
 import { geoRole } from "@/lib/geo-role"
+import { pickPublishSite } from "@/lib/publish-post"
 import { and, asc, desc, eq, gte, isNull, sql } from "drizzle-orm"
 import { reviewState, utcToday } from "./_shared"
 
@@ -87,6 +88,7 @@ export async function GET() {
         url: connectedSites.url,
         platform: connectedSites.platform,
         isDefault: connectedSites.isDefault,
+        createdAt: connectedSites.createdAt,
         publishStatus: sql<string | null>`${connectedSites.siteProfile}->>'publishStatus'`,
       })
       .from(connectedSites)
@@ -107,7 +109,7 @@ export async function GET() {
       ])
     )
     // The site the publishing cron sends every article to.
-    const fallback = sites.find((s) => s.isDefault) ?? sites[0]
+    const fallback = pickPublishSite(sites)
     const defaultSite = fallback ? siteInfo.get(fallback.id) ?? null : null
 
     const posts = await db
@@ -217,9 +219,9 @@ export async function GET() {
     }
     articles.sort((x, y) => (y.publishedAt ?? y.scheduledDate).localeCompare(x.publishedAt ?? x.scheduledDate))
 
-    // Someone without a site we publish to and no paid plan has no articles coming: the page says so
-    // instead of promising any.
-    const client = articles.length > 0 || (await geoRole(userId)).client
+    // Only a GEO client (geo_clients or a paid followed site) gets the client copy. Having queue or
+    // blog rows proves nothing: LinkedIn/X blog users have them too.
+    const client = (await geoRole(userId)).client
 
     return NextResponse.json({ articles, client })
   } catch (e) {

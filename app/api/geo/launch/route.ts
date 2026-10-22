@@ -8,8 +8,9 @@ import { geoClientOwns } from "@/lib/geo-role"
 // The launch report on "Your website": what the launch checked, fixed and registered for a site.
 // The items live on the VM (/root/geo_check/launch.py): automatic ones re-run daily and on "Check
 // again", manual ones (Bing, Search Console, profile, ...) set by us. The plan delivers it, so it is
-// shown only for a site the user pays the plan for, or a client's own site (geo_clients with the site
-// connected, lib/geo-role.ts); anyone else gets not_found, as for a site that is not theirs.
+// shown only for a site the user pays the plan for, or a client's own site (listed for them in
+// geo_client_sites, lib/geo-role.ts geoClientOwns; connected_sites is not read); anyone else gets
+// not_found, as for a site that is not theirs.
 
 export const dynamic = "force-dynamic"
 export const maxDuration = 60

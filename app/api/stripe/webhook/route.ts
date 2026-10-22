@@ -178,7 +178,12 @@ export async function POST(req: NextRequest) {
         const amount = (invoice as unknown as { amount_paid?: number }).amount_paid ?? 0
         if (amount > 0) {
           // Real money collected (first charge after the 14-day trial, or a renewal).
-          const subId = (invoice as unknown as { subscription?: string }).subscription
+          // Newer Stripe API versions carry the subscription under parent.subscription_details.
+          const paidInv = invoice as unknown as {
+            subscription?: string
+            parent?: { subscription_details?: { subscription?: string } }
+          }
+          const subId = paidInv.subscription ?? paidInv.parent?.subscription_details?.subscription
           if (!subId) break
           let sub: Stripe.Subscription
           try {

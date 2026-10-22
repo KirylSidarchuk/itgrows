@@ -7,11 +7,13 @@ import { eq, sql } from "drizzle-orm"
 import { GEO_PLAN, stripeClient } from "@/lib/geo-business"
 import { isGeoClient } from "@/lib/geo-role"
 
-// "Manage subscription" in the AI-visibility cabinet: a Stripe Billing Portal session on the GEO
-// plan's own portal configuration (not the LinkedIn/X one in app/api/stripe/portal): cancel at the
-// end of the paid period, change the payment method, see invoices; no switching plans. It comes back
-// to /business/dashboard/plan. The configuration is found by its metadata (product = geo_business)
-// and created on first use.
+// "Card and invoices" in the AI-visibility cabinet: a Stripe Billing Portal session on the GEO plan's
+// own portal configuration (not the LinkedIn/X one in app/api/stripe/portal): change the payment
+// method, see invoices. The portal lists every subscription on the customer, the LinkedIn/X ones
+// too, so it neither cancels nor changes any: the plan is cancelled on /business/dashboard/plan
+// (/api/geo/cancel). It comes back to /business/dashboard/plan. The configuration is found by its
+// metadata (product = geo_business) and created on first use; one made before with cancelling or
+// switching on is turned off here.
 //
 // Only for a user who pays the plan for a followed site, or a client we set up by hand
 // (geo_clients), and who has a Stripe customer: no customer is created here. Answers { url } or
@@ -26,21 +28,25 @@ const RETURN_URL = "https://www.itgrows.ai/business/dashboard/plan"
 
 let configId: string | null = null
 
+const LOCKED = { subscription_cancel: { enabled: false }, subscription_update: { enabled: false } }
+
 /** The GEO portal configuration: the active one marked product = geo_business, else a new one. */
 async function geoPortalConfiguration(stripe: Stripe): Promise<string> {
   if (configId) return configId
   for await (const c of stripe.billingPortal.configurations.list({ active: true, limit: 100 })) {
-    if (c.metadata?.product === GEO_PLAN) return (configId = c.id)
+    if (c.metadata?.product !== GEO_PLAN) continue
+    if (c.features.subscription_cancel?.enabled || c.features.subscription_update?.enabled)
+      await stripe.billingPortal.configurations.update(c.id, { features: LOCKED })
+    return (configId = c.id)
   }
   const created = await stripe.billingPortal.configurations.create({
     name: "ItGrows for Business — AI visibility",
     business_profile: { headline: "ItGrows for Business — AI visibility" },
     default_return_url: RETURN_URL,
     features: {
-      subscription_cancel: { enabled: true, mode: "at_period_end" },
+      ...LOCKED,
       payment_method_update: { enabled: true },
       invoice_history: { enabled: true },
-      subscription_update: { enabled: false },
       customer_update: { enabled: false },
     },
     metadata: { product: GEO_PLAN },

@@ -2,6 +2,7 @@ import { db } from "@/lib/db"
 import { sql } from "drizzle-orm"
 import { CREDIT_DAYS, SAMPLE_DOMAIN } from "@/lib/geo-pricing"
 import { clientOwnsSql } from "@/lib/geo-role"
+import { isGeoInterval } from "@/lib/geo-business"
 
 // Everything the AI-visibility page shows for one site: the latest finished report, the one in
 // progress if any, the history of summaries for the trend, and the quick check (shown whole: it is
@@ -9,7 +10,8 @@ import { clientOwnsSql } from "@/lib/geo-role"
 // user's sites and by /api/geo/sample for the public sample report.
 //
 // Each site carries `client`: the viewer pays for the plan for it (a paid follow), or is a client we
-// set up by hand (geo_clients) with that site connected (lib/geo-role.ts clientOwnsSql). A client
+// set up by hand with that site listed as theirs in geo_client_sites (lib/geo-role.ts clientOwnsSql;
+// connected_sites is not read). A client
 // site, a bought report and the sample are shown whole ("full"); anything else is a preview of the
 // $49.90 report: the totals stay, the questions of the quick check keep their answers (the teaser
 // run's questions, or the profile's teaser picks when the site has no quick check yet), every other
@@ -142,7 +144,8 @@ async function siteReport(f: Row, sample = false) {
     client,
     access,
     research: { paidAt, creditUntil },
-    planInterval: f.plan_interval === "month" || f.plan_interval === "quarter" ? f.plan_interval : null,
+    // Whatever the plan was bought for: month, quarter or year (geo_follows.plan_interval).
+    planInterval: isGeoInterval(f.plan_interval) ? f.plan_interval : null,
     pending: pending && {
       kind: pending.kind,
       status: pending.status,

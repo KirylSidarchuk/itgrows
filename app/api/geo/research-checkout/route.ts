@@ -17,7 +17,7 @@ import { geoClientOwns } from "@/lib/geo-role"
 // days). Until it is done the answer is { preparing: true } and the button asks again; the webhook's
 // call to the VM then only writes rows. A click while an earlier payment for the same report is still
 // on its way to the webhook is refused, so nobody pays twice. A site on the plan, or a client's own
-// site (geo_clients with the site connected, lib/geo-role.ts), is shown whole and never sold a report.
+// site (geo_client_sites, lib/geo-role.ts), is shown whole and never sold a report.
 
 export const dynamic = "force-dynamic"
 export const maxDuration = 60

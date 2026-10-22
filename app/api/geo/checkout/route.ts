@@ -6,6 +6,7 @@ import {
   GEO_PLAN,
   geoPriceId,
   isGeoInterval,
+  liveGeoSubscriptions,
   normaliseDomain,
   researchCreditCoupon,
   stripeClient,
@@ -50,6 +51,10 @@ export async function POST(req: NextRequest) {
   const stripe = stripeClient()
   const customer = await stripeCustomerFor(stripe, userId)
   if (!customer) return NextResponse.json({ error: "unauthorized" }, { status: 401 })
+  // Stripe already has a live plan for this site (the webhook not in yet, or the follow out of step):
+  // a second checkout would charge twice.
+  if ((await liveGeoSubscriptions(stripe, customer, site)).length)
+    return NextResponse.json({ error: "already_paid" }, { status: 409 })
 
   // The month-to-month plan carries the one-time setup on its first invoice; 3 months and a year do not.
   const lineItems = [
