@@ -5,6 +5,7 @@ import { sql } from "drizzle-orm"
 import { geoCheck, type PublicRun } from "@/lib/geo-check"
 import { normaliseDomain } from "@/lib/geo-business"
 import { REPORT_SITES } from "@/lib/geo-pricing"
+import { sendOwner } from "@/lib/telegram"
 
 // Follow a site from the AI-visibility cabinet. The VM records the follow and queues the day-0
 // report (20 questions x 4 assistants x 3 samples), or returns the one already made this week.
@@ -122,5 +123,6 @@ export async function POST(req: NextRequest) {
     )
     .catch(() => {})
 
+  void sendOwner(`👁 Кабинет GEO: ${session?.user?.email ?? userId} следит за ${r.data.domain}`)
   return NextResponse.json({ domain: r.data.domain, status: r.data.status })
 }

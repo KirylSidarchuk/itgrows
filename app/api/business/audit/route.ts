@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db"
 import { sql } from "drizzle-orm"
 import { parseRobots, rulesFor, sitemapsIn, verdict } from "@/lib/robots"
+import { sendOwner } from "@/lib/telegram"
 
 // The audit that runs from nothing but a URL.
 //
@@ -189,6 +190,10 @@ async function rivalSurface(raw: string) {
   }
 }
 
+// /business runs this audit beside the AI check, which already pings the owner; the crawler
+// checker page runs only this one, so only its runs are reported.
+const fromCrawlerChecker = (req: NextRequest) => (req.headers.get("referer") ?? "").includes("/ai-crawler-checker")
+
 export async function POST(req: NextRequest) {
   let body: { url?: string; competitor?: string }
   try {
@@ -240,6 +245,7 @@ export async function POST(req: NextRequest) {
         INSERT INTO analytics_events (event, path, props)
         VALUES ('geo_audit', '/business', ${JSON.stringify({ site: target.hostname, unreachable: true })}::jsonb)`)
       .catch(() => {})
+    if (fromCrawlerChecker(req)) void sendOwner(`🕷 Проверка AI-краулеров: ${target.hostname} — сайт не ответил`)
     return NextResponse.json({ site: target.hostname, unreachable: true })
   }
 
@@ -364,6 +370,16 @@ export async function POST(req: NextRequest) {
         blocked: result.robots.bots.filter((b) => b.verdict === "blocked").map((b) => b.bot),
       })}::jsonb)`)
     .catch(() => {})
+
+  if (fromCrawlerChecker(req)) {
+    const shut = [
+      ...new Set([
+        ...result.robots.bots.filter((b) => b.verdict === "blocked").map((b) => b.bot),
+        ...result.liveFetch.filter((f) => f.blocked).map((f) => f.bot),
+      ]),
+    ]
+    void sendOwner(`🕷 Проверка AI-краулеров: ${result.site} — ${shut.length ? `закрыт для ${shut.join(", ")}` : "краулеров пускает"}`)
+  }
 
   return NextResponse.json(result)
 }

@@ -13,6 +13,7 @@ import {
   stripeCustomerFor,
 } from "@/lib/geo-business"
 import { CREDIT_DAYS, firstPaymentCents, setupFree } from "@/lib/geo-pricing"
+import { sendOwner } from "@/lib/telegram"
 
 // Start the AI-visibility plan for one of the user's followed sites: $499 by the month plus the
 // one-time $499 setup, or $1,497 for 3 months / $4,788 for a year with the setup free. Stripe
@@ -80,5 +81,6 @@ export async function POST(req: NextRequest) {
       VALUES (${userId}, 'geo_checkout_started', '/business/dashboard/plan',
               ${JSON.stringify({ domain: site, interval, credit, cents: firstPaymentCents(interval, credit), session: checkout.id })}::jsonb)`)
     .catch(() => {})
+  void sendOwner(`🛒 Открыл оплату GEO: ${session?.user?.email ?? userId} — ${site}, ${interval}`)
   return NextResponse.json({ url: checkout.url })
 }

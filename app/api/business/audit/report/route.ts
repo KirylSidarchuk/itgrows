@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { Resend } from "resend"
 import { db } from "@/lib/db"
 import { sql } from "drizzle-orm"
+import { sendOwner } from "@/lib/telegram"
 
 // A softer ask than "request access": the visitor already has their result on screen and is
 // asking for it in writing. Stored first, emailed second — a Resend outage must not lose the
@@ -33,6 +34,7 @@ export async function POST(req: NextRequest) {
       INSERT INTO analytics_events (event, path, props)
       VALUES ('audit_report_request', '/business', ${JSON.stringify({ email, site, audit })}::jsonb)`)
     .catch(() => {})
+  void sendOwner(`📧 Просит отчёт по сайту: ${email} — ${site}`)
 
   try {
     const resend = new Resend(process.env.RESEND_API_KEY)

@@ -7,6 +7,7 @@ import { GEO_RESEARCH, geoPriceId, normaliseDomain, stripeClient, stripeCustomer
 import { geoCheck, type PublicRun } from "@/lib/geo-check"
 import { GEO_PRICES } from "@/lib/geo-pricing"
 import { geoClientOwns } from "@/lib/geo-role"
+import { sendOwner } from "@/lib/telegram"
 
 // Buy the full detailed report for one site ($49.90, once): Stripe Checkout in payment mode. The
 // webhook unlocks it (geo_follows.research_paid_at). Also for a site the user does not follow yet —
@@ -155,5 +156,6 @@ export async function POST(req: NextRequest) {
       VALUES (${userId}, 'geo_research_checkout_started', '/business/dashboard/visibility',
               ${JSON.stringify({ domain: site, followed: !!follow, cents: GEO_PRICES.research.cents, session: checkout.id })}::jsonb)`)
     .catch(() => {})
+  void sendOwner(`🛒 Открыл оплату отчёта: ${session?.user?.email ?? userId} — ${site}`)
   return NextResponse.json({ url: checkout.url })
 }

@@ -5,6 +5,7 @@ import { db } from "@/lib/db"
 import { users } from "@/lib/db/schema"
 import { eq, sql } from "drizzle-orm"
 import { cookies } from "next/headers"
+import { sendOwner } from "@/lib/telegram"
 
 function getStripe() {
   const key = process.env.STRIPE_SECRET_KEY
@@ -98,5 +99,6 @@ export async function POST(req: NextRequest) {
     await db.execute(sql`INSERT INTO analytics_events (user_id, event, path, props) VALUES (${user.id}, 'checkout_session_created', '/api/stripe/create-checkout', ${JSON.stringify({ plan, session: checkoutSession.id })}::jsonb)`)
   } catch { /* analytics must never block checkout */ }
 
+  void sendOwner(`🛒 Открыл оформление: ${user.email} — план ${plan}`)
   return NextResponse.json({ url: checkoutSession.url })
 }

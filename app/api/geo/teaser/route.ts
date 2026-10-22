@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { geoCheck, clientIp, type PublicRun, type ResultRow } from "@/lib/geo-check"
+import { sendOwner } from "@/lib/telegram"
 
 // The instant check on /business: five questions a buyer of this business would ask, put to ChatGPT
 // and Perplexity. POST starts it (or returns a result under a day old at once); GET ?id= follows it,
@@ -87,6 +88,17 @@ function view(run: PublicRun) {
   }
 }
 
+/** One line for the owner per check started from the page. */
+function teaserAlert(url: string, status: number, run: Partial<PublicRun> & { error?: string | null }): string {
+  const site = run.domain ?? url
+  if (status !== 200 && status !== 202) return `🔎 Анализатор: ${site} — не запустился (${run.error ?? status})`
+  if (run.status === "failed") return `🔎 Анализатор: ${site} — проверка упала (${run.error ?? "?"})`
+  if (run.status === "done" && run.summary) {
+    return `🔎 Анализатор: ${site} — готовый результат: назван в ${run.summary.named} из ${run.summary.of}`
+  }
+  return `🔎 Анализатор: ${site} — новая проверка`
+}
+
 async function relay(status: number, data: Partial<PublicRun> & { error?: string }) {
   if (status === 200 || status === 202) return NextResponse.json(view(data as PublicRun))
   return NextResponse.json({ status: "failed", error: data.error ?? "unavailable" }, { status: status >= 400 && status < 600 ? status : 502 })
@@ -102,8 +114,10 @@ export async function POST(req: NextRequest) {
   }
   try {
     const r = await geoCheck<PublicRun>("/teaser", { url, ip: clientIp(req.headers) }, 25_000)
+    void sendOwner(teaserAlert(url, r.status, r.data))
     return relay(r.status, r.data)
   } catch {
+    void sendOwner(`🔎 Анализатор: ${url} — сервис проверки не ответил`)
     return NextResponse.json({ status: "failed", error: "unavailable" }, { status: 502 })
   }
 }
