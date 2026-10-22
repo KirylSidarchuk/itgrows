@@ -75,6 +75,31 @@ export async function GET(req: NextRequest) {
     return slugBase(t) + "-" + Math.random().toString(36).slice(2, 8)
   }
 
+  // Where an article on a blog we serve can be read: the public blog address when the blog sits
+  // under a path of the client's own domain (www.itgrows.ai/blog), otherwise the blog's own host.
+  // Null when neither is set. Stored as published_url so the client's cabinet can link to it.
+  function blogArticleUrl(s: typeof connectedSites.$inferSelect, slug: string): string | null {
+    let publicBase = s.blogPublicUrl?.trim().replace(/\/+$/, "") ?? ""
+    if (publicBase && !/^https?:\/\//i.test(publicBase)) publicBase = "https://" + publicBase
+    if (publicBase) return `${publicBase}/${slug}`
+    const host = s.blogDomain?.trim().replace(/^https?:\/\//i, "").replace(/\/+$/, "")
+    return host ? `https://${host}/${slug}` : null
+  }
+
+  // A receiver's answer is only kept when it is a web address (relative paths resolve against the
+  // site), so nothing else ever ends up behind the cabinet's "Open" link.
+  function receivedUrl(u: unknown, siteUrl: string): string | null {
+    if (typeof u !== "string" || !u.trim()) return null
+    const v = u.trim()
+    if (!/^https?:\/\//i.test(v) && !v.startsWith("/")) return null
+    try {
+      const parsed = new URL(v, siteUrl + "/")
+      return parsed.protocol === "https:" || parsed.protocol === "http:" ? parsed.toString() : null
+    } catch {
+      return null
+    }
+  }
+
   for (const post of duePosts) {
     try {
       // Validate keyword before processing
@@ -192,6 +217,9 @@ export async function GET(req: NextRequest) {
       // wordpress/shopify/webflow/octobercms/php → call external API endpoint
       const isBlogPostsPlatform = !site || site.platform === "itgrows_blog" || (site.platform === "custom" && !!site.blogDomain)
 
+      // The live address of this article, saved with the row below. Null when a branch can't know it.
+      let liveUrl: string | null = null
+
       if (site && isBlogPostsPlatform) {
         // Save directly to blog_posts so blog-service can serve it via CNAME
         const slug = sharedSlug
@@ -210,6 +238,7 @@ export async function GET(req: NextRequest) {
         if (blogDomainHost) {
           console.log(`[SEO Autopilot] Published to hosted blog: https://${blogDomainHost}/${slug}`)
         }
+        liveUrl = blogArticleUrl(site, slug)
       } else if (site && !isBlogPostsPlatform) {
         let normalUrl = site.url.trim().replace(/\/$/, "")
         if (!normalUrl.startsWith("http")) normalUrl = "https://" + normalUrl
@@ -253,11 +282,13 @@ export async function GET(req: NextRequest) {
             console.error(`[SEO Autopilot] WordPress app-password publish failed: ${wp.error}`)
           }
           // Separate branches rather than a ternary: a union of two object shapes is not
-          // assignable to drizzle's set(). There is no published_url column — the URL lives in
-          // the log line above, and success is recorded by published_at.
+          // assignable to drizzle's set(). The link WordPress gave the post (for a draft site, its
+          // preview address) goes to published_url. publishToWordPress falls back to the site's
+          // root when WordPress returns no link; that is not the article, so it is not stored.
           if (wp.success) {
+            const wpLink = wp.url && wp.url !== normalUrl ? receivedUrl(wp.url, normalUrl) : null
             await db.update(scheduledPosts)
-              .set({ status: "published", publishedAt: new Date(), publishError: null })
+              .set({ status: "published", publishedAt: new Date(), publishError: null, publishedUrl: wpLink })
               .where(eq(scheduledPosts.id, post.id))
           } else {
             await db.update(scheduledPosts)
@@ -338,6 +369,7 @@ export async function GET(req: NextRequest) {
 
         // Also insert into blog_posts so the /blog/ listing (blog-service) can serve this article.
         // Uses ON CONFLICT DO NOTHING in case the slug already exists (e.g. from a partial retry).
+        let mirrored = false
         try {
           const blogSlug = sharedSlug
           await db.insert(blogPosts).values({
@@ -353,11 +385,19 @@ export async function GET(req: NextRequest) {
             coverImageUrl: article.coverImageUrl ?? null,
             publishedAt: new Date(),
           }).onConflictDoNothing()
+          mirrored = true
           console.log(`[SEO Autopilot] Mirrored to blog_posts: ${blogSlug}`)
         } catch (blogInsertErr) {
           // Non-fatal: the article is already on the external site; just log the error.
           console.error(`[SEO Autopilot] Failed to mirror to blog_posts: ${blogInsertErr instanceof Error ? blogInsertErr.message : String(blogInsertErr)}`)
         }
+
+        // What the receiver answered with, if it named an address. Otherwise, for webhook sites
+        // (the only ones sent a slug), the site's blog address and that slug, once the copy there
+        // exists. The other receivers pick their own slug, so their address can't be built.
+        const isWebhookSite = site.platform === "octobercms" || site.platform === "php"
+        liveUrl = receivedUrl(publishedUrl, normalUrl)
+          ?? (isWebhookSite && mirrored ? blogArticleUrl(site, sharedSlug) : null)
       }
 
       // Save articleData and mark as published
@@ -367,6 +407,7 @@ export async function GET(req: NextRequest) {
           status: "published",
           articleData: prepared?.preparedBy === "vm-writer" ? { ...prepared, ...article } : article,
           publishedAt: new Date(),
+          publishedUrl: liveUrl,
           publishAttempts: (post.publishAttempts ?? 0) + 1,
           ...(article.coverImageUrl ? { coverImageUrl: article.coverImageUrl } : {}),
         })

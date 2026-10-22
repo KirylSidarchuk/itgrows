@@ -1,8 +1,8 @@
 "use client"
 
 import { Suspense, useEffect, useState } from "react"
+import Link from "next/link"
 import { useSearchParams } from "next/navigation"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -12,6 +12,7 @@ import {
   generateSiteSlug,
 } from "@/lib/connectedSites"
 import type { DetectedPlatform, DetectPlatformResult } from "@/app/api/detect-platform/route"
+import { card } from "../visibility/parts"
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -19,20 +20,26 @@ type WizardStep =
   | "url"
   | "detecting"
   | "wordpress"
-  | "shopify"
-  | "webflow"
   | "cname"
   | "done"
 
+// As /api/sites returns it (lib/public-site.ts): passwords and third-party tokens never reach the
+// browser, only whether one is stored. siteToken is our own key for the WordPress plugin and the
+// webhook, which the owner needs on their side.
 interface ConnectedSite {
   id: string
   name: string
   url: string
   platform: string
-  siteToken: string
+  siteToken: string | null
   siteSlug: string | null
   isDefault: boolean
   webhookUrl?: string | null
+  blogDomain?: string | null
+  blogPublicUrl?: string | null
+  wpUsername?: string | null
+  hasWpAppPassword?: boolean
+  lastCheckedAt?: string | null
   lastCheckOk?: boolean | null
 }
 
@@ -71,7 +78,28 @@ function BackButton({ onClick }: { onClick: () => void }) {
   )
 }
 
+// ─── WordPress plugin steps ───────────────────────────────────────────────────
+
+function WpPluginSteps({ last }: { last: string }) {
+  return (
+    <div className="rounded-xl bg-[#ebe9e5] border border-black/10 p-4 space-y-2 text-sm">
+      <ol className="list-decimal list-inside space-y-2 text-slate-600">
+        <li>
+          <a href="/api/wp-plugin/download" className="text-violet-600 hover:text-violet-800 underline font-medium">
+            Download ItGrows WordPress Plugin
+          </a>
+        </li>
+        <li>Go to <strong>WP Admin → Plugins → Add New → Upload Plugin → Install → Activate</strong></li>
+        <li>Go to <strong>Settings → ItGrows.ai</strong> and copy your <strong>Site Token</strong></li>
+        <li>{last}</li>
+      </ol>
+    </div>
+  )
+}
+
 // ─── Add-site wizard ──────────────────────────────────────────────────────────
+
+const SAVE_FAILED = "That did not save. Try again, or write to us and we will connect it."
 
 interface AddSiteWizardProps {
   onSaved: (site: ConnectedSite) => void
@@ -96,14 +124,6 @@ function AddSiteWizard({ onSaved, onCancel, isFirstSite }: AddSiteWizardProps) {
 
   // Pre-generate a token for CNAME / custom
   const [generatedToken] = useState(() => generateSiteToken())
-
-  // Shopify fields
-  const [shopifyAccessToken, setShopifyAccessToken] = useState("")
-  const [shopifyBlogId, setShopifyBlogId] = useState("")
-
-  // Webflow fields
-  const [webflowApiToken, setWebflowApiToken] = useState("")
-  const [webflowCollectionId, setWebflowCollectionId] = useState("")
 
   // ── Derived values ────────────────────────────────────────────────────────
 
@@ -147,15 +167,8 @@ function AddSiteWizard({ onSaved, onCancel, isFirstSite }: AddSiteWizardProps) {
       const data: DetectPlatformResult = await res.json()
       const platform = data.platform ?? "custom"
       setDetected(platform)
-      if (platform === "wordpress") {
-        setStep("wordpress")
-      } else if (platform === "shopify") {
-        setStep("shopify")
-      } else if (platform === "webflow") {
-        setStep("webflow")
-      } else {
-        setStep("cname")
-      }
+      // WordPress gets the plugin; every other site gets the hosted blog (one DNS record).
+      setStep(platform === "wordpress" ? "wordpress" : "cname")
     } catch {
       setDetected("custom")
       setStep("cname")
@@ -169,10 +182,6 @@ function AddSiteWizard({ onSaved, onCancel, isFirstSite }: AddSiteWizardProps) {
     platform: string
     siteToken: string
     siteSlug: string
-    shopifyToken?: string
-    shopifyBlogId?: string
-    webflowToken?: string
-    webflowCollectionId?: string
     blogDomain?: string
     blogPublicUrl?: string
   }) => {
@@ -196,8 +205,10 @@ function AddSiteWizard({ onSaved, onCancel, isFirstSite }: AddSiteWizardProps) {
         onSaved(data.site)
         return true
       }
+      setSaveError(SAVE_FAILED)
       return false
     } catch {
+      setSaveError(SAVE_FAILED)
       return false
     } finally {
       setSaving(false)
@@ -211,30 +222,6 @@ function AddSiteWizard({ onSaved, onCancel, isFirstSite }: AddSiteWizardProps) {
       platform: "wordpress",
       siteToken: wpToken.trim(),
       siteSlug,
-    })
-  }
-
-  const handleConnectShopify = () => {
-    saveSite({
-      name: derivedName,
-      url: normalUrl,
-      platform: "shopify",
-      siteToken: shopifyAccessToken.trim(),
-      siteSlug,
-      shopifyToken: shopifyAccessToken.trim(),
-      shopifyBlogId: shopifyBlogId.trim(),
-    })
-  }
-
-  const handleConnectWebflow = () => {
-    saveSite({
-      name: derivedName,
-      url: normalUrl,
-      platform: "webflow",
-      siteToken: webflowApiToken.trim(),
-      siteSlug,
-      webflowToken: webflowApiToken.trim(),
-      webflowCollectionId: webflowCollectionId.trim(),
     })
   }
 
@@ -281,7 +268,7 @@ function AddSiteWizard({ onSaved, onCancel, isFirstSite }: AddSiteWizardProps) {
   if (step === "url") {
     return (
       <div className="space-y-5 pt-4 border-t border-black/10">
-        <h3 className="text-[#1b1916] font-semibold text-base">Connect Your Website</h3>
+        <h3 className="text-[#1b1916] font-semibold text-base">Connect a website</h3>
         <div className="space-y-2">
           <Label className="text-slate-700 text-sm">Website URL</Label>
           <Input
@@ -346,18 +333,7 @@ function AddSiteWizard({ onSaved, onCancel, isFirstSite }: AddSiteWizardProps) {
           <p className="text-slate-600 text-xs">Install the ItGrows plugin and paste your Site Token below.</p>
         </div>
 
-        <div className="rounded-xl bg-[#ebe9e5] border border-black/10 p-4 space-y-2 text-sm">
-          <ol className="list-decimal list-inside space-y-2 text-slate-600">
-            <li>
-              <a href="/api/wp-plugin/download" className="text-violet-600 hover:text-violet-800 underline font-medium">
-                Download ItGrows WordPress Plugin
-              </a>
-            </li>
-            <li>Go to <strong>WP Admin → Plugins → Add New → Upload Plugin → Install → Activate</strong></li>
-            <li>Go to <strong>Settings → ItGrows.ai</strong> and copy your <strong>Site Token</strong></li>
-            <li>Paste the Site Token in the field below</li>
-          </ol>
-        </div>
+        <WpPluginSteps last="Paste the Site Token in the field below" />
 
         <div className="space-y-2">
           <Label className="text-slate-700 text-sm">Site Token (from WP Admin)</Label>
@@ -390,147 +366,6 @@ function AddSiteWizard({ onSaved, onCancel, isFirstSite }: AddSiteWizardProps) {
             className="bg-violet-600 hover:bg-violet-500 text-white"
           >
             {saving ? "Connecting..." : "Connect WordPress"}
-          </Button>
-          <BackButton onClick={() => setStep("url")} />
-        </div>
-      </div>
-    )
-  }
-
-  // ─────────────────────────────────────────────────────────────────────────
-  // SHOPIFY
-  // ─────────────────────────────────────────────────────────────────────────
-  if (step === "shopify") {
-    return (
-      <div className="space-y-5 pt-4 border-t border-black/10">
-        <DetectionBadge />
-        <div>
-          <h3 className="text-[#1b1916] font-semibold text-base mb-1">Connect Shopify</h3>
-          <p className="text-slate-600 text-xs">Create a private app and enter your API token below.</p>
-        </div>
-
-        <div className="rounded-xl bg-[#ebe9e5] border border-black/10 p-4 space-y-2 text-sm">
-          <ol className="list-decimal list-inside space-y-2 text-slate-600">
-            <li>Go to <strong>Shopify Admin → Settings → Apps and sales channels → Develop apps</strong></li>
-            <li>Create a new app → configure Admin API scopes: <span className="text-violet-600 font-mono">write_content</span></li>
-            <li>Install app → copy the <strong>Admin API access token</strong></li>
-            <li>Find Blog ID: <strong>Admin → Online Store → Blog posts</strong> → the URL contains the blog ID</li>
-          </ol>
-        </div>
-
-        <div className="grid grid-cols-2 gap-3">
-          <div className="space-y-2">
-            <Label className="text-slate-700 text-sm">Access Token</Label>
-            <Input
-              type="password"
-              placeholder="shpat_..."
-              value={shopifyAccessToken}
-              onChange={(e) => setShopifyAccessToken(e.target.value)}
-              className="bg-[#ebe9e5] border-black/10 text-[#1b1916] placeholder:text-slate-500 focus:border-violet-500 text-sm"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label className="text-slate-700 text-sm">Blog ID</Label>
-            <Input
-              placeholder="123456789"
-              value={shopifyBlogId}
-              onChange={(e) => setShopifyBlogId(e.target.value)}
-              className="bg-[#ebe9e5] border-black/10 text-[#1b1916] placeholder:text-slate-500 focus:border-violet-500 text-sm"
-            />
-          </div>
-        </div>
-
-        <div className="space-y-2">
-          <Label className="text-slate-700 text-sm">
-            Site Name <span className="text-slate-400">(optional)</span>
-          </Label>
-          <Input
-            placeholder="My Store"
-            value={siteName}
-            onChange={(e) => setSiteName(e.target.value)}
-            className="bg-[#ebe9e5] border-black/10 text-[#1b1916] placeholder:text-slate-500 focus:border-violet-500 text-sm"
-          />
-        </div>
-
-        {saveError && <p className="text-red-500 text-sm">{saveError}</p>}
-
-        <div className="flex gap-3 pt-1">
-          <Button
-            onClick={handleConnectShopify}
-            disabled={!shopifyAccessToken.trim() || !shopifyBlogId.trim() || saving}
-            className="bg-violet-600 hover:bg-violet-500 text-white"
-          >
-            {saving ? "Connecting..." : "Connect Shopify"}
-          </Button>
-          <BackButton onClick={() => setStep("url")} />
-        </div>
-      </div>
-    )
-  }
-
-  // ─────────────────────────────────────────────────────────────────────────
-  // WEBFLOW
-  // ─────────────────────────────────────────────────────────────────────────
-  if (step === "webflow") {
-    return (
-      <div className="space-y-5 pt-4 border-t border-black/10">
-        <DetectionBadge />
-        <div>
-          <h3 className="text-[#1b1916] font-semibold text-base mb-1">Connect Webflow</h3>
-          <p className="text-slate-600 text-xs">Generate an API token in Webflow and enter your Collection ID.</p>
-        </div>
-
-        <div className="rounded-xl bg-[#ebe9e5] border border-black/10 p-4 space-y-2 text-sm">
-          <ol className="list-decimal list-inside space-y-2 text-slate-600">
-            <li>Go to <strong>Webflow Dashboard → Project Settings → Integrations → API Access</strong></li>
-            <li>Generate a new API token and copy it</li>
-            <li>Find Collection ID: <strong>CMS → your blog collection → settings</strong></li>
-          </ol>
-        </div>
-
-        <div className="grid grid-cols-2 gap-3">
-          <div className="space-y-2">
-            <Label className="text-slate-700 text-sm">API Token</Label>
-            <Input
-              type="password"
-              placeholder="your-webflow-token"
-              value={webflowApiToken}
-              onChange={(e) => setWebflowApiToken(e.target.value)}
-              className="bg-[#ebe9e5] border-black/10 text-[#1b1916] placeholder:text-slate-500 focus:border-violet-500 text-sm"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label className="text-slate-700 text-sm">Collection ID</Label>
-            <Input
-              placeholder="collection-id"
-              value={webflowCollectionId}
-              onChange={(e) => setWebflowCollectionId(e.target.value)}
-              className="bg-[#ebe9e5] border-black/10 text-[#1b1916] placeholder:text-slate-500 focus:border-violet-500 text-sm"
-            />
-          </div>
-        </div>
-
-        <div className="space-y-2">
-          <Label className="text-slate-700 text-sm">
-            Site Name <span className="text-slate-400">(optional)</span>
-          </Label>
-          <Input
-            placeholder="My Site"
-            value={siteName}
-            onChange={(e) => setSiteName(e.target.value)}
-            className="bg-[#ebe9e5] border-black/10 text-[#1b1916] placeholder:text-slate-500 focus:border-violet-500 text-sm"
-          />
-        </div>
-
-        {saveError && <p className="text-red-500 text-sm">{saveError}</p>}
-
-        <div className="flex gap-3 pt-1">
-          <Button
-            onClick={handleConnectWebflow}
-            disabled={!webflowApiToken.trim() || !webflowCollectionId.trim() || saving}
-            className="bg-violet-600 hover:bg-violet-500 text-white"
-          >
-            {saving ? "Connecting..." : "Connect Webflow"}
           </Button>
           <BackButton onClick={() => setStep("url")} />
         </div>
@@ -627,10 +462,10 @@ function AddSiteWizard({ onSaved, onCancel, isFirstSite }: AddSiteWizardProps) {
     return (
       <div className="space-y-5 pt-4 border-t border-black/10">
         <div className="text-center py-4">
-          <div className="text-4xl mb-4">&#9989;</div>
-          <h3 className="text-[#1b1916] font-bold text-xl mb-2">Connected!</h3>
+          <div className="mx-auto mb-4 h-12 w-12 rounded-full bg-green-100 text-green-700 flex items-center justify-center text-2xl font-bold">&#10003;</div>
+          <h3 className="text-[#1b1916] font-bold text-xl mb-2">Saved</h3>
           <p className="text-slate-600 text-sm mb-4">
-            Your blog is at:
+            Your blog will be at:
           </p>
           <div className="inline-block bg-violet-50 border border-violet-200 rounded-xl px-5 py-3 font-mono text-violet-700 text-sm font-semibold">
             {displayDomain}
@@ -650,61 +485,269 @@ function AddSiteWizard({ onSaved, onCancel, isFirstSite }: AddSiteWizardProps) {
   return null
 }
 
-// ─── Settings page ────────────────────────────────────────────────────────────
+// ─── Your website page ────────────────────────────────────────────────────────
 
 type TestStatus = { loading: boolean; success?: boolean; message?: string }
+
+const label = "text-[11px] font-bold uppercase tracking-wide text-slate-500"
+
+// How articles reach the site, mirroring the branches of app/api/cron/publish-scheduled: WordPress
+// with a stored application password publishes through the WordPress API, other WordPress sites
+// through our plugin; a custom site with a blog domain is our hosted blog; every other custom or
+// PHP site is posted to as a webhook.
+type Method = "wp_plugin" | "wp_api" | "webhook" | "hosted" | "other"
+
+function methodOf(site: ConnectedSite): Method {
+  if (site.platform === "wordpress") return site.hasWpAppPassword && site.wpUsername?.trim() ? "wp_api" : "wp_plugin"
+  if (site.platform === "itgrows_blog") return "hosted"
+  if (site.platform === "custom" && site.blogDomain) return "hosted"
+  if (["php", "octobercms", "october", "custom", "nextjs", "next.js"].includes(site.platform)) return "webhook"
+  return "other"
+}
+
+const METHOD_LABEL: Record<Exclude<Method, "other">, string> = {
+  wp_plugin: "WordPress plugin",
+  wp_api: "WordPress API",
+  webhook: "Webhook",
+  hosted: "Hosted blog",
+}
+
+function methodLabel(site: ConnectedSite) {
+  const m = methodOf(site)
+  if (m !== "other") return METHOD_LABEL[m]
+  return platformLabel(site.platform as Parameters<typeof platformLabel>[0]) ?? site.platform
+}
+
+// POST /api/test-connection stores its result, and publish-scheduled refuses every article for a
+// plugin or webhook site whose stored check is not OK. Two of its checks test something publishing
+// does not use, so a click could stop articles that go through fine:
+// - WordPress with an application password: it asks for our plugin's status address, and those
+//   sites have no plugin (404 on firma-ausland.de).
+// - PHP / October CMS webhooks: it sends GET ?test=1, while articles go out as POST. MagiScan's
+//   webhook answers that GET with 404 and takes an article every day.
+// Until the route checks what publishing uses, these sites are not offered the check.
+const UNCHECKABLE_WEBHOOK = ["php", "october", "octobercms"]
+
+function checkable(site: ConnectedSite) {
+  const m = methodOf(site)
+  if (m === "wp_api") return false
+  if (m === "webhook" && UNCHECKABLE_WEBHOOK.includes(site.platform)) return false
+  return true
+}
+
+function siteHref(url: string) {
+  return /^https?:\/\//i.test(url) ? url : `https://${url}`
+}
+
+function fmtWhen(iso: string) {
+  const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return ""
+  return d.toLocaleString("en-GB", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })
+}
+
+function StatusPill({ ok }: { ok: boolean | null | undefined }) {
+  if (ok === true)
+    return <span className="shrink-0 rounded-full bg-green-100 border border-green-300 px-2.5 py-0.5 text-xs font-bold text-green-800">OK</span>
+  if (ok === false)
+    return <span className="shrink-0 rounded-full bg-red-50 border border-red-300 px-2.5 py-0.5 text-xs font-bold text-red-700">Problem</span>
+  return <span className="shrink-0 rounded-full bg-slate-100 border border-slate-300 px-2.5 py-0.5 text-xs font-bold text-slate-600">Not checked yet</span>
+}
+
+function SiteCard({
+  site,
+  showDefault,
+  test,
+  onCheck,
+  onSetDefault,
+}: {
+  site: ConnectedSite
+  showDefault: boolean
+  test: TestStatus | undefined
+  onCheck: () => void
+  onSetDefault: () => void
+}) {
+  const method = methodOf(site)
+  const blogUrl = method === "hosted" ? site.blogPublicUrl || (site.blogDomain ? `https://${site.blogDomain}` : null) : null
+  const token = (method === "wp_plugin" || method === "webhook") && site.siteToken ? site.siteToken : null
+  const fresh = test && !test.loading && test.message ? test : null
+  const canCheck = checkable(site)
+  // A status we set by hand has no time; then the badge alone shows it.
+  const when = site.lastCheckedAt ? fmtWhen(site.lastCheckedAt) : ""
+
+  return (
+    <section className={card}>
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-2">
+            <h2 className="font-extrabold text-lg text-[#1b1916] break-words">{site.name}</h2>
+            {showDefault && site.isDefault && (
+              <span className="rounded-full bg-violet-100 border border-violet-300 px-2 py-0.5 text-xs font-semibold text-violet-700">
+                Default
+              </span>
+            )}
+          </div>
+          <a
+            href={siteHref(site.url)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm text-violet-700 hover:underline break-all"
+          >
+            {site.url}
+          </a>
+        </div>
+        <StatusPill ok={site.lastCheckOk} />
+      </div>
+
+      <dl className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 text-sm">
+        <div>
+          <dt className={label}>Method</dt>
+          <dd className="mt-0.5 text-[#1b1916]">{methodLabel(site)}</dd>
+        </div>
+        {(when || site.lastCheckOk == null) && (
+          <div>
+            <dt className={label}>Last check</dt>
+            <dd className="mt-0.5 text-[#1b1916]">{when || "Not checked yet"}</dd>
+          </div>
+        )}
+        {blogUrl && (
+          <div className="sm:col-span-2 min-w-0">
+            <dt className={label}>Blog address</dt>
+            <dd className="mt-0.5">
+              <a href={siteHref(blogUrl)} target="_blank" rel="noopener noreferrer" className="text-violet-700 hover:underline break-all">
+                {blogUrl}
+              </a>
+            </dd>
+          </div>
+        )}
+      </dl>
+
+      {fresh ? (
+        <div
+          className={`mt-4 rounded-xl border px-4 py-2.5 text-sm ${
+            fresh.success ? "bg-green-50 border-green-200 text-green-800" : "bg-red-50 border-red-200 text-red-800"
+          }`}
+        >
+          <p>{fresh.message}</p>
+          {!fresh.success && (
+            <p className="mt-1 text-xs">
+              If this stays,{" "}
+              <Link href="/business/dashboard/support" className="font-semibold underline">
+                write to us
+              </Link>{" "}
+              and we will fix it.
+            </p>
+          )}
+        </div>
+      ) : (
+        site.lastCheckOk === false && (
+          <p className="mt-4 rounded-xl border bg-red-50 border-red-200 px-4 py-2.5 text-sm text-red-800">
+            The last check did not pass. {canCheck ? "Check again, or " : ""}
+            <Link href="/business/dashboard/support" className="font-semibold underline">
+              {canCheck ? "write to us" : "Write to us"}
+            </Link>{" "}
+            and we will fix it.
+          </p>
+        )
+      )}
+
+      {token && (
+        <div className="mt-4 rounded-xl bg-[#ebe9e5] border border-black/10 p-4">
+          <p className={label}>Site token</p>
+          <div className="mt-1.5 flex flex-wrap items-center gap-2">
+            <code className="font-mono text-xs text-[#1b1916] break-all">{token}</code>
+            <CopyButton text={token} label="Copy" />
+          </div>
+          <p className="mt-2 text-xs text-slate-600">
+            {method === "wp_plugin"
+              ? "It must be the same as the token in WP Admin → Settings → ItGrows.ai."
+              : "Your webhook checks this token on every article we send."}
+          </p>
+        </div>
+      )}
+
+      {method === "wp_plugin" && (
+        <details className="mt-3 text-sm">
+          <summary className="cursor-pointer font-semibold text-violet-700">How to install the plugin</summary>
+          <div className="mt-3">
+            <WpPluginSteps last="Check that the Site Token there is the same as the one above. If it is different, write to us and we will update it." />
+          </div>
+        </details>
+      )}
+
+      <div className="mt-5 flex flex-wrap items-center gap-2">
+        {canCheck ? (
+          <button
+            onClick={onCheck}
+            disabled={test?.loading}
+            className="rounded-xl bg-violet-600 hover:bg-violet-500 text-white px-4 py-2 text-sm font-semibold disabled:opacity-60"
+          >
+            {test?.loading ? "Checking…" : "Check again"}
+          </button>
+        ) : (
+          <p className="text-xs text-slate-600">
+            {method === "wp_api"
+              ? "WordPress checks this connection each time we publish an article."
+              : "Your site checks this connection each time we send an article."}
+          </p>
+        )}
+        {showDefault && !site.isDefault && (
+          <button
+            onClick={onSetDefault}
+            className="rounded-xl border border-black/15 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-[#f4f3f1]"
+          >
+            Set as default
+          </button>
+        )}
+      </div>
+    </section>
+  )
+}
 
 function SettingsContent() {
   const searchParams = useSearchParams()
   const [sites, setSites] = useState<ConnectedSite[]>([])
-  const [showWizard, setShowWizard] = useState(false)
+  // We connect paying clients' websites ourselves, so the wizard opens only when asked for: the
+  // "Connect a website" button, or ?connect=1 from other pages and the WordPress plugin.
+  const [showWizard, setShowWizard] = useState(() => searchParams.get("connect") === "1")
   const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState(false)
+  const [notice, setNotice] = useState("")
   const [testStatuses, setTestStatuses] = useState<Record<string, TestStatus>>({})
 
   useEffect(() => {
-    fetch("/api/sites")
-      .then((r) => r.json())
-      .then((data: { sites?: ConnectedSite[] }) => {
-        const loaded = data.sites ?? []
-        setSites(loaded)
-        // Auto-open wizard if no sites connected OR ?connect=1 param is present
-        if (loaded.length === 0 || searchParams.get("connect") === "1") {
-          setShowWizard(true)
-        }
+    fetch("/api/sites", { cache: "no-store" })
+      .then((r) => {
+        if (!r.ok) throw new Error(String(r.status))
+        return r.json()
       })
-      .catch(() => {})
+      .then((data: { sites?: ConnectedSite[] }) => setSites(data.sites ?? []))
+      .catch(() => setLoadError(true))
       .finally(() => setLoading(false))
-  }, [searchParams])
+  }, [])
 
   const handleSaved = (newSite: ConnectedSite) => {
-    setSites((prev) => [...prev, newSite])
-    setShowWizard(false)
+    setSites((prev) => [
+      ...prev.map((s) => (newSite.isDefault ? { ...s, isDefault: false } : s)),
+      newSite,
+    ])
+    // The hosted-blog step shows its own "Saved" screen and closes itself.
+    if (newSite.platform !== "custom") setShowWizard(false)
   }
 
-  const handleDelete = async (id: string) => {
-    await fetch(`/api/sites/${id}`, { method: "DELETE" }).catch(() => {})
-    setSites((prev) => {
-      const updated = prev.filter((s) => s.id !== id)
-      if (updated.length > 0 && !updated.some((s) => s.isDefault)) {
-        const firstId = updated[0].id
-        fetch(`/api/sites/${firstId}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ isDefault: true }),
-        }).catch(() => {})
-        updated[0] = { ...updated[0], isDefault: true }
-      }
-      return updated
-    })
-  }
-
-  const handleSetDefault = async (id: string) => {
-    await fetch(`/api/sites/${id}`, {
+  // The default site is where new articles are published, so this asks first.
+  const handleSetDefault = async (site: ConnectedSite) => {
+    if (!window.confirm(`Publish new articles to ${site.name} from now on?`)) return
+    setNotice("")
+    const res = await fetch(`/api/sites/${site.id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ isDefault: true }),
-    }).catch(() => {})
-    setSites((prev) => prev.map((s) => ({ ...s, isDefault: s.id === id })))
+    }).catch(() => null)
+    if (!res?.ok) {
+      setNotice("That did not save. Try again, or write to us.")
+      return
+    }
+    setSites((prev) => prev.map((s) => ({ ...s, isDefault: s.id === site.id })))
   }
 
   const handleTestConnection = async (id: string) => {
@@ -715,160 +758,109 @@ function SettingsContent() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ siteId: id }),
       })
-      const data = await res.json() as { success: boolean; message: string }
+      const data = await res.json() as { success?: boolean; message?: string }
       setTestStatuses((prev) => ({
         ...prev,
-        [id]: { loading: false, success: data.success, message: data.message },
+        [id]: {
+          loading: false,
+          success: res.ok && data.success === true,
+          message: data.message || "The check did not run. Reload the page and try again.",
+        },
       }))
+      // A 200 is a check that ran; the server stores its result, so the card shows it too.
+      if (res.ok) {
+        const at = new Date().toISOString()
+        setSites((prev) => prev.map((s) => (s.id === id ? { ...s, lastCheckOk: data.success === true, lastCheckedAt: at } : s)))
+      }
     } catch {
       setTestStatuses((prev) => ({
         ...prev,
-        [id]: { loading: false, success: false, message: "Request failed" },
+        [id]: { loading: false, success: false, message: "The check did not run. Try again in a minute." },
       }))
     }
   }
 
-  const defaultSite = sites.find((s) => s.isDefault) ?? sites[0] ?? null
+  const several = sites.length > 1
 
   return (
-    <div className="p-8">
-      <div className="max-w-3xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-1 text-[#1b1916] dashboard-heading">Settings</h1>
-          <p className="text-slate-600">Manage your account preferences and integrations.</p>
-        </div>
+    <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-10 space-y-5">
+      <header>
+        <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#1b1916]">Your website</h1>
+        <p className="text-sm text-slate-600 mt-1">
+          {several
+            ? "Where we publish your articles. New articles go to the website marked Default."
+            : "Where we publish your articles."}
+        </p>
+      </header>
 
-        {/* Connected Sites */}
-        <Card className="dashboard-glass-card border-0">
-          <CardHeader className="flex flex-row items-start justify-between">
-            <div>
-              <CardTitle className="text-[#1b1916] text-lg flex items-center gap-2">
-                {defaultSite ? (
-                  <>
-                    <span className="text-green-600">&#10003;</span>
-                    Your Connected Sites
-                  </>
-                ) : (
-                  "Your Connected Sites"
-                )}
-              </CardTitle>
-              <p className="text-slate-600 text-sm mt-1">
-                Add your website to automatically publish articles from ItGrows.ai
-              </p>
-              {defaultSite && (
-                <p className="text-green-600 text-xs mt-1">Default: {defaultSite.name}</p>
-              )}
-            </div>
-            {!showWizard && (
-              <Button
-                onClick={() => setShowWizard(true)}
-                className="bg-violet-600 hover:bg-violet-500 text-white text-sm shrink-0"
-              >
-                + Add Site
-              </Button>
-            )}
-          </CardHeader>
+      {loading && <section className={`${card} text-sm text-slate-600`}>Loading…</section>}
 
-          <CardContent className="space-y-4">
-            {loading && (
-              <div className="text-center py-8 text-[#1b1916] text-sm">Loading...</div>
-            )}
-            {!loading && sites.length === 0 && !showWizard && (
-              <div className="text-center py-8 text-[#1b1916] text-sm">
-                No sites connected yet. Click &quot;+ Add Site&quot; to get started.
-              </div>
-            )}
+      {!loading && loadError && (
+        <section className={`${card} text-sm text-[#1b1916]`}>
+          We could not load your website. Reload the page, or{" "}
+          <Link href="/business/dashboard/support" className="font-semibold text-violet-700 underline">
+            write to us
+          </Link>
+          .
+        </section>
+      )}
 
-            {sites.map((site) => {
-              const testStatus = testStatuses[site.id]
-              return (
-                <div key={site.id} className="space-y-2">
-                  <div className="flex items-center justify-between p-4 rounded-xl bg-[#ebe9e5] border border-black/10">
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2">
-                        <span className="text-[#1b1916] font-medium text-sm">{site.name}</span>
-                        {site.isDefault && (
-                          <span className="px-2 py-0.5 rounded-full bg-green-100 border border-green-300 text-green-700 text-xs font-medium">
-                            Default
-                          </span>
-                        )}
-                        <span className="px-2 py-0.5 rounded-full bg-violet-100 border border-violet-300 text-violet-700 text-xs font-medium">
-                          {platformLabel(site.platform as Parameters<typeof platformLabel>[0])}
-                        </span>
-                      </div>
-                      <p className="text-slate-600 text-xs mt-0.5 truncate">{site.url}</p>
-                    </div>
-                    <div className="flex items-center gap-2 ml-3 shrink-0">
-                      <button
-                        onClick={() => handleTestConnection(site.id)}
-                        disabled={testStatus?.loading}
-                        className="text-xs text-violet-500 hover:text-violet-700 transition-colors disabled:opacity-50"
-                        title="Test connection"
-                      >
-                        {testStatus?.loading ? "Testing…" : "⚡ Test"}
-                      </button>
-                      {!site.isDefault && (
-                        <button
-                          onClick={() => handleSetDefault(site.id)}
-                          className="text-xs text-slate-500 hover:text-violet-600 transition-colors"
-                        >
-                          Set default
-                        </button>
-                      )}
-                      <button
-                        onClick={() => handleDelete(site.id)}
-                        className="text-xs text-red-400 hover:text-red-300 transition-colors"
-                      >
-                        Remove
-                      </button>
-                    </div>
-                  </div>
-                  {testStatus && !testStatus.loading && (
-                    <div
-                      className={`flex items-center gap-2 px-4 py-2 rounded-xl border text-xs ${
-                        testStatus.success
-                          ? "bg-green-50 border-green-200 text-green-700"
-                          : "bg-red-50 border-red-200 text-red-700"
-                      }`}
-                    >
-                      <span>{testStatus.success ? "✅" : "❌"}</span>
-                      <span>{testStatus.success ? "Connection working" : `Connection failed: ${testStatus.message}`}</span>
-                    </div>
-                  )}
-                  {site.siteSlug && !testStatus && (
-                    <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-green-50 border border-green-200 text-sm">
-                      <span className="text-green-600 shrink-0 font-semibold">&#10003; Connected!</span>
-                      <span className="text-slate-700 text-xs">Articles will be published to your site automatically.</span>
-                    </div>
-                  )}
-                  {!testStatus && site.platform === "custom" && !site.lastCheckOk && (
-                    <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-800">
-                      <span>⚠️</span>
-                      <span>DNS propagation in progress. Your blog will be live at <code className="font-mono bg-amber-100 px-1 rounded">{site.url}</code> within 24 hours.</span>
-                    </div>
-                  )}
-                </div>
-              )
-            })}
+      {notice && <p className="rounded-xl border bg-red-50 border-red-200 px-4 py-2.5 text-sm text-red-800">{notice}</p>}
 
-            {/* Wizard */}
-            {showWizard && (
-              <AddSiteWizard
-                onSaved={handleSaved}
-                onCancel={() => setShowWizard(false)}
-                isFirstSite={sites.length === 0}
-              />
-            )}
-          </CardContent>
-        </Card>
-      </div>
+      {!loading && !loadError && sites.length === 0 && !showWizard && (
+        <section className={card}>
+          <p className="text-[#1b1916]">
+            We connect your website when your paid plan starts.{" "}
+            <Link href="/business/dashboard/support" className="font-semibold text-violet-700 underline">
+              Write to us
+            </Link>{" "}
+            if you want to start now.
+          </p>
+          <button
+            onClick={() => setShowWizard(true)}
+            className="mt-4 rounded-xl border border-black/15 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-[#f4f3f1]"
+          >
+            Connect a website
+          </button>
+        </section>
+      )}
+
+      {sites.map((site) => (
+        <SiteCard
+          key={site.id}
+          site={site}
+          showDefault={several}
+          test={testStatuses[site.id]}
+          onCheck={() => handleTestConnection(site.id)}
+          onSetDefault={() => handleSetDefault(site)}
+        />
+      ))}
+
+      {!loading && !loadError && sites.length > 0 && !showWizard && (
+        <button
+          onClick={() => setShowWizard(true)}
+          className="rounded-xl border border-black/15 bg-white/80 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-white"
+        >
+          Connect a website
+        </button>
+      )}
+
+      {showWizard && (
+        <section className={`${card} [&>div]:border-t-0 [&>div]:pt-0`}>
+          <AddSiteWizard
+            onSaved={handleSaved}
+            onCancel={() => setShowWizard(false)}
+            isFirstSite={sites.length === 0}
+          />
+        </section>
+      )}
     </div>
   )
 }
 
 export default function SettingsPage() {
   return (
-    <Suspense fallback={<div className="p-8 text-slate-400 text-sm">Loading settings...</div>}>
+    <Suspense fallback={<div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-10 text-slate-500 text-sm">Loading…</div>}>
       <SettingsContent />
     </Suspense>
   )

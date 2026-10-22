@@ -108,6 +108,8 @@ export const scheduledPosts = pgTable("scheduled_posts", {
   blogPostSlug: text("blog_post_slug"),
   coverImageUrl: text("cover_image_url"),
   publishedAt: timestamp("published_at"),
+  // Where the article can be read once it is out; null when the publishing path cannot know it.
+  publishedUrl: text("published_url"),
   publishError: text("publish_error"),
   publishAttempts: integer("publish_attempts").default(0),
   createdAt: timestamp("created_at").notNull().defaultNow(),
