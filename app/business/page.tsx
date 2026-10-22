@@ -4,6 +4,7 @@ import AuditForm from "./AuditForm"
 import LeadForm from "./LeadForm"
 import { ENGINE_ICONS } from "./engine-icons"
 import { FoundOnSites, GEO_INCLUDED, VersusArticles, WorkSystem } from "./GeoSections"
+import { OG_GEO } from "@/lib/entity"
 
 // Server-rendered on purpose. This page sells machine legibility, so it has to be legible to a
 // machine itself: the substance is in the HTML, not assembled by script after arrival.
@@ -16,6 +17,8 @@ export const metadata: Metadata = {
     title: "Make your site visible to ChatGPT, Claude, Perplexity, Gemini and the rest",
     description: "Crawler and index fixes, answer pages on your own domain, and a weekly count of four assistants. $499/mo.",
     url: "https://www.itgrows.ai/business",
+    siteName: "ItGrows.ai",
+    images: [OG_GEO],
     type: "website",
   },
   // Without this the root layout's card wins, and a link shared to X or Slack advertises the
@@ -25,6 +28,7 @@ export const metadata: Metadata = {
     title: "Make your site visible to ChatGPT, Claude, Perplexity, Gemini and the rest",
     description:
       "Crawler and index fixes, answer pages on your own domain, and a weekly count of four assistants. Free check.",
+    images: [OG_GEO.url],
   },
 }
 
@@ -81,15 +85,15 @@ const CASES = [
 const FAQS = [
   {
     q: "Can you guarantee ChatGPT will cite me?",
-    a: "No, and distrust anyone who does. No assistant sells placement or publishes its ranking mechanism. What we can do is make you eligible, publish consistently, and show you the crawler evidence.",
+    a: "No, and distrust anyone who does. No assistant sells placement or publishes its ranking mechanism. What we can do is make you findable and quotable, publish consistently, and show you every week whether you are named.",
   },
   {
     q: "What can you actually prove?",
-    a: "Three things. Whether the assistants name you: every week we put the same questions your buyers ask to ChatGPT, Claude, Gemini and Perplexity, several times each, and count the answers that name you and the sites they cite. And, from a server log, that crawlers fetched your pages and that assistants retrieved specific articles while answering somebody live — ChatGPT-User, OAI-SearchBot and Perplexity-User only appear mid-conversation. Nobody can measure every question anyone might ask; we measure the ones your buyers do.",
+    a: "Three things. Whether the assistants name you: every week we put the same questions your buyers ask to ChatGPT, Claude, Gemini and Perplexity, several times each, and count the answers that name you and the sites they cite. And, for blogs we host, from the server log, that crawlers fetched your pages and that assistants retrieved specific articles while answering somebody live — ChatGPT-User, OAI-SearchBot and Perplexity-User only appear mid-conversation. Nobody can measure every question anyone might ask; we measure the ones your buyers do.",
   },
   {
     q: "How is this different from an SEO agency?",
-    a: "They optimise for a crawler that, on our own logs, is a rounding error next to the answer engines. And we publish rather than advise — no deck, no list of recommendations for your team to implement.",
+    a: "An SEO agency optimises for one index and counts rankings. Each assistant searches a different index — Bing, Brave, Google or its own — and we count the answers, not the rankings. We publish rather than advise; where a fix needs your developer, we give exact instructions and check that it worked.",
   },
   {
     q: "Is this AI blog spam on my domain?",
@@ -97,7 +101,7 @@ const FAQS = [
   },
   {
     q: "How long before anything happens?",
-    a: "Crawlers find new material in a week or two. Becoming a source an assistant reaches for repeatedly takes months and a body of work. If you need attributable revenue this quarter, buy ads — we will say so on the call rather than after your third invoice.",
+    a: "Once a page is in the right indexes, crawlers usually arrive within a week or two, and we test findability every week so a gap is caught. Becoming a source an assistant reaches for repeatedly takes months and a body of work. If you need attributable revenue this quarter, buy ads — we will say so on the call rather than after your third invoice.",
   },
   {
     q: "Who is this wrong for?",
@@ -368,7 +372,7 @@ export default function BusinessPage() {
         <div className="max-w-3xl mx-auto">
           <h2 className="text-2xl sm:text-4xl font-extrabold mb-3 tracking-tight text-center">Where this goes</h2>
           <p className="text-slate-600 text-center mb-12 text-sm sm:text-base">
-            Authority compounds. Here is the road.
+            Typical, when indexing works — and we test that it does, every week. Not a guarantee.
           </p>
 
           <div className="relative">

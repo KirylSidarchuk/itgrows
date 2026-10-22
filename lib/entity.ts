@@ -10,6 +10,10 @@ export const ENTITY_ABOUT = [
   "No one can guarantee that an assistant will name a business. We promise the work and an honest weekly count.",
 ]
 
+// Share images. The GEO one is drawn by app/og/geo; og-image.png shows the LinkedIn/X product.
+export const OG_GEO = { url: "https://www.itgrows.ai/og/geo", width: 1200, height: 630 }
+export const OG_PERSONAL = { url: "https://www.itgrows.ai/og-image.png", width: 1200, height: 630 }
+
 export const ORGANIZATION = {
   "@type": "Organization",
   "@id": "https://www.itgrows.ai/#organization",

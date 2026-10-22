@@ -301,7 +301,7 @@ export default function AuditForm() {
               always bot protection. It stops the answer engines exactly the same way.
             </p>
             <a
-              href="#apply"
+              href="/business#apply"
               className="block w-full text-center rounded-xl border border-black/10 bg-white hover:bg-[#f8f7f6] text-[#1b1916] px-6 py-3.5 text-sm font-semibold"
             >
               Talk to us about it — $499/mo →
@@ -513,7 +513,7 @@ export default function AuditForm() {
               ))}
 
             <a
-              href="#apply"
+              href="/business#apply"
               className="block w-full text-center rounded-xl border border-black/10 bg-white hover:bg-[#f8f7f6] text-[#1b1916] px-6 py-3.5 text-sm font-semibold"
             >
               Start the 90 days — $499/mo →

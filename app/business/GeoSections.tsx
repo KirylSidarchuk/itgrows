@@ -20,7 +20,7 @@ const LAYERS = [
   {
     n: "4",
     l: "search indexes, one per assistant",
-    d: "ChatGPT searches through Bing, Claude through Brave, Gemini through Google, Perplexity through its own. A page Google has indexed can still be invisible to the other three. Every new page is pushed to the indexes as soon as it is published, and every article keeps one address.",
+    d: "ChatGPT searches through Bing, Claude through Brave, Gemini through Google, Perplexity through its own. A page Google has indexed can still be invisible to the other three. On blogs we host, every new page is submitted to Bing within half an hour; every week we test whether each assistant can actually find it. Every article keeps one address.",
   },
   {
     n: "Every",
@@ -79,7 +79,7 @@ export function FoundOnSites({ id }: { id?: string }) {
       <div className="max-w-5xl mx-auto">
         <h2 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-white text-center">Publishing is not the same as being found</h2>
         <p className="text-slate-400 text-center mt-3 mb-10 text-sm sm:text-base max-w-2xl mx-auto">
-          What we found on sites that were already publishing articles. October 2026.
+          What our own weekly checks found in October 2026, on client sites and on itgrows.ai itself.
         </p>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {FOUND.map((f) => (
@@ -90,7 +90,7 @@ export function FoundOnSites({ id }: { id?: string }) {
           ))}
           <div className="rounded-2xl border border-violet-400/40 bg-violet-500/10 p-6 flex items-center">
             <p className="text-sm sm:text-base text-white font-semibold leading-relaxed">
-              Every one of these sites was publishing. None of these problems shows in an article. A service that only writes would have kept writing.
+              Every one of these sites was publishing. None of these problems shows in an article. They were found because every week we check what the assistants can actually find.
             </p>
           </div>
         </div>
@@ -102,7 +102,7 @@ export function FoundOnSites({ id }: { id?: string }) {
 const VERSUS = [
   { k: "Before writing", a: "A keyword list", b: "240 answers from four assistants: who is named, and who is quoted" },
   { k: "Can assistants reach your site?", a: "Not their job", b: "Tested as 11 crawlers; blockers found and fixed with you before the first article" },
-  { k: "Is each page in the index each assistant searches?", a: "Publish and hope", b: "Every new page pushed to the indexes on publication; findability tested every week" },
+  { k: "Is each page in the index each assistant searches?", a: "Publish and hope", b: "New pages submitted to Bing on publication (blogs we host); findability tested every week" },
   { k: "Duplicate addresses, sitemaps that miss new pages", a: "Not checked", b: "Found and fixed" },
   { k: "Questions no own-site article can win", a: "Written anyway", b: "Found before your budget goes into them" },
   { k: "Facts and sources", a: "Up to the writer", b: "3–5 sources per article, each read; editor pass and automated checks" },

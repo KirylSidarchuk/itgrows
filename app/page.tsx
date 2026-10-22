@@ -6,7 +6,7 @@ import { and, desc, eq, isNull } from "drizzle-orm"
 import AuditForm from "./business/AuditForm"
 import HashForward from "./_home/HashForward"
 import SignIn from "./_home/SignIn"
-import { ENTITY_ABOUT, ORGANIZATION } from "@/lib/entity"
+import { ENTITY_ABOUT, OG_GEO, ORGANIZATION } from "@/lib/entity"
 import { FoundOnSites, GEO_INCLUDED, VersusArticles, WorkSystem } from "./business/GeoSections"
 
 // The front door says what ItGrows is first: AI visibility for companies. The LinkedIn/X product
@@ -25,7 +25,15 @@ export const metadata: Metadata = {
     title: "Get your company named by ChatGPT, Claude, Gemini and Perplexity",
     description: "Answer pages on your own domain, crawler and indexing fixes, and a weekly check of four assistants. Free check.",
     url: `${BASE}/`,
+    siteName: "ItGrows.ai",
+    images: [OG_GEO],
     type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Get your company named by ChatGPT, Claude, Gemini and Perplexity",
+    description: "Answer pages on your own domain, crawler and indexing fixes, and a weekly check of four assistants. Free check.",
+    images: [OG_GEO.url],
   },
 }
 
@@ -192,7 +200,7 @@ export default async function Home() {
               <p className="font-bold">AI crawler checker</p>
               <p className="text-sm text-slate-600 mt-2">Can GPTBot, ClaudeBot and PerplexityBot read your pages? Including robots.txt rules that block more than you meant.</p>
             </Link>
-            <Link href="/signup?from=ai-check" className="rounded-2xl bg-white border border-black/10 p-5 hover:border-violet-300">
+            <Link href="/signup?from=ai-check&callbackUrl=%2Fbusiness%2Fdashboard%2Fvisibility" className="rounded-2xl bg-white border border-black/10 p-5 hover:border-violet-300">
               <p className="font-bold">Free account</p>
               <p className="text-sm text-slate-600 mt-2">The full day-0 report — 20 questions, four assistants — and a weekly re-check.</p>
             </Link>

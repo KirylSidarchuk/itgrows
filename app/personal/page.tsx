@@ -1,5 +1,6 @@
 import type { Metadata } from "next"
 import PersonalHome from "./PersonalHome"
+import { OG_PERSONAL } from "@/lib/entity"
 
 // The LinkedIn/X product's landing, moved here unchanged from "/" on 22 Oct 2026, when the front
 // page became the AI-visibility page.
@@ -11,7 +12,15 @@ export const metadata: Metadata = {
     title: "ItGrows — AI drafts your LinkedIn & X posts",
     description: "AI drafts LinkedIn and X posts in your voice. You review and publish. Start your 14-day free trial.",
     url: "https://www.itgrows.ai/personal",
+    siteName: "ItGrows.ai",
+    images: [OG_PERSONAL],
     type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "ItGrows — AI drafts your LinkedIn & X posts",
+    description: "AI drafts LinkedIn and X posts in your voice. You review and publish. Start your 14-day free trial.",
+    images: [OG_PERSONAL.url],
   },
 }
 
