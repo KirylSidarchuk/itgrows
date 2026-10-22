@@ -9,7 +9,7 @@ import { ENGINE_ICONS } from "./engine-icons"
 export const metadata: Metadata = {
   title: "Get named by ChatGPT, Claude, Gemini & Perplexity | ItGrows",
   description:
-    "We publish research-grade articles to your own domain, shaped so AI assistants can quote them — and show you which answer engines actually visited. Free check, then $499/mo.",
+    "We get businesses named by ChatGPT, Claude, Gemini and Perplexity: answer pages on your domain, crawler fixes and a weekly check. Free check.",
   alternates: { canonical: "https://www.itgrows.ai/business" },
   openGraph: {
     title: "Make your site visible to ChatGPT, Claude, Perplexity, Gemini and the rest",
