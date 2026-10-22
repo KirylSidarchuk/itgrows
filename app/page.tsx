@@ -181,7 +181,7 @@ export default async function Home() {
                   <li key={f}>✓ {f}</li>
                 ))}
               </ul>
-              <Link href="/business#apply" className="mt-6 block text-center rounded-xl bg-white text-[#1b1916] px-5 py-3 text-sm font-semibold">Start the plan</Link>
+              <Link href="/signup?from=ai-check&callbackUrl=%2Fbusiness%2Fdashboard%2Fplan" className="mt-6 block text-center rounded-xl bg-white text-[#1b1916] px-5 py-3 text-sm font-semibold">Start the plan</Link>
             </div>
           </div>
           <p className="text-center text-sm text-slate-500 mt-5">No one can guarantee that an assistant will name a business. We measure and show you every week.</p>
