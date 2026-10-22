@@ -84,8 +84,9 @@ export default function BusinessSidebar({ client = false, hasLinkedin = false }:
     </div>
   )
 
+  // The logo goes to the site, like every logo; the menu below is the way around the cabinet.
   const logo = (
-    <Link href="/business/dashboard">
+    <Link href="/" aria-label="ItGrows.ai — home">
       <span className="text-xl font-bold bg-gradient-to-r from-violet-600 to-pink-500 bg-clip-text text-transparent">ItGrows.ai</span>
     </Link>
   )
