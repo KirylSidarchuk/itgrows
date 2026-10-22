@@ -57,6 +57,6 @@ export default function robots(): MetadataRoute.Robots {
       })),
     ],
     sitemap: "https://www.itgrows.ai/sitemap.xml",
-    host: "https://www.itgrows.ai",
+    // No "host": it is a Yandex directive that Bing's robots.txt tester reports as an error.
   }
 }
