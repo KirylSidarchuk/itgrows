@@ -33,6 +33,23 @@ interface PublishResult {
 
 // POST { siteUrl, siteToken, platform, title, content, metaDescription }
 // Publishes an article to a connected site using the siteToken
+// A post may only go to a blog the caller owns. The site is looked up by id or slug among the
+// caller's own connected sites; whatever slug the request carries is never trusted on its own
+// (it used to be, so any account could publish into another client's blog or onto itgrows.ai/blog).
+async function ownedSite(userId: string, siteId?: string | null, siteSlug?: string | null) {
+  if (!siteId && !siteSlug) return null
+  try {
+    const [s] = await db
+      .select({ id: connectedSites.id, siteSlug: connectedSites.siteSlug, blogDomain: connectedSites.blogDomain })
+      .from(connectedSites)
+      .where(and(siteId ? eq(connectedSites.id, siteId) : eq(connectedSites.siteSlug, siteSlug!), eq(connectedSites.userId, userId)))
+      .limit(1)
+    return s ?? null
+  } catch {
+    return null
+  }
+}
+
 export async function POST(req: NextRequest): Promise<NextResponse> {
   const session = await auth()
   if (!session?.user?.id) {
@@ -92,6 +109,10 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
   // ── itgrows_blog: publish directly to internal blog_posts table ──────────────
   if (platform === "itgrows_blog") {
+    const owned = await ownedSite(session.user.id, siteId, siteSlug)
+    if ((siteId || siteSlug) && !owned) {
+      return NextResponse.json({ success: false, error: "site_not_found" }, { status: 403 })
+    }
     try {
       const slug =
         title.toLowerCase().replace(/[^a-z0-9\s-]/g, "").replace(/\s+/g, "-").replace(/-+/g, "-").trim() +
@@ -104,8 +125,8 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         content,
         metaDescription: metaDescription ?? "",
         keywords: keywords ?? [],
-        siteId: siteId ?? null,
-        siteSlug: siteSlug ?? null,
+        siteId: owned?.id ?? null,
+        siteSlug: owned?.siteSlug ?? null,
         coverImageUrl: coverImageUrl ?? null,
       })
       return NextResponse.json({ success: true, url: `/blog/${slug}` })
@@ -303,20 +324,10 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     // so it can be served via CNAME (e.g. blog.magiscan.app → blogs.itgrows.ai).
     if (platform === "custom" && (siteSlug || siteId)) {
       try {
-        // Resolve siteSlug from DB if not provided directly
-        let resolvedSlug = siteSlug ?? null
-        let resolvedBlogDomain: string | null = null
-        if (siteId && !resolvedSlug) {
-          const [site] = await db
-            .select({ siteSlug: connectedSites.siteSlug, blogDomain: connectedSites.blogDomain })
-            .from(connectedSites)
-            .where(and(eq(connectedSites.id, siteId), eq(connectedSites.userId, session.user.id)))
-            .limit(1)
-          if (site) {
-            resolvedSlug = site.siteSlug
-            resolvedBlogDomain = site.blogDomain
-          }
-        }
+        // Only a blog the caller owns; the slug in the request is not trusted on its own.
+        const owned = await ownedSite(session.user.id, siteId, siteSlug)
+        const resolvedSlug = owned?.siteSlug ?? null
+        const resolvedBlogDomain = owned?.blogDomain ?? null
         if (resolvedSlug || resolvedBlogDomain) {
           const slug =
             title.toLowerCase().replace(/[^a-z0-9\s-]/g, "").replace(/\s+/g, "-").replace(/-+/g, "-").trim() +
@@ -329,7 +340,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
             content,
             metaDescription: metaDescription ?? "",
             keywords: keywords ?? [],
-            siteId: siteId ?? null,
+            siteId: owned?.id ?? null,
             siteSlug: resolvedSlug ?? null,
             coverImageUrl: coverImageUrl ?? null,
           })

@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/auth"
 import { db } from "@/lib/db"
-import { blogPosts } from "@/lib/db/schema"
+import { blogPosts, connectedSites } from "@/lib/db/schema"
 import { storeImage } from "@/lib/image-store"
-import { eq, desc } from "drizzle-orm"
+import { and, eq, desc } from "drizzle-orm"
 import { slugBase } from "@/lib/slug"
 
 async function uploadBase64Image(dataUrl: string, slug: string): Promise<string | null> {
@@ -24,6 +24,23 @@ export interface BlogPost {
   siteId?: string
   siteSlug?: string
   coverImageUrl?: string
+}
+
+// A post may only go to a blog the caller owns. The site is looked up by id or slug among the
+// caller's own connected sites; whatever slug the request carries is never trusted on its own
+// (it used to be, so any account could publish into another client's blog or onto itgrows.ai/blog).
+async function ownedSite(userId: string, siteId?: string | null, siteSlug?: string | null) {
+  if (!siteId && !siteSlug) return null
+  try {
+    const [s] = await db
+      .select({ id: connectedSites.id, siteSlug: connectedSites.siteSlug, blogDomain: connectedSites.blogDomain })
+      .from(connectedSites)
+      .where(and(siteId ? eq(connectedSites.id, siteId) : eq(connectedSites.siteSlug, siteSlug!), eq(connectedSites.userId, userId)))
+      .limit(1)
+    return s ?? null
+  } catch {
+    return null
+  }
 }
 
 function slugify(text: string): string {
@@ -86,6 +103,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: "Missing title or content" }, { status: 400 })
     }
 
+    const owned = await ownedSite(session.user.id, body.siteId, body.siteSlug)
+    if ((body.siteId || body.siteSlug) && !owned) {
+      return NextResponse.json({ success: false, error: "site_not_found" }, { status: 403 })
+    }
+
     const slug = slugify(body.title)
 
     // If coverImageUrl is a base64 data URL, upload it to the VM image service
@@ -106,8 +128,8 @@ export async function POST(req: NextRequest) {
         metaDescription: body.metaDescription ?? "",
         keyword: body.keyword ?? null,
         keywords: body.keywords ?? [],
-        siteId: body.siteId ?? null,
-        siteSlug: body.siteSlug ?? null,
+        siteId: owned?.id ?? null,
+        siteSlug: owned?.siteSlug ?? null,
         coverImageUrl,
       })
       .returning()
