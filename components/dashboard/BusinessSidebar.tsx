@@ -55,7 +55,7 @@ export default function BusinessSidebar({ client = false, hasLinkedin = false }:
     }`
 
   const links = (
-    <nav className="flex-1 px-4 py-5 space-y-1">
+    <nav className="flex-1 min-h-0 overflow-y-auto px-4 py-5 space-y-1">
       {items.map((item) => (
         <Link key={item.href} href={item.href} onClick={() => setOpen(false)} className={row(pathname.startsWith(item.href))}>
           <Icon name={item.icon} />
@@ -116,7 +116,9 @@ export default function BusinessSidebar({ client = false, hasLinkedin = false }:
         </div>
       )}
 
-      <aside className="hidden lg:flex w-72 min-h-screen flex-col shrink-0" style={{ ...glass, borderRight: "1px solid rgba(255,255,255,0.7)" }}>
+      {/* Desktop: the column stays on screen while the page scrolls, so "Contact us" and "Sign out"
+          at its foot are always in reach; only the menu above them scrolls if the window is very short. */}
+      <aside className="hidden lg:flex w-72 h-screen sticky top-0 self-start flex-col shrink-0" style={{ ...glass, borderRight: "1px solid rgba(255,255,255,0.7)" }}>
         <div className="px-7 py-7 border-b border-white/40">{logo}</div>
         {links}
         {footer}
