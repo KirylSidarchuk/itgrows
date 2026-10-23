@@ -188,7 +188,8 @@ export async function GET() {
       .select({ slug: blogPosts.slug, title: blogPosts.title, siteSlug: blogPosts.siteSlug, siteId: blogPosts.siteId,
                 publishedAt: blogPosts.publishedAt, blogDomain: connectedSites.blogDomain })
       .from(blogPosts)
-      .leftJoin(connectedSites, and(eq(connectedSites.id, blogPosts.siteId), eq(connectedSites.userId, userId)))
+      // blog_posts.site_id is text, connected_sites.id a uuid: Postgres has no uuid = text, so compare as text.
+      .leftJoin(connectedSites, and(sql`${connectedSites.id}::text = ${blogPosts.siteId}`, eq(connectedSites.userId, userId)))
       .where(and(eq(blogPosts.userId, userId), isNull(blogPosts.redirectTo), gte(blogPosts.publishedAt, new Date("2026-10-15T00:00:00Z"))))
       .orderBy(desc(blogPosts.publishedAt))
       .limit(200)
