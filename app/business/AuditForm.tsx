@@ -272,8 +272,8 @@ export default function AuditForm() {
     urlRef.current?.scrollIntoView({ behavior: "smooth", block: "center" })
   }
 
-  // An unreachable result carries only { site, unreachable } — reading robots/liveFetch off it
-  // would throw and take the whole page down.
+  // An unreachable result carries only { site, unreachable } — reading robots, liveFetch or surface
+  // off it would throw and take the whole page down (it did: booba.net, 23 Oct).
   const blocked =
     data && !data.unreachable
       ? [
@@ -281,7 +281,7 @@ export default function AuditForm() {
           ...data.liveFetch.filter((b) => b.blocked).map((b) => b.bot),
         ]
       : []
-  const answers = data?.surface.answerPages ?? 0
+  const answers = data && !data.unreachable ? (data.surface?.answerPages ?? 0) : 0
   const showEmailCapture = aiFailed
 
   return (
