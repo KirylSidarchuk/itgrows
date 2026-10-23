@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
+import { sql } from "drizzle-orm"
+import { db } from "@/lib/db"
 import { geoCheck, clientIp, type PublicRun, type ResultRow } from "@/lib/geo-check"
 import { sendOwner } from "@/lib/telegram"
 
@@ -88,15 +90,37 @@ function view(run: PublicRun) {
   }
 }
 
-/** One line for the owner per check started from the page. */
+/** One line for the owner per check started from the page. A site checked in the last day gets its
+ *  stored result back at once ("повтор"); a new check is announced when it starts and again, with
+ *  its count, when it finishes (outcomeAlert). */
 function teaserAlert(url: string, status: number, run: Partial<PublicRun> & { error?: string | null }): string {
   const site = run.domain ?? url
   if (status !== 200 && status !== 202) return `🔎 Анализатор: ${site} — не запустился (${run.error ?? status})`
   if (run.status === "failed") return `🔎 Анализатор: ${site} — проверка упала (${run.error ?? "?"})`
   if (run.status === "done" && run.summary) {
-    return `🔎 Анализатор: ${site} — готовый результат: назван в ${run.summary.named} из ${run.summary.of}`
+    return `🔎 Анализатор: ${site} — повтор (проверка за последние сутки): назван в ${run.summary.named} из ${run.summary.of}`
   }
-  return `🔎 Анализатор: ${site} — новая проверка`
+  return `🔎 Анализатор: ${site} — новая проверка запущена`
+}
+
+/** The outcome of a new check, sent once. The page polls GET every few seconds, so the first poll
+ *  that sees the check finished claims it in geo_run_alerts (lib/db/migrations/add_geo_run_alerts.sql)
+ *  and only that poll sends. A visitor who leaves before the end sends nothing; the start line stays. */
+async function outcomeAlert(run: Partial<PublicRun>) {
+  if ((run.status !== "done" && run.status !== "failed") || !run.run_id) return
+  try {
+    const res = await db.execute(sql`INSERT INTO geo_run_alerts (run_id) VALUES (${run.run_id}::uuid) ON CONFLICT DO NOTHING RETURNING run_id`)
+    const claimed = Array.isArray(res) ? res.length : ((res as { rows?: unknown[] }).rows?.length ?? 0)
+    if (!claimed) return
+    const site = run.domain ?? "?"
+    await sendOwner(
+      run.status === "failed"
+        ? `🔎 Анализатор: ${site} — проверка упала (${run.error ?? "?"})`
+        : `🔎 Анализатор: ${site} — готово: назван в ${run.summary?.named ?? "?"} из ${run.summary?.of ?? "?"}`
+    )
+  } catch (e) {
+    console.warn("[geo/teaser] outcome alert:", e instanceof Error ? e.message : e)
+  }
 }
 
 async function relay(status: number, data: Partial<PublicRun> & { error?: string }) {
@@ -131,6 +155,7 @@ export async function GET(req: NextRequest) {
     if (r.status !== 200 || r.data.kind !== "teaser") {
       return NextResponse.json({ status: "failed", error: "not_found" }, { status: 404 })
     }
+    await outcomeAlert(r.data)
     return relay(200, r.data)
   } catch {
     return NextResponse.json({ status: "failed", error: "unavailable" }, { status: 502 })
