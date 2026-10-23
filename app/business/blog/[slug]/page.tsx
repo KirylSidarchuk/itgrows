@@ -3,15 +3,78 @@ import { noteCrawler } from "@/lib/crawler-log"
 import Link from "next/link"
 import { db } from "@/lib/db"
 import { blogPosts } from "@/lib/db/schema"
-import { and, desc, eq, isNull, ne } from "drizzle-orm"
+import { and, desc, eq, isNull, ne, sql } from "drizzle-orm"
 import sanitizeHtml from "sanitize-html"
 import type { Metadata } from "next"
 
 const SITE_SLUG = "itgrows-business"
 const BASE = "https://www.itgrows.ai"
 
-function formatDate(date: Date): string {
-  return date.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })
+function formatDate(date: Date, locale: string): string {
+  return date.toLocaleDateString(locale, { year: "numeric", month: "long", day: "numeric" })
+}
+
+// The page around the article speaks the article's language. Articles are English or German
+// (blog_posts.lang); any other language gets the English page.
+const UI = {
+  en: {
+    dateLocale: "en-US",
+    ogLocale: "en_US",
+    allArticles: "All articles",
+    updated: "Updated",
+    minRead: "min read",
+    ctaTitle: "Does ChatGPT name your business?",
+    ctaText:
+      "Enter your site: we ask ChatGPT and Perplexity five questions your buyers ask and show who they name instead of you. No signup, about 30 seconds.",
+    ctaCheck: "Check my AI visibility →",
+    ctaCrawlers: "Am I blocking AI crawlers?",
+    keepReading: "Keep reading",
+    home: "ItGrows for Business",
+    // Our site in the post's language (the GEO site is translated: /de, 2f44505).
+    links: { home: "/", check: "/business/ai-visibility-checker", crawlers: "/business/ai-crawler-checker" },
+  },
+  de: {
+    dateLocale: "de-DE",
+    ogLocale: "de_DE",
+    allArticles: "Alle Artikel",
+    updated: "Aktualisiert am",
+    minRead: "Min. Lesezeit",
+    ctaTitle: "Nennt ChatGPT Ihr Unternehmen?",
+    ctaText:
+      "Geben Sie Ihre Website ein: Wir stellen ChatGPT und Perplexity fünf Fragen, wie Ihre Kunden sie stellen, und zeigen, wen sie statt Ihnen nennen. Ohne Anmeldung, etwa 30 Sekunden.",
+    ctaCheck: "Meine KI-Sichtbarkeit prüfen →",
+    ctaCrawlers: "Sperre ich KI-Crawler aus?",
+    keepReading: "Weiterlesen",
+    home: "ItGrows für Unternehmen",
+    links: { home: "/de", check: "/de/business/ai-visibility-checker", crawlers: "/de/business/ai-crawler-checker" },
+  },
+}
+const uiFor = (lang: string | null) => UI[lang === "de" ? "de" : "en"]
+
+// FAQPage data from the article's FAQ section (German articles head it "Häufig gestellte Fragen").
+// The generator writes each question as a bold paragraph; the answer follows in the next paragraph
+// or, in some articles, in the question's own paragraph. Older content used <h3> questions.
+const FAQ_SECTION = /<h2[^>]*>[^<]*(?:frequently asked questions|\bfaqs?\b|häufig gestellte fragen|häufige fragen)[^<]*<\/h2>([\s\S]*)/i
+
+function extractFaq(content: string): Array<{ question: string; answer: string }> {
+  const section = content.match(FAQ_SECTION)?.[1]
+  if (!section) return []
+  const items: Array<{ question: string; answer: string }> = []
+  const patterns = [
+    /<p[^>]*>\s*<strong>([\s\S]*?)<\/strong>\s*(?:<\/p>\s*<p[^>]*>)?([\s\S]*?)<\/p>/gi,
+    /<h3[^>]*>([\s\S]*?)<\/h3>\s*<p[^>]*>([\s\S]*?)<\/p>/gi,
+  ]
+  for (const pattern of patterns) {
+    for (const m of section.matchAll(pattern)) {
+      if (items.length >= 5) break
+      const question = m[1].replace(/<[^>]+>/g, "").trim()
+      const answer = m[2].replace(/<[^>]+>/g, "").trim()
+      // Only genuine Q/A pairs: a question ends with "?", which skips bold lead-ins like "Note:".
+      if (question.endsWith("?") && answer) items.push({ question, answer })
+    }
+    if (items.length > 0) break
+  }
+  return items
 }
 
 // Must run per request: a prerendered response is served from the CDN and never reaches the
@@ -40,6 +103,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       description: post.metaDescription || post.title,
       url: `${BASE}/business/blog/${slug}`,
       type: "article",
+      locale: uiFor(post.lang).ogLocale,
       publishedTime: post.publishedAt.toISOString(),
       ...(post.updatedAt ? { modifiedTime: post.updatedAt.toISOString() } : {}),
       images: post.coverImageUrl ? [{ url: imageUrl, width: 1200, height: 630, alt: post.title }] : [],
@@ -65,12 +129,23 @@ export default async function BusinessBlogPostPage({ params }: { params: Promise
   if (!post) notFound()
   if (post.redirectTo) permanentRedirect(post.redirectTo)
 
+  const lang = post.lang ?? "en"
+  const ui = uiFor(post.lang)
+
   // Siblings for the footer. The generator links inline where it fits; this guarantees every
-  // article has outbound paths into the cluster even when it did not.
+  // article has outbound paths into the cluster even when it did not. Same language only: a German
+  // reader offered English pages (or the reverse) has nowhere to go.
   const related = await db
     .select({ slug: blogPosts.slug, title: blogPosts.title, id: blogPosts.id })
     .from(blogPosts)
-    .where(and(eq(blogPosts.siteSlug, SITE_SLUG), ne(blogPosts.slug, slug), isNull(blogPosts.redirectTo)))
+    .where(
+      and(
+        eq(blogPosts.siteSlug, SITE_SLUG),
+        ne(blogPosts.slug, slug),
+        isNull(blogPosts.redirectTo),
+        sql`coalesce(${blogPosts.lang}, 'en') = ${lang}`,
+      ),
+    )
     .orderBy(desc(blogPosts.publishedAt))
     .limit(4)
 
@@ -82,7 +157,7 @@ export default async function BusinessBlogPostPage({ params }: { params: Promise
     datePublished: post.publishedAt.toISOString(),
     dateModified: (post.updatedAt ?? post.publishedAt).toISOString(),
     inLanguage: post.lang ?? "en",
-    author: { "@type": "Organization", "@id": `${BASE}/#organization`, name: "ItGrows", url: `${BASE}/business` },
+    author: { "@type": "Organization", "@id": `${BASE}/#organization`, name: "ItGrows", url: BASE },
     publisher: {
       "@type": "Organization",
       "@id": `${BASE}/#organization`,
@@ -94,24 +169,7 @@ export default async function BusinessBlogPostPage({ params }: { params: Promise
     ...(post.coverImageUrl ? { image: `${BASE}/api/blog/image/${post.id}` } : {}),
   }
 
-  // FAQ extraction, same two shapes the generator produces (bold-paragraph questions, legacy h3).
-  const faqItems: Array<{ question: string; answer: string }> = []
-  const faqSectionMatch = post.content.match(/<h2[^>]*>[^<]*(?:frequently asked questions|faq)[^<]*<\/h2>([\s\S]*)/i)
-  if (faqSectionMatch) {
-    const faqPatterns = [
-      /<p[^>]*>\s*<strong>([\s\S]*?)<\/strong>\s*<\/p>\s*<p[^>]*>([\s\S]*?)<\/p>/gi,
-      /<h3[^>]*>([\s\S]*?)<\/h3>\s*<p[^>]*>([\s\S]*?)<\/p>/gi,
-    ]
-    for (const faqRegex of faqPatterns) {
-      let faqMatch
-      while ((faqMatch = faqRegex.exec(faqSectionMatch[1])) !== null && faqItems.length < 5) {
-        const question = faqMatch[1].replace(/<[^>]+>/g, "").trim()
-        const answer = faqMatch[2].replace(/<[^>]+>/g, "").trim()
-        if (question.endsWith("?") && answer) faqItems.push({ question, answer })
-      }
-      if (faqItems.length > 0) break
-    }
-  }
+  const faqItems = extractFaq(post.content)
 
   const faqSchema =
     faqItems.length > 0
@@ -130,7 +188,10 @@ export default async function BusinessBlogPostPage({ params }: { params: Promise
   const readingTimeMin = Math.max(1, Math.round(wordCount / 200))
 
   return (
-    <div className="min-h-screen bg-[#f3f2f1] text-[#1b1916]">
+    <div lang={lang} className="min-h-screen bg-[#f3f2f1] text-[#1b1916]">
+      {/* app/layout.tsx sets <html lang="en"> for every route; this tells search engines (Bing reads it)
+          the page's real language. React moves it into <head>. */}
+      <meta httpEquiv="content-language" content={lang} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }} />
       {faqSchema && (
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
@@ -138,12 +199,13 @@ export default async function BusinessBlogPostPage({ params }: { params: Promise
 
       <header className="border-b border-black/10 px-4 sm:px-6 py-4 bg-[#f3f2f1]">
         <div className="max-w-3xl mx-auto flex items-center justify-between gap-4">
-          <Link href="/business" className="flex items-center gap-2 text-lg font-bold bg-gradient-to-r from-violet-600 to-cyan-600 bg-clip-text text-transparent shrink-0">
+          <Link href={ui.links.home} className="flex items-center gap-2 text-lg font-bold bg-gradient-to-r from-violet-600 to-cyan-600 bg-clip-text text-transparent shrink-0">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/logo.jpg" className="h-7 w-7 rounded-lg" alt="ItGrows" />
             <span>ItGrows.ai</span>
           </Link>
           <Link href="/business/blog" className="text-sm text-slate-600 hover:text-[#1b1916] transition-colors shrink-0">
-            ← All articles
+            ← {ui.allArticles}
           </Link>
         </div>
       </header>
@@ -160,18 +222,18 @@ export default async function BusinessBlogPostPage({ params }: { params: Promise
           <h1 className="text-3xl sm:text-4xl font-extrabold leading-tight mb-4">{post.title}</h1>
 
           <p className="text-[#1b1916]/60 text-sm mb-10">
-            {formatDate(post.publishedAt)}
+            {formatDate(post.publishedAt, ui.dateLocale)}
             {post.updatedAt && (
               <>
-                <span className="mx-2 opacity-40">·</span>Updated {formatDate(post.updatedAt)}
+                <span className="mx-2 opacity-40">·</span>
+                {ui.updated} {formatDate(post.updatedAt, ui.dateLocale)}
               </>
             )}
             <span className="mx-2 opacity-40">·</span>
-            {readingTimeMin} min read
+            {readingTimeMin} {ui.minRead}
           </p>
 
           <div
-            lang={post.lang ?? "en"}
             className="article-content"
             dangerouslySetInnerHTML={{
               // The stored article starts with its own <h1>; the page already renders the title as one.
@@ -191,31 +253,28 @@ export default async function BusinessBlogPostPage({ params }: { params: Promise
           {/* The reason this blog exists. */}
           <div className="mt-12 rounded-2xl bg-white border-2 border-violet-200 p-6 sm:p-8 text-center">
             <h2 className="text-xl sm:text-2xl font-extrabold mb-2 tracking-tight">
-              Does ChatGPT name your business?
+              {ui.ctaTitle}
             </h2>
-            <p className="text-slate-600 text-sm sm:text-base mb-6 max-w-lg mx-auto leading-relaxed">
-              Enter your site: we ask ChatGPT and Perplexity five questions your buyers ask and show who they name
-              instead of you. No signup, about 30 seconds.
-            </p>
+            <p className="text-slate-600 text-sm sm:text-base mb-6 max-w-lg mx-auto leading-relaxed">{ui.ctaText}</p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <Link
-                href="/business/ai-visibility-checker"
+                href={ui.links.check}
                 className="inline-block rounded-xl bg-violet-600 hover:bg-violet-500 text-white px-8 py-3.5 text-sm font-semibold shadow-lg shadow-violet-600/30 transition-colors"
               >
-                Check my AI visibility →
+                {ui.ctaCheck}
               </Link>
               <Link
-                href="/business/ai-crawler-checker"
+                href={ui.links.crawlers}
                 className="inline-block rounded-xl border border-black/10 bg-white hover:bg-[#f8f7f6] px-8 py-3.5 text-sm font-semibold transition-colors"
               >
-                Am I blocking AI crawlers?
+                {ui.ctaCrawlers}
               </Link>
             </div>
           </div>
 
           {related.length > 0 && (
             <div className="mt-12 pt-8 border-t border-black/10">
-              <h2 className="text-sm font-bold uppercase tracking-widest text-slate-400 mb-5">Keep reading</h2>
+              <h2 className="text-sm font-bold uppercase tracking-widest text-slate-400 mb-5">{ui.keepReading}</h2>
               <div className="grid sm:grid-cols-2 gap-4">
                 {related.map((r) => (
                   <Link
@@ -235,8 +294,8 @@ export default async function BusinessBlogPostPage({ params }: { params: Promise
       <footer className="border-t border-black/10 px-6 py-8 text-center text-slate-500 text-sm bg-[#ebe9e5]">
         <div className="max-w-6xl mx-auto">
           © 2026 ItGrows.ai ·{" "}
-          <Link href="/business" className="hover:text-[#1b1916] transition-colors">ItGrows for Business</Link>{" · "}
-          <Link href="/business/blog" className="hover:text-[#1b1916] transition-colors">All articles</Link>
+          <Link href={ui.links.home} className="hover:text-[#1b1916] transition-colors">{ui.home}</Link>{" · "}
+          <Link href="/business/blog" className="hover:text-[#1b1916] transition-colors">{ui.allArticles}</Link>
         </div>
       </footer>
     </div>

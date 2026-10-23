@@ -3,7 +3,8 @@ import { noteCrawler } from "@/lib/crawler-log"
 import Link from "next/link"
 import { db } from "@/lib/db"
 import { blogPosts } from "@/lib/db/schema"
-import { and, desc, eq, ne, or } from "drizzle-orm"
+import { and, desc, eq, isNull, ne, or, sql } from "drizzle-orm"
+import { GEO_PRICES } from "@/lib/geo-pricing"
 
 // itgrows.ai internal blog owner — only their posts are publicly accessible at /blog
 const ITGROWS_OWNER_USER_ID = "7cd0011c-fadd-4ff5-bd1e-6445fea70b22"
@@ -16,6 +17,33 @@ function formatDate(date: Date): string {
     month: "long",
     day: "numeric",
   })
+}
+
+// FAQPage data from the article's FAQ section (German articles head it "Häufig gestellte Fragen").
+// Our generator renders FAQ questions as bold paragraphs (**Q**  ->  <p><strong>Q</strong></p>); the
+// answer follows in the next paragraph or, in some articles, in the question's own paragraph. Older
+// content used <h3> questions. Supports all three.
+const FAQ_SECTION = /<h2[^>]*>[^<]*(?:frequently asked questions|\bfaqs?\b|häufig gestellte fragen|häufige fragen)[^<]*<\/h2>([\s\S]*)/i
+
+function extractFaq(content: string): Array<{ question: string; answer: string }> {
+  const section = content.match(FAQ_SECTION)?.[1]
+  if (!section) return []
+  const items: Array<{ question: string; answer: string }> = []
+  const patterns = [
+    /<p[^>]*>\s*<strong>([\s\S]*?)<\/strong>\s*(?:<\/p>\s*<p[^>]*>)?([\s\S]*?)<\/p>/gi, // bold-paragraph questions
+    /<h3[^>]*>([\s\S]*?)<\/h3>\s*<p[^>]*>([\s\S]*?)<\/p>/gi,                                   // legacy h3 questions
+  ]
+  for (const pattern of patterns) {
+    for (const m of section.matchAll(pattern)) {
+      if (items.length >= 5) break
+      const question = m[1].replace(/<[^>]+>/g, "").trim()
+      const answer = m[2].replace(/<[^>]+>/g, "").trim()
+      // Only keep genuine Q/A pairs (a question ends with "?"); skips the CTA strong-line.
+      if (question.endsWith("?") && answer) items.push({ question, answer })
+    }
+    if (items.length > 0) break
+  }
+  return items
 }
 
 // Must run per request: a prerendered response is served from the CDN and never
@@ -91,9 +119,10 @@ function ReadNext({ current, related }: { current: BlogRow; related: BlogRow[] }
             <p className="text-[#1b1916] font-semibold mb-2">We do this for companies.</p>
             <p className="text-sm text-[#1b1916]/70 leading-relaxed mb-4">
               Answer-shaped articles published on your own domain, so an assistant has something of
-              yours to quote. $499 a month.
+              yours to quote. {GEO_PRICES.month.label} a month plus a one-time {GEO_PRICES.setup.label} setup;
+              the setup is included with 3 months or a year.
             </p>
-            <Link href="/business" className="inline-flex items-center gap-2 rounded-xl bg-violet-600 hover:bg-violet-500 text-white px-5 py-2.5 text-sm font-semibold transition-colors">
+            <Link href="/" className="inline-flex items-center gap-2 rounded-xl bg-violet-600 hover:bg-violet-500 text-white px-5 py-2.5 text-sm font-semibold transition-colors">
               See how it works →
             </Link>
           </>
@@ -105,7 +134,7 @@ function ReadNext({ current, related }: { current: BlogRow; related: BlogRow[] }
               quoting somebody. We measured our own logs: AI crawlers read our sites roughly 370
               times more often than Google does.
             </p>
-            <Link href="/business" className="inline-flex items-center gap-2 text-violet-600 hover:text-violet-500 font-semibold text-sm transition-colors">
+            <Link href="/" className="inline-flex items-center gap-2 text-violet-600 hover:text-violet-500 font-semibold text-sm transition-colors">
               Why assistants name some companies and not others →
             </Link>
           </>
@@ -130,7 +159,9 @@ export default async function BlogPostPage({
 
   // Two more from the same blog, most recent first, excluding this one. Matching on shared
   // keywords would be better; the table has no index for it, so recency is the cheap honest
-  // version rather than a slow clever one.
+  // version rather than a slow clever one. Only live posts (a merged one would just redirect) in
+  // this post's language.
+  const lang = post?.lang ?? "en"
   const related = post
     ? await db
         .select({
@@ -140,7 +171,14 @@ export default async function BlogPostPage({
           keyword: blogPosts.keyword,
         })
         .from(blogPosts)
-        .where(and(eq(blogPosts.siteSlug, post.siteSlug ?? "itgrows"), ne(blogPosts.slug, slug)))
+        .where(
+          and(
+            eq(blogPosts.siteSlug, post.siteSlug ?? "itgrows"),
+            ne(blogPosts.slug, slug),
+            isNull(blogPosts.redirectTo),
+            sql`coalesce(${blogPosts.lang}, 'en') = ${lang}`,
+          ),
+        )
         .orderBy(desc(blogPosts.publishedAt))
         .limit(2)
     : []
@@ -157,6 +195,7 @@ export default async function BlogPostPage({
     description: post.metaDescription || post.title,
     datePublished: post.publishedAt.toISOString(),
     dateModified: post.publishedAt.toISOString(),
+    inLanguage: lang,
     publisher: {
       "@type": "Organization",
       name: "ItGrows.ai",
@@ -171,29 +210,7 @@ export default async function BlogPostPage({
       : {}),
   }
 
-  // Extract FAQ items from the article for FAQPage structured data.
-  // Our generator renders FAQ questions as bold paragraphs (**Q**  ->  <p><strong>Q</strong></p>)
-  // followed by a <p> answer; older content used <h3> questions. Support both formats.
-  const faqItems: Array<{ question: string; answer: string }> = []
-  const faqSectionMatch = post.content.match(/<h2[^>]*>[^<]*(?:frequently asked questions|faq)[^<]*<\/h2>([\s\S]*)/i)
-  if (faqSectionMatch) {
-    const faqPatterns = [
-      /<p[^>]*>\s*<strong>([\s\S]*?)<\/strong>\s*<\/p>\s*<p[^>]*>([\s\S]*?)<\/p>/gi, // bold-paragraph questions
-      /<h3[^>]*>([\s\S]*?)<\/h3>\s*<p[^>]*>([\s\S]*?)<\/p>/gi,                        // legacy h3 questions
-    ]
-    for (const faqRegex of faqPatterns) {
-      let faqMatch
-      while ((faqMatch = faqRegex.exec(faqSectionMatch[1])) !== null && faqItems.length < 5) {
-        const question = faqMatch[1].replace(/<[^>]+>/g, "").trim()
-        const answer = faqMatch[2].replace(/<[^>]+>/g, "").trim()
-        // Only keep genuine Q/A pairs (a question ends with "?"); skips the CTA strong-line.
-        if (question.endsWith("?") && answer) {
-          faqItems.push({ question, answer })
-        }
-      }
-      if (faqItems.length > 0) break
-    }
-  }
+  const faqItems = extractFaq(post.content)
 
   const faqSchema = faqItems.length > 0
     ? {
@@ -215,7 +232,10 @@ export default async function BlogPostPage({
   const readingTimeMin = Math.max(1, Math.round(wordCount / 200))
 
   return (
-    <div className="min-h-screen bg-[#f3f2f1] text-[#1b1916]">
+    <div lang={lang} className="min-h-screen bg-[#f3f2f1] text-[#1b1916]">
+      {/* app/layout.tsx sets <html lang="en"> for every route; this states the post's own language
+          (Bing reads it). React moves it into <head>. */}
+      <meta httpEquiv="content-language" content={lang} />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }}
