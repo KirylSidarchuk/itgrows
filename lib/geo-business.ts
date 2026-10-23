@@ -59,6 +59,12 @@ const PRODUCTS = {
       "Articles on your own domain that answer your buyers' questions, crawler and indexing fixes, and a weekly check of ChatGPT, Claude, Gemini and Perplexity.",
     metadata: { product: GEO_PLAN },
   },
+  setup: {
+    name: "ItGrows for Business — one-time setup",
+    description:
+      "Your site and its indexes made ready for the AI assistants: crawler access, sitemaps, Bing and Google, the blog. Delivered as a launch report. One-time.",
+    metadata: { product: GEO_PLAN, kind: "setup" },
+  },
   research: {
     name: "AI visibility report",
     description:
@@ -70,6 +76,7 @@ const PRODUCTS = {
 /** The product a new price goes under: the plan's prices share the product of the monthly one. */
 async function productFor(stripe: Stripe, kind: PriceKind): Promise<string> {
   if (kind === "research") return (await stripe.products.create(PRODUCTS.research)).id
+  if (kind === "setup") return (await stripe.products.create(PRODUCTS.setup)).id
   if (kind === "month") return (await stripe.products.create(PRODUCTS.plan)).id
   const month = await stripe.prices.retrieve(await geoPriceId(stripe, "month"))
   return typeof month.product === "string" ? month.product : month.product.id

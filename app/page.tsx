@@ -4,7 +4,7 @@ import { db } from "@/lib/db"
 import { blogPosts } from "@/lib/db/schema"
 import { and, desc, eq, isNull } from "drizzle-orm"
 import AuditForm from "./business/AuditForm"
-import LeadForm from "./business/LeadForm"
+import ContactForm from "./business/ContactForm"
 import HashForward from "./_home/HashForward"
 import SignIn from "./_home/SignIn"
 import SiteFooter from "./_home/SiteFooter"
@@ -15,7 +15,7 @@ import { CREDIT_DAYS, GEO_PRICES, SAMPLE_PATH } from "@/lib/geo-pricing"
 
 // The front door says what ItGrows is first: AI visibility for companies. The LinkedIn/X product
 // lives at /personal, one click away from here and from the sign-in menu. Since 22 Oct 2026 this is
-// also the AI-visibility page: /business redirects here (next.config.ts), so its request form (#apply)
+// also the AI-visibility page: /business redirects here (next.config.ts), so its contact form (#apply)
 // and its questions live on this page.
 
 const BASE = "https://www.itgrows.ai"
@@ -43,13 +43,49 @@ export const metadata: Metadata = {
   },
 }
 
-const CASES = [
+const CASES: { site: string; href?: string; kind: string; n: string; l: string }[] = [
   { site: "freightsizer.ai", kind: "B2B SaaS", n: "2", l: "new B2B customers in one month, both from ChatGPT" },
   { site: "magiscan.app", kind: "iOS app", n: "Hundreds", l: "of installs a month from ChatGPT, Claude and Gemini" },
-  { site: "appslift.com", kind: "App store optimisation", n: "2–5", l: "leads a month from AI assistants" },
+  {
+    site: "pickaclass.com",
+    href: "https://www.pickaclass.com",
+    kind: "Course marketplace",
+    n: "1,918",
+    l: "times AI assistants opened its pages while answering someone, in two weeks",
+  },
 ]
 
 const R = GEO_PRICES.research
+
+const ICON = "h-6 w-6"
+const QUICK_CHECKS = [
+  {
+    href: "/business/ai-visibility-checker",
+    title: "Does ChatGPT name you?",
+    line: "Five questions your buyers would ask, put live to ChatGPT and Perplexity.",
+    icon: (
+      <svg viewBox="0 0 24 24" className={ICON} fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+        <path d="M20.5 11.5a8.5 8.5 0 0 1-12.3 7.6L3.5 20.5l1.4-4.4a8.5 8.5 0 1 1 15.6-4.6z" />
+        <path d="M8.5 11.8l2.4 2.4 4.6-4.6" />
+      </svg>
+    ),
+  },
+  {
+    href: "/business/ai-crawler-checker",
+    title: "Can AI crawlers read your site?",
+    line: "Your sitemap pages against robots.txt for GPTBot, ClaudeBot, PerplexityBot and more.",
+    icon: (
+      <svg viewBox="0 0 24 24" className={ICON} fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+        <rect x="5" y="8" width="14" height="11" rx="3" />
+        <path d="M12 8V5" />
+        <circle cx="12" cy="4" r="1" />
+        <path d="M2.5 12.5v3M21.5 12.5v3M9.5 16h5" />
+        <circle cx="9.5" cy="12.5" r="0.9" fill="currentColor" stroke="none" />
+        <circle cx="14.5" cy="12.5" r="0.9" fill="currentColor" stroke="none" />
+      </svg>
+    ),
+  },
+]
 
 const FAQ = [
   { q: "What is ItGrows?", a: ENTITY_ABOUT[0] },
@@ -211,7 +247,7 @@ export default async function Home() {
           <h2 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-white text-center">What clients report</h2>
           <div className="grid md:grid-cols-3 gap-4 sm:gap-5 mt-10">
             {CASES.map((c) => (
-              <a key={c.site} href={`https://${c.site}`} target="_blank" rel="noopener" className="block rounded-2xl bg-white/[0.06] border border-white/10 hover:bg-white/[0.09] p-6">
+              <a key={c.site} href={c.href ?? `https://${c.site}`} target="_blank" rel="noopener" className="block rounded-2xl bg-white/[0.06] border border-white/10 hover:bg-white/[0.09] p-6">
                 <p className="text-[11px] uppercase tracking-wide font-bold text-slate-400">{c.kind}</p>
                 <p className="text-xl font-extrabold text-white mt-1">{c.site} ↗</p>
                 <div className="mt-5 text-4xl sm:text-5xl font-extrabold tracking-tighter bg-gradient-to-r from-violet-400 to-cyan-300 bg-clip-text text-transparent">{c.n}</div>
@@ -219,7 +255,7 @@ export default async function Home() {
               </a>
             ))}
           </div>
-          <p className="text-center text-xs text-slate-500 mt-6">As reported by the clients.</p>
+          <p className="text-center text-xs text-slate-500 mt-6">As reported by the clients; pickaclass.com from its server log, August 2026.</p>
         </div>
       </section>
 
@@ -234,14 +270,15 @@ export default async function Home() {
         <p className="text-center text-xs text-slate-500 mt-2">LinkedIn &amp; X ghostwriting: Personal $49 · Duo $99 · All-in $199 — <Link href="/personal#pricing" className="underline">see plans</Link></p>
       </section>
 
-      {/* The request form: talking to us before paying (it was the heart of /business) */}
+      {/* The contact form: any question before paying. The id stays "apply": the pricing cards and
+          the crawler result link here. */}
       <section id="apply" className="px-4 sm:px-6 py-14 sm:py-20 scroll-mt-20" style={{ backgroundColor: "#ebe9e5" }}>
         <div className="max-w-xl mx-auto">
-          <h2 className="text-2xl sm:text-4xl font-extrabold mb-3 tracking-tight text-center">Request access</h2>
+          <h2 className="text-2xl sm:text-4xl font-extrabold mb-3 tracking-tight text-center">Write to us</h2>
           <p className="text-slate-600 text-center mb-8 text-sm sm:text-base">
-            Tell us about your site. We reply within a day. If it does not fit, we will say so.
+            Questions about your site, the plan or anything else. We reply within a day.
           </p>
-          <LeadForm />
+          <ContactForm />
         </div>
       </section>
 
@@ -262,33 +299,29 @@ export default async function Home() {
         </div>
       </section>
 
-      <section id="geo-tools" className="px-4 sm:px-6 py-14 scroll-mt-20" style={{ backgroundColor: "#ebe9e5" }}>
-        <div className="max-w-5xl mx-auto">
-          <h2 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-center">Check your site</h2>
-          <div className="grid md:grid-cols-3 gap-4 mt-10">
-            <Link href="/business/ai-visibility-checker" className="rounded-2xl bg-white border border-black/10 p-5 hover:border-violet-300">
-              <p className="font-bold">AI visibility checker</p>
-              <p className="text-sm text-slate-600 mt-2">Does ChatGPT name your business? Five of your buyers&apos; questions, answered live. No signup.</p>
-            </Link>
-            <Link href="/business/ai-crawler-checker" className="rounded-2xl bg-white border border-black/10 p-5 hover:border-violet-300">
-              <p className="font-bold">AI crawler checker</p>
-              <p className="text-sm text-slate-600 mt-2">Can GPTBot, ClaudeBot and PerplexityBot read your pages? Including robots.txt rules that block more than you meant.</p>
-            </Link>
-            <div className="rounded-2xl bg-white border border-black/10 p-5 flex flex-col">
-              <p className="font-bold">Detailed report · {R.label}</p>
-              <p className="text-sm text-slate-600 mt-2">
-                20 questions × ChatGPT, Claude, Gemini and Perplexity × 3 asks: who is named, who is quoted instead, and our plan for
-                your site. Built when you create an account; the totals are open.
-              </p>
-              <p className="mt-auto pt-3 text-sm font-semibold flex flex-wrap gap-x-4 gap-y-1">
-                <Link href="/signup?from=ai-check&callbackUrl=%2Fbusiness%2Fdashboard%2Fvisibility" className="text-violet-700 hover:underline">
-                  Create account →
-                </Link>
-                <Link href={SAMPLE_PATH} className="text-violet-700 hover:underline">
-                  See a real report →
-                </Link>
-              </p>
-            </div>
+      <section id="geo-tools" className="px-4 sm:px-6 py-12 sm:py-14 scroll-mt-20" style={{ backgroundColor: "#ebe9e5" }}>
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-center">Two quick checks</h2>
+          <p className="text-sm sm:text-base text-slate-600 text-center mt-2">Enter your site, see the answer. No signup.</p>
+          <div className="grid sm:grid-cols-2 gap-4 mt-8">
+            {QUICK_CHECKS.map((c) => (
+              <Link
+                key={c.href}
+                href={c.href}
+                className="group flex items-start gap-4 rounded-2xl bg-white border border-black/10 p-5 sm:p-6 transition duration-200 hover:-translate-y-1 hover:border-violet-300 hover:shadow-lg hover:shadow-violet-600/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400"
+              >
+                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-violet-100 text-violet-600 ring-4 ring-violet-50">
+                  {c.icon}
+                </span>
+                <span className="min-w-0">
+                  <span className="block font-bold text-base sm:text-lg leading-snug">{c.title}</span>
+                  <span className="block text-sm text-slate-600 mt-1 leading-relaxed">{c.line}</span>
+                  <span className="inline-flex items-center gap-1 mt-3 text-sm font-semibold text-violet-700">
+                    Run it <span aria-hidden className="transition-transform duration-200 group-hover:translate-x-1">→</span>
+                  </span>
+                </span>
+              </Link>
+            ))}
           </div>
         </div>
       </section>

@@ -33,10 +33,8 @@ const COLUMNS: { title: string; links: { href: string; label: string }[] }[] = [
     title: "Company",
     links: [
       { href: "/about", label: "About" },
-      { href: "mailto:kiryl@itgrows.ai", label: "kiryl@itgrows.ai" },
       { href: "/privacy", label: "Privacy" },
       { href: "/terms", label: "Terms" },
-      { href: "/llms.txt", label: "llms.txt" },
     ],
   },
 ]
@@ -63,11 +61,7 @@ export default function SiteFooter() {
                 <ul className="mt-4 space-y-2.5 text-sm">
                   {c.links.map((l) => (
                     <li key={l.href}>
-                      {l.href.startsWith("mailto:") || l.href.endsWith(".txt") ? (
-                        <a href={l.href} className="hover:text-white transition-colors">{l.label}</a>
-                      ) : (
-                        <Link href={l.href} className="hover:text-white transition-colors">{l.label}</Link>
-                      )}
+                      <Link href={l.href} className="hover:text-white transition-colors">{l.label}</Link>
                     </li>
                   ))}
                 </ul>

@@ -57,11 +57,17 @@ function bareDomain(raw: string) {
     .split(/[/?#]/)[0]
 }
 
+/** Someone checking our own site gets a wink instead of a check: no API is called for it. */
+function isOurSite(raw: string) {
+  return bareDomain(raw).replace(/:\d+$/, "").replace(/\.$/, "") === "itgrows.ai"
+}
+
 export default function AuditForm() {
   const [url, setUrl] = useState("")
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState("")
   const [data, setData] = useState<Audit | null>(null)
+  const [ours, setOurs] = useState(false)
   const urlRef = useRef<HTMLInputElement>(null)
 
   const [reportEmail, setReportEmail] = useState("")
@@ -202,6 +208,21 @@ export default function AuditForm() {
   async function run(e?: React.FormEvent) {
     e?.preventDefault()
     if (!url.trim() || busy) return
+    if (isOurSite(url)) {
+      // No check, no API call, no tracking: a friendly card where the results would be.
+      aiToken.current++
+      setAiOn(false)
+      setAi(null)
+      setError("")
+      setData(null)
+      setOurs(true)
+      setTimeout(() => {
+        urlRef.current?.focus()
+        urlRef.current?.select()
+      }, 0)
+      return
+    }
+    setOurs(false)
     setBusy(true)
     setError("")
     setData(null)
@@ -275,6 +296,15 @@ export default function AuditForm() {
         </div>
         {error && <p className="text-sm text-red-600 mt-3">{error}</p>}
       </form>
+
+      {ours && (
+        <div role="status" className="mt-5 rounded-2xl border border-violet-200 bg-violet-50/70 px-5 py-5 text-center">
+          <p className="font-extrabold text-base sm:text-lg leading-snug text-[#1b1916]">That&apos;s us — and we&apos;re doing just fine 🙂</p>
+          <p className="text-sm text-slate-600 mt-1.5">
+            Try your own site: <span aria-hidden className="text-violet-600 font-bold">↑</span>
+          </p>
+        </div>
+      )}
 
       {aiOn && (
         <div ref={aiRef} className="mt-5 scroll-mt-24">

@@ -20,7 +20,8 @@ export type GeoInterval = "month" | "quarter" | "year"
 
 export const GEO_PRICES = {
   research: { cents: 4990, label: "$49.90", lookupKey: "itgrows_geo_research_4990" },
-  setup: { cents: 49900, label: "$499", lookupKey: "itgrows_geo_setup_499" },
+  // v2: its own product, so the checkout line reads as the setup rather than a second month of the plan.
+  setup: { cents: 49900, label: "$499", lookupKey: "itgrows_geo_setup_499_v2" },
   month: { cents: 49900, label: "$499", perMonth: "$499", lookupKey: "itgrows_business_499_monthly", interval: "month", intervalCount: 1 },
   quarter: { cents: 149700, label: "$1,497", perMonth: "$499", lookupKey: "itgrows_business_1497_quarterly", interval: "month", intervalCount: 3 },
   year: { cents: 478800, label: "$4,788", perMonth: "$399", lookupKey: "itgrows_business_4788_yearly", interval: "year", intervalCount: 1 },
