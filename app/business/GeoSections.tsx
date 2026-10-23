@@ -234,58 +234,86 @@ const VERSUS = [
   { a: "You pay for words", b: "You pay to be findable", k: "What you pay for", d: "Being findable, readable and quotable, and an honest count of whether you are named." },
 ]
 
-function Mark({ yes }: { yes?: boolean }) {
-  return (
-    <span
-      aria-hidden
-      className={`mt-px w-5 h-5 shrink-0 rounded-full flex items-center justify-center text-[11px] font-bold ${
-        yes ? "bg-violet-600 text-white" : "bg-slate-200 text-slate-500"
-      }`}
-    >
-      {yes ? "✓" : "✕"}
-    </span>
-  )
-}
-
 /**
- * Row pairs: ✕ what an article-only service does, ✓ what the plan does, 2–5 words each. Tapping a
- * row opens the detail under it. Same two columns on desktop and phone; the phrases are short enough.
+ * Seven contrasts as cards, then the one that sums them up. A card: what the plan does (bold), the
+ * detail, and under a rule what an article-only service does instead. The first card spans both
+ * columns; the last pair ("what you pay for") closes the block on dark. No disclosure: the detail is
+ * what makes each short phrase readable, so it stays visible (and in the HTML for crawlers).
  */
 export function VersusArticles({ id }: { id?: string }) {
+  const m = {
+    h2: "Why this is not paying for articles",
+    colA: "Article-only service",
+    colB: "ItGrows plan",
+    rows: VERSUS,
+    footnote: "Some agencies do more than write. Ask them for last week's count against day 0.",
+  }
+  const cards = m.rows.slice(0, -1)
+  const last = m.rows[m.rows.length - 1]
   return (
     <section id={id} className="px-4 sm:px-6 py-14 sm:py-20 scroll-mt-20" style={{ backgroundColor: "#ebe9e5" }}>
-      <div className="max-w-3xl mx-auto">
-        <h2 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-center mb-10">Why this is not paying for articles</h2>
-        <div className="bg-white border border-black/10 rounded-2xl overflow-hidden">
-          <div className="flex text-[11px] uppercase tracking-wide font-bold border-b border-black/10">
-            <div className="flex-1 basis-0 px-3 sm:px-5 py-3 text-slate-500">Article-only service</div>
-            <div className="flex-1 basis-0 px-3 sm:px-5 py-3 text-violet-700 bg-violet-50/70">ItGrows plan</div>
-            <div className="w-9 sm:w-11 shrink-0 bg-violet-50/70" />
-          </div>
-          {VERSUS.map((r) => (
-            <details key={r.k} className="group border-b border-black/5 last:border-0">
-              <summary className={`${SUMMARY} flex items-stretch text-sm`}>
-                <span className="flex-1 basis-0 px-3 sm:px-5 py-3 flex gap-2 sm:gap-2.5 text-slate-500">
-                  <Mark />
-                  <span>{r.a}</span>
-                </span>
-                <span className="flex-1 basis-0 px-3 sm:px-5 py-3 flex gap-2 sm:gap-2.5 font-semibold text-[#1b1916] bg-violet-50/70">
-                  <Mark yes />
-                  <span>{r.b}</span>
-                </span>
-                <span className="w-9 sm:w-11 shrink-0 bg-violet-50/70 flex items-center justify-center text-violet-600 text-lg leading-none" aria-hidden>
-                  <span className="transition-transform group-open:rotate-45">+</span>
-                </span>
-              </summary>
-              <p className="px-3 sm:px-5 py-3 text-sm text-slate-600 leading-relaxed bg-violet-50/40 border-t border-black/5">
-                <b className="text-[#1b1916]">{r.k}.</b> {r.d}
-              </p>
-            </details>
-          ))}
+      <div className="max-w-4xl mx-auto">
+        <h2 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-center mb-10">{m.h2}</h2>
+        <div className="grid sm:grid-cols-2 gap-3 sm:gap-4">
+          {cards.map((r, i) => {
+            const hero = i === 0
+            return (
+              <div
+                key={r.k}
+                className={`flex flex-col rounded-2xl border p-5 sm:p-6 ${
+                  hero ? "sm:col-span-2 bg-gradient-to-br from-violet-600 to-violet-700 border-violet-700 text-white shadow-lg shadow-violet-600/20" : "bg-white border-black/10"
+                }`}
+              >
+                <div className="flex items-start gap-3">
+                  <span
+                    aria-hidden
+                    className={`mt-1 w-6 h-6 shrink-0 rounded-full flex items-center justify-center text-xs font-bold ${
+                      hero ? "bg-white text-violet-700" : "bg-violet-600 text-white"
+                    }`}
+                  >
+                    ✓
+                  </span>
+                  <p className={`font-extrabold tracking-tight leading-tight ${hero ? "text-2xl sm:text-3xl" : "text-lg sm:text-xl text-[#1b1916]"}`}>{r.b}</p>
+                </div>
+                <p className={`text-sm leading-relaxed mt-2.5 ${hero ? "text-violet-100 sm:text-base" : "text-slate-600"}`}>
+                  <b className={hero ? "text-white" : "text-[#1b1916]"}>{/[.?!]$/.test(r.k) ? r.k : `${r.k}.`}</b> {r.d}
+                </p>
+                <div className="mt-auto pt-4">
+                  <p className={`border-t pt-3 flex items-center gap-2 text-sm ${hero ? "border-white/20 text-violet-200" : "border-black/[0.07] text-slate-500"}`}>
+                    <span
+                      aria-hidden
+                      className={`w-5 h-5 shrink-0 rounded-full flex items-center justify-center text-[10px] font-bold ${
+                        hero ? "bg-white/15 text-white" : "bg-rose-50 text-rose-500"
+                      }`}
+                    >
+                      ✕
+                    </span>
+                    <span className={`text-[10px] font-bold uppercase tracking-wider shrink-0 ${hero ? "text-violet-300" : "text-slate-400"}`}>{m.colA}:</span>
+                    <span>{r.a}</span>
+                  </p>
+                </div>
+              </div>
+            )
+          })}
         </div>
-        <p className="text-center text-xs sm:text-sm text-slate-500 mt-5">
-          Some agencies do more than write. Ask them for last week&apos;s count against day 0.
-        </p>
+
+        <div className="mt-3 sm:mt-4 rounded-2xl px-5 py-6 sm:px-8 sm:py-8" style={{ backgroundColor: "#1b1916" }}>
+          <p className="text-[11px] font-bold uppercase tracking-widest text-slate-500 text-center">{last.k}</p>
+          <div className="mt-4 grid sm:grid-cols-2 gap-5 sm:gap-0 items-center text-center">
+            <div className="sm:pr-6">
+              <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500">{m.colA}</p>
+              <p className="mt-1.5 text-xl sm:text-2xl font-bold text-slate-500 line-through decoration-rose-500/70 decoration-2">{last.a}</p>
+            </div>
+            <div className="sm:pl-6 sm:border-l sm:border-white/10">
+              <p className="text-[11px] font-bold uppercase tracking-wider text-violet-300">{m.colB}</p>
+              <p className="mt-1.5 text-2xl sm:text-3xl font-extrabold tracking-tight leading-tight bg-gradient-to-r from-violet-300 to-cyan-300 bg-clip-text text-transparent">
+                {last.b}
+              </p>
+            </div>
+          </div>
+          <p className="mt-5 text-sm text-slate-400 leading-relaxed text-center max-w-xl mx-auto">{last.d}</p>
+        </div>
+        <p className="text-center text-xs sm:text-sm text-slate-500 mt-5">{m.footnote}</p>
       </div>
     </section>
   )
