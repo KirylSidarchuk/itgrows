@@ -34,6 +34,23 @@ const DOT = { bad: "bg-red-500", good: "bg-green-500", warn: "bg-amber-500" } as
 // can measure — asking a stranger to request a $499/mo service after two clicks is far too rare
 // an event to tell us which keyword did the work.
 const REPORT_CONVERSION = "AW-18160234884/GnV1COO4h-AcEITjvNND"
+// "GEO check done": the quick check came back with the assistants' answers. Once per site per page,
+// so the ads can be judged by the cost of one finished check. gtag runs under Consent Mode basic
+// (app/layout.tsx): the call is queued and reaches Google only after "Accept".
+const CHECK_CONVERSION = "AW-18160234884/jlHTCPW47qYdEITjvNND"
+const checksCounted = new Set<string>()
+
+function countCheck(domain: string | undefined) {
+  const key = domain || "?"
+  if (checksCounted.has(key)) return
+  checksCounted.add(key)
+  try {
+    const w = window as unknown as { gtag?: (...args: unknown[]) => void }
+    w.gtag?.("event", "conversion", { send_to: CHECK_CONVERSION })
+  } catch {
+    // Analytics never gets in the way.
+  }
+}
 
 // How long the page follows an instant check before calling it failed. The VM keeps working, and a
 // retry within a day returns its answers at once.
@@ -174,6 +191,7 @@ export default function AuditForm() {
     if (aiToken.current !== token) return
     if (v.status === "done") {
       track("geo_teaser_done", { domain: v.domain, named: v.summary?.named, of: v.summary?.of, ms: Date.now() - t0 })
+      countCheck(v.domain)
     } else {
       track("geo_teaser_failed", { domain: v.domain ?? bareDomain(target), error: v.error, ms: Date.now() - t0 })
     }
