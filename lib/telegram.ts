@@ -1,13 +1,16 @@
 import { after } from "next/server"
 
 // Owner alerts in Telegram. Kept tiny and fire-and-forget: an alert must never
-// break or slow the flow it reports on. TELEGRAM_BOT_TOKEN wins when set; until it is
-// added in Vercel the bot's own token is the fallback (it is in git history anyway).
+// break or slow the flow it reports on. The bot token comes only from TELEGRAM_BOT_TOKEN (set in
+// Vercel since 23 Oct 2026, a new bot); without it alerts are skipped, never sent with a token in code.
 const OWNER_CHAT = "372194458"
-const FALLBACK_TOKEN = "8213146538:AAH9ceXiIQ62-ICZJlUFx0psyd2nYq1gN7g"
 
 async function deliver(chatId: string, payload: Record<string, unknown>): Promise<void> {
-  const token = process.env.TELEGRAM_BOT_TOKEN?.trim() || FALLBACK_TOKEN
+  const token = process.env.TELEGRAM_BOT_TOKEN?.trim()
+  if (!token) {
+    console.warn("[telegram] TELEGRAM_BOT_TOKEN is not set; owner alert skipped")
+    return
+  }
   const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
