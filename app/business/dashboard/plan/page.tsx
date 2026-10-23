@@ -66,7 +66,8 @@ function chosenInterval(params: URLSearchParams): Interval | null {
 }
 
 // The places the assistants quote instead of the client, by the type lib/geo_check gives a source.
-// We prepare everything; from the client only what needs their own login or approval.
+// We prepare everything; from the client only what needs their own login or approval. A competitor
+// is never a place: its site is a question our own article answers better (a step in the report).
 const PLACE: Record<string, { tag: string; what: string; we: string; you: string }> = {
   directory: {
     tag: "Directory & reviews",
@@ -85,6 +86,12 @@ const PLACE: Record<string, { tag: string; what: string; we: string; you: string
     what: "An article or guide that lists providers.",
     we: "We find the article that covers your service and its editor, and write the letter to the editor.",
     you: "Approving the letter: it goes out from your address.",
+  },
+  news: {
+    tag: "News & media",
+    what: "A news site the assistants quote.",
+    we: "We find the journalist who covers your field and write the pitch: a story, data or a comment they can use.",
+    you: "Approving the pitch: it goes out from your address.",
   },
   community: {
     tag: "Community",
@@ -119,7 +126,9 @@ function plan(site: SiteReport) {
     .map((r) => r.q)
     .slice(0, 5)
   const own = (d: string) => d === site.domain || d.endsWith(`.${site.domain}`)
-  const places = (full.summary.sources ?? []).filter((s) => PLACE[s.type] && !own(s.domain)).slice(0, MAX_PLACES)
+  const places = (full.summary.sources ?? [])
+    .filter((s) => s.type !== "competitor" && PLACE[s.type] && !own(s.domain))
+    .slice(0, MAX_PLACES)
   return { questions, places, placesMore: full.summary.sourcesMore ?? 0 }
 }
 
@@ -158,7 +167,7 @@ function Places({
                   {working && <span className={`${chip} text-green-800 bg-green-50 border border-green-200`}>We&apos;re on it</span>}
                 </div>
                 <p className="text-xs text-slate-500 mt-1">
-                  {t.what} Cited in {p.count} answer{p.count === 1 ? "" : "s"} to your buyers&apos; questions.
+                  {`${t.what} Cited in ${p.count} answer${p.count === 1 ? "" : "s"} to your buyers' questions.`}
                 </p>
                 <p className="text-sm text-slate-600 leading-relaxed mt-2">
                   <span className={lead}>We do: </span>

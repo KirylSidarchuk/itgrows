@@ -524,6 +524,7 @@ const TYPE: Record<string, { tag: string; what: string }> = {
   directory: { tag: "Directory & reviews", what: "A directory with reviews: the assistants read the profiles here." },
   competitor: { tag: "Competitor", what: "A competitor answering your buyers' question on its own site." },
   roundup: { tag: "Media & guides", what: "An article or guide that lists providers." },
+  news: { tag: "News & media", what: "A news site the assistants quote." },
   marketplace: { tag: "Marketplace", what: "A marketplace: the assistants read the listings here." },
   community: { tag: "Community", what: "Discussions the assistants read." },
   video: { tag: "Video", what: "A video that answers these questions." },
@@ -1060,7 +1061,9 @@ export function planSteps(site: SiteReport, audit: Audit | "failed" | undefined)
   })
 
   // The places the assistants quote instead of you: we prepare everything; from the owner only
-  // what needs their own login or approval.
+  // what needs their own login or approval. Only a directory or marketplace becomes a profile or
+  // listing step; a competitor's site becomes an article of ours, never a listing; a news site
+  // becomes a pitch to its journalist.
   const listings: Step[] = []
   const rivals: Step[] = []
   const media: Step[] = []
@@ -1121,6 +1124,24 @@ export function planSteps(site: SiteReport, audit: Audit | "failed" | undefined)
         }`,
         change: `If the editor uses it, the answers that quote ${m.domain} find you mentioned there.`,
         you: "Approving the letter: it goes out from your address.",
+      })
+    }
+    const news = s.sources.find((x) => x.type === "news")
+    if (news) {
+      const c = citing(l.rows, news.domain)
+      media.push({
+        id: `news:${news.domain}`,
+        kind: "place",
+        tag: "PR",
+        title: `A story or comment for ${news.domain}`,
+        we: `We find the journalist at ${news.domain} who covers your field and write the pitch: a story, data or a comment they can use.`,
+        why: `A news site the assistants quote: ${
+          c.n
+            ? `cited in ${answers(c.n)} for your questions; you're named in ${c.named ? `${c.named} of them` : "none of them"}.`
+            : `cited in ${answers(news.count)} for your questions.`
+        }`,
+        change: "If the journalist uses it, you're mentioned on a news site the assistants already quote.",
+        you: "Approving the pitch: it goes out from your address.",
       })
     }
   }
