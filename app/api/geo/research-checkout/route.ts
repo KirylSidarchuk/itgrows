@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import type Stripe from "stripe"
 import { auth } from "@/auth"
+import { adsClickMeta } from "@/lib/ads-click"
 import { db } from "@/lib/db"
 import { sql } from "drizzle-orm"
 import { GEO_RESEARCH, geoPriceId, normaliseDomain, stripeClient, stripeCustomerFor } from "@/lib/geo-business"
@@ -140,12 +141,13 @@ export async function POST(req: NextRequest) {
   if (!customer) return NextResponse.json({ error: "unauthorized" }, { status: 401 })
 
   const back = `https://www.itgrows.ai/business/dashboard/visibility?site=${encodeURIComponent(site)}`
-  const meta = { userId, plan: GEO_RESEARCH, domain: site }
+  const meta = { userId, plan: GEO_RESEARCH, domain: site, ...(await adsClickMeta()) }
   const checkout = await stripe.checkout.sessions.create({
     customer,
     mode: "payment",
     line_items: [{ price: await geoPriceId(stripe, "research"), quantity: 1 }],
-    success_url: `${back}&unlocked=1`,
+    // cs: the Google Ads conversion on return (components/GeoPurchaseConversion.tsx).
+    success_url: `${back}&unlocked=1&cs={CHECKOUT_SESSION_ID}`,
     cancel_url: back,
     metadata: meta,
     payment_intent_data: { metadata: meta, description: `AI visibility report for ${site}` },

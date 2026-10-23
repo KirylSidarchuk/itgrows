@@ -1,6 +1,7 @@
 import { auth } from "@/auth"
 import { redirect } from "next/navigation"
 import BusinessSidebar from "@/components/dashboard/BusinessSidebar"
+import GeoPurchaseConversion from "@/components/GeoPurchaseConversion"
 import { geoRole } from "@/lib/geo-role"
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -23,6 +24,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
     >
       <BusinessSidebar client={role.client} hasLinkedin={role.hasLinkedin} />
       <main className="flex-1 overflow-auto min-w-0">{children}</main>
+      <GeoPurchaseConversion />
     </div>
   )
 }
