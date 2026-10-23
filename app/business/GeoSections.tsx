@@ -8,8 +8,14 @@
 //  - 3-5 sources = client_writer.py research step; findability = geo_findability.py (Mondays)
 //  - findings = the 19 Oct audit of three client sites plus our own robots.txt (fixed 21 Oct)
 // What it deliberately does not say is how: which rules, which tests, which order.
+// Server components that read the page's language themselves (lib/i18n/server); every string is in
+// lib/i18n/messages/geoSections.ts.
 
 import { GEO_PRICES } from "@/lib/geo-pricing"
+import type { Locale } from "@/lib/i18n/config"
+import { t } from "@/lib/i18n/messages"
+import geoSections from "@/lib/i18n/messages/geoSections"
+import { getLocale } from "@/lib/i18n/server"
 
 // "See the plan" points at the pricing section of the page the block sits on: "/" prefixes its GEO
 // section ids with "geo-" (#geo-pricing); a page without the prefix would use #pricing.
@@ -52,42 +58,13 @@ const ICONS = {
   ),
 } as const
 
-const STAGES: { step: string; icon: keyof typeof ICONS; n: string; l: string; d: string }[] = [
-  {
-    step: "Measure",
-    icon: "measure",
-    n: "240",
-    l: "answers read before we write a word",
-    d: "Twenty questions your buyers ask, put to all four assistants three times each, because their answers change from one ask to the next. Who is named, which pages are quoted, and what kind of site each source is: a competitor, a review site, a directory and an official source each call for a different move. Some questions no article on your own site can win; we find out which before your budget goes into them.",
-  },
-  {
-    step: "Open the doors",
-    icon: "doors",
-    n: "11",
-    l: "crawlers your site is tested as",
-    d: "Before the first article, on every domain you own: certificates, redirects, your host's firewall, robots.txt, sitemaps. Whatever stops GPTBot, ClaudeBot, PerplexityBot and the rest, we find and fix with you.",
-  },
-  {
-    step: "Get indexed",
-    icon: "index",
-    n: "4",
-    l: "search indexes, one per assistant",
-    d: "ChatGPT searches through Bing, Claude through Brave, Gemini through Google, Perplexity through its own. A page Google has indexed can still be invisible to the other three. On blogs we host, every new page is submitted to Bing within half an hour, and every article keeps one address.",
-  },
-  {
-    step: "Write",
-    icon: "write",
-    n: "3–5",
-    l: "sources read and cited per article",
-    d: "Research on live search, and every source is read before it is cited. An editor pass checks each claim against your product facts and the sources, then automated checks go over the rest. A topic too close to one you already have is not written. You see every article 2 days before it goes live, and can edit or stop it.",
-  },
-  {
-    step: "Re-measure",
-    icon: "repeat",
-    n: "52",
-    l: "full recounts a year, against day 0",
-    d: "The same questions against day 0, every week. A separate test tells us whether each assistant can find your published articles at all, so a gap in indexing is caught and fixed instead of being mistaken for weak writing. Once a month, a report in your language, read by a person before it reaches you.",
-  },
+// Icon and big number of each stage; its name, line and detail are geoSections.work.stages, in this order.
+const STAGES: { icon: keyof typeof ICONS; n: string }[] = [
+  { icon: "measure", n: "240" },
+  { icon: "doors", n: "11" },
+  { icon: "index", n: "4" },
+  { icon: "write", n: "3–5" },
+  { icon: "repeat", n: "52" },
 ]
 
 function StageIcon({ name }: { name: keyof typeof ICONS }) {
@@ -102,24 +79,22 @@ function StageIcon({ name }: { name: keyof typeof ICONS }) {
  * The plan as a pipeline: five stages, a big number each. Desktop: one row with a road through the
  * nodes. Phone: a vertical timeline. What runs inside each stage opens below, aligned to its column.
  */
-export function WorkSystem({ id = "how" }: { id?: string }) {
+export async function WorkSystem({ id = "how" }: { id?: string }) {
+  const m = t(await getLocale(), geoSections).work
+  const stages = STAGES.map((s, i) => ({ ...s, ...m.stages[i] }))
   return (
     <section id={id} className="px-4 sm:px-6 py-14 sm:py-20 scroll-mt-20">
       <div className="max-w-5xl mx-auto">
-        <p className="text-[11px] uppercase tracking-[0.15em] font-bold text-violet-600 text-center mb-3">
-          What we run for you · {GEO_PRICES.month.label} a month
-        </p>
-        <h2 className="text-2xl sm:text-4xl font-extrabold mb-3 tracking-tight text-center">An article is the last step, not the product</h2>
-        <p className="text-slate-600 text-center mb-10 sm:mb-14 text-sm sm:text-base">
-          Five stages. We do the work, every week. You see every article 2 days before it goes live, and can edit or stop it.
-        </p>
+        <p className="text-[11px] uppercase tracking-[0.15em] font-bold text-violet-600 text-center mb-3">{m.kicker(GEO_PRICES.month.label)}</p>
+        <h2 className="text-2xl sm:text-4xl font-extrabold mb-3 tracking-tight text-center">{m.h2}</h2>
+        <p className="text-slate-600 text-center mb-10 sm:mb-14 text-sm sm:text-base">{m.lead}</p>
 
         <div className="relative">
           {/* The road: vertical on the phone, through the node centres on desktop */}
           <div aria-hidden className="lg:hidden absolute left-[27px] top-7 bottom-7 w-0.5 rounded-full bg-gradient-to-b from-violet-300 via-violet-500 to-cyan-400" />
           <div aria-hidden className="hidden lg:block absolute top-[27px] left-[10%] right-[10%] h-0.5 rounded-full bg-gradient-to-r from-violet-300 via-violet-500 to-cyan-400" />
           <ol className="relative grid gap-5 lg:grid-cols-5 lg:gap-6">
-            {STAGES.map((s, i) => (
+            {stages.map((s, i) => (
               <li key={s.step} className="relative flex lg:flex-col lg:items-center gap-4 lg:gap-0 lg:text-center">
                 <div className="relative z-10 w-14 h-14 shrink-0 rounded-full bg-white border-2 border-violet-200 text-violet-600 flex items-center justify-center shadow-sm lg:mb-4">
                   <StageIcon name={s.icon} />
@@ -140,13 +115,13 @@ export function WorkSystem({ id = "how" }: { id?: string }) {
 
         <details className="group mt-10 border-t border-black/10">
           <summary className={`${SUMMARY} flex items-center justify-center gap-2 py-4 text-sm font-semibold text-violet-700`}>
-            What runs inside each stage
+            {m.inside}
             <span className="text-lg leading-none transition-transform group-open:rotate-45" aria-hidden>
               +
             </span>
           </summary>
           <div className="grid gap-4 lg:grid-cols-5 lg:gap-6 pb-2">
-            {STAGES.map((s) => (
+            {stages.map((s) => (
               <div key={s.step} className="border-l-2 border-violet-200 pl-4 lg:border-l-0 lg:pl-0 lg:border-t-2 lg:pt-3">
                 <p className="text-xs font-bold text-[#1b1916]">{s.step}</p>
                 <p className="text-sm text-slate-600 leading-relaxed mt-1">{s.d}</p>
@@ -156,11 +131,9 @@ export function WorkSystem({ id = "how" }: { id?: string }) {
         </details>
 
         <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4 text-center sm:text-left">
-          <p className="text-sm sm:text-base font-semibold max-w-xl">
-            None of this shows in an article. All of it decides whether an assistant ever reads one.
-          </p>
+          <p className="text-sm sm:text-base font-semibold max-w-xl">{m.closing}</p>
           <a href={pricingAnchor(id)} className="shrink-0 rounded-xl bg-violet-600 hover:bg-violet-500 text-white px-5 py-3 text-sm font-semibold shadow-lg shadow-violet-600/20">
-            See the plan →
+            {m.seePlan}
           </a>
         </div>
       </div>
@@ -168,28 +141,19 @@ export function WorkSystem({ id = "how" }: { id?: string }) {
   )
 }
 
-const FOUND = [
-  { n: "1 of 18", h: "articles ChatGPT found by their exact title", d: "Yet Google had indexed nearly every article on one site." },
-  { n: "128 MB", h: "one blog index page, images embedded", d: "Google reads the first 15 MB. Links sat below." },
-  { n: "0", h: "new articles in Google after three weeks", d: "Crawlers were led only to old pages." },
-  { n: "2", h: "addresses per article, each posing as original", d: "It competes with itself." },
-  { n: "1 line", h: "in robots.txt, meant to hide one page", d: "It hid every address starting with that letter." },
-]
-
 /**
  * An evidence wall on dark. Desktop: the first finding spans two columns, four tiles follow, the
  * closing line runs full width under them. Phone: one column of tiles.
  */
-export function FoundOnSites({ id }: { id?: string }) {
+export async function FoundOnSites({ id }: { id?: string }) {
+  const m = t(await getLocale(), geoSections).found
   return (
     <section id={id} className="px-4 sm:px-6 py-14 sm:py-20 scroll-mt-20" style={{ backgroundColor: "#1b1916" }}>
       <div className="max-w-5xl mx-auto">
-        <h2 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-white text-center">Publishing is not the same as being found</h2>
-        <p className="text-slate-400 text-center mt-3 mb-10 text-sm sm:text-base">
-          Our own weekly checks, October 2026: client sites and itgrows.ai itself.
-        </p>
+        <h2 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-white text-center">{m.h2}</h2>
+        <p className="text-slate-400 text-center mt-3 mb-10 text-sm sm:text-base">{m.lead}</p>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-          {FOUND.map((f, i) => (
+          {m.items.map((f, i) => (
             <div
               key={f.n}
               className={`rounded-2xl border p-5 sm:p-6 ${
@@ -211,28 +175,12 @@ export function FoundOnSites({ id }: { id?: string }) {
           ))}
         </div>
         <p className="mt-4 rounded-2xl border border-violet-400/40 bg-violet-500/10 px-5 py-4 text-center text-sm sm:text-base text-white font-semibold leading-relaxed">
-          Every one of these sites was publishing. On the plan, the same weekly checks run on yours.
+          {m.closing}
         </p>
       </div>
     </section>
   )
 }
-
-const VERSUS = [
-  { a: "A keyword list", b: "240 answers read first", k: "Before writing", d: "Who ChatGPT, Claude, Gemini and Perplexity name today, and who they quote." },
-  { a: "Crawlers not checked", b: "Tested as 11 crawlers", k: "Can assistants reach your site?", d: "Blockers are found and fixed with you before the first article." },
-  {
-    a: "Publish and hope",
-    b: "Findability tested weekly",
-    k: "Is each page in the index each assistant searches?",
-    d: "New pages are submitted to Bing on publication (blogs we host), and every week we test whether each assistant can find them.",
-  },
-  { a: "Duplicates not checked", b: "Duplicates found, fixed", k: "Duplicate addresses, sitemaps that miss new pages", d: "We find them on your site and fix them." },
-  { a: "Unwinnable topics written", b: "Spotted before you spend", k: "Questions no own-site article can win", d: "Found before your budget goes into them." },
-  { a: "Facts up to the writer", b: "3–5 sources, each read", k: "Facts and sources", d: "Every source read before it is cited; an editor pass and automated checks on every article." },
-  { a: "Proof: articles, traffic", b: "Proof: count vs day 0", k: "Proof", d: "The same questions against day 0, every week, across four assistants." },
-  { a: "You pay for words", b: "You pay to be findable", k: "What you pay for", d: "Being findable, readable and quotable, and an honest count of whether you are named." },
-]
 
 /**
  * Seven contrasts as cards, then the one that sums them up. A card: what the plan does (bold), the
@@ -240,14 +188,8 @@ const VERSUS = [
  * columns; the last pair ("what you pay for") closes the block on dark. No disclosure: the detail is
  * what makes each short phrase readable, so it stays visible (and in the HTML for crawlers).
  */
-export function VersusArticles({ id }: { id?: string }) {
-  const m = {
-    h2: "Why this is not paying for articles",
-    colA: "Article-only service",
-    colB: "ItGrows plan",
-    rows: VERSUS,
-    footnote: "Some agencies do more than write. Ask them for last week's count against day 0.",
-  }
+export async function VersusArticles({ id }: { id?: string }) {
+  const m = t(await getLocale(), geoSections).versus
   const cards = m.rows.slice(0, -1)
   const last = m.rows[m.rows.length - 1]
   return (
@@ -319,14 +261,7 @@ export function VersusArticles({ id }: { id?: string }) {
   )
 }
 
-export const GEO_INCLUDED = [
-  "Setup: your site tested as 11 crawlers, blockers fixed, Bing and Google set up — one-time $499, free with 3 months or a year",
-  "Day 0: the full detailed report — 240 answers from ChatGPT, Claude, Gemini and Perplexity — included",
-  "Every week: the same count against day 0, whether the assistants can find your articles, and who is quoted instead",
-  "Up to 12 researched articles a month on your own domain, 3–5 sources each",
-  "The sites the assistants quote instead of you: we prepare the profiles and the letters to editors",
-  "Blog hosting with the machine-readable layer built in — one DNS record",
-  "You see every article 2 days before it goes live, and can edit or stop it",
-  "A monthly report in your language, read by a person first",
-  "A human who knows your account",
-]
+/** What the plan includes, in a language (was GEO_INCLUDED): plain strings, so a client component can take it. */
+export function geoIncluded(locale: Locale): string[] {
+  return t(locale, geoSections).included(GEO_PRICES.setup.label)
+}

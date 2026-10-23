@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next"
+import { PREFIXED } from "@/lib/i18n/config"
 
 // Private areas — kept in one place so every crawler rule below stays in step.
 const PRIVATE = [
@@ -9,6 +10,9 @@ const PRIVATE = [
   "/personal/cabinet/",
   "/login",
   "/signup",
+  // The same sign-in pages in the other languages (lib/i18n): robots rules are prefixes, and
+  // "/login" does not cover "/de/login".
+  ...PREFIXED.flatMap((l) => [`/${l}/login`, `/${l}/signup`]),
   "/forgot-password",
   "/reset-password",
   "/welcome",

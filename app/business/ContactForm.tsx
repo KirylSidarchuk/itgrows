@@ -1,6 +1,8 @@
 "use client"
 
 import { useState } from "react"
+import { useT } from "@/components/i18n/LocaleProvider"
+import ns from "@/lib/i18n/messages/contactForm"
 
 // Google Ads conversion for a submitted message. Fired only after the API confirms the message was
 // received, so the campaign optimises against messages we actually got rather than button presses.
@@ -11,6 +13,7 @@ const MAX = { name: 200, company: 200, email: 254, message: 5000 }
 
 // "Write to us" on the home page (#apply): any question, not only a request for the plan.
 export default function ContactForm() {
+  const m = useT(ns)
   const [sent, setSent] = useState(false)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState("")
@@ -36,11 +39,7 @@ export default function ContactForm() {
       if (!res.ok) {
         const j = (await res.json().catch(() => ({}))) as { error?: string }
         setError(
-          j.error === "email"
-            ? "Check the email address — we need it to reply."
-            : j.error === "message"
-            ? "Tell us a little more: the question needs at least 5 characters."
-            : "That did not go through. Try again in a minute."
+          j.error === "email" ? m.errEmail : j.error === "message" ? m.errMessage : m.errGeneric
         )
         return
       }
@@ -52,7 +51,7 @@ export default function ContactForm() {
       }
       setSent(true)
     } catch {
-      setError("That did not go through. Try again in a minute.")
+      setError(m.errGeneric)
     } finally {
       setBusy(false)
     }
@@ -66,7 +65,7 @@ export default function ContactForm() {
             <path d="M5 12.5l4.5 4.5L19 7.5" />
           </svg>
         </div>
-        <p className="font-bold text-lg">Thanks — we will reply within a day.</p>
+        <p className="font-bold text-lg">{m.thanks}</p>
       </div>
     )
   }
@@ -78,17 +77,17 @@ export default function ContactForm() {
     <form onSubmit={submit} className="relative bg-white border border-black/10 rounded-2xl p-6 sm:p-7 space-y-4">
       <div className="grid sm:grid-cols-2 gap-4">
         <div>
-          <label htmlFor="cf-name" className="block text-sm font-semibold mb-1.5">Name</label>
+          <label htmlFor="cf-name" className="block text-sm font-semibold mb-1.5">{m.name}</label>
           <input id="cf-name" className={field} value={form.name} onChange={set("name")} maxLength={MAX.name} autoComplete="name" />
         </div>
         <div>
-          <label htmlFor="cf-company" className="block text-sm font-semibold mb-1.5">Company</label>
+          <label htmlFor="cf-company" className="block text-sm font-semibold mb-1.5">{m.company}</label>
           <input id="cf-company" className={field} value={form.company} onChange={set("company")} maxLength={MAX.company} autoComplete="organization" />
         </div>
       </div>
       <div>
         <label htmlFor="cf-email" className="block text-sm font-semibold mb-1.5">
-          Email <span className="text-violet-600">*</span>
+          {m.email} <span className="text-violet-600">*</span>
         </label>
         <input
           id="cf-email"
@@ -103,7 +102,7 @@ export default function ContactForm() {
       </div>
       <div>
         <label htmlFor="cf-message" className="block text-sm font-semibold mb-1.5">
-          Your question or request <span className="text-violet-600">*</span>
+          {m.message} <span className="text-violet-600">*</span>
         </label>
         <textarea
           id="cf-message"
@@ -119,7 +118,7 @@ export default function ContactForm() {
 
       {/* Honeypot: off-screen and out of the tab order; a person never fills it. */}
       <div aria-hidden className="absolute -left-[9999px] top-auto h-px w-px overflow-hidden">
-        <label htmlFor="cf-hp">Leave this empty</label>
+        <label htmlFor="cf-hp">{m.honeypot}</label>
         <input id="cf-hp" name="hp_extra" tabIndex={-1} autoComplete="off" value={form.hp} onChange={set("hp")} />
       </div>
 
@@ -133,10 +132,10 @@ export default function ContactForm() {
         {busy ? (
           <>
             <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-            Sending…
+            {m.sending}
           </>
         ) : (
-          "Send"
+          m.send
         )}
       </button>
     </form>

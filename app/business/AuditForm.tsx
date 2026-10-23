@@ -1,9 +1,13 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import Link from "next/link"
 import AiAnswers, { type TeaserView } from "./AiAnswers"
-import { GEO_PRICES } from "@/lib/geo-pricing"
+import LocaleLink from "@/components/i18n/LocaleLink"
+import { useLocale, useT } from "@/components/i18n/LocaleProvider"
+import { formatNumber } from "@/lib/i18n/format"
+import { localePath } from "@/lib/i18n/paths"
+import { rich } from "@/lib/i18n/rich"
+import ns from "@/lib/i18n/messages/auditForm"
 
 type Verdict = "blocked" | "allowed" | "wildcard" | "none"
 
@@ -56,6 +60,9 @@ function countCheck(domain: string | undefined) {
 // retry within a day returns its answers at once.
 const TEASER_GIVE_UP_MS = 150_000
 
+// The one error text /api/business/audit sends for a bad address; shown in the page's language.
+const INVALID_ADDRESS = "That does not look like a public website address."
+
 function track(event: string, props?: Record<string, unknown>) {
   try {
     navigator.sendBeacon("/api/track", JSON.stringify({ event, path: "/business", props, anon_id: localStorage.getItem("itg_anon") }))
@@ -80,6 +87,8 @@ function isOurSite(raw: string) {
 }
 
 export default function AuditForm() {
+  const m = useT(ns)
+  const locale = useLocale()
   const [url, setUrl] = useState("")
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState("")
@@ -134,9 +143,12 @@ export default function AuditForm() {
   }, [aiFailed])
 
   const shownDomain = ai?.domain || aiDomain
-  const signupHref = `/signup?from=ai-check&site=${encodeURIComponent(shownDomain)}&callbackUrl=${encodeURIComponent(
-    `/business/dashboard/visibility?site=${shownDomain}`
-  )}`
+  const signupHref = localePath(
+    locale,
+    `/signup?from=ai-check&site=${encodeURIComponent(shownDomain)}&callbackUrl=${encodeURIComponent(
+      `/business/dashboard/visibility?site=${shownDomain}`
+    )}`
+  )
 
   function onCta(where: string) {
     try {
@@ -257,10 +269,10 @@ export default function AuditForm() {
         body: JSON.stringify({ url }),
       })
       const j = (await res.json()) as Audit & { error?: string }
-      if (!res.ok || j.error) setError(j.error ?? "That check did not complete. Try again.")
+      if (!res.ok || j.error) setError(j.error === INVALID_ADDRESS ? m.invalidAddress : (j.error ?? m.failed))
       else setData(j)
     } catch {
-      setError("That check did not complete. Try again.")
+      setError(m.failed)
     } finally {
       setBusy(false)
     }
@@ -293,8 +305,8 @@ export default function AuditForm() {
             type="text"
             value={url}
             onChange={(e) => setUrl(e.target.value)}
-            placeholder="yourcompany.com"
-            aria-label="Your website address"
+            placeholder={m.placeholder}
+            aria-label={m.inputLabel}
             className="flex-1 rounded-xl border border-black/15 bg-white px-4 py-3.5 text-base text-[#1b1916] placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-400"
           />
           <button
@@ -305,10 +317,10 @@ export default function AuditForm() {
             {busy || aiRunning ? (
               <>
                 <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                Checking…
+                {m.checking}
               </>
             ) : (
-              "Check my site →"
+              m.submit
             )}
           </button>
         </div>
@@ -317,9 +329,9 @@ export default function AuditForm() {
 
       {ours && (
         <div role="status" className="mt-5 rounded-2xl border border-violet-200 bg-violet-50/70 px-5 py-5 text-center">
-          <p className="font-extrabold text-base sm:text-lg leading-snug text-[#1b1916]">That&apos;s us — and we&apos;re doing just fine 🙂</p>
+          <p className="font-extrabold text-base sm:text-lg leading-snug text-[#1b1916]">{m.oursTitle}</p>
           <p className="text-sm text-slate-600 mt-1.5">
-            Try your own site: <span aria-hidden className="text-violet-600 font-bold">↑</span>
+            {m.oursTry} <span aria-hidden className="text-violet-600 font-bold">↑</span>
           </p>
         </div>
       )}
@@ -342,21 +354,16 @@ export default function AuditForm() {
         <div className="mt-5 bg-white border border-black/10 rounded-2xl overflow-hidden">
           <div className="px-5 py-6 text-center bg-red-50 border-b border-red-200">
             <div className="text-3xl mb-2">🚧</div>
-            <div className="font-extrabold text-base sm:text-lg leading-snug">
-              {data.site} refused every request we made
-            </div>
+            <div className="font-extrabold text-base sm:text-lg leading-snug">{m.unreachableTitle(data.site)}</div>
           </div>
           <div className="p-5">
-            <p className="text-sm text-slate-600 leading-relaxed mb-4">
-              Not a typo — we tried as a browser and as three different crawlers, and got nothing back. That is almost
-              always bot protection. It stops the answer engines exactly the same way.
-            </p>
-            <Link
+            <p className="text-sm text-slate-600 leading-relaxed mb-4">{m.unreachableBody}</p>
+            <LocaleLink
               href="/#apply"
               className="block w-full text-center rounded-xl border border-black/10 bg-white hover:bg-[#f8f7f6] text-[#1b1916] px-6 py-3.5 text-sm font-semibold"
             >
-              Talk to us about fixing it →
-            </Link>
+              {m.talkToUs}
+            </LocaleLink>
           </div>
         </div>
       )}
@@ -364,7 +371,7 @@ export default function AuditForm() {
       {data && !data.unreachable && (
         <div className="mt-5 bg-white border border-black/10 rounded-2xl overflow-hidden">
           <div className="px-5 pt-4">
-            <p className="text-[11px] font-bold uppercase tracking-wide text-slate-500">Can AI crawlers read your site?</p>
+            <p className="text-[11px] font-bold uppercase tracking-wide text-slate-500">{m.crawlersEyebrow}</p>
           </div>
           {/* Verdict */}
           <div
@@ -374,13 +381,11 @@ export default function AuditForm() {
           >
             <div className="text-3xl mb-1">{blocked.length ? "⛔" : "⚠️"}</div>
             <div className="font-extrabold text-base sm:text-lg leading-snug">
-              {blocked.length ? (
-                <>You are turning away {blocked.join(", ")}</>
-              ) : answers === 0 ? (
-                <>They can read you. There is nothing here to quote.</>
-              ) : (
-                <>{answers} of your {data.surface.urlCount.toLocaleString()} pages can be quoted</>
-              )}
+              {blocked.length
+                ? m.turningAway(blocked.join(", "))
+                : answers === 0
+                  ? m.nothingToQuote
+                  : m.canBeQuoted(answers, data.surface.urlCount)}
             </div>
             <div className="text-xs text-slate-500 mt-1">{data.site}</div>
           </div>
@@ -390,17 +395,15 @@ export default function AuditForm() {
             <div className="bg-[#f8f7f6] rounded-xl p-4 text-center">
               <div className="text-3xl sm:text-4xl font-extrabold tracking-tight text-[#1b1916]">
                 {data.surface.isFloor ? "≥" : ""}
-                {data.surface.urlCount.toLocaleString()}
+                {formatNumber(locale, data.surface.urlCount)}
               </div>
-              <div className="text-[10px] sm:text-xs text-slate-600 mt-1 leading-tight">
-                pages an assistant can reach{data.surface.partial ? " (sampled)" : ""}
-              </div>
+              <div className="text-[10px] sm:text-xs text-slate-600 mt-1 leading-tight">{m.pagesReach(data.surface.partial)}</div>
             </div>
             <div className={`rounded-xl p-4 text-center ${answers === 0 ? "bg-red-50" : "bg-amber-50"}`}>
               <div className={`text-3xl sm:text-4xl font-extrabold tracking-tight ${answers === 0 ? "text-red-600" : "text-amber-600"}`}>
-                {answers.toLocaleString()}
+                {formatNumber(locale, answers)}
               </div>
-              <div className="text-[10px] sm:text-xs text-slate-600 mt-1 leading-tight">of them answer a question</div>
+              <div className="text-[10px] sm:text-xs text-slate-600 mt-1 leading-tight">{m.answerAQuestion}</div>
             </div>
           </div>
 
@@ -410,12 +413,9 @@ export default function AuditForm() {
             if (!hit.length) return null
             return (
               <div className="mx-4 mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900">
-                <b>
-                  Your robots.txt closes {Math.max(...hit.map((h) => h.blocked))} of {hit[0].checked} sitemap pages to{" "}
-                  {hit.map((h) => h.bot).join(", ")}
-                </b>
-                {hit[0].rules[0] && <> — rule “{hit[0].rules[0].rule}”. Rules match prefixes.</>}{" "}
-                <a href="/business/ai-crawler-checker" className="underline">Details</a>
+                <b>{m.robotsCloses(Math.max(...hit.map((h) => h.blocked)), hit[0].checked, hit.map((h) => h.bot).join(", "))}</b>
+                {hit[0].rules[0] && <> {m.ruleNote(hit[0].rules[0].rule)}</>}{" "}
+                <a href={localePath(locale, "/business/ai-crawler-checker")} className="underline">{m.details}</a>
               </div>
             )
           })()}
@@ -441,56 +441,43 @@ export default function AuditForm() {
               className="w-full text-sm font-semibold text-violet-700 hover:text-violet-600 py-2"
               aria-expanded={bOpen}
             >
-              {bOpen ? "Hide the details ▴" : "Show the 90-day projection ▾"}
+              {bOpen ? m.hideDetails : m.showProjection}
             </button>
           </div>
 
           {bOpen && (
             <>
               <div className="px-5 pb-1">
-                <p className="text-sm text-slate-700 leading-relaxed">
-                  Assistants do not rank pages. They pick one and quote it, and the one they pick already contains the
-                  answer. {answers === 0 ? "You have none of those." : `You have ${answers}.`} Everything else on your site
-                  is a page about you, and nobody asks a question your brochure is the answer to.
-                </p>
+                <p className="text-sm text-slate-700 leading-relaxed">{m.answerPagesExplain(answers)}</p>
               </div>
 
               {/* Ninety days, with and without */}
               <div className="p-4">
                 <div className="rounded-xl border border-black/10 overflow-hidden">
-                  <div className="px-4 py-2.5 bg-[#1b1916] text-white text-[11px] font-bold tracking-wide uppercase">
-                    Answer pages you will own
-                  </div>
+                  <div className="px-4 py-2.5 bg-[#1b1916] text-white text-[11px] font-bold tracking-wide uppercase">{m.ownTitle}</div>
                   <div className="divide-y divide-black/[0.07]">
                     <div className="flex items-center justify-between px-4 py-3">
-                      <span className="text-sm text-slate-600">Today</span>
+                      <span className="text-sm text-slate-600">{m.today}</span>
                       <span className="font-extrabold text-lg tabular-nums">{answers}</span>
                     </div>
                     <div className="flex items-center justify-between px-4 py-3">
-                      <span className="text-sm text-slate-600">In 90 days, if nothing changes</span>
+                      <span className="text-sm text-slate-600">{m.in90Nothing}</span>
                       <span className="font-extrabold text-lg tabular-nums text-slate-400">{answers}</span>
                     </div>
                     <div className="flex items-center justify-between px-4 py-3 bg-violet-50">
-                      <span className="text-sm font-semibold text-violet-900">In 90 days with us</span>
+                      <span className="text-sm font-semibold text-violet-900">{m.in90WithUs}</span>
                       <span className="font-extrabold text-lg tabular-nums text-violet-700">{answers + 36}</span>
                     </div>
                   </div>
                 </div>
-                <p className="text-[11px] text-slate-500 leading-relaxed mt-2.5">
-                  Twelve a month on your own domain — that is the arithmetic, not a forecast. The middle row is the one
-                  that costs you: the crawlers come back either way, and on the next pass they find whatever is there.
-                </p>
+                <p className="text-[11px] text-slate-500 leading-relaxed mt-2.5">{m.arithmetic}</p>
               </div>
 
               {/* What we measured ourselves */}
               <div className="px-4 pb-4">
                 <div className="rounded-xl bg-[#f8f7f6] p-4">
-                  <p className="text-[11px] font-bold uppercase tracking-wide text-slate-500 mb-2">From our own server logs</p>
-                  <p className="text-sm text-slate-700 leading-relaxed">
-                    On a site we run, a 190,000-page catalogue took <b>489,000 ClaudeBot requests</b> in two weeks.
-                    Googlebot made <b>1,100</b>. The AI crawlers are the ones showing up now — and they show up for
-                    volume, not for markup.
-                  </p>
+                  <p className="text-[11px] font-bold uppercase tracking-wide text-slate-500 mb-2">{m.logsEyebrow}</p>
+                  <p className="text-sm text-slate-700 leading-relaxed">{rich(m.logsBody, { b: (c) => <b>{c}</b> })}</p>
                 </div>
               </div>
 
@@ -501,12 +488,12 @@ export default function AuditForm() {
                   const tone: Tone = b.verdict === "blocked" || live?.blocked ? "bad" : b.verdict === "allowed" ? "good" : "warn"
                   const text =
                     b.verdict === "blocked"
-                      ? "Blocked in robots.txt"
+                      ? m.verdictBlocked
                       : live?.blocked
-                      ? `Server refuses it (HTTP ${live.status})`
+                      ? m.verdictRefused(live.status)
                       : b.verdict === "allowed"
-                      ? "Allowed"
-                      : "Wildcard rule only"
+                      ? m.verdictAllowed
+                      : m.verdictWildcard
                   return (
                     <div key={b.bot} className="flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl bg-[#f8f7f6]">
                       <span className="flex items-center gap-2.5 min-w-0">
@@ -520,10 +507,7 @@ export default function AuditForm() {
               </div>
 
               <div className="px-5 pb-2">
-                <p className="text-[11px] text-slate-500 leading-relaxed">
-                  We cannot read your server logs — this shows whether they are allowed in and whether there is enough to
-                  hold them, not who visited.
-                </p>
+                <p className="text-[11px] text-slate-500 leading-relaxed">{m.noLogs}</p>
               </div>
             </>
           )}
@@ -532,24 +516,20 @@ export default function AuditForm() {
             {showEmailCapture &&
               (reportSent ? (
                 <div className="rounded-xl bg-green-50 border border-green-200 p-4 text-center mb-3">
-                  <p className="text-sm font-semibold text-green-800">Got it.</p>
-                  <p className="text-xs text-green-700 mt-1 leading-relaxed">
-                    A person will look at what stopped the check and write back within a day.
-                  </p>
+                  <p className="text-sm font-semibold text-green-800">{m.gotIt}</p>
+                  <p className="text-xs text-green-700 mt-1 leading-relaxed">{m.gotItBody}</p>
                 </div>
               ) : (
                 <form onSubmit={requestReport} className="mb-4">
-                  <p className="text-sm font-semibold mb-1">Want a person to look at it?</p>
-                  <p className="text-xs text-slate-500 mb-3 leading-relaxed">
-                    The live check of the assistants didn&apos;t finish for this site. Leave your email: we look at what got in the way and write back within a day.
-                  </p>
+                  <p className="text-sm font-semibold mb-1">{m.wantPerson}</p>
+                  <p className="text-xs text-slate-500 mb-3 leading-relaxed">{m.wantPersonBody}</p>
                   <div className="flex flex-col sm:flex-row gap-2">
                     <input
                       type="email"
                       value={reportEmail}
                       onChange={(e) => setReportEmail(e.target.value)}
-                      placeholder="you@company.com"
-                      aria-label="Your email"
+                      placeholder={m.emailPlaceholder}
+                      aria-label={m.emailLabel}
                       className="flex-1 rounded-xl border border-black/15 bg-white px-4 py-3 text-sm text-[#1b1916] placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-400"
                     />
                     <button
@@ -557,18 +537,18 @@ export default function AuditForm() {
                       disabled={reportBusy || !reportEmail.includes("@")}
                       className="px-5 py-3 rounded-xl bg-[#1b1916] hover:bg-[#33302c] disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold transition-colors whitespace-nowrap"
                     >
-                      {reportBusy ? "Sending…" : "Write to me"}
+                      {reportBusy ? m.sending : m.writeToMe}
                     </button>
                   </div>
                 </form>
               ))}
 
-            <Link
+            <LocaleLink
               href="/#geo-pricing"
               className="block w-full text-center rounded-xl border border-black/10 bg-white hover:bg-[#f8f7f6] text-[#1b1916] px-6 py-3.5 text-sm font-semibold"
             >
-              Have us fix it — see the plan →
-            </Link>
+              {m.fixCta}
+            </LocaleLink>
           </div>
         </div>
       )}
@@ -579,7 +559,7 @@ export default function AuditForm() {
           onClick={() => aiRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })}
           className="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 rounded-full bg-[#1b1916] text-white text-sm font-semibold px-5 py-3 shadow-xl"
         >
-          Your AI answers are ready ↑
+          {m.readyPill}
         </button>
       )}
     </div>

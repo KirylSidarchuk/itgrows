@@ -1,0 +1,108 @@
+import { defineMessages } from "../messages"
+import { plural } from "../format"
+
+// app/business/sample-report/SampleReport.tsx (client): the frame around the sample report — its
+// header, the price line, the "not available" state and the closing block. The report's own cards
+// (ReportSections, YourPlan) come from app/business/dashboard and are translated with the cabinet.
+// Prices, days, the domain and the date come in as arguments.
+
+// "в течение 30 дней", "в течение 21 дня".
+const ruDays = (n: number) => plural("ru", n, { one: `${n} дня`, other: `${n} дней` })
+
+const en = {
+  // <PriceLine>, under the header and in the closing block
+  priceLine: (report: string, days: number) =>
+    `The quick check: no signup, about 30 seconds. Create an account and we build this report for your site: the totals and the questions from your quick check are open, and the full report is ${report}, one payment. It comes off your first plan payment if you start the plan within ${days} days.`,
+
+  badge: "Sample report",
+  h1: (domain: string) => `A real report: ${domain}`,
+  intro: "An app-store-optimisation agency (our own company). This is what the detailed report shows for your site.",
+  checked: (date: string, questions: number, assistants: number, asks: number) =>
+    `Checked ${date} · ${questions} questions × ${assistants} assistants, ${asks} asks each`,
+  checkMySite: "Check my site",
+
+  unavailable: "The sample report isn't available right now.",
+  unavailableHint: "Try again in a few minutes, or run the quick check on your own site.",
+
+  sameTitle: "The same report for your site",
+  honesty:
+    "No one can promise that assistants will name you. The report shows where you stand, honestly, and what we would do about it.",
+}
+
+export default defineMessages(en, {
+  de: {
+    priceLine: (report, days) =>
+      `Der Schnellcheck: ohne Anmeldung, etwa 30 Sekunden. Legen Sie ein Konto an, und wir erstellen diesen Bericht für Ihre Website: Die Gesamtwerte und die Fragen aus Ihrem Schnellcheck sind offen einsehbar, der vollständige Bericht kostet ${report}, einmalig. Er wird auf Ihre erste Plan-Zahlung angerechnet, wenn Sie den Plan innerhalb von ${days} Tagen starten.`,
+
+    badge: "Beispielbericht",
+    h1: (domain) => `Ein echter Bericht: ${domain}`,
+    intro: "Eine Agentur für App-Store-Optimierung (unser eigenes Unternehmen). So sieht der ausführliche Bericht für Ihre Website aus.",
+    checked: (date, questions, assistants, asks) =>
+      `Geprüft am ${date} · ${questions} ${plural("de", questions, { one: "Frage", other: "Fragen" })} × ${assistants} ${plural("de", assistants, { one: "Assistent", other: "Assistenten" })}, je ${asks} ${plural("de", asks, { one: "Durchlauf", other: "Durchläufe" })}`,
+    checkMySite: "Website prüfen",
+
+    unavailable: "Der Beispielbericht ist gerade nicht verfügbar.",
+    unavailableHint: "Versuchen Sie es in ein paar Minuten erneut, oder machen Sie den Schnellcheck für Ihre eigene Website.",
+
+    sameTitle: "Derselbe Bericht für Ihre Website",
+    honesty:
+      "Niemand kann versprechen, dass Assistenten Sie nennen werden. Der Bericht zeigt ehrlich, wo Sie stehen und was wir daran ändern würden.",
+  },
+
+  fr: {
+    priceLine: (report, days) =>
+      `La vérification rapide : sans inscription, environ 30 secondes. Créez un compte et nous établissons ce rapport pour votre site : les totaux et les questions de votre vérification rapide sont visibles, et le rapport complet coûte ${report}, en un seul paiement. Il est déduit de votre premier paiement d’abonnement si vous démarrez l’abonnement dans les ${days} jours.`,
+
+    badge: "Exemple de rapport",
+    h1: (domain) => `Un vrai rapport : ${domain}`,
+    intro: "Une agence d’optimisation pour les stores d’applications (notre propre entreprise). Voici ce que le rapport détaillé montre pour votre site.",
+    checked: (date, questions, assistants, asks) =>
+      `Vérifié le ${date} · ${questions} ${plural("fr", questions, { one: "question", other: "questions" })} × ${assistants} ${plural("fr", assistants, { one: "assistant", other: "assistants" })}, ${asks} ${plural("fr", asks, { one: "requête", other: "requêtes" })} par question`,
+    checkMySite: "Vérifier mon site",
+
+    unavailable: "L’exemple de rapport n’est pas disponible pour le moment.",
+    unavailableHint: "Réessayez dans quelques minutes, ou lancez la vérification rapide sur votre propre site.",
+
+    sameTitle: "Le même rapport pour votre site",
+    honesty:
+      "Personne ne peut promettre que les assistants vous mentionneront. Le rapport montre honnêtement où vous en êtes, et ce que nous ferions pour y remédier.",
+  },
+
+  es: {
+    priceLine: (report, days) =>
+      `La comprobación rápida: sin registro, unos 30 segundos. Cree una cuenta y elaboraremos este informe para su sitio: los totales y las preguntas de su comprobación rápida quedan a la vista, y el informe completo cuesta ${report}, en un solo pago. Se descuenta de su primer pago del plan si lo inicia en un plazo de ${days} días.`,
+
+    badge: "Informe de ejemplo",
+    h1: (domain) => `Un informe real: ${domain}`,
+    intro: "Una agencia de optimización para tiendas de aplicaciones (nuestra propia empresa). Esto es lo que muestra el informe detallado de su sitio.",
+    checked: (date, questions, assistants, asks) =>
+      `Comprobado el ${date} · ${questions} ${plural("es", questions, { one: "pregunta", other: "preguntas" })} × ${assistants} ${plural("es", assistants, { one: "asistente", other: "asistentes" })}, ${asks} ${plural("es", asks, { one: "consulta", other: "consultas" })} por pregunta`,
+    checkMySite: "Comprobar mi sitio",
+
+    unavailable: "El informe de ejemplo no está disponible en este momento.",
+    unavailableHint: "Vuelva a intentarlo en unos minutos o haga la comprobación rápida de su propio sitio.",
+
+    sameTitle: "El mismo informe para su sitio",
+    honesty:
+      "Nadie puede prometer que los asistentes le mencionen. El informe muestra con honestidad dónde está y qué haríamos al respecto.",
+  },
+
+  ru: {
+    priceLine: (report, days) =>
+      `Быстрая проверка: без регистрации, около 30 секунд. Создайте аккаунт, и мы составим такой отчёт по вашему сайту: итоги и вопросы из вашей быстрой проверки открыты, а полный отчёт стоит ${report}, один платёж. Он засчитывается в первый платёж за подписку, если оформить её в течение ${ruDays(days)}.`,
+
+    badge: "Пример отчёта",
+    h1: (domain) => `Настоящий отчёт: ${domain}`,
+    intro: "Агентство по оптимизации приложений в магазинах (наша собственная компания). Вот что подробный отчёт показывает для вашего сайта.",
+    checked: (date, questions, assistants, asks) =>
+      `Проверено ${date} · ${plural("ru", questions, { one: `${questions} вопрос`, few: `${questions} вопроса`, many: `${questions} вопросов`, other: `${questions} вопроса` })} × ${plural("ru", assistants, { one: `${assistants} ассистент`, few: `${assistants} ассистента`, many: `${assistants} ассистентов`, other: `${assistants} ассистента` })}, ${plural("ru", asks, { one: `по ${asks} запросу`, few: `по ${asks} запроса`, many: `по ${asks} запросов`, other: `по ${asks} запроса` })} на каждый`,
+    checkMySite: "Проверить мой сайт",
+
+    unavailable: "Пример отчёта сейчас недоступен.",
+    unavailableHint: "Попробуйте через несколько минут или запустите быструю проверку своего сайта.",
+
+    sameTitle: "Такой же отчёт для вашего сайта",
+    honesty:
+      "Никто не может обещать, что ассистенты вас назовут. Отчёт честно показывает, где вы сейчас и что мы бы с этим сделали.",
+  },
+})

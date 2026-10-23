@@ -1,0 +1,72 @@
+import { defineMessages } from "../messages"
+
+// app/business/ContactForm.tsx (client): "Write to us" on the home page (#apply).
+
+const en = {
+  errEmail: "Check the email address — we need it to reply.",
+  errMessage: "Tell us a little more: the question needs at least 5 characters.",
+  errGeneric: "That did not go through. Try again in a minute.",
+  thanks: "Thanks — we will reply within a day.",
+  name: "Name",
+  company: "Company",
+  email: "Email",
+  message: "Your question or request",
+  honeypot: "Leave this empty",
+  sending: "Sending…",
+  send: "Send",
+}
+
+export default defineMessages(en, {
+  de: {
+    errEmail: "Bitte prüfen Sie die E-Mail-Adresse – wir brauchen sie für die Antwort.",
+    errMessage: "Schreiben Sie uns etwas mehr: Die Frage braucht mindestens 5 Zeichen.",
+    errGeneric: "Das hat nicht geklappt. Bitte versuchen Sie es in einer Minute erneut.",
+    thanks: "Danke – wir antworten innerhalb eines Tages.",
+    name: "Name",
+    company: "Unternehmen",
+    email: "E-Mail",
+    message: "Ihre Frage oder Anfrage",
+    honeypot: "Dieses Feld leer lassen",
+    sending: "Wird gesendet…",
+    send: "Senden",
+  },
+  fr: {
+    errEmail: "Vérifiez l’adresse e-mail : nous en avons besoin pour vous répondre.",
+    errMessage: "Dites-nous-en un peu plus : la question doit comporter au moins 5 caractères.",
+    errGeneric: "L’envoi n’a pas abouti. Réessayez dans une minute.",
+    thanks: "Merci ! Nous vous répondrons dans les 24 heures.",
+    name: "Nom",
+    company: "Entreprise",
+    email: "E-mail",
+    message: "Votre question ou demande",
+    honeypot: "Laissez ce champ vide",
+    sending: "Envoi…",
+    send: "Envoyer",
+  },
+  es: {
+    errEmail: "Revise la dirección de email: la necesitamos para responderle.",
+    errMessage: "Cuéntenos un poco más: la pregunta necesita al menos 5 caracteres.",
+    errGeneric: "No se ha podido enviar. Inténtelo de nuevo en un minuto.",
+    thanks: "Gracias. Le responderemos en un día.",
+    name: "Nombre",
+    company: "Empresa",
+    email: "Correo electrónico",
+    message: "Su pregunta o solicitud",
+    honeypot: "Deje este campo vacío",
+    sending: "Enviando…",
+    send: "Enviar",
+  },
+  ru: {
+    errEmail: "Проверьте адрес email — он нужен нам, чтобы ответить.",
+    errMessage: "Расскажите чуть подробнее: в вопросе должно быть не меньше 5 символов.",
+    errGeneric: "Не удалось отправить. Попробуйте ещё раз через минуту.",
+    thanks: "Спасибо — мы ответим в течение дня.",
+    name: "Имя",
+    company: "Компания",
+    email: "Email",
+    message: "Ваш вопрос или запрос",
+    honeypot: "Оставьте это поле пустым",
+    sending: "Отправляем…",
+    send: "Отправить",
+  },
+})

@@ -5,9 +5,14 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { signIn } from "next-auth/react"
 import Link from "next/link"
 import OAuthButtons from "@/components/auth/OAuthButtons"
+import LocaleLink from "@/components/i18n/LocaleLink"
+import { useT } from "@/components/i18n/LocaleProvider"
 import { CREDIT_DAYS, GEO_PRICES } from "@/lib/geo-pricing"
+import { rich } from "@/lib/i18n/rich"
+import signupNs from "@/lib/i18n/messages/signup"
 
 function SignupForm() {
+  const m = useT(signupNs)
   const router = useRouter()
   const searchParams = useSearchParams()
   const callbackUrl = searchParams.get("callbackUrl") ?? "/cabinet"
@@ -126,13 +131,13 @@ function SignupForm() {
       })
       const data = await res.json()
       if (!res.ok) {
-        setError(data.error ?? "Failed to send PIN")
+        setError(data.error ?? m.failedToSend)
         setLoading(false)
         return
       }
       setStep("pin")
     } catch {
-      setError("Something went wrong")
+      setError(m.somethingWrong)
     } finally {
       setLoading(false)
     }
@@ -145,7 +150,7 @@ function SignupForm() {
     try {
       const res = await signIn("pin", { email, pin, redirect: false })
       if (res?.error) {
-        setError("Invalid or expired code. Please try again.")
+        setError(m.invalidCode)
         setLoading(false)
         return
       }
@@ -173,7 +178,7 @@ function SignupForm() {
       }
       router.push(callbackUrl)
     } catch {
-      setError("Something went wrong")
+      setError(m.somethingWrong)
       setLoading(false)
     }
   }
@@ -187,9 +192,9 @@ function SignupForm() {
 
         <div className="w-full max-w-md relative z-10">
           <div className="text-center mb-6">
-            <Link href="/">
+            <LocaleLink href="/">
               <span className="text-2xl font-bold bg-gradient-to-r from-violet-600 to-pink-500 bg-clip-text text-transparent">ItGrows.ai</span>
-            </Link>
+            </LocaleLink>
           </div>
 
           <div className="bg-white rounded-3xl shadow-xl p-8">
@@ -199,21 +204,21 @@ function SignupForm() {
                 <div className="w-9 h-9 rounded-full bg-violet-100 border-2 border-violet-300 flex items-center justify-center">
                   <svg className="w-4 h-4 text-violet-600" fill="none" viewBox="0 0 16 16"><path d="M3 8l3 3 7-7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
                 </div>
-                <span className="text-xs text-slate-400">Account</span>
+                <span className="text-xs text-slate-400">{m.stepAccount}</span>
               </div>
               <div className="flex-1 h-0.5 bg-violet-300 mx-2 mb-4" />
               <div className="flex flex-col items-center gap-1">
                 <div className="w-9 h-9 rounded-full bg-violet-600 flex items-center justify-center">
                   <span className="text-white text-sm font-bold">2</span>
                 </div>
-                <span className="text-xs font-semibold text-violet-600">Verify email</span>
+                <span className="text-xs font-semibold text-violet-600">{m.stepVerify}</span>
               </div>
               <div className="flex-1 h-0.5 bg-slate-200 mx-2 mb-4" />
               <div className="flex flex-col items-center gap-1">
                 <div className="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center">
                   <span className="text-slate-400 text-sm font-bold">3</span>
                 </div>
-                <span className="text-xs text-slate-400">Complete</span>
+                <span className="text-xs text-slate-400">{m.stepComplete}</span>
               </div>
             </div>
 
@@ -254,8 +259,8 @@ function SignupForm() {
               </div>
             </div>
 
-            <h1 className="text-2xl font-bold text-[#1b1916] text-center mb-2">Check your email</h1>
-            <p className="text-slate-500 text-sm text-center mb-2">We&apos;ve sent a 6-digit code to</p>
+            <h1 className="text-2xl font-bold text-[#1b1916] text-center mb-2">{m.checkEmail}</h1>
+            <p className="text-slate-500 text-sm text-center mb-2">{m.codeSentTo}</p>
             <div className="flex justify-center mb-6">
               <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-violet-200 bg-violet-50 text-violet-700 text-sm font-medium">
                 <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 16 16"><path d="M2 5l5.3 3.5a1 1 0 001.4 0L14 5M3 13h10a1 1 0 001-1V4a1 1 0 00-1-1H3a1 1 0 00-1 1v8a1 1 0 001 1z" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/></svg>
@@ -264,7 +269,7 @@ function SignupForm() {
             </div>
 
             <form onSubmit={handleVerifyPin}>
-              <label className="block text-sm font-medium text-[#1b1916] mb-3">Enter 6-digit code</label>
+              <label className="block text-sm font-medium text-[#1b1916] mb-3">{m.enterCode}</label>
               {/* OTP boxes */}
               <div className="grid grid-cols-6 gap-2 mb-5" onPaste={handleDigitPaste}>
                 {digits.map((d, i) => (
@@ -292,7 +297,7 @@ function SignupForm() {
                 className="w-full py-3.5 rounded-xl text-white text-sm font-semibold transition-all disabled:opacity-50"
                 style={{ background: "linear-gradient(135deg, #7c3aed, #ec4899)" }}
               >
-                {loading ? "Verifying..." : "Continue →"}
+                {loading ? m.verifying : m.continue}
               </button>
             </form>
 
@@ -300,7 +305,7 @@ function SignupForm() {
             <div className="flex items-center justify-between mt-4">
               <span className="flex items-center gap-1.5 text-xs text-slate-400">
                 <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.5" stroke="currentColor" strokeWidth="1.2"/><path d="M8 5v3.5l2 1.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/></svg>
-                Code expires in {formatTime(timeLeft)}
+                {m.codeExpires(formatTime(timeLeft))}
               </span>
               <button
                 type="button"
@@ -308,7 +313,7 @@ function SignupForm() {
                 disabled={resending}
                 className="flex items-center gap-1 text-xs font-semibold text-violet-600 hover:text-violet-500 disabled:opacity-50"
               >
-                {resending ? "Sending..." : "Resend code"}
+                {resending ? m.resending : m.resendCode}
                 <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 16 16"><path d="M2.5 8a5.5 5.5 0 1010.5 1.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/><polyline points="10.5,6 13.5,6 13.5,3" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>
               </button>
             </div>
@@ -317,8 +322,8 @@ function SignupForm() {
             <div className="mt-5 flex items-start gap-3 bg-violet-50 border border-violet-100 rounded-xl p-4">
               <svg className="w-5 h-5 text-violet-500 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24"><path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
               <div>
-                <p className="text-sm font-semibold text-violet-700">Can&apos;t find the email?</p>
-                <p className="text-xs text-violet-500 mt-0.5">Check your spam or promotions folder.</p>
+                <p className="text-sm font-semibold text-violet-700">{m.cantFind}</p>
+                <p className="text-xs text-violet-500 mt-0.5">{m.checkSpam}</p>
               </div>
             </div>
           </div>
@@ -331,47 +336,47 @@ function SignupForm() {
     <div className="min-h-screen bg-[#f3f2f1] flex items-center justify-center px-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <Link href="/">
+          <LocaleLink href="/">
             <span className="text-2xl font-bold bg-gradient-to-r from-violet-600 to-pink-500 bg-clip-text text-transparent">
               ItGrows.ai
             </span>
-          </Link>
+          </LocaleLink>
           {aiForPlan ? (
             <>
-              <h1 className="text-2xl font-bold text-[#1b1916] mt-4">Start the AI visibility plan</h1>
-              <p className="text-slate-500 text-sm mt-1">First your account, then your site: the plan is built from its report. Then you choose how to pay: {GEO_PRICES.month.label} a month plus a one-time {GEO_PRICES.setup.label} setup, or {GEO_PRICES.quarter.label} for 3 months upfront or {GEO_PRICES.year.label} for a year with the setup free.</p>
+              <h1 className="text-2xl font-bold text-[#1b1916] mt-4">{m.planTitle}</h1>
+              <p className="text-slate-500 text-sm mt-1">{m.planLead(GEO_PRICES.month.label, GEO_PRICES.setup.label, GEO_PRICES.quarter.label, GEO_PRICES.year.label)}</p>
             </>
           ) : fromAiCheck ? (
             <>
-              <h1 className="text-2xl font-bold text-[#1b1916] mt-4">Your detailed AI report{aiSite ? <> for {aiSite}</> : null}</h1>
-              <p className="text-slate-500 text-sm mt-1">No card to create the account. We put 20 buyer questions to ChatGPT, Claude, Gemini and Perplexity, 3 times each; you see the totals and the 5 questions of the quick check. The whole report is {GEO_PRICES.research.label}, one payment, and comes off your first plan payment if you start the plan within {CREDIT_DAYS} days.</p>
+              <h1 className="text-2xl font-bold text-[#1b1916] mt-4">{m.reportTitle(aiSite)}</h1>
+              <p className="text-slate-500 text-sm mt-1">{m.reportLead(GEO_PRICES.research.label, CREDIT_DAYS)}</p>
             </>
           ) : handoff ? (
             <>
-              <h1 className="text-2xl font-bold text-[#1b1916] mt-4">One step left — claim your posts</h1>
-              <p className="text-slate-500 text-sm mt-1">Your {handoff.n} post{handoff.n > 1 ? "s are" : " is"} saved. Creating an account is <strong>free</strong> — and so is your 14-day trial. No credit card required.</p>
+              <h1 className="text-2xl font-bold text-[#1b1916] mt-4">{m.handoffTitle}</h1>
+              <p className="text-slate-500 text-sm mt-1">{rich(m.handoffLead(handoff.n), { b: (c) => <strong>{c}</strong> })}</p>
             </>
           ) : (
             <>
-              <h1 className="text-2xl font-bold text-[#1b1916] mt-4">Create your free account</h1>
-              <p className="text-slate-500 text-sm mt-1">✓ Free account · No credit card required — not even for the 14-day trial.</p>
+              <h1 className="text-2xl font-bold text-[#1b1916] mt-4">{m.defaultTitle}</h1>
+              <p className="text-slate-500 text-sm mt-1">{m.defaultLead}</p>
             </>
           )}
         </div>
         <div className="bg-white border border-black/10 rounded-2xl p-8">
           {fromAiCheck && aiQuick && (
             <div className="mb-5 rounded-xl border border-violet-200 bg-violet-50 px-4 py-3 text-sm text-[#1b1916]">
-              <span className="text-slate-600">Quick check:</span> <strong>named in {aiQuick.named} of {aiQuick.of} answers</strong>
+              <span className="text-slate-600">{m.quickCheck}</span> <strong>{m.quickNamed(aiQuick.named, aiQuick.of)}</strong>
             </div>
           )}
           {handoff && !fromAiCheck && (
             <div className="mb-5 rounded-xl border border-violet-200 bg-violet-50 p-3 flex gap-3 items-start">
               {handoff.images?.[0] && (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={handoff.images[0]!} alt="Your generated post" className="w-14 h-14 rounded-lg object-cover flex-shrink-0" />
+                <img src={handoff.images[0]!} alt={m.postAlt} className="w-14 h-14 rounded-lg object-cover flex-shrink-0" />
               )}
               <div className="min-w-0">
-                <div className="text-xs font-semibold text-violet-700 mb-0.5">✓ {handoff.n} post{handoff.n > 1 ? "s" : ""} saved{handoff.n > 1 ? ` · +${handoff.n - 1} more waiting` : ""}</div>
+                <div className="text-xs font-semibold text-violet-700 mb-0.5">✓ {m.postsSaved(handoff.n)}</div>
                 <p className="text-xs text-slate-600">{handoff.posts[0].slice(0, 120)}{handoff.posts[0].length > 120 ? "…" : ""}</p>
               </div>
             </div>
@@ -381,7 +386,7 @@ function SignupForm() {
           </div>
           <form onSubmit={handleSendPin} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-[#1b1916] mb-1.5">Name</label>
+              <label className="block text-sm font-medium text-[#1b1916] mb-1.5">{m.nameLabel}</label>
               <input
                 type="text"
                 value={name}
@@ -389,18 +394,18 @@ function SignupForm() {
                 required
                 autoFocus
                 className="w-full px-4 py-2.5 rounded-xl border border-black/10 bg-[#f3f2f1] text-[#1b1916] text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
-                placeholder="Your name"
+                placeholder={m.namePlaceholder}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-[#1b1916] mb-1.5">Email</label>
+              <label className="block text-sm font-medium text-[#1b1916] mb-1.5">{m.emailLabel}</label>
               <input
                 type="email"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 required
                 className="w-full px-4 py-2.5 rounded-xl border border-black/10 bg-[#f3f2f1] text-[#1b1916] text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
-                placeholder="you@example.com"
+                placeholder={m.emailPlaceholder}
               />
             </div>
             {error && <p className="text-red-500 text-sm">{error}</p>}
@@ -409,19 +414,19 @@ function SignupForm() {
               disabled={loading}
               className="w-full py-3 bg-violet-600 hover:bg-violet-500 text-white rounded-xl text-sm font-semibold transition-colors disabled:opacity-50"
             >
-              {loading ? "Sending code..." : fromAiCheck ? "Email me a code" : "Continue with email"}
+              {loading ? m.sendingCode : fromAiCheck ? m.emailMeCode : m.continueWithEmail}
             </button>
           </form>
           <p className="text-center text-sm text-slate-500 mt-6">
-            Already have an account?{" "}
-            <Link href={fromAiCheck ? `/login?callbackUrl=${encodeURIComponent(callbackUrl)}` : "/login"} className="text-violet-600 hover:underline font-medium">Sign in</Link>
+            {m.haveAccount}{" "}
+            <LocaleLink href={fromAiCheck ? `/login?callbackUrl=${encodeURIComponent(callbackUrl)}` : "/login"} className="text-violet-600 hover:underline font-medium">{m.signIn}</LocaleLink>
           </p>
         </div>
         <p className="text-center text-xs text-slate-400 mt-6">
-          By signing up you agree to our{" "}
-          <Link href="/terms" className="text-violet-600 hover:underline">Terms of Service</Link>
-          {" "}and{" "}
-          <Link href="/privacy" className="text-violet-600 hover:underline">Privacy Policy</Link>
+          {rich(m.agree, {
+            link: (c) => <Link href="/terms" className="text-violet-600 hover:underline">{c}</Link>,
+            link2: (c) => <Link href="/privacy" className="text-violet-600 hover:underline">{c}</Link>,
+          })}
         </p>
       </div>
     </div>
@@ -432,6 +437,7 @@ function SignupForm() {
 // so this fallback IS the initial HTML paid visitors see before the JS bundle hydrates.
 // Keep it a real page (logo, promise, skeleton), not a white screen.
 function SignupShell() {
+  const m = useT(signupNs)
   return (
     <div className="min-h-screen bg-[#f3f2f1] flex items-center justify-center px-4">
       <div className="w-full max-w-md">
@@ -441,8 +447,8 @@ function SignupShell() {
           </span>
           {/* Shared by every variant (the LinkedIn/X trial and the AI-visibility report), so it says only
               what is true of both; the page itself says the rest once it loads. */}
-          <h1 className="text-2xl font-bold text-[#1b1916] mt-4">Create your account</h1>
-          <p className="text-slate-500 text-sm mt-1">No credit card required.</p>
+          <h1 className="text-2xl font-bold text-[#1b1916] mt-4">{m.shellTitle}</h1>
+          <p className="text-slate-500 text-sm mt-1">{m.shellLead}</p>
         </div>
         <div className="bg-white border border-black/10 rounded-2xl p-8">
           <div className="space-y-3">
@@ -450,7 +456,7 @@ function SignupShell() {
             <div className="h-11 rounded-xl bg-[#f3f2f1] animate-pulse" />
             <div className="h-11 rounded-xl bg-violet-100 animate-pulse" />
           </div>
-          <p className="text-center text-xs text-slate-400 mt-6">Loading sign-up options…</p>
+          <p className="text-center text-xs text-slate-400 mt-6">{m.shellLoading}</p>
         </div>
       </div>
     </div>

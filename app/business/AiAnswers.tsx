@@ -9,6 +9,13 @@
 // here is called free: the quick check is the one free thing, and it is described, not labelled.
 
 import { CREDIT_DAYS, GEO_PRICES, SAMPLE_PATH } from "@/lib/geo-pricing"
+import { useLocale, useT } from "@/components/i18n/LocaleProvider"
+import { INTL_LOCALE, type Locale } from "@/lib/i18n/config"
+import { localePath } from "@/lib/i18n/paths"
+import { rich } from "@/lib/i18n/rich"
+import ns from "@/lib/i18n/messages/aiAnswers"
+
+type M = (typeof ns)["en"]
 
 export interface TeaserEngine {
   named: boolean
@@ -59,11 +66,6 @@ function plain(s: string) {
     .replace(/\s+/g, " ")
     .trim()
 }
-const LANG: Record<string, string> = {
-  en: "English", de: "German", fr: "French", es: "Spanish", it: "Italian", nl: "Dutch", pl: "Polish",
-  pt: "Portuguese", sv: "Swedish", da: "Danish", no: "Norwegian", fi: "Finnish", cs: "Czech", tr: "Turkish",
-  ru: "Russian", uk: "Ukrainian", ro: "Romanian", hu: "Hungarian", el: "Greek", ja: "Japanese",
-}
 const STAGES = ["reading", "questions", "asking", "analysing"]
 
 type StepState = "todo" | "active" | "done"
@@ -81,26 +83,33 @@ function StepDot({ state }: { state: StepState }) {
 }
 
 function Waiting({ view, elapsed }: { view: TeaserView | null; elapsed: number }) {
+  const m = useT(ns)
   const at = Math.max(0, STAGES.indexOf(view?.stage ?? "reading"))
   const qs = view?.questions ?? []
   const total = view?.total ?? 5
   const ans = view?.answered ?? {}
-  const lang = view?.language && LANG[view.language] ? ` in ${LANG[view.language]}` : ""
+  const inLanguage = (view?.language && (m.inLanguage as Readonly<Record<string, string | undefined>>)[view.language]) || ""
   const asking = (e: string): StepState => (at >= 3 || (ans[e] ?? 0) >= total ? "done" : at === 2 ? "active" : "todo")
   const steps: { label: string; state: StepState }[] = [
-    { label: "Reading your homepage", state: at > 0 || qs.length ? "done" : "active" },
-    { label: qs.length ? `Wrote 5 buyer questions${lang}` : "Writing 5 buyer questions", state: qs.length ? "done" : at >= 1 ? "active" : "todo" },
-    { label: `Asking ChatGPT${at >= 2 ? ` · ${Math.min(ans.chatgpt ?? 0, total)} of ${total} answered` : ""}`, state: asking("chatgpt") },
-    { label: `Asking Perplexity${at >= 2 ? ` · ${Math.min(ans.perplexity ?? 0, total)} of ${total} answered` : ""}`, state: asking("perplexity") },
-    { label: "Checking who they name and which sites they cite", state: at >= 3 ? "active" : "todo" },
+    { label: m.stepReading, state: at > 0 || qs.length ? "done" : "active" },
+    { label: qs.length ? m.stepWrote(inLanguage) : m.stepWriting, state: qs.length ? "done" : at >= 1 ? "active" : "todo" },
+    {
+      label: at >= 2 ? m.stepAskingCount(LABEL.chatgpt, Math.min(ans.chatgpt ?? 0, total), total) : m.stepAsking(LABEL.chatgpt),
+      state: asking("chatgpt"),
+    },
+    {
+      label: at >= 2 ? m.stepAskingCount(LABEL.perplexity, Math.min(ans.perplexity ?? 0, total), total) : m.stepAsking(LABEL.perplexity),
+      state: asking("perplexity"),
+    },
+    { label: m.stepChecking, state: at >= 3 ? "active" : "todo" },
   ]
   return (
     <div className="p-5 sm:p-6">
-      <h3 className="font-extrabold text-lg sm:text-xl leading-snug">Asking ChatGPT and Perplexity what your buyers ask</h3>
-      <p className="text-sm text-slate-500 mt-1">Live answers, web search on. Takes 15–35 seconds.</p>
+      <h3 className="font-extrabold text-lg sm:text-xl leading-snug">{m.waitingTitle}</h3>
+      <p className="text-sm text-slate-500 mt-1">{m.waitingSub}</p>
       <ol className="mt-5 space-y-3">
-        {steps.map((s) => (
-          <li key={s.label.slice(0, 14)} className="flex items-center gap-3">
+        {steps.map((s, i) => (
+          <li key={i} className="flex items-center gap-3">
             <StepDot state={s.state} />
             <span className={`text-sm ${s.state === "todo" ? "text-slate-400" : "text-[#1b1916]"} ${s.state === "active" ? "font-semibold" : ""}`}>
               {s.label}
@@ -110,12 +119,12 @@ function Waiting({ view, elapsed }: { view: TeaserView | null; elapsed: number }
       </ol>
       {elapsed >= 40 && (
         <p className="mt-5 rounded-xl bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-amber-800">
-          Slower than usual — one assistant is taking its time. Still working.
+          {m.slow}
         </p>
       )}
       {qs.length > 0 && (
         <div className="mt-6 animate-in fade-in duration-500">
-          <p className="text-[11px] font-bold uppercase tracking-wide text-slate-500 mb-2">Your 5 questions</p>
+          <p className="text-[11px] font-bold uppercase tracking-wide text-slate-500 mb-2">{m.yourQuestions}</p>
           <ol className="space-y-2">
             {qs.map((q, i) => (
               <li key={i} className="flex gap-2.5 text-[15px] leading-snug">
@@ -131,13 +140,15 @@ function Waiting({ view, elapsed }: { view: TeaserView | null; elapsed: number }
 }
 
 function Chip({ a }: { a: TeaserEngine }) {
-  if (a.failed) return <span className="shrink-0 text-[11px] font-bold px-2.5 py-1 rounded-full border text-slate-600 bg-slate-100 border-slate-200">No answer — timed out</span>
-  if (a.named && a.cited) return <span className="shrink-0 text-[11px] font-bold px-2.5 py-1 rounded-full border text-emerald-700 bg-emerald-50 border-emerald-200">Named, linked to you</span>
-  if (a.named) return <span className="shrink-0 text-[11px] font-bold px-2.5 py-1 rounded-full border text-amber-700 bg-amber-50 border-amber-200">Named, no link to you</span>
-  return <span className="shrink-0 text-[11px] font-bold px-2.5 py-1 rounded-full border text-red-700 bg-red-50 border-red-200">Not named</span>
+  const m = useT(ns)
+  if (a.failed) return <span className="shrink-0 text-[11px] font-bold px-2.5 py-1 rounded-full border text-slate-600 bg-slate-100 border-slate-200">{m.chipTimedOut}</span>
+  if (a.named && a.cited) return <span className="shrink-0 text-[11px] font-bold px-2.5 py-1 rounded-full border text-emerald-700 bg-emerald-50 border-emerald-200">{m.chipNamedLinked}</span>
+  if (a.named) return <span className="shrink-0 text-[11px] font-bold px-2.5 py-1 rounded-full border text-amber-700 bg-amber-50 border-amber-200">{m.chipNamedNoLink}</span>
+  return <span className="shrink-0 text-[11px] font-bold px-2.5 py-1 rounded-full border text-red-700 bg-red-50 border-red-200">{m.chipNotNamed}</span>
 }
 
 function EnginePanel({ engine, a, domain }: { engine: string; a: TeaserEngine; domain: string }) {
+  const m = useT(ns)
   const names = a.namedInstead
   const src = a.sources
   const own = (d: string) => d === domain || d.endsWith("." + domain)
@@ -149,22 +160,22 @@ function EnginePanel({ engine, a, domain }: { engine: string; a: TeaserEngine; d
       </div>
       {!a.failed && (
         <>
-          {a.snippet && <p className="text-sm text-slate-700 mt-2 leading-relaxed">“{plain(a.snippet)}”</p>}
+          {a.snippet && <p className="text-sm text-slate-700 mt-2 leading-relaxed">{m.quote(plain(a.snippet))}</p>}
           <p className="text-[13px] text-slate-700 mt-2 leading-relaxed">
             {names.length ? (
               <>
-                <span className="text-slate-500">{a.named ? "Also named: " : "Named instead: "}</span>
+                <span className="text-slate-500">{a.named ? m.alsoNamed : m.namedInsteadLabel}</span>
                 {names.slice(0, 4).join(", ")}
-                {names.length > 4 && <span className="text-slate-500"> +{names.length - 4} more</span>}
+                {names.length > 4 && <span className="text-slate-500">{m.more(names.length - 4)}</span>}
               </>
             ) : (
-              <span className="text-slate-500">No specific business named.</span>
+              <span className="text-slate-500">{m.noBusinessNamed}</span>
             )}
           </p>
           <p className="text-xs text-slate-500 mt-1.5 break-words">
             {src.length ? (
               <>
-                Sources:{" "}
+                {m.sources}{" "}
                 {src.slice(0, 4).map((d, i) => (
                   <span key={d}>
                     {i > 0 && " · "}
@@ -174,7 +185,7 @@ function EnginePanel({ engine, a, domain }: { engine: string; a: TeaserEngine; d
                 {src.length > 4 && ` +${src.length - 4}`}
               </>
             ) : (
-              "No sources cited."
+              m.noSources
             )}
           </p>
         </>
@@ -197,16 +208,19 @@ function OpenRow({ row, domain, engines }: { row: NonNullable<TeaserView["open"]
   )
 }
 
-function askedAt(iso?: string) {
-  if (!iso) return "Asked today"
+function askedAt(m: M, locale: Locale, iso?: string) {
+  if (!iso) return m.askedTodayNoTime
   const d = new Date(iso)
   const now = new Date()
-  const time = d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+  // English keeps the visitor's own clock format; the other languages use their own.
+  const time = d.toLocaleTimeString(locale === "en" ? [] : INTL_LOCALE[locale], { hour: "2-digit", minute: "2-digit" })
   const sameDay = d.toDateString() === now.toDateString()
-  return `Asked ${sameDay ? "today" : "yesterday"} at ${time}`
+  return m.askedAt(sameDay, time)
 }
 
 function Result({ view, signupHref, onCta }: { view: TeaserView; signupHref: string; onCta: (where: string) => void }) {
+  const m = useT(ns)
+  const locale = useLocale()
   const s = view.summary!
   const domain = view.domain ?? ""
   const engines = (view.engines ?? ["chatgpt", "perplexity"]).filter((e) => s.engines[e])
@@ -214,12 +228,13 @@ function Result({ view, signupHref, onCta }: { view: TeaserView; signupHref: str
   const silent = engines.filter((e) => s.engines[e].of === 0)
   const zero = s.named === 0
   const all = s.of > 0 && s.named === s.of
-  const who = answered.map((e) => LABEL[e]).join(" and ")
+  const who = m.joinAnd(answered.map((e) => LABEL[e]))
+  const several = answered.length > 1
   const sub = zero
-    ? `We asked ${who} 5 questions your buyers ask. ${answered.length > 1 ? "Neither" : "It"} named ${domain}.`
+    ? m.subZero(several, who, domain)
     : all
-      ? `${answered.length > 1 ? "Both assistants" : who} named ${domain} in every answer. This check covered 2 of the 4 assistants we track.`
-      : `You came up in ${s.named} answer${s.named === 1 ? "" : "s"}. In the other ${s.of - s.named}, ${who} answered without you.`
+      ? m.subAll(several, who, domain)
+      : m.subSome(several, s.named, s.of - s.named, who)
   const open = view.open ?? []
   const locked = view.locked ?? []
 
@@ -228,11 +243,11 @@ function Result({ view, signupHref, onCta }: { view: TeaserView; signupHref: str
       <div className="px-5 sm:px-6 pt-5 pb-4">
         <h3 className="flex items-baseline gap-2 flex-wrap">
           <span className="text-[40px] leading-none font-extrabold tracking-tight tabular-nums">{s.named}</span>
-          <span className="text-xl font-bold text-slate-500">of {s.of} answers named you</span>
+          <span className="text-xl font-bold text-slate-500">{m.ofAnswersNamed(s.named, s.of)}</span>
         </h3>
         {silent.length > 0 && (
           <p className="text-xs text-slate-500 mt-1">
-            {silent.map((e) => LABEL[e]).join(", ")} didn&apos;t respond and {silent.length > 1 ? "are" : "is"} left out of the count.
+            {m.silentNote(silent.length > 1, silent.map((e) => LABEL[e]).join(", "))}
           </p>
         )}
         <p className="text-sm text-slate-600 mt-2 leading-relaxed">{sub}</p>
@@ -244,27 +259,27 @@ function Result({ view, signupHref, onCta }: { view: TeaserView; signupHref: str
               <div className="text-lg font-extrabold tabular-nums mt-0.5">
                 {s.engines[e].of > 0 ? (
                   <>
-                    {s.engines[e].named} <span className="text-slate-400 text-sm font-bold">of {s.engines[e].of}</span>
+                    {s.engines[e].named} <span className="text-slate-400 text-sm font-bold">{m.engineOf(s.engines[e].of)}</span>
                   </>
                 ) : (
-                  <span className="text-slate-400 text-sm font-bold">No answer</span>
+                  <span className="text-slate-400 text-sm font-bold">{m.noAnswer}</span>
                 )}
               </div>
             </div>
           ))}
         </div>
-        {s.linked > 0 && <p className="text-xs text-slate-600 mt-2.5">Linked as a source: {s.linked} of {s.of}</p>}
+        {s.linked > 0 && <p className="text-xs text-slate-600 mt-2.5">{m.linkedAsSource(s.linked, s.of)}</p>}
 
         {s.namedInstead.length > 0 && (
           <div className="mt-4">
             <p className="text-[11px] font-bold uppercase tracking-wide text-slate-500 mb-1.5">
-              {zero ? "Named instead of you" : "Others named"}
+              {zero ? m.namedInsteadTitle : m.othersNamed}
             </p>
             <ul className="space-y-1">
               {s.namedInstead.map((r) => (
                 <li key={r.name} className="text-sm">
                   <span className="font-semibold">{r.name}</span>
-                  <span className="text-slate-500"> — in {r.count} answer{r.count === 1 ? "" : "s"}</span>
+                  <span className="text-slate-500">{m.inAnswers(r.count)}</span>
                 </li>
               ))}
             </ul>
@@ -282,33 +297,29 @@ function Result({ view, signupHref, onCta }: { view: TeaserView; signupHref: str
         )}
 
         <div className="relative z-10 -mt-8 rounded-2xl bg-white border border-black/10 shadow-lg shadow-violet-600/10 p-5">
-          <p className="font-extrabold text-lg leading-snug">{all ? "Do Claude and Gemini agree?" : "Want to see what all of them say?"}</p>
-          <p className="text-sm text-slate-600 mt-1.5 leading-relaxed">
-            Create an account and we build the detailed report for {domain}: 20 buyer questions to ChatGPT, Claude, Gemini
-            and Perplexity, 3 times each — who gets named, which sites they quote, and our plan for your site.
-          </p>
+          <p className="font-extrabold text-lg leading-snug">{all ? m.overlayTitleAll : m.overlayTitle}</p>
+          <p className="text-sm text-slate-600 mt-1.5 leading-relaxed">{m.overlayBody(domain)}</p>
           <p className="text-sm text-[#1b1916] mt-2 leading-relaxed">
-            You see its totals and these 5 questions. The whole report is <b>{GEO_PRICES.research.label}</b>, one payment. If you
-            then want us to do the work, the {GEO_PRICES.research.label} comes off your first plan payment within {CREDIT_DAYS} days.
+            {rich(m.overlayPrice(GEO_PRICES.research.label, CREDIT_DAYS), { b: (c) => <b>{c}</b> })}
           </p>
           <a
             href={signupHref}
             onClick={() => onCta("overlay")}
             className="mt-4 flex items-center justify-center w-full min-h-12 px-4 py-2 rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-base font-semibold text-center transition-colors"
           >
-            Create account — build my report
+            {m.createReport}
           </a>
           <a
-            href={SAMPLE_PATH}
+            href={localePath(locale, SAMPLE_PATH)}
             target="_blank"
             rel="noopener"
             onClick={() => onCta("sample")}
             className="mt-2.5 block text-center text-sm font-semibold text-violet-700 hover:underline"
           >
-            See a real report →
+            {m.seeReport}
           </a>
           <p className="text-xs text-slate-500 mt-2.5 text-center leading-relaxed">
-            Google or LinkedIn in one click, or a code by email. No card to create the account.
+            {m.signInNote}
           </p>
         </div>
 
@@ -324,26 +335,27 @@ function Result({ view, signupHref, onCta }: { view: TeaserView; signupHref: str
                 <div className="h-2.5 w-11/12 rounded bg-slate-200 mt-2.5" />
                 <div className="h-2.5 w-3/4 rounded bg-slate-200 mt-1.5" />
               </div>
-              <p className="text-xs text-slate-500 mt-1.5">ChatGPT · Perplexity — answered, in your detailed report</p>
+              <p className="text-xs text-slate-500 mt-1.5">{m.lockedNote}</p>
             </a>
           ))}
         </div>
       </div>
 
       <p className="px-5 sm:px-6 pb-5 text-xs text-slate-500 leading-relaxed">
-        {askedAt(view.finishedAt)}, web search on. Answers vary between runs — the detailed report asks each question 3 times.
+        {m.footnote(askedAt(m, locale, view.finishedAt))}
       </p>
     </div>
   )
 }
 
-const REASON: [RegExp, string][] = [
-  [/certificate/, "Its security certificate isn't valid for this address, so browsers show a warning and crawlers get an error."],
-  [/resolve/, "The address doesn't resolve. Check the spelling."],
-  [/answered (401|403|429)/, "The site refused our request — usually bot protection or a firewall."],
-  [/answered 5\d\d/, "The site answered with a server error."],
-  [/answered 404/, "The homepage answered “not found”."],
-  [/timeout|did not answer/, "The server didn't respond within 10 seconds."],
+// The VM's reason text (English, technical) -> the sentence shown, in the page's language.
+const REASON: [RegExp, keyof M["reasons"]][] = [
+  [/certificate/, "certificate"],
+  [/resolve/, "resolve"],
+  [/answered (401|403|429)/, "refused"],
+  [/answered 5\d\d/, "serverError"],
+  [/answered 404/, "notFound"],
+  [/timeout|did not answer/, "timeout"],
 ]
 
 function Failed({
@@ -361,6 +373,7 @@ function Failed({
   onRetry: () => void
   onOtherUrl: () => void
 }) {
+  const m = useT(ns)
   const e = view.error ?? "check_failed"
   const amber = "bg-amber-50 border-amber-200"
   const box = (tone: string, title: string, body: string, actions: React.ReactNode, note?: string) => (
@@ -385,47 +398,48 @@ function Failed({
   if (e === "limit_ip")
     return box(
       amber,
-      "You've used today's 3 checks",
-      `Each check asks ChatGPT and Perplexity live, so we limit it per visitor. Create an account and we build the detailed report for your site: 20 questions, 4 assistants, with its totals open. The whole report is ${GEO_PRICES.research.label}.`,
+      m.limitTitle,
+      m.limitBody(GEO_PRICES.research.label),
       <>
-        {primary("Create account", () => onCta("limit"), signupHref)}
-        <span className="text-sm text-slate-500">Or check again tomorrow</span>
+        {primary(m.createAccount, () => onCta("limit"), signupHref)}
+        <span className="text-sm text-slate-500">{m.tomorrow}</span>
       </>
     )
   if (e === "busy")
     return box(
       amber,
-      "Live checks are full for today",
-      "We run a fixed number of live checks a day, and today's are used up. Your crawler check below is done.",
-      primary("Create account", () => onCta("busy"), signupHref),
-      "Your report waits in the queue; we'll email you when it's ready."
+      m.busyTitle,
+      m.busyBody,
+      primary(m.createAccount, () => onCta("busy"), signupHref),
+      m.busyNote
     )
   if (e === "unreachable") {
-    const why = REASON.find(([re]) => re.test(view.reason ?? ""))?.[1] ?? "The site refused our request, usually because of bot protection or a firewall."
+    const reason = REASON.find(([re]) => re.test(view.reason ?? ""))?.[1]
+    const why = reason ? m.reasons[reason] : m.reasonDefault
     return box(
       "bg-red-50 border-red-200",
-      `We couldn't read ${domain}`,
-      `${why} The crawler check below shows whether AI bots get through.`,
-      primary("Check a different URL", onOtherUrl),
-      "This didn't count toward your 3 checks."
+      m.unreachableTitle(domain),
+      m.unreachableBody(why),
+      primary(m.otherUrl, onOtherUrl),
+      m.notCounted
     )
   }
   if (e === "questions_failed")
     return box(
       amber,
-      "We couldn't write questions from your homepage",
-      "Usually the page has too little readable text, which is common when it loads with JavaScript. Sometimes the error is ours.",
-      primary("Try again", onRetry),
-      "This didn't count toward your 3 checks."
+      m.questionsTitle,
+      m.questionsBody,
+      primary(m.tryAgain, onRetry),
+      m.notCounted
     )
   if (e === "invalid_url")
-    return box(amber, "That doesn't look like a website address", "Enter it like yourcompany.com.", primary("Check a different URL", onOtherUrl))
+    return box(amber, m.invalidTitle, m.invalidBody, primary(m.otherUrl, onOtherUrl))
   return box(
     amber,
-    "The check didn't finish",
-    "One of the assistants or our side failed this time. Try again — if the answers came in meanwhile, they appear at once.",
-    primary("Try again", onRetry),
-    "This didn't count toward your 3 checks."
+    m.failedTitle,
+    m.failedBody,
+    primary(m.tryAgain, onRetry),
+    m.notCounted
   )
 }
 
@@ -446,12 +460,13 @@ export default function AiAnswers({
   onRetry: () => void
   onOtherUrl: () => void
 }) {
+  const m = useT(ns)
   const shown = view?.domain || domain
   const waiting = !view || view.status === "running"
   return (
     <div className={`bg-white border border-black/10 rounded-2xl overflow-hidden ${waiting ? "min-h-[560px]" : ""}`}>
       <div className="px-5 sm:px-6 pt-4 pb-0">
-        <p className="text-[11px] font-bold uppercase tracking-wide text-slate-500">AI answers · {shown}</p>
+        <p className="text-[11px] font-bold uppercase tracking-wide text-slate-500">{m.eyebrow(shown)}</p>
       </div>
       {waiting && <Waiting view={view} elapsed={elapsed} />}
       {view?.status === "done" && view.summary && <Result view={view} signupHref={signupHref} onCta={onCta} />}

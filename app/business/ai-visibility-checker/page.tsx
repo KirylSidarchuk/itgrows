@@ -1,109 +1,88 @@
 import type { Metadata } from "next"
+import type { ReactNode } from "react"
 import Link from "next/link"
 import AuditForm from "../AuditForm"
 import ToolShell from "../_tools/ToolShell"
 import Faq, { faqSchema, type QA } from "../_tools/Faq"
 import { GEO_PRICES } from "@/lib/geo-pricing"
+import { getLocale } from "@/lib/i18n/server"
+import { t } from "@/lib/i18n/messages"
+import { localizedMetadata } from "@/lib/i18n/metadata"
+import { absoluteUrl, localePath } from "@/lib/i18n/paths"
+import { rich } from "@/lib/i18n/rich"
+import ns from "@/lib/i18n/messages/visibilityChecker"
 
-const URL = "https://www.itgrows.ai/business/ai-visibility-checker"
+const PATH = "/business/ai-visibility-checker"
 
-export const metadata: Metadata = {
-  title: "AI visibility checker: does ChatGPT name you? | ItGrows",
-  description:
-    "Enter your website: we ask ChatGPT and Perplexity five questions your buyers ask and show whether they name you, who they name instead and which sites they cite. No signup.",
-  alternates: { canonical: URL },
-  openGraph: {
-    title: "Does ChatGPT recommend your business? AI visibility check",
-    description: "Five buyer questions, asked live to ChatGPT and Perplexity. See who they name instead of you.",
-    url: URL,
-    type: "website",
-  },
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocale()
+  const m = t(locale, ns)
+  return localizedMetadata(locale, PATH, {
+    title: m.metaTitle,
+    description: m.metaDescription,
+    openGraph: { title: m.ogTitle, description: m.ogDescription },
+    twitter: { title: m.ogTitle, description: m.ogDescription },
+  })
 }
 
-const FAQ: QA[] = [
-  {
-    q: "Do I need an account for the check?",
-    a: `No. The check runs without signup, in about 30 seconds: it asks ChatGPT and Perplexity five questions and shows two answers in full. With an account we build the detailed report for your site (20 questions × 4 assistants × 3 asks): you see its totals and the answers to the check's five questions. The whole report is ${GEO_PRICES.research.label}, one payment.`,
-  },
-  {
-    q: "Where do the questions come from?",
-    a: "We read your homepage and write the questions a buyer of your business would type into an assistant, in your site's language: who to choose, what it costs, how to decide. If your site blocks our reader, we learn what the business is from a web search instead.",
-  },
-  {
-    q: "Why do the answers change if I run it again?",
-    a: "Assistants do not answer the same question the same way twice. That is why one check is a first look, and the full report asks every question three times and compares weeks only on the same questions.",
-  },
-  {
-    q: "Can anyone guarantee that ChatGPT will recommend my business?",
-    a: "No. No assistant sells organic placement or publishes how it chooses. What can be done is making your site readable and indexed, publishing pages that answer your buyers' questions, being present on the sites assistants cite, and measuring the result honestly.",
-  },
-]
-
-export default function AiVisibilityCheckerPage() {
+export default async function AiVisibilityCheckerPage() {
+  const locale = await getLocale()
+  const m = t(locale, ns)
+  const faq: QA[] = [{ q: m.faqAccount.q, a: m.faqAccount.a(GEO_PRICES.research.label) }, ...m.faq]
   const schema = {
     "@context": "https://schema.org",
     "@graph": [
       {
         "@type": "WebApplication",
-        name: "ItGrows AI visibility checker",
-        url: URL,
+        name: m.schemaName,
+        url: absoluteUrl(locale, PATH),
+        inLanguage: locale,
         applicationCategory: "BusinessApplication",
         operatingSystem: "Web",
-        description:
-          "A 30-second check of whether ChatGPT and Perplexity name a business when its buyers ask: five buyer questions generated from the site, answered live with web search, with the businesses named instead and the sites cited.",
+        description: m.schemaDescription,
         offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
         provider: { "@id": "https://www.itgrows.ai/#organization" },
       },
-      faqSchema(FAQ),
+      faqSchema(faq),
     ],
   }
+  const linkTo = (href: string, c: ReactNode) => (
+    <Link className="text-violet-700 underline" href={href}>
+      {c}
+    </Link>
+  )
   return (
     <ToolShell>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />
       <main className="px-4 sm:px-6 pt-10 sm:pt-14">
         <div className="max-w-3xl mx-auto text-center">
-          <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-violet-700">AI visibility check · no signup</p>
-          <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight mt-3">Does ChatGPT recommend your business?</h1>
-          <p className="text-base sm:text-lg text-slate-600 mt-4 max-w-2xl mx-auto">
-            Enter your site. We write five questions your buyers would ask and put them to ChatGPT and Perplexity, live,
-            with web search on. You see whether they name you, who they name instead and which sites they cite. About 30
-            seconds.
-          </p>
+          <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-violet-700">{m.eyebrow}</p>
+          <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight mt-3">{m.h1}</h1>
+          <p className="text-base sm:text-lg text-slate-600 mt-4 max-w-2xl mx-auto">{m.lead}</p>
         </div>
         <div className="mt-8">
           <AuditForm />
         </div>
 
         <article className="max-w-3xl mx-auto mt-16 text-[#1b1916]">
-          <h2 className="text-2xl font-extrabold tracking-tight">What the check does</h2>
+          <h2 className="text-2xl font-extrabold tracking-tight">{m.whatTitle}</h2>
           <ol className="mt-4 space-y-3 text-slate-700 leading-relaxed list-decimal pl-5">
-            <li>Reads your homepage and works out what you sell, to whom and where.</li>
-            <li>Writes five questions a buyer would ask an assistant: who to choose, what it costs, how to decide.</li>
-            <li>Asks ChatGPT and Perplexity each question with web search on, and reads the answers: are you named, is your site cited, who is named instead, which sites are the sources.</li>
+            {m.steps.map((s, i) => (
+              <li key={i}>{s}</li>
+            ))}
           </ol>
 
-          <h2 className="text-2xl font-extrabold tracking-tight mt-12">How to read the result</h2>
-          <p className="mt-4 text-slate-700 leading-relaxed">
-            <b>Named</b> means the answer mentions your business. <b>Cited</b> means it links your site as a source. The
-            sites cited instead of you are where the assistants learn who exists in your field: directories, comparison
-            pages, your competitors&apos; own pages. One run is a first look, because answers vary between asks; the full
-            report asks 20 questions to ChatGPT, Claude, Gemini and Perplexity, three times each.
-          </p>
+          <h2 className="text-2xl font-extrabold tracking-tight mt-12">{m.readTitle}</h2>
+          <p className="mt-4 text-slate-700 leading-relaxed">{rich(m.readBody, { b: (c) => <b>{c}</b> })}</p>
 
-          <h2 className="text-2xl font-extrabold tracking-tight mt-12">If you are not named</h2>
+          <h2 className="text-2xl font-extrabold tracking-tight mt-12">{m.notNamedTitle}</h2>
           <ul className="mt-4 space-y-2 text-slate-700 leading-relaxed list-disc pl-5">
-            <li>
-              Start with the whole path: <Link className="text-violet-700 underline" href="/business/blog/how-to-get-your-business-recommended-by-chatgpt">how to get your business recommended by ChatGPT, Claude, Gemini and Perplexity</Link>.
-            </li>
-            <li>
-              Check that crawlers can read you: <Link className="text-violet-700 underline" href="/business/ai-crawler-checker">AI crawler check</Link> — it tests your sitemap pages against your robots.txt for each crawler.
-            </li>
-            <li>
-              See the usual causes: <Link className="text-violet-700 underline" href="/business/blog/why-doesnt-chatgpt-mention-my-company">why ChatGPT names your competitors and not you</Link>.
-            </li>
+            <li>{rich(m.tipGuide, { link: (c) => linkTo("/business/blog/how-to-get-your-business-recommended-by-chatgpt", c) })}</li>
+            <li>{rich(m.tipCrawler, { link: (c) => linkTo(localePath(locale, "/business/ai-crawler-checker"), c) })}</li>
+            <li>{rich(m.tipCauses, { link: (c) => linkTo("/business/blog/why-doesnt-chatgpt-mention-my-company", c) })}</li>
           </ul>
 
-          <Faq items={FAQ} />
+          <Faq items={faq} />
         </article>
       </main>
     </ToolShell>

@@ -3,10 +3,13 @@
 import { Suspense, useState, useEffect } from "react"
 import { signIn } from "next-auth/react"
 import { useRouter, useSearchParams } from "next/navigation"
-import Link from "next/link"
 import OAuthButtons from "@/components/auth/OAuthButtons"
+import LocaleLink from "@/components/i18n/LocaleLink"
+import { useT } from "@/components/i18n/LocaleProvider"
+import loginNs from "@/lib/i18n/messages/login"
 
 function LoginForm() {
+  const m = useT(loginNs)
   const router = useRouter()
   const searchParams = useSearchParams()
   const callbackUrl = searchParams.get("callbackUrl") ?? "/cabinet"
@@ -46,13 +49,13 @@ function LoginForm() {
       })
       const data = await res.json()
       if (!res.ok) {
-        setError(data.error ?? "Failed to send PIN")
+        setError(data.error ?? m.failedToSend)
         setLoading(false)
         return
       }
       setStep("pin")
     } catch {
-      setError("Something went wrong")
+      setError(m.somethingWrong)
     } finally {
       setLoading(false)
     }
@@ -69,13 +72,13 @@ function LoginForm() {
         redirect: false,
       })
       if (res?.error) {
-        setError("Invalid or expired PIN. Please try again.")
+        setError(m.invalidPin)
         setLoading(false)
         return
       }
       router.push(callbackUrl)
     } catch {
-      setError("Something went wrong")
+      setError(m.somethingWrong)
       setLoading(false)
     }
   }
@@ -85,13 +88,13 @@ function LoginForm() {
       <div className="bg-white border border-black/10 rounded-2xl p-8">
         <div className="text-center mb-6">
           <div className="text-4xl mb-3">📧</div>
-          <p className="text-[#1b1916] font-medium text-sm">Code sent to</p>
+          <p className="text-[#1b1916] font-medium text-sm">{m.codeSentTo}</p>
           <p className="text-violet-600 font-semibold text-sm">{email}</p>
         </div>
         <form onSubmit={handleVerifyPin} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-[#1b1916] mb-1.5">
-              Enter 6-digit code
+              {m.enterCode}
             </label>
             <input
               type="text"
@@ -112,17 +115,17 @@ function LoginForm() {
             disabled={loading || pin.length !== 6}
             className="w-full py-3 bg-violet-600 hover:bg-violet-500 text-white rounded-xl text-sm font-semibold transition-colors disabled:opacity-50"
           >
-            {loading ? "Verifying..." : "Sign in"}
+            {loading ? m.verifying : m.signIn}
           </button>
         </form>
         <p className="text-center text-sm text-slate-500 mt-6">
-          Didn&apos;t get the code?{" "}
+          {m.didntGetCode}{" "}
           <button
             type="button"
             onClick={() => { setStep("email"); setPin(""); setError("") }}
             className="text-violet-600 hover:underline font-medium"
           >
-            Try again
+            {m.tryAgain}
           </button>
         </p>
       </div>
@@ -133,13 +136,13 @@ function LoginForm() {
     <div className="bg-white border border-black/10 rounded-2xl p-8">
       {authError && (
         <div className="mb-4 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-          Something went wrong on our side while signing you in — sorry about that. Please sign in again below; your work is saved.
+          {m.authError}
         </div>
       )}
       <OAuthButtons callbackUrl={callbackUrl} />
       <form onSubmit={handleSendPin} className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-[#1b1916] mb-1.5">Email</label>
+          <label className="block text-sm font-medium text-[#1b1916] mb-1.5">{m.emailLabel}</label>
           <input
             type="email"
             value={email}
@@ -147,7 +150,7 @@ function LoginForm() {
             required
             autoFocus
             className="w-full px-4 py-2.5 rounded-xl border border-black/10 bg-[#f3f2f1] text-[#1b1916] text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
-            placeholder="you@example.com"
+            placeholder={m.emailPlaceholder}
           />
         </div>
         {error && <p className="text-red-500 text-sm">{error}</p>}
@@ -156,29 +159,30 @@ function LoginForm() {
           disabled={loading}
           className="w-full py-3 bg-violet-600 hover:bg-violet-500 text-white rounded-xl text-sm font-semibold transition-colors disabled:opacity-50"
         >
-          {loading ? "Sending code..." : "Continue with email"}
+          {loading ? m.sendingCode : m.continueWithEmail}
         </button>
       </form>
       <p className="text-center text-sm text-slate-500 mt-6">
-        Don&apos;t have an account?{" "}
-        <Link href="/signup" className="text-violet-600 hover:underline font-medium">Sign up</Link>
+        {m.noAccount}{" "}
+        <LocaleLink href="/signup" className="text-violet-600 hover:underline font-medium">{m.signUp}</LocaleLink>
       </p>
     </div>
   )
 }
 
 export default function LoginPage() {
+  const m = useT(loginNs)
   return (
     <div className="min-h-screen bg-[#f3f2f1] flex items-center justify-center px-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <Link href="/">
+          <LocaleLink href="/">
             <span className="text-2xl font-bold bg-gradient-to-r from-violet-600 to-pink-500 bg-clip-text text-transparent">
               ItGrows.ai
             </span>
-          </Link>
-          <h1 className="text-2xl font-bold text-[#1b1916] mt-4">Welcome back</h1>
-          <p className="text-slate-500 text-sm mt-1">Sign in to your account</p>
+          </LocaleLink>
+          <h1 className="text-2xl font-bold text-[#1b1916] mt-4">{m.welcomeBack}</h1>
+          <p className="text-slate-500 text-sm mt-1">{m.signInToAccount}</p>
         </div>
         <Suspense fallback={<div className="bg-white border border-black/10 rounded-2xl p-8 animate-pulse h-64" />}>
           <LoginForm />

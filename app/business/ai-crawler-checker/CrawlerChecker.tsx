@@ -1,6 +1,10 @@
 "use client"
 
 import { useState } from "react"
+import { useLocale, useT } from "@/components/i18n/LocaleProvider"
+import { formatNumber } from "@/lib/i18n/format"
+import { localePath } from "@/lib/i18n/paths"
+import ns from "@/lib/i18n/messages/crawlerChecker"
 
 interface PathBlock {
   bot: string
@@ -21,16 +25,8 @@ interface Result {
   error?: string
 }
 
-const ROLE: Record<string, string> = {
-  GPTBot: "OpenAI · training",
-  "OAI-SearchBot": "OpenAI · ChatGPT search index",
-  "ChatGPT-User": "OpenAI · fetches while answering",
-  ClaudeBot: "Anthropic · crawler",
-  "Claude-SearchBot": "Anthropic · search index",
-  PerplexityBot: "Perplexity · index",
-  Googlebot: "Google · Search, AI Overviews",
-  Bingbot: "Microsoft · Bing (ChatGPT search, Copilot)",
-}
+// The one error text /api/business/audit sends for a bad address; shown in the page's language.
+const INVALID_ADDRESS = "That does not look like a public website address."
 
 function track(event: string, props?: Record<string, unknown>) {
   try {
@@ -39,6 +35,9 @@ function track(event: string, props?: Record<string, unknown>) {
 }
 
 export default function CrawlerChecker() {
+  const m = useT(ns)
+  const locale = useLocale()
+  const role = m.roles as Readonly<Record<string, string | undefined>>
   const [url, setUrl] = useState("")
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState("")
@@ -57,13 +56,13 @@ export default function CrawlerChecker() {
         body: JSON.stringify({ url }),
       })
       const j = (await res.json()) as Result
-      if (!res.ok || j.error) setError(j.error ?? "That check did not complete. Try again.")
+      if (!res.ok || j.error) setError(j.error === INVALID_ADDRESS ? m.invalidAddress : (j.error ?? m.failed))
       else {
         setR(j)
         track("crawler_check_done", { site: j.site, blocked: (j.pathBlocks ?? []).filter((b) => b.blocked).map((b) => b.bot) })
       }
     } catch {
-      setError("That check did not complete. Try again.")
+      setError(m.failed)
     } finally {
       setBusy(false)
     }
@@ -77,8 +76,8 @@ export default function CrawlerChecker() {
         <input
           value={url}
           onChange={(e) => setUrl(e.target.value)}
-          placeholder="yourcompany.com"
-          aria-label="Your website address"
+          placeholder={m.placeholder}
+          aria-label={m.inputLabel}
           className="flex-1 rounded-xl border border-black/15 bg-white px-4 py-3.5 text-base focus:outline-none focus:ring-2 focus:ring-violet-400"
         />
         <button
@@ -86,15 +85,15 @@ export default function CrawlerChecker() {
           disabled={busy || url.trim().length < 3}
           className="px-7 py-3.5 rounded-xl bg-violet-600 hover:bg-violet-500 disabled:opacity-50 text-white text-base font-semibold whitespace-nowrap"
         >
-          {busy ? "Checking…" : "Check crawlers →"}
+          {busy ? m.checking : m.submit}
         </button>
       </form>
       {error && <p className="text-sm text-red-600 mt-3">{error}</p>}
 
       {r?.unreachable && (
         <div className="mt-5 rounded-2xl bg-red-50 border border-red-200 p-5">
-          <p className="font-bold">{r.site} refused every request we made</p>
-          <p className="text-sm text-slate-700 mt-1">We tried as a browser and as three crawlers and got nothing back. That is almost always bot protection, and it stops AI crawlers the same way.</p>
+          <p className="font-bold">{m.refusedTitle(r.site)}</p>
+          <p className="text-sm text-slate-700 mt-1">{m.refusedBody}</p>
         </div>
       )}
 
@@ -105,16 +104,12 @@ export default function CrawlerChecker() {
             {worst.length ? (
               <>
                 <p className="font-extrabold text-lg mt-1">
-                  Your robots.txt closes {Math.max(...worst.map((w) => w.blocked))} of the {worst[0].checked} pages we checked to{" "}
-                  {worst.map((w) => w.bot).join(", ")}
+                  {m.closesTitle(Math.max(...worst.map((w) => w.blocked)), worst[0].checked, worst.map((w) => w.bot).join(", "))}
                 </p>
-                <p className="text-sm text-slate-700 mt-1">
-                  Rule{worst[0].rules.length > 1 ? "s" : ""}: {worst[0].rules.map((x) => `“${x.rule}”`).join(", ")}. Rules match
-                  prefixes, so a rule meant for one page closes every path that starts the same way.
-                </p>
+                <p className="text-sm text-slate-700 mt-1">{m.rulesLine(worst[0].rules.map((x) => x.rule))}</p>
               </>
             ) : (
-              <p className="font-extrabold text-lg mt-1">robots.txt lets these crawlers reach the pages in your sitemap</p>
+              <p className="font-extrabold text-lg mt-1">{m.allOpenTitle}</p>
             )}
           </div>
 
@@ -125,8 +120,8 @@ export default function CrawlerChecker() {
                 <div key={b.bot} className="px-5 py-3 flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <p className="text-sm font-semibold">{b.bot}</p>
-                    <p className="text-xs text-slate-500">{ROLE[b.bot]}</p>
-                    {b.blocked > 0 && b.examples[0] && <p className="text-xs text-red-700 mt-1 break-all">e.g. {b.examples[0]}</p>}
+                    <p className="text-xs text-slate-500">{role[b.bot]}</p>
+                    {b.blocked > 0 && b.examples[0] && <p className="text-xs text-red-700 mt-1 break-all">{m.example(b.examples[0])}</p>}
                   </div>
                   <div className="text-right shrink-0">
                     <span
@@ -134,11 +129,11 @@ export default function CrawlerChecker() {
                         b.blocked ? "text-red-700 bg-red-50 border-red-200" : "text-green-700 bg-green-50 border-green-200"
                       }`}
                     >
-                      {b.blocked ? `${b.blocked} of ${b.checked} pages closed` : "All pages open"}
+                      {b.blocked ? m.closedOf(b.blocked, b.checked) : m.allOpen}
                     </span>
                     {live && (
                       <p className={`text-[11px] mt-1 ${live.blocked ? "text-red-700" : "text-slate-500"}`}>
-                        {live.blocked ? `Server refused it (HTTP ${live.status})` : live.status ? `Server answered ${live.status}` : "No answer"}
+                        {live.blocked ? m.serverRefused(live.status) : live.status ? m.serverAnswered(live.status) : m.noAnswer}
                       </p>
                     )}
                   </div>
@@ -149,17 +144,17 @@ export default function CrawlerChecker() {
 
           <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm px-5 py-4 bg-[#f8f7f6]">
             <dt className="text-slate-500">robots.txt</dt>
-            <dd className="text-right font-semibold">{r.robots.found ? "Found" : "None"}</dd>
-            <dt className="text-slate-500">Pages in your sitemap</dt>
-            <dd className="text-right font-semibold">{r.surface.sitemapKind === "none" ? "No sitemap found" : `${r.surface.isFloor ? "≥" : ""}${r.surface.urlCount.toLocaleString()}`}</dd>
-            <dt className="text-slate-500">Words readable without JavaScript</dt>
-            <dd className="text-right font-semibold">{r.serverRenderedWords.toLocaleString()}</dd>
+            <dd className="text-right font-semibold">{r.robots.found ? m.found : m.none}</dd>
+            <dt className="text-slate-500">{m.sitemapPages}</dt>
+            <dd className="text-right font-semibold">{r.surface.sitemapKind === "none" ? m.noSitemap : `${r.surface.isFloor ? "≥" : ""}${formatNumber(locale, r.surface.urlCount)}`}</dd>
+            <dt className="text-slate-500">{m.words}</dt>
+            <dd className="text-right font-semibold">{formatNumber(locale, r.serverRenderedWords)}</dd>
             <dt className="text-slate-500">llms.txt</dt>
-            <dd className="text-right font-semibold">{r.llmsTxt ? "Yes" : "No"}</dd>
+            <dd className="text-right font-semibold">{r.llmsTxt ? m.yes : m.no}</dd>
           </dl>
           <div className="px-5 py-4">
-            <a href="/business/ai-visibility-checker" className="block text-center rounded-xl bg-violet-600 hover:bg-violet-500 text-white px-6 py-3 text-sm font-semibold">
-              Now check whether ChatGPT names you →
+            <a href={localePath(locale, "/business/ai-visibility-checker")} className="block text-center rounded-xl bg-violet-600 hover:bg-violet-500 text-white px-6 py-3 text-sm font-semibold">
+              {m.nextCta}
             </a>
           </div>
         </div>

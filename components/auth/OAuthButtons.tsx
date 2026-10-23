@@ -2,12 +2,16 @@
 
 import { signIn } from "next-auth/react"
 import { useState } from "react"
+import { useT } from "@/components/i18n/LocaleProvider"
+import oauthButtons from "@/lib/i18n/messages/oauthButtons"
 
 /**
  * Google + LinkedIn one-click sign-in buttons.
  * Redirect-based (redirect: true) so the OAuth flow leaves and returns to callbackUrl.
+ * Labels in the page's language (lib/i18n/messages/oauthButtons.ts); English without a LocaleProvider.
  */
 export default function OAuthButtons({ callbackUrl = "/cabinet" }: { callbackUrl?: string }) {
+  const m = useT(oauthButtons)
   const [loading, setLoading] = useState<"google" | "linkedin" | null>(null)
 
   return (
@@ -24,7 +28,7 @@ export default function OAuthButtons({ callbackUrl = "/cabinet" }: { callbackUrl
           <path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.997 8.997 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" />
           <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z" />
         </svg>
-        {loading === "google" ? "Redirecting…" : "Continue with Google"}
+        {loading === "google" ? m.redirecting : m.google}
       </button>
 
       <button
@@ -36,12 +40,12 @@ export default function OAuthButtons({ callbackUrl = "/cabinet" }: { callbackUrl
         <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
           <path fill="#0A66C2" d="M20.45 20.45h-3.56v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.13 1.45-2.13 2.94v5.67H9.35V9h3.42v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.45v6.29zM5.34 7.43a2.06 2.06 0 1 1 0-4.13 2.06 2.06 0 0 1 0 4.13zM7.12 20.45H3.55V9h3.57v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.22.79 24 1.77 24h20.45c.98 0 1.78-.78 1.78-1.73V1.73C24 .77 23.2 0 22.22 0z" />
         </svg>
-        {loading === "linkedin" ? "Redirecting…" : "Continue with LinkedIn"}
+        {loading === "linkedin" ? m.redirecting : m.linkedin}
       </button>
 
       <div className="flex items-center gap-3 py-1">
         <div className="h-px flex-1 bg-black/10" />
-        <span className="text-xs text-slate-400">or</span>
+        <span className="text-xs text-slate-400">{m.or}</span>
         <div className="h-px flex-1 bg-black/10" />
       </div>
     </div>

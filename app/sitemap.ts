@@ -2,6 +2,7 @@ import { db } from "@/lib/db"
 import { blogPosts } from "@/lib/db/schema"
 import { and, desc, eq, isNull } from "drizzle-orm"
 import type { MetadataRoute } from "next"
+import { localizedSitemapEntries } from "@/lib/i18n/metadata"
 
 // Always reflect the DB so cron-published posts hit the sitemap immediately
 // (without a revalidate this renders once at build and new posts never appear).
@@ -33,15 +34,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     return d > m ? d : m
   }, new Date("2026-10-21"))
   const D = (s: string) => new Date(s)
+  // The public AI-visibility pages exist in five languages (lib/i18n): each language's address is
+  // listed, and every entry carries the hreflang alternates of all five plus x-default (English).
   const staticRoutes: MetadataRoute.Sitemap = [
-    { url: "https://www.itgrows.ai", lastModified: D("2026-10-22"), changeFrequency: "weekly", priority: 1 },
+    ...localizedSitemapEntries("/", { lastModified: D("2026-10-23"), changeFrequency: "weekly", priority: 1 }),
     { url: "https://www.itgrows.ai/personal", lastModified: D("2026-10-22"), changeFrequency: "weekly", priority: 0.9 },
     { url: "https://www.itgrows.ai/blog", lastModified: latestBlog, changeFrequency: "daily", priority: 0.9 },
     { url: "https://www.itgrows.ai/company", lastModified: D("2026-10-01"), changeFrequency: "weekly", priority: 0.9 },
     { url: "https://www.itgrows.ai/business/blog", lastModified: latestGuide, changeFrequency: "weekly", priority: 0.8 },
-    { url: "https://www.itgrows.ai/business/ai-visibility-checker", lastModified: D("2026-10-21"), changeFrequency: "weekly", priority: 0.9 },
-    { url: "https://www.itgrows.ai/business/ai-crawler-checker", lastModified: D("2026-10-21"), changeFrequency: "weekly", priority: 0.9 },
-    { url: "https://www.itgrows.ai/about", lastModified: D("2026-10-22"), changeFrequency: "monthly", priority: 0.6 },
+    ...localizedSitemapEntries("/business/ai-visibility-checker", { lastModified: D("2026-10-23"), changeFrequency: "weekly", priority: 0.9 }),
+    ...localizedSitemapEntries("/business/ai-crawler-checker", { lastModified: D("2026-10-23"), changeFrequency: "weekly", priority: 0.9 }),
+    ...localizedSitemapEntries("/about", { lastModified: D("2026-10-23"), changeFrequency: "monthly", priority: 0.6 }),
     { url: "https://www.itgrows.ai/reddit", lastModified: D("2026-10-14"), changeFrequency: "weekly", priority: 0.8 },
     ...businessPosts.map((post) => ({
       url: `https://www.itgrows.ai/business/blog/${post.slug}`,
