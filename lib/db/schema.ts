@@ -94,7 +94,15 @@ export const blogPosts = pgTable("blog_posts", {
   redirectTo: text("redirect_to"),
   // Language of the article; null means English.
   lang: text("lang"),
-}, (t) => [index("blog_posts_user_id_idx").on(t.userId), index("blog_posts_site_slug_idx").on(t.siteSlug)])
+  // The AI-visibility plan question this article answers, and the site's geo_sites.domain: stamped
+  // where the topic is chosen, never by the writer (lib/db/migrations/add_geo_step_links.sql).
+  geoDomain: text("geo_domain"),
+  geoQuestion: text("geo_question"),
+}, (t) => [
+  index("blog_posts_user_id_idx").on(t.userId),
+  index("blog_posts_site_slug_idx").on(t.siteSlug),
+  index("blog_posts_geo_domain_idx").on(t.geoDomain),
+])
 
 export const scheduledPosts = pgTable("scheduled_posts", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -113,7 +121,15 @@ export const scheduledPosts = pgTable("scheduled_posts", {
   publishError: text("publish_error"),
   publishAttempts: integer("publish_attempts").default(0),
   createdAt: timestamp("created_at").notNull().defaultNow(),
-}, (t) => [index("scheduled_posts_user_id_idx").on(t.userId), index("scheduled_posts_status_idx").on(t.status)])
+  // The AI-visibility plan question this article answers, and the site's geo_sites.domain: stamped
+  // where the topic is chosen, never by the writer (lib/db/migrations/add_geo_step_links.sql).
+  geoDomain: text("geo_domain"),
+  geoQuestion: text("geo_question"),
+}, (t) => [
+  index("scheduled_posts_user_id_idx").on(t.userId),
+  index("scheduled_posts_status_idx").on(t.status),
+  index("scheduled_posts_geo_domain_idx").on(t.geoDomain),
+])
 
 export const passwordResetTokens = pgTable("password_reset_tokens", {
   id: uuid("id").primaryKey().defaultRandom(),

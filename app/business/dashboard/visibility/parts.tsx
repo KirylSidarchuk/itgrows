@@ -12,7 +12,9 @@
 // What is sold, said the same way on every page: the report is the diagnosis plus the plan of what
 // WE do about it; the plan is us doing that work. The report never teaches how to do it yourself:
 // a step says what we do, why (the evidence) and what it should change — no how-to, no guides.
-// Clients on the plan, and clients we set up by hand (site.client), read every step as "We're on it".
+// Clients on the plan, and clients we set up by hand (site.client), read each step with where it
+// stands (site.work): the article's state, the launch items behind a fix, or what we set by hand;
+// "Planned" until there is something to say. Never why, never our notes, never a forecast.
 
 import { Fragment, useEffect, useState, type ReactNode } from "react"
 import { ENGINE_ICONS } from "../../engine-icons"
@@ -53,6 +55,8 @@ export type Change =
   | { type: "lost"; engine: string; q: string }
   | { type: "rival"; name: string; count: number }
 export interface Report {
+  /** The run, to open it from the history. */
+  id?: string
   kind: string
   finishedAt: string
   engines: string[]
@@ -88,8 +92,51 @@ export interface SiteReport {
   failed: boolean
   latest: Report | null
   baseline: Report | null
-  history: { kind: string; finishedAt: string; samples: number; questions: number; named: number; of: number }[]
+  /** Every finished report, oldest first, counts only (lib/geo-report.ts). */
+  history: HistoryRun[]
   teaser: { engines: string[]; summary: Summary; rows: Row[]; finishedAt: string } | null
+  /** A client's own site only: where the plan's work stands (lib/geo-report.ts planWork). */
+  work?: PlanWork | null
+}
+/** Keyed by the day-0 question as asked, and by launch item or "step:<step id>". */
+export interface PlanWork {
+  articles: Record<string, PlanArticle>
+  launch: Record<string, LaunchState>
+  /** The latest weekly check, per question: named by how many of the assistants it could check. */
+  week: { finishedAt: string; samples: number; named: Record<string, { named: number; of: number }> } | null
+  day0: { samples: number; named: Record<string, { named: number; of: number }> }
+}
+export interface PlanArticle {
+  state: "scheduled" | "written" | "approval" | "published" | "stopped"
+  /** scheduled / written: the day it goes live (YYYY-MM-DD, UTC); approval / published: when it was sent. */
+  date: string | null
+  url: string | null
+  title: string
+}
+export interface LaunchState {
+  status: string
+  who: "you" | "us"
+  updatedAt: string | null
+  /** Belongs in the "Done" list (worked out on the server, so the page never learns how an item was
+   *  confirmed). */
+  done: boolean
+  /** As "Your website" titles it; null for a step of the plan. */
+  title: string | null
+}
+/** One finished report in the history; its answers load when it is opened (/api/geo/report/run). */
+export interface HistoryRun {
+  id: string
+  kind: string
+  finishedAt: string
+  samples: number
+  questions: number
+  /** Equal for runs that asked the same questions the same number of times: only those compare. */
+  basis: string
+  named: number
+  of: number
+  engines: Record<string, { named: number; of: number }>
+  /** What a weekly check was compared with; for the first week of a shorter check, day 0 read that way. */
+  previous: { kind: string; finishedAt: string | null; named: number; of: number } | null
 }
 export interface Audit {
   site: string
@@ -139,6 +186,11 @@ export function fmtDate(iso?: string | null) {
   return new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })
 }
 
+/** "28 Oct", under a bar of the trend. */
+function fmtDay(iso: string) {
+  return new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short" })
+}
+
 function citedByEngine(rows: Row[]) {
   const out: Record<string, number> = {}
   for (const r of rows) for (const [e, a] of Object.entries(r.engines ?? {})) if (a.cited > 0) out[e] = (out[e] ?? 0) + 1
@@ -161,7 +213,7 @@ export const lockedCount = (rows: Row[]) => rows.filter((r) => r.locked).length
 export const isPreview = (site: SiteReport) => site.access === "preview"
 
 /** We do the work for this site: it is on the plan, or a client we set up by hand. No unlock, no
- *  offer of the plan; every step reads "We're on it". */
+ *  offer of the plan; each step says where it stands. */
 export const onPlan = (site: SiteReport) => site.plan === "paid" || site.client === true
 
 /** The report the detailed cards come from: a weekly check of five questions is not the full
@@ -335,13 +387,48 @@ export function FirstLook({ site }: { site: SiteReport }) {
 
 // ── the weekly view ──────────────────────────────────────────────────────────────────────────
 
+/** "5 questions × 1 ask": how a run was measured, shown where two runs do not compare. */
+const basisLabel = (h: HistoryRun) => `${h.questions} questions × ${h.samples} ask${h.samples === 1 ? "" : "s"}`
+
+/** Assistants that did not answer every question of a run. Their missing answers are out of its
+ *  total, so a smaller "of" is a partial week, not a drop. */
+const unchecked = (h: HistoryRun) => ENGINES.filter((e) => h.engines[e] && h.engines[e].of < h.questions)
+
+/** The basis of the latest report: what the trend and the changes in the history are measured on. */
+const latestBasis = (site: SiteReport) => site.history[site.history.length - 1]?.basis
+
 /** Weekly checks measured the same way as the latest one, oldest first. */
 function sameBasis(site: SiteReport) {
-  const l = site.latest!
-  return site.history.filter((h) => h.kind === "weekly" && h.samples === l.samples && h.questions === l.rows.length)
+  const basis = latestBasis(site)
+  return site.history.filter((h) => h.kind === "weekly" && h.basis === basis)
 }
 
-export function WeeklyHero({ site, onShowBaseline, readOnly }: { site: SiteReport; onShowBaseline?: () => void; readOnly?: boolean }) {
+/** Day 0 measured on `basis`, where the trend starts: the day-0 report itself when it asked the same
+ *  questions as often, else day 0 read on the shorter weekly basis, which the VM keeps with the first
+ *  weekly check of that basis (summary.previous). `id` opens the day-0 report either way. `partial`
+ *  is the History row's test (an assistant that could not answer every question), so the bar and the
+ *  row agree; day 0 read the weekly way keeps only its counts, so it cannot say and is not marked. */
+function dayZero(history: HistoryRun[], basis: string | undefined) {
+  const days0 = history.filter((h) => h.kind === "baseline")
+  const same = days0.filter((h) => h.basis === basis).pop()
+  if (same) return { id: same.id as string | undefined, named: same.named, of: same.of, partial: unchecked(same).length > 0 }
+  const first = history.find((h) => h.kind === "weekly" && h.basis === basis && h.previous?.kind === "baseline")
+  if (!first?.previous) return null
+  return { id: days0[days0.length - 1]?.id, named: first.previous.named, of: first.previous.of, partial: false }
+}
+
+export function WeeklyHero({
+  site,
+  onShowBaseline,
+  onOpenRun,
+  readOnly,
+}: {
+  site: SiteReport
+  onShowBaseline?: () => void
+  /** Opens the report of a bar, as a row of the history does. */
+  onOpenRun?: (id: string) => void
+  readOnly?: boolean
+}) {
   const l = site.latest!
   const s = l.summary
   const weeks = sameBasis(site)
@@ -351,11 +438,18 @@ export function WeeklyHero({ site, onShowBaseline, readOnly }: { site: SiteRepor
   const avgPrev = prev8.length === 4 ? prev8.reduce((n, w) => n + w.named, 0) / 4 : null
   const avgTone = avg !== null && avgPrev !== null && weeks.length >= 8 ? (avg > avgPrev ? "bg-green-50 text-green-800" : avg < avgPrev ? "bg-amber-50 text-amber-800" : "") : ""
   const prev = s.previous
-  const shown = weeks.slice(-12)
-  const max = Math.max(1, ...shown.map((w) => w.of))
+  // The trend: day 0 measured the same way first, when there is one, then the weeks; 12 bars, 8 on a
+  // phone, where day 0 stays and the oldest weeks drop.
+  const day0 = dayZero(site.history, latestBasis(site))
+  const lead = day0 ? 1 : 0
+  const bars = [
+    ...(day0 ? [{ ...day0, label: "Day 0" }] : []),
+    ...weeks.slice(lead - 12).map((w) => ({ id: w.id as string | undefined, named: w.named, of: w.of, label: fmtDay(w.finishedAt), partial: unchecked(w).length > 0 })),
+  ]
+  const max = Math.max(1, ...bars.map((b) => b.of))
   const engines = ENGINES.filter((e) => s.engines[e])
-  // Not on the plan: this week's check is a short one, so say how short and where the full picture is.
-  const short = !onPlan(site) && !readOnly
+  // This week's check asks fewer questions than day 0: say how short. The day-0 report opens from here.
+  const short = !readOnly && fullReport(site) !== l
   return (
     <section className={card}>
       <div className="flex items-start justify-between gap-3 flex-wrap">
@@ -378,14 +472,35 @@ export function WeeklyHero({ site, onShowBaseline, readOnly }: { site: SiteRepor
           </span>
         )}
       </div>
-      {shown.length > 1 && (
-        <div className="mt-5 flex items-end gap-1.5 h-24" aria-label="Answers that named you, week by week">
-          {shown.map((w, i) => (
-            <div key={i} className={`flex-1 flex flex-col items-center justify-end h-full ${i < shown.length - 8 ? "hidden sm:flex" : ""}`}>
-              <span className="text-[10px] text-slate-500 tabular-nums mb-0.5">{w.named}</span>
-              <div className="w-full rounded-t bg-violet-500/80" style={{ height: `${Math.max(3, (w.named / max) * 100)}%` }} />
-            </div>
-          ))}
+      {bars.length > 1 && (
+        <div className="mt-5 flex items-end gap-1.5" aria-label="Answers that named you, week by week">
+          {bars.map((b, i) => {
+            const cls = `flex-1 min-w-0 flex-col items-center ${i >= lead && i < bars.length - 8 + lead ? "hidden sm:flex" : "flex"}`
+            const title = `${b.label}: named in ${b.named} of ${b.of}${b.partial ? " (partial)" : ""}`
+            const body = (
+              <>
+                <span className="h-24 w-full flex flex-col items-center justify-end">
+                  <span className="text-[10px] text-slate-500 tabular-nums mb-0.5">{b.named}</span>
+                  <span
+                    className={`block w-full rounded-t ${b.partial ? "bg-violet-300" : "bg-violet-500/80"}`}
+                    style={{ height: `${Math.max(3, (b.named / max) * 100)}%` }}
+                  />
+                </span>
+                <span className="mt-1 text-[10px] text-slate-500 whitespace-nowrap">{b.label}</span>
+              </>
+            )
+            const id = b.id
+            const open = onOpenRun
+            return open && id ? (
+              <button key={i} type="button" onClick={() => open(id)} title={title} className={`${cls} rounded hover:bg-[#f8f7f6]`}>
+                {body}
+              </button>
+            ) : (
+              <div key={i} title={title} className={cls}>
+                {body}
+              </div>
+            )
+          })}
         </div>
       )}
       <p className="text-xs text-slate-500 mt-3 leading-relaxed">
@@ -397,16 +512,13 @@ export function WeeklyHero({ site, onShowBaseline, readOnly }: { site: SiteRepor
           <Tile key={e} engine={e} named={s.engines[e].named} of={s.engines[e].of} />
         ))}
       </div>
-      {short && (
+      {(short || onShowBaseline) && (
         <p className="text-xs text-slate-500 mt-3">
-          This check: {l.rows.length} questions × {engines.length} assistants, {l.samples} ask{l.samples === 1 ? "" : "s"} each.
+          {short && `This check: ${l.rows.length} questions × ${engines.length} assistants, ${l.samples} ask${l.samples === 1 ? "" : "s"} each. `}
           {onShowBaseline && (
-            <>
-              {" "}
-              <button type="button" onClick={onShowBaseline} className="text-violet-700 font-semibold hover:underline">
-                View day-0 report
-              </button>
-            </>
+            <button type="button" onClick={onShowBaseline} className="text-violet-700 font-semibold hover:underline">
+              View day-0 report
+            </button>
           )}
         </p>
       )}
@@ -414,11 +526,11 @@ export function WeeklyHero({ site, onShowBaseline, readOnly }: { site: SiteRepor
   )
 }
 
-export function WhatChanged({ changes }: { changes: Change[] }) {
+export function WhatChanged({ changes, title = "What changed this week" }: { changes: Change[]; title?: string }) {
   const list = changes.slice(0, 5)
   return (
     <section className={card}>
-      <h2 className="font-bold text-lg">What changed this week</h2>
+      <h2 className="font-bold text-lg">{title}</h2>
       {list.length === 0 ? (
         <p className="text-sm text-slate-600 mt-3">No changes since last week.</p>
       ) : (
@@ -906,6 +1018,8 @@ export interface Step {
   /** Only what needs the owner's own login or approval. */
   you?: string
   optional?: boolean
+  /** An article step: the day-0 question it answers, word for word (its article is linked by it). */
+  q?: string
 }
 
 const andList = (xs: string[]) => (xs.length <= 1 ? xs.join("") : `${xs.slice(0, -1).join(", ")} and ${xs[xs.length - 1]}`)
@@ -928,10 +1042,20 @@ const ARTICLE_YOU = "Nothing to do. You see every article 2 days before it goes 
 const HOSTING_YOU = "Access to your hosting or CDN settings, or a word to your developer."
 const ADMIN_YOU = "Access to your site's admin, or a word to your developer."
 
-export function planSteps(site: SiteReport, audit: Audit | "failed" | undefined): Step[] {
+/** A place step's evidence: where the assistants cited a site, and whether they named you there. A
+ *  client's step stays from day 0 on, so it says when that was seen, in the past tense, as the Article
+ *  steps do; the offer reads the latest report and speaks in the present. */
+function seenIn(client: boolean, what: string, cited: string, named: string | null) {
+  if (client) return `On day 0, ${what[0].toLowerCase()}${what.slice(1)} was cited in ${cited}${named ? `; you were named in ${named}` : ""}.`
+  return `${what}: cited in ${cited}${named ? `; you're named in ${named}` : ""}.`
+}
+
+export function planSteps(site: SiteReport, audit: Audit | "failed" | undefined, client = false): Step[] {
   // Steps come from the fullest report. A preview keeps to the few steps its open questions support;
-  // the full report lists every step, so it is always a superset of what the preview showed.
-  const l = fullReport(site)
+  // the full report lists every step, so it is always a superset of what the preview showed. A
+  // client's plan is the day-0 report's, the one the work started from: a step stays when it starts
+  // to work (its status says so) and the weekly checks never reshuffle it.
+  const l = client ? (site.baseline ?? site.latest) : fullReport(site)
   if (!l) return []
   const preview = isPreview(site)
   const s = l.summary
@@ -1048,13 +1172,16 @@ export function planSteps(site: SiteReport, audit: Audit | "failed" | undefined)
   const used = new Set(gaps.map((g) => g.q))
   const content: Step[] = gaps.map((g) => {
     const top = g.names.slice(0, 3)
+    const notYou = g.checked === 1 ? "the assistant we could check didn't name you" : `none of the ${g.checked} assistants named you`
     return {
       id: `gap:${g.q}`,
+      q: g.q,
       kind: "write",
       tag: "Article",
       title: `A page that answers “${g.q}”`,
       we: "We research and write the article, and publish it on your site.",
-      why: `${g.checked === 1 ? "The assistant we could check didn't name you" : `None of the ${g.checked} assistants named you`} for it. ${andList(g.others.map((e) => LABEL[e]))} named ${andList(g.names.length > 3 ? [...top, "others"] : top)} instead.`,
+      // A client's step stays from day 0 on, so its evidence says when it was seen.
+      why: `${client ? `On day 0, ${notYou}` : notYou[0].toUpperCase() + notYou.slice(1)} for it. ${andList(g.others.map((e) => LABEL[e]))} named ${andList(g.names.length > 3 ? [...top, "others"] : top)} instead.`,
       change: "The assistants get a page of yours that answers this question directly. The weekly check shows whether their answers start naming you.",
       you: ARTICLE_YOU,
     }
@@ -1079,11 +1206,12 @@ export function planSteps(site: SiteReport, audit: Audit | "failed" | undefined)
         tag: market ? "Listing" : "Profile",
         title: `Your ${what} on ${dir.domain}`,
         we: `We prepare the ${what}: the text and every field, matching your site.`,
-        why: `${market ? "A marketplace" : "A directory with reviews"} the assistants quote: ${
-          c.n
-            ? `cited in ${c.n} of ${s.of} answers to your questions; you're named in ${c.named ? `${c.named} of those ${c.n}` : "none of them"}.`
-            : `cited in ${dir.count} of ${s.of} answers to your questions.`
-        }`,
+        why: seenIn(
+          client,
+          `${market ? "A marketplace" : "A directory with reviews"} the assistants quote`,
+          `${c.n || dir.count} of ${s.of} answers to your questions`,
+          c.n ? (c.named ? `${c.named} of those ${c.n}` : "none of them") : null,
+        ),
         change: `The answers that quote ${dir.domain} find a complete, current ${what} of yours there.`,
         you: `Signing in to ${dir.domain} to claim the ${what} (it has to be your own login), and approving the text.`,
       })
@@ -1103,7 +1231,9 @@ export function planSteps(site: SiteReport, audit: Audit | "failed" | undefined)
           tag: "Article",
           title: `A fuller answer than ${rival.domain} to “${best.q}”`,
           we: "We research and write the article, and publish it on your site.",
-          why: `${rival.domain}, a competitor's site, is cited for it in ${answers(best.n)}; you're named in ${best.named ? `${best.named} of them` : "none of them"}.`,
+          why: client
+            ? `On day 0, ${rival.domain}, a competitor's site, was cited for it in ${answers(best.n)}; you were named in ${best.named ? `${best.named} of them` : "none of them"}.`
+            : `${rival.domain}, a competitor's site, is cited for it in ${answers(best.n)}; you're named in ${best.named ? `${best.named} of them` : "none of them"}.`,
           change: "The assistants get a fuller answer of yours to quote for this question. The weekly check shows whether they start citing your site or naming you.",
           you: ARTICLE_YOU,
         })
@@ -1117,11 +1247,12 @@ export function planSteps(site: SiteReport, audit: Audit | "failed" | undefined)
         tag: "Media",
         title: `An expert quote on ${m.domain}`,
         we: `We find the article on ${m.domain} that covers your service and its editor, and write the letter to the editor.`,
-        why: `A media site or guide the assistants quote: ${
-          c.n
-            ? `cited in ${answers(c.n)} for your questions; you're named in ${c.named ? `${c.named} of them` : "none of them"}.`
-            : `cited in ${answers(m.count)} for your questions.`
-        }`,
+        why: seenIn(
+          client,
+          "A media site or guide the assistants quote",
+          `${answers(c.n || m.count)} for your questions`,
+          c.n ? (c.named ? `${c.named} of them` : "none of them") : null,
+        ),
         change: `If the editor uses it, the answers that quote ${m.domain} find you mentioned there.`,
         you: "Approving the letter: it goes out from your address.",
       })
@@ -1135,11 +1266,12 @@ export function planSteps(site: SiteReport, audit: Audit | "failed" | undefined)
         tag: "PR",
         title: `A story or comment for ${news.domain}`,
         we: `We find the journalist at ${news.domain} who covers your field and write the pitch: a story, data or a comment they can use.`,
-        why: `A news site the assistants quote: ${
-          c.n
-            ? `cited in ${answers(c.n)} for your questions; you're named in ${c.named ? `${c.named} of them` : "none of them"}.`
-            : `cited in ${answers(news.count)} for your questions.`
-        }`,
+        why: seenIn(
+          client,
+          "A news site the assistants quote",
+          `${answers(c.n || news.count)} for your questions`,
+          c.n ? (c.named ? `${c.named} of them` : "none of them") : null,
+        ),
         change: "If the journalist uses it, you're mentioned on a news site the assistants already quote.",
         you: "Approving the pitch: it goes out from your address.",
       })
@@ -1161,8 +1293,8 @@ export function planSteps(site: SiteReport, audit: Audit | "failed" | undefined)
 }
 
 /** Who reads the plan: an account not on it (the offer, "Start the plan"), a client on the plan or
- *  set up by hand ("We're on it"), or a visitor of the public sample (read-only; the plan's prices
- *  are on the home page). */
+ *  set up by hand (where each step stands), or a visitor of the public sample (read-only; the plan's
+ *  prices are on the home page). */
 export type PlanMode = "offer" | "client" | "sample"
 
 const PLAN_HOME = "/#geo-pricing"
@@ -1173,7 +1305,114 @@ const TAG_TONE: Record<Step["kind"], string> = {
   place: "text-slate-600 bg-[#f8f7f6]",
 }
 
-function PlanStep({ n, step, client }: { n: number; step: Step; client: boolean }) {
+// ── a client's plan: where each step stands ──
+
+const YOUR_ARTICLES = "/business/dashboard/articles"
+const YOUR_WEBSITE = "/business/dashboard/settings"
+
+/** What a step shows a client: one chip, at most one link, and for a published article the latest
+ *  weekly count of its question. Never why something was skipped, our notes, or a forecast. */
+export interface StepStatus {
+  text: string
+  tone: "planned" | "work" | "wait" | "you" | "done"
+  link?: { href: string; text: string; external?: boolean }
+  week?: string
+}
+
+// The colours "Your website" gives the same words (settings/page.tsx LAUNCH_PILL).
+const STATUS_TONE: Record<StepStatus["tone"], string> = {
+  planned: "text-slate-600 bg-[#f8f7f6] border border-black/[0.07]",
+  work: "text-violet-700 bg-violet-50 border border-violet-200",
+  wait: "text-sky-800 bg-sky-50 border border-sky-200",
+  you: "text-amber-900 bg-amber-50 border border-amber-300",
+  done: "text-green-800 bg-green-50 border border-green-200",
+}
+
+const PLANNED: StepStatus = { text: "Planned", tone: "planned" }
+const ON_IT: StepStatus = { text: "We're on it", tone: "work" }
+const CHECKING: StepStatus = { text: "We are checking", tone: "wait" }
+
+/** A day the publisher counts in UTC ("2026-10-25"): the same date for every viewer. */
+const fmtUtcDay = (d: string | null) =>
+  d ? new Date(`${d}T00:00:00Z`).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" }) : ""
+
+/** A launch item, or a step we set by hand, in the words "Your website" uses for it. */
+function launchStatus(i: LaunchState, toYourWebsite: boolean): StepStatus {
+  if (i.status === "ok" || i.status === "fixed") return { text: `Done ${fmtDate(i.updatedAt)}`.trim(), tone: "done" }
+  if (i.status === "check") return CHECKING
+  if (i.status === "you" || (i.who === "you" && ["issue", "handed", "todo"].includes(i.status)))
+    return { text: "Needs you", tone: "you", link: toYourWebsite ? { href: YOUR_WEBSITE, text: "Your website →" } : undefined }
+  if (i.status === "handed") return { text: "With your developer", tone: "wait" }
+  return ON_IT
+}
+
+// The launch items behind each fix step (none behind "ssr": we work that out with the developer).
+const FIX_ITEMS: Record<string, string[]> = {
+  crawlers: ["firewall", "crawlers"],
+  sitemap: ["sitemap", "gsc", "bing"],
+  schema: ["structured_data"],
+  llms: ["llms_txt"],
+}
+// Several items behind one fix: the one that waits on someone speaks for it, the client first.
+const URGENCY = ["Needs you", "With your developer", "We are checking", "We're on it"]
+
+function articleStatus(q: string, work: PlanWork): StepStatus {
+  const a = work.articles[q]
+  if (!a) return PLANNED
+  if (a.state === "scheduled") return { text: `Scheduled for ${fmtUtcDay(a.date)}`, tone: "work" }
+  if (a.state === "written")
+    return { text: `Written, goes live ${fmtUtcDay(a.date)}`, tone: "work", link: { href: YOUR_ARTICLES, text: "Your articles →" } }
+  if (a.state === "approval") return { text: "Sent to your WordPress for approval", tone: "wait" }
+  if (a.state === "stopped") return { text: "Stopped by you", tone: "planned" }
+  // Out. Its question's count once a weekly check has run since; day 0 beside it only when both
+  // asked the same number of times (an answer counts as named in at least 1 of N asks).
+  const w = work.week
+  const now = w && a.date && Date.parse(w.finishedAt) > Date.parse(a.date) ? w.named[q] : undefined
+  const then = w && work.day0.samples === w.samples ? work.day0.named[q] : undefined
+  return {
+    text: `Published ${fmtDate(a.date)}`.trim(),
+    tone: "done",
+    link: a.url ? { href: a.url, text: "Read it →", external: true } : undefined,
+    week: now && now.of > 0 ? `This week: named by ${now.named} of ${now.of}${then && then.of > 0 ? ` (day 0: ${then.named} of ${then.of})` : ""}` : undefined,
+  }
+}
+
+/** Where a step of a client's plan stands (site.work, lib/geo-report.ts planWork). */
+export function stepStatus(step: Step, work: PlanWork | null | undefined): StepStatus {
+  if (!work) return ON_IT
+  if (step.q) return articleStatus(step.q, work)
+  if (step.kind === "fix") {
+    const items = (FIX_ITEMS[step.id] ?? []).map((k) => work.launch[k]).filter((i): i is LaunchState => Boolean(i))
+    if (!items.length) return ON_IT
+    const open = items
+      .map((i) => launchStatus(i, true))
+      .filter((st) => st.tone !== "done")
+      .sort((a, b) => URGENCY.indexOf(a.text) - URGENCY.indexOf(b.text))
+    // Every item behind it is in order by our daily check, yet the crawler check on this page still
+    // finds the problem: one of the two is about to change.
+    return open[0] ?? CHECKING
+  }
+  // A profile, listing, media, PR or rival-answer step: nothing checks that work, so only what we set
+  // by hand (launch.py set <domain> step:<id>).
+  const r = work.launch[`step:${step.id}`]
+  return r && r.status !== "tip" ? launchStatus(r, false) : PLANNED
+}
+
+/** Under a client's plan, newest first: launch items the check saw fixed or we set in order by hand,
+ *  steps we marked done, and the plan's articles that are out. */
+function doneList(steps: Step[], work: PlanWork) {
+  const out: { key: string; title: string; date: string | null; href?: string }[] = []
+  for (const [key, i] of Object.entries(work.launch)) {
+    if (!i.done) continue
+    const title = key.startsWith("step:") ? steps.find((st) => `step:${st.id}` === key)?.title : i.title
+    if (title) out.push({ key, title, date: i.updatedAt })
+  }
+  for (const [q, a] of Object.entries(work.articles))
+    if (a.state === "published") out.push({ key: `article:${q}`, title: a.title || q, date: a.date, href: a.url ?? undefined })
+  return out.sort((a, b) => (b.date ?? "").localeCompare(a.date ?? ""))
+}
+
+function PlanStep({ n, step, status }: { n: number; step: Step; status: StepStatus | null }) {
   const line = "text-sm text-slate-600 leading-relaxed mt-1 break-words"
   const lead = "font-semibold text-[#1b1916]"
   const chip = "text-[10px] font-bold uppercase tracking-wide rounded-full px-2 py-0.5"
@@ -1185,9 +1424,19 @@ function PlanStep({ n, step, client }: { n: number; step: Step; client: boolean 
           <div className="flex flex-wrap items-center gap-1.5">
             <span className={`${chip} ${TAG_TONE[step.kind]}`}>{step.tag}</span>
             {step.optional && <span className={`${chip} text-slate-500 bg-[#f8f7f6]`}>Optional</span>}
-            {client && <span className={`${chip} text-green-800 bg-green-50 border border-green-200`}>We&apos;re on it</span>}
+            {status && <span className={`${chip} ${STATUS_TONE[status.tone]}`}>{status.text}</span>}
+            {status?.link && (
+              <a
+                href={status.link.href}
+                {...(status.link.external ? { target: "_blank", rel: "noopener" } : {})}
+                className="text-xs font-semibold text-violet-700 hover:underline"
+              >
+                {status.link.text}
+              </a>
+            )}
           </div>
           <p className="mt-1.5 text-sm font-semibold leading-snug break-words">{step.title}</p>
+          {status?.week && <p className="mt-1 text-xs font-semibold text-slate-700">{status.week}</p>}
           <p className={`${line} mt-1.5`}>
             <span className={lead}>We do: </span>
             {step.we}
@@ -1213,9 +1462,10 @@ function PlanStep({ n, step, client }: { n: number; step: Step; client: boolean 
 }
 
 /** The end of the report: what we do for the site, step by step. One button, "Start the plan", for an
- *  account not on it; "We're on it" on every step for a client. */
+ *  account not on it; for a client, where each step stands and what is done. */
 export function YourPlan({ site, steps, ready, mode }: { site: SiteReport; steps: Step[]; ready: boolean; mode: PlanMode }) {
   const client = mode === "client"
+  const done = client && site.work ? doneList(steps, site.work) : []
   const sample = mode === "sample"
   const more = mode === "offer" ? lockedSteps(site) : null
   const credit = mode === "offer" ? (site.research?.creditUntil ?? null) : null
@@ -1230,7 +1480,7 @@ export function YourPlan({ site, steps, ready, mode }: { site: SiteReport; steps
         <>
           <p className="text-xs text-slate-500 mt-1 leading-relaxed">
             {client
-              ? `What we do for ${site.domain}, most important first. Each step says why and what it should change; the weekly check shows whether it did.`
+              ? `What we do for ${site.domain}, most important first. Each step says where it stands, why and what it should change; the weekly check shows whether it did.`
               : sample
                 ? `What we would do for ${site.domain}, most important first: why, from the report, and what it should change.`
                 : `What we do for ${site.domain} on the plan, most important first: why, from your report, and what it should change.`}
@@ -1239,7 +1489,7 @@ export function YourPlan({ site, steps, ready, mode }: { site: SiteReport; steps
           {steps.length > 0 && (
             <ol className="mt-4 space-y-3">
               {steps.map((st, i) => (
-                <PlanStep key={st.id} n={i + 1} step={st} client={client} />
+                <PlanStep key={st.id} n={i + 1} step={st} status={client ? stepStatus(st, site.work) : null} />
               ))}
             </ol>
           )}
@@ -1255,8 +1505,30 @@ export function YourPlan({ site, steps, ready, mode }: { site: SiteReport; steps
               </p>
             </div>
           )}
+          {done.length > 0 && (
+            <div className="mt-5">
+              <p className={label}>Done</p>
+              <ul className="mt-2 rounded-xl border border-black/[0.07] bg-white divide-y divide-black/[0.06]">
+                {done.map((d) => (
+                  <li key={d.key} className="flex items-start gap-3 px-4 py-2.5 text-sm">
+                    <span aria-hidden className="mt-px font-bold text-green-700">✓</span>
+                    <span className="min-w-0 flex-1 break-words">
+                      {d.href ? (
+                        <a href={d.href} target="_blank" rel="noopener" className="hover:underline">
+                          {d.title}
+                        </a>
+                      ) : (
+                        d.title
+                      )}
+                    </span>
+                    <span className="shrink-0 text-xs text-slate-500 tabular-nums">{fmtDate(d.date)}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
           {client ? (
-            <a href="/business/dashboard/articles" className="mt-4 inline-block text-sm font-semibold text-violet-700 hover:underline">
+            <a href={YOUR_ARTICLES} className="mt-4 inline-block text-sm font-semibold text-violet-700 hover:underline">
               Your articles →
             </a>
           ) : (
@@ -1489,11 +1761,14 @@ export function ReportSections({
   site,
   showBase,
   onToggleBase,
+  onOpenRun,
   readOnly,
 }: {
   site: SiteReport
   showBase?: boolean
   onToggleBase?: () => void
+  /** The cabinet: a bar of the trend opens its report, as the history does. */
+  onOpenRun?: (id: string) => void
   readOnly?: boolean
 }) {
   const latest = site.latest
@@ -1521,7 +1796,7 @@ export function ReportSections({
     <>
       {latest.kind === "weekly" ? (
         <>
-          <WeeklyHero site={site} onShowBaseline={site.baseline ? onToggleBase : undefined} readOnly={readOnly} />
+          <WeeklyHero site={site} onShowBaseline={site.baseline ? onToggleBase : undefined} onOpenRun={onOpenRun} readOnly={readOnly} />
           <WhatChanged changes={latest.summary.changes ?? []} />
           {fromDay0 && (
             <WhereNamed rows={latest.rows} engines={latest.engines} samples={latest.samples} asked={latest.finishedAt} title="This week's questions" />
@@ -1538,6 +1813,183 @@ export function ReportSections({
         </p>
       )}
       {fromDay0 && showBase && <Hero report={full} />}
+      {preview ? (
+        <>
+          {questions}
+          {rivalsAndSources}
+        </>
+      ) : (
+        <>
+          {rivalsAndSources}
+          {questions}
+        </>
+      )}
+    </>
+  )
+}
+
+// ── every report, newest first ────────────────────────────────────────────────────────────────
+
+/** Every finished report of the site, newest first: the count, per assistant, and the change since
+ *  day 0 where both were measured the same way. A row opens that report; the latest one is the page
+ *  itself. The cabinet only: the public sample has no history to open. */
+export function History({ site, openId, onOpen }: { site: SiteReport; openId: string | null; onOpen: (id: string) => void }) {
+  const h = site.history
+  const latest = h[h.length - 1]
+  if (!latest) return null
+  const day0 = dayZero(h, latest.basis)
+  const onScreen = openId ?? latest.id
+  return (
+    <section className={card}>
+      <h2 className="font-bold text-lg">History</h2>
+      <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+        Every report for {site.domain}, newest first. Change is against day 0, same questions.
+      </p>
+      <ul className="mt-3 divide-y divide-black/[0.06]">
+        {[...h].reverse().map((r) => {
+          const missing = unchecked(r)
+          const same = r.basis === latest.basis
+          const d = same && day0 && r.kind === "weekly" && !missing.length && r.of === day0.of ? r.named - day0.named : null
+          const change = !same
+            ? basisLabel(r)
+            : r.id === day0?.id
+              ? "Starting point"
+              : d === null
+                ? "—"
+                : d === 0
+                  ? "Same as day 0"
+                  : `${d > 0 ? "+" : "−"}${Math.abs(d)} vs day 0`
+          return (
+            <li key={r.id}>
+              <button
+                type="button"
+                onClick={() => onOpen(r.id)}
+                aria-current={r.id === onScreen ? "true" : undefined}
+                className={`w-full text-left py-3 px-2 rounded-lg flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-4 ${
+                  r.id === onScreen ? "bg-violet-50" : "hover:bg-[#f8f7f6]"
+                }`}
+              >
+                <span className="flex-1 min-w-0">
+                  <span className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm">
+                    <span className="font-semibold">{fmtDate(r.finishedAt)}</span>
+                    <span className="text-slate-500">{r.kind === "weekly" ? "Weekly check" : "Day-0 report"}</span>
+                    {r.id === latest.id && (
+                      <span className="text-[10px] font-bold uppercase tracking-wide text-violet-700 bg-violet-100 rounded-full px-2 py-0.5">
+                        {latest.kind === "weekly" ? "This week" : "Latest"}
+                      </span>
+                    )}
+                    {missing.length > 0 && (
+                      <span
+                        title={`${missing.map((e) => LABEL[e]).join(", ")} couldn't be fully checked`}
+                        className="text-[10px] font-bold uppercase tracking-wide text-amber-800 bg-amber-50 rounded-full px-2 py-0.5"
+                      >
+                        Partial
+                      </span>
+                    )}
+                  </span>
+                  <span className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-xs text-slate-600 tabular-nums">
+                    {ENGINES.filter((e) => r.engines[e]).map((e) => (
+                      <span key={e} title={LABEL[e]} className="inline-flex items-center gap-1">
+                        <EngineMark engine={e} className="w-3.5 h-3.5 text-slate-500" />
+                        <span className="sr-only">{LABEL[e]}</span>
+                        {r.engines[e].of ? (
+                          <>
+                            {r.engines[e].named}
+                            <span className="text-slate-400">/{r.engines[e].of}</span>
+                          </>
+                        ) : (
+                          <span className="text-slate-400">—</span>
+                        )}
+                      </span>
+                    ))}
+                  </span>
+                </span>
+                <span className="shrink-0 flex items-baseline justify-between sm:justify-end gap-3">
+                  <span className="text-sm text-slate-700">
+                    Named in <b className="text-violet-700 tabular-nums">{r.named}</b> of {r.of}
+                  </span>
+                  <span
+                    title={d !== null && day0 ? `Day 0, same questions: ${day0.named} of ${day0.of}` : undefined}
+                    className={`sm:w-32 sm:text-right text-xs font-semibold tabular-nums ${d !== null && d > 0 ? "text-violet-700" : "text-slate-500"}`}
+                  >
+                    {change}
+                  </span>
+                </span>
+              </button>
+            </li>
+          )
+        })}
+      </ul>
+      {h.length === 1 && latest.kind === "baseline" && (
+        <p className="text-xs text-slate-500 mt-3">
+          {onPlan(site) ? "The first weekly check comes about a week after day 0." : "Weekly checks come with the plan."}
+        </p>
+      )}
+    </section>
+  )
+}
+
+/** A report opened from the history, drawn with the report's own cards in place of this week's. */
+export function RunView({
+  site,
+  run,
+  onBack,
+  onRetry,
+}: {
+  site: SiteReport
+  run: Report | "loading" | "failed"
+  onBack: () => void
+  onRetry: () => void
+}) {
+  const back = (
+    <div>
+      <button type="button" onClick={onBack} className="text-sm font-semibold text-violet-700 hover:underline">
+        ← Back to {site.latest?.kind === "weekly" ? "this week" : "the latest report"}
+      </button>
+    </div>
+  )
+  if (run === "loading")
+    return (
+      <>
+        {back}
+        <div className="h-48 rounded-2xl bg-white/60 animate-pulse" />
+      </>
+    )
+  if (run === "failed")
+    return (
+      <>
+        {back}
+        <div className={`${card} text-sm text-slate-700`}>
+          We couldn&apos;t open this report.{" "}
+          <button type="button" onClick={onRetry} className="font-semibold text-violet-700 hover:underline">
+            Try again
+          </button>
+        </div>
+      </>
+    )
+  // Cut on the server like the page (a preview only ever reaches a day-0 report); laid out as ReportSections lays it.
+  const preview = !onPlan(site) && isPreview(site) && lockedCount(run.rows) > 0
+  const rivalsAndSources = (
+    <div className="grid xl:grid-cols-2 gap-5">
+      <NamedInstead summary={run.summary} you={site.business || site.domain} />
+      <Sources summary={run.summary} />
+    </div>
+  )
+  const questions = (
+    <WhereNamed
+      rows={run.rows}
+      engines={run.engines}
+      samples={run.samples}
+      asked={run.finishedAt}
+      unlock={preview ? <UnlockPanel domain={site.domain} report={run} /> : undefined}
+    />
+  )
+  return (
+    <>
+      {back}
+      <Hero report={run} />
+      {run.kind === "weekly" && <WhatChanged changes={run.summary.changes ?? []} title="What changed that week" />}
+      {preview && <PreviewNote report={run} />}
       {preview ? (
         <>
           {questions}

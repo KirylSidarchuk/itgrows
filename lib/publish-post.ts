@@ -2,7 +2,8 @@ import { db } from "@/lib/db"
 import { scheduledPosts, connectedSites, blogPosts, users } from "@/lib/db/schema"
 import { sendEmail } from "@/lib/email"
 import { draftReadyEmail } from "@/lib/email-templates"
-import { eq, and } from "drizzle-orm"
+import { eq, and, sql } from "drizzle-orm"
+import { clientOwnsSql } from "@/lib/geo-role"
 import { publishToWordPress, canUseAppPassword } from "@/lib/wordpress-publish"
 import { slugBase } from "@/lib/slug"
 import { storeAndRecordImage } from "@/lib/image-store"
@@ -455,6 +456,90 @@ export async function publishScheduledPost(duePost: ScheduledPost, ctx: PublishC
   }
 }
 
+// What the AI-visibility plan's queue (/root/blog_engine/client_writer.py seed-geo) works with, the
+// same as there: our own sites, whose plan articles own_geo_writer.py writes; the four assistants.
+const OWN_SITES = ["itgrows", "itgrows-business"]
+const PLAN_ENGINES = ["chatgpt", "claude", "gemini", "perplexity"]
+
+const dbRows = (r: unknown): Record<string, unknown>[] =>
+  Array.isArray(r) ? (r as Record<string, unknown>[]) : ((r as { rows?: Record<string, unknown>[] }).rows ?? [])
+
+/** A question as the plan matches it: case, extra spaces and the closing "?" aside (lib/geo-report.ts
+ *  questionKey, client_writer.py question_key). */
+const planQuestionKey = (q: unknown) =>
+  String(q ?? "").trim().toLowerCase().replace(/\s+/g, " ").replace(/[?.!]+$/, "")
+
+/** A connected site's url or blog_domain as a bare host; either may come without a scheme
+ *  (client_writer.py site_host). */
+function siteHost(u: string | null | undefined): string {
+  const s = (u ?? "").trim()
+  if (!s) return ""
+  try {
+    return new URL(s.includes("://") ? s : `https://${s}`).host.toLowerCase().replace(/^www\./, "")
+  } catch {
+    return ""
+  }
+}
+
+type PlanAnswer = { samples?: number; named?: number; named_instead?: unknown[] }
+
+/** The day-0 questions that are Article steps of the plan (parts.tsx planSteps, client_writer.py
+ *  article_questions): no assistant that could be checked named the site, and one named others. */
+function planArticleQuestions(results: unknown): string[] {
+  if (!Array.isArray(results)) return []
+  return (results as { q?: unknown; engines?: Record<string, PlanAnswer | undefined> }[]).flatMap((r) => {
+    const eng = r?.engines ?? {}
+    const checked = PLAN_ENGINES.filter((e) => (eng[e]?.samples ?? 0) > 0)
+    if (!checked.length || checked.some((e) => (eng[e]?.named ?? 0) > 0)) return []
+    return checked.some((e) => (eng[e]?.named_instead ?? []).length > 0) ? [String(r.q ?? "")] : []
+  })
+}
+
+/** Whether seed-geo (/root/blog_engine/client_writer.py) has a plan question to queue for this user,
+ *  the one case where the plan fills their queue and the batch refill must not. It has to hold only
+ *  when seed-geo would really queue something: if it held for anyone else, their blog would stop with
+ *  nothing in place of the refill. So it asks what seed-geo asks:
+ *  - `site`, where their articles are published (pickPublishSite), is not one of our own sites;
+ *  - its host is the domain of a site of their plan that has a day-0 report (a paid follow, or a
+ *    site of theirs in geo_client_sites), or a subdomain of it: one site's plan never goes on another;
+ *  - one of that day-0 report's Article questions has no article of theirs yet, in any state. Once
+ *    every one has, the plan has nothing left to queue and the refill takes over again.
+ *  When the check fails it answers false: the refill as before, so the blog does not stop. */
+async function hasGeoPlanQuestions(userId: string, site: Site | null): Promise<boolean> {
+  try {
+    if (!site || OWN_SITES.includes(site.siteSlug ?? "")) return false
+    const hosts = [siteHost(site.url), siteHost(site.blogDomain)].filter(Boolean)
+    const plans = dbRows(
+      await db.execute(sql`
+        SELECT DISTINCT ON (s.domain) s.domain, r.results
+        FROM geo_sites s
+        JOIN geo_runs r ON r.site_id = s.id AND r.kind = 'baseline' AND r.status = 'done'
+        WHERE EXISTS (SELECT 1 FROM geo_follows f
+                      WHERE f.site_id = s.id AND f.user_id = ${userId}
+                        AND (f.plan = 'paid' OR ${clientOwnsSql(sql.raw("f.user_id"), sql.raw("s.domain"))}))
+           OR EXISTS (SELECT 1 FROM geo_client_sites g WHERE g.user_id = ${userId} AND g.domain = s.domain)
+        ORDER BY s.domain, r.created_at DESC`)
+    )
+    for (const p of plans) {
+      const domain = String(p.domain)
+      const base = domain.split("#")[0]
+      if (!hosts.some((h) => h === base || h.endsWith(`.${base}`))) continue
+      const have = new Set(
+        dbRows(
+          await db.execute(sql`
+            SELECT geo_question FROM scheduled_posts WHERE user_id::text = ${userId} AND geo_domain = ${domain}
+            UNION ALL
+            SELECT geo_question FROM blog_posts WHERE user_id::text = ${userId} AND geo_domain = ${domain}`)
+        ).map((r) => planQuestionKey(r.geo_question))
+      )
+      if (planArticleQuestions(p.results).some((q) => !have.has(planQuestionKey(q)))) return true
+    }
+    return false
+  } catch {
+    return false
+  }
+}
+
 /** When a user has no scheduled post left after a publish, asks the batch scheduler for the next
  *  batch (it has its own guard against scheduling twice). Never throws. */
 export async function scheduleNextBatchIfEmpty(userId: string, ctx: PublishContext): Promise<void> {
@@ -468,6 +553,10 @@ export async function scheduleNextBatchIfEmpty(userId: string, ctx: PublishConte
     if (remainingScheduled.length === 0) {
       // The site the user's articles are published to
       const defaultSite = await publishSiteFor(userId)
+      // Not while the AI-visibility plan has questions to queue for it: the batch scheduler invents SEO
+      // topics, which would take the place of the plan's questions in the queue, and the plan's
+      // Article steps would never get their article. seed-geo queues those (hasGeoPlanQuestions).
+      if (await hasGeoPlanQuestions(userId, defaultSite)) return
       if (defaultSite) {
         // Call batch scheduling endpoint (it has its own guard against duplicate scheduling)
         await fetch(`${ctx.baseUrl}/api/schedule/batch`, {

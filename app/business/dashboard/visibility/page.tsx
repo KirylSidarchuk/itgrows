@@ -8,9 +8,11 @@ import {
   CreditNote,
   Crawlers,
   FirstLook,
+  History,
   NamedInstead,
   Pending,
   ReportSections,
+  RunView,
   WhereNamed,
   YourPlan,
   card,
@@ -19,6 +21,7 @@ import {
   onPlan,
   planSteps,
   type Audit,
+  type Report,
   type SiteReport,
 } from "./parts"
 
@@ -31,6 +34,9 @@ import {
 // the page asks again until the site reads as unlocked. A site past the account's report is refused
 // by /api/geo/follow with "report_limit" (402); its report can be bought instead, and the purchase
 // follows it. The report ends with "Your plan": what we do, never how to do it yourself.
+//
+// Under the report, the history lists every finished report of the site; a row (or a bar of the
+// trend, or "View day-0 report") opens that report in place of this week's, until "Back".
 
 // Same conversion the email report fires: a visitor of the quick check left a way to reach them.
 // Fired once per site per browser, when the follow succeeds.
@@ -65,7 +71,11 @@ export default function VisibilityPage() {
   const [showAdd, setShowAdd] = useState(false)
   const [followErr, setFollowErr] = useState<{ domain: string; error: string } | null>(null)
   const [audits, setAudits] = useState<Record<string, Audit | "failed">>({})
-  const [showBase, setShowBase] = useState(false)
+  // A report opened from the history, and the ones fetched so far, by run and access: buying the
+  // report changes how a run is cut, so a run fetched as a preview is not shown once it is unlocked.
+  const [openRun, setOpenRun] = useState<{ domain: string; id: string } | null>(null)
+  const [runs, setRuns] = useState<Record<string, Report | "failed">>({})
+  const fetching = useRef(new Set<string>())
   // Back from Stripe with a bought report: which site, since when, and whether it is taking long.
   const [unlocking, setUnlocking] = useState<{ domain: string; since: number } | null>(null)
   const [unlockSlow, setUnlockSlow] = useState(false)
@@ -177,6 +187,19 @@ export default function VisibilityPage() {
     return () => clearInterval(t)
   }, [unlocking, unlockedNow, load])
 
+  // The latest report and the day-0 one are in the payload; any other is fetched once when opened.
+  const opened = site && openRun?.domain === site.domain ? openRun.id : null
+  const runKey = site && opened && opened !== site.baseline?.id ? `${opened}:${site.access ?? "full"}` : null
+  useEffect(() => {
+    if (!runKey || runs[runKey] || fetching.current.has(runKey)) return
+    fetching.current.add(runKey)
+    fetch(`/api/geo/report/run?id=${encodeURIComponent(runKey.split(":")[0])}`, { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
+      .then((j: { report: Report }) => setRuns((c) => ({ ...c, [runKey]: j.report })))
+      .catch(() => setRuns((c) => ({ ...c, [runKey]: "failed" })))
+      .finally(() => fetching.current.delete(runKey))
+  }, [runKey, runs])
+
   // The crawler check for the site on screen, cached for an hour in this tab.
   const domain = site?.domain
   useEffect(() => {
@@ -211,11 +234,28 @@ export default function VisibilityPage() {
   }
 
   const audit = site ? audits[site.domain] : undefined
-  // On the plan, or a client we set up by hand: no unlock, no offer, every step "We're on it".
+  // On the plan, or a client we set up by hand: no unlock, no offer; the plan is the day-0 report's,
+  // each step with where it stands.
   const client = site ? onPlan(site) : false
   // The server's rule for a new site, as a hint before anyone types: sites neither bought nor on the
   // plan (a client we set up by hand reads as unlocked everywhere, and has no limit).
   const reportUsed = sites.filter(isPreview).length >= REPORT_SITES
+  const run = !site || !opened ? null : opened === site.baseline?.id ? site.baseline : (runKey && runs[runKey]) || "loading"
+  // The latest report is the page itself: opening it goes back.
+  const showRun = (id: string) => {
+    if (!site) return
+    setOpenRun(id === site.latest?.id ? null : { domain: site.domain, id })
+    window.scrollTo({ top: 0, behavior: "smooth" })
+  }
+  const showDay0 = () => {
+    if (site?.baseline?.id) showRun(site.baseline.id)
+  }
+  const retryRun = () =>
+    setRuns((c) => {
+      const next = { ...c }
+      if (runKey) delete next[runKey]
+      return next
+    })
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-10 space-y-5">
@@ -301,9 +341,14 @@ export default function VisibilityPage() {
             <>
               {/* The detailed cards come from the fullest report: this week's on the plan, else the
                   day-0 report (a short weekly check is five questions). */}
-              <ReportSections site={site} showBase={showBase} onToggleBase={() => setShowBase((v) => !v)} />
+              {run ? (
+                <RunView key={opened} site={site} run={run} onBack={() => setOpenRun(null)} onRetry={retryRun} />
+              ) : (
+                <ReportSections site={site} onToggleBase={showDay0} onOpenRun={showRun} />
+              )}
+              <History site={site} openId={opened} onOpen={showRun} />
               <Crawlers audit={audit} />
-              <YourPlan site={site} steps={planSteps(site, audit)} ready mode={client ? "client" : "offer"} />
+              <YourPlan site={site} steps={planSteps(site, audit, client)} ready mode={client ? "client" : "offer"} />
             </>
           ) : (
             <>
