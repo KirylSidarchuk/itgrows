@@ -8,6 +8,9 @@ import { useEffect, useState } from "react"
 // ($49.90) or "GEO plan bought" (the first payment), with the real amount and currency and the
 // session id as transaction_id, so Google counts a reload of the page only once. gtag runs under
 // Google Consent Mode basic (app/layout.tsx): the call is queued and reaches Google only after "Accept".
+// The same payment goes to the Meta pixel "ItGrows.ai" as Purchase, with the session id as eventID;
+// the pixel loads only after "Accept" (components/consent/ConsentedTrackers.tsx), and without it
+// nothing is sent to Meta.
 
 const SEND_TO = {
   report: "AW-18160234884/bfDCCKP15qYdEITjvNND",
@@ -18,19 +21,29 @@ type Paid = { ready: true; kind: keyof typeof SEND_TO; id: string; value: number
 
 const sent = new Set<string>()
 
+type Fbq = (...args: unknown[]) => void
+
+// gtag.js and the Meta pixel can load a moment after this runs; try again briefly.
+function soon(fire: () => boolean) {
+  if (fire()) return
+  let tries = 0
+  const t = setInterval(() => {
+    if (fire() || ++tries > 20) clearInterval(t)
+  }, 300)
+}
+
 function send(p: Paid) {
-  const fire = () => {
+  soon(() => {
     if (typeof window.gtag !== "function") return false
     window.gtag("event", "conversion", { send_to: SEND_TO[p.kind], value: p.value, currency: p.currency, transaction_id: p.id })
     return true
-  }
-  // gtag.js can load a moment after this runs; try again briefly.
-  if (!fire()) {
-    let tries = 0
-    const t = setInterval(() => {
-      if (fire() || ++tries > 20) clearInterval(t)
-    }, 300)
-  }
+  })
+  soon(() => {
+    const fbq = (window as unknown as { fbq?: Fbq }).fbq
+    if (typeof fbq !== "function") return false
+    fbq("track", "Purchase", { value: p.value, currency: p.currency, content_name: p.kind === "plan" ? "GEO plan" : "GEO report" }, { eventID: p.id })
+    return true
+  })
 }
 
 export default function GeoPurchaseConversion() {
