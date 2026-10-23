@@ -518,7 +518,7 @@ async function main() {
     assert.match(out, /aria-label="Sprache"/)
     assert.match(out, /aria-label="Sprache: Deutsch"/)
     assert.match(out, /href="\/de" hrefLang="de" lang="de" title="Deutsch" aria-current="true"/)
-    assert.equal((out.match(/aria-current/g) ?? []).length, 2, "one marked link in each of the two layouts")
+    assert.equal((out.match(/aria-current/g) ?? []).length, 1, "one menu, the current language marked once")
     assert.match(inLocale("ru", createElement(LanguageSwitcher)), /aria-label="Язык"/)
   })
   await check("plural and formatNumber", () => {
