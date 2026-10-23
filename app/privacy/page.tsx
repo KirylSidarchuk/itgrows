@@ -1,198 +1,389 @@
+import type { Metadata } from "next"
+import type { ReactNode } from "react"
 import Link from "next/link"
 
-export const metadata = {
+// Privacy & Cookie Policy for both products: AI visibility (ItGrows for Business) and LinkedIn & X
+// posts. It describes what the code stores and sends today (app/api/geo/**, app/api/track/**,
+// components/Analytics.tsx, components/AdsConversion.tsx, components/consent/**, app/layout.tsx,
+// app/api/user/delete, and the daily retention purge on the VM, /root/geo_check/purge.py). Consent,
+// retention, transfers, the EU/UK contact and the effective date are the owner's decisions of 23 Oct 2026.
+// Visible text has no brackets, and AI visibility is never called free.
+
+export const metadata: Metadata = {
   title: "Privacy Policy & Cookie Policy — ItGrows.ai",
-  description: "Privacy Policy and Cookie Policy for ItGrows.ai",
+  description: "What data ItGrows.ai processes, why, who helps us process it, and your rights.",
+  alternates: { canonical: "https://www.itgrows.ai/privacy" },
 }
+
+const CONTACT = "kiryl@itgrows.ai"
+
+const SECTIONS = [
+  { id: "who", title: "Who we are" },
+  { id: "data", title: "What we process, and why" },
+  { id: "cookies", title: "Cookies and similar tools" },
+  { id: "processors", title: "Who helps us process data" },
+  { id: "transfers", title: "International transfers" },
+  { id: "retention", title: "How long we keep data" },
+  { id: "rights", title: "Your rights" },
+  { id: "security", title: "Security" },
+  { id: "children", title: "Children" },
+  { id: "changes", title: "Changes to this policy" },
+  { id: "contact", title: "Contact" },
+] as const
+
+type SectionId = (typeof SECTIONS)[number]["id"]
+
+function Section({ id, children }: { id: SectionId; children: ReactNode }) {
+  const n = SECTIONS.findIndex((s) => s.id === id) + 1
+  return (
+    <section id={id} className="scroll-mt-6">
+      <h2 className="text-xl font-bold text-[#1b1916]">
+        <span className="text-violet-600 mr-2">{n}.</span>
+        {SECTIONS[n - 1].title}
+      </h2>
+      <div className="mt-3 space-y-3">{children}</div>
+    </section>
+  )
+}
+
+function List({ children }: { children: ReactNode }) {
+  return <ul className="list-disc pl-5 space-y-1.5">{children}</ul>
+}
+
+/** One kind of data: what it is, what we use it for, and the legal basis (GDPR art. 6). */
+function DataBlock({ title, what, why, basis }: { title: string; what: ReactNode; why: ReactNode; basis: ReactNode }) {
+  return (
+    <div className="rounded-2xl border border-black/10 bg-white p-5">
+      <h3 className="font-bold text-[#1b1916]">{title}</h3>
+      <dl className="mt-2 space-y-2 text-[15px]">
+        <div>
+          <dt className="text-[11px] uppercase tracking-[0.12em] font-bold text-slate-500">What</dt>
+          <dd className="mt-0.5">{what}</dd>
+        </div>
+        <div>
+          <dt className="text-[11px] uppercase tracking-[0.12em] font-bold text-slate-500">Why</dt>
+          <dd className="mt-0.5">{why}</dd>
+        </div>
+        <div>
+          <dt className="text-[11px] uppercase tracking-[0.12em] font-bold text-slate-500">Legal basis</dt>
+          <dd className="mt-0.5">{basis}</dd>
+        </div>
+      </dl>
+    </div>
+  )
+}
+
+/** Rows of a two-column list that stacks on a phone. */
+function Rows({ rows }: { rows: { name: ReactNode; text: ReactNode }[] }) {
+  return (
+    <div className="rounded-2xl border border-black/10 bg-white divide-y divide-black/10">
+      {rows.map((r, i) => (
+        <div key={i} className="p-4 sm:grid sm:grid-cols-[11rem_1fr] sm:gap-4 text-[15px]">
+          <div className="font-semibold text-[#1b1916]">{r.name}</div>
+          <div className="mt-1 sm:mt-0">{r.text}</div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+const Mail = () => (
+  <a href={`mailto:${CONTACT}`} className="text-violet-700 underline">
+    {CONTACT}
+  </a>
+)
+
+/** Reopens the cookie banner (components/CookieBanner.tsx listens for this link). */
+const CookieSettings = () => (
+  <a href="#cookie-settings" data-cookie-settings className="text-violet-700 underline">
+    Cookie settings
+  </a>
+)
+
+const CONTRACT = "To provide the service you signed up for: our contract with you."
+const INTEREST = "Our legitimate interests"
+
+const COOKIES = [
+  { name: "Sign-in cookie", text: "Keeps you signed in. Essential. Lasts until you sign out or it expires." },
+  { name: "cookie_consent", text: "Stored in your browser. Remembers what you chose in the cookie banner. Essential." },
+  {
+    name: "itg_anon, itg_seen, itgrows_welcome_tracked, itg_trial_fired",
+    text: "Only after you accept. Stored in your browser: itg_anon is a random id for our own analytics; the others mark the current visit and a sign-up or trial already counted, and are cleared when you close the tab.",
+  },
+  {
+    name: "itg_gclid",
+    text: "Only after you accept. A cookie that keeps the Google Ads click id for 90 days, so we can tell which sign-ups and payments came from our ads.",
+  },
+  {
+    name: "Google Ads tag",
+    text: "Advertising, loaded only after you accept. Measures whether visitors from our ads sign up or pay; Google sets its own cookies. Before you accept, nothing is sent to Google.",
+  },
+  {
+    name: "Contentsquare",
+    text: "Analytics, loaded only after you accept. Records how pages are used: clicks, scrolling and page movement, which can include a replay of a visit.",
+  },
+  { name: "Microsoft Clarity", text: "Analytics, loaded only after you accept. Heatmaps and recordings of how pages are used. Microsoft sets its own cookies." },
+  { name: "Vercel Analytics", text: "Analytics, loaded only after you accept. Counts page views, referring sites and device types." },
+]
+
+const PROCESSORS = [
+  { name: "Stripe", text: "Payments, subscriptions, invoices and the billing portal. Stripe handles your card; we never see the card number." },
+  { name: "Resend", text: "Sends our emails: sign-in codes, reports, weekly updates, article notices and account emails." },
+  { name: "Vercel", text: "Hosts the website and the app, and provides Vercel Analytics." },
+  { name: "Google Cloud", text: "Hosts our database and the servers that run the checks and write the articles, in the United States." },
+  {
+    name: "Anthropic, OpenAI, Google Gemini, Perplexity",
+    text: "Their APIs answer the buyer questions we use to measure AI answers. Anthropic also helps research and write articles; Google Gemini, with OpenAI as a backup, writes LinkedIn and X drafts, images and the free post preview. We send them what the task needs: questions about your business, facts from your public site, your topics and drafts, and what you type into the free post preview.",
+  },
+  { name: "Google Ads", text: "Advertising measurement, see Cookies." },
+  { name: "Contentsquare, Microsoft Clarity", text: "Analytics of how our pages are used, see Cookies." },
+  { name: "Telegram", text: "Internal notifications to our team about sign-ups, payments and messages, with the name, email and website involved." },
+  { name: "LinkedIn, X", text: "When you connect them: we publish your posts through their APIs and read your posts’ statistics." },
+  { name: "Google, LinkedIn sign-in", text: "If you sign in with them, they tell us your name and email address." },
+  { name: "Your website platform", text: "WordPress, Shopify or Webflow, when we publish articles to your site with the access you gave us." },
+]
 
 export default function PrivacyPage() {
   return (
     <div className="min-h-screen bg-[#f3f2f1] text-[#1b1916]" style={{ fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" }}>
-      {/* Nav */}
-      <nav className="border-b border-black/10 px-6 py-4" style={{ backgroundColor: "#f3f2f1" }}>
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
+      <nav className="border-b border-black/10 px-4 sm:px-6 py-4">
+        <div className="max-w-6xl mx-auto flex items-center justify-between gap-4">
           <Link href="/">
-            <span className="text-xl font-bold bg-gradient-to-r from-violet-600 to-cyan-600 bg-clip-text text-transparent">
-              ItGrows.ai
-            </span>
+            <span className="text-xl font-bold bg-gradient-to-r from-violet-600 to-cyan-600 bg-clip-text text-transparent">ItGrows.ai</span>
           </Link>
-          <Link href="/" className="text-sm text-slate-500 hover:text-[#1b1916] transition-colors">
-            ← Back to Home
-          </Link>
+          <div className="flex items-center gap-4 text-sm text-slate-500">
+            <Link href="/terms" className="hover:text-[#1b1916] transition-colors">Terms</Link>
+            <Link href="/" className="hover:text-[#1b1916] transition-colors">← Home</Link>
+          </div>
         </div>
       </nav>
 
-      <main className="max-w-3xl mx-auto px-6 py-16">
-        <h1 className="text-4xl font-bold mb-2 text-[#1b1916]">Privacy Policy &amp; Cookie Policy</h1>
-        <p className="text-slate-500 text-sm mb-10">Last updated: April 2026</p>
+      <main className="max-w-3xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
+        <p className="text-[11px] uppercase tracking-[0.14em] font-bold text-violet-700">Legal</p>
+        <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight mt-2">Privacy Policy &amp; Cookie Policy</h1>
+        <p className="text-slate-500 text-sm mt-2">
+          Effective date: 23 October 2026
+        </p>
 
-        <div className="space-y-10 text-slate-700 leading-relaxed">
-          <section>
-            <h2 className="text-xl font-semibold text-[#1b1916] mb-3">1. Introduction</h2>
+        <div className="mt-8 rounded-2xl border border-black/10 bg-white overflow-hidden">
+          <div className="h-1 bg-gradient-to-r from-violet-600 to-cyan-500" />
+          <div className="p-5 sm:p-6">
+            <p className="font-bold">In short</p>
+            <ul className="mt-3 space-y-2 text-sm text-slate-700 leading-relaxed list-disc pl-5">
+              <li>We keep what we need to run your account, check your site, write your articles and posts, and bill you.</li>
+              <li>Stripe handles payments. We never see your card number.</li>
+              <li>
+                Analytics and advertising tools load only after you accept them in the cookie banner. You can change your choice at any time in{" "}
+                <CookieSettings />.
+              </li>
+              <li>We do not sell your personal data.</li>
+              <li>
+                You can ask for a copy of your data, or for it to be corrected or deleted: write to <Mail />.
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <nav aria-label="Contents" className="mt-8">
+          <p className="text-[11px] uppercase tracking-[0.14em] font-bold text-slate-500">Contents</p>
+          <ol className="mt-3 grid sm:grid-cols-2 gap-x-6 gap-y-1.5 text-sm">
+            {SECTIONS.map((s, i) => (
+              <li key={s.id}>
+                <a href={`#${s.id}`} className="text-slate-600 hover:text-violet-700 transition-colors">
+                  <span className="text-slate-400 mr-1.5">{i + 1}.</span>
+                  {s.title}
+                </a>
+              </li>
+            ))}
+          </ol>
+        </nav>
+
+        <div className="mt-12 space-y-10 text-slate-700 leading-relaxed">
+          <Section id="who">
             <p>
-              ItGrows.ai is operated by <strong>Magiscan Inc.</strong> (919 North Market Street, Wilmington, DE 19801, USA). We are committed to protecting your personal information. This Privacy Policy explains what data we collect, how we use it, and your rights regarding that data.
+              ItGrows.ai is operated by <strong>Magiscan Inc.</strong>, 919 North Market Street, Wilmington, DE 19801, USA. We are the controller of
+              the personal data described here. This policy covers the itgrows.ai website and both of our products: AI visibility for businesses,
+              and LinkedIn &amp; X posts.
             </p>
-            <p className="mt-3">
-              By using ItGrows.ai, you agree to the collection and use of information in accordance with this policy.
-            </p>
-          </section>
-
-          <section>
-            <h2 className="text-xl font-semibold text-[#1b1916] mb-3">2. Data We Collect</h2>
-            <p className="mb-3">We collect the following types of information when you use our service:</p>
-            <ul className="list-disc list-inside space-y-2 ml-2">
-              <li><strong>Email address</strong> — used for account creation, authentication, and service communications.</li>
-              <li><strong>Website URL</strong> — used to analyze your site niche and generate relevant content.</li>
-              <li><strong>Generated posts</strong> — content we create on your behalf is stored to enable publishing and scheduling.</li>
-              <li><strong>Usage data</strong> — anonymized logs about how you interact with the platform (pages visited, features used).</li>
-              <li><strong>Billing information</strong> — handled exclusively by Stripe; we do not store your payment card details.</li>
-            </ul>
-          </section>
-
-          <section>
-            <h2 className="text-xl font-semibold text-[#1b1916] mb-3">3. How We Use Your Data</h2>
-            <ul className="list-disc list-inside space-y-2 ml-2">
-              <li>To provide and improve the ItGrows.ai service.</li>
-              <li>To generate social posts tailored to your voice, audience, and goals.</li>
-              <li>To send transactional emails (account verification, billing receipts).</li>
-              <li>To communicate important service updates.</li>
-              <li>To detect and prevent abuse or unauthorized access.</li>
-            </ul>
-            <p className="mt-3">We do not sell your personal data to third parties.</p>
-          </section>
-
-          <section>
-            <h2 className="text-xl font-semibold text-[#1b1916] mb-3">4. Payments via Stripe</h2>
             <p>
-              All payment processing is handled by <strong>Stripe, Inc.</strong>, a PCI-DSS compliant payment provider. When you subscribe, you are redirected to Stripe&apos;s secure checkout. We receive confirmation of payment status but never store your full card number, CVV, or banking credentials.
+              If you are in the EU or UK, contact us at <Mail />.
             </p>
-            <p className="mt-3">
-              Stripe&apos;s privacy policy is available at <a href="https://stripe.com/privacy" target="_blank" rel="noopener noreferrer" className="text-violet-600 underline">stripe.com/privacy</a>.
-            </p>
-          </section>
+          </Section>
 
-          <section>
-            <h2 className="text-xl font-semibold text-[#1b1916] mb-3">5. Data Storage and Security</h2>
+          <Section id="data">
+            <div className="space-y-4">
+              <DataBlock
+                title="Your account"
+                what="Your email address and name; how you sign in: with a code sent by email, or with Google or LinkedIn, which give us your name and email; a password hash if you set a password; your plan and its status; your Stripe customer id."
+                why="To create and run your account, sign you in and know which plan you have."
+                basis={CONTRACT}
+              />
+              <DataBlock
+                title="Your website, for AI visibility"
+                what="The site address you enter, and the public pages of that site we fetch, such as the home page, robots.txt and sitemaps. From them we note what the business does, its brand names, language and city, and the questions its buyers ask."
+                why="To run the quick check, the detailed report and the weekly re-check, and to check the site the way AI crawlers see it."
+                basis={`${CONTRACT} For the quick check without an account: ${INTEREST.toLowerCase()} in giving you the result you asked for.`}
+              />
+              <DataBlock
+                title="The AI assistants’ answers"
+                what="The questions we ask, the answers ChatGPT, Claude, Gemini and Perplexity give, the businesses they name and the sites they cite. These are stored per website, so every account that adds the same site sees the same measurements. Answers are about businesses but can mention people by name."
+                why="To show you whether, and how, the assistants name your business, and what changed since last time."
+                basis={CONTRACT}
+              />
+              <DataBlock
+                title="The quick check and the free post preview"
+                what="For the quick check: the site address you enter and your IP address. For the free post preview on the LinkedIn & X page: your IP address; what you type goes to the AI model that writes the preview and is not stored."
+                why="To limit the number of quick checks and previews per visitor and to prevent abuse. IP addresses are removed after 90 days."
+                basis={`${INTEREST} in keeping the quick check and the preview available and safe.`}
+              />
+              <DataBlock
+                title="Articles and access to your site"
+                what="The articles we write for you, your edits, the articles you publish early or stop, cover images, the launch checklist for your site and the steps you mark as done. To publish, we store the access you give us: a WordPress username and application password, a Shopify or Webflow token, or the settings of the blog we host for you."
+                why="To write, show you and publish the articles on your plan."
+                basis={CONTRACT}
+              />
+              <DataBlock
+                title="LinkedIn & X"
+                what="The access tokens you grant when you connect an account, and for X also refresh tokens; account identifiers: your LinkedIn member or organisation id and page name, your X user id, username and display name; your topics, drafts, edits, images and published posts; your posts’ statistics: impressions, likes, comments, shares."
+                why="To draft posts in your voice, publish the posts in your queue, and show how they perform. When you disconnect an account, its tokens are deleted at once. You can also revoke access in LinkedIn’s or X’s own settings."
+                basis={CONTRACT}
+              />
+              <DataBlock
+                title="Payments"
+                what="Stripe collects your card details; we never see or store your card number. We receive the payment status, plan, amounts and invoices. For LinkedIn & X subscriptions, if you came from our ad and accepted cookies, the Google Ads click id is saved with the subscription."
+                why="To charge for the plan you chose, keep billing records and know which ads lead to paying customers."
+                basis={`${CONTRACT} Keeping billing records: legal obligation. The ad click id: your consent, given in the cookie banner.`}
+              />
+              <DataBlock
+                title="Emails"
+                what="Your email address and the emails we send through Resend: sign-in codes, report-ready emails, weekly updates on the plan, notices that articles are ready to review, and account and trial emails for LinkedIn & X, which can include an offer."
+                why="To run the service and keep you informed about your account. Every weekly update has an unsubscribe link; your report stays in your account."
+                basis={`${CONTRACT} Trial reminders and offers: ${INTEREST.toLowerCase()}.`}
+              />
+              <DataBlock
+                title="Messages you send us"
+                what="What you type into our contact forms: name, company, email, website and your message."
+                why="To answer you. Messages are stored and emailed to us."
+                basis={`${INTEREST} in answering the people who write to us.`}
+              />
+              <DataBlock
+                title="How the site is used"
+                what="Our own analytics: the pages you view, the buttons and links you click, the referring site, host only and not the full address, campaign tags in the link such as utm, your browser’s user agent, and your account id when you are signed in. Only after you accept cookies: a random id kept in your browser, and the ad click id in the link, gclid or fbclid. For counting unique visitors we keep a hash of your IP address and browser that changes every day, not the IP address itself, and remove it after 90 days. Third-party analytics and advertising tools are listed under Cookies."
+                why="To understand which pages work, fix what does not, and measure our advertising."
+                basis={
+                  <>
+                    Our own analytics: {INTEREST.toLowerCase()}. The random id in your browser, the ad click id, and third-party analytics and
+                    advertising tools: your consent, given in the cookie banner.
+                  </>
+                }
+              />
+            </div>
+            <p>We do not sell your personal data.</p>
+          </Section>
+
+          <Section id="cookies">
+            <p>These are the cookies and browser storage items our site uses:</p>
+            <Rows rows={COOKIES} />
             <p>
-              Your data is stored on servers located in the <strong>European Union</strong>. We use industry-standard encryption (TLS/HTTPS) for data in transit and encrypted storage for sensitive fields at rest.
+              On your first visit a banner lets you accept or decline cookies, and remembers your choice. The analytics and advertising tools, the
+              Google Ads tag, Contentsquare, Microsoft Clarity and Vercel Analytics, load only after you accept; until then none of them is loaded.
+              If you decline, they do not run.
             </p>
-            <p className="mt-3">
-              We retain your data for as long as your account is active. Upon account deletion, your personal data is removed within 30 days, except where retention is required by applicable law.
-            </p>
-          </section>
-
-          <section>
-            <h2 className="text-xl font-semibold text-[#1b1916] mb-3">6. Social Media Account Access</h2>
             <p>
-              ItGrows.ai allows you to connect your social media accounts — currently <strong>LinkedIn</strong>, with <strong>Instagram</strong> and <strong>Google Ads</strong> support coming in the future — via OAuth. When you connect an account, we request only the permissions needed to post content and manage campaigns on your behalf.
+              You can change your choice at any time: open <CookieSettings />.
             </p>
-            <p className="mt-3">
-              We will never post, modify, or delete content without your explicit instruction. You remain in full control of what is published through the platform. We only access the scopes you explicitly authorize during the OAuth flow.
-            </p>
-          </section>
+            <p>You can also delete cookies and site data at any time in your browser settings.</p>
+          </Section>
 
-          <section>
-            <h2 className="text-xl font-semibold text-[#1b1916] mb-3">7. Data Collected via Social Integrations</h2>
-            <p className="mb-3">When you connect a social media account, we may collect and store the following data to provide the service:</p>
-            <ul className="list-disc list-inside space-y-2 ml-2">
-              <li><strong>Page and post analytics</strong> — impressions, reach, engagement metrics (likes, comments, shares) retrieved from the platform API to display performance data in your dashboard.</li>
-              <li><strong>AI-generated post content</strong> — text, images, and other content created by ItGrows.ai and scheduled or published on your behalf.</li>
-              <li><strong>Advertising campaign data</strong> — campaign names, budgets, targeting parameters, and performance metrics for campaigns managed through the platform.</li>
-              <li><strong>Account identifiers</strong> — platform-specific user or page IDs required to authenticate API requests.</li>
-            </ul>
-            <p className="mt-3">This data is used solely to operate and improve the features you have enabled. It is not used for advertising profiling or sold to third parties.</p>
-          </section>
-
-          <section>
-            <h2 className="text-xl font-semibold text-[#1b1916] mb-3">8. Third-Party Social Platforms</h2>
+          <Section id="processors">
+            <p>We share data only with the companies that help us run ItGrows, and only for that purpose:</p>
+            <Rows rows={PROCESSORS} />
             <p>
-              LinkedIn, Meta (Instagram/Facebook), and Google are independent platforms governed by their own privacy policies. When you connect your accounts to ItGrows.ai, your use of those platforms remains subject to their respective terms and policies:
+              Each of them handles data under its own terms and privacy policy. We may also disclose data when the law requires it, or to protect our
+              rights and our users.
             </p>
-            <ul className="list-disc list-inside space-y-2 ml-2 mt-2">
-              <li><a href="https://www.linkedin.com/legal/privacy-policy" target="_blank" rel="noopener noreferrer" className="text-violet-600 underline">LinkedIn Privacy Policy</a></li>
-              <li><a href="https://privacycenter.instagram.com/policy" target="_blank" rel="noopener noreferrer" className="text-violet-600 underline">Meta / Instagram Privacy Policy</a></li>
-              <li><a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" className="text-violet-600 underline">Google Privacy Policy</a></li>
-            </ul>
-            <p className="mt-3">
-              ItGrows.ai acts as a <strong>data processor</strong> on your behalf when accessing these platforms. You, as the account holder, remain the data controller for any content published or analytics retrieved through our service.
-            </p>
-          </section>
+          </Section>
 
-          <section>
-            <h2 className="text-xl font-semibold text-[#1b1916] mb-3">9. Revoking Social Media Access</h2>
-            <p>You can disconnect any connected social media account at any time:</p>
-            <ul className="list-disc list-inside space-y-2 ml-2 mt-2">
-              <li><strong>From ItGrows.ai</strong> — go to your account settings and remove the connected integration. We will immediately delete the associated OAuth tokens from our systems.</li>
-              <li><strong>Directly from the platform</strong> — you can also revoke access from within LinkedIn, Instagram, or Google&apos;s own app/security settings at any time, independent of our platform.</li>
-            </ul>
-            <p className="mt-3">
-              Revoking access will disable any scheduled posts or active campaigns that rely on the disconnected account. Analytics data already retrieved and stored in your dashboard may be retained for up to 30 days before deletion.
-            </p>
-          </section>
-
-          <section>
-            <h2 className="text-xl font-semibold text-[#1b1916] mb-3">10. Third-Party Services</h2>
-            <p>We may share data with the following third-party services strictly to operate our platform:</p>
-            <ul className="list-disc list-inside space-y-2 ml-2 mt-2">
-              <li><strong>Stripe</strong> — payment processing</li>
-              <li><strong>Resend</strong> — transactional email delivery</li>
-              <li><strong>Google</strong> — AI content generation via API</li>
-              <li><strong>LinkedIn</strong> — social media publishing and analytics (when connected)</li>
-              <li><strong>Meta</strong> — social media publishing and analytics (when connected)</li>
-            </ul>
-            <p className="mt-3">Each third party operates under its own privacy policy and data processing agreements.</p>
-          </section>
-
-          <section>
-            <h2 className="text-xl font-semibold text-[#1b1916] mb-3">11. Your Rights</h2>
-            <p>Under GDPR and applicable privacy laws, you have the right to:</p>
-            <ul className="list-disc list-inside space-y-2 ml-2 mt-2">
-              <li>Access the personal data we hold about you.</li>
-              <li>Request correction of inaccurate data.</li>
-              <li>Request deletion of your account and data.</li>
-              <li>Object to or restrict processing of your data.</li>
-              <li>Data portability (receive your data in a structured format).</li>
-            </ul>
-            <p className="mt-3">To exercise any of these rights, contact us at <strong>kiryl@itgrows.ai</strong>.</p>
-          </section>
-
-          <section>
-            <h2 className="text-xl font-semibold text-[#1b1916] mb-3">12. Cookie Policy</h2>
-            <p className="mb-3">
-              We use cookies and similar technologies to operate and improve our service. Below is a summary of the cookies we use:
-            </p>
-            <ul className="list-disc list-inside space-y-2 ml-2">
-              <li><strong>Session cookies</strong> — essential cookies that keep you logged in during your session. These cannot be disabled without breaking the service.</li>
-              <li><strong>Analytics cookies</strong> — we use <strong>Vercel Analytics</strong> to collect anonymized usage data (pages visited, device type, referrer). No personally identifiable information is stored. These cookies help us understand how users interact with the product so we can improve it.</li>
-            </ul>
-            <p className="mt-3">
-              We do not use advertising, retargeting, or third-party tracking cookies. You can decline analytics cookies via the cookie consent banner shown on your first visit. Essential session cookies will still be used to provide the service.
-            </p>
-            <p className="mt-3">
-              You can also manage or delete cookies at any time through your browser settings.
-            </p>
-          </section>
-
-          <section>
-            <h2 className="text-xl font-semibold text-[#1b1916] mb-3">13. Changes to This Policy</h2>
+          <Section id="transfers">
             <p>
-              We may update this Privacy Policy from time to time. We will notify you of significant changes by email or via a banner in the dashboard. Continued use of the service after changes constitutes acceptance.
+              Magiscan Inc. is a US company. Your data is processed in the United States: our database and servers are there, and most of the
+              providers above process data there. If you are in the EU, the UK or Switzerland, your data is transferred to the United States.
             </p>
-          </section>
+            <p>Where required, we rely on the Standard Contractual Clauses offered by our providers.</p>
+          </Section>
 
-          <section>
-            <h2 className="text-xl font-semibold text-[#1b1916] mb-3">14. Contact</h2>
+          <Section id="retention">
+            <List>
+              <li>Account data: while your account exists; it is removed when you delete the account (see below). The answers we collected about a website and its quick-check results belong to the website and are kept without a time limit.</li>
+              <li>
+                IP addresses saved with quick checks and free post previews, and the daily visitor hash: 90 days. The result of a quick check stays
+                with the website, like the AI assistants’ other answers.
+              </li>
+              <li>Usage analytics: 24 months.</li>
+              <li>Messages you send us through our contact forms: 24 months.</li>
+              <li>Billing records: as long as tax law requires.</li>
+              <li>LinkedIn and X tokens: deleted as soon as you disconnect the account.</li>
+              <li>
+                Deleting your account from the LinkedIn &amp; X dashboard, or by writing to <Mail />, first cancels all your subscriptions, trials
+                included; if one cannot be cancelled, the account is kept. Then it deletes: your account and its sign-in codes; your
+                connected LinkedIn and X accounts with their tokens; your posts, drafts, topics and briefs, and their statistics; your image library;
+                your connected sites with their access details; your articles; your AI visibility data: the sites you follow, your plans, launch
+                steps and launch emails; and the usage analytics and messages recorded under your account, or in the same browser before you signed
+                in. The AI assistants’ answers about a website are stored per website and stay with it, with no link to your account. Stripe keeps
+                your invoices as billing records. To have your image files erased from our image server too, or your Reddit planner projects
+                removed, write to us.
+              </li>
+            </List>
+          </Section>
+
+          <Section id="rights">
+            <p>Under the GDPR, the UK GDPR and similar laws, you have the right to:</p>
+            <List>
+              <li>get a copy of the personal data we hold about you;</li>
+              <li>have inaccurate data corrected;</li>
+              <li>have your data deleted;</li>
+              <li>restrict or object to processing, including processing based on our legitimate interests;</li>
+              <li>receive your data in a structured, machine-readable format;</li>
+              <li>withdraw your consent at any time, without affecting what was done before;</li>
+              <li>complain to your local data protection authority.</li>
+            </List>
             <p>
-              For any privacy-related questions or requests, contact us at:{" "}
-              <a href="mailto:kiryl@itgrows.ai" className="text-violet-600 underline">kiryl@itgrows.ai</a>
+              To use any of these rights, write to <Mail /> from the email address on your account. We answer within one month. Some things you can do
+              yourself: edit or stop articles in your cabinet, disconnect LinkedIn or X, unsubscribe from weekly emails, delete your account in the
+              LinkedIn &amp; X dashboard, change your choice in <CookieSettings />, and clear cookies in your browser.
             </p>
-          </section>
+          </Section>
+
+          <Section id="security">
+            <p>
+              All traffic to ItGrows is encrypted with HTTPS. Your articles, connected accounts and access details are available only to your account
+              and to the ItGrows team that runs it. No system is perfectly secure; if a breach affects your data, we will tell you as the law requires.
+            </p>
+          </Section>
+
+          <Section id="children">
+            <p>ItGrows is for people aged 18 and over. We do not knowingly collect data from children.</p>
+          </Section>
+
+          <Section id="changes">
+            <p>
+              We may update this policy. We will tell you about important changes by email or in your dashboard, and the date at the top will change.
+            </p>
+          </Section>
+
+          <Section id="contact">
+            <p>
+              Privacy questions and requests: <Mail />
+              <br />
+              Magiscan Inc., 919 North Market Street, Wilmington, DE 19801, USA
+            </p>
+          </Section>
         </div>
       </main>
 
-      <footer className="border-t border-black/10 px-6 py-8 text-center text-slate-500 text-sm mt-16" style={{ backgroundColor: "#ebe9e5" }}>
+      <footer className="border-t border-black/10 px-4 sm:px-6 py-8 text-center text-slate-500 text-sm" style={{ backgroundColor: "#ebe9e5" }}>
         <p>
-          © 2026 ItGrows.ai. All rights reserved. ·{" "}
+          © 2026 ItGrows.ai ·{" "}
           <Link href="/privacy" className="hover:text-[#1b1916]">Privacy Policy</Link> ·{" "}
           <Link href="/terms" className="hover:text-[#1b1916]">Terms of Service</Link>
         </p>

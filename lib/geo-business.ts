@@ -1,7 +1,7 @@
 import Stripe from "stripe"
 import { db } from "@/lib/db"
 import { users } from "@/lib/db/schema"
-import { eq, sql } from "drizzle-orm"
+import { eq, sql, type SQL } from "drizzle-orm"
 import { GEO_PRICES, type GeoInterval } from "@/lib/geo-pricing"
 import { geoCheck, type PublicRun } from "@/lib/geo-check"
 import { sendOwner } from "@/lib/telegram"
@@ -168,6 +168,54 @@ export async function liveGeoSubscriptions(stripe: Stripe, customer: string, dom
   return live
 }
 
+/** SQL, true when the site has had a paid plan before, by anyone: the one-time setup is the launch
+ *  of the SITE, done once, so a new plan for it starts without the setup whoever buys it (an invoice
+ *  client turned off, an account deleted and made again, a colleague). Our own records: any follow of
+ *  the domain on the plan (plan_interval) or bought for it through checkout or by invoice
+ *  (research_session "plan:<checkout>" / "invoice", kept after the plan ends), and any plan checkout
+ *  or paid geo_business subscription state recorded for the domain (analytics_events, kept after an
+ *  account is deleted). `domain` is a value or a column (sql.raw("s.domain")). */
+export function geoPlanBeforeSql(domain: SQL | string): SQL {
+  return sql`(EXISTS (SELECT 1 FROM geo_follows pf JOIN geo_sites ps ON ps.id = pf.site_id
+                      WHERE ps.domain = ${domain}
+                        AND (pf.plan_interval IS NOT NULL OR pf.research_session LIKE 'plan:%' OR pf.research_session = 'invoice'))
+           OR EXISTS (SELECT 1 FROM analytics_events e
+                      WHERE e.event IN ('geo_checkout_completed', 'geo_subscription') AND e.props->>'domain' = ${domain}
+                        AND (e.event = 'geo_checkout_completed' OR e.props->>'status' IN ('active', 'trialing', 'past_due'))))`
+}
+
+/** A plan subscription for the domain that was paid: live now, or with a paid invoice. */
+async function geoSubscriptionPaid(stripe: Stripe, s: Stripe.Subscription, domain: string): Promise<boolean> {
+  if (s.metadata?.plan !== GEO_PLAN || s.metadata?.domain !== domain) return false
+  if (PAID.has(s.status)) return true
+  return (await stripe.invoices.list({ subscription: s.id, status: "paid", limit: 1 })).data.length > 0
+}
+
+/** Whether the site has had a paid plan before, by anyone (so its setup is not charged again): our
+ *  records (geoPlanBeforeSql), else any plan subscription for the domain in Stripe, on any customer,
+ *  live or ended, that was paid; and the customer's own, should the search miss one. /api/geo/checkout
+ *  charges by it and the plan page shows by it (/api/geo/launch/setup), so the two agree. A null
+ *  customer (none yet) has no subscriptions of its own. Whose account asks does not matter: the setup
+ *  is per site (`_userId` stays for the callers). */
+export async function geoPlanPaidBefore(stripe: Stripe, _userId: string, customer: string | null, domain: string): Promise<boolean> {
+  const [own] = rows(await db.execute(sql`SELECT ${geoPlanBeforeSql(domain)} AS before`))
+  if (own?.before === true) return true
+  try {
+    const query = `metadata['plan']:'${GEO_PLAN}' AND metadata['domain']:'${domain.replace(/['\\]/g, "")}'`
+    for await (const s of stripe.subscriptions.search({ query, limit: 100 })) {
+      if (await geoSubscriptionPaid(stripe, s, domain)) return true
+    }
+  } catch (err) {
+    // Search can be unavailable; the customer's own list below still counts.
+    console.error("[geo-business] subscription search", domain, err instanceof Error ? err.message : err)
+  }
+  if (!customer) return false
+  for await (const s of stripe.subscriptions.list({ customer, status: "all", limit: 100 })) {
+    if (await geoSubscriptionPaid(stripe, s, domain)) return true
+  }
+  return false
+}
+
 /** Mirror a GEO subscription's state onto the follow it was bought for. What is written is the
  *  subscription as Stripe has it now, not the event's copy: events come out of order and are retried,
  *  and an old "active" must not put a cancelled customer back on the plan. A subscription that has
@@ -198,9 +246,11 @@ export async function syncGeoSubscription(eventSub: Stripe.Subscription, event: 
     FROM geo_sites s
     WHERE s.id = f.site_id AND f.user_id = ${userId} AND s.domain = ${domain}`)
   const props = { domain, status: sub.status, interval, event, subscription: sub.id, ...(current !== sub ? { live: current.id } : {}) }
+  // Only for an account that still exists: deleting one (/api/user/delete) cancels its subscriptions,
+  // and their events, coming after, must not leave a row signed with it behind.
   await db
     .execute(sql`INSERT INTO analytics_events (user_id, event, path, props)
-      VALUES (${userId}, 'geo_subscription', '/stripe/webhook', ${JSON.stringify(props)}::jsonb)`)
+      SELECT u.id, 'geo_subscription', '/stripe/webhook', ${JSON.stringify(props)}::jsonb FROM users u WHERE u.id = ${userId}`)
     .catch(() => {})
 }
 
@@ -243,7 +293,16 @@ export async function geoPlanCheckoutCompleted(session: Stripe.Checkout.Session,
   const interval = geoSubscriptionInterval(sub) ?? "month"
   if (!(await firstTime(userId, "geo_checkout_completed", { session: session.id, domain, interval, credit }))) return
   const price = GEO_PRICES[interval]
-  const terms = interval === "quarter" ? `${price.label} за 3 мес` : interval === "year" ? `${price.label} за год` : `${price.label}/мес + запуск ${GEO_PRICES.setup.label}`
+  // metadata.setup = "0": the site had the plan before, so its one-time setup was not charged again.
+  const setupCharged = (session.metadata?.setup ?? sub.metadata?.setup) !== "0"
+  const terms =
+    interval === "quarter"
+      ? `${price.label} за 3 мес`
+      : interval === "year"
+        ? `${price.label} за год`
+        : setupCharged
+          ? `${price.label}/мес + запуск ${GEO_PRICES.setup.label}`
+          : `${price.label}/мес, запуск уже был оплачен раньше`
   await notifyOwner(
     `💳 GEO оплачен: ${terms}${credit ? `, зачтён отчёт −${GEO_PRICES.research.label}` : ""}\n👤 ${await buyer(userId)}\n🌐 ${domain}\nДальше: подключить сайт клиента и поставить статьи.`
   )

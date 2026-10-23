@@ -2,19 +2,12 @@
 
 import { useEffect } from "react"
 import { usePathname } from "next/navigation"
+import { consentedAnonId, hasConsent } from "@/components/consent/consent"
 
 // Stable anonymous id (localStorage) so pre-login and post-login events stitch into one journey.
+// Created only after the visitor accepts cookies; before that, events are sent without it.
 function anonId(): string {
-  try {
-    let a = localStorage.getItem("itg_anon")
-    if (!a) {
-      a = (crypto as Crypto & { randomUUID?: () => string }).randomUUID?.() ?? String(Date.now()) + Math.random().toString(36).slice(2)
-      localStorage.setItem("itg_anon", a)
-    }
-    return a
-  } catch {
-    return ""
-  }
+  return consentedAnonId()
 }
 
 // Host only. A full referrer URL can carry the visitor's search terms, which we have no business
@@ -32,13 +25,35 @@ function referrerHost(): string {
 
 // First view of this visit. Later navigations refer to our own pages, so only the first one
 // knows the real source; a session marker keeps it that way without any cross-visit tracking.
+// Before "Accept" the marker lives in memory only (nothing is written to the browser).
+let seenInMemory = false
+
 function firstOfVisit(): boolean {
+  const first = !seenInMemory
+  seenInMemory = true
+  if (!hasConsent()) return first
   try {
-    if (sessionStorage.getItem("itg_seen")) return false
+    const stored = sessionStorage.getItem("itg_seen")
     sessionStorage.setItem("itg_seen", "1")
-    return true
+    return first && !stored
   } catch {
     return false
+  }
+}
+
+// Ad click ids (Google, Meta) single out one click on an ad: like the itg_gclid cookie, they are
+// recorded only after "Accept". Before that they are left out of the event and of its path.
+const CLICK_IDS = ["gclid", "gbraid", "wbraid", "fbclid"]
+
+function pagePath(): string {
+  if (hasConsent()) return location.pathname + location.search
+  try {
+    const q = new URLSearchParams(location.search)
+    for (const k of CLICK_IDS) q.delete(k)
+    const rest = q.toString()
+    return location.pathname + (rest ? `?${rest}` : "")
+  } catch {
+    return location.pathname
   }
 }
 
@@ -46,7 +61,8 @@ function campaign(): Record<string, string> {
   const out: Record<string, string> = {}
   try {
     const q = new URLSearchParams(location.search)
-    for (const k of ["utm_source", "utm_medium", "utm_campaign", "gclid", "gad_source", "fbclid"]) {
+    const keys = ["utm_source", "utm_medium", "utm_campaign", "gad_source", ...(hasConsent() ? CLICK_IDS : [])]
+    for (const k of keys) {
       const v = q.get(k)
       if (v) out[k] = v.slice(0, 120)
     }
@@ -60,7 +76,7 @@ function send(event: string, props: Record<string, unknown>) {
   try {
     const body = JSON.stringify({
       event,
-      path: location.pathname + location.search,
+      path: pagePath(),
       anon_id: anonId(),
       props,
     })

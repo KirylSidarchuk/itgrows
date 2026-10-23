@@ -67,6 +67,10 @@
     {
       "path": "/api/geo/articles/review-notice",
       "schedule": "0 6 * * *"
+    },
+    {
+      "path": "/api/geo/launch/remind",
+      "schedule": "0 8 * * *"
     }
   ]
 }

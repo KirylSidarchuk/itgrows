@@ -2,7 +2,7 @@ import { db } from "@/lib/db"
 import { sql } from "drizzle-orm"
 import { CREDIT_DAYS, SAMPLE_DOMAIN } from "@/lib/geo-pricing"
 import { clientOwnsSql } from "@/lib/geo-role"
-import { isGeoInterval } from "@/lib/geo-business"
+import { geoPlanBeforeSql, isGeoInterval } from "@/lib/geo-business"
 
 // Everything the AI-visibility page shows for one site: the latest finished report, the one in
 // progress if any, the history of summaries for the trend, and the quick check (shown whole: it is
@@ -146,6 +146,11 @@ async function siteReport(f: Row, sample = false) {
     research: { paidAt, creditUntil },
     // Whatever the plan was bought for: month, quarter or year (geo_follows.plan_interval).
     planInterval: isGeoInterval(f.plan_interval) ? f.plan_interval : null,
+    // The site had a paid plan before, by anyone (lib/geo-business.ts geoPlanBeforeSql), so its one-time
+    // setup is paid: /api/geo/checkout starts the month-to-month plan without it, and its first payment
+    // is GEO_PRICES.month alone (less a credit). False here can still turn out true in Stripe: the plan
+    // page asks /api/geo/launch/setup, which decides as checkout does.
+    setupPaid: f.setup_paid === true,
     pending: pending && {
       kind: pending.kind,
       status: pending.status,
@@ -186,7 +191,8 @@ export async function siteReportsFor(userId: string): Promise<SiteReportData[]> 
              nullif(s.profile->>'local_city', '') AS city, s.profile->>'offering' AS offering,
              s.profile->'questions' AS profile_questions, s.profile->'teaser' AS teaser_picks,
              f.plan, f.created_at AS followed_at, f.research_paid_at, f.research_credited_at, f.plan_interval,
-             (f.plan = 'paid' OR ${clientOwnsSql(sql.raw("f.user_id"), sql.raw("s.domain"))}) AS client
+             (f.plan = 'paid' OR ${clientOwnsSql(sql.raw("f.user_id"), sql.raw("s.domain"))}) AS client,
+             ${geoPlanBeforeSql(sql.raw("s.domain"))} AS setup_paid
       FROM geo_follows f JOIN geo_sites s ON s.id = f.site_id
       WHERE f.user_id = ${userId}
       ORDER BY f.created_at`)

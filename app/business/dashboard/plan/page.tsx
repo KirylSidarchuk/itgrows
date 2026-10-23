@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import { card, fmtDate, fullReport, onPlan, type Row, type SiteReport } from "../visibility/parts"
-import { GEO_PRICES, REPORT_SITES, SAMPLE_PATH, firstPaymentCents, usd } from "@/lib/geo-pricing"
+import { GEO_PRICES, REPORT_SITES, SAMPLE_PATH, firstPaymentCents, setupFree, usd } from "@/lib/geo-pricing"
 
 // The plan, for one site, and its billing. It is a service, not a guide: the page says who does
 // what before it asks for money — we write, publish, fix indexing, prepare the places the
@@ -13,7 +13,10 @@ import { GEO_PRICES, REPORT_SITES, SAMPLE_PATH, firstPaymentCents, usd } from "@
 // assistants cite become the places we prepare.
 //
 // Three ways to pay, all from lib/geo-pricing.ts: by the month plus the one-time setup, 3 months
-// upfront, or a year (both with the setup free). A choice made
+// upfront, or a year (both with the setup free). The setup is once per site: a site that has had a
+// paid plan before, by anyone, reads "$499 a month" with no setup and a first payment of $499 (less a
+// credit), exactly what /api/geo/checkout charges (the report's setupPaid, and where that says no,
+// /api/geo/launch/setup, which decides as checkout does). A choice made
 // on the pricing block arrives as ?interval= (through sign-up, and kept for a day in case the site
 // has to be added first): the page opens on it and marks it. An account without a site enters it
 // here: it is followed (/api/geo/follow) and checkout opens for the chosen interval.
@@ -354,6 +357,45 @@ function ManageSubscription() {
   )
 }
 
+/** What the launch will need from the client, from the site's own check (GET /api/geo/launch/needs):
+ *  titles only, before the payment choices. The first time a site is checked this takes most of a
+ *  minute; until then, and when nothing is needed, the block is not shown. */
+function LaunchNeeds({ domain }: { domain: string }) {
+  const [needs, setNeeds] = useState<{ key: string; title: string; optional?: boolean }[] | null>(null)
+  useEffect(() => {
+    let current = true
+    fetch(`/api/geo/launch/needs?site=${encodeURIComponent(domain)}`, { cache: "no-store" })
+      .then(async (r) => {
+        const j = (r.ok ? await r.json().catch(() => ({})) : {}) as { items?: { key: string; title: string; optional?: boolean }[] }
+        if (current) setNeeds(j.items ?? [])
+      })
+      .catch(() => {
+        if (current) setNeeds([])
+      })
+    return () => {
+      current = false
+    }
+  }, [domain])
+  if (!needs?.length) return null
+  return (
+    <div className="mt-6 rounded-xl bg-white/[0.06] border border-white/15 p-4 sm:p-5">
+      <h2 className="font-extrabold text-lg">To launch, we&apos;ll need from you (about 15 minutes)</h2>
+      <ul className="mt-3 space-y-1.5 text-sm text-white/85">
+        {needs.map((n) => (
+          <li key={n.key} className="flex gap-2">
+            <span className="text-violet-300">→</span>
+            {n.optional ? `${n.title} (if you use it)` : n.title}
+          </li>
+        ))}
+      </ul>
+      <p className="mt-3 text-sm text-white/60">We send the exact steps after you start.</p>
+    </div>
+  )
+}
+
+/** The site's one-time setup is paid already, by our records (/api/geo/report setupPaid). */
+const reportSetupPaid = (s: SiteReport) => (s as SiteReport & { setupPaid?: boolean }).setupPaid === true
+
 /** The signed-in account's sites, each cut to what it has paid for (lib/geo-report.ts). */
 async function loadSites(): Promise<SiteReport[]> {
   const r = await fetch("/api/geo/report", { cache: "no-store" })
@@ -370,6 +412,8 @@ export default function PlanPage() {
   const [picked, setPicked] = useState<Interval | null>(null)
   // An account without a site enters it here.
   const [newSite, setNewSite] = useState("")
+  // Per site: the setup paid before as checkout decides it (Stripe included), where the report said no.
+  const [setupAsked, setSetupAsked] = useState<Record<string, boolean>>({})
 
   useEffect(() => {
     const p = new URLSearchParams(window.location.search)
@@ -385,6 +429,21 @@ export default function PlanPage() {
       })
       .catch(() => setSites([]))
   }, [])
+
+  useEffect(() => {
+    const s = sites?.find((x) => x.domain === domain)
+    if (!s || onPlan(s) || reportSetupPaid(s) || s.domain in setupAsked) return
+    let current = true
+    fetch(`/api/geo/launch/setup?site=${encodeURIComponent(s.domain)}`, { cache: "no-store" })
+      .then(async (r) => {
+        const j = (r.ok ? await r.json().catch(() => ({})) : {}) as { setupPaid?: boolean }
+        if (current && typeof j.setupPaid === "boolean") setSetupAsked((m) => ({ ...m, [s.domain]: j.setupPaid === true }))
+      })
+      .catch(() => {})
+    return () => {
+      current = false
+    }
+  }, [sites, domain, setupAsked])
 
   async function start(interval: Interval) {
     setError("")
@@ -450,17 +509,21 @@ export default function PlanPage() {
   const creditUntil = site?.research?.creditUntil ?? null
   const credit = !!creditUntil
   const forSite = site?.domain ?? (newSite.trim() || "your site")
+  // The site has had a paid plan before: the month-to-month plan starts without the setup.
+  const setupPaid = site ? reportSetupPaid(site) || setupAsked[site.domain] === true : false
+  const firstCents = (i: Interval, withCredit: boolean) =>
+    firstPaymentCents(i, withCredit) - (!setupFree(i) && setupPaid ? P.setup.cents : 0)
 
   const busyText = (i: Interval) =>
     busy?.interval === i ? (busy.stage === "follow" ? "Reading your site… up to a minute" : "Opening checkout…") : null
   const firstPayment = (i: Interval) =>
     credit ? (
       <>
-        First payment <s className="text-white/40">{usd(firstPaymentCents(i, false))}</s>{" "}
-        <b className="text-white">{usd(firstPaymentCents(i, true))}</b>
+        First payment <s className="text-white/40">{usd(firstCents(i, false))}</s>{" "}
+        <b className="text-white">{usd(firstCents(i, true))}</b>
       </>
     ) : (
-      <>First payment {usd(firstPaymentCents(i, false))}</>
+      <>First payment {usd(firstCents(i, false))}</>
     )
   const choice = (i: Interval, title: string, lines: React.ReactNode[], cta: string) => (
     <Choice
@@ -600,25 +663,32 @@ export default function PlanPage() {
             </div>
             <p className="text-sm text-white/60 mt-5">No one can promise that assistants will name you. We promise the work and an honest weekly count.</p>
 
+            {site && <LaunchNeeds key={site.domain} domain={site.domain} />}
+
             <h2 className="mt-6 font-extrabold text-xl break-all">Start for {forSite}</h2>
 
             <div className="mt-4 grid gap-3 sm:grid-cols-3">
               {choice(
                 "month",
-                `${P.month.label} a month + ${P.setup.label} setup`,
-                [firstPayment("month"), `Billed monthly. The ${P.setup.label} setup is one-time: your site and its indexes made ready, with a launch report.`],
+                setupPaid ? `${P.month.label} a month` : `${P.month.label} a month + ${P.setup.label} setup`,
+                [
+                  firstPayment("month"),
+                  setupPaid
+                    ? "Billed monthly."
+                    : `Billed monthly. The ${P.setup.label} setup is one-time: your site and its indexes made ready, with a launch report.`,
+                ],
                 "Start monthly",
               )}
               {choice(
                 "quarter",
                 `${P.quarter.label} for 3 months upfront`,
-                [firstPayment("quarter"), `${P.quarter.perMonth} a month, billed every 3 months. Setup free.`],
+                [firstPayment("quarter"), `${P.quarter.perMonth} a month, billed every 3 months.${setupPaid ? "" : " Setup free."}`],
                 "Pay 3 months",
               )}
               {choice(
                 "year",
                 `${P.year.label} for a year`,
-                [firstPayment("year"), `${P.year.perMonth} a month, 20% off. Setup free.`],
+                [firstPayment("year"), `${P.year.perMonth} a month, 20% off.${setupPaid ? "" : " Setup free."}`],
                 "Pay a year",
               )}
             </div>

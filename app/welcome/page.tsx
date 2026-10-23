@@ -6,10 +6,35 @@ import { useEffect, useState } from "react"
 import { useSearchParams } from "next/navigation"
 import { Suspense } from "react"
 import { track } from "@vercel/analytics"
+import { hasConsent } from "@/components/consent/consent"
 
 declare global {
   interface Window {
     gtag?: (...args: unknown[]) => void
+  }
+}
+
+// "Purchase tracked" marker: in sessionStorage only after the visitor accepted cookies, else in memory.
+const WELCOME_TRACKED = "itgrows_welcome_tracked"
+let trackedInMemory = false
+
+function welcomeTracked(): boolean {
+  if (trackedInMemory) return true
+  if (!hasConsent()) return false
+  try {
+    return !!sessionStorage.getItem(WELCOME_TRACKED)
+  } catch {
+    return false
+  }
+}
+
+function markWelcomeTracked() {
+  trackedInMemory = true
+  if (!hasConsent()) return
+  try {
+    sessionStorage.setItem(WELCOME_TRACKED, "1")
+  } catch {
+    /* ignore */
   }
 }
 
@@ -20,8 +45,8 @@ function PersonalWelcomeContent() {
 
   useEffect(() => {
     // Google Ads trial-start conversion now fires centrally via <AdsConversion/> (itg_conv=trial).
-    if (subscribed && typeof window !== "undefined" && !sessionStorage.getItem("itgrows_welcome_tracked")) {
-      sessionStorage.setItem("itgrows_welcome_tracked", "1")
+    if (subscribed && typeof window !== "undefined" && !welcomeTracked()) {
+      markWelcomeTracked()
       track("purchase_completed")
     }
   }, [subscribed])

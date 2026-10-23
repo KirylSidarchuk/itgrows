@@ -4,6 +4,7 @@ import { db } from "@/lib/db"
 import { sql } from "drizzle-orm"
 import {
   GEO_PLAN,
+  geoPlanPaidBefore,
   geoPriceId,
   isGeoInterval,
   liveGeoSubscriptions,
@@ -12,13 +13,15 @@ import {
   stripeClient,
   stripeCustomerFor,
 } from "@/lib/geo-business"
-import { CREDIT_DAYS, firstPaymentCents, setupFree } from "@/lib/geo-pricing"
+import { CREDIT_DAYS, GEO_PRICES, firstPaymentCents, setupFree } from "@/lib/geo-pricing"
 import { sendOwner } from "@/lib/telegram"
 
 // Start the AI-visibility plan for one of the user's followed sites: $499 by the month plus the
 // one-time $499 setup, or $1,497 for 3 months / $4,788 for a year with the setup free. Stripe
 // Checkout, no trial; the webhook
-// turns the follow into plan = 'paid'. A report bought within CREDIT_DAYS comes off the first payment
+// turns the follow into plan = 'paid'. The setup is charged once per site: a site this user has had
+// the plan for before starts the month-to-month plan without it (lib/geo-business.ts geoPlanPaidBefore;
+// /api/geo/report shows it as setupPaid). A report bought within CREDIT_DAYS comes off the first payment
 // as a once-only coupon — Stripe takes either a coupon or promotion codes, so a credited checkout
 // takes no codes.
 
@@ -57,14 +60,17 @@ export async function POST(req: NextRequest) {
   if ((await liveGeoSubscriptions(stripe, customer, site)).length)
     return NextResponse.json({ error: "already_paid" }, { status: 409 })
 
-  // The month-to-month plan carries the one-time setup on its first invoice; 3 months and a year do not.
+  // The month-to-month plan carries the one-time setup on its first invoice; 3 months and a year do
+  // not, nor does a site that has had the plan before (its setup was done then).
+  const setupCharged = !setupFree(interval) && !(await geoPlanPaidBefore(stripe, userId, customer, site))
   const lineItems = [
     { price: await geoPriceId(stripe, interval), quantity: 1 },
-    ...(setupFree(interval) ? [] : [{ price: await geoPriceId(stripe, "setup"), quantity: 1 }]),
+    ...(setupCharged ? [{ price: await geoPriceId(stripe, "setup"), quantity: 1 }] : []),
   ]
+  const cents = firstPaymentCents(interval, credit) - (setupFree(interval) || setupCharged ? 0 : GEO_PRICES.setup.cents)
 
   const back = `https://www.itgrows.ai/business/dashboard/plan?site=${encodeURIComponent(site)}`
-  const meta = { userId, plan: GEO_PLAN, domain: site, interval, researchCredit: credit ? "1" : "0" }
+  const meta = { userId, plan: GEO_PLAN, domain: site, interval, researchCredit: credit ? "1" : "0", setup: setupCharged ? "1" : "0" }
   const checkout = await stripe.checkout.sessions.create({
     customer,
     mode: "subscription",
@@ -79,7 +85,7 @@ export async function POST(req: NextRequest) {
   await db
     .execute(sql`INSERT INTO analytics_events (user_id, event, path, props)
       VALUES (${userId}, 'geo_checkout_started', '/business/dashboard/plan',
-              ${JSON.stringify({ domain: site, interval, credit, cents: firstPaymentCents(interval, credit), session: checkout.id })}::jsonb)`)
+              ${JSON.stringify({ domain: site, interval, credit, setup: setupCharged, cents, session: checkout.id })}::jsonb)`)
     .catch(() => {})
   void sendOwner(`🛒 Открыл оплату GEO: ${session?.user?.email ?? userId} — ${site}, ${interval}`)
   return NextResponse.json({ url: checkout.url })

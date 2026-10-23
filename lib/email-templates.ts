@@ -310,3 +310,74 @@ export function articlesReadyEmail(name: string | null, siteName: string, articl
     </div>
   `
 }
+
+export function launchNeedsSubject(language: string | undefined, reminder: boolean): string {
+  const de = (language ?? "").toLowerCase().startsWith("de")
+  if (de) return reminder ? "Erinnerung: Was wir von Ihnen für den Start brauchen" : "Was wir von Ihnen für den Start brauchen"
+  return reminder ? "Reminder: what we need from you to start" : "What we need from you to start"
+}
+
+/**
+ * "What we need from you to start" (app/api/geo/launch/_mail.ts): what the client gives or does for
+ * the launch of their site, each item with where to click, a link to "Your website" and "Reply when
+ * it's done". Only what and where, never why. In the language of the client's site; the items arrive
+ * already in it (launch.py writes them in English and German).
+ */
+export function launchNeedsEmail(
+  name: string | null,
+  domain: string,
+  items: { title: string; steps: string[] }[],
+  settingsUrl: string,
+  language?: string,
+  reminder = false,
+): string {
+  const esc = (s: string) =>
+    s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;")
+  const de = (language ?? "").toLowerCase().startsWith("de")
+  const who = name?.trim() ? esc(name.trim()) : ""
+  const site = esc(domain)
+  const t = de
+    ? {
+        head: "Was wir von Ihnen für den Start brauchen",
+        hi: who ? `Guten Tag ${who},` : "Guten Tag,",
+        body: reminder
+          ? `für die Einrichtung von ${site} brauchen wir noch Folgendes von Ihnen:`
+          : `für die Einrichtung von ${site} brauchen wir Folgendes von Ihnen:`,
+        mark: "In Ihrem Konto können Sie jeden Punkt als erledigt markieren.",
+        cta: "Im Konto öffnen →",
+        reply: "Antworten Sie einfach auf diese E-Mail, wenn es erledigt ist.",
+      }
+    : {
+        head: "What we need from you to start",
+        hi: who ? `Hi ${who},` : "Hi,",
+        body: reminder ? `To set up ${site}, we still need the following from you:` : `To set up ${site}, we need the following from you:`,
+        mark: "In your account you can mark each one as done.",
+        cta: "Open Your website →",
+        reply: "Reply when it's done.",
+      }
+  const list = items
+    .map(
+      (i, n) => `
+        <div style="border: 1px solid #e5e7eb; border-radius: 10px; padding: 14px 18px; margin: 12px 0;">
+          <p style="color: #111827; font-size: 16px; font-weight: 600; margin: 0 0 6px;">${n + 1}. ${esc(i.title)}</p>
+          ${i.steps.map((s) => `<p style="color: #374151; font-size: 14px; line-height: 1.6; margin: 4px 0 0;">${esc(s)}</p>`).join("")}
+        </div>`,
+    )
+    .join("")
+  return `
+    <div style="${baseStyle}">
+      <div style="background: linear-gradient(135deg, #7c3aed, #a855f7); padding: 24px 32px; border-radius: 12px 12px 0 0;">
+        <h1 style="color: white; margin: 0; font-size: 20px;">${t.head}</h1>
+      </div>
+      <div style="padding: 32px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 12px 12px;">
+        <p style="color: #374151;">${t.hi}</p>
+        <p style="color: #374151;">${t.body}</p>
+        ${list}
+        <p style="color: #374151; margin-top: 20px;">${t.mark}</p>
+        <a href="${esc(settingsUrl)}" style="display: inline-block; background: #7c3aed; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600;">${t.cta}</a>
+        <p style="color: #111827; font-weight: 600; margin-top: 24px;">${t.reply}</p>
+        <p style="color: #9ca3af; font-size: 12px; margin-top: 32px;">ItGrows.ai</p>
+      </div>
+    </div>
+  `
+}

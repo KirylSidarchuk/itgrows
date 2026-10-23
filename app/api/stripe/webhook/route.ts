@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server"
+import { NextRequest, NextResponse, after } from "next/server"
 import Stripe from "stripe"
 import { db } from "@/lib/db"
 import { users, linkedinAccounts } from "@/lib/db/schema"
@@ -7,6 +7,7 @@ import { sendEmail } from "@/lib/email"
 import { subscriptionActivatedEmail, paymentFailedEmail, subscriptionCancelledEmail } from "@/lib/email-templates"
 import { GEO_PLAN, GEO_RESEARCH, geoPlanCheckoutCompleted, notifyOwner, syncGeoSubscription, unlockGeoResearch } from "@/lib/geo-business"
 import { sendOwner } from "@/lib/telegram"
+import { sendFirstLaunchMail } from "@/app/api/geo/launch/_mail"
 
 // A bought AI-visibility report for a site nobody followed yet waits for the VM to follow it.
 export const maxDuration = 60
@@ -86,6 +87,16 @@ export async function POST(req: NextRequest) {
           // ItGrows for Business (AI visibility plan): its own state, never the LinkedIn/X plan.
           if (plan === GEO_PLAN) {
             await geoPlanCheckoutCompleted(session, subscription, event.type)
+            // "What we need from you to start", once per site and buyer (app/api/geo/launch/_mail.ts),
+            // after Stripe has its answer: a site never checked for it is checked first.
+            const geoDomain = subscription.metadata?.domain ?? session.metadata?.domain
+            if (userId && geoDomain) {
+              after(() =>
+                sendFirstLaunchMail(userId, geoDomain).catch((e) =>
+                  console.error("[stripe/webhook] launch email", geoDomain, e instanceof Error ? e.message : e),
+                ),
+              )
+            }
             break
           }
 

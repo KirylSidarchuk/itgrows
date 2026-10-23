@@ -7,7 +7,7 @@ import { useEffect, useState } from "react"
 // Session id>; this asks /api/geo/conversion what was paid and sends it once: "GEO report bought"
 // ($49.90) or "GEO plan bought" (the first payment), with the real amount and currency and the
 // session id as transaction_id, so Google counts a reload of the page only once. gtag runs under
-// Google Consent Mode (app/layout.tsx): before "Accept" Google receives it without cookies.
+// Google Consent Mode basic (app/layout.tsx): the call is queued and reaches Google only after "Accept".
 
 const SEND_TO = {
   report: "AW-18160234884/bfDCCKP15qYdEITjvNND",

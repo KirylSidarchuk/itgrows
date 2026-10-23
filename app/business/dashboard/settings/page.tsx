@@ -772,15 +772,21 @@ function fmtWhen(iso: string) {
 // What the launch checked, fixed and set up for a site: GET /api/geo/launch, from
 // /root/geo_check/launch.py on the VM. The automatic items run again every day (cron 05:40 UTC)
 // and on "Check again"; the others we set as the work gets done. "na" items never reach here.
-type LaunchStatus = "ok" | "fixed" | "handed" | "you" | "todo" | "issue" | "tip"
+// Each item says who does it. First what we need from the client ("you": what to do and where to
+// click, and Done, POST /api/geo/launch/done, after which it reads "We are checking" until a check or
+// we confirm it), then what we are doing (our manual items, with their date), then the rest of the
+// report: the automatic checks.
+type LaunchStatus = "ok" | "fixed" | "handed" | "you" | "todo" | "issue" | "tip" | "check"
 
 interface LaunchItem {
   key: string
   title: string
   how: "auto" | "manual"
+  who?: "you" | "us"
   status: LaunchStatus
   note: string | null
   updated_at: string | null
+  steps?: string[]
 }
 
 const LAUNCH_PILL: Record<LaunchStatus, [string, string]> = {
@@ -791,13 +797,66 @@ const LAUNCH_PILL: Record<LaunchStatus, [string, string]> = {
   todo: ["We're on it", "text-violet-700 bg-violet-50 border-violet-200"],
   issue: ["Needs fixing", "text-red-700 bg-red-50 border-red-200"],
   tip: ["Worth adding", "text-slate-600 bg-slate-100 border-slate-200"],
+  check: ["We are checking", "text-sky-800 bg-sky-50 border-sky-200"],
 }
+
+const DONE_PILL: [string, string] = ["Done", "text-green-700 bg-green-50 border-green-200"]
 
 const known = (items: LaunchItem[] | undefined) => (items ?? []).filter((i) => Object.hasOwn(LAUNCH_PILL, i.status))
 
 /** The bare domain the launch API keys on, normalised as app/api/geo/launch does. */
 function domainOf(url: string) {
   return url.trim().toLowerCase().replace(/^https?:\/\//, "").replace(/^www\./, "").split(/[/?#]/)[0]
+}
+
+function fmtDay(iso: string | null) {
+  const d = new Date(iso ?? "")
+  if (Number.isNaN(d.getTime())) return ""
+  return d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })
+}
+
+const isYou = (i: LaunchItem) => i.who === "you"
+const OPEN_YOU = new Set<LaunchStatus>(["you", "issue", "handed", "todo"])
+
+function YouItem({ item, onDone }: { item: LaunchItem; onDone: (key: string) => Promise<boolean> }) {
+  const [busy, setBusy] = useState(false)
+  const [failed, setFailed] = useState(false)
+  const open = OPEN_YOU.has(item.status)
+  const [pillText, pillCls] = item.status === "check" ? LAUNCH_PILL.check : open ? LAUNCH_PILL.you : DONE_PILL
+  const done = async () => {
+    setBusy(true)
+    setFailed(false)
+    const ok = await onDone(item.key)
+    if (!ok) setFailed(true)
+    setBusy(false)
+  }
+  return (
+    <li className="rounded-xl bg-[#f8f7f6] px-3.5 py-3">
+      <div className="flex items-start justify-between gap-3">
+        <span className="min-w-0 text-sm font-semibold text-[#1b1916]">{item.title}</span>
+        <span className={`shrink-0 text-[11px] font-bold px-2.5 py-1 rounded-full border ${pillCls}`}>{pillText}</span>
+      </div>
+      {open && (
+        <>
+          {(item.steps ?? []).map((s) => (
+            <p key={s} className="mt-1.5 text-sm text-slate-700 break-words">
+              {s}
+            </p>
+          ))}
+          <div className="mt-3 flex flex-wrap items-center gap-3">
+            <button
+              onClick={done}
+              disabled={busy}
+              className="rounded-xl bg-violet-600 hover:bg-violet-500 text-white px-4 py-2 text-sm font-semibold disabled:opacity-60"
+            >
+              {busy ? "Saving…" : "Done"}
+            </button>
+            {failed && <span className="text-xs text-red-700">That didn&apos;t go through. Try again in a minute.</span>}
+          </div>
+        </>
+      )}
+    </li>
+  )
 }
 
 function LaunchReport({ domain }: { domain: string }) {
@@ -850,9 +909,30 @@ function LaunchReport({ domain }: { domain: string }) {
     }
   }
 
+  const markDone = async (key: string) => {
+    try {
+      const r = await fetch("/api/geo/launch/done", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ site: domain, key }),
+      })
+      const data = (await r.json().catch(() => ({}))) as { status?: LaunchStatus }
+      if (!r.ok || !data.status) return false
+      setItems((cur) => (Array.isArray(cur) ? cur.map((i) => (i.key === key ? { ...i, status: data.status! } : i)) : cur))
+      return true
+    } catch {
+      return false
+    }
+  }
+
   if (hidden) return null
 
   const list = Array.isArray(items) ? items : []
+  // What we need from the client: theirs to do, being checked, or done by them ("ok" from the start
+  // was never needed). What we are doing: our manual items. The rest: the automatic checks.
+  const youList = list.filter((i) => isYou(i) && i.status !== "ok")
+  const usList = list.filter((i) => !isYou(i) && i.how === "manual")
+  const rest = list.filter((i) => !isYou(i) && i.how !== "manual")
   // "Worth adding" is optional, so it neither counts against the site nor in the total.
   const counted = list.filter((i) => i.status !== "tip")
   const inOrder = counted.filter((i) => i.status === "ok" || i.status === "fixed").length
@@ -862,78 +942,114 @@ function LaunchReport({ domain }: { domain: string }) {
   const open = list.some((i) => i.status === "you" || i.status === "issue" || i.status === "handed")
 
   return (
-    <section className={card}>
-      <p className={`${label} break-all`}>{domain}</p>
-      <h2 className="mt-1 font-extrabold text-lg text-[#1b1916]">
-        {ready ? `Ready for AI assistants: ${inOrder} of ${counted.length} in order` : "Ready for AI assistants"}
-      </h2>
-      <p className="mt-1 text-sm text-slate-600">
-        The launch report that comes with your launch: what we checked, fixed and set up so AI assistants and search engines can
-        reach and read your site. The automatic checks run again every day.
-      </p>
-
-      {ready && (
-        <div
-          className="mt-4 h-2 rounded-full bg-[#ebe9e5] overflow-hidden"
-          role="progressbar"
-          aria-label="Items in order"
-          aria-valuemin={0}
-          aria-valuemax={counted.length}
-          aria-valuenow={inOrder}
-        >
-          <div className="h-full rounded-full bg-green-600" style={{ width: `${pct}%` }} />
-        </div>
+    <>
+      {ready && youList.length > 0 && (
+        <section className={card}>
+          <p className={`${label} break-all`}>{domain}</p>
+          <h2 className="mt-1 font-extrabold text-lg text-[#1b1916]">What we need from you</h2>
+          <ul className="mt-4 space-y-2">
+            {youList.map((i) => (
+              <YouItem key={i.key} item={i} onDone={markDone} />
+            ))}
+          </ul>
+        </section>
       )}
 
-      {items === null ? (
-        <div className="mt-4 space-y-2">
-          {[0, 1, 2].map((i) => (
-            <div key={i} className="h-10 rounded-xl bg-[#f8f7f6] animate-pulse" />
-          ))}
-        </div>
-      ) : items === "failed" ? (
-        <p className="mt-4 text-sm text-slate-600">The launch report did not load just now. Reload the page in a minute.</p>
-      ) : notRun ? (
-        <p className="mt-4 text-sm text-slate-600">The launch check has not run for this site yet.</p>
-      ) : (
-        <ul className="mt-4 space-y-2">
-          {list.map((i) => {
-            const [text, cls] = LAUNCH_PILL[i.status]
-            return (
-              <li key={i.key} className="rounded-xl bg-[#f8f7f6] px-3.5 py-2.5">
-                <div className="flex items-start justify-between gap-3">
-                  <span className="min-w-0 text-sm font-semibold text-[#1b1916]">{i.title}</span>
-                  <span className={`shrink-0 text-[11px] font-bold px-2.5 py-1 rounded-full border ${cls}`}>{text}</span>
-                </div>
-                {i.note && <p className="mt-1 text-xs text-slate-600 break-words">{i.note}</p>}
-              </li>
-            )
-          })}
-        </ul>
+      {ready && usList.length > 0 && (
+        <section className={card}>
+          <p className={`${label} break-all`}>{domain}</p>
+          <h2 className="mt-1 font-extrabold text-lg text-[#1b1916]">What we&apos;re doing</h2>
+          <ul className="mt-4 space-y-2">
+            {usList.map((i) => {
+              const [text, cls] = LAUNCH_PILL[i.status]
+              return (
+                <li key={i.key} className="rounded-xl bg-[#f8f7f6] px-3.5 py-2.5">
+                  <div className="flex items-start justify-between gap-3">
+                    <span className="min-w-0 text-sm font-semibold text-[#1b1916]">{i.title}</span>
+                    <span className={`shrink-0 text-[11px] font-bold px-2.5 py-1 rounded-full border ${cls}`}>{text}</span>
+                  </div>
+                  {i.updated_at && <p className="mt-1 text-xs text-slate-500">{fmtDay(i.updated_at)}</p>}
+                  {i.note && <p className="mt-1 text-xs text-slate-600 break-words">{i.note}</p>}
+                </li>
+              )
+            })}
+          </ul>
+        </section>
       )}
 
-      {items !== null && (
-        <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-2">
-          <button
-            onClick={checkAgain}
-            disabled={checking}
-            className="rounded-xl bg-violet-600 hover:bg-violet-500 text-white px-4 py-2 text-sm font-semibold disabled:opacity-60"
+      <section className={card}>
+        <p className={`${label} break-all`}>{domain}</p>
+        <h2 className="mt-1 font-extrabold text-lg text-[#1b1916]">
+          {ready ? `Ready for AI assistants: ${inOrder} of ${counted.length} in order` : "Ready for AI assistants"}
+        </h2>
+        <p className="mt-1 text-sm text-slate-600">
+          The launch report that comes with your launch: what we checked, fixed and set up so AI assistants and search engines can
+          reach and read your site. The automatic checks run again every day.
+        </p>
+
+        {ready && (
+          <div
+            className="mt-4 h-2 rounded-full bg-[#ebe9e5] overflow-hidden"
+            role="progressbar"
+            aria-label="Items in order"
+            aria-valuemin={0}
+            aria-valuemax={counted.length}
+            aria-valuenow={inOrder}
           >
-            {checking ? "Checking… up to a minute" : notRun ? "Run the check" : "Check again"}
-          </button>
-          {checked && <span className={`text-xs ${checked.bad ? "text-red-700" : "text-slate-600"}`}>{checked.text}</span>}
-          {open && !checking && (
-            <span className="text-xs text-slate-600">
-              A question about an item?{" "}
-              <Link href="/business/dashboard/support" className="font-semibold text-violet-700 underline">
-                Write to us
-              </Link>
-              .
-            </span>
-          )}
-        </div>
-      )}
-    </section>
+            <div className="h-full rounded-full bg-green-600" style={{ width: `${pct}%` }} />
+          </div>
+        )}
+
+        {items === null ? (
+          <div className="mt-4 space-y-2">
+            {[0, 1, 2].map((i) => (
+              <div key={i} className="h-10 rounded-xl bg-[#f8f7f6] animate-pulse" />
+            ))}
+          </div>
+        ) : items === "failed" ? (
+          <p className="mt-4 text-sm text-slate-600">The launch report did not load just now. Reload the page in a minute.</p>
+        ) : notRun ? (
+          <p className="mt-4 text-sm text-slate-600">The launch check has not run for this site yet.</p>
+        ) : (
+          <ul className="mt-4 space-y-2">
+            {rest.map((i) => {
+              const [text, cls] = LAUNCH_PILL[i.status]
+              return (
+                <li key={i.key} className="rounded-xl bg-[#f8f7f6] px-3.5 py-2.5">
+                  <div className="flex items-start justify-between gap-3">
+                    <span className="min-w-0 text-sm font-semibold text-[#1b1916]">{i.title}</span>
+                    <span className={`shrink-0 text-[11px] font-bold px-2.5 py-1 rounded-full border ${cls}`}>{text}</span>
+                  </div>
+                  {i.note && <p className="mt-1 text-xs text-slate-600 break-words">{i.note}</p>}
+                </li>
+              )
+            })}
+          </ul>
+        )}
+
+        {items !== null && (
+          <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-2">
+            <button
+              onClick={checkAgain}
+              disabled={checking}
+              className="rounded-xl bg-violet-600 hover:bg-violet-500 text-white px-4 py-2 text-sm font-semibold disabled:opacity-60"
+            >
+              {checking ? "Checking… up to a minute" : notRun ? "Run the check" : "Check again"}
+            </button>
+            {checked && <span className={`text-xs ${checked.bad ? "text-red-700" : "text-slate-600"}`}>{checked.text}</span>}
+            {open && !checking && (
+              <span className="text-xs text-slate-600">
+                A question about an item?{" "}
+                <Link href="/business/dashboard/support" className="font-semibold text-violet-700 underline">
+                  Write to us
+                </Link>
+                .
+              </span>
+            )}
+          </div>
+        )}
+      </section>
+    </>
   )
 }
 
