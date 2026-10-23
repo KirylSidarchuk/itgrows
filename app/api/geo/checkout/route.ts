@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/auth"
+import { adsClickMeta } from "@/lib/ads-click"
 import { db } from "@/lib/db"
 import { sql } from "drizzle-orm"
 import {
@@ -75,11 +76,12 @@ export async function POST(req: NextRequest) {
     customer,
     mode: "subscription",
     line_items: lineItems,
-    success_url: `${back}&paid=1`,
+    // cs: the Google Ads conversion on return (components/GeoPurchaseConversion.tsx).
+    success_url: `${back}&paid=1&cs={CHECKOUT_SESSION_ID}`,
     cancel_url: back,
     ...(credit ? { discounts: [{ coupon: await researchCreditCoupon(stripe) }] } : { allow_promotion_codes: true }),
-    metadata: meta,
-    subscription_data: { metadata: meta, description: `AI visibility for ${site}` },
+    metadata: { ...meta, ...(await adsClickMeta()) },
+    subscription_data: { metadata: { ...meta, ...(await adsClickMeta()) }, description: `AI visibility for ${site}` },
   })
 
   await db
