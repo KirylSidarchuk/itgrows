@@ -39,7 +39,7 @@ async function readSite(origin: string): Promise<string> {
     try {
       const r = await fetch(u, {
         signal: AbortSignal.timeout(12000),
-        headers: { "User-Agent": "Mozilla/5.0 (compatible; ItGrows/1.0)" },
+        headers: { "User-Agent": "ItGrows/1.0 (+https://www.itgrows.ai/business)" },
       })
       return r.ok ? (await r.text()).slice(0, 120_000) : ""
     } catch {

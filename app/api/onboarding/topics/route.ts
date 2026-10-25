@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
   let siteContext = `Website URL: ${siteUrl}`
   try {
     const siteRes = await fetch(siteUrl.startsWith("http") ? siteUrl : `https://${siteUrl}`, {
-      headers: { "User-Agent": "Mozilla/5.0 (compatible; ItGrows/1.0)" },
+      headers: { "User-Agent": "ItGrows/1.0 (+https://www.itgrows.ai/business)" },
       signal: AbortSignal.timeout(5000),
     })
     const html = await siteRes.text()
