@@ -16,7 +16,7 @@ import { sendOwner } from "@/lib/telegram"
 // - The plan (plan "geo_business"), by the month (plus the one-time setup), 3 months upfront or a year: a paying
 //   customer is a geo_follows row with plan = 'paid' and plan_interval for the site they bought it for.
 //
-// Stripe prices are found by their lookup keys and created on first use; the $49.90 credit is one
+// Stripe prices are found by their lookup keys and created on first use; the $19.99 credit is one
 // coupon with a fixed id, also created on first use.
 
 export const GEO_PLAN = "geo_business"

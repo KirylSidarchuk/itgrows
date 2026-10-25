@@ -14,7 +14,7 @@ import { geoPlanBeforeSql, isGeoInterval } from "@/lib/geo-business"
 // set up by hand with that site listed as theirs in geo_client_sites (lib/geo-role.ts clientOwnsSql;
 // connected_sites is not read). A client
 // site, a bought report and the sample are shown whole ("full"); anything else is a preview of the
-// $49.90 report: the totals stay, the questions of the quick check keep their answers (the teaser
+// $19.99 report: the totals stay, the questions of the quick check keep their answers (the teaser
 // run's questions, or the profile's teaser picks when the site has no quick check yet), every other
 // question is shown as the question alone; the first PREVIEW_RIVALS of the names given instead; no
 // cited sources, only how many there are. The cut happens here, so the hidden answers never reach the

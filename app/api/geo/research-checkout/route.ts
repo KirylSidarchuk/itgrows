@@ -10,7 +10,7 @@ import { GEO_PRICES } from "@/lib/geo-pricing"
 import { geoClientOwns } from "@/lib/geo-role"
 import { sendOwner } from "@/lib/telegram"
 
-// Buy the full detailed report for one site ($49.90, once): Stripe Checkout in payment mode. The
+// Buy the full detailed report for one site ($19.99, once): Stripe Checkout in payment mode. The
 // webhook unlocks it (geo_follows.research_paid_at). Also for a site the user does not follow yet —
 // a site past the one the account includes: the webhook follows it first, which queues its report.
 //

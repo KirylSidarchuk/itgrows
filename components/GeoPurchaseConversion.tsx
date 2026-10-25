@@ -5,7 +5,7 @@ import { useEffect, useState } from "react"
 // Google Ads conversions for GEO payments (account ItGrows, tag AW-18160234884). Mounted in the GEO
 // cabinet layout (app/business/dashboard/layout.tsx). Stripe brings the buyer back with ?cs=<Checkout
 // Session id>; this asks /api/geo/conversion what was paid and sends it once: "GEO report bought"
-// ($49.90) or "GEO plan bought" (the first payment), with the real amount and currency and the
+// ($19.99) or "GEO plan bought" (the first payment), with the real amount and currency and the
 // session id as transaction_id, so Google counts a reload of the page only once. gtag runs under
 // Google Consent Mode basic (app/layout.tsx): the call is queued and reaches Google only after "Accept".
 // The same payment goes to the Meta pixel "ItGrows.ai" as Purchase, with the session id as eventID;

@@ -4,7 +4,7 @@
 //
 // - Detailed report (20 questions x 4 assistants x 3 asks): an account has it computed for
 //   REPORT_SITES site after sign-up, with the totals and the quick check's 5 questions open; the whole
-//   report is $49.90, and for another site the report is $49.90. Its price comes off the first plan
+//   report is $19.99, and for another site the report is $19.99. Its price comes off the first plan
 //   payment if the plan starts within CREDIT_DAYS of buying it.
 // - The plan: $499 a month plus a one-time $499 setup (the launch: site and index setup, delivered as
 //   the launch report on "Your website"); 3 months upfront ($1,497) or a year ($4,788 = $399 a month,
@@ -13,13 +13,14 @@
 export const CREDIT_DAYS = 30
 /** Sites an account has the detailed report computed for. Past that /api/geo/follow answers
  *  "report_limit", and the report for another site is bought. UI text: "Your account includes the
- *  report for one site; for another site the report is $49.90". */
+ *  report for one site; for another site the report is $19.99". */
 export const REPORT_SITES = 1
 
 export type GeoInterval = "month" | "quarter" | "year"
 
 export const GEO_PRICES = {
-  research: { cents: 4990, label: "$49.90", lookupKey: "itgrows_geo_research_4990" },
+  // $19.99 since 25.10.2026 (was $19.99): a new lookup key, so Stripe gets a new price on first use.
+  research: { cents: 1999, label: "$19.99", lookupKey: "itgrows_geo_research_1999" },
   // v2: its own product, so the checkout line reads as the setup rather than a second month of the plan.
   setup: { cents: 49900, label: "$499", lookupKey: "itgrows_geo_setup_499_v2" },
   month: { cents: 49900, label: "$499", perMonth: "$499", lookupKey: "itgrows_business_499_monthly", interval: "month", intervalCount: 1 },
