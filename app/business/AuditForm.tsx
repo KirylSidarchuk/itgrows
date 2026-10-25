@@ -424,7 +424,7 @@ export default function AuditForm() {
           <div className="px-4 pb-4 flex flex-wrap gap-2">
             {data.robots.bots.map((b) => {
               const live = data.liveFetch.find((l) => l.bot === b.bot)
-              const tone: Tone = b.verdict === "blocked" || live?.blocked ? "bad" : b.verdict === "allowed" ? "good" : "warn"
+              const tone: Tone = b.verdict === "blocked" || live?.blocked ? "bad" : b.verdict === "allowed" || (b.verdict === "wildcard" && live?.status === 200) ? "good" : "warn"
               return (
                 <span key={b.bot} className={`inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full border ${TONE[tone]}`}>
                   <span className={`w-1.5 h-1.5 rounded-full ${DOT[tone]}`} />
@@ -485,7 +485,7 @@ export default function AuditForm() {
               <div className="px-4 pb-4 space-y-2">
                 {data.robots.bots.map((b) => {
                   const live = data.liveFetch.find((l) => l.bot === b.bot)
-                  const tone: Tone = b.verdict === "blocked" || live?.blocked ? "bad" : b.verdict === "allowed" ? "good" : "warn"
+                  const tone: Tone = b.verdict === "blocked" || live?.blocked ? "bad" : b.verdict === "allowed" || (b.verdict === "wildcard" && live?.status === 200) ? "good" : "warn"
                   const text =
                     b.verdict === "blocked"
                       ? m.verdictBlocked

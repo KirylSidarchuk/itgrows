@@ -61,6 +61,15 @@ async function grab(url: string, ua: string, ms = 9000) {
   }
 }
 
+// Robots.txt, sitemaps and a content page are read as ourselves first: some hosts' bot filters
+// (SiteGround) drop a browser user agent coming from a data centre but let an honest named one through.
+// If the site refuses that, the browser one is tried, so a site that only serves browsers still counts.
+const SITE_UA = "ItGrowsCheck/1.0 (+https://www.itgrows.ai/business)"
+async function grabFile(url: string, ms = 9000) {
+  const first = await grab(url, SITE_UA, ms)
+  return first.status === 200 ? first : await grab(url, HUMAN_UA, ms)
+}
+
 async function statusOnly(url: string, ua: string, ms = 9000) {
   const ctrl = new AbortController()
   const timer = setTimeout(() => ctrl.abort(), ms)
@@ -164,7 +173,7 @@ async function rivalSurface(raw: string) {
   if (!target) return null
   const origin = `${target.protocol}//${target.hostname}`
 
-  const first = await grab(`${origin}/sitemap.xml`, HUMAN_UA, 10000)
+  const first = await grabFile(`${origin}/sitemap.xml`, 10000)
   if (first.status !== 200 || !/<loc>/.test(first.text)) return null
 
   let xml = first.text
@@ -175,7 +184,7 @@ async function rivalSurface(raw: string) {
   if (/<sitemapindex/i.test(xml)) {
     const children = pickChildren(locs, 6)
     partial = children.length < locs.length
-    const bodies = await Promise.all(children.map(async (c) => (await grab(c, HUMAN_UA, 8000)).text))
+    const bodies = await Promise.all(children.map(async (c) => (await grabFile(c, 8000)).text))
     xml = bodies.join("\n")
     locs = bodies.flatMap((b) => [...b.matchAll(/<loc>\s*([^<]+?)\s*<\/loc>/g)].map((m) => m[1]))
     urlCount = locs.length
@@ -218,10 +227,10 @@ export async function POST(req: NextRequest) {
     : Promise.resolve(null)
 
   const [robotsRes, homeHuman, sitemapRes, llmsStatus, ...botStatusValues] = await Promise.all([
-    grab(`${origin}/robots.txt`, HUMAN_UA, 7000),
+    grabFile(`${origin}/robots.txt`, 7000),
     grab(origin, HUMAN_UA, 9000),
-    grab(`${origin}/sitemap.xml`, HUMAN_UA, 12000),
-    statusOnly(`${origin}/llms.txt`, HUMAN_UA, 6000),
+    grabFile(`${origin}/sitemap.xml`, 12000),
+    statusOnly(`${origin}/llms.txt`, SITE_UA, 6000).then((st) => (st === 200 ? st : statusOnly(`${origin}/llms.txt`, HUMAN_UA, 6000))),
     // What the server actually does when the caller says it is a crawler. robots.txt is only a
     // request; a 403 here is a refusal, and plenty of sites refuse without their owner knowing.
     ...Object.values(BOT_UAS).map((ua) => statusOnly(origin, ua, 9000)),
@@ -255,12 +264,15 @@ export async function POST(req: NextRequest) {
   let sitemapKind: "none" | "urlset" | "index" = "none"
   let partial = false
   let locs = [...sitemapRes.text.matchAll(/<loc>\s*([^<]+?)\s*<\/loc>/g)].map((m) => m[1])
+  // Every sitemap already accounted for, so one named again in robots.txt is not read twice.
+  const openedMaps = [`${origin}/sitemap.xml`]
   if (sitemapRes.status === 200 && urlCount > 0) {
     sitemapKind = /<sitemapindex/i.test(sitemapRes.text) ? "index" : "urlset"
     if (sitemapKind === "index") {
+      openedMaps.push(...locs)
       const children = pickChildren(locs, 6)
       partial = children.length < locs.length
-      const bodies = await Promise.all(children.map(async (c) => (await grab(c, HUMAN_UA, 8000)).text))
+      const bodies = await Promise.all(children.map(async (c) => (await grabFile(c, 8000)).text))
       // Only the sitemaps we opened are counted, so this is a floor, never an estimate. The UI
       // renders it with a "≥" for exactly that reason.
       urlCount = bodies.reduce((a, b) => a + (b.match(/<loc>/g) ?? []).length, 0)
@@ -268,23 +280,34 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // No /sitemap.xml: many sites declare theirs only in robots.txt (WordPress plugins name them
-  // page-sitemap.xml, post-sitemap.xml and so on). Read those before reporting "no sitemap".
-  if (urlCount === 0 && robotsRes.status === 200) {
-    const declared = sitemapsIn(robotsRes.text).slice(0, 6)
+  // Sitemaps declared in robots.txt besides /sitemap.xml. WordPress plugins name them page-sitemap.xml,
+  // post-sitemap.xml and so on, and many sites keep their articles in a second one (magiscan.app: the
+  // site in /sitemap.xml, the blog in /blog-sitemap.xml). Read them as well, not only when /sitemap.xml
+  // is missing, or the articles never count and the site reads as having nothing to quote.
+  if (robotsRes.status === 200) {
+    const key = (u: string) => u.trim().replace(/^https?:\/\/(www\.)?/i, "").replace(/\/+$/, "").toLowerCase()
+    const opened = new Set(openedMaps.map(key))
+    const declared = sitemapsIn(robotsRes.text).filter((u) => !opened.has(key(u))).slice(0, 6)
     if (declared.length) {
-      const bodies = await Promise.all(declared.map(async (u) => (await grab(u, HUMAN_UA, 8000)).text))
+      const bodies = await Promise.all(declared.map(async (u) => (await grabFile(u, 8000)).text))
       const firstLevel = bodies.flatMap((b) => [...b.matchAll(/<loc>\s*([^<]+?)\s*<\/loc>/g)].map((m) => m[1]))
-      const nested = firstLevel.filter((u) => /\.xml($|\?)/i.test(u))
+      const nested = firstLevel.filter((u) => /\.xml($|\?)/i.test(u) && !opened.has(key(u)))
+      let found = firstLevel.filter((u) => !/\.xml($|\?)/i.test(u))
       if (nested.length) {
-        const more = await Promise.all(pickChildren(nested, 6).map(async (c) => (await grab(c, HUMAN_UA, 8000)).text))
-        locs = [...firstLevel.filter((u) => !/\.xml($|\?)/i.test(u)), ...more.flatMap((b) => [...b.matchAll(/<loc>\s*([^<]+?)\s*<\/loc>/g)].map((m) => m[1]))]
-        partial = true
-      } else {
-        locs = firstLevel
+        const picked = pickChildren(nested, 6)
+        if (picked.length < nested.length) partial = true
+        const more = await Promise.all(picked.map(async (c) => (await grabFile(c, 8000)).text))
+        found = [...found, ...more.flatMap((b) => [...b.matchAll(/<loc>\s*([^<]+?)\s*<\/loc>/g)].map((m) => m[1]))]
       }
-      urlCount = locs.length
-      if (urlCount) sitemapKind = nested.length ? "index" : "urlset"
+      if (found.length) {
+        // One address listed in two sitemaps is still one page.
+        const before = new Set(locs.filter((u) => !/\.xml($|\?)/i.test(u)))
+        const merged = [...new Set([...before, ...found])]
+        // A partly opened index stays a floor and gains only the new pages; otherwise the merged list is the count.
+        urlCount = partial ? urlCount + (merged.length - before.size) : merged.length
+        locs = merged
+        if (sitemapKind === "none") sitemapKind = nested.length ? "index" : "urlset"
+      }
     }
   }
 
@@ -324,7 +347,7 @@ export async function POST(req: NextRequest) {
     .map((m) => m[1])
     .find((u) => !/\.xml($|\?)/i.test(u) && u.replace(origin, "").split("/").filter(Boolean).length >= 1)
 
-  const contentPage = contentUrl ? await grab(contentUrl, HUMAN_UA, 9000) : null
+  const contentPage = contentUrl ? await grabFile(contentUrl, 9000) : null
   const sample = contentPage?.text || homeHuman.text
 
   const jsonLdTypes = [...sample.matchAll(/"@type"\s*:\s*"([A-Za-z]+)"/g)].map((m) => m[1])
