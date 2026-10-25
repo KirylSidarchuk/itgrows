@@ -206,18 +206,7 @@ export default async function Home() {
               })}
             </h1>
             <p className="text-base sm:text-xl text-slate-600 max-w-2xl mx-auto mt-5 mb-8">{m.lead}</p>
-            <AuditForm />
-            <p className="text-xs text-slate-500 mt-3">{m.heroNote}</p>
-          </div>
-        </section>
-
-        <section className="px-4 sm:px-6 pb-10">
-          <div className="max-w-4xl mx-auto rounded-2xl border border-violet-200 bg-white px-5 py-4 flex flex-col sm:flex-row sm:items-center gap-3">
-            <p className="text-sm text-slate-700 flex-1">{rich(m.founder(LI.personal), { b: (c) => <b>{c}</b> })}</p>
-            <div className="flex gap-2 shrink-0">
-              <Link href="/personal" className="rounded-xl bg-[#1b1916] text-white px-4 py-2.5 text-sm font-semibold">{m.founderCta}</Link>
-              <Link href="/cabinet" rel="nofollow" className="rounded-xl border border-black/10 px-4 py-2.5 text-sm font-semibold">{m.openCabinet}</Link>
-            </div>
+            <AuditForm note={m.heroNote} />
           </div>
         </section>
 
@@ -332,6 +321,18 @@ export default async function Home() {
             </div>
           </section>
         )}
+
+        {/* The LinkedIn/X product, after all of the AI-visibility page: right under the check's
+            result it stood between the answers and everything that explains them. */}
+        <section className="px-4 sm:px-6 py-10">
+          <div className="max-w-4xl mx-auto rounded-2xl border border-violet-200 bg-white px-5 py-4 flex flex-col sm:flex-row sm:items-center gap-3">
+            <p className="text-sm text-slate-700 flex-1">{rich(m.founder(LI.personal), { b: (c) => <b>{c}</b> })}</p>
+            <div className="flex gap-2 shrink-0">
+              <Link href="/personal" className="rounded-xl bg-[#1b1916] text-white px-4 py-2.5 text-sm font-semibold">{m.founderCta}</Link>
+              <Link href="/cabinet" rel="nofollow" className="rounded-xl border border-black/10 px-4 py-2.5 text-sm font-semibold">{m.openCabinet}</Link>
+            </div>
+          </div>
+        </section>
 
         <SiteFooter />
       </div>

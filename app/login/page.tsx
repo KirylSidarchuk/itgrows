@@ -47,9 +47,9 @@ function LoginForm() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
       })
-      const data = await res.json()
       if (!res.ok) {
-        setError(data.error ?? m.failedToSend)
+        // In the visitor's language: 429 is a new code asked for within a minute of the last one.
+        setError(res.status === 429 ? m.waitResend : res.status === 400 ? m.emailInvalid : m.failedToSend)
         setLoading(false)
         return
       }
@@ -99,6 +99,7 @@ function LoginForm() {
             <input
               type="text"
               inputMode="numeric"
+              autoComplete="one-time-code"
               pattern="[0-9]{6}"
               maxLength={6}
               value={pin}
@@ -139,7 +140,7 @@ function LoginForm() {
           {m.authError}
         </div>
       )}
-      <OAuthButtons callbackUrl={callbackUrl} />
+      <OAuthButtons callbackUrl={callbackUrl} googleFirst={callbackUrl.startsWith("/business")} />
       <form onSubmit={handleSendPin} className="space-y-4">
         <div>
           <label className="block text-sm font-medium text-[#1b1916] mb-1.5">{m.emailLabel}</label>

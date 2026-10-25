@@ -8,6 +8,7 @@ import OAuthButtons from "@/components/auth/OAuthButtons"
 import LocaleLink from "@/components/i18n/LocaleLink"
 import { useT } from "@/components/i18n/LocaleProvider"
 import { CREDIT_DAYS, GEO_PRICES } from "@/lib/geo-pricing"
+import { isBareDomain } from "@/lib/geo-handoff"
 import { rich } from "@/lib/i18n/rich"
 import signupNs from "@/lib/i18n/messages/signup"
 
@@ -20,16 +21,24 @@ function SignupForm() {
   // Arriving from the quick AI check on "/": this account is for that site's report, so the
   // page talks about the report, not about the LinkedIn trial.
   const fromAiCheck = searchParams.get("from") === "ai-check"
-  const aiSite = (searchParams.get("site") ?? "").slice(0, 100)
+  // The site goes into the heading, so only a bare domain counts; anything else gets the report heading.
+  const siteParam = (searchParams.get("site") ?? "").trim().toLowerCase()
+  const aiSite = isBareDomain(siteParam) ? siteParam : ""
   // "Start the plan" on the pricing block: the same account, headed for the plan rather than the report.
   const aiForPlan = fromAiCheck && callbackUrl.startsWith("/business/dashboard/plan")
 
   // Funnel step events (page view -> oauth click / email submit -> complete) so we can see
   // exactly where /signup loses people instead of guessing.
+  // Each step carries where the visitor came from and the site they checked, so a site's way from the
+  // quick check to an account can be followed.
+  const funnel = { from: searchParams.get("from") ?? undefined, site: aiSite || undefined }
   const sgTrack = (event: string, props?: Record<string, unknown>) => {
-    try { navigator.sendBeacon("/api/track", JSON.stringify({ event, path: "/signup", props, anon_id: localStorage.getItem("itg_anon") })) } catch {}
+    try { navigator.sendBeacon("/api/track", JSON.stringify({ event, path: "/signup", props: { ...funnel, ...props }, anon_id: localStorage.getItem("itg_anon") })) } catch {}
   }
-  useEffect(() => { sgTrack("signup_view", { plan: planParam ?? undefined, from: searchParams.get("from") ?? undefined }) // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    sgTrack("signup_view", { plan: planParam ?? undefined })
+    // Once per page view.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const [name, setName] = useState("")
@@ -43,6 +52,10 @@ function SignupForm() {
   const digitRefs = useRef<(HTMLInputElement | null)[]>([])
 
   const pin = digits.join("")
+
+  // The send-pin errors in the visitor's language: 429 is a new code asked for within a minute of the
+  // last one, 400 an address the server refuses.
+  const sendPinError = (status: number) => (status === 429 ? m.waitResend : status === 400 ? m.emailInvalid : m.failedToSend)
 
   // Warm the signup with the posts the visitor just generated on the landing (activation fix):
   // the same localStorage handoff the cabinet reads, so signup feels like "finish what I started".
@@ -79,12 +92,37 @@ function SignupForm() {
 
   const formatTime = (s: number) => `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`
 
-  const handleDigitChange = (i: number, val: string) => {
-    const v = val.replace(/[^0-9]/g, "").slice(-1)
+  // Several digits from box i on: one per box, then the caret goes to the box after the last.
+  const spreadDigits = (i: number, s: string) => {
     const next = [...digits]
-    next[i] = v
+    const put = s.slice(0, 6 - i).split("")
+    put.forEach((c, k) => {
+      next[i + k] = c
+    })
     setDigits(next)
-    if (v && i < 5) digitRefs.current[i + 1]?.focus()
+    digitRefs.current[Math.min(i + put.length, 5)]?.focus()
+  }
+
+  const handleDigitChange = (i: number, val: string) => {
+    const v = val.replace(/[^0-9]/g, "")
+    // The whole code at once (the keyboard's one-time-code suggestion, or a paste) fills every box.
+    if (v.length >= 6) {
+      // Into a box that held a digit, the box's own digit comes along once: drop it.
+      const code = digits[i] && v.length > 6 ? v.replace(digits[i], "") : v
+      setDigits(code.slice(0, 6).split(""))
+      digitRefs.current[5]?.focus()
+      return
+    }
+    // Typed into a filled box: keep what was typed, wherever the caret was, not the digit it held.
+    const typed = digits[i] && v.length > 1 ? v.replace(digits[i], "") : v
+    if (typed.length > 1) {
+      spreadDigits(i, typed)
+      return
+    }
+    const next = [...digits]
+    next[i] = typed
+    setDigits(next)
+    if (next[i] && i < 5) digitRefs.current[i + 1]?.focus()
   }
 
   const handleDigitKeyDown = (i: number, e: React.KeyboardEvent) => {
@@ -96,8 +134,16 @@ function SignupForm() {
   const handleDigitPaste = (e: React.ClipboardEvent) => {
     const text = e.clipboardData.getData("text").replace(/[^0-9]/g, "").slice(0, 6)
     if (text.length === 6) {
+      e.preventDefault()
       setDigits(text.split(""))
       digitRefs.current[5]?.focus()
+      return
+    }
+    // Part of a code: from the box it was pasted into.
+    const i = digitRefs.current.indexOf(e.target as HTMLInputElement)
+    if (text.length > 0 && i >= 0) {
+      e.preventDefault()
+      spreadDigits(i, text)
     }
   }
 
@@ -105,14 +151,20 @@ function SignupForm() {
     setResending(true)
     setError("")
     try {
-      await fetch("/api/auth/send-pin", {
+      const res = await fetch("/api/auth/send-pin", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, name }),
       })
+      if (!res.ok) {
+        setError(sendPinError(res.status))
+        return
+      }
       setTimeLeft(900)
       setDigits(["", "", "", "", "", ""])
       digitRefs.current[0]?.focus()
+    } catch {
+      setError(m.somethingWrong)
     } finally {
       setResending(false)
     }
@@ -129,9 +181,8 @@ function SignupForm() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, name }),
       })
-      const data = await res.json()
       if (!res.ok) {
-        setError(data.error ?? m.failedToSend)
+        setError(sendPinError(res.status))
         setLoading(false)
         return
       }
@@ -269,16 +320,18 @@ function SignupForm() {
             </div>
 
             <form onSubmit={handleVerifyPin}>
-              <label className="block text-sm font-medium text-[#1b1916] mb-3">{m.enterCode}</label>
-              {/* OTP boxes */}
-              <div className="grid grid-cols-6 gap-2 mb-5" onPaste={handleDigitPaste}>
+              <p id="signup-code-label" className="text-sm font-medium text-[#1b1916] mb-3">{m.enterCode}</p>
+              {/* OTP boxes: each takes the whole code too (one-time-code suggestion, paste) */}
+              <div role="group" aria-labelledby="signup-code-label" className="grid grid-cols-6 gap-2 mb-5" onPaste={handleDigitPaste}>
                 {digits.map((d, i) => (
                   <input
                     key={i}
                     ref={el => { digitRefs.current[i] = el }}
                     type="text"
                     inputMode="numeric"
-                    maxLength={1}
+                    autoComplete="one-time-code"
+                    aria-label={m.digitLabel(i + 1)}
+                    maxLength={7}
                     value={d}
                     onChange={e => handleDigitChange(i, e.target.value)}
                     onKeyDown={e => handleDigitKeyDown(i, e)}
@@ -346,6 +399,11 @@ function SignupForm() {
               <h1 className="text-2xl font-bold text-[#1b1916] mt-4">{m.planTitle}</h1>
               <p className="text-slate-500 text-sm mt-1">{m.planLead(GEO_PRICES.month.label, GEO_PRICES.setup.label, GEO_PRICES.quarter.label, GEO_PRICES.year.label)}</p>
             </>
+          ) : fromAiCheck && aiSite ? (
+            <>
+              <h1 className="text-2xl font-bold text-[#1b1916] mt-4 break-words">{m.answersTitle(aiSite)}</h1>
+              <p className="text-slate-500 text-sm mt-1">{m.answersLead(GEO_PRICES.research.label)}</p>
+            </>
           ) : fromAiCheck ? (
             <>
               <h1 className="text-2xl font-bold text-[#1b1916] mt-4">{m.reportTitle(aiSite)}</h1>
@@ -382,25 +440,28 @@ function SignupForm() {
             </div>
           )}
           <div onClickCapture={() => sgTrack("signup_oauth_click")}>
-            <OAuthButtons callbackUrl={callbackUrl} />
+            <OAuthButtons callbackUrl={callbackUrl} googleFirst={fromAiCheck || callbackUrl.startsWith("/business")} />
           </div>
           <form onSubmit={handleSendPin} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-[#1b1916] mb-1.5">{m.nameLabel}</label>
+              <label htmlFor="signup-name" className="block text-sm font-medium text-[#1b1916] mb-1.5">{m.nameLabel}</label>
               <input
+                id="signup-name"
                 type="text"
+                autoComplete="name"
                 value={name}
                 onChange={e => setName(e.target.value)}
                 required
-                autoFocus
                 className="w-full px-4 py-2.5 rounded-xl border border-black/10 bg-[#f3f2f1] text-[#1b1916] text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
                 placeholder={m.namePlaceholder}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-[#1b1916] mb-1.5">{m.emailLabel}</label>
+              <label htmlFor="signup-email" className="block text-sm font-medium text-[#1b1916] mb-1.5">{m.emailLabel}</label>
               <input
+                id="signup-email"
                 type="email"
+                autoComplete="email"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 required

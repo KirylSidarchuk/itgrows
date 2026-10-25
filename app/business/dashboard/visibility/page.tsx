@@ -10,6 +10,7 @@ import {
   FirstLook,
   History,
   NamedInstead,
+  OpeningSite,
   Pending,
   ReportSections,
   RunView,
@@ -35,6 +36,12 @@ import {
 // by /api/geo/follow with "report_limit" (402); its report can be bought instead, and the purchase
 // follows it. The report ends with "Your plan": what we do, never how to do it yourself.
 //
+// A new account lands here straight from the sign-up: while the site it came with is being followed, the
+// first screen says "Opening your answers for …" (not an empty address form). If that follow fails, the
+// site stays in the address and the check's handoff stays in localStorage, and the page offers to try
+// again (the next visit retries too); only an answer a retry cannot change (report_limit, limit_user,
+// invalid_url) lets them go, and the form shows it.
+//
 // Under the report, the history lists every finished report of the site; a row (or a bar of the
 // trend, or "View day-0 report") opens that report in place of this week's, until "Back".
 
@@ -54,6 +61,20 @@ function bare(raw: string) {
     .split(/[/?#]/)[0]
 }
 
+// Errors of /api/geo/follow that trying again cannot change.
+const FINAL_ERRORS = new Set(["report_limit", "limit_user", "invalid_url"])
+
+// The site the visitor came with is in: tidy the address bar and drop the quick check's handoff.
+function forgetArrival() {
+  const params = new URLSearchParams(window.location.search)
+  if (params.has("site") || params.has("unlocked")) window.history.replaceState(null, "", window.location.pathname)
+  try {
+    localStorage.removeItem("itg_geo_handoff")
+    // Signed in now: the pricing block on "/" stops offering this site's sign-up.
+    localStorage.removeItem("itg_geo_checked")
+  } catch {}
+}
+
 function track(event: string, props?: Record<string, unknown>) {
   try {
     navigator.sendBeacon(
@@ -70,6 +91,8 @@ export default function VisibilityPage() {
   const [adding, setAdding] = useState(false)
   const [showAdd, setShowAdd] = useState(false)
   const [followErr, setFollowErr] = useState<{ domain: string; error: string } | null>(null)
+  // The site the visitor came with (?site= or the quick check's handoff), until it is followed.
+  const [opening, setOpening] = useState<string | null>(null)
   const [audits, setAudits] = useState<Record<string, Audit | "failed">>({})
   // A report opened from the history, and the ones fetched so far, by run and access: buying the
   // report changes how a run is cut, so a run fetched as a preview is not shown once it is unlocked.
@@ -80,6 +103,11 @@ export default function VisibilityPage() {
   const [unlocking, setUnlocking] = useState<{ domain: string; since: number } | null>(null)
   const [unlockSlow, setUnlockSlow] = useState(false)
   const started = useRef(false)
+  // Whether the last list load worked, and a site followed while it did not: "Opening…" stays on screen
+  // until a load brings the list (it is asked again while loading fails), not the empty address form.
+  const listOk = useRef(true)
+  const [awaitingList, setAwaitingList] = useState(false)
+  const awaiting = useRef(false)
 
   const load = useCallback(async () => {
     try {
@@ -88,16 +116,24 @@ export default function VisibilityPage() {
       const j = (await r.json()) as { sites: SiteReport[] }
       setSites(j.sites)
       setLoadFailed(false)
+      listOk.current = true
+      if (awaiting.current) {
+        awaiting.current = false
+        setAwaitingList(false)
+        setOpening(null)
+      }
       return j.sites
     } catch {
+      listOk.current = false
       setLoadFailed(true)
       setSites((s) => s ?? [])
       return null
     }
   }, [])
 
+  // Resolves to the error code, or null once the site is followed.
   const follow = useCallback(
-    async (site: string) => {
+    async (site: string): Promise<string | null> => {
       setAdding(true)
       setFollowErr(null)
       try {
@@ -106,13 +142,20 @@ export default function VisibilityPage() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ site }),
         })
+        if (r.status === 401) {
+          // Signed out meanwhile: a retry here cannot work. Sign in again and come back to the same address
+          // (it still names the site, and the hand-over is kept).
+          window.location.href = `/login?callbackUrl=${encodeURIComponent(window.location.pathname + window.location.search)}`
+          return "unauthorized"
+        }
         const j = (await r.json().catch(() => ({}))) as { domain?: string; status?: string; error?: string }
         if (!r.ok || !j.domain || j.error) {
           // report_limit names the domain as the server spells it: the report is bought for that one.
           const domain = (j.error === "report_limit" && j.domain) || bare(site)
-          setFollowErr({ domain, error: j.error ?? "unavailable" })
+          const error = j.error ?? "unavailable"
+          setFollowErr({ domain, error })
           track("geo_follow_failed", { domain, error: j.error })
-          return
+          return error
         }
         setActive(j.domain)
         setShowAdd(false)
@@ -125,12 +168,46 @@ export default function VisibilityPage() {
           }
         } catch {}
         await load()
+        return null
+      } catch {
+        // A dropped request: the server may not have it, so it is tried again like any other failure.
+        setFollowErr({ domain: bare(site), error: "unavailable" })
+        track("geo_follow_failed", { domain: bare(site), error: "network" })
+        return "unavailable"
       } finally {
         setAdding(false)
       }
     },
     [load]
   )
+
+  // Follow the site the visitor came with; it is let go once followed, or when retrying cannot help.
+  const open = useCallback(
+    async (site: string) => {
+      setOpening(site)
+      const error = await follow(site)
+      if (error && !FINAL_ERRORS.has(error)) return
+      forgetArrival()
+      if (!error && !listOk.current) {
+        // Followed, but the list did not load: keep saying "Opening…" until it does.
+        awaiting.current = true
+        setAwaitingList(true)
+        return
+      }
+      setOpening(null)
+    },
+    [follow]
+  )
+
+  // "Check a different site" (and "+ Add a site" while the card is up): the address form instead.
+  const checkOther = () => {
+    awaiting.current = false
+    setAwaitingList(false)
+    setOpening(null)
+    setFollowErr(null)
+    setShowAdd(true)
+    forgetArrival()
+  }
 
   // First visit: follow the site the visitor came with, then tidy the address bar.
   useEffect(() => {
@@ -146,6 +223,8 @@ export default function VisibilityPage() {
           if (h?.site && Date.now() - (h.at ?? 0) < 86_400_000) site = bare(h.site)
         } catch {}
       }
+      // Said at once, so the first screen is never the empty address form.
+      if (site && !unlocked) setOpening(site)
       const list = await load()
       if (site && unlocked) {
         // A bought report: the webhook unlocks the site (and follows it, if it is a new one). Not
@@ -153,14 +232,15 @@ export default function VisibilityPage() {
         setActive(site)
         setUnlocking({ domain: site, since: Date.now() })
         track("geo_research_return", { domain: site })
-      } else if (site && list && !list.some((s) => s.domain === site)) await follow(site)
-      else if (site) setActive(site)
-      if (params.has("site") || unlocked) window.history.replaceState(null, "", window.location.pathname)
-      try {
-        localStorage.removeItem("itg_geo_handoff")
-      } catch {}
+      } else if (site && !list?.some((s) => s.domain === site)) {
+        // A new site, or the list did not load (a site already followed answers at once).
+        await open(site)
+        return
+      } else if (site) setActive(site)
+      setOpening(null)
+      forgetArrival()
     })()
-  }, [load, follow])
+  }, [load, open])
 
   const site = sites?.find((s) => s.domain === active) ?? sites?.[sites.length - 1]
   const anyPending = Boolean(sites?.some((s) => s.pending))
@@ -170,6 +250,13 @@ export default function VisibilityPage() {
     const t = setInterval(load, 10_000)
     return () => clearInterval(t)
   }, [anyPending, load])
+
+  // The list failed to load: ask again, as the notice says ("It retries on its own").
+  useEffect(() => {
+    if (!loadFailed || anyPending) return
+    const t = setInterval(load, 10_000)
+    return () => clearInterval(t)
+  }, [loadFailed, anyPending, load])
 
   // After the purchase: ask again every few seconds until the site reads as unlocked.
   const bought = unlocking ? sites?.find((s) => s.domain === unlocking.domain) : undefined
@@ -281,7 +368,11 @@ export default function VisibilityPage() {
                 </button>
               ))}
             {sites.length < 3 && (
-              <button type="button" onClick={() => setShowAdd((v) => !v)} className="text-sm text-violet-700 font-semibold hover:underline px-1">
+              <button
+                type="button"
+                onClick={() => (opening && !adding ? checkOther() : setShowAdd((v) => !v))}
+                className="text-sm text-violet-700 font-semibold hover:underline px-1"
+              >
                 + Add a site
               </button>
             )}
@@ -329,8 +420,21 @@ export default function VisibilityPage() {
         <div className={`${card} text-sm text-slate-700`}>We couldn&apos;t load your report just now. It retries on its own; you can also refresh.</div>
       )}
 
-      {(!site || showAdd || followErr) && (
-        <AddSite onAdd={follow} busy={adding} error={followErr} first={!site} reportUsed={Boolean(site) && reportUsed} />
+      {opening ? (
+        <OpeningSite
+          domain={opening}
+          busy={adding || awaitingList}
+          error={followErr?.error ?? null}
+          onRetry={() => {
+            track("geo_open_retry", { domain: opening })
+            open(opening)
+          }}
+          onOther={checkOther}
+        />
+      ) : (
+        (!site || showAdd || followErr) && (
+          <AddSite onAdd={follow} busy={adding} error={followErr} first={!site} reportUsed={Boolean(site) && reportUsed} />
+        )
       )}
 
       {site && (

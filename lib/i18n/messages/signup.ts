@@ -6,8 +6,8 @@ import { plural } from "../format"
 // posts handed over from the landing) — plus the code step, the loading shell and the page's
 // metadata (app/signup/layout.tsx). The Google and LinkedIn buttons are
 // components/auth/OAuthButtons.tsx. Prices and days come in as arguments (lib/geo-pricing.ts);
-// emailInvalid and waitResend are the send-pin errors, whose English is the server's own text, for
-// the page to show in the visitor's language instead of the raw English.
+// emailInvalid and waitResend are the send-pin errors (400 and 429), shown by status in the visitor's
+// language instead of the server's raw English.
 
 // "в течение 30 дней", "в течение 21 дня".
 const ruDays = (n: number) => plural("ru", n, { one: `${n} дня`, other: `${n} дней` })
@@ -21,6 +21,11 @@ const en = {
   planTitle: "Start the AI visibility plan",
   planLead: (month: string, setup: string, quarter: string, year: string) =>
     `First your account, then your site: the plan is built from its report. Then you choose how to pay: ${month} a month plus a one-time ${setup} setup, or ${quarter} for 3 months upfront or ${year} for a year with the setup free.`,
+  // From the quick check with its site: the account opens the check's other answers
+  answersTitle: (site: string) => `Open all 5 answers for ${site}`,
+  answersLead: (report: string) =>
+    `No card needed. Right after sign-up: the other 3 answers and everyone named instead of you. In about 10 minutes: your totals across ChatGPT, Claude, Gemini and Perplexity. The full report is ${report}, one payment.`,
+  // From the quick check without a site
   reportTitle: (site: string) => (site ? `Your detailed AI report for ${site}` : "Your detailed AI report"),
   reportLead: (report: string, days: number) =>
     `No card to create the account. We put 20 buyer questions to ChatGPT, Claude, Gemini and Perplexity, 3 times each; you see the totals and the 5 questions of the quick check. The whole report is ${report}, one payment, and comes off your first plan payment if you start the plan within ${days} days.`,
@@ -58,6 +63,8 @@ const en = {
   checkEmail: "Check your email",
   codeSentTo: "We've sent a 6-digit code to",
   enterCode: "Enter 6-digit code",
+  // Each box's label for screen readers
+  digitLabel: (n: number) => `Digit ${n} of 6`,
   verifying: "Verifying...",
   continue: "Continue →",
   codeExpires: (time: string) => `Code expires in ${time}`,
@@ -76,7 +83,7 @@ const en = {
   somethingWrong: "Something went wrong",
   invalidCode: "Invalid or expired code. Please try again.",
   emailInvalid: "Valid email required",
-  waitResend: "Please wait before requesting another PIN",
+  waitResend: "Wait a minute, then ask for a new code.",
 }
 
 export default defineMessages(en, {
@@ -86,6 +93,9 @@ export default defineMessages(en, {
     planTitle: "Den KI-Sichtbarkeitsplan starten",
     planLead: (month, setup, quarter, year) =>
       `Zuerst Ihr Konto, dann Ihre Website: Der Plan baut auf dem Bericht zu Ihrer Website auf. Danach wählen Sie, wie Sie zahlen: ${month} pro Monat plus einmalig ${setup} für die Einrichtung, oder ${quarter} für 3 Monate im Voraus bzw. ${year} für ein Jahr, jeweils ohne Einrichtungsgebühr.`,
+    answersTitle: (site) => `Alle 5 Antworten für ${site} öffnen`,
+    answersLead: (report) =>
+      `Keine Kreditkarte nötig. Direkt nach der Registrierung: die übrigen 3 Antworten und alle, die statt Ihnen genannt werden. Nach etwa 10 Minuten: Ihre Gesamtwerte für ChatGPT, Claude, Gemini und Perplexity. Der vollständige Bericht kostet einmalig ${report}.`,
     reportTitle: (site) => (site ? `Ihr ausführlicher KI-Bericht für ${site}` : "Ihr ausführlicher KI-Bericht"),
     reportLead: (report, days) =>
       `Für das Konto brauchen Sie keine Karte. Wir stellen ChatGPT, Claude, Gemini und Perplexity 20 Fragen, wie Ihre Kunden sie stellen, jeweils dreimal; Sie sehen die Gesamtwerte und die 5 Fragen des Schnellchecks. Der vollständige Bericht kostet ${report}, einmalig, und wird auf Ihre erste Plan-Zahlung angerechnet, wenn Sie den Plan innerhalb von ${days} Tagen starten.`,
@@ -117,6 +127,7 @@ export default defineMessages(en, {
     checkEmail: "Prüfen Sie Ihr Postfach",
     codeSentTo: "Wir haben einen 6-stelligen Code gesendet an",
     enterCode: "6-stelligen Code eingeben",
+    digitLabel: (n) => `Ziffer ${n} von 6`,
     verifying: "Wird geprüft…",
     continue: "Weiter →",
     codeExpires: (time) => `Code noch ${time} gültig`,
@@ -133,7 +144,7 @@ export default defineMessages(en, {
     somethingWrong: "Etwas ist schiefgelaufen",
     invalidCode: "Der Code ist ungültig oder abgelaufen. Bitte versuchen Sie es erneut.",
     emailInvalid: "Bitte geben Sie eine gültige E-Mail-Adresse ein.",
-    waitResend: "Bitte warten Sie kurz, bevor Sie einen neuen Code anfordern.",
+    waitResend: "Warten Sie eine Minute und fordern Sie dann einen neuen Code an.",
   },
 
   fr: {
@@ -142,6 +153,9 @@ export default defineMessages(en, {
     planTitle: "Démarrer l’abonnement visibilité IA",
     planLead: (month, setup, quarter, year) =>
       `D’abord votre compte, puis votre site : l’abonnement est établi à partir de son rapport. Vous choisissez ensuite comment payer : ${month} par mois plus une mise en place de ${setup} facturée une seule fois, ou bien ${quarter} pour 3 mois d’avance ou ${year} pour un an, sans frais de mise en place.`,
+    answersTitle: (site) => `Ouvrir les 5 réponses pour ${site}`,
+    answersLead: (report) =>
+      `Aucune carte bancaire requise. Dès l’inscription : les 3 autres réponses et toutes les entreprises mentionnées à votre place. Environ 10 minutes plus tard : vos résultats globaux sur ChatGPT, Claude, Gemini et Perplexity. Le rapport complet coûte ${report}, en un seul paiement.`,
     reportTitle: (site) => (site ? `Votre rapport IA détaillé pour ${site}` : "Votre rapport IA détaillé"),
     reportLead: (report, days) =>
       `Aucune carte pour créer le compte. Nous posons 20 questions de clients à ChatGPT, Claude, Gemini et Perplexity, 3 fois chacune ; vous voyez les totaux et les 5 questions de la vérification rapide. Le rapport complet coûte ${report}, en un seul paiement, et il est déduit de votre premier paiement d’abonnement si vous démarrez l’abonnement dans les ${days} jours.`,
@@ -173,6 +187,7 @@ export default defineMessages(en, {
     checkEmail: "Consultez vos e-mails",
     codeSentTo: "Nous avons envoyé un code à 6 chiffres à",
     enterCode: "Saisissez le code à 6 chiffres",
+    digitLabel: (n) => `Chiffre ${n} sur 6`,
     verifying: "Vérification…",
     continue: "Continuer →",
     codeExpires: (time) => `Le code expire dans ${time}`,
@@ -189,7 +204,7 @@ export default defineMessages(en, {
     somethingWrong: "Un problème est survenu",
     invalidCode: "Code invalide ou expiré. Veuillez réessayer.",
     emailInvalid: "Saisissez une adresse e-mail valide.",
-    waitResend: "Patientez un instant avant de demander un nouveau code.",
+    waitResend: "Patientez une minute, puis demandez un nouveau code.",
   },
 
   es: {
@@ -198,6 +213,9 @@ export default defineMessages(en, {
     planTitle: "Empezar el plan de visibilidad en IA",
     planLead: (month, setup, quarter, year) =>
       `Primero su cuenta, después su sitio: el plan se elabora a partir de su informe. Luego elige cómo pagar: ${month} al mes más una configuración inicial de ${setup} (pago único), o bien ${quarter} por 3 meses por adelantado o ${year} por un año, sin cargo por la configuración inicial.`,
+    answersTitle: (site) => `Abrir las 5 respuestas de ${site}`,
+    answersLead: (report) =>
+      `No necesita tarjeta. Justo después de registrarse: las otras 3 respuestas y todos los mencionados en su lugar. En unos 10 minutos: sus resultados globales en ChatGPT, Claude, Gemini y Perplexity. El informe completo cuesta ${report}, en un solo pago.`,
     reportTitle: (site) => (site ? `Su informe detallado de IA para ${site}` : "Su informe detallado de IA"),
     reportLead: (report, days) =>
       `No necesita tarjeta para crear la cuenta. Planteamos 20 preguntas de clientes a ChatGPT, Claude, Gemini y Perplexity, 3 veces cada una; verá los totales y las 5 preguntas de la comprobación rápida. El informe completo cuesta ${report}, en un solo pago, y se descuenta de su primer pago del plan si lo inicia en un plazo de ${days} días.`,
@@ -229,6 +247,7 @@ export default defineMessages(en, {
     checkEmail: "Revise su correo",
     codeSentTo: "Hemos enviado un código de 6 dígitos a",
     enterCode: "Introduzca el código de 6 dígitos",
+    digitLabel: (n) => `Dígito ${n} de 6`,
     verifying: "Verificando…",
     continue: "Continuar →",
     codeExpires: (time) => `El código caduca en ${time}`,
@@ -245,7 +264,7 @@ export default defineMessages(en, {
     somethingWrong: "Algo ha salido mal",
     invalidCode: "Código no válido o caducado. Inténtelo de nuevo.",
     emailInvalid: "Introduzca un correo electrónico válido.",
-    waitResend: "Espere un momento antes de pedir un nuevo código.",
+    waitResend: "Espere un minuto y después pida un nuevo código.",
   },
 
   ru: {
@@ -254,6 +273,9 @@ export default defineMessages(en, {
     planTitle: "Оформить подписку на видимость в ИИ",
     planLead: (month, setup, quarter, year) =>
       `Сначала аккаунт, затем ваш сайт: подписка строится на основе его отчёта. Потом вы выбираете, как платить: ${month} в месяц плюс разовая настройка за ${setup}, или ${quarter} за 3 месяца вперёд, или ${year} за год — в последних двух случаях без платы за настройку.`,
+    answersTitle: (site) => `Открыть все 5 ответов по ${site}`,
+    answersLead: (report) =>
+      `Карта не нужна. Сразу после регистрации — остальные 3 ответа и все, кого называют вместо вас. Примерно через 10 минут — ваши итоги по ChatGPT, Claude, Gemini и Perplexity. Полный отчёт — ${report}, одним платежом.`,
     reportTitle: (site) => (site ? `Ваш подробный отчёт о видимости в ИИ для ${site}` : "Ваш подробный отчёт о видимости в ИИ"),
     reportLead: (report, days) =>
       `Для создания аккаунта карта не нужна. Мы задаём ChatGPT, Claude, Gemini и Perplexity 20 вопросов ваших клиентов, по 3 раза каждый; вы видите итоги и 5 вопросов быстрой проверки. Полный отчёт стоит ${report}, один платёж, и засчитывается в первый платёж за подписку, если оформить её в течение ${ruDays(days)}.`,
@@ -285,6 +307,7 @@ export default defineMessages(en, {
     checkEmail: "Проверьте почту",
     codeSentTo: "Мы отправили 6-значный код на",
     enterCode: "Введите 6-значный код",
+    digitLabel: (n) => `Цифра ${n} из 6`,
     verifying: "Проверяем…",
     continue: "Продолжить →",
     codeExpires: (time) => `Код действует ещё ${time}`,
@@ -301,6 +324,6 @@ export default defineMessages(en, {
     somethingWrong: "Что-то пошло не так",
     invalidCode: "Неверный или просроченный код. Попробуйте ещё раз.",
     emailInvalid: "Введите корректный адрес email.",
-    waitResend: "Подождите немного, прежде чем запрашивать новый код.",
+    waitResend: "Подождите минуту и запросите новый код.",
   },
 })

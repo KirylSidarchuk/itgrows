@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { CREDIT_DAYS, GEO_PRICES, SAMPLE_PATH, type GeoInterval } from "@/lib/geo-pricing"
 import LocaleLink from "@/components/i18n/LocaleLink"
 import { useLocale, useT } from "@/components/i18n/LocaleProvider"
@@ -8,6 +8,7 @@ import { splitLocale, type Locale } from "@/lib/i18n/config"
 import { formatNumber } from "@/lib/i18n/format"
 import { rich } from "@/lib/i18n/rich"
 import pricingPlans from "@/lib/i18n/messages/pricingPlans"
+import { GEO_CHECKED_KEY, GEO_HANDOFF_KEY, handOff, readChecked, type CheckedSite } from "@/lib/geo-handoff"
 
 // The pricing block of "/": the quick check in one line, then the two offers side by side. What is
 // sold, said the same way everywhere: the quick check needs no signup; the detailed report is the
@@ -21,6 +22,11 @@ import pricingPlans from "@/lib/i18n/messages/pricingPlans"
 // Each goes to sign-up and on to the plan page with that choice made (?interval=). The page passes
 // the link for talking to us first. Sign-up keeps the visitor's language (LocaleLink); the plan page
 // in the cabinet has no prefix.
+//
+// After a quick check in this browser ("/"'s check leaves its shown result in itg_geo_checked, and the
+// hand-over for sign-up in itg_geo_handoff: lib/geo-handoff.ts), "Run the check first" becomes the way
+// to that site's answers, and the report's button signs up with the site. geo_cta_seen (where:
+// "pricing") says the line was on screen, once per page, with the state it was in at that moment.
 
 const P = GEO_PRICES
 
@@ -28,17 +34,22 @@ const P = GEO_PRICES
 const startHref = (i: GeoInterval) => `/signup?from=ai-check&callbackUrl=${encodeURIComponent(`/business/dashboard/plan?interval=${i}`)}`
 // The report: the account first, then the site; the cabinet builds the report and shows its open part.
 const REPORT_HREF = `/signup?from=ai-check&callbackUrl=${encodeURIComponent("/business/dashboard/visibility")}`
+// With a checked site: the same sign-up the check's own button opens, and the cabinet follows the site.
+const siteHref = (site: string) =>
+  `/signup?from=ai-check&site=${encodeURIComponent(site)}&callbackUrl=${encodeURIComponent(
+    `/business/dashboard/visibility?site=${encodeURIComponent(site)}`
+  )}`
 
 // The path without its language prefix, so "/" and "/de" count as one page in the funnel; the
 // language the page was shown in (prefix or cookie) goes along as its own property.
-function track(locale: Locale, where: string, props?: Record<string, unknown>) {
+function send(locale: Locale, event: string, props: Record<string, unknown>) {
   try {
     navigator.sendBeacon(
       "/api/track",
       JSON.stringify({
-        event: "geo_pricing_click",
+        event,
         path: splitLocale(window.location.pathname).path,
-        props: { where, ...props, locale },
+        props: { ...props, locale },
         anon_id: localStorage.getItem("itg_anon"),
       })
     )
@@ -46,6 +57,8 @@ function track(locale: Locale, where: string, props?: Record<string, unknown>) {
     // Analytics never gets in the way.
   }
 }
+
+const track = (locale: Locale, where: string, props?: Record<string, unknown>) => send(locale, "geo_pricing_click", { where, ...props })
 
 function Go({ href, className, onClick, children }: { href: string; className: string; onClick: () => void; children: React.ReactNode }) {
   return href.startsWith("#") ? (
@@ -85,6 +98,53 @@ export default function PricingPlans({
   const m = useT(pricingPlans)
   const locale = useLocale()
   const [period, setPeriod] = useState<"month" | "year">("month")
+
+  // Read after mounting (the server has no localStorage), again each time the block comes into view
+  // (the check above may have finished since), and when another tab changes it.
+  const [checked, setChecked] = useState<CheckedSite | null>(null)
+  const lineRef = useRef<HTMLParagraphElement>(null)
+  const seen = useRef(false)
+  useEffect(() => {
+    const update = () => {
+      const c = readChecked()
+      setChecked((prev) => (prev?.site === c?.site && prev?.named === c?.named && prev?.of === c?.of ? prev : c))
+      return c
+    }
+    update()
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === GEO_CHECKED_KEY || e.key === GEO_HANDOFF_KEY || e.key === null) update()
+    }
+    window.addEventListener("storage", onStorage)
+    const el = lineRef.current
+    const io =
+      el && typeof IntersectionObserver !== "undefined"
+        ? new IntersectionObserver(
+            ([entry]) => {
+              if (!entry.isIntersecting) return
+              const c = update()
+              if (seen.current) return
+              seen.current = true
+              send(locale, "geo_cta_seen", { where: "pricing", checked: Boolean(c), domain: c?.site, named: c?.named ?? undefined, of: c?.of ?? undefined })
+            },
+            { threshold: 0.5 }
+          )
+        : null
+    if (el && io) io.observe(el)
+    return () => {
+      window.removeEventListener("storage", onStorage)
+      io?.disconnect()
+    }
+  }, [locale])
+
+  // Sign-up with the checked site: the hand-over is written for it (with its own count, not one left by
+  // an earlier check of another site), so sign-up shows the check's result and the cabinet follows it.
+  const onSite = (where: "answers" | "report") => {
+    if (!checked) return
+    handOff(checked.site, checked.named, checked.of)
+    const quick = { domain: checked.site, named: checked.named ?? undefined, of: checked.of ?? undefined }
+    track(locale, where, quick)
+    if (where === "answers") send(locale, "geo_cta_click", { where: "pricing", ...quick })
+  }
   // The card shows five points; the full list (included) stays in the page's structured data and FAQ.
   const points = m.planPoints
   void included
@@ -100,14 +160,23 @@ export default function PricingPlans({
   return (
     <div className="max-w-5xl mx-auto">
       <h2 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-center">{m.h2}</h2>
-      <p className="mt-3 text-center text-sm text-slate-600">
-        {rich(m.notSure, {
-          link: (c) => (
-            <Go href={checkHref} onClick={() => track(locale, "check")} className="font-semibold text-violet-700 hover:underline">
-              {c}
-            </Go>
-          ),
-        })}
+      <p ref={lineRef} className="mt-3 text-center text-sm text-slate-600 break-words">
+        {checked
+          ? rich(m.checked, {
+              site: () => <strong className="font-semibold text-[#1b1916]">{checked.site}</strong>,
+              link: (c) => (
+                <LocaleLink href={siteHref(checked.site)} onClick={() => onSite("answers")} className="font-semibold text-violet-700 hover:underline">
+                  {c}
+                </LocaleLink>
+              ),
+            })
+          : rich(m.notSure, {
+              link: (c) => (
+                <Go href={checkHref} onClick={() => track(locale, "check")} className="font-semibold text-violet-700 hover:underline">
+                  {c}
+                </Go>
+              ),
+            })}
       </p>
 
       <div className="grid md:grid-cols-2 gap-4 mt-8">
@@ -126,8 +195,8 @@ export default function PricingPlans({
           </ul>
           <div className="mt-auto pt-7 space-y-3">
             <Go
-              href={REPORT_HREF}
-              onClick={() => track(locale, "report")}
+              href={checked ? siteHref(checked.site) : REPORT_HREF}
+              onClick={() => (checked ? onSite("report") : track(locale, "report"))}
               className="block text-center rounded-xl bg-violet-600 hover:bg-violet-500 text-white px-5 py-3 text-sm font-semibold"
             >
               {m.getReport(P.research.label)}

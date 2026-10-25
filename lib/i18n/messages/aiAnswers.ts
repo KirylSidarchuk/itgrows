@@ -2,7 +2,8 @@ import { defineMessages } from "../messages"
 import { plural } from "../format"
 
 // app/business/AiAnswers.tsx (client): card A of the quick check — progress while it runs, the
-// result, the account offer, and the failure boxes. Assistant names stay as they are (LABEL in the
+// result, the account offer (cta*: open the other answers), the paid-report card (report*), and the
+// failure boxes. Assistant names stay as they are (LABEL in the
 // component). Prices and CREDIT_DAYS come in as parameters. <b>…</b> is bold.
 // Flags such as `several` (more than one assistant) come first in a function's arguments, so a
 // language that does not need them simply ignores them.
@@ -41,7 +42,7 @@ const en = {
   askedAt: (today: boolean, time: string) => `Asked ${today ? "today" : "yesterday"} at ${time}`,
   joinAnd: (names: string[]) => names.join(" and "),
   subZero: (several: boolean, who: string, domain: string) =>
-    `We asked ${who} 5 questions your buyers ask. ${several ? "Neither" : "It"} named ${domain}.`,
+    `We asked ${who} 5 questions your buyers ask. ${several ? `Neither named ${domain}` : `It didn't name ${domain}`}.`,
   subAll: (several: boolean, who: string, domain: string) =>
     `${several ? "Both assistants" : who} named ${domain} in every answer. This check covered 2 of the 4 assistants we track.`,
   subSome: (several: boolean, named: number, rest: number, who: string) =>
@@ -54,16 +55,16 @@ const en = {
   namedInsteadTitle: "Named instead of you",
   othersNamed: "Others named",
   inAnswers: (n: number) => ` — in ${n} answer${n === 1 ? "" : "s"}`,
-  overlayTitleAll: "Do Claude and Gemini agree?",
-  overlayTitle: "Want to see what all of them say?",
-  overlayBody: (domain: string) =>
-    `Create an account and we build the detailed report for ${domain}: 20 buyer questions to ChatGPT, Claude, Gemini and Perplexity, 3 times each — who gets named, which sites they quote, and our plan for your site.`,
-  overlayPrice: (price: string, days: number) =>
-    `You see its totals and these 5 questions. The whole report is <b>${price}</b>, one payment. If you then want us to do the work, the ${price} comes off your first plan payment within ${days} days.`,
-  createReport: "Create account — build my report",
+  ctaTitle: (n: number) => (n === 1 ? "The other answer is ready" : `The other ${n} answers are ready`),
+  ctaBody: (all: boolean, n: number) =>
+    `Create an account to open ${n === 1 ? "it" : "them"} and see ${all ? "everyone else they name" : "everyone named instead of you"}. In about 10 minutes you also get your totals across ChatGPT, Claude, Gemini and Perplexity. No card needed.`,
+  ctaButton: (total: number) => `Create account — open all ${total} answers`,
+  ctaSignIn: "Google, LinkedIn or a code by email.",
+  reportTitle: (domain: string) => `The detailed report for ${domain}`,
+  reportBody: (price: string, days: number) =>
+    `20 buyer questions to ChatGPT, Claude, Gemini and Perplexity, 3 times each — who gets named, which sites they quote, and our plan for your site. <b>${price}</b>, one payment; it comes off your first plan payment within ${days} days.`,
   seeReport: "See a real report →",
-  signInNote: "Google or LinkedIn in one click, or a code by email. No card to create the account.",
-  lockedNote: "ChatGPT · Perplexity — answered, in your detailed report",
+  lockedNote: (several: boolean, names: string) => `${names} — answered. Opens in your account.`,
   footnote: (asked: string) => `${asked}, web search on. Answers vary between runs — the detailed report asks each question 3 times.`,
   reasons: {
     certificate: "Its security certificate isn't valid for this address, so browsers show a warning and crawlers get an error.",
@@ -144,16 +145,16 @@ export default defineMessages(en, {
     namedInsteadTitle: "Statt Ihnen genannt",
     othersNamed: "Ebenfalls genannt",
     inAnswers: (n) => ` – in ${n} ${n === 1 ? "Antwort" : "Antworten"}`,
-    overlayTitleAll: "Sehen Claude und Gemini das genauso?",
-    overlayTitle: "Möchten Sie sehen, was alle sagen?",
-    overlayBody: (domain) =>
-      `Legen Sie ein Konto an, und wir erstellen den ausführlichen Bericht für ${domain}: 20 Kundenfragen an ChatGPT, Claude, Gemini und Perplexity, jede dreimal gestellt – wer genannt wird, welche Websites zitiert werden und unser Maßnahmenplan für Ihre Website.`,
-    overlayPrice: (price, days) =>
-      `Sie sehen seine Gesamtwerte und diese 5 Fragen. Der vollständige Bericht kostet <b>${price}</b>, als einmalige Zahlung. Wenn Sie uns danach mit der Arbeit beauftragen, werden die ${price} auf Ihre erste Zahlung für den Plan angerechnet, sofern er innerhalb von ${days} Tagen beginnt.`,
-    createReport: "Konto anlegen – meinen Bericht erstellen",
+    ctaTitle: (n) => (n === 1 ? "Die andere Antwort liegt bereit" : `Die anderen ${n} Antworten liegen bereit`),
+    ctaBody: (all, n) =>
+      `Legen Sie ein Konto an, um ${n === 1 ? "die Antwort" : "die Antworten"} zu öffnen und ${all ? "zu sehen, wen die Assistenten außer Ihnen noch nennen" : "alle zu sehen, die statt Ihnen genannt werden"}. In etwa 10 Minuten erhalten Sie außerdem Ihre Gesamtwerte für ChatGPT, Claude, Gemini und Perplexity. Keine Kreditkarte nötig.`,
+    ctaButton: (total) => `Konto anlegen – alle ${total} Antworten öffnen`,
+    ctaSignIn: "Mit Google, LinkedIn oder einem Code per E-Mail.",
+    reportTitle: (domain) => `Der ausführliche Bericht für ${domain}`,
+    reportBody: (price, days) =>
+      `20 Kundenfragen an ChatGPT, Claude, Gemini und Perplexity, jede dreimal gestellt – wer genannt wird, welche Websites zitiert werden und unser Maßnahmenplan für Ihre Website. <b>${price}</b>, einmalige Zahlung; der Betrag wird auf Ihre erste Plan-Zahlung angerechnet, wenn Sie den Plan innerhalb von ${days} Tagen starten.`,
     seeReport: "Einen echten Bericht ansehen (auf Englisch) →",
-    signInNote: "Mit Google oder LinkedIn per Klick oder mit einem Code per E-Mail. Für das Konto ist keine Karte nötig.",
-    lockedNote: "ChatGPT · Perplexity – beantwortet, in Ihrem ausführlichen Bericht",
+    lockedNote: (several, names) => `${names} – beantwortet. In Ihrem Konto abrufbar.`,
     footnote: (asked) =>
       `${asked}, Websuche aktiv. Die Antworten schwanken von Durchlauf zu Durchlauf – der ausführliche Bericht stellt jede Frage dreimal.`,
     reasons: {
@@ -233,16 +234,16 @@ export default defineMessages(en, {
     namedInsteadTitle: "Mentionnés à votre place",
     othersNamed: "Autres entreprises mentionnées",
     inAnswers: (n) => ` — dans ${n} ${n > 1 ? "réponses" : "réponse"}`,
-    overlayTitleAll: "Claude et Gemini sont-ils d’accord ?",
-    overlayTitle: "Vous voulez voir ce qu’ils disent tous ?",
-    overlayBody: (domain) =>
-      `Créez un compte et nous établissons le rapport détaillé pour ${domain} : 20 questions de clients posées à ChatGPT, Claude, Gemini et Perplexity, 3 fois chacune — qui est mentionné, quels sites ils citent, et notre plan d’action pour votre site.`,
-    overlayPrice: (price, days) =>
-      `Vous voyez ses totaux et ces 5 questions. Le rapport complet coûte <b>${price}</b>, en un seul paiement. Si vous nous confiez ensuite le travail, les ${price} sont déduits de votre premier paiement d’abonnement, s’il démarre dans les ${days} jours.`,
-    createReport: "Créer un compte — obtenir mon rapport",
+    ctaTitle: (n) => (n > 1 ? `Les ${n} autres réponses sont prêtes` : "L’autre réponse est prête"),
+    ctaBody: (all, n) =>
+      `Créez un compte pour ${n > 1 ? "les ouvrir" : "l’ouvrir"} et ${all ? "voir quelles autres entreprises ils mentionnent" : "voir toutes les entreprises mentionnées à votre place"}. Dans une dizaine de minutes, vous recevrez aussi vos résultats globaux sur ChatGPT, Claude, Gemini et Perplexity. Aucune carte bancaire requise.`,
+    ctaButton: (total) => `Créer un compte — ouvrir les ${total} réponses`,
+    ctaSignIn: "Google, LinkedIn ou un code par e-mail.",
+    reportTitle: (domain) => `Le rapport détaillé pour ${domain}`,
+    reportBody: (price, days) =>
+      `20 questions de clients posées à ChatGPT, Claude, Gemini et Perplexity, 3 fois chacune — qui est mentionné, quels sites ils citent, et notre plan d’action pour votre site. <b>${price}</b>, en un seul paiement ; ce montant est déduit de votre premier paiement d’abonnement si vous démarrez l’abonnement dans les ${days} jours.`,
     seeReport: "Voir un vrai rapport (en anglais) →",
-    signInNote: "Google ou LinkedIn en un clic, ou un code par e-mail. Aucune carte pour créer le compte.",
-    lockedNote: "ChatGPT · Perplexity — réponses dans votre rapport détaillé",
+    lockedNote: (several, names) => `${names} — ${several ? "ont" : "a"} répondu. À ouvrir dans votre compte.`,
     footnote: (asked) =>
       `${asked}, recherche web activée. Les réponses varient d’un passage à l’autre : le rapport détaillé pose chaque question 3 fois.`,
     reasons: {
@@ -322,16 +323,16 @@ export default defineMessages(en, {
     namedInsteadTitle: "Mencionados en su lugar",
     othersNamed: "Otros mencionados",
     inAnswers: (n) => ` — en ${n} ${n === 1 ? "respuesta" : "respuestas"}`,
-    overlayTitleAll: "¿Coinciden Claude y Gemini?",
-    overlayTitle: "¿Quiere ver lo que dicen todos?",
-    overlayBody: (domain) =>
-      `Cree una cuenta y elaboraremos el informe detallado para ${domain}: 20 preguntas de clientes a ChatGPT, Claude, Gemini y Perplexity, 3 veces cada una; quién es mencionado, qué sitios citan y nuestro plan de acción para su sitio.`,
-    overlayPrice: (price, days) =>
-      `Verá sus totales y estas 5 preguntas. El informe completo cuesta <b>${price}</b>, en un único pago. Si después quiere que hagamos el trabajo, los ${price} se descuentan de su primer pago del plan si lo contrata en un plazo de ${days} días.`,
-    createReport: "Crear cuenta y elaborar mi informe",
+    ctaTitle: (n) => (n === 1 ? "La otra respuesta está lista" : `Las otras ${n} respuestas están listas`),
+    ctaBody: (all, n) =>
+      `Cree una cuenta para ${n === 1 ? "abrirla" : "abrirlas"} y ${all ? "ver a quién más mencionan" : "ver a todos los que mencionan en su lugar"}. En unos 10 minutos tendrá además sus resultados globales en ChatGPT, Claude, Gemini y Perplexity. No hace falta tarjeta.`,
+    ctaButton: (total) => `Crear cuenta y abrir las ${total} respuestas`,
+    ctaSignIn: "Google, LinkedIn o un código por email.",
+    reportTitle: (domain) => `El informe detallado de ${domain}`,
+    reportBody: (price, days) =>
+      `20 preguntas de clientes a ChatGPT, Claude, Gemini y Perplexity, 3 veces cada una: a quién mencionan, qué sitios citan y nuestro plan de acción para su sitio. <b>${price}</b>, en un único pago; se descuenta de su primer pago del plan si lo contrata en un plazo de ${days} días.`,
     seeReport: "Ver un informe real (en inglés) →",
-    signInNote: "Google o LinkedIn con un clic, o un código por email. No hace falta tarjeta para crear la cuenta.",
-    lockedNote: "ChatGPT · Perplexity: respondida, en su informe detallado",
+    lockedNote: (several, names) => `${names}: ya ${several ? "han" : "ha"} respondido. Disponible en su cuenta.`,
     footnote: (asked) =>
       `${asked}, con búsqueda web. Las respuestas varían entre ejecuciones: el informe detallado hace cada pregunta 3 veces.`,
     reasons: {
@@ -414,16 +415,18 @@ export default defineMessages(en, {
     namedInsteadTitle: "Названы вместо вас",
     othersNamed: "Также названы",
     inAnswers: (n) => ` — в ${plural("ru", n, { one: `${n} ответе`, other: `${n} ответах` })}`,
-    overlayTitleAll: "А согласны ли Claude и Gemini?",
-    overlayTitle: "Хотите увидеть, что говорят все?",
-    overlayBody: (domain) =>
-      `Создайте аккаунт, и мы составим подробный отчёт по ${domain}: 20 вопросов клиентов к ChatGPT, Claude, Gemini и Perplexity, каждый по 3 раза — кого называют, какие сайты цитируют, и наш план действий для вашего сайта.`,
-    overlayPrice: (price, days) =>
-      `Вы увидите его итоги и эти 5 вопросов. Полный отчёт стоит <b>${price}</b>, одним платежом. Если потом захотите, чтобы работу сделали мы, ${price} засчитываются в первый платёж за подписку — при условии, что вы оформите её в течение ${plural("ru", days, { one: `${days} дня`, other: `${days} дней` })}.`,
-    createReport: "Создать аккаунт — составить мой отчёт",
+    ctaTitle: (n) =>
+      n === 1 ? "Ещё один ответ готов" : `Остальные ${plural("ru", n, { one: `${n} ответ`, few: `${n} ответа`, other: `${n} ответов` })} готовы`,
+    ctaBody: (all, n) =>
+      `Создайте аккаунт, чтобы открыть ${n === 1 ? "его" : "их"} и увидеть ${all ? "всех, кого ещё они называют" : "всех, кого назвали вместо вас"}. Примерно через 10 минут вы также получите итоги по ChatGPT, Claude, Gemini и Perplexity. Карта не нужна.`,
+    ctaButton: (total) =>
+      `Создать аккаунт — открыть все ${plural("ru", total, { one: `${total} ответ`, few: `${total} ответа`, other: `${total} ответов` })}`,
+    ctaSignIn: "Google, LinkedIn или код по email.",
+    reportTitle: (domain) => `Подробный отчёт по ${domain}`,
+    reportBody: (price, days) =>
+      `20 вопросов клиентов к ChatGPT, Claude, Gemini и Perplexity, каждый по 3 раза — кого называют, какие сайты цитируют и наш план действий для вашего сайта. <b>${price}</b>, одним платежом; эта сумма засчитывается в первый платёж за подписку, если вы оформите её в течение ${plural("ru", days, { one: `${days} дня`, other: `${days} дней` })}.`,
     seeReport: "Посмотреть настоящий отчёт (на английском) →",
-    signInNote: "Google или LinkedIn в один клик или код по email. Карта для создания аккаунта не нужна.",
-    lockedNote: "ChatGPT · Perplexity — ответ есть в вашем подробном отчёте",
+    lockedNote: (several, names) => `${names} — ${several ? "ответили" : "ответил"}. Откроется в вашем аккаунте.`,
     footnote: (asked) =>
       `${asked}, веб-поиск включён. Ответы меняются от запуска к запуску — подробный отчёт задаёт каждый вопрос 3 раза.`,
     reasons: {

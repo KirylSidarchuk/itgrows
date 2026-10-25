@@ -2,8 +2,10 @@ import { defineMessages } from "../messages"
 import { formatNumber, plural } from "../format"
 
 // app/business/AuditForm.tsx (client): the address form of the quick check, the crawler card
-// under the assistants' answers (card B), the email capture when the live check fails, and the
-// "answers ready" pill. The answers card itself is app/business/AiAnswers.tsx (namespace aiAnswers).
+// under the assistants' answers (card B), the email capture when the live check fails, the
+// "answers ready" pill, and the phone bar that opens all the answers (openAllBar, rendered by
+// app/business/OpenAnswersBar.tsx). The answers card itself is app/business/AiAnswers.tsx
+// (namespace aiAnswers).
 // <b>…</b> is bold. The figures in logsBody are a fixed measurement, written in each language's
 // own number format.
 
@@ -29,16 +31,10 @@ const en = {
   robotsCloses: (max: number, checked: number, bots: string) => `Your robots.txt closes ${max} of ${checked} sitemap pages to ${bots}`,
   ruleNote: (rule: string) => `— rule “${rule}”. Rules match prefixes.`,
   details: "Details",
-  showProjection: "Show the 90-day projection ▾",
+  showDetails: "Show the details ▾",
   hideDetails: "Hide the details ▴",
   answerPagesExplain: (answers: number) =>
     `Assistants do not rank pages. They pick one and quote it, and the one they pick already contains the answer. ${answers === 0 ? "You have none of those." : `You have ${answers}.`} Everything else on your site is a page about you, and nobody asks a question your brochure is the answer to.`,
-  ownTitle: "Answer pages you will own",
-  today: "Today",
-  in90Nothing: "In 90 days, if nothing changes",
-  in90WithUs: "In 90 days with us",
-  arithmetic:
-    "Twelve a month on your own domain — that is the arithmetic, not a forecast. The middle row is the one that costs you: the crawlers come back either way, and on the next pass they find whatever is there.",
   logsEyebrow: "From our own server logs",
   logsBody:
     "On a site we run, a 190,000-page catalogue took <b>489,000 ClaudeBot requests</b> in two weeks. Googlebot made <b>1,100</b>. The AI crawlers are the ones showing up now — and they show up for volume, not for markup.",
@@ -58,6 +54,7 @@ const en = {
   writeToMe: "Write to me",
   fixCta: "Have us fix it — see the plan →",
   readyPill: "Your AI answers are ready ↑",
+  openAllBar: (total: number) => `Open all ${total} answers →`,
 }
 
 export default defineMessages(en, {
@@ -83,16 +80,10 @@ export default defineMessages(en, {
     robotsCloses: (max, checked, bots) => `Ihre robots.txt sperrt ${max} von ${checked} Sitemap-Seiten für ${bots}`,
     ruleNote: (rule) => `– Regel „${rule}“. Regeln wirken als Präfix.`,
     details: "Details",
-    showProjection: "90-Tage-Hochrechnung anzeigen ▾",
+    showDetails: "Details anzeigen ▾",
     hideDetails: "Details ausblenden ▴",
     answerPagesExplain: (answers) =>
       `Assistenten ranken keine Seiten. Sie wählen eine aus und zitieren sie – und die gewählte enthält die Antwort bereits. ${answers === 0 ? "Davon haben Sie keine." : `Sie haben ${answers}.`} Alles andere auf Ihrer Website ist eine Seite über Sie, und niemand stellt eine Frage, auf die Ihre Imagebroschüre die Antwort wäre.`,
-    ownTitle: "Antwortseiten, die Ihnen gehören",
-    today: "Heute",
-    in90Nothing: "In 90 Tagen, wenn sich nichts ändert",
-    in90WithUs: "In 90 Tagen mit uns",
-    arithmetic:
-      "Zwölf pro Monat auf Ihrer eigenen Domain – das ist Rechnung, keine Prognose. Teuer wird die mittlere Zeile: Die Crawler kommen so oder so wieder und finden beim nächsten Durchgang, was eben da ist.",
     logsEyebrow: "Aus unseren eigenen Server-Logs",
     logsBody:
       "Auf einer Website, die wir betreiben, erhielt ein Katalog mit 190.000 Seiten in zwei Wochen <b>489.000 Anfragen von ClaudeBot</b>. Googlebot kam auf <b>1.100</b>. Es sind die KI-Crawler, die jetzt vorbeikommen – und sie kommen wegen der Menge, nicht wegen des Markups.",
@@ -113,6 +104,7 @@ export default defineMessages(en, {
     writeToMe: "Schreiben Sie mir",
     fixCta: "Lassen Sie es uns beheben – zum Plan →",
     readyPill: "Ihre KI-Antworten sind da ↑",
+    openAllBar: (total) => `Alle ${total} Antworten öffnen →`,
   },
   fr: {
     failed: "Le test n’a pas abouti. Réessayez.",
@@ -137,16 +129,10 @@ export default defineMessages(en, {
     robotsCloses: (max, checked, bots) => `Votre robots.txt ferme ${max} des ${checked} pages du sitemap à ${bots}`,
     ruleNote: (rule) => `— règle « ${rule} ». Les règles fonctionnent par préfixe.`,
     details: "Détails",
-    showProjection: "Voir la projection à 90 jours ▾",
+    showDetails: "Voir les détails ▾",
     hideDetails: "Masquer les détails ▴",
     answerPagesExplain: (answers) =>
       `Les assistants ne classent pas les pages. Ils en choisissent une et la citent, et celle qu’ils choisissent contient déjà la réponse. ${answers === 0 ? "Vous n’en avez aucune." : `Vous en avez ${answers}.`} Tout le reste de votre site, ce sont des pages qui parlent de vous, et personne ne pose une question dont votre plaquette serait la réponse.`,
-    ownTitle: "Pages de réponse qui vous appartiendront",
-    today: "Aujourd’hui",
-    in90Nothing: "Dans 90 jours, si rien ne change",
-    in90WithUs: "Dans 90 jours avec nous",
-    arithmetic:
-      "Douze par mois sur votre propre domaine : c’est un calcul, pas une prévision. C’est la ligne du milieu qui vous coûte : les robots reviennent de toute façon, et au prochain passage ils trouvent ce qui est là.",
     logsEyebrow: "D’après nos propres journaux serveur",
     logsBody:
       "Sur un site que nous gérons, un catalogue de 190 000 pages a reçu <b>489 000 requêtes de ClaudeBot</b> en deux semaines. Googlebot en a fait <b>1 100</b>. Ce sont les robots d’IA qui viennent aujourd’hui — et ils viennent pour le volume, pas pour le balisage.",
@@ -167,6 +153,7 @@ export default defineMessages(en, {
     writeToMe: "Écrivez-moi",
     fixCta: "Confiez-nous la correction — voir l’abonnement →",
     readyPill: "Vos réponses IA sont prêtes ↑",
+    openAllBar: (total) => `Ouvrir les ${total} réponses →`,
   },
   es: {
     failed: "La comprobación no se completó. Inténtelo de nuevo.",
@@ -191,16 +178,10 @@ export default defineMessages(en, {
     robotsCloses: (max, checked, bots) => `Su robots.txt cierra ${max} de ${checked} páginas del sitemap a ${bots}`,
     ruleNote: (rule) => `— regla «${rule}». Las reglas funcionan por prefijo.`,
     details: "Detalles",
-    showProjection: "Ver la proyección a 90 días ▾",
+    showDetails: "Ver detalles ▾",
     hideDetails: "Ocultar detalles ▴",
     answerPagesExplain: (answers) =>
       `Los asistentes no clasifican páginas. Eligen una y la citan, y la que eligen ya contiene la respuesta. ${answers === 0 ? "Usted no tiene ninguna." : `Usted tiene ${answers}.`} Todo lo demás en su sitio son páginas sobre usted, y nadie hace una pregunta cuya respuesta sea su folleto corporativo.`,
-    ownTitle: "Páginas de respuesta que serán suyas",
-    today: "Hoy",
-    in90Nothing: "En 90 días, si nada cambia",
-    in90WithUs: "En 90 días con nosotros",
-    arithmetic:
-      "Doce al mes en su propio dominio: es aritmética, no una previsión. La fila del medio es la que le cuesta: los rastreadores vuelven de todos modos y, en la siguiente pasada, encuentran lo que haya.",
     logsEyebrow: "De nuestros propios registros de servidor",
     logsBody:
       "En un sitio que gestionamos, un catálogo de 190.000 páginas recibió <b>489.000 solicitudes de ClaudeBot</b> en dos semanas. Googlebot hizo <b>1100</b>. Los rastreadores de IA son los que aparecen ahora, y vienen por el volumen, no por el marcado.",
@@ -221,6 +202,7 @@ export default defineMessages(en, {
     writeToMe: "Escríbanme",
     fixCta: "Que lo arreglemos nosotros: ver el plan →",
     readyPill: "Sus respuestas de IA están listas ↑",
+    openAllBar: (total) => `Abrir las ${total} respuestas →`,
   },
   ru: {
     failed: "Проверка не завершилась. Попробуйте ещё раз.",
@@ -246,16 +228,10 @@ export default defineMessages(en, {
       `Ваш robots.txt закрывает для ${bots} ${max} из ${plural("ru", checked, { one: `${checked} страницы`, other: `${checked} страниц` })} sitemap`,
     ruleNote: (rule) => `— правило «${rule}». Правила работают как префиксы.`,
     details: "Подробнее",
-    showProjection: "Показать расчёт на 90 дней ▾",
+    showDetails: "Показать подробности ▾",
     hideDetails: "Скрыть подробности ▴",
     answerPagesExplain: (answers) =>
       `Ассистенты не ранжируют страницы. Они выбирают одну и цитируют её, и выбранная страница уже содержит ответ. ${answers === 0 ? "У вас таких нет." : `У вас таких: ${answers}.`} Всё остальное на вашем сайте — страницы о вас, а никто не задаёт вопрос, ответом на который был бы ваш рекламный буклет.`,
-    ownTitle: "Страницы-ответы, которые будут вашими",
-    today: "Сегодня",
-    in90Nothing: "Через 90 дней, если ничего не менять",
-    in90WithUs: "Через 90 дней с нами",
-    arithmetic:
-      "Двенадцать в месяц на вашем собственном домене — это арифметика, а не прогноз. Дорого вам обходится средняя строка: краулеры вернутся в любом случае и при следующем обходе найдут то, что есть.",
     logsEyebrow: "Из логов наших собственных серверов",
     logsBody:
       "На одном из наших сайтов каталог на 190 000 страниц получил за две недели <b>489 000 запросов от ClaudeBot</b>. Googlebot сделал <b>1100</b>. Сейчас приходят именно ИИ-краулеры — и приходят они за объёмом, а не за разметкой.",
@@ -276,5 +252,7 @@ export default defineMessages(en, {
     writeToMe: "Напишите мне",
     fixCta: "Поручить исправление нам — смотреть подписку →",
     readyPill: "Ответы ИИ готовы ↑",
+    openAllBar: (total) =>
+      `Открыть все ${plural("ru", total, { one: `${total} ответ`, few: `${total} ответа`, other: `${total} ответов` })} →`,
   },
 })

@@ -8,8 +8,8 @@ import { sendOwner } from "@/lib/telegram"
 // and Perplexity. POST starts it (or returns a result under a day old at once); GET ?id= follows it,
 // stage by stage, so the page can show the questions as soon as they exist.
 //
-// A stranger gets two answers in full. For the other three only the question leaves the server, so
-// the blur on the page hides nothing devtools could lift. The full answers, and the other two
+// A stranger gets two answers in full. For the other three only the question leaves the server (with
+// the names of the assistants that answered it), so the blur on the page hides nothing devtools could lift. The full answers, and the other two
 // assistants, are what the account and the detailed report are for.
 
 export const dynamic = "force-dynamic"
@@ -86,7 +86,9 @@ function view(run: PublicRun) {
       namedInstead: run.summary.named_instead.slice(0, 3),
     },
     open: open.map((i) => ({ n: i + 1, ...openRow(rows[i]) })),
-    locked: rows.map((r, i) => ({ n: i + 1, q: r.q })).filter((_, i) => !open.includes(i)),
+    locked: rows
+      .map((r, i) => ({ n: i + 1, q: r.q, answered: Object.keys(r.engines).filter((e) => r.engines[e].samples > 0) }))
+      .filter((_, i) => !open.includes(i)),
   }
 }
 

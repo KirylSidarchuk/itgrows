@@ -1,9 +1,12 @@
 "use client"
 
-import { useState, useRef, useEffect } from "react"
+import { useState, useRef, useEffect, useCallback } from "react"
 import AiAnswers, { type TeaserView } from "./AiAnswers"
+import OpenAnswersBar from "./OpenAnswersBar"
 import LocaleLink from "@/components/i18n/LocaleLink"
 import { useLocale, useT } from "@/components/i18n/LocaleProvider"
+import { useConsent, useSettingsOpen } from "@/components/consent/consent"
+import { handOff, rememberChecked } from "@/lib/geo-handoff"
 import { formatNumber } from "@/lib/i18n/format"
 import { localePath } from "@/lib/i18n/paths"
 import { rich } from "@/lib/i18n/rich"
@@ -71,6 +74,20 @@ function track(event: string, props?: Record<string, unknown>) {
   }
 }
 
+// geo_cta_seen: an account offer was really on screen, once per place per page. Its `where` is the
+// name the click on that offer sends (geo_cta_click), so the two can be set against each other:
+// "inline" (the offer under who was named instead), "overlay" (the paid-report card under the two
+// answers), "locked-row" (the closed answers), "sticky" (the phone bar). The other clicks ("sample",
+// "failed", "questions-failed", "limit", "busy") have no seen event.
+const ctaSeen = new Set<string>()
+
+function seenOnce(where: string, domain: string) {
+  const key = `${window.location.pathname}|${where}`
+  if (ctaSeen.has(key)) return
+  ctaSeen.add(key)
+  track("geo_cta_seen", { where, domain })
+}
+
 /** What the visitor typed, reduced to a bare domain for labels until the server says otherwise. */
 function bareDomain(raw: string) {
   return raw
@@ -86,7 +103,9 @@ function isOurSite(raw: string) {
   return bareDomain(raw).replace(/:\d+$/, "").replace(/\.$/, "") === "itgrows.ai"
 }
 
-export default function AuditForm() {
+/** `note`: the line under the form before any check ("No signup · about 30 seconds" on the home
+ *  page); it goes once a check starts. */
+export default function AuditForm({ note }: { note?: string } = {}) {
   const m = useT(ns)
   const locale = useLocale()
   const [url, setUrl] = useState("")
@@ -110,6 +129,21 @@ export default function AuditForm() {
   const aiRef = useRef<HTMLDivElement>(null)
   const [aiInView, setAiInView] = useState(true)
   const [pillDone, setPillDone] = useState(false)
+  // The account offer inside the card, and the locked rows. Until the observer says otherwise the
+  // offer counts as on screen, so the phone bar never flashes up before the first measurement.
+  const ctaRef = useRef<HTMLDivElement>(null)
+  const reportRef = useRef<HTMLDivElement>(null)
+  const lockedRef = useRef<HTMLDivElement>(null)
+  const [ctaInView, setCtaInView] = useState(true)
+  // The phone bar waits until the page sits still after a result: one that comes back at once (a site
+  // checked in the last day) can land during the smooth scroll to the card, before the offer in it is on
+  // screen, and the bar would flash up, and count as seen, for a moment.
+  const [barReady, setBarReady] = useState(false)
+  // Nor while the cookie banner is up (no choice yet, or its settings reopened): the banner covers the
+  // bar completely, and an IntersectionObserver does not see what sits on top.
+  const consent = useConsent()
+  const cookieSettingsOpen = useSettingsOpen()
+  const cookieBannerUp = consent === "unset" || consent === "unknown" || cookieSettingsOpen
 
   // Card B starts folded: the assistants' answers are the news, the crawler check explains them.
   const [bOpen, setBOpen] = useState(false)
@@ -143,6 +177,50 @@ export default function AuditForm() {
   }, [aiFailed])
 
   const shownDomain = ai?.domain || aiDomain
+  const hasLocked = (ai?.locked?.length ?? 0) > 0
+  const totalAnswers = (ai?.open?.length ?? 0) + (ai?.locked?.length ?? 0)
+
+  useEffect(() => {
+    if (!aiDone || typeof IntersectionObserver === "undefined") return
+    const cta = ctaRef.current
+    const report = reportRef.current
+    const locked = lockedRef.current
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (e.target === cta) setCtaInView(e.isIntersecting)
+          if (e.intersectionRatio >= 0.5) seenOnce(e.target === cta ? "inline" : e.target === report ? "overlay" : "locked-row", shownDomain)
+        }
+      },
+      { threshold: [0, 0.5] }
+    )
+    if (cta) io.observe(cta)
+    if (report) io.observe(report)
+    if (locked) io.observe(locked)
+    return () => io.disconnect()
+  }, [aiDone, shownDomain])
+
+  // Ready once there has been no scrolling for a moment after the result arrived.
+  useEffect(() => {
+    if (!aiDone) return
+    let t: ReturnType<typeof setTimeout> | undefined
+    const settle = () => {
+      clearTimeout(t)
+      t = setTimeout(() => {
+        window.removeEventListener("scroll", settle)
+        setBarReady(true)
+      }, 700)
+    }
+    window.addEventListener("scroll", settle, { passive: true })
+    settle()
+    return () => {
+      clearTimeout(t)
+      window.removeEventListener("scroll", settle)
+      setBarReady(false)
+    }
+  }, [aiDone])
+
+  const barSeen = useCallback(() => seenOnce("sticky", shownDomain), [shownDomain])
   const signupHref = localePath(
     locale,
     `/signup?from=ai-check&site=${encodeURIComponent(shownDomain)}&callbackUrl=${encodeURIComponent(
@@ -151,12 +229,7 @@ export default function AuditForm() {
   )
 
   function onCta(where: string) {
-    try {
-      localStorage.setItem(
-        "itg_geo_handoff",
-        JSON.stringify({ site: shownDomain, named: ai?.summary?.named ?? null, of: ai?.summary?.of ?? null, at: Date.now() })
-      )
-    } catch {}
+    handOff(shownDomain, ai?.summary?.named ?? null, ai?.summary?.of ?? null)
     track("geo_cta_click", { where, domain: shownDomain, named: ai?.summary?.named, of: ai?.summary?.of })
   }
 
@@ -168,6 +241,7 @@ export default function AuditForm() {
     setAiStart(t0)
     setElapsed(0)
     setPillDone(false)
+    setCtaInView(true)
     const show = (v: TeaserView) => {
       if (aiToken.current === token) setAi(v)
     }
@@ -202,6 +276,9 @@ export default function AuditForm() {
     }
     if (aiToken.current !== token) return
     if (v.status === "done") {
+      // For the pricing block further down, which reads it when it comes into view. Not the sign-up
+      // hand-over: the cabinet follows that one (lib/geo-handoff.ts).
+      rememberChecked(v.domain || bareDomain(target), v.summary?.named ?? null, v.summary?.of ?? null)
       track("geo_teaser_done", { domain: v.domain, named: v.summary?.named, of: v.summary?.of, ms: Date.now() - t0 })
       countCheck(v.domain)
     } else {
@@ -326,6 +403,7 @@ export default function AuditForm() {
         </div>
         {error && <p className="text-sm text-red-600 mt-3">{error}</p>}
       </form>
+      {note && !aiOn && !data && <p className="text-xs text-slate-500 mt-3 text-center">{note}</p>}
 
       {ours && (
         <div role="status" className="mt-5 rounded-2xl border border-violet-200 bg-violet-50/70 px-5 py-5 text-center">
@@ -346,6 +424,9 @@ export default function AuditForm() {
             onCta={onCta}
             onRetry={() => void run()}
             onOtherUrl={otherUrl}
+            ctaRef={ctaRef}
+            reportRef={reportRef}
+            lockedRef={lockedRef}
           />
         </div>
       )}
@@ -441,7 +522,7 @@ export default function AuditForm() {
               className="w-full text-sm font-semibold text-violet-700 hover:text-violet-600 py-2"
               aria-expanded={bOpen}
             >
-              {bOpen ? m.hideDetails : m.showProjection}
+              {bOpen ? m.hideDetails : m.showDetails}
             </button>
           </div>
 
@@ -451,30 +532,9 @@ export default function AuditForm() {
                 <p className="text-sm text-slate-700 leading-relaxed">{m.answerPagesExplain(answers)}</p>
               </div>
 
-              {/* Ninety days, with and without */}
+              {/* What we measured ourselves. (The 90-day projection that stood above was a forecast,
+                  and the page makes no promises: removed 25 Oct.) */}
               <div className="p-4">
-                <div className="rounded-xl border border-black/10 overflow-hidden">
-                  <div className="px-4 py-2.5 bg-[#1b1916] text-white text-[11px] font-bold tracking-wide uppercase">{m.ownTitle}</div>
-                  <div className="divide-y divide-black/[0.07]">
-                    <div className="flex items-center justify-between px-4 py-3">
-                      <span className="text-sm text-slate-600">{m.today}</span>
-                      <span className="font-extrabold text-lg tabular-nums">{answers}</span>
-                    </div>
-                    <div className="flex items-center justify-between px-4 py-3">
-                      <span className="text-sm text-slate-600">{m.in90Nothing}</span>
-                      <span className="font-extrabold text-lg tabular-nums text-slate-400">{answers}</span>
-                    </div>
-                    <div className="flex items-center justify-between px-4 py-3 bg-violet-50">
-                      <span className="text-sm font-semibold text-violet-900">{m.in90WithUs}</span>
-                      <span className="font-extrabold text-lg tabular-nums text-violet-700">{answers + 36}</span>
-                    </div>
-                  </div>
-                </div>
-                <p className="text-[11px] text-slate-500 leading-relaxed mt-2.5">{m.arithmetic}</p>
-              </div>
-
-              {/* What we measured ourselves */}
-              <div className="px-4 pb-4">
                 <div className="rounded-xl bg-[#f8f7f6] p-4">
                   <p className="text-[11px] font-bold uppercase tracking-wide text-slate-500 mb-2">{m.logsEyebrow}</p>
                   <p className="text-sm text-slate-700 leading-relaxed">{rich(m.logsBody, { b: (c) => <b>{c}</b> })}</p>
@@ -553,14 +613,26 @@ export default function AuditForm() {
         </div>
       )}
 
+      {/* The pill brings a reader who scrolled away back to the offer, not to the score. */}
       {aiDone && !aiInView && !pillDone && (
         <button
           type="button"
-          onClick={() => aiRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })}
+          onClick={() =>
+            ctaRef.current
+              ? ctaRef.current.scrollIntoView({ behavior: "smooth", block: "center" })
+              : aiRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
+          }
           className="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 rounded-full bg-[#1b1916] text-white text-sm font-semibold px-5 py-3 shadow-xl"
         >
           {m.readyPill}
         </button>
+      )}
+
+      {/* Phones: once the answers have been on screen, the way in stays at hand while the offer in
+          the card is scrolled away. Not with the pill (one thing pinned at a time), not before the page
+          has settled after the result, and not under the cookie banner. */}
+      {aiDone && pillDone && barReady && hasLocked && !ctaInView && !cookieBannerUp && (
+        <OpenAnswersBar href={signupHref} label={m.openAllBar(totalAnswers)} onClick={() => onCta("sticky")} onSeen={barSeen} />
       )}
     </div>
   )

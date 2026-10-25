@@ -20,6 +20,8 @@ import { Fragment, useEffect, useState, type ReactNode } from "react"
 import { ENGINE_ICONS } from "../../engine-icons"
 import { CREDIT_DAYS, GEO_PRICES, REPORT_SITES, SAMPLE_PATH, type GeoInterval } from "@/lib/geo-pricing"
 import { listQuestions } from "@/lib/geo-list-question"
+import { useT } from "@/components/i18n/LocaleProvider"
+import visibilityOpening from "@/lib/i18n/messages/visibilityOpening"
 
 export interface EngineAnswer {
   named: number
@@ -2116,6 +2118,59 @@ export function AddSite({
             {error.domain}: {FOLLOW_ERRORS[error.error] ?? "That didn't work. Try again in a minute."}
           </p>
         )
+      )}
+    </section>
+  )
+}
+
+/** The first screen while the site checked on the homepage is being followed ("Opening your answers for
+ *  …", in place of an empty address form), and a retry when that fails: the page keeps the site and the
+ *  check's handoff for it. One live region, so a screen reader hears the switch. */
+export function OpeningSite({
+  domain,
+  busy,
+  error,
+  onRetry,
+  onOther,
+}: {
+  domain: string
+  busy: boolean
+  /** The error /api/geo/follow returned; null while it is still working. */
+  error: string | null
+  onRetry: () => void
+  onOther: () => void
+}) {
+  const m = useT(visibilityOpening)
+  const failed = !busy && error !== null
+  const reason = error === "unreachable" ? m.reasonSite : error === "questions_failed" ? m.reasonText : m.reasonOther
+  return (
+    <section className={card} aria-live="polite">
+      {failed ? (
+        <>
+          <h2 className="font-bold text-lg break-words">{m.failedTitle(domain)}</h2>
+          <p className="text-sm text-slate-600 mt-1 leading-relaxed">{reason}</p>
+          <div className="mt-4 flex flex-col sm:flex-row sm:items-center gap-3">
+            <button
+              type="button"
+              onClick={onRetry}
+              className="rounded-xl bg-violet-600 hover:bg-violet-500 text-white px-6 py-3 text-sm font-semibold focus-visible:ring-2 focus-visible:ring-violet-400 focus-visible:ring-offset-2"
+            >
+              {m.retry}
+            </button>
+            <button
+              type="button"
+              onClick={onOther}
+              className="rounded-xl px-3 py-2 text-sm font-semibold text-violet-700 hover:underline focus-visible:ring-2 focus-visible:ring-violet-400"
+            >
+              {m.other}
+            </button>
+          </div>
+        </>
+      ) : (
+        <div className="flex items-center gap-3">
+          <span aria-hidden className="w-5 h-5 shrink-0 rounded-full border-2 border-violet-300 border-t-violet-700 animate-spin" />
+          <h2 className="font-bold text-lg break-words min-w-0">{m.opening(domain)}</h2>
+        </div>
       )}
     </section>
   )

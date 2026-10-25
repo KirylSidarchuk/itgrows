@@ -3,10 +3,14 @@
 // Card A of the free check: what ChatGPT and Perplexity answer when this business's buyers ask.
 // While it runs it shows real progress from the VM (stage, the questions as soon as they exist,
 // answers in per assistant). The result shows two answers in full; the other three arrive as their
-// question only — there is no answer data in the page to un-blur — behind the account offer. The
-// offer says what it costs: the account shows the detailed report's totals and the quick check's
-// questions; the whole report is paid (lib/geo-pricing.ts), with a real one a click away. Nothing
-// here is called free: the quick check is the one free thing, and it is described, not labelled.
+// question only — there is no answer data in the page to un-blur. The account offer sits right under
+// who was named instead, before the two answers: an account opens the other answers and, a few
+// minutes later, the detailed report's totals (a day-0 run takes about 6 minutes; the copy says
+// "about 10"). Under the two answers comes the paid report itself (lib/geo-pricing.ts), with a real
+// one a click away. Nothing here is called free: the quick check is the one free thing, and it is
+// described, not labelled. AuditForm owns the refs of the offer, the report card and the locked rows:
+// it watches them for geo_cta_seen and for the phone bar. Each locked row says which assistants
+// answered that question (the API sends their names, never the answers).
 
 import { CREDIT_DAYS, GEO_PRICES, SAMPLE_PATH } from "@/lib/geo-pricing"
 import { useLocale, useT } from "@/components/i18n/LocaleProvider"
@@ -46,12 +50,16 @@ export interface TeaserView {
     namedInstead: { name: string; count: number }[]
   }
   open?: { n: number; q: string; engines: Record<string, TeaserEngine> }[]
-  locked?: { n: number; q: string }[]
+  /** `answered`: the assistants that answered this question; missing from an older API response. */
+  locked?: { n: number; q: string; answered?: string[] }[]
   error?: string
   reason?: string
 }
 
 const LABEL: Record<string, string> = { chatgpt: "ChatGPT", claude: "Claude", gemini: "Gemini", perplexity: "Perplexity" }
+
+const CTA_BUTTON =
+  "mt-4 flex items-center justify-center w-full min-h-12 px-4 py-2 rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-base font-semibold text-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400 focus-visible:ring-offset-2"
 
 /** Answers arrive as markdown; quoted on a card they should read as plain sentences. */
 function plain(s: string) {
@@ -218,7 +226,21 @@ function askedAt(m: M, locale: Locale, iso?: string) {
   return m.askedAt(sameDay, time)
 }
 
-function Result({ view, signupHref, onCta }: { view: TeaserView; signupHref: string; onCta: (where: string) => void }) {
+function Result({
+  view,
+  signupHref,
+  onCta,
+  ctaRef,
+  reportRef,
+  lockedRef,
+}: {
+  view: TeaserView
+  signupHref: string
+  onCta: (where: string) => void
+  ctaRef?: React.Ref<HTMLDivElement>
+  reportRef?: React.Ref<HTMLDivElement>
+  lockedRef?: React.Ref<HTMLDivElement>
+}) {
   const m = useT(ns)
   const locale = useLocale()
   const s = view.summary!
@@ -237,6 +259,12 @@ function Result({ view, signupHref, onCta }: { view: TeaserView; signupHref: str
       : m.subSome(several, s.named, s.of - s.named, who)
   const open = view.open ?? []
   const locked = view.locked ?? []
+  // Who answered a closed question, in the card's order; without the per-question list, every
+  // assistant that answered at all.
+  const answeredBy = (r: (typeof locked)[number]) => (r.answered ? engines.filter((e) => r.answered!.includes(e)) : answered)
+  // A closed question no assistant answered is shown but not counted as a ready answer.
+  const ready = locked.filter((r) => answeredBy(r).length > 0).length
+  const total = open.length + ready
 
   return (
     <div>
@@ -285,6 +313,17 @@ function Result({ view, signupHref, onCta }: { view: TeaserView; signupHref: str
             </ul>
           </div>
         )}
+
+        {ready > 0 && (
+          <div ref={ctaRef} className="mt-5 scroll-mt-24 rounded-2xl border border-violet-200 bg-violet-50/70 p-4 sm:p-5">
+            <p className="font-extrabold text-lg leading-snug">{m.ctaTitle(ready)}</p>
+            <p className="text-sm text-slate-700 mt-1.5 leading-relaxed">{m.ctaBody(all, ready)}</p>
+            <a href={signupHref} onClick={() => onCta("inline")} className={CTA_BUTTON}>
+              {m.ctaButton(total)}
+            </a>
+            <p className="text-xs text-slate-500 mt-2.5 text-center leading-relaxed">{m.ctaSignIn}</p>
+          </div>
+        )}
       </div>
 
       <div className="px-5 sm:px-6 border-t border-black/[0.07] pt-5">
@@ -296,18 +335,13 @@ function Result({ view, signupHref, onCta }: { view: TeaserView; signupHref: str
           </div>
         )}
 
-        <div className="relative z-10 -mt-8 rounded-2xl bg-white border border-black/10 shadow-lg shadow-violet-600/10 p-5">
-          <p className="font-extrabold text-lg leading-snug">{all ? m.overlayTitleAll : m.overlayTitle}</p>
-          <p className="text-sm text-slate-600 mt-1.5 leading-relaxed">{m.overlayBody(domain)}</p>
-          <p className="text-sm text-[#1b1916] mt-2 leading-relaxed">
-            {rich(m.overlayPrice(GEO_PRICES.research.label, CREDIT_DAYS), { b: (c) => <b>{c}</b> })}
+        <div ref={reportRef} className="relative z-10 -mt-8 rounded-2xl bg-white border border-black/10 shadow-lg shadow-violet-600/10 p-5">
+          <p className="font-extrabold text-lg leading-snug break-words">{m.reportTitle(domain)}</p>
+          <p className="text-sm text-slate-600 mt-1.5 leading-relaxed">
+            {rich(m.reportBody(GEO_PRICES.research.label, CREDIT_DAYS), { b: (c) => <b className="text-[#1b1916]">{c}</b> })}
           </p>
-          <a
-            href={signupHref}
-            onClick={() => onCta("overlay")}
-            className="mt-4 flex items-center justify-center w-full min-h-12 px-4 py-2 rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-base font-semibold text-center transition-colors"
-          >
-            {m.createReport}
+          <a href={signupHref} onClick={() => onCta("overlay")} className={CTA_BUTTON}>
+            {ready ? m.ctaButton(total) : m.createAccount}
           </a>
           <a
             href={localePath(locale, SAMPLE_PATH)}
@@ -318,26 +352,35 @@ function Result({ view, signupHref, onCta }: { view: TeaserView; signupHref: str
           >
             {m.seeReport}
           </a>
-          <p className="text-xs text-slate-500 mt-2.5 text-center leading-relaxed">
-            {m.signInNote}
-          </p>
         </div>
 
-        <div className="mt-5 space-y-4 pb-5">
-          {locked.map((r) => (
-            <a key={r.n} href={signupHref} onClick={() => onCta("locked-row")} className="block group">
-              <p className="text-base font-semibold leading-snug group-hover:text-violet-700">
-                <span className="text-slate-400 mr-1.5 tabular-nums">{r.n}.</span>
-                {r.q}
-              </p>
-              <div aria-hidden className="mt-2 rounded-xl bg-[#f8f7f6] p-3.5 blur-[3px] select-none">
-                <div className="h-3 w-2/5 rounded bg-slate-300" />
-                <div className="h-2.5 w-11/12 rounded bg-slate-200 mt-2.5" />
-                <div className="h-2.5 w-3/4 rounded bg-slate-200 mt-1.5" />
-              </div>
-              <p className="text-xs text-slate-500 mt-1.5">{m.lockedNote}</p>
-            </a>
-          ))}
+        <div ref={lockedRef} className="mt-5 space-y-4 pb-5">
+          {locked.map((r) => {
+            const by = answeredBy(r)
+            return (
+              <a
+                key={r.n}
+                href={signupHref}
+                onClick={() => onCta("locked-row")}
+                className="block group rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400 focus-visible:ring-offset-4"
+              >
+                <p className="text-base font-semibold leading-snug group-hover:text-violet-700">
+                  <span className="text-slate-400 mr-1.5 tabular-nums">{r.n}.</span>
+                  {r.q}
+                </p>
+                {by.length > 0 && (
+                  <div aria-hidden className="mt-2 rounded-xl bg-[#f8f7f6] p-3.5 blur-[3px] select-none">
+                    <div className="h-3 w-2/5 rounded bg-slate-300" />
+                    <div className="h-2.5 w-11/12 rounded bg-slate-200 mt-2.5" />
+                    <div className="h-2.5 w-3/4 rounded bg-slate-200 mt-1.5" />
+                  </div>
+                )}
+                <p className="text-xs text-slate-500 mt-1.5">
+                  {by.length ? m.lockedNote(by.length > 1, by.map((e) => LABEL[e] ?? e).join(" · ")) : m.chipTimedOut}
+                </p>
+              </a>
+            )
+          })}
         </div>
       </div>
 
@@ -394,6 +437,17 @@ function Failed({
         {label}
       </button>
     )
+  // Next to "Try again": the account runs the detailed check on its own, so a failed quick check
+  // need not be the end of the visit.
+  const account = (where: string) => (
+    <a
+      href={signupHref}
+      onClick={() => onCta(where)}
+      className="inline-flex justify-center rounded-xl border border-black/15 bg-white hover:bg-[#f8f7f6] text-[#1b1916] px-5 py-3 text-sm font-semibold"
+    >
+      {m.createAccount}
+    </a>
+  )
 
   if (e === "limit_ip")
     return box(
@@ -429,7 +483,10 @@ function Failed({
       amber,
       m.questionsTitle,
       m.questionsBody,
-      primary(m.tryAgain, onRetry),
+      <>
+        {primary(m.tryAgain, onRetry)}
+        {account("questions-failed")}
+      </>,
       m.notCounted
     )
   if (e === "invalid_url")
@@ -438,7 +495,10 @@ function Failed({
     amber,
     m.failedTitle,
     m.failedBody,
-    primary(m.tryAgain, onRetry),
+    <>
+      {primary(m.tryAgain, onRetry)}
+      {account("failed")}
+    </>,
     m.notCounted
   )
 }
@@ -451,6 +511,9 @@ export default function AiAnswers({
   onCta,
   onRetry,
   onOtherUrl,
+  ctaRef,
+  reportRef,
+  lockedRef,
 }: {
   view: TeaserView | null
   domain: string
@@ -459,6 +522,11 @@ export default function AiAnswers({
   onCta: (where: string) => void
   onRetry: () => void
   onOtherUrl: () => void
+  /** The account offer under the named-instead list, the paid-report card and the locked rows:
+   *  AuditForm watches all three. */
+  ctaRef?: React.Ref<HTMLDivElement>
+  reportRef?: React.Ref<HTMLDivElement>
+  lockedRef?: React.Ref<HTMLDivElement>
 }) {
   const m = useT(ns)
   const shown = view?.domain || domain
@@ -469,7 +537,9 @@ export default function AiAnswers({
         <p className="text-[11px] font-bold uppercase tracking-wide text-slate-500">{m.eyebrow(shown)}</p>
       </div>
       {waiting && <Waiting view={view} elapsed={elapsed} />}
-      {view?.status === "done" && view.summary && <Result view={view} signupHref={signupHref} onCta={onCta} />}
+      {view?.status === "done" && view.summary && (
+        <Result view={view} signupHref={signupHref} onCta={onCta} ctaRef={ctaRef} reportRef={reportRef} lockedRef={lockedRef} />
+      )}
       {view?.status === "failed" && (
         <Failed view={view} domain={shown} signupHref={signupHref} onCta={onCta} onRetry={onRetry} onOtherUrl={onOtherUrl} />
       )}

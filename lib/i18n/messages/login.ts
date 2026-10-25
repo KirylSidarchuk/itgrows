@@ -2,9 +2,8 @@ import { defineMessages } from "../messages"
 
 // app/login/page.tsx (/login, /de/login …): the page heading, the email + code form and its errors,
 // and the page's metadata (app/login/layout.tsx). The Google and LinkedIn buttons are
-// components/auth/OAuthButtons.tsx. emailInvalid and waitResend are the send-pin errors, whose
-// English is the server's own text, for the page to show in the visitor's language instead of the
-// raw English.
+// components/auth/OAuthButtons.tsx. emailInvalid and waitResend are the send-pin errors (400 and 429),
+// shown by status in the visitor's language instead of the server's raw English.
 
 const en = {
   // Metadata (app/login/layout.tsx): the description the page had from the root layout; the title
@@ -35,7 +34,7 @@ const en = {
   somethingWrong: "Something went wrong",
   invalidPin: "Invalid or expired PIN. Please try again.",
   emailInvalid: "Valid email required",
-  waitResend: "Please wait before requesting another PIN",
+  waitResend: "Wait a minute, then ask for a new code.",
 }
 
 export default defineMessages(en, {
@@ -64,7 +63,7 @@ export default defineMessages(en, {
     somethingWrong: "Etwas ist schiefgelaufen",
     invalidPin: "Der Code ist ungültig oder abgelaufen. Bitte versuchen Sie es erneut.",
     emailInvalid: "Bitte geben Sie eine gültige E-Mail-Adresse ein.",
-    waitResend: "Bitte warten Sie kurz, bevor Sie einen neuen Code anfordern.",
+    waitResend: "Warten Sie eine Minute und fordern Sie dann einen neuen Code an.",
   },
 
   fr: {
@@ -92,7 +91,7 @@ export default defineMessages(en, {
     somethingWrong: "Un problème est survenu",
     invalidPin: "Code invalide ou expiré. Veuillez réessayer.",
     emailInvalid: "Saisissez une adresse e-mail valide.",
-    waitResend: "Patientez un instant avant de demander un nouveau code.",
+    waitResend: "Patientez une minute, puis demandez un nouveau code.",
   },
 
   es: {
@@ -120,7 +119,7 @@ export default defineMessages(en, {
     somethingWrong: "Algo ha salido mal",
     invalidPin: "Código no válido o caducado. Inténtelo de nuevo.",
     emailInvalid: "Introduzca un correo electrónico válido.",
-    waitResend: "Espere un momento antes de pedir un nuevo código.",
+    waitResend: "Espere un minuto y después pida un nuevo código.",
   },
 
   ru: {
@@ -148,6 +147,6 @@ export default defineMessages(en, {
     somethingWrong: "Что-то пошло не так",
     invalidPin: "Неверный или просроченный код. Попробуйте ещё раз.",
     emailInvalid: "Введите корректный адрес email.",
-    waitResend: "Подождите немного, прежде чем запрашивать новый код.",
+    waitResend: "Подождите минуту и запросите новый код.",
   },
 })

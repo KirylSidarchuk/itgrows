@@ -10,6 +10,8 @@ const ruDays = (n: number) => plural("ru", n, { one: `${n} дня`, other: `${n}
 const en = {
   h2: "See where you stand. Have us fix it.",
   notSure: "Not sure yet? <link>Run the 30-second check first →</link>",
+  // Instead of notSure once this browser has checked a site: <site/> is the domain, <link> goes to sign-up
+  checked: "You've checked <site/>. <link>Open all 5 answers →</link>",
 
   reportTitle: "Detailed report",
   onePayment: "one payment",
@@ -44,6 +46,7 @@ export default defineMessages(en, {
   de: {
     h2: "Sehen Sie, wo Sie stehen. Lassen Sie es uns beheben.",
     notSure: "Noch unsicher? <link>Machen Sie zuerst den 30-Sekunden-Check →</link>",
+    checked: "Sie haben <site/> geprüft. <link>Alle 5 Antworten öffnen →</link>",
 
     reportTitle: "Ausführlicher Bericht",
     onePayment: "einmalige Zahlung",
@@ -76,6 +79,7 @@ export default defineMessages(en, {
   fr: {
     h2: "Voyez où vous en êtes. Laissez-nous y remédier.",
     notSure: "Pas encore décidé ? <link>Faites d’abord la vérification en 30 secondes →</link>",
+    checked: "Vous avez vérifié <site/>. <link>Ouvrir les 5 réponses →</link>",
 
     reportTitle: "Rapport détaillé",
     onePayment: "paiement unique",
@@ -108,6 +112,7 @@ export default defineMessages(en, {
   es: {
     h2: "Vea dónde está. Déjenos arreglarlo.",
     notSure: "¿Aún no lo tiene claro? <link>Haga primero la comprobación de 30 segundos →</link>",
+    checked: "Ya ha comprobado <site/>. <link>Abrir las 5 respuestas →</link>",
 
     reportTitle: "Informe detallado",
     onePayment: "pago único",
@@ -140,6 +145,7 @@ export default defineMessages(en, {
   ru: {
     h2: "Узнайте, где вы сейчас. А исправим — мы.",
     notSure: "Ещё не уверены? <link>Сначала пройдите 30-секундную проверку →</link>",
+    checked: "Вы проверили <site/>. <link>Открыть все 5 ответов →</link>",
 
     reportTitle: "Подробный отчёт",
     onePayment: "один платёж",
