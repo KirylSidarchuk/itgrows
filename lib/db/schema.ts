@@ -1,4 +1,5 @@
 import { pgTable, text, timestamp, boolean, jsonb, uuid, index, integer, serial, uniqueIndex } from "drizzle-orm/pg-core"
+import { sql } from "drizzle-orm"
 
 export const users = pgTable("users", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -129,6 +130,9 @@ export const scheduledPosts = pgTable("scheduled_posts", {
   index("scheduled_posts_user_id_idx").on(t.userId),
   index("scheduled_posts_status_idx").on(t.status),
   index("scheduled_posts_geo_domain_idx").on(t.geoDomain),
+  // One row per plan question: two seed-geo runs at once both pass their check, and this lets only one
+  // in (client_writer.py inserts ON CONFLICT DO NOTHING). Declared so a drizzle push keeps it.
+  uniqueIndex("scheduled_posts_geo_question_key").on(t.userId, t.geoDomain, t.geoQuestion).where(sql`${t.geoQuestion} IS NOT NULL`),
 ])
 
 export const passwordResetTokens = pgTable("password_reset_tokens", {

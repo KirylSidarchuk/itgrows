@@ -8,6 +8,7 @@ import { publishToWordPress, canUseAppPassword } from "@/lib/wordpress-publish"
 import { slugBase } from "@/lib/slug"
 import { storeAndRecordImage } from "@/lib/image-store"
 import { extractFaq, faqJsonLd } from "@/lib/faq-schema"
+import { generatedQuestions, listQuestions } from "@/lib/geo-list-question"
 
 // Publishing one scheduled article: the body of the nightly cron (app/api/cron/publish-scheduled),
 // moved here unchanged so "Publish now" in the client's "Your articles" goes through exactly the same
@@ -484,10 +485,15 @@ function siteHost(u: string | null | undefined): string {
 type PlanAnswer = { samples?: number; named?: number; named_instead?: unknown[] }
 
 /** The day-0 questions that are Article steps of the plan (parts.tsx planSteps, client_writer.py
- *  article_questions): no assistant that could be checked named the site, and one named others. */
-function planArticleQuestions(results: unknown): string[] {
+ *  article_questions): no assistant that could be checked named the site, one named others, and it is
+ *  not a list question (lib/geo-list-question.ts listQuestions, with the site profile's answer key
+ *  `generated`), which the plan wins through the places quoted. */
+function planArticleQuestions(results: unknown, generated: unknown): string[] {
   if (!Array.isArray(results)) return []
-  return (results as { q?: unknown; engines?: Record<string, PlanAnswer | undefined> }[]).flatMap((r) => {
+  const rows = results as { q?: unknown; engines?: Record<string, PlanAnswer | undefined> }[]
+  const listed = listQuestions(rows.map((r) => r?.q), generated)
+  return rows.flatMap((r, i) => {
+    if (listed[i]) return []
     const eng = r?.engines ?? {}
     const checked = PLAN_ENGINES.filter((e) => (eng[e]?.samples ?? 0) > 0)
     if (!checked.length || checked.some((e) => (eng[e]?.named ?? 0) > 0)) return []
@@ -511,7 +517,7 @@ async function hasGeoPlanQuestions(userId: string, site: Site | null): Promise<b
     const hosts = [siteHost(site.url), siteHost(site.blogDomain)].filter(Boolean)
     const plans = dbRows(
       await db.execute(sql`
-        SELECT DISTINCT ON (s.domain) s.domain, r.results
+        SELECT DISTINCT ON (s.domain) s.domain, r.results, s.profile
         FROM geo_sites s
         JOIN geo_runs r ON r.site_id = s.id AND r.kind = 'baseline' AND r.status = 'done'
         WHERE EXISTS (SELECT 1 FROM geo_follows f
@@ -532,7 +538,7 @@ async function hasGeoPlanQuestions(userId: string, site: Site | null): Promise<b
             SELECT geo_question FROM blog_posts WHERE user_id::text = ${userId} AND geo_domain = ${domain}`)
         ).map((r) => planQuestionKey(r.geo_question))
       )
-      if (planArticleQuestions(p.results).some((q) => !have.has(planQuestionKey(q)))) return true
+      if (planArticleQuestions(p.results, generatedQuestions(p.profile)).some((q) => !have.has(planQuestionKey(q)))) return true
     }
     return false
   } catch {

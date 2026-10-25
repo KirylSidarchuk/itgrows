@@ -2,15 +2,16 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
-import { card, fmtDate, fullReport, onPlan, type Row, type SiteReport } from "../visibility/parts"
+import { card, fmtDate, fullReport, onPlan, planSteps, type SiteReport } from "../visibility/parts"
 import { GEO_PRICES, REPORT_SITES, SAMPLE_PATH, firstPaymentCents, setupFree, usd } from "@/lib/geo-pricing"
 
 // The plan, for one site, and its billing. It is a service, not a guide: the page says who does
 // what before it asks for money — we write, publish, fix indexing, prepare the places the
 // assistants quote and measure; from the client only what needs their own login or approval. What
-// we would do first is read from the site's own report: the questions where others are named and
-// it is not become the first articles; the directories, marketplaces, media and discussions the
-// assistants cite become the places we prepare.
+// we would do first is read from the site's own report: the first articles are the first Article
+// steps of "Your plan" (visibility/parts.tsx planSteps, in its order), questions where others are
+// named and it is not, never a list question (lib/geo-list-question.ts); the directories,
+// marketplaces, media and discussions the assistants cite become the places we prepare.
 //
 // Three ways to pay, all from lib/geo-pricing.ts: by the month plus the one-time setup, 3 months
 // upfront, or a year (both with the setup free). The setup is once per site: a site that has had a
@@ -121,13 +122,9 @@ const CHECKOUT_FAILED = "Checkout did not open. Try again in a minute."
 function plan(site: SiteReport) {
   const full = fullReport(site)
   if (!full) return { questions: [] as string[], places: [] as { domain: string; count: number; type: string }[], placesMore: 0 }
-  // In the preview, rows past the quick check's arrive locked, without answers.
-  const answers = (r: Row) => Object.values(r.engines ?? {})
-  const questions = full.rows
-    .filter((r) => !r.locked && answers(r).length)
-    .filter((r) => answers(r).every((a) => !a.named) && answers(r).some((a) => a.named_instead.length))
-    .map((r) => r.q)
-    .slice(0, 5)
+  // The questions of the first Article steps of "Your plan" as the offer shows it (in the preview only
+  // the quick check's questions have answers to go by): never a list question.
+  const questions = planSteps(site, undefined).flatMap((st) => (st.q !== undefined ? [st.q] : [])).slice(0, 5)
   const own = (d: string) => d === site.domain || d.endsWith(`.${site.domain}`)
   const places = (full.summary.sources ?? [])
     .filter((s) => s.type !== "competitor" && PLACE[s.type] && !own(s.domain))

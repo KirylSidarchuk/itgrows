@@ -19,6 +19,7 @@
 import { Fragment, useEffect, useState, type ReactNode } from "react"
 import { ENGINE_ICONS } from "../../engine-icons"
 import { CREDIT_DAYS, GEO_PRICES, REPORT_SITES, SAMPLE_PATH, type GeoInterval } from "@/lib/geo-pricing"
+import { listQuestions } from "@/lib/geo-list-question"
 
 export interface EngineAnswer {
   named: number
@@ -97,6 +98,10 @@ export interface SiteReport {
   teaser: { engines: string[]; summary: Summary; rows: Row[]; finishedAt: string } | null
   /** A client's own site only: where the plan's work stands (lib/geo-report.ts planWork). */
   work?: PlanWork | null
+  /** The site profile's questions as the generator wrote them, null for a profile written by hand
+   *  (lib/geo-list-question.ts generatedQuestions): the answer key that makes questions 1-8 of the
+   *  day-0 report list questions. Without it only their words decide. */
+  generatedQuestions?: unknown[] | null
 }
 /** Keyed by the day-0 question as asked, and by launch item or "step:<step id>". */
 export interface PlanWork {
@@ -1146,11 +1151,15 @@ export function planSteps(site: SiteReport, audit: Audit | "failed" | undefined,
       }
   }
 
-  // Content gaps: questions where the assistants named others and nobody named you.
+  // Content gaps: questions where the assistants named others and nobody named you. Never a list
+  // question ("Best app for ...", "Which agency ..."; lib/geo-list-question.ts): the assistants answer
+  // those from reviews, directories and app stores, the places the steps below cover, not from an
+  // article of yours. seed-geo and the publisher's guard leave them out the same way.
+  const listed = listQuestions(l.rows.map((r) => r.q), site.generatedQuestions)
   const gaps = l.rows
     .map((r, i) => {
       const eng = r.engines
-      if (!eng) return null
+      if (!eng || listed[i]) return null
       const checked = ENGINES.filter((e) => (eng[e]?.samples ?? 0) > 0)
       if (!checked.length || checked.some((e) => eng[e].named > 0)) return null
       const others = checked.filter((e) => (eng[e].named_instead ?? []).length > 0)
@@ -1219,8 +1228,9 @@ export function planSteps(site: SiteReport, audit: Audit | "failed" | undefined,
     const rival = s.sources.find((x) => x.type === "competitor")
     if (rival) {
       let best: { q: string; n: number; named: number } | null = null
-      for (const r of l.rows) {
-        if (used.has(r.q)) continue
+      // The question it is cited for most that is neither an Article step above nor a list question.
+      for (const [i, r] of l.rows.entries()) {
+        if (used.has(r.q) || listed[i]) continue
         const cite = Object.values(r.engines ?? {}).filter((a) => (a.sources ?? []).includes(rival.domain))
         if (cite.length && (!best || cite.length > best.n)) best = { q: r.q, n: cite.length, named: cite.filter((a) => a.named > 0).length }
       }
