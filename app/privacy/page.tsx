@@ -116,7 +116,7 @@ const COOKIES = [
   },
   {
     name: "Google Ads tag",
-    text: "Advertising, loaded only after you accept. Measures whether visitors from our ads sign up or pay; Google sets its own cookies. Before you accept, nothing is sent to Google.",
+    text: "Advertising measurement, on every page. Before you accept, and if you decline, it uses no cookies: Google receives only measurement signals without cookies and without the ad click id, used to count conversions from our ads in aggregate. After you accept, it measures whether visitors from our ads sign up or pay, and Google sets its own cookies.",
   },
   {
     name: "Contentsquare",
@@ -173,7 +173,7 @@ export default function PrivacyPage() {
               <li>We keep what we need to run your account, check your site, write your articles and posts, and bill you.</li>
               <li>Stripe handles payments. We never see your card number.</li>
               <li>
-                Analytics and advertising tools load only after you accept them in the cookie banner. You can change your choice at any time in{" "}
+                Analytics tools and advertising cookies load only after you accept them in the cookie banner; before that, the Google Ads tag sends only signals without cookies. You can change your choice at any time in{" "}
                 <CookieSettings />.
               </li>
               <li>We do not sell your personal data.</li>
@@ -272,8 +272,9 @@ export default function PrivacyPage() {
                 why="To understand which pages work, fix what does not, and measure our advertising."
                 basis={
                   <>
-                    Our own analytics: {INTEREST.toLowerCase()}. The random id in your browser, the ad click id, and third-party analytics and
-                    advertising tools: your consent, given in the cookie banner.
+                    Our own analytics: {INTEREST.toLowerCase()}. Signals without cookies from the Google Ads tag before you choose or after you
+                    decline: {INTEREST.toLowerCase()}, measuring our advertising in aggregate. The random id in your browser, the ad click id, and
+                    third-party analytics and advertising cookies: your consent, given in the cookie banner.
                   </>
                 }
               />
@@ -285,9 +286,10 @@ export default function PrivacyPage() {
             <p>These are the cookies and browser storage items our site uses:</p>
             <Rows rows={COOKIES} />
             <p>
-              On your first visit a banner lets you accept or decline cookies, and remembers your choice. The analytics and advertising tools, the
-              Google Ads tag, Contentsquare, Microsoft Clarity and Vercel Analytics, load only after you accept; until then none of them is loaded.
-              If you decline, they do not run.
+              On your first visit a banner lets you accept or decline cookies, and remembers your choice. Contentsquare, Microsoft Clarity and
+              Vercel Analytics load only after you accept; if you decline, they do not run. The Google Ads tag is on every page, but until you
+              accept, and if you decline, it works without cookies: Google receives only measurement signals without cookies and without the ad
+              click id, used to count conversions from our ads in aggregate.
             </p>
             <p>
               You can change your choice at any time: open <CookieSettings />.

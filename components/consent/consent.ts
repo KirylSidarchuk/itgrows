@@ -4,8 +4,9 @@
 // old banner used, so earlier choices carry over. Nothing optional (Contentsquare, Clarity, Vercel
 // Analytics, the itg_gclid cookie, the itg_anon id, the ad click id in our own analytics) is stored or
 // loaded until it reads "accepted".
-// The Google tag runs in Basic Consent Mode (app/layout.tsx): before "Accept" gtag() only queues calls
-// locally and nothing is requested from Google; "Accept" loads gtag.js, "Decline" drops the queue.
+// The Google tag runs in Advanced Consent Mode (app/layout.tsx): gtag.js loads on every page with
+// consent denied, so Google gets only cookieless pings without the ad click id; "Accept" grants consent,
+// "Decline" keeps it denied.
 //
 // Reopening the settings from anywhere (the footer, the privacy page, any component):
 //   - a link:        <a href="#cookie-settings">Cookie settings</a>   (or any element with data-cookie-settings)
@@ -59,8 +60,7 @@ export function hasConsent(): boolean {
   return readConsent() === "accepted"
 }
 
-// "Accept": gtag.js and the config load now, with the calls queued so far. "Decline": the queued
-// calls are dropped (or, if the tag had already loaded, Google is told consent is denied).
+// "Accept": Google is told consent is granted. "Decline": Google is told it is denied (cookieless pings only).
 export function applyGoogleConsent(granted: boolean) {
   try {
     if (granted) window.itgGoogleTag?.load()

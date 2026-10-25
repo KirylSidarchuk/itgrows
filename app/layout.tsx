@@ -55,60 +55,38 @@ export const metadata: Metadata = {
   },
 };
 
-// Google tag, Basic Consent Mode: nothing is requested from Google before "Accept".
-// This runs first in <head> and only defines a local gtag() that queues calls in window.dataLayer.
-//   - accepted earlier: gtag.js and the config load right away, on this page load;
-//   - "Accept" now: components/consent/consent.ts calls itgGoogleTag.load(), and the calls queued
-//     so far (a conversion, say) go out with it;
-//   - "Decline" (now or earlier): the queue is emptied and gtag() drops every call from then on.
-// gtag() exists in every state, so conversion calls never throw.
-// Contentsquare, Clarity and Vercel Analytics are not here: components/consent/ConsentedTrackers.tsx
-// loads them after "Accept".
+// Google tag, Advanced Consent Mode (Kiryl, 25.10.2026): gtag.js loads on every page with every
+// consent type "denied" by default, so before a choice, and after "Decline", Google gets only cookieless
+// pings with the ad click id redacted (ads_data_redaction) and models the conversions; url_passthrough
+// carries the click id in the link instead of a cookie. "Accept" (now or earlier) switches consent to
+// "granted". gtag() exists from the first line, so conversion calls never throw.
+// Contentsquare, Clarity, Vercel Analytics, the itg_gclid cookie and the itg_anon id are not here:
+// components/consent/** still loads or stores them only after "Accept".
 const GOOGLE_TAG_INIT = `
 (function () {
-  var w = window, ID = 'AW-18160234884', state = 'queue';
+  var w = window, ID = 'AW-18160234884';
   var dl = w.dataLayer = w.dataLayer || [];
-  function queue() { dl.push(arguments); }
-  function drop() {}
-  w.gtag = queue;
-  function load() {
-    if (state === 'loaded') return;
-    var waiting = state === 'queue' ? dl.splice(0, dl.length) : [];
-    state = 'loaded';
-    w.gtag = queue;
-    queue('consent', 'default', {
-      ad_storage: 'granted',
-      ad_user_data: 'granted',
-      ad_personalization: 'granted',
-      analytics_storage: 'granted'
-    });
-    queue('js', new Date());
-    queue('config', ID);
-    for (var i = 0; i < waiting.length; i++) dl.push(waiting[i]);
-    var s = document.createElement('script');
-    s.async = true;
-    s.src = 'https://www.googletagmanager.com/gtag/js?id=' + ID;
-    (document.head || document.documentElement).appendChild(s);
+  function gtag() { dl.push(arguments); }
+  w.gtag = gtag;
+  function consent(on) {
+    var v = on ? 'granted' : 'denied';
+    return { ad_storage: v, ad_user_data: v, ad_personalization: v, analytics_storage: v };
   }
-  function discard() {
-    if (state === 'loaded') {
-      queue('consent', 'update', {
-        ad_storage: 'denied',
-        ad_user_data: 'denied',
-        ad_personalization: 'denied',
-        analytics_storage: 'denied'
-      });
-      return;
-    }
-    state = 'dropped';
-    dl.splice(0, dl.length);
-    w.gtag = drop;
-  }
-  w.itgGoogleTag = { load: load, discard: discard };
   var choice = null;
   try { choice = localStorage.getItem('cookie_consent'); } catch (e) {}
-  if (choice === 'accepted') load();
-  else if (choice === 'declined') discard();
+  gtag('consent', 'default', consent(choice === 'accepted'));
+  gtag('set', 'ads_data_redaction', true);
+  gtag('set', 'url_passthrough', true);
+  gtag('js', new Date());
+  gtag('config', ID);
+  var s = document.createElement('script');
+  s.async = true;
+  s.src = 'https://www.googletagmanager.com/gtag/js?id=' + ID;
+  (document.head || document.documentElement).appendChild(s);
+  w.itgGoogleTag = {
+    load: function () { gtag('consent', 'update', consent(true)); },
+    discard: function () { gtag('consent', 'update', consent(false)); }
+  };
 })();
 `
 
