@@ -104,19 +104,28 @@ export function openYou(items: LaunchItem[]) {
   return items.filter((i) => i.who === "you" && OPEN_STATUSES.has(i.status))
 }
 
-/** A note on an "us" item reaches the client as today when it reads as a plain result (launch.py
- *  writes those in English); one typed in Russian or naming our own address stays with us. */
-const OUR_NOTE = /[\u0400-\u04FF]|136\.114\.136\.34|itgrows-vm/i
-
-/** The items as the client sees them ("Your website"): never our diagnostic notes. A "you" item
- *  keeps its title, clicks and status; an "us" item keeps its note only when it is client-safe. The
- *  generic list (a site never checked) is left out: the page shows the site's own items. */
+/** The items as the client sees them ("Your website"): title, who, status and date, plus the ask
+ *  (steps, de) on a "you" item. No note ever goes out, on any item: an "us" note is ours. Built field
+ *  by field, so a field launch.py adds later stays with us too. The generic list (a site never
+ *  checked) is left out: the page shows the site's own items. */
 export function forClient(items: LaunchItem[]): LaunchItem[] {
   return items
     .filter((i) => !i.generic)
     .map((i) => {
-      const out: LaunchItem = { ...i, note: i.who === "you" || !i.note || OUR_NOTE.test(i.note) ? null : i.note }
-      delete out.detail
+      const out: LaunchItem = {
+        key: i.key,
+        title: i.title,
+        how: i.how,
+        who: i.who,
+        status: i.status,
+        note: null,
+        updated_at: i.updated_at,
+      }
+      if (i.who === "you") {
+        if (i.steps) out.steps = i.steps
+        if (i.de) out.de = i.de
+        if (i.optional) out.optional = i.optional
+      }
       return out
     })
 }
