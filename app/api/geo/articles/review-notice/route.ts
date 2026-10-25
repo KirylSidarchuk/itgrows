@@ -55,6 +55,9 @@ export async function GET(req: NextRequest) {
     try {
       const site = await publishSiteFor(userId)
       if (!site || isDraftSite(site)) continue
+      // A client can be kept off these emails (site_profile.reviewEmails = false): the articles still
+      // wait in "Your articles", only the email is skipped. FreightSizer since 25.10 (Kiryl).
+      if ((site.siteProfile as { reviewEmails?: boolean } | null)?.reviewEmails === false) continue
       const [owner] = await db.select({ email: users.email, name: users.name }).from(users).where(eq(users.id, userId)).limit(1)
       if (!owner?.email) continue
 
