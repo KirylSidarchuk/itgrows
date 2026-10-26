@@ -9,6 +9,7 @@ import { slugBase } from "@/lib/slug"
 import { storeAndRecordImage } from "@/lib/image-store"
 import { extractFaq, faqJsonLd } from "@/lib/faq-schema"
 import { generatedQuestions, listQuestions } from "@/lib/geo-list-question"
+import { sendOwner } from "@/lib/telegram"
 
 // Publishing one scheduled article: the body of the nightly cron (app/api/cron/publish-scheduled),
 // moved here unchanged so "Publish now" in the client's "Your articles" goes through exactly the same
@@ -365,6 +366,8 @@ export async function publishScheduledPost(duePost: ScheduledPost, ctx: PublishC
 
       let publishedUrl: string | null = null
       let externalPublishError: string | null = null
+      // What our WordPress plugin answered: post_id for the editor link, post_status should it say.
+      let pluginAnswer: { post_id?: unknown; post_status?: unknown } | null = null
       try {
         const wpRes = await fetch(endpoint, {
           method: "POST",
@@ -373,8 +376,9 @@ export async function publishScheduledPost(duePost: ScheduledPost, ctx: PublishC
           signal: AbortSignal.timeout(20000),
         })
         if (wpRes.ok) {
-          const wpData = (await wpRes.json()) as { url?: string }
+          const wpData = (await wpRes.json()) as { url?: string; post_id?: unknown; post_status?: unknown }
           publishedUrl = wpData.url ?? null
+          if (site.platform === "wordpress") pluginAnswer = wpData
         } else {
           const errText = await wpRes.text().catch(() => "")
           externalPublishError = `Remote returned ${wpRes.status}: ${errText}`.slice(0, 500)
@@ -469,6 +473,59 @@ export async function publishScheduledPost(duePost: ScheduledPost, ctx: PublishC
       const isWebhookSite = site.platform === "octobercms" || site.platform === "php"
       liveUrl = receivedUrl(publishedUrl, normalUrl)
         ?? (isWebhookSite && mirrored ? blogArticleUrl(site, sharedSlug) : null)
+
+      // Our WordPress plugin on a site whose owner approves every article: the owner gets the same
+      // "draft ready" email as on the application-password path above, with a link into the editor
+      // (or to their list of drafts when the plugin named no post). A plugin older than 2.1 ignores
+      // the requested status and publishes at once. None of ours reports the status it gave the post
+      // (post_status is read in case one does), but WordPress gives a draft only its plain "?p=<id>"
+      // address, so any other address back means the post is live. That is not undone here: the row
+      // keeps a note, Kiryl is told in Telegram, and the owner gets no "not visible yet" email.
+      if (site.platform === "wordpress" && siteProfile?.publishStatus === "draft" && pluginAnswer) {
+        const reported = typeof pluginAnswer.post_status === "string" ? pluginAnswer.post_status : null
+        const draftAddress = (u: string | null) => {
+          if (!u) return true // nothing to judge by: taken as the draft that was asked for
+          try {
+            const parsed = new URL(u, normalUrl + "/")
+            return parsed.searchParams.has("p") || parsed.searchParams.has("page_id") || parsed.pathname.replace(/\/+$/, "") === ""
+          } catch {
+            return true
+          }
+        }
+        const wentLive = reported ? reported === "publish" : !draftAddress(liveUrl)
+        if (wentLive) {
+          const why = reported ? `the plugin reports post_status "${reported}"` : "the plugin returned a live address"
+          const note = `Draft requested, but the post went live (${why}): ${liveUrl ?? publishedUrl ?? "no address"}. Plugin older than 2.1?`
+          await db.update(scheduledPosts).set({ publishError: note.slice(0, 500) }).where(eq(scheduledPosts.id, post.id))
+          await sendOwner(
+            `⚠️ ${normalUrl}: просили черновик, а статья сразу вышла в открытый доступ ` +
+              `(${reported ? `плагин ответил post_status "${reported}"` : "плагин вернул живой адрес"}): ` +
+              `${liveUrl ?? publishedUrl ?? "адреса нет"}\n«${article.title}»\nСкорее всего, плагин у клиента старше 2.1. Снимать с публикации сами не стали.`,
+          )
+        } else {
+          const [owner] = await db.select({ email: users.email, name: users.name })
+            .from(users).where(eq(users.id, post.userId)).limit(1)
+          if (owner?.email) {
+            const postId = Number(pluginAnswer.post_id)
+            // On the host WordPress itself calls home (the plugin's permalink is built on it): its login
+            // cookie is set there only, so an editor link on the other host (www or not) ends at a login.
+            let wpBase = normalUrl
+            try {
+              if (liveUrl) wpBase = new URL(liveUrl).origin
+            } catch {}
+            const editUrl = Number.isInteger(postId) && postId > 0
+              ? `${wpBase}/wp-admin/post.php?post=${postId}&action=edit`
+              : `${wpBase}/wp-admin/edit.php?post_status=draft&post_type=post`
+            await sendEmail({
+              to: owner.email,
+              subject: (siteProfile?.language ?? "").toLowerCase().startsWith("de")
+                ? `Entwurf zur Freigabe: ${article.title}`
+                : `Draft ready for your approval: ${article.title}`,
+              html: draftReadyEmail(owner.name ?? "there", article.title, editUrl, siteProfile?.language),
+            }).catch((e) => console.warn("[SEO Autopilot] draft notice failed:", e))
+          }
+        }
+      }
     }
 
     // Save articleData and mark as published
