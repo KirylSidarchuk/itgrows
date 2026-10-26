@@ -174,7 +174,37 @@ export async function publishScheduledPost(duePost: ScheduledPost, ctx: PublishC
     // sources checked, editor-reviewed) is published as it is — with the client's edits, if they
     // made any in "Your articles". Anything else is generated here, exactly as before — the VM
     // writer failing must never stop a client's schedule.
-    const prepared = post.articleData as (Partial<Article> & { preparedBy?: string }) | null
+    // rewriteOf / targetSlug: set by the VM writer when the article replaces one already published
+    // (our blog_posts slug, and the file name the client's receiver has it under).
+    const prepared = post.articleData as (Partial<Article> & { preparedBy?: string; rewriteOf?: string; targetSlug?: string }) | null
+    // A rewrite on a webhook site (MagiScan) keeps the page's address: the receiver updates that page
+    // in place, keeping its publish date, and our row for it is updated instead of a new one added.
+    // Older MagiScan pages have a different name on their side than our slug, hence two slugs.
+    // A rewrite that can't be done that way fails here, before anything is generated or sent:
+    // published as a new article it would be a second copy of the page there and a second row here.
+    let rewrite: { rowSlug: string; pageSlug: string } | null = null
+    if (prepared?.rewriteOf) {
+      const rowSlug = prepared.rewriteOf
+      const pageSlug = prepared.targetSlug ?? ""
+      const fail = (why: string) => new Error(`Rewrite of ${rowSlug} not published: ${why}`)
+      if (prepared.preparedBy !== "vm-writer" || !prepared.title || !prepared.content) throw fail("no prepared article")
+      if (!site || (site.platform !== "octobercms" && site.platform !== "php")) throw fail("only a webhook site updates a page in place")
+      if (!/^[a-z0-9-]+$/.test(pageSlug)) throw fail("missing or invalid targetSlug")
+      const [row] = await db.select({ id: blogPosts.id }).from(blogPosts)
+        .where(and(eq(blogPosts.slug, rowSlug), eq(blogPosts.siteId, site.id)))
+        .limit(1)
+      if (!row) throw fail("no such article of this site")
+      // Only once their receiver updates pages in place: it is what writes blog-sitemap.xml, from the
+      // pages it lists and without redirected ones. Before that, a rewrite would be a second card
+      // with today's date.
+      let siteBase = site.url.trim().replace(/\/+$/, "")
+      if (!/^https?:\/\//i.test(siteBase)) siteBase = "https://" + siteBase
+      const listed = await fetch(`${siteBase}/blog-sitemap.xml`, { signal: AbortSignal.timeout(15000) })
+        .then((r) => (r.ok ? r.text() : ""))
+        .catch(() => "")
+      if (!listed.includes(`/${pageSlug}.html</loc>`)) throw fail(`${pageSlug} is not in ${siteBase}/blog-sitemap.xml`)
+      rewrite = { rowSlug, pageSlug }
+    }
     let article: Article
     if (prepared?.preparedBy === "vm-writer" && prepared.title && prepared.content) {
       article = {
@@ -217,7 +247,8 @@ export async function publishScheduledPost(duePost: ScheduledPost, ctx: PublishC
 
     // One address for every copy of the article. Two separate random tails used to give the
     // client's page and our mirror different URLs, which search engines saw as duplicates.
-    const sharedSlug = generateSlug(article.title)
+    // A rewrite keeps the address of the page it replaces (above).
+    const sharedSlug = rewrite?.pageSlug ?? generateSlug(article.title)
 
     // Publish to connected site
     // itgrows_blog = ItGrows.ai own blog → write to blog_posts table
@@ -391,26 +422,45 @@ export async function publishScheduledPost(duePost: ScheduledPost, ctx: PublishC
       // Also insert into blog_posts so the /blog/ listing (blog-service) can serve this article.
       // Uses ON CONFLICT DO NOTHING in case the slug already exists (e.g. from a partial retry).
       let mirrored = false
-      try {
-        const blogSlug = sharedSlug
-        await db.insert(blogPosts).values({
-          userId: post.userId,
-          siteSlug: site.siteSlug ?? null,
-          siteId: site.id,
-          slug: blogSlug,
-          title: article.title,
-          content: article.content,
-          metaDescription: article.metaDescription ?? "",
-          keyword: post.keyword,
-          keywords: article.keywords ?? [],
-          coverImageUrl: article.coverImageUrl ?? null,
-          publishedAt: new Date(),
-        }).onConflictDoNothing()
+      if (rewrite) {
+        // Same row, new text; updated_at is what makes IndexNow send the page again. Outside the
+        // try below: a rewrite whose row is not updated is a failed publish, not a warning.
+        const updated = await db.update(blogPosts)
+          .set({
+            title: article.title,
+            content: article.content,
+            metaDescription: article.metaDescription ?? "",
+            keywords: article.keywords ?? [],
+            ...(article.coverImageUrl ? { coverImageUrl: article.coverImageUrl } : {}),
+            updatedAt: new Date(),
+          })
+          .where(and(eq(blogPosts.slug, rewrite.rowSlug), eq(blogPosts.siteId, site.id)))
+          .returning({ id: blogPosts.id })
+        if (!updated.length) throw new Error(`Rewrite of ${rewrite.rowSlug}: the page was updated on the site, but its blog_posts row was not found`)
         mirrored = true
-        console.log(`[SEO Autopilot] Mirrored to blog_posts: ${blogSlug}`)
-      } catch (blogInsertErr) {
-        // Non-fatal: the article is already on the external site; just log the error.
-        console.error(`[SEO Autopilot] Failed to mirror to blog_posts: ${blogInsertErr instanceof Error ? blogInsertErr.message : String(blogInsertErr)}`)
+        console.log(`[SEO Autopilot] Rewrote ${rewrite.rowSlug} in place (${site.siteSlug}/${rewrite.pageSlug})`)
+      } else {
+        try {
+          const blogSlug = sharedSlug
+          await db.insert(blogPosts).values({
+            userId: post.userId,
+            siteSlug: site.siteSlug ?? null,
+            siteId: site.id,
+            slug: blogSlug,
+            title: article.title,
+            content: article.content,
+            metaDescription: article.metaDescription ?? "",
+            keyword: post.keyword,
+            keywords: article.keywords ?? [],
+            coverImageUrl: article.coverImageUrl ?? null,
+            publishedAt: new Date(),
+          }).onConflictDoNothing()
+          mirrored = true
+          console.log(`[SEO Autopilot] Mirrored to blog_posts: ${blogSlug}`)
+        } catch (blogInsertErr) {
+          // Non-fatal: the article is already on the external site; just log the error.
+          console.error(`[SEO Autopilot] Failed to mirror to blog_posts: ${blogInsertErr instanceof Error ? blogInsertErr.message : String(blogInsertErr)}`)
+        }
       }
 
       // What the receiver answered with, if it named an address. Otherwise, for webhook sites
