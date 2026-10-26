@@ -30,7 +30,7 @@ const en = {
   reportLead: (report: string, days: number) =>
     `No card to create the account. We put 20 buyer questions to ChatGPT, Claude, Gemini and Perplexity, 3 times each; you see the totals and the 5 questions of the quick check. The whole report is ${report}, one payment, and comes off your first plan payment if you start the plan within ${days} days.`,
   // LinkedIn/X trial: <b> is bold. The other languages do not call anything "free" (owner's rule for
-  // the translated site: only the quick check's "no signup" is); they name the trial and "no card".
+  // the translated site: only the quick check is called free); they name the trial and "no card".
   handoffTitle: "One step left — claim your posts",
   handoffLead: (n: number) =>
     `Your ${n} post${n > 1 ? "s are" : " is"} saved. Creating an account is <b>free</b> — and so is your 14-day trial. No credit card required.`,

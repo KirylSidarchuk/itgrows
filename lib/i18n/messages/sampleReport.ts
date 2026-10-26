@@ -12,7 +12,7 @@ const ruDays = (n: number) => plural("ru", n, { one: `${n} дня`, other: `${n}
 const en = {
   // <PriceLine>, under the header and in the closing block
   priceLine: (report: string, days: number) =>
-    `The quick check: no signup, about 30 seconds. Create an account and we build this report for your site: the totals and the questions from your quick check are open, and the full report is ${report}, one payment. It comes off your first plan payment if you start the plan within ${days} days.`,
+    `The quick check is free and takes about 30 seconds: two answers show in full right away, all five once you create an account. With the account we also build this report for your site: the totals and the questions from your quick check are open, and the full report is ${report}, one payment. It comes off your first plan payment if you start the plan within ${days} days.`,
 
   badge: "Sample report",
   h1: (domain: string) => `A real report: ${domain}`,
@@ -32,7 +32,7 @@ const en = {
 export default defineMessages(en, {
   de: {
     priceLine: (report, days) =>
-      `Der Schnellcheck: ohne Anmeldung, etwa 30 Sekunden. Legen Sie ein Konto an, und wir erstellen diesen Bericht für Ihre Website: Die Gesamtwerte und die Fragen aus Ihrem Schnellcheck sind offen einsehbar, der vollständige Bericht kostet ${report}, einmalig. Er wird auf Ihre erste Plan-Zahlung angerechnet, wenn Sie den Plan innerhalb von ${days} Tagen starten.`,
+      `Der Schnellcheck ist kostenlos und dauert etwa 30 Sekunden: Zwei Antworten sehen Sie sofort vollständig, alle fünf, sobald Sie ein Konto anlegen. Mit dem Konto erstellen wir außerdem diesen Bericht für Ihre Website: Die Gesamtwerte und die Fragen aus Ihrem Schnellcheck sind offen einsehbar, der vollständige Bericht kostet ${report}, einmalig. Er wird auf Ihre erste Plan-Zahlung angerechnet, wenn Sie den Plan innerhalb von ${days} Tagen starten.`,
 
     badge: "Beispielbericht",
     h1: (domain) => `Ein echter Bericht: ${domain}`,
@@ -51,7 +51,7 @@ export default defineMessages(en, {
 
   fr: {
     priceLine: (report, days) =>
-      `La vérification rapide : sans inscription, environ 30 secondes. Créez un compte et nous établissons ce rapport pour votre site : les totaux et les questions de votre vérification rapide sont visibles, et le rapport complet coûte ${report}, en un seul paiement. Il est déduit de votre premier paiement d’abonnement si vous démarrez l’abonnement dans les ${days} jours.`,
+      `La vérification rapide est gratuite et prend environ 30 secondes : deux réponses s’affichent en entier tout de suite, les cinq dès que vous créez un compte. Avec ce compte, nous établissons aussi ce rapport pour votre site : les totaux et les questions de votre vérification rapide sont visibles, et le rapport complet coûte ${report}, en un seul paiement. Il est déduit de votre premier paiement d’abonnement si vous démarrez l’abonnement dans les ${days} jours.`,
 
     badge: "Exemple de rapport",
     h1: (domain) => `Un vrai rapport : ${domain}`,
@@ -70,7 +70,7 @@ export default defineMessages(en, {
 
   es: {
     priceLine: (report, days) =>
-      `La comprobación rápida: sin registro, unos 30 segundos. Cree una cuenta y elaboraremos este informe para su sitio: los totales y las preguntas de su comprobación rápida quedan a la vista, y el informe completo cuesta ${report}, en un solo pago. Se descuenta de su primer pago del plan si lo inicia en un plazo de ${days} días.`,
+      `La comprobación rápida es gratuita y tarda unos 30 segundos: dos respuestas se ven completas al momento y las cinco, en cuanto cree una cuenta. Con esa cuenta elaboramos también este informe para su sitio: los totales y las preguntas de su comprobación rápida quedan a la vista, y el informe completo cuesta ${report}, en un solo pago. Se descuenta de su primer pago del plan si lo inicia en un plazo de ${days} días.`,
 
     badge: "Informe de ejemplo",
     h1: (domain) => `Un informe real: ${domain}`,
@@ -89,7 +89,7 @@ export default defineMessages(en, {
 
   ru: {
     priceLine: (report, days) =>
-      `Быстрая проверка: без регистрации, около 30 секунд. Создайте аккаунт, и мы составим такой отчёт по вашему сайту: итоги и вопросы из вашей быстрой проверки открыты, а полный отчёт стоит ${report}, один платёж. Он засчитывается в первый платёж за подписку, если оформить её в течение ${ruDays(days)}.`,
+      `Быстрая проверка бесплатна и занимает около 30 секунд: два ответа видны целиком сразу, все пять — после создания аккаунта. С аккаунтом мы также составим такой отчёт по вашему сайту: итоги и вопросы из вашей быстрой проверки открыты, а полный отчёт стоит ${report}, один платёж. Он засчитывается в первый платёж за подписку, если оформить её в течение ${ruDays(days)}.`,
 
     badge: "Пример отчёта",
     h1: (domain) => `Настоящий отчёт: ${domain}`,

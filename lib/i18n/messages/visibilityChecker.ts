@@ -8,13 +8,13 @@ import { defineMessages } from "../messages"
 const en = {
   metaTitle: "AI visibility checker: does ChatGPT name you? | ItGrows",
   metaDescription:
-    "Enter your website: we ask ChatGPT and Perplexity five questions your buyers ask and show whether they name you, who they name instead and which sites they cite. No signup.",
+    "Enter your website: we ask ChatGPT and Perplexity five questions your buyers ask and show whether they name you, who they name instead and which sites they cite. Free, about 30 seconds.",
   ogTitle: "Does ChatGPT recommend your business? AI visibility check",
   ogDescription: "Five buyer questions, asked live to ChatGPT and Perplexity. See who they name instead of you.",
   schemaName: "ItGrows AI visibility checker",
   schemaDescription:
     "A 30-second check of whether ChatGPT and Perplexity name a business when its buyers ask: five buyer questions generated from the site, answered live with web search, with the businesses named instead and the sites cited.",
-  eyebrow: "AI visibility check · no signup",
+  eyebrow: "AI visibility check · free",
   h1: "Does ChatGPT recommend your business?",
   lead: "Enter your site. We write five questions your buyers would ask and put them to ChatGPT and Perplexity, live, with web search on. You see whether they name you, who they name instead and which sites they cite. About 30 seconds.",
   whatTitle: "What the check does",
@@ -33,7 +33,7 @@ const en = {
   faqAccount: {
     q: "Do I need an account for the check?",
     a: (price: string) =>
-      `No. The check runs without signup, in about 30 seconds: it asks ChatGPT and Perplexity five questions and shows two answers in full. With an account we build the detailed report for your site (20 questions × 4 assistants × 3 asks): you see its totals and the answers to the check's five questions. The whole report is ${price}, one payment.`,
+      `Not to run it: the check takes about 30 seconds without an account. It asks ChatGPT and Perplexity five questions and shows two answers in full right away; to open all five, you create an account, which costs nothing. With the account we also build the detailed report for your site (20 questions × 4 assistants × 3 asks) and show you its totals. The whole report is ${price}, one payment.`,
   },
   faq: [
     {
@@ -55,13 +55,13 @@ export default defineMessages(en, {
   de: {
     metaTitle: "KI-Sichtbarkeitscheck: Nennt ChatGPT Ihr Unternehmen? | ItGrows",
     metaDescription:
-      "Geben Sie Ihre Website ein: Wir stellen ChatGPT und Perplexity fünf Fragen, wie Ihre Kunden sie stellen, und zeigen, ob Sie genannt werden, wer stattdessen genannt wird und welche Websites zitiert werden. Ohne Anmeldung.",
+      "Geben Sie Ihre Website ein: Wir stellen ChatGPT und Perplexity fünf Fragen, wie Ihre Kunden sie stellen, und zeigen, ob Sie genannt werden, wer stattdessen genannt wird und welche Websites zitiert werden. Kostenlos, etwa 30 Sekunden.",
     ogTitle: "Empfiehlt ChatGPT Ihr Unternehmen? Der KI-Sichtbarkeitscheck",
     ogDescription: "Fünf Kundenfragen, live an ChatGPT und Perplexity gestellt. Sehen Sie, wen die Assistenten statt Ihnen nennen.",
     schemaName: "ItGrows KI-Sichtbarkeitscheck",
     schemaDescription:
       "Ein 30-Sekunden-Check, ob ChatGPT und Perplexity ein Unternehmen nennen, wenn seine Kunden fragen: fünf aus der Website abgeleitete Kundenfragen, live mit Websuche beantwortet, mit den stattdessen genannten Unternehmen und den zitierten Websites.",
-    eyebrow: "KI-Sichtbarkeitscheck · ohne Anmeldung",
+    eyebrow: "KI-Sichtbarkeitscheck · kostenlos",
     h1: "Empfiehlt ChatGPT Ihr Unternehmen?",
     lead: "Geben Sie Ihre Website ein. Wir formulieren fünf Fragen, die Ihre Kunden stellen würden, und stellen sie ChatGPT und Perplexity – live, mit eingeschalteter Websuche. Sie sehen, ob Sie genannt werden, wer stattdessen genannt wird und welche Websites zitiert werden. Dauert etwa 30 Sekunden.",
     whatTitle: "Was der Check macht",
@@ -80,7 +80,7 @@ export default defineMessages(en, {
     faqAccount: {
       q: "Brauche ich für den Check ein Konto?",
       a: (price) =>
-        `Nein. Der Check läuft ohne Anmeldung und dauert etwa 30 Sekunden: Er stellt ChatGPT und Perplexity fünf Fragen und zeigt zwei Antworten vollständig. Mit einem Konto erstellen wir den ausführlichen Bericht für Ihre Website (20 Fragen × 4 Assistenten × 3 Durchläufe): Sie sehen seine Gesamtwerte und die Antworten auf die fünf Fragen des Checks. Der vollständige Bericht kostet ${price}, als einmalige Zahlung.`,
+        `Zum Starten nicht: Der Check läuft ohne Konto und dauert etwa 30 Sekunden. Er stellt ChatGPT und Perplexity fünf Fragen und zeigt zwei Antworten sofort vollständig; um alle fünf zu öffnen, legen Sie ein Konto an – das kostet nichts. Mit dem Konto erstellen wir außerdem den ausführlichen Bericht für Ihre Website (20 Fragen × 4 Assistenten × 3 Durchläufe) und zeigen Ihnen seine Gesamtwerte. Der vollständige Bericht kostet ${price}, als einmalige Zahlung.`,
     },
     faq: [
       {
@@ -100,13 +100,13 @@ export default defineMessages(en, {
   fr: {
     metaTitle: "Test de visibilité IA : ChatGPT vous mentionne-t-il ? | ItGrows",
     metaDescription:
-      "Saisissez votre site : nous posons à ChatGPT et Perplexity cinq questions que posent vos clients, et vous montrons s’ils vous mentionnent, qui ils mentionnent à votre place et quels sites ils citent. Sans inscription.",
+      "Saisissez votre site : nous posons à ChatGPT et Perplexity cinq questions que posent vos clients, et vous montrons s’ils vous mentionnent, qui ils mentionnent à votre place et quels sites ils citent. Gratuit, environ 30 secondes.",
     ogTitle: "ChatGPT recommande-t-il votre entreprise ? Test de visibilité IA",
     ogDescription: "Cinq questions de clients, posées en direct à ChatGPT et Perplexity. Découvrez qui ils mentionnent à votre place.",
     schemaName: "Test de visibilité IA ItGrows",
     schemaDescription:
       "Un test de 30 secondes pour savoir si ChatGPT et Perplexity mentionnent une entreprise quand ses clients posent la question : cinq questions de clients rédigées à partir du site, posées en direct avec recherche web, avec les entreprises mentionnées à sa place et les sites cités.",
-    eyebrow: "Test de visibilité IA · sans inscription",
+    eyebrow: "Test de visibilité IA · gratuit",
     h1: "ChatGPT recommande-t-il votre entreprise ?",
     lead: "Saisissez votre site. Nous rédigeons cinq questions que vos clients poseraient et les soumettons à ChatGPT et Perplexity, en direct, recherche web activée. Vous voyez s’ils vous mentionnent, qui ils mentionnent à votre place et quels sites ils citent. Environ 30 secondes.",
     whatTitle: "Ce que fait le test",
@@ -125,7 +125,7 @@ export default defineMessages(en, {
     faqAccount: {
       q: "Faut-il un compte pour le test ?",
       a: (price) =>
-        `Non. Le test fonctionne sans inscription, en 30 secondes environ : il pose cinq questions à ChatGPT et Perplexity et affiche deux réponses en entier. Avec un compte, nous établissons le rapport détaillé de votre site (20 questions × 4 assistants × 3 requêtes) : vous voyez ses totaux et les réponses aux cinq questions du test. Le rapport complet coûte ${price}, en un seul paiement.`,
+        `Pas pour le lancer : le test se fait sans compte, en 30 secondes environ. Il pose cinq questions à ChatGPT et Perplexity et affiche tout de suite deux réponses en entier ; pour ouvrir les cinq, vous créez un compte, ce qui ne coûte rien. Avec ce compte, nous établissons aussi le rapport détaillé de votre site (20 questions × 4 assistants × 3 requêtes) et vous montrons ses totaux. Le rapport complet coûte ${price}, en un seul paiement.`,
     },
     faq: [
       {
@@ -145,13 +145,13 @@ export default defineMessages(en, {
   es: {
     metaTitle: "Comprobador de visibilidad en IA: ¿ChatGPT menciona su empresa? | ItGrows",
     metaDescription:
-      "Introduzca su sitio: hacemos a ChatGPT y Perplexity cinco preguntas que hacen sus clientes y le mostramos si mencionan su empresa, a quién mencionan en su lugar y qué sitios citan. Sin registro.",
+      "Introduzca su sitio: hacemos a ChatGPT y Perplexity cinco preguntas que hacen sus clientes y le mostramos si mencionan su empresa, a quién mencionan en su lugar y qué sitios citan. Gratis, unos 30 segundos.",
     ogTitle: "¿ChatGPT recomienda su empresa? Comprobación de visibilidad en IA",
     ogDescription: "Cinco preguntas de clientes, hechas en directo a ChatGPT y Perplexity. Vea a quién mencionan en lugar de usted.",
     schemaName: "Comprobador de visibilidad en IA de ItGrows",
     schemaDescription:
       "Una comprobación de 30 segundos de si ChatGPT y Perplexity mencionan una empresa cuando sus clientes preguntan: cinco preguntas de clientes generadas a partir del sitio, respondidas en directo con búsqueda web, con las empresas mencionadas en su lugar y los sitios citados.",
-    eyebrow: "Comprobación de visibilidad en IA · sin registro",
+    eyebrow: "Comprobación de visibilidad en IA · gratis",
     h1: "¿ChatGPT recomienda su empresa?",
     lead: "Introduzca su sitio. Redactamos cinco preguntas que harían sus clientes y se las planteamos a ChatGPT y Perplexity, en directo y con la búsqueda web activada. Verá si mencionan su empresa, a quién mencionan en su lugar y qué sitios citan. Unos 30 segundos.",
     whatTitle: "Qué hace la comprobación",
@@ -170,7 +170,7 @@ export default defineMessages(en, {
     faqAccount: {
       q: "¿Necesito una cuenta para la comprobación?",
       a: (price) =>
-        `No. La comprobación funciona sin registro, en unos 30 segundos: hace cinco preguntas a ChatGPT y Perplexity y muestra dos respuestas completas. Con una cuenta elaboramos el informe detallado de su sitio (20 preguntas × 4 asistentes × 3 consultas): verá sus totales y las respuestas a las cinco preguntas de la comprobación. El informe completo cuesta ${price}, en un único pago.`,
+        `Para hacerla, no: la comprobación funciona sin cuenta, en unos 30 segundos. Hace cinco preguntas a ChatGPT y Perplexity y muestra al momento dos respuestas completas; para abrir las cinco, cree una cuenta, que no cuesta nada. Con esa cuenta elaboramos también el informe detallado de su sitio (20 preguntas × 4 asistentes × 3 consultas) y le mostramos sus totales. El informe completo cuesta ${price}, en un único pago.`,
     },
     faq: [
       {
@@ -190,13 +190,13 @@ export default defineMessages(en, {
   ru: {
     metaTitle: "Проверка видимости в ИИ: называет ли вас ChatGPT? | ItGrows",
     metaDescription:
-      "Укажите свой сайт: мы зададим ChatGPT и Perplexity пять вопросов, которые задают ваши клиенты, и покажем, называют ли они вас, кого называют вместо вас и на какие сайты ссылаются. Без регистрации.",
+      "Укажите свой сайт: мы зададим ChatGPT и Perplexity пять вопросов, которые задают ваши клиенты, и покажем, называют ли они вас, кого называют вместо вас и на какие сайты ссылаются. Бесплатно, около 30 секунд.",
     ogTitle: "Рекомендует ли ChatGPT ваш бизнес? Проверка видимости в ИИ",
     ogDescription: "Пять вопросов ваших клиентов, заданных ChatGPT и Perplexity в реальном времени. Посмотрите, кого они называют вместо вас.",
     schemaName: "Проверка видимости в ИИ от ItGrows",
     schemaDescription:
       "30-секундная проверка того, называют ли ChatGPT и Perplexity компанию, когда её клиенты задают вопросы: пять клиентских вопросов, составленных по сайту, ответы в реальном времени с веб-поиском, компании, названные вместо неё, и цитируемые сайты.",
-    eyebrow: "Проверка видимости в ИИ · без регистрации",
+    eyebrow: "Проверка видимости в ИИ · бесплатно",
     h1: "Рекомендует ли ChatGPT ваш бизнес?",
     lead: "Укажите свой сайт. Мы составим пять вопросов, которые задали бы ваши клиенты, и зададим их ChatGPT и Perplexity в реальном времени, с включённым веб-поиском. Вы увидите, называют ли они вас, кого называют вместо вас и на какие сайты ссылаются. Около 30 секунд.",
     whatTitle: "Что делает проверка",
@@ -215,7 +215,7 @@ export default defineMessages(en, {
     faqAccount: {
       q: "Нужен ли аккаунт для проверки?",
       a: (price) =>
-        `Нет. Проверка работает без регистрации, примерно за 30 секунд: она задаёт ChatGPT и Perplexity пять вопросов и показывает два ответа полностью. С аккаунтом мы составим подробный отчёт по вашему сайту (20 вопросов × 4 ассистента × 3 запроса): вы увидите его итоги и ответы на пять вопросов проверки. Полный отчёт стоит ${price}, одним платежом.`,
+        `Чтобы запустить проверку, аккаунт не нужен: она идёт примерно 30 секунд, задаёт ChatGPT и Perplexity пять вопросов и сразу показывает два ответа полностью. Чтобы открыть все пять, вы создаёте аккаунт — это бесплатно. С аккаунтом мы также составим подробный отчёт по вашему сайту (20 вопросов × 4 ассистента × 3 запроса) и покажем его итоги. Полный отчёт стоит ${price}, одним платежом.`,
     },
     faq: [
       {

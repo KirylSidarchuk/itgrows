@@ -1,6 +1,6 @@
 // AI-visibility pricing, in one place: the site, the cabinet and Stripe Checkout all read it.
 // Decided by Kiryl on 22 Oct 2026. Nothing is free but the quick check on the site (5 questions x
-// ChatGPT + Perplexity, no signup).
+// ChatGPT + Perplexity; two answers open without an account, all five once one is created).
 //
 // - Detailed report (20 questions x 4 assistants x 3 asks): an account has it computed for
 //   REPORT_SITES site after sign-up, with the totals and the quick check's 5 questions open; the whole

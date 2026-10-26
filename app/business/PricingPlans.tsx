@@ -11,7 +11,7 @@ import pricingPlans from "@/lib/i18n/messages/pricingPlans"
 import { GEO_CHECKED_KEY, GEO_HANDOFF_KEY, handOff, readChecked, type CheckedSite } from "@/lib/geo-handoff"
 
 // The pricing block of "/": the quick check in one line, then the two offers side by side. What is
-// sold, said the same way everywhere: the quick check needs no signup; the detailed report is the
+// sold, said the same way everywhere: the quick check is free (two answers at once, all five with an account); the detailed report is the
 // diagnosis and our plan for the site — computed after the account is created, its totals and the
 // quick check's questions open, the whole of it for the report's price; the plan is us doing that
 // work, and the report's price comes off its first payment within CREDIT_DAYS. Every number comes

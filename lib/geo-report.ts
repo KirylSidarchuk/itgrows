@@ -6,7 +6,7 @@ import { geoPlanBeforeSql, isGeoInterval } from "@/lib/geo-business"
 
 // Everything the AI-visibility page shows for one site: the latest finished report, the one in
 // progress if any, the history of summaries for the trend, and the quick check (shown whole: it is
-// the one free thing, asked on the site with no signup). Read by /api/geo/report for the signed-in
+// the one free thing; on the site it opens two answers without an account). Read by /api/geo/report for the signed-in
 // user's sites and by /api/geo/sample for the public sample report. A past report opens from the
 // history through /api/geo/report/run (siteRunFor), cut by the same viewOf as the page.
 //

@@ -27,8 +27,8 @@ function stripHtml(html: string): string {
   return html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim()
 }
 
-function formatDate(date: Date): string {
-  return date.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })
+function formatDate(date: Date, lang: "de" | "en" = "en"): string {
+  return date.toLocaleDateString(lang === "de" ? "de-DE" : "en-US", { year: "numeric", month: "long", day: "numeric" })
 }
 
 export default async function BusinessBlogPage() {
@@ -38,6 +38,43 @@ export default async function BusinessBlogPage() {
     .from(blogPosts)
     .where(and(eq(blogPosts.siteSlug, "itgrows-business"), isNull(blogPosts.redirectTo)))
     .orderBy(desc(blogPosts.publishedAt))
+  // English guides first; the German ones in their own section below (the old posts without a
+  // language are English), so the English list is not interleaved with German titles.
+  const german = posts.filter((p) => p.lang === "de")
+  const english = posts.filter((p) => p.lang !== "de")
+
+  const card = (post: (typeof posts)[number], lang: "de" | "en") => {
+    const excerpt = stripHtml(post.content).slice(0, 150)
+    return (
+      <Link
+        key={post.id}
+        href={`/business/blog/${post.slug}`}
+        className="group block bg-white border border-black/10 rounded-2xl overflow-hidden hover:border-violet-400/60 hover:shadow-md transition-all"
+      >
+        {post.coverImageUrl && (
+          <div className="w-full h-48 overflow-hidden">
+            <img
+              src={`/api/blog/image/${post.id}`}
+              alt={post.title}
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            />
+          </div>
+        )}
+        <div className="p-6">
+          <p className="text-xs text-slate-400 mb-3">{formatDate(post.publishedAt, lang)}</p>
+          <h2 className="text-lg font-bold mb-3 group-hover:text-violet-600 transition-colors leading-snug">
+            {post.title}
+          </h2>
+          <p className="text-sm text-slate-500 leading-relaxed">
+            {excerpt}{excerpt.length >= 150 ? "…" : ""}
+          </p>
+          <span className="inline-block mt-4 text-xs font-medium text-violet-600 group-hover:text-violet-500 transition-colors">
+            {lang === "de" ? "Weiterlesen →" : "Read more →"}
+          </span>
+        </div>
+      </Link>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-[#f3f2f1] text-[#1b1916]">
@@ -48,12 +85,12 @@ export default async function BusinessBlogPage() {
             <span>ItGrows.ai</span>
           </Link>
           <div className="hidden md:flex items-center gap-6 text-sm text-slate-600">
-            <Link href="/business" className="hover:text-[#1b1916] transition-colors">For business</Link>
+            <Link href="/" className="hover:text-[#1b1916] transition-colors">For business</Link>
             <Link href="/business/blog" className="text-[#1b1916] font-medium">AI visibility</Link>
             <Link href="/blog" className="hover:text-[#1b1916] transition-colors">Blog</Link>
           </div>
-          <Link href="/#apply" className="rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-sm font-semibold px-4 py-2.5 transition-colors">
-            Request access
+          <Link href="/" className="rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-sm font-semibold px-4 py-2.5 transition-colors">
+            Check your site
           </Link>
         </div>
       </nav>
@@ -71,7 +108,7 @@ export default async function BusinessBlogPage() {
             How answer engines find, read and cite a company — and how to tell whether yours is visible at all.
           </p>
           <Link
-            href="/business"
+            href="/"
             className="inline-block rounded-xl bg-violet-600 hover:bg-violet-500 text-white px-7 py-3.5 text-sm font-semibold shadow-lg shadow-violet-600/30 transition-colors"
           >
             Check your site →
@@ -84,40 +121,20 @@ export default async function BusinessBlogPage() {
           {posts.length === 0 ? (
             <p className="text-slate-600 text-lg text-center py-16">The first articles are on their way.</p>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {posts.map((post) => {
-                const excerpt = stripHtml(post.content).slice(0, 150)
-                return (
-                  <Link
-                    key={post.id}
-                    href={`/business/blog/${post.slug}`}
-                    className="group block bg-white border border-black/10 rounded-2xl overflow-hidden hover:border-violet-400/60 hover:shadow-md transition-all"
-                  >
-                    {post.coverImageUrl && (
-                      <div className="w-full h-48 overflow-hidden">
-                        <img
-                          src={`/api/blog/image/${post.id}`}
-                          alt={post.title}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                        />
-                      </div>
-                    )}
-                    <div className="p-6">
-                      <p className="text-xs text-slate-400 mb-3">{formatDate(post.publishedAt)}</p>
-                      <h2 className="text-lg font-bold mb-3 group-hover:text-violet-600 transition-colors leading-snug">
-                        {post.title}
-                      </h2>
-                      <p className="text-sm text-slate-500 leading-relaxed">
-                        {excerpt}{excerpt.length >= 150 ? "…" : ""}
-                      </p>
-                      <span className="inline-block mt-4 text-xs font-medium text-violet-600 group-hover:text-violet-500 transition-colors">
-                        Read more →
-                      </span>
-                    </div>
-                  </Link>
-                )
-              })}
-            </div>
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {english.map((post) => card(post, "en"))}
+              </div>
+              {german.length > 0 && (
+                <div id="de" lang="de" className="mt-16 scroll-mt-24">
+                  <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight">Auf Deutsch: Leitfäden zur KI-Sichtbarkeit</h2>
+                  <p className="text-slate-600 mt-2 mb-6">Wie ChatGPT, Claude, Gemini und Perplexity Unternehmen finden und nennen.</p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {german.map((post) => card(post, "de"))}
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </div>
       </section>
@@ -125,7 +142,7 @@ export default async function BusinessBlogPage() {
       <footer className="border-t border-black/10 px-6 py-8 text-center text-slate-500 text-sm bg-[#ebe9e5]">
         <div className="max-w-6xl mx-auto">
           © 2026 ItGrows.ai ·{" "}
-          <Link href="/business" className="hover:text-[#1b1916] transition-colors">ItGrows for Business</Link>{" · "}
+          <Link href="/" className="hover:text-[#1b1916] transition-colors">ItGrows for Business</Link>{" · "}
           <Link href="/privacy" className="hover:text-[#1b1916] transition-colors">Privacy</Link>
         </div>
       </footer>

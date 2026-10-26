@@ -17,7 +17,7 @@ const en = {
   paragraphs: ENTITY_ABOUT,
   productsTitle: "Products",
   geoProduct: (month: string, setup: string, report: string) =>
-    `<link>AI visibility for businesses</link> — answer pages, crawler fixes, a weekly check of four assistants. ${month} a month plus a one-time ${setup} setup (free with 3 months or a year); the detailed report ${report}; a 30-second check with no signup.`,
+    `<link>AI visibility for businesses</link> — answer pages, crawler fixes, a weekly check of four assistants. ${month} a month plus a one-time ${setup} setup (free with 3 months or a year); the detailed report ${report}; a free 30-second check: two answers right away, all five once you create an account.`,
   liProduct: (from: string) =>
     `<link>LinkedIn & X posts</link> — drafts in your own voice, published after your approval. From ${from} a month.`,
   contactTitle: "Contact",
@@ -39,7 +39,7 @@ export default defineMessages(en, {
     ],
     productsTitle: "Produkte",
     geoProduct: (month, setup, report) =>
-      `<link>KI-Sichtbarkeit für Unternehmen</link> — Antwortseiten, Korrekturen für Crawler, ein wöchentlicher Check von vier Assistenten. ${month} pro Monat plus einmalig ${setup} für die Einrichtung (entfällt bei Vorauszahlung von 3 Monaten oder einem Jahr); der ausführliche Bericht ${report}; ein 30-Sekunden-Check ohne Anmeldung.`,
+      `<link>KI-Sichtbarkeit für Unternehmen</link> — Antwortseiten, Korrekturen für Crawler, ein wöchentlicher Check von vier Assistenten. ${month} pro Monat plus einmalig ${setup} für die Einrichtung (entfällt bei Vorauszahlung von 3 Monaten oder einem Jahr); der ausführliche Bericht ${report}; ein kostenloser 30-Sekunden-Check: zwei Antworten sofort, alle fünf, sobald Sie ein Konto anlegen.`,
     liProduct: (from) =>
       `<link>LinkedIn- & X-Posts</link> — Entwürfe in Ihrer eigenen Stimme, veröffentlicht nach Ihrer Freigabe. Ab ${from} pro Monat.`,
     contactTitle: "Kontakt",
@@ -60,7 +60,7 @@ export default defineMessages(en, {
     ],
     productsTitle: "Produits",
     geoProduct: (month, setup, report) =>
-      `<link>Visibilité dans l’IA pour les entreprises</link> — pages de réponse, corrections pour les robots, vérification hebdomadaire de quatre assistants. ${month} par mois plus une mise en place de ${setup}, une seule fois (non facturée si vous payez 3 mois ou un an d’avance) ; le rapport détaillé ${report} ; une vérification de 30 secondes sans inscription.`,
+      `<link>Visibilité dans l’IA pour les entreprises</link> — pages de réponse, corrections pour les robots, vérification hebdomadaire de quatre assistants. ${month} par mois plus une mise en place de ${setup}, une seule fois (non facturée si vous payez 3 mois ou un an d’avance) ; le rapport détaillé ${report} ; une vérification gratuite de 30 secondes : deux réponses tout de suite, les cinq dès que vous créez un compte.`,
     liProduct: (from) =>
       `<link>Posts LinkedIn et X</link> — des brouillons rédigés dans votre style, publiés après votre validation. À partir de ${from} par mois.`,
     contactTitle: "Contact",
@@ -81,7 +81,7 @@ export default defineMessages(en, {
     ],
     productsTitle: "Productos",
     geoProduct: (month, setup, report) =>
-      `<link>Visibilidad en IA para empresas</link> — páginas de respuesta, correcciones para rastreadores y una comprobación semanal de cuatro asistentes. ${month} al mes más una configuración inicial de ${setup} (pago único; no se cobra si paga 3 meses o un año por adelantado); el informe detallado, ${report}; una comprobación de 30 segundos sin registro.`,
+      `<link>Visibilidad en IA para empresas</link> — páginas de respuesta, correcciones para rastreadores y una comprobación semanal de cuatro asistentes. ${month} al mes más una configuración inicial de ${setup} (pago único; no se cobra si paga 3 meses o un año por adelantado); el informe detallado, ${report}; una comprobación gratuita de 30 segundos: dos respuestas al momento y las cinco, en cuanto cree una cuenta.`,
     liProduct: (from) =>
       `<link>Publicaciones de LinkedIn y X</link> — borradores con su propia voz, publicados tras su aprobación. Desde ${from} al mes.`,
     contactTitle: "Contacto",
@@ -102,7 +102,7 @@ export default defineMessages(en, {
     ],
     productsTitle: "Продукты",
     geoProduct: (month, setup, report) =>
-      `<link>Видимость в ИИ для бизнеса</link> — страницы-ответы, исправления для краулеров, еженедельная проверка четырёх ассистентов. ${month} в месяц плюс разовая настройка за ${setup} (не взимается при оплате 3 месяцев или года); подробный отчёт — ${report}; 30-секундная проверка без регистрации.`,
+      `<link>Видимость в ИИ для бизнеса</link> — страницы-ответы, исправления для краулеров, еженедельная проверка четырёх ассистентов. ${month} в месяц плюс разовая настройка за ${setup} (не взимается при оплате 3 месяцев или года); подробный отчёт — ${report}; бесплатная 30-секундная проверка: два ответа сразу, все пять — после создания аккаунта.`,
     liProduct: (from) =>
       `<link>Посты в LinkedIn и X</link> — черновики вашим голосом, публикуются после вашего одобрения. От ${from} в месяц.`,
     contactTitle: "Контакты",

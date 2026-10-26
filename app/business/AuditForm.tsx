@@ -103,7 +103,7 @@ function isOurSite(raw: string) {
   return bareDomain(raw).replace(/:\d+$/, "").replace(/\.$/, "") === "itgrows.ai"
 }
 
-/** `note`: the line under the form before any check ("No signup · about 30 seconds" on the home
+/** `note`: the line under the form before any check ("Free · about 30 seconds" on the home
  *  page); it goes once a check starts. */
 export default function AuditForm({ note }: { note?: string } = {}) {
   const m = useT(ns)

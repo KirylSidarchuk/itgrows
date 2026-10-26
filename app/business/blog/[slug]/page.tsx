@@ -25,7 +25,7 @@ const UI = {
     minRead: "min read",
     ctaTitle: "Does ChatGPT name your business?",
     ctaText:
-      "Enter your site: we ask ChatGPT and Perplexity five questions your buyers ask and show who they name instead of you. No signup, about 30 seconds.",
+      "Enter your site: we ask ChatGPT and Perplexity five questions your buyers ask and show who they name instead of you. Free, about 30 seconds.",
     ctaCheck: "Check my AI visibility →",
     ctaCrawlers: "Am I blocking AI crawlers?",
     keepReading: "Keep reading",
@@ -41,7 +41,7 @@ const UI = {
     minRead: "Min. Lesezeit",
     ctaTitle: "Nennt ChatGPT Ihr Unternehmen?",
     ctaText:
-      "Geben Sie Ihre Website ein: Wir stellen ChatGPT und Perplexity fünf Fragen, wie Ihre Kunden sie stellen, und zeigen, wen sie statt Ihnen nennen. Ohne Anmeldung, etwa 30 Sekunden.",
+      "Geben Sie Ihre Website ein: Wir stellen ChatGPT und Perplexity fünf Fragen, wie Ihre Kunden sie stellen, und zeigen, wen sie statt Ihnen nennen. Kostenlos, etwa 30 Sekunden.",
     ctaCheck: "Meine KI-Sichtbarkeit prüfen →",
     ctaCrawlers: "Sperre ich KI-Crawler aus?",
     keepReading: "Weiterlesen",

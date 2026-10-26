@@ -3,7 +3,7 @@ import { unstable_cache } from "next/cache"
 import Link from "next/link"
 import { db } from "@/lib/db"
 import { blogPosts } from "@/lib/db/schema"
-import { and, desc, eq, isNull } from "drizzle-orm"
+import { and, desc, eq, isNull, or } from "drizzle-orm"
 import AuditForm from "./business/AuditForm"
 import ContactForm from "./business/ContactForm"
 import HashForward from "./_home/HashForward"
@@ -83,23 +83,31 @@ const QUICK_CHECKS = [
 
 const price = (cents: number) => (cents / 100).toFixed(2)
 
-// An hour, as the whole page was cached before it became per-language. A failed query is not
-// cached (it throws inside, and the page shows no guides this time).
+// The guides in the page's language: German on /de, English everywhere else (the old posts without
+// a language are English). The argument is part of the cache key. An hour, as the whole page was
+// cached before it became per-language. A failed query is not cached (it throws inside, and the
+// page shows no guides this time).
 const latestGuides = unstable_cache(
-  async () =>
+  async (lang: "de" | "en") =>
     db
       .select({ slug: blogPosts.slug, title: blogPosts.title })
       .from(blogPosts)
-      .where(and(eq(blogPosts.siteSlug, "itgrows-business"), isNull(blogPosts.redirectTo)))
+      .where(
+        and(
+          eq(blogPosts.siteSlug, "itgrows-business"),
+          isNull(blogPosts.redirectTo),
+          lang === "de" ? eq(blogPosts.lang, "de") : or(eq(blogPosts.lang, "en"), isNull(blogPosts.lang)),
+        ),
+      )
       .orderBy(desc(blogPosts.publishedAt))
       .limit(6),
-  ["home-latest-guides"],
+  ["home-latest-guides-by-lang"],
   { revalidate: 3600 },
 )
 
-async function guides() {
+async function guides(lang: "de" | "en") {
   try {
-    return await latestGuides()
+    return await latestGuides(lang)
   } catch {
     return []
   }
@@ -108,7 +116,8 @@ async function guides() {
 export default async function Home() {
   const locale = await getLocale()
   const m = t(locale, homeMessages)
-  const latest = await guides()
+  const guideLang = locale === "de" ? "de" : "en"
+  const latest = await guides(guideLang)
   // The yearly discount, from the prices themselves: "20%" in English, "20 %" in German and French.
   const yearOff = formatNumber(locale, 1 - GEO_PRICES.year.cents / (GEO_PRICES.month.cents * 12), { style: "percent", maximumFractionDigits: 0 })
   const FAQ = m.faq({
@@ -314,7 +323,7 @@ export default async function Home() {
                 ))}
               </div>
               <p className="mt-5 text-sm">
-                <Link href="/business/blog" className="text-violet-700 font-semibold hover:underline">{m.allGuides}</Link>
+                <Link href={guideLang === "de" ? "/business/blog#de" : "/business/blog"} className="text-violet-700 font-semibold hover:underline">{m.allGuides}</Link>
                 <span className="mx-2 text-slate-400">·</span>
                 <Link href="/blog" className="text-violet-700 font-semibold hover:underline">{m.expertsBlog}</Link>
               </p>
