@@ -42,7 +42,7 @@ const en = {
     },
     {
       q: "Why do the answers change if I run it again?",
-      a: "Assistants do not answer the same question the same way twice. That is why one check is a first look, and the full report asks every question three times and compares weeks only on the same questions.",
+      a: "Assistants do not answer the same question the same way twice. That is why one check is a first look, and the full report asks every question three times and compares checks only on the same questions.",
     },
     {
       q: "Can anyone guarantee that ChatGPT will recommend my business?",
@@ -89,7 +89,7 @@ export default defineMessages(en, {
       },
       {
         q: "Warum ändern sich die Antworten, wenn ich den Check wiederhole?",
-        a: "Assistenten beantworten dieselbe Frage nie zweimal gleich. Deshalb ist ein einzelner Check ein erster Eindruck; der vollständige Bericht stellt jede Frage dreimal und vergleicht Wochen nur anhand derselben Fragen.",
+        a: "Assistenten beantworten dieselbe Frage nie zweimal gleich. Deshalb ist ein einzelner Check ein erster Eindruck; der vollständige Bericht stellt jede Frage dreimal und vergleicht Messungen nur anhand derselben Fragen.",
       },
       {
         q: "Kann jemand garantieren, dass ChatGPT mein Unternehmen empfiehlt?",
@@ -134,7 +134,7 @@ export default defineMessages(en, {
       },
       {
         q: "Pourquoi les réponses changent-elles si je relance le test ?",
-        a: "Les assistants ne répondent jamais deux fois de la même façon à la même question. C’est pourquoi un test n’est qu’un premier aperçu, et le rapport complet pose chaque question trois fois et ne compare les semaines que sur les mêmes questions.",
+        a: "Les assistants ne répondent jamais deux fois de la même façon à la même question. C’est pourquoi un test n’est qu’un premier aperçu, et le rapport complet pose chaque question trois fois et ne compare les mesures que sur les mêmes questions.",
       },
       {
         q: "Quelqu’un peut-il garantir que ChatGPT recommandera mon entreprise ?",
@@ -179,7 +179,7 @@ export default defineMessages(en, {
       },
       {
         q: "¿Por qué cambian las respuestas si repito la comprobación?",
-        a: "Los asistentes no responden dos veces igual a la misma pregunta. Por eso una comprobación es una primera impresión, y el informe completo hace cada pregunta tres veces y solo compara semanas con las mismas preguntas.",
+        a: "Los asistentes no responden dos veces igual a la misma pregunta. Por eso una comprobación es una primera impresión, y el informe completo hace cada pregunta tres veces y solo compara mediciones con las mismas preguntas.",
       },
       {
         q: "¿Puede alguien garantizar que ChatGPT recomiende mi empresa?",
@@ -224,7 +224,7 @@ export default defineMessages(en, {
       },
       {
         q: "Почему ответы меняются, если запустить проверку ещё раз?",
-        a: "Ассистенты не отвечают на один и тот же вопрос дважды одинаково. Поэтому одна проверка — это первый взгляд, а полный отчёт задаёт каждый вопрос три раза и сравнивает недели только по одним и тем же вопросам.",
+        a: "Ассистенты не отвечают на один и тот же вопрос дважды одинаково. Поэтому одна проверка — это первый взгляд, а полный отчёт задаёт каждый вопрос три раза и сравнивает замеры только по одним и тем же вопросам.",
       },
       {
         q: "Может ли кто-то гарантировать, что ChatGPT будет рекомендовать мой бизнес?",

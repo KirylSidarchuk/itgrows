@@ -32,9 +32,9 @@ const ruDays = (n: number) => plural("ru", n, { one: `${n} дня`, other: `${n}
 const en = {
   metaTitle: "AI visibility for businesses: get named by ChatGPT | ItGrows",
   metaDescription:
-    "ItGrows is an AI visibility (GEO) service: answer pages on your own website and a weekly check of four AI assistants. Check your site free in about 30 seconds.",
+    "ItGrows is an AI visibility (GEO) service: answer pages on your own website and a check of four AI assistants every two weeks. Check your site free in about 30 seconds.",
   ogTitle: "Get your company named by ChatGPT, Claude, Gemini and Perplexity",
-  ogDescription: "Answer pages on your own domain, crawler and indexing fixes, and a weekly check of four assistants.",
+  ogDescription: "Answer pages on your own domain, crawler and indexing fixes, and a check of four assistants every two weeks.",
 
   // Structured data (JSON-LD)
   orgDescription: ENTITY_ONE_LINER,
@@ -44,7 +44,7 @@ const en = {
   serviceName: "ItGrows — AI visibility (GEO)",
   serviceType: "Generative engine optimisation and content publishing",
   serviceDescription:
-    "Articles published to a customer's own domain that answer the questions buyers ask AI assistants, fixes for crawler access and indexing, and a weekly measurement across ChatGPT, Claude, Gemini and Perplexity of whether the business is named.",
+    "Articles published to a customer's own domain that answer the questions buyers ask AI assistants, fixes for crawler access and indexing, and a measurement every two weeks across ChatGPT, Claude, Gemini and Perplexity of whether the business is named.",
   offerReport: "Detailed AI visibility report",
   offerPlan: "AI visibility plan, monthly",
 
@@ -59,7 +59,7 @@ const en = {
 
   // Hero: <g> is the gradient part
   h1: "Get your company named when buyers ask <g>ChatGPT, Claude, Gemini and Perplexity.</g>",
-  lead: "We measure what four assistants answer about your field, fix what stops their crawlers and search indexes from reading your site, publish answer pages on your own domain, and count every week whether each one names you.",
+  lead: "We measure what four assistants answer about your field, fix what stops their crawlers and search indexes from reading your site, publish answer pages on your own domain, and count every two weeks whether each one names you.",
   heroNote: "Free · about 30 seconds",
 
   // The LinkedIn/X product, one line
@@ -96,10 +96,10 @@ const en = {
       a: "An AI visibility (GEO) service for businesses. The LinkedIn and X post drafting you may have seen is a separate product for founders and experts, at itgrows.ai/personal.",
     },
     { q: "Which assistants do you measure?", a: "ChatGPT, Claude, Gemini and Perplexity, through their own APIs with web search on, three asks per question, because their answers vary." },
-    { q: "Can you guarantee that ChatGPT will name us?", a: "No, and distrust anyone who does. No assistant sells organic placement or publishes how it chooses. We do the work that makes you findable and quotable, and we show you every week what changed." },
+    { q: "Can you guarantee that ChatGPT will name us?", a: "No, and distrust anyone who does. No assistant sells organic placement or publishes how it chooses. We do the work that makes you findable and quotable, and we show you every two weeks what changed." },
     {
       q: "What can you actually prove?",
-      a: "Three things. Whether the assistants name you: every week we put the same questions your buyers ask to ChatGPT, Claude, Gemini and Perplexity, several times each, and count the answers that name you and the sites they cite. And, for blogs we host, from the server log, that crawlers fetched your pages and that assistants retrieved specific articles while answering somebody live — ChatGPT-User, OAI-SearchBot and Perplexity-User only appear mid-conversation. Nobody can measure every question anyone might ask; we measure the ones your buyers do.",
+      a: "Three things. Whether the assistants name you: every two weeks we put the same questions your buyers ask to ChatGPT, Claude, Gemini and Perplexity, several times each, and count the answers that name you and the sites they cite. And, for blogs we host, from the server log, that crawlers fetched your pages and that assistants retrieved specific articles while answering somebody live — ChatGPT-User and Perplexity-User only appear mid-conversation. Nobody can measure every question anyone might ask; we measure the ones your buyers do.",
     },
     {
       q: "How is this different from an SEO agency?",
@@ -111,11 +111,11 @@ const en = {
     },
     {
       q: "How long before anything happens?",
-      a: "Once a page is in the right indexes, crawlers usually arrive within a week or two, and we test findability every week so a gap is caught. Becoming a source an assistant reaches for repeatedly takes months and a body of work. If you need attributable revenue this quarter, buy ads — we will say so on the call rather than after your third invoice.",
+      a: "Once a page is in the right indexes, crawlers usually arrive within a week or two, and we test findability every two weeks so a gap is caught. Becoming a source an assistant reaches for repeatedly takes months and a body of work. If you need attributable revenue this quarter, buy ads — we will say so on the call rather than after your third invoice.",
     },
     {
       q: "Do you give us a guide to do it ourselves, or do the work?",
-      a: `We do the work. The detailed report (${report}) is the diagnosis and our plan: where you stand in all four assistants, who is named instead of you, and what we will do about it, step by step. On the plan we do that work: we publish answer pages on your domain, fix crawler access and indexing, and measure every week. The report's price comes off the plan within ${days} days.`,
+      a: `We do the work. The detailed report (${report}) is the diagnosis and our plan: where you stand in all four assistants, who is named instead of you, and what we will do about it, step by step. On the plan we do that work: we publish answer pages on your domain, fix crawler access and indexing, and measure every two weeks. The report's price comes off the plan within ${days} days.`,
     },
     {
       q: "What does the detailed report cost?",
@@ -152,19 +152,19 @@ export default defineMessages(en, {
   de: {
     metaTitle: "KI-Sichtbarkeit: von ChatGPT genannt werden | ItGrows",
     metaDescription:
-      "ItGrows, Dienst für KI-Sichtbarkeit (GEO): Antwortseiten auf Ihrer Website, ein wöchentlicher Check von vier KI-Assistenten. Kostenlos prüfen, etwa 30 Sekunden.",
+      "ItGrows, Dienst für KI-Sichtbarkeit (GEO): Antwortseiten auf Ihrer Website, alle zwei Wochen ein Check von vier KI-Assistenten. Kostenlos prüfen, etwa 30 Sekunden.",
     ogTitle: "Damit ChatGPT, Claude, Gemini und Perplexity Ihr Unternehmen nennen",
-    ogDescription: "Antwortseiten auf Ihrer eigenen Domain, Korrekturen für Crawler und Indexierung und ein wöchentlicher Check von vier Assistenten.",
+    ogDescription: "Antwortseiten auf Ihrer eigenen Domain, Korrekturen für Crawler und Indexierung und alle zwei Wochen ein Check von vier Assistenten.",
 
     orgDescription:
-      "ItGrows ist ein Dienst für KI-Sichtbarkeit (Generative Engine Optimization, GEO) für Unternehmen: Er veröffentlicht Antwortseiten auf der eigenen Website des Unternehmens, macht die Website für KI-Crawler und Suchindizes lesbar und prüft jede Woche, ob ChatGPT, Claude, Gemini und Perplexity das Unternehmen nennen.",
+      "ItGrows ist ein Dienst für KI-Sichtbarkeit (Generative Engine Optimization, GEO) für Unternehmen: Er veröffentlicht Antwortseiten auf der eigenen Website des Unternehmens, macht die Website für KI-Crawler und Suchindizes lesbar und prüft alle zwei Wochen, ob ChatGPT, Claude, Gemini und Perplexity das Unternehmen nennen.",
     appName: "ItGrows KI-Sichtbarkeitscheck",
     appDescription:
       "Ein 30-Sekunden-Check, ob ChatGPT und Perplexity ein Unternehmen nennen, wenn seine Kunden fragen: fünf Kundenfragen, aus der Website abgeleitet und live mit Websuche beantwortet, dazu die stattdessen genannten Unternehmen und die zitierten Websites. Kostenlos: zwei Antworten sofort vollständig, alle fünf, sobald Sie ein Konto anlegen.",
     serviceName: "ItGrows — KI-Sichtbarkeit (GEO)",
     serviceType: "Generative Engine Optimization und Veröffentlichung von Inhalten",
     serviceDescription:
-      "Artikel auf der eigenen Domain des Kunden, die die Fragen beantworten, die Kunden KI-Assistenten stellen, Korrekturen bei Crawler-Zugriff und Indexierung sowie eine wöchentliche Messung über ChatGPT, Claude, Gemini und Perplexity, ob das Unternehmen genannt wird.",
+      "Artikel auf der eigenen Domain des Kunden, die die Fragen beantworten, die Kunden KI-Assistenten stellen, Korrekturen bei Crawler-Zugriff und Indexierung sowie alle zwei Wochen eine Messung über ChatGPT, Claude, Gemini und Perplexity, ob das Unternehmen genannt wird.",
     offerReport: "Ausführlicher Bericht zur KI-Sichtbarkeit",
     offerPlan: "Plan für KI-Sichtbarkeit, monatlich",
 
@@ -177,7 +177,7 @@ export default defineMessages(en, {
     checkMySite: "Website prüfen",
 
     h1: "Damit Ihr Unternehmen genannt wird, wenn Kunden <g>ChatGPT, Claude, Gemini und Perplexity</g> fragen.",
-    lead: "Wir messen, was vier Assistenten zu Ihrem Fachgebiet antworten, beheben, was ihre Crawler und Suchindizes am Lesen Ihrer Website hindert, veröffentlichen Antwortseiten auf Ihrer eigenen Domain und zählen jede Woche, ob jeder von ihnen Sie nennt.",
+    lead: "Wir messen, was vier Assistenten zu Ihrem Fachgebiet antworten, beheben, was ihre Crawler und Suchindizes am Lesen Ihrer Website hindert, veröffentlichen Antwortseiten auf Ihrer eigenen Domain und zählen alle zwei Wochen, ob jeder von ihnen Sie nennt.",
     heroNote: "Kostenlos · etwa 30 Sekunden",
 
     founder: (from) =>
@@ -205,7 +205,7 @@ export default defineMessages(en, {
     faq: ({ report, days, sample, month, setup, quarter, year, yearPerMonth, yearOff }) => [
       {
         q: "Was ist ItGrows?",
-        a: "ItGrows hilft einem Unternehmen, genannt zu werden, wenn seine Kunden einen KI-Assistenten fragen. Wir stellen ChatGPT, Claude, Gemini und Perplexity die Fragen, die diese Kunden stellen, jeweils mehrmals, und halten fest, wer genannt wird und welche Websites zitiert werden. Dann veröffentlichen wir auf der eigenen Domain des Unternehmens Seiten, die diese Fragen beantworten, beheben, was KI-Crawler und Suchindizes am Lesen der Website hindert, und messen jede Woche erneut.",
+        a: "ItGrows hilft einem Unternehmen, genannt zu werden, wenn seine Kunden einen KI-Assistenten fragen. Wir stellen ChatGPT, Claude, Gemini und Perplexity die Fragen, die diese Kunden stellen, jeweils mehrmals, und halten fest, wer genannt wird und welche Websites zitiert werden. Dann veröffentlichen wir auf der eigenen Domain des Unternehmens Seiten, die diese Fragen beantworten, beheben, was KI-Crawler und Suchindizes am Lesen der Website hindert, und messen alle zwei Wochen erneut.",
       },
       {
         q: "Ist ItGrows ein LinkedIn-Tool oder ein Dienst für KI-Sichtbarkeit?",
@@ -214,11 +214,11 @@ export default defineMessages(en, {
       { q: "Welche Assistenten messen Sie?", a: "ChatGPT, Claude, Gemini und Perplexity, über ihre eigenen APIs mit aktivierter Websuche, drei Anfragen pro Frage, weil ihre Antworten schwanken." },
       {
         q: "Können Sie garantieren, dass ChatGPT uns nennt?",
-        a: "Nein, und misstrauen Sie jedem, der das tut. Kein Assistent verkauft organische Platzierungen oder legt offen, wie er auswählt. Wir erledigen die Arbeit, die Sie auffindbar und zitierfähig macht, und zeigen Ihnen jede Woche, was sich verändert hat.",
+        a: "Nein, und misstrauen Sie jedem, der das tut. Kein Assistent verkauft organische Platzierungen oder legt offen, wie er auswählt. Wir erledigen die Arbeit, die Sie auffindbar und zitierfähig macht, und zeigen Ihnen alle zwei Wochen, was sich verändert hat.",
       },
       {
         q: "Was können Sie tatsächlich belegen?",
-        a: "Drei Dinge. Ob die Assistenten Sie nennen: Jede Woche stellen wir ChatGPT, Claude, Gemini und Perplexity dieselben Fragen, die Ihre Kunden stellen, jeweils mehrmals, und zählen die Antworten, die Sie nennen, sowie die Websites, die sie zitieren. Und bei Blogs, die wir hosten, anhand des Server-Logs: dass Crawler Ihre Seiten abgerufen haben und dass Assistenten bestimmte Artikel geöffnet haben, während sie jemandem live antworteten — ChatGPT-User, OAI-SearchBot und Perplexity-User tauchen nur mitten in einem Gespräch auf. Niemand kann jede Frage messen, die irgendwer stellen könnte; wir messen die Fragen, die Ihre Kunden stellen.",
+        a: "Drei Dinge. Ob die Assistenten Sie nennen: Alle zwei Wochen stellen wir ChatGPT, Claude, Gemini und Perplexity dieselben Fragen, die Ihre Kunden stellen, jeweils mehrmals, und zählen die Antworten, die Sie nennen, sowie die Websites, die sie zitieren. Und bei Blogs, die wir hosten, anhand des Server-Logs: dass Crawler Ihre Seiten abgerufen haben und dass Assistenten bestimmte Artikel geöffnet haben, während sie jemandem live antworteten — ChatGPT-User und Perplexity-User tauchen nur mitten in einem Gespräch auf. Niemand kann jede Frage messen, die irgendwer stellen könnte; wir messen die Fragen, die Ihre Kunden stellen.",
       },
       {
         q: "Was unterscheidet das von einer SEO-Agentur?",
@@ -230,11 +230,11 @@ export default defineMessages(en, {
       },
       {
         q: "Wie lange dauert es, bis sich etwas tut?",
-        a: "Sobald eine Seite in den richtigen Indizes ist, kommen Crawler meist innerhalb von ein, zwei Wochen, und wir testen jede Woche die Auffindbarkeit, damit eine Lücke auffällt. Eine Quelle zu werden, auf die ein Assistent immer wieder zurückgreift, dauert Monate und braucht einen Fundus an Inhalten. Wenn Sie in diesem Quartal zurechenbaren Umsatz brauchen, schalten Sie Anzeigen — das sagen wir Ihnen im Gespräch und nicht erst nach Ihrer dritten Rechnung.",
+        a: "Sobald eine Seite in den richtigen Indizes ist, kommen Crawler meist innerhalb von ein, zwei Wochen, und wir testen alle zwei Wochen die Auffindbarkeit, damit eine Lücke auffällt. Eine Quelle zu werden, auf die ein Assistent immer wieder zurückgreift, dauert Monate und braucht einen Fundus an Inhalten. Wenn Sie in diesem Quartal zurechenbaren Umsatz brauchen, schalten Sie Anzeigen — das sagen wir Ihnen im Gespräch und nicht erst nach Ihrer dritten Rechnung.",
       },
       {
         q: "Geben Sie uns eine Anleitung zum Selbermachen, oder erledigen Sie die Arbeit?",
-        a: `Wir erledigen die Arbeit. Der ausführliche Bericht (${report}) ist die Diagnose und unser Maßnahmenplan: wo Sie in allen vier Assistenten stehen, wer statt Ihnen genannt wird und was wir Schritt für Schritt dagegen tun. Im Plan erledigen wir diese Arbeit: Wir veröffentlichen Antwortseiten auf Ihrer Domain, beheben Probleme bei Crawler-Zugriff und Indexierung und messen jede Woche. Der Preis des Berichts wird auf den Plan angerechnet, wenn Sie ihn innerhalb von ${days} Tagen starten.`,
+        a: `Wir erledigen die Arbeit. Der ausführliche Bericht (${report}) ist die Diagnose und unser Maßnahmenplan: wo Sie in allen vier Assistenten stehen, wer statt Ihnen genannt wird und was wir Schritt für Schritt dagegen tun. Im Plan erledigen wir diese Arbeit: Wir veröffentlichen Antwortseiten auf Ihrer Domain, beheben Probleme bei Crawler-Zugriff und Indexierung und messen alle zwei Wochen. Der Preis des Berichts wird auf den Plan angerechnet, wenn Sie ihn innerhalb von ${days} Tagen starten.`,
       },
       {
         q: "Was kostet der ausführliche Bericht?",
@@ -274,19 +274,19 @@ export default defineMessages(en, {
   fr: {
     metaTitle: "Visibilité dans l’IA : être mentionné par ChatGPT | ItGrows",
     metaDescription:
-      "ItGrows, visibilité dans l’IA (GEO) : des pages de réponse sur votre site et une vérification hebdomadaire de quatre assistants. Test gratuit, 30 s environ.",
+      "ItGrows, visibilité dans l’IA (GEO) : des pages de réponse sur votre site et une vérification de quatre assistants toutes les deux semaines. Test gratuit, 30 s environ.",
     ogTitle: "Faites mentionner votre entreprise par ChatGPT, Claude, Gemini et Perplexity",
-    ogDescription: "Des pages de réponse sur votre propre domaine, des corrections pour les robots et l’indexation, et une vérification hebdomadaire de quatre assistants.",
+    ogDescription: "Des pages de réponse sur votre propre domaine, des corrections pour les robots et l’indexation, et une vérification de quatre assistants toutes les deux semaines.",
 
     orgDescription:
-      "ItGrows est un service de visibilité dans l’IA (generative engine optimization, GEO) pour les entreprises : il publie des pages de réponse sur le propre site de l’entreprise, rend le site lisible pour les robots d’IA et les index de recherche, et vérifie chaque semaine si ChatGPT, Claude, Gemini et Perplexity mentionnent l’entreprise.",
+      "ItGrows est un service de visibilité dans l’IA (generative engine optimization, GEO) pour les entreprises : il publie des pages de réponse sur le propre site de l’entreprise, rend le site lisible pour les robots d’IA et les index de recherche, et vérifie toutes les deux semaines si ChatGPT, Claude, Gemini et Perplexity mentionnent l’entreprise.",
     appName: "Test de visibilité IA ItGrows",
     appDescription:
       "Une vérification en 30 secondes : ChatGPT et Perplexity mentionnent-ils une entreprise quand ses clients posent la question ? Cinq questions de clients générées à partir du site, posées en direct avec la recherche web, avec les entreprises mentionnées à sa place et les sites cités. Gratuit : deux réponses complètes tout de suite, les cinq dès que vous créez un compte.",
     serviceName: "ItGrows — visibilité dans l’IA (GEO)",
     serviceType: "Optimisation pour les moteurs génératifs et publication de contenus",
     serviceDescription:
-      "Des articles publiés sur le propre domaine du client qui répondent aux questions que les clients posent aux assistants IA, des corrections de l’accès des robots et de l’indexation, et une mesure hebdomadaire sur ChatGPT, Claude, Gemini et Perplexity de la mention de l’entreprise.",
+      "Des articles publiés sur le propre domaine du client qui répondent aux questions que les clients posent aux assistants IA, des corrections de l’accès des robots et de l’indexation, et une mesure toutes les deux semaines sur ChatGPT, Claude, Gemini et Perplexity de la mention de l’entreprise.",
     offerReport: "Rapport détaillé de visibilité dans l’IA",
     offerPlan: "Abonnement visibilité IA, mensuel",
 
@@ -299,7 +299,7 @@ export default defineMessages(en, {
     checkMySite: "Vérifier mon site",
 
     h1: "Faites mentionner votre entreprise quand vos clients interrogent <g>ChatGPT, Claude, Gemini et Perplexity.</g>",
-    lead: "Nous mesurons ce que quatre assistants répondent sur votre secteur, corrigeons ce qui empêche leurs robots et leurs index de recherche de lire votre site, publions des pages de réponse sur votre propre domaine et comptons chaque semaine si chacun d’eux vous mentionne.",
+    lead: "Nous mesurons ce que quatre assistants répondent sur votre secteur, corrigeons ce qui empêche leurs robots et leurs index de recherche de lire votre site, publions des pages de réponse sur votre propre domaine et comptons toutes les deux semaines si chacun d’eux vous mentionne.",
     heroNote: "Gratuit · environ 30 secondes",
 
     founder: (from) =>
@@ -327,7 +327,7 @@ export default defineMessages(en, {
     faq: ({ report, days, sample, month, setup, quarter, year, yearPerMonth, yearOff }) => [
       {
         q: "Qu’est-ce qu’ItGrows ?",
-        a: "ItGrows aide une entreprise à être mentionnée quand ses clients interrogent un assistant IA. Nous posons à ChatGPT, Claude, Gemini et Perplexity les questions que posent ces clients, plusieurs fois chacune, et relevons qui est mentionné et quels sites sont cités. Puis nous publions sur le propre domaine de l’entreprise des pages qui répondent à ces questions, corrigeons ce qui empêche les robots d’IA et les index de recherche de lire le site, et mesurons de nouveau chaque semaine.",
+        a: "ItGrows aide une entreprise à être mentionnée quand ses clients interrogent un assistant IA. Nous posons à ChatGPT, Claude, Gemini et Perplexity les questions que posent ces clients, plusieurs fois chacune, et relevons qui est mentionné et quels sites sont cités. Puis nous publions sur le propre domaine de l’entreprise des pages qui répondent à ces questions, corrigeons ce qui empêche les robots d’IA et les index de recherche de lire le site, et mesurons de nouveau toutes les deux semaines.",
       },
       {
         q: "ItGrows est-il un outil LinkedIn ou un service de visibilité dans l’IA ?",
@@ -336,11 +336,11 @@ export default defineMessages(en, {
       { q: "Quels assistants mesurez-vous ?", a: "ChatGPT, Claude, Gemini et Perplexity, via leurs propres API avec la recherche web activée, trois requêtes par question, car leurs réponses varient." },
       {
         q: "Pouvez-vous garantir que ChatGPT nous mentionnera ?",
-        a: "Non, et méfiez-vous de quiconque le promet. Aucun assistant ne vend de placement organique ni ne publie la façon dont il choisit. Nous faisons le travail qui vous rend trouvable et citable, et nous vous montrons chaque semaine ce qui a changé.",
+        a: "Non, et méfiez-vous de quiconque le promet. Aucun assistant ne vend de placement organique ni ne publie la façon dont il choisit. Nous faisons le travail qui vous rend trouvable et citable, et nous vous montrons toutes les deux semaines ce qui a changé.",
       },
       {
         q: "Que pouvez-vous réellement prouver ?",
-        a: "Trois choses. Si les assistants vous mentionnent : chaque semaine, nous posons à ChatGPT, Claude, Gemini et Perplexity les mêmes questions que vos clients, plusieurs fois chacune, et comptons les réponses qui vous mentionnent et les sites qu’elles citent. Et, pour les blogs que nous hébergeons, d’après le journal serveur : que les robots ont bien récupéré vos pages et que des assistants ont consulté des articles précis en répondant en direct à quelqu’un — ChatGPT-User, OAI-SearchBot et Perplexity-User n’apparaissent qu’en pleine conversation. Personne ne peut mesurer toutes les questions que n’importe qui pourrait poser ; nous mesurons celles que posent vos clients.",
+        a: "Trois choses. Si les assistants vous mentionnent : toutes les deux semaines, nous posons à ChatGPT, Claude, Gemini et Perplexity les mêmes questions que vos clients, plusieurs fois chacune, et comptons les réponses qui vous mentionnent et les sites qu’elles citent. Et, pour les blogs que nous hébergeons, d’après le journal serveur : que les robots ont bien récupéré vos pages et que des assistants ont consulté des articles précis en répondant en direct à quelqu’un — ChatGPT-User et Perplexity-User n’apparaissent qu’en pleine conversation. Personne ne peut mesurer toutes les questions que n’importe qui pourrait poser ; nous mesurons celles que posent vos clients.",
       },
       {
         q: "En quoi est-ce différent d’une agence SEO ?",
@@ -352,11 +352,11 @@ export default defineMessages(en, {
       },
       {
         q: "Combien de temps avant que quelque chose se passe ?",
-        a: "Une fois qu’une page est dans les bons index, les robots arrivent en général en une ou deux semaines, et nous testons la trouvabilité chaque semaine pour repérer tout manque. Devenir une source vers laquelle un assistant revient régulièrement prend des mois et demande un vrai corpus. Si vous avez besoin d’un chiffre d’affaires attribuable ce trimestre, achetez de la publicité — nous vous le dirons pendant l’appel plutôt qu’après votre troisième facture.",
+        a: "Une fois qu’une page est dans les bons index, les robots arrivent en général en une ou deux semaines, et nous testons la trouvabilité toutes les deux semaines pour repérer tout manque. Devenir une source vers laquelle un assistant revient régulièrement prend des mois et demande un vrai corpus. Si vous avez besoin d’un chiffre d’affaires attribuable ce trimestre, achetez de la publicité — nous vous le dirons pendant l’appel plutôt qu’après votre troisième facture.",
       },
       {
         q: "Nous donnez-vous un guide pour le faire nous-mêmes, ou faites-vous le travail ?",
-        a: `Nous faisons le travail. Le rapport détaillé (${report}) est le diagnostic et notre plan d’action : où vous en êtes dans les quatre assistants, qui est mentionné à votre place et ce que nous allons faire, étape par étape. Avec l’abonnement, nous faisons ce travail : nous publions des pages de réponse sur votre domaine, corrigeons l’accès des robots et l’indexation, et mesurons chaque semaine. Le prix du rapport est déduit de l’abonnement s’il démarre dans les ${days} jours.`,
+        a: `Nous faisons le travail. Le rapport détaillé (${report}) est le diagnostic et notre plan d’action : où vous en êtes dans les quatre assistants, qui est mentionné à votre place et ce que nous allons faire, étape par étape. Avec l’abonnement, nous faisons ce travail : nous publions des pages de réponse sur votre domaine, corrigeons l’accès des robots et l’indexation, et mesurons toutes les deux semaines. Le prix du rapport est déduit de l’abonnement s’il démarre dans les ${days} jours.`,
       },
       {
         q: "Combien coûte le rapport détaillé ?",
@@ -396,19 +396,19 @@ export default defineMessages(en, {
   es: {
     metaTitle: "Visibilidad en IA: que ChatGPT le mencione | ItGrows",
     metaDescription:
-      "ItGrows, visibilidad en IA (GEO): páginas de respuesta en su sitio web y una comprobación semanal de cuatro asistentes. Compruebe su sitio gratis, unos 30 s.",
+      "ItGrows, visibilidad en IA (GEO): páginas de respuesta en su sitio web y una comprobación de cuatro asistentes cada dos semanas. Compruebe su sitio gratis, unos 30 s.",
     ogTitle: "Haga que ChatGPT, Claude, Gemini y Perplexity mencionen su empresa",
-    ogDescription: "Páginas de respuesta en su propio dominio, correcciones de rastreo e indexación y una comprobación semanal de cuatro asistentes.",
+    ogDescription: "Páginas de respuesta en su propio dominio, correcciones de rastreo e indexación y una comprobación de cuatro asistentes cada dos semanas.",
 
     orgDescription:
-      "ItGrows es un servicio de visibilidad en IA (generative engine optimization, GEO) para empresas: publica páginas de respuesta en el propio sitio web de la empresa, hace que el sitio sea legible para los rastreadores de IA y los índices de búsqueda, y comprueba cada semana si ChatGPT, Claude, Gemini y Perplexity mencionan a la empresa.",
+      "ItGrows es un servicio de visibilidad en IA (generative engine optimization, GEO) para empresas: publica páginas de respuesta en el propio sitio web de la empresa, hace que el sitio sea legible para los rastreadores de IA y los índices de búsqueda, y comprueba cada dos semanas si ChatGPT, Claude, Gemini y Perplexity mencionan a la empresa.",
     appName: "Comprobación de visibilidad en IA de ItGrows",
     appDescription:
       "Una comprobación de 30 segundos de si ChatGPT y Perplexity mencionan a una empresa cuando sus clientes preguntan: cinco preguntas de clientes generadas a partir del sitio, respondidas en directo con búsqueda web, con las empresas mencionadas en su lugar y los sitios citados. Gratis: dos respuestas completas al momento y las cinco en cuanto cree una cuenta.",
     serviceName: "ItGrows — visibilidad en IA (GEO)",
     serviceType: "Optimización para motores generativos y publicación de contenidos",
     serviceDescription:
-      "Artículos publicados en el propio dominio del cliente que responden a las preguntas que los clientes hacen a los asistentes de IA, correcciones del acceso de rastreadores y de la indexación, y una medición semanal en ChatGPT, Claude, Gemini y Perplexity de si se menciona a la empresa.",
+      "Artículos publicados en el propio dominio del cliente que responden a las preguntas que los clientes hacen a los asistentes de IA, correcciones del acceso de rastreadores y de la indexación, y una medición cada dos semanas en ChatGPT, Claude, Gemini y Perplexity de si se menciona a la empresa.",
     offerReport: "Informe detallado de visibilidad en IA",
     offerPlan: "Plan de visibilidad en IA, mensual",
 
@@ -421,7 +421,7 @@ export default defineMessages(en, {
     checkMySite: "Comprobar mi sitio",
 
     h1: "Haga que mencionen su empresa cuando sus clientes pregunten a <g>ChatGPT, Claude, Gemini y Perplexity.</g>",
-    lead: "Medimos lo que cuatro asistentes responden sobre su sector, corregimos lo que impide a sus rastreadores e índices de búsqueda leer su sitio, publicamos páginas de respuesta en su propio dominio y contamos cada semana si cada uno de ellos menciona su empresa.",
+    lead: "Medimos lo que cuatro asistentes responden sobre su sector, corregimos lo que impide a sus rastreadores e índices de búsqueda leer su sitio, publicamos páginas de respuesta en su propio dominio y contamos cada dos semanas si cada uno de ellos menciona su empresa.",
     heroNote: "Gratis · unos 30 segundos",
 
     founder: (from) =>
@@ -449,7 +449,7 @@ export default defineMessages(en, {
     faq: ({ report, days, sample, month, setup, quarter, year, yearPerMonth, yearOff }) => [
       {
         q: "¿Qué es ItGrows?",
-        a: "ItGrows ayuda a una empresa a que la mencionen cuando sus clientes preguntan a un asistente de IA. Planteamos a ChatGPT, Claude, Gemini y Perplexity las preguntas que hacen esos clientes, varias veces cada una, y registramos a quién mencionan y qué sitios citan. Después publicamos en el propio dominio de la empresa páginas que responden a esas preguntas, corregimos lo que impide a los rastreadores de IA y a los índices de búsqueda leer el sitio, y volvemos a medir cada semana.",
+        a: "ItGrows ayuda a una empresa a que la mencionen cuando sus clientes preguntan a un asistente de IA. Planteamos a ChatGPT, Claude, Gemini y Perplexity las preguntas que hacen esos clientes, varias veces cada una, y registramos a quién mencionan y qué sitios citan. Después publicamos en el propio dominio de la empresa páginas que responden a esas preguntas, corregimos lo que impide a los rastreadores de IA y a los índices de búsqueda leer el sitio, y volvemos a medir cada dos semanas.",
       },
       {
         q: "¿ItGrows es una herramienta para LinkedIn o un servicio de visibilidad en IA?",
@@ -458,11 +458,11 @@ export default defineMessages(en, {
       { q: "¿Qué asistentes miden?", a: "ChatGPT, Claude, Gemini y Perplexity, a través de sus propias API con la búsqueda web activada, tres consultas por pregunta, porque sus respuestas varían." },
       {
         q: "¿Pueden garantizar que ChatGPT nos mencione?",
-        a: "No, y desconfíe de quien lo haga. Ningún asistente vende posiciones orgánicas ni publica cómo elige. Hacemos el trabajo que permite encontrarle y citarle, y cada semana le mostramos qué ha cambiado.",
+        a: "No, y desconfíe de quien lo haga. Ningún asistente vende posiciones orgánicas ni publica cómo elige. Hacemos el trabajo que permite encontrarle y citarle, y cada dos semanas le mostramos qué ha cambiado.",
       },
       {
         q: "¿Qué pueden demostrar realmente?",
-        a: "Tres cosas. Si los asistentes le mencionan: cada semana planteamos a ChatGPT, Claude, Gemini y Perplexity las mismas preguntas que hacen sus clientes, varias veces cada una, y contamos las respuestas que le mencionan y los sitios que citan. Y, en los blogs que alojamos, a partir del registro del servidor: que los rastreadores descargaron sus páginas y que los asistentes consultaron artículos concretos mientras respondían a alguien en directo — ChatGPT-User, OAI-SearchBot y Perplexity-User solo aparecen en mitad de una conversación. Nadie puede medir todas las preguntas que cualquiera podría hacer; medimos las que hacen sus clientes.",
+        a: "Tres cosas. Si los asistentes le mencionan: cada dos semanas planteamos a ChatGPT, Claude, Gemini y Perplexity las mismas preguntas que hacen sus clientes, varias veces cada una, y contamos las respuestas que le mencionan y los sitios que citan. Y, en los blogs que alojamos, a partir del registro del servidor: que los rastreadores descargaron sus páginas y que los asistentes consultaron artículos concretos mientras respondían a alguien en directo — ChatGPT-User y Perplexity-User solo aparecen en mitad de una conversación. Nadie puede medir todas las preguntas que cualquiera podría hacer; medimos las que hacen sus clientes.",
       },
       {
         q: "¿En qué se diferencia de una agencia SEO?",
@@ -474,11 +474,11 @@ export default defineMessages(en, {
       },
       {
         q: "¿Cuánto tarda en notarse algo?",
-        a: "Una vez que una página está en los índices adecuados, los rastreadores suelen llegar en una o dos semanas, y comprobamos cada semana si se puede encontrar, para detectar cualquier hueco. Convertirse en una fuente a la que un asistente recurre una y otra vez lleva meses y un buen volumen de contenido. Si necesita ingresos atribuibles este trimestre, compre publicidad — se lo diremos en la llamada y no después de su tercera factura.",
+        a: "Una vez que una página está en los índices adecuados, los rastreadores suelen llegar en una o dos semanas, y comprobamos cada dos semanas si se puede encontrar, para detectar cualquier hueco. Convertirse en una fuente a la que un asistente recurre una y otra vez lleva meses y un buen volumen de contenido. Si necesita ingresos atribuibles este trimestre, compre publicidad — se lo diremos en la llamada y no después de su tercera factura.",
       },
       {
         q: "¿Nos dan una guía para hacerlo nosotros mismos o hacen ustedes el trabajo?",
-        a: `Hacemos el trabajo. El informe detallado (${report}) es el diagnóstico y nuestro plan de acción: dónde está usted en los cuatro asistentes, a quién mencionan en su lugar y qué haremos al respecto, paso a paso. Con el plan hacemos ese trabajo: publicamos páginas de respuesta en su dominio, corregimos el acceso de los rastreadores y la indexación, y medimos cada semana. El precio del informe se descuenta del plan si lo inicia en un plazo de ${days} días.`,
+        a: `Hacemos el trabajo. El informe detallado (${report}) es el diagnóstico y nuestro plan de acción: dónde está usted en los cuatro asistentes, a quién mencionan en su lugar y qué haremos al respecto, paso a paso. Con el plan hacemos ese trabajo: publicamos páginas de respuesta en su dominio, corregimos el acceso de los rastreadores y la indexación, y medimos cada dos semanas. El precio del informe se descuenta del plan si lo inicia en un plazo de ${days} días.`,
       },
       {
         q: "¿Cuánto cuesta el informe detallado?",
@@ -518,19 +518,19 @@ export default defineMessages(en, {
   ru: {
     metaTitle: "Видимость в ИИ: пусть ChatGPT называет вас | ItGrows",
     metaDescription:
-      "ItGrows — сервис видимости в ИИ (GEO): страницы-ответы на вашем сайте и еженедельная проверка четырёх ассистентов. Проверьте сайт бесплатно, около 30 секунд.",
+      "ItGrows — сервис видимости в ИИ (GEO): страницы-ответы на вашем сайте и проверка четырёх ассистентов раз в две недели. Проверьте сайт бесплатно, около 30 секунд.",
     ogTitle: "Пусть ChatGPT, Claude, Gemini и Perplexity называют вашу компанию",
-    ogDescription: "Страницы-ответы на вашем собственном домене, исправления для краулеров и индексации и еженедельная проверка четырёх ассистентов.",
+    ogDescription: "Страницы-ответы на вашем собственном домене, исправления для краулеров и индексации и проверка четырёх ассистентов раз в две недели.",
 
     orgDescription:
-      "ItGrows — сервис видимости в ИИ (generative engine optimization, GEO) для бизнеса: публикует страницы-ответы на собственном сайте компании, делает сайт доступным для ИИ-краулеров и поисковых индексов и каждую неделю проверяет, называют ли компанию ChatGPT, Claude, Gemini и Perplexity.",
+      "ItGrows — сервис видимости в ИИ (generative engine optimization, GEO) для бизнеса: публикует страницы-ответы на собственном сайте компании, делает сайт доступным для ИИ-краулеров и поисковых индексов и раз в две недели проверяет, называют ли компанию ChatGPT, Claude, Gemini и Perplexity.",
     appName: "Проверка видимости в ИИ от ItGrows",
     appDescription:
       "30-секундная проверка того, называют ли ChatGPT и Perplexity компанию, когда спрашивают её клиенты: пять клиентских вопросов, составленных по сайту, с ответами в реальном времени через веб-поиск, с компаниями, которых называют вместо неё, и процитированными сайтами. Бесплатно: два ответа целиком сразу, все пять — после создания аккаунта.",
     serviceName: "ItGrows — видимость в ИИ (GEO)",
     serviceType: "Оптимизация под генеративные системы и публикация контента",
     serviceDescription:
-      "Статьи на собственном домене клиента, отвечающие на вопросы, которые клиенты задают ИИ-ассистентам, исправление доступа краулеров и индексации и еженедельное измерение в ChatGPT, Claude, Gemini и Perplexity того, называют ли компанию.",
+      "Статьи на собственном домене клиента, отвечающие на вопросы, которые клиенты задают ИИ-ассистентам, исправление доступа краулеров и индексации и измерение раз в две недели в ChatGPT, Claude, Gemini и Perplexity того, называют ли компанию.",
     offerReport: "Подробный отчёт о видимости в ИИ",
     offerPlan: "Подписка на видимость в ИИ, помесячно",
 
@@ -543,7 +543,7 @@ export default defineMessages(en, {
     checkMySite: "Проверить мой сайт",
 
     h1: "Пусть вашу компанию называют, когда клиенты спрашивают <g>ChatGPT, Claude, Gemini и Perplexity.</g>",
-    lead: "Мы измеряем, что четыре ассистента отвечают о вашей сфере, устраняем то, что мешает их краулерам и поисковым индексам читать ваш сайт, публикуем страницы-ответы на вашем собственном домене и каждую неделю считаем, называет ли вас каждый из них.",
+    lead: "Мы измеряем, что четыре ассистента отвечают о вашей сфере, устраняем то, что мешает их краулерам и поисковым индексам читать ваш сайт, публикуем страницы-ответы на вашем собственном домене и раз в две недели считаем, называет ли вас каждый из них.",
     heroNote: "Бесплатно · около 30 секунд",
 
     founder: (from) =>
@@ -571,7 +571,7 @@ export default defineMessages(en, {
     faq: ({ report, days, sample, month, setup, quarter, year, yearPerMonth, yearOff }) => [
       {
         q: "Что такое ItGrows?",
-        a: "ItGrows помогает компании добиться того, чтобы её называли, когда её клиенты спрашивают ИИ-ассистента. Мы задаём ChatGPT, Claude, Gemini и Perplexity вопросы, которые задают эти клиенты, по нескольку раз каждый, и фиксируем, кого называют и какие сайты цитируют. Затем публикуем на собственном домене компании страницы, отвечающие на эти вопросы, устраняем то, что мешает ИИ-краулерам и поисковым индексам читать сайт, и каждую неделю измеряем снова.",
+        a: "ItGrows помогает компании добиться того, чтобы её называли, когда её клиенты спрашивают ИИ-ассистента. Мы задаём ChatGPT, Claude, Gemini и Perplexity вопросы, которые задают эти клиенты, по нескольку раз каждый, и фиксируем, кого называют и какие сайты цитируют. Затем публикуем на собственном домене компании страницы, отвечающие на эти вопросы, устраняем то, что мешает ИИ-краулерам и поисковым индексам читать сайт, и раз в две недели измеряем снова.",
       },
       {
         q: "ItGrows — это инструмент для LinkedIn или сервис видимости в ИИ?",
@@ -580,11 +580,11 @@ export default defineMessages(en, {
       { q: "Какие ассистенты вы измеряете?", a: "ChatGPT, Claude, Gemini и Perplexity — через их собственные API с включённым веб-поиском, по три запроса на вопрос, потому что их ответы меняются." },
       {
         q: "Можете ли вы гарантировать, что ChatGPT будет нас называть?",
-        a: "Нет, и не доверяйте тем, кто это гарантирует. Ни один ассистент не продаёт органические места и не раскрывает, как делает выбор. Мы делаем работу, благодаря которой вас можно найти и процитировать, и каждую неделю показываем, что изменилось.",
+        a: "Нет, и не доверяйте тем, кто это гарантирует. Ни один ассистент не продаёт органические места и не раскрывает, как делает выбор. Мы делаем работу, благодаря которой вас можно найти и процитировать, и раз в две недели показываем, что изменилось.",
       },
       {
         q: "Что вы можете доказать на деле?",
-        a: "Три вещи. Называют ли вас ассистенты: каждую неделю мы задаём ChatGPT, Claude, Gemini и Perplexity те же вопросы, что задают ваши клиенты, по нескольку раз каждый, и считаем ответы, в которых называют вас, и сайты, которые они цитируют. А для блогов, которые хостим мы, — по логу сервера: что краулеры забирали ваши страницы и что ассистенты открывали конкретные статьи, отвечая кому-то в реальном времени, — ChatGPT-User, OAI-SearchBot и Perplexity-User появляются только посреди разговора. Никто не может измерить все вопросы, которые кто угодно может задать; мы измеряем те, что задают ваши клиенты.",
+        a: "Три вещи. Называют ли вас ассистенты: раз в две недели мы задаём ChatGPT, Claude, Gemini и Perplexity те же вопросы, что задают ваши клиенты, по нескольку раз каждый, и считаем ответы, в которых называют вас, и сайты, которые они цитируют. А для блогов, которые хостим мы, — по логу сервера: что краулеры забирали ваши страницы и что ассистенты открывали конкретные статьи, отвечая кому-то в реальном времени, — ChatGPT-User и Perplexity-User появляются только посреди разговора. Никто не может измерить все вопросы, которые кто угодно может задать; мы измеряем те, что задают ваши клиенты.",
       },
       {
         q: "Чем это отличается от SEO-агентства?",
@@ -596,11 +596,11 @@ export default defineMessages(en, {
       },
       {
         q: "Когда что-то начнёт происходить?",
-        a: "Как только страница попадает в нужные индексы, краулеры обычно приходят в течение одной-двух недель, а мы каждую неделю проверяем находимость, чтобы вовремя заметить пробел. Стать источником, к которому ассистент обращается снова и снова, — это месяцы и солидный объём работы. Если вам нужна выручка с понятным источником уже в этом квартале, покупайте рекламу — мы скажем это на звонке, а не после вашего третьего счёта.",
+        a: "Как только страница попадает в нужные индексы, краулеры обычно приходят в течение одной-двух недель, а мы раз в две недели проверяем находимость, чтобы вовремя заметить пробел. Стать источником, к которому ассистент обращается снова и снова, — это месяцы и солидный объём работы. Если вам нужна выручка с понятным источником уже в этом квартале, покупайте рекламу — мы скажем это на звонке, а не после вашего третьего счёта.",
       },
       {
         q: "Вы даёте инструкцию, чтобы мы всё сделали сами, или делаете работу?",
-        a: `Мы делаем работу. Подробный отчёт (${report}) — это диагноз и наш план действий: где вы находитесь во всех четырёх ассистентах, кого называют вместо вас и что мы будем с этим делать, шаг за шагом. По подписке мы делаем эту работу: публикуем страницы-ответы на вашем домене, исправляем доступ краулеров и индексацию и измеряем каждую неделю. Стоимость отчёта засчитывается в подписку, если вы оформите её в течение ${ruDays(days)}.`,
+        a: `Мы делаем работу. Подробный отчёт (${report}) — это диагноз и наш план действий: где вы находитесь во всех четырёх ассистентах, кого называют вместо вас и что мы будем с этим делать, шаг за шагом. По подписке мы делаем эту работу: публикуем страницы-ответы на вашем домене, исправляем доступ краулеров и индексацию и измеряем раз в две недели. Стоимость отчёта засчитывается в подписку, если вы оформите её в течение ${ruDays(days)}.`,
       },
       {
         q: "Сколько стоит подробный отчёт?",

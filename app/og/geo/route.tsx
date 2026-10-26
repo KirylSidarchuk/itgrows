@@ -10,7 +10,7 @@ export async function GET() {
         <div style={{ display: "flex", fontSize: 66, fontWeight: 800, lineHeight: 1.08, marginTop: 28 }}>
           Get your company named when buyers ask ChatGPT, Claude, Gemini and Perplexity
         </div>
-        <div style={{ display: "flex", fontSize: 30, color: "#cbd5e1", marginTop: 32 }}>Free AI visibility check · a weekly count of four assistants</div>
+        <div style={{ display: "flex", fontSize: 30, color: "#cbd5e1", marginTop: 32 }}>Free AI visibility check · four assistants, every two weeks</div>
       </div>
     ),
     { width: 1200, height: 630, headers: { "Cache-Control": "public, max-age=86400, s-maxage=86400" } },

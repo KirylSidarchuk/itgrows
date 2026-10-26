@@ -84,14 +84,14 @@ ${
 ${button("See your report →", href)}
 <p style="font-size:13px;margin-top:-10px"><a href="${SAMPLE}" style="color:#7c3aed">See a real report →</a> <span style="color:#888">(${SAMPLE_DOMAIN}, every answer open)</span></p>`
 }
-${weekly ? `<p style="color:#555;font-size:13px">We re-check every week and tell you what changed.</p>` : ""}`)
+${weekly ? `<p style="color:#555;font-size:13px">We re-check every two weeks and tell you what changed.</p>` : ""}`)
   return { subject, html }
 }
 
 function weeklyEmail(first: string, domain: string, business: string, s: WeeklySummary, unsub: string) {
   const who = esc(business || domain)
   const prev = s.previous
-  const prevText = prev ? ` (${prev.kind === "baseline" ? "day 0, same questions" : "last week"}: ${prev.named})` : ""
+  const prevText = prev ? ` (${prev.kind === "baseline" ? "day 0, same questions" : "last check"}: ${prev.named})` : ""
   const lines = (s.changes ?? []).slice(0, 2).map((c) =>
     c.type === "new"
       ? `${ENGINE_LABEL[c.engine]} now names you for “${esc(cut(c.q, 60))}”`
@@ -99,14 +99,14 @@ function weeklyEmail(first: string, domain: string, business: string, s: WeeklyS
         ? `${ENGINE_LABEL[c.engine]} no longer names you for “${esc(cut(c.q, 60))}”`
         : `${esc(c.name)} newly named instead of you, in ${c.count} answers`
   )
-  const subject = `${domain} in AI answers this week: ${s.named} of ${s.of}`
+  const subject = `${domain} in AI answers, latest check: ${s.named} of ${s.of}`
   const html = wrap(
     `<p>Hi ${esc(first)},</p>
-<p>This week the assistants named ${who} in <strong>${s.named} of ${s.of}</strong> answers${prevText}.</p>
-${lines.length ? `<p style="margin-bottom:4px"><strong>What changed</strong></p><ul style="margin-top:0;padding-left:18px">${lines.map((l) => `<li>${l}</li>`).join("")}</ul>` : "<p>No changes since last week.</p>"}
-<p style="color:#555;font-size:13px">One week is noise; the 4-week average is the signal.</p>
+<p>In this check the assistants named ${who} in <strong>${s.named} of ${s.of}</strong> answers${prevText}.</p>
+${lines.length ? `<p style="margin-bottom:4px"><strong>What changed</strong></p><ul style="margin-top:0;padding-left:18px">${lines.map((l) => `<li>${l}</li>`).join("")}</ul>` : "<p>No changes since the last check.</p>"}
+<p style="color:#555;font-size:13px">One check is noise; the average of the last 4 checks is the signal.</p>
 ${button("See details →", `${REPORT}?site=${encodeURIComponent(domain)}`)}`,
-    `<p style="font-size:12px;color:#999;margin-top:24px">You get this weekly because you follow ${esc(domain)} on ItGrows. <a href="${unsub}" style="color:#999">Unsubscribe</a></p>`
+    `<p style="font-size:12px;color:#999;margin-top:24px">You get this every two weeks because you follow ${esc(domain)} on ItGrows. <a href="${unsub}" style="color:#999">Unsubscribe</a></p>`
   )
   return { subject, html }
 }

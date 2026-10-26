@@ -17,7 +17,7 @@ export const metadata: Metadata = {
   alternates: { canonical: "https://www.itgrows.ai/business/blog" },
   openGraph: {
     title: "AI visibility guides: how to get your business named by ChatGPT",
-    description: "How ChatGPT, Claude, Gemini and Perplexity find, read and cite a business, from our own weekly measurements.",
+    description: "How ChatGPT, Claude, Gemini and Perplexity find, read and cite a business, from our own measurements.",
     url: "https://www.itgrows.ai/business/blog",
     type: "website",
   },

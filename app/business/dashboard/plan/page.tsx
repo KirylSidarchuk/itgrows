@@ -34,7 +34,7 @@ const WE_DO = [
   "Write articles that answer the questions your buyers ask, with sources, in your language, and publish them on your domain",
   "Fix crawler access and indexing: robots.txt, sitemaps, Bing and Google, IndexNow",
   "Prepare your profiles and listings on the sites the assistants quote, and the letters to their editors",
-  "Put all 20 questions to ChatGPT, Claude, Gemini and Perplexity, 3 asks each, every week",
+  "Put all 20 questions to ChatGPT, Claude, Gemini and Perplexity, 3 asks each, every two weeks",
   "A monthly report, read by a person before it reaches you",
 ]
 
@@ -570,7 +570,7 @@ export default function PlanPage() {
               <ol className="mt-3 space-y-2 text-sm text-green-900 list-decimal pl-5">
                 <li>Within one business day we email you to connect publishing to {site.domain}: a blog we host at blog.{site.domain} or {site.domain}/blog, or your WordPress.</li>
                 <li>{ARTICLES_YOU} Each one is ready 2 days before its date and we email you; untouched, it goes live on the date.</li>
-                <li>Your weekly check becomes the full one: 20 questions, 4 assistants, 3 asks.</li>
+                <li>Every two weeks we run the full check: 20 questions, 4 assistants, 3 asks.</li>
               </ol>
             )}
             <div className="mt-4 flex flex-wrap gap-3">
@@ -658,7 +658,7 @@ export default function PlanPage() {
                 </ul>
               </div>
             </div>
-            <p className="text-sm text-white/60 mt-5">No one can promise that assistants will name you. We promise the work and an honest weekly count.</p>
+            <p className="text-sm text-white/60 mt-5">No one can promise that assistants will name you. We promise the work and an honest count every two weeks.</p>
 
             {site && <LaunchNeeds key={site.domain} domain={site.domain} />}
 

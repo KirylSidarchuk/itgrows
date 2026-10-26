@@ -39,8 +39,8 @@ export async function GET(req: NextRequest) {
   if (!domain) return page("Not found", "<p>We couldn't find this subscription.</p>")
   return page(
     "Unsubscribe",
-    `<h1 style="font-size:20px;margin:0 0 8px">Stop the weekly email for ${esc(domain)}?</h1>
-<p style="color:#555;font-size:14px;line-height:1.6">Your report stays in your account; we just stop emailing the weekly change.</p>
+    `<h1 style="font-size:20px;margin:0 0 8px">Stop the update emails for ${esc(domain)}?</h1>
+<p style="color:#555;font-size:14px;line-height:1.6">Your report stays in your account; we just stop emailing what changed every two weeks.</p>
 <form method="post" action="/api/geo/unsubscribe?f=${f}&t=${t}"><button style="margin-top:12px;background:#7c3aed;color:#fff;border:0;border-radius:10px;padding:12px 18px;font-size:15px;font-weight:600;cursor:pointer">Unsubscribe</button></form>`
   )
 }
@@ -54,6 +54,6 @@ export async function POST(req: NextRequest) {
   return page(
     "Unsubscribed",
     `<h1 style="font-size:20px;margin:0 0 8px">Done.</h1>
-<p style="color:#555;font-size:14px;line-height:1.6">No more weekly emails for ${esc(domain)}. Your report is still in your account: <a href="/business/dashboard/visibility" style="color:#7c3aed">open it</a>.</p>`
+<p style="color:#555;font-size:14px;line-height:1.6">No more update emails for ${esc(domain)}. Your report is still in your account: <a href="/business/dashboard/visibility" style="color:#7c3aed">open it</a>.</p>`
   )
 }

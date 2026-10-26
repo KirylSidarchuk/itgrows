@@ -130,7 +130,7 @@ const COOKIES = [
 
 const PROCESSORS = [
   { name: "Stripe", text: "Payments, subscriptions, invoices and the billing portal. Stripe handles your card; we never see the card number." },
-  { name: "Resend", text: "Sends our emails: sign-in codes, reports, weekly updates, article notices and account emails." },
+  { name: "Resend", text: "Sends our emails: sign-in codes, reports, updates every two weeks, article notices and account emails." },
   { name: "Vercel", text: "Hosts the website and the app, and provides Vercel Analytics." },
   { name: "Google Cloud", text: "Hosts our database and the servers that run the checks and write the articles, in the United States." },
   {
@@ -223,7 +223,7 @@ export default function PrivacyPage() {
               <DataBlock
                 title="Your website, for AI visibility"
                 what="The site address you enter, and the public pages of that site we fetch, such as the home page, robots.txt and sitemaps. From them we note what the business does, its brand names, language and city, and the questions its buyers ask."
-                why="To run the quick check, the detailed report and the weekly re-check, and to check the site the way AI crawlers see it."
+                why="To run the quick check, the detailed report and the re-check every two weeks, and to check the site the way AI crawlers see it."
                 basis={`${CONTRACT} For the quick check without an account: ${INTEREST.toLowerCase()} in giving you the result you asked for.`}
               />
               <DataBlock
@@ -258,8 +258,8 @@ export default function PrivacyPage() {
               />
               <DataBlock
                 title="Emails"
-                what="Your email address and the emails we send through Resend: sign-in codes, report-ready emails, weekly updates on the plan, notices that articles are ready to review, and account and trial emails for LinkedIn & X, which can include an offer."
-                why="To run the service and keep you informed about your account. Every weekly update has an unsubscribe link; your report stays in your account."
+                what="Your email address and the emails we send through Resend: sign-in codes, report-ready emails, updates every two weeks on the plan, notices that articles are ready to review, and account and trial emails for LinkedIn & X, which can include an offer."
+                why="To run the service and keep you informed about your account. Every update email has an unsubscribe link; your report stays in your account."
                 basis={`${CONTRACT} Trial reminders and offers: ${INTEREST.toLowerCase()}.`}
               />
               <DataBlock
@@ -353,7 +353,7 @@ export default function PrivacyPage() {
             </List>
             <p>
               To use any of these rights, write to <Mail /> from the email address on your account. We answer within one month. Some things you can do
-              yourself: edit or stop articles in your cabinet, disconnect LinkedIn or X, unsubscribe from weekly emails, delete your account in the
+              yourself: edit or stop articles in your cabinet, disconnect LinkedIn or X, unsubscribe from update emails, delete your account in the
               LinkedIn &amp; X dashboard, change your choice in <CookieSettings />, and clear cookies in your browser.
             </p>
           </Section>

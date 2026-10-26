@@ -271,7 +271,7 @@ export function Banner({ pending }: { pending: NonNullable<SiteReport["pending"]
   return (
     <section className="rounded-2xl bg-violet-50 border border-violet-200 p-5">
       <p className="font-bold text-violet-900">
-        {waiting ? "In the queue" : weekly ? "This week's check is running" : "Building your full report"}
+        {waiting ? "In the queue" : weekly ? "The new check is running" : "Building your full report"}
       </p>
       <p className="text-sm text-violet-900/80 mt-1 leading-relaxed">
         {waiting
@@ -334,7 +334,7 @@ export function Hero({ report }: { report: Report }) {
       <div className="flex items-start justify-between gap-3 flex-wrap">
         <p className={label}>Do AI assistants name you?</p>
         <span className="text-[11px] font-semibold text-slate-600 bg-[#f8f7f6] rounded-full px-2.5 py-1">
-          {l.kind === "weekly" ? "Weekly check" : "Day-0 report"} · {fmtDate(l.finishedAt)}
+          {l.kind === "weekly" ? "Regular check" : "Day-0 report"} · {fmtDate(l.finishedAt)}
         </span>
       </div>
       <div className="mt-3 flex items-baseline gap-2 flex-wrap">
@@ -360,7 +360,7 @@ export function Hero({ report }: { report: Report }) {
         </figure>
       )}
       {l.kind !== "weekly" && (
-        <p className="text-xs text-slate-500 mt-3">This is the starting point every weekly check on the plan is compared with.</p>
+        <p className="text-xs text-slate-500 mt-3">On the plan, every check (once every two weeks) is compared with this starting point.</p>
       )}
     </section>
   )
@@ -460,27 +460,27 @@ export function WeeklyHero({
   return (
     <section className={card}>
       <div className="flex items-start justify-between gap-3 flex-wrap">
-        <p className={label}>This week</p>
-        <span className="text-[11px] font-semibold text-slate-600 bg-[#f8f7f6] rounded-full px-2.5 py-1">Weekly check · {fmtDate(l.finishedAt)}</span>
+        <p className={label}>Latest check</p>
+        <span className="text-[11px] font-semibold text-slate-600 bg-[#f8f7f6] rounded-full px-2.5 py-1">Regular check · {fmtDate(l.finishedAt)}</span>
       </div>
       <div className="mt-3 flex items-baseline gap-2 flex-wrap">
         <span className="text-5xl sm:text-6xl font-extrabold tracking-tight text-violet-600 tabular-nums">{s.named}</span>
-        <span className="text-xl font-bold text-slate-400">of {s.of} answers named you this week</span>
+        <span className="text-xl font-bold text-slate-400">of {s.of} answers named you in this check</span>
       </div>
       <div className="mt-3 flex flex-wrap gap-2">
         {prev && (
           <span className="text-xs font-semibold text-slate-700 bg-[#f8f7f6] rounded-full px-3 py-1.5">
-            {prev.kind === "baseline" ? "Day 0, same questions" : "Last week"}: {prev.named}
+            {prev.kind === "baseline" ? "Day 0, same questions" : "Previous check"}: {prev.named}
           </span>
         )}
         {avg !== null && (
           <span className={`text-xs font-semibold rounded-full px-3 py-1.5 ${avgTone || "bg-[#f8f7f6] text-slate-700"}`}>
-            4-week average: {avg.toFixed(1).replace(/\.0$/, "")}
+            4-check average: {avg.toFixed(1).replace(/\.0$/, "")}
           </span>
         )}
       </div>
       {bars.length > 1 && (
-        <div className="mt-5 flex items-end gap-1.5" aria-label="Answers that named you, week by week">
+        <div className="mt-5 flex items-end gap-1.5" aria-label="Answers that named you, check by check">
           {bars.map((b, i) => {
             const cls = `flex-1 min-w-0 flex-col items-center ${i >= lead && i < bars.length - 8 + lead ? "hidden sm:flex" : "flex"}`
             const title = `${b.label}: named in ${b.named} of ${b.of}${b.partial ? " (partial)" : ""}`
@@ -511,7 +511,7 @@ export function WeeklyHero({
         </div>
       )}
       <p className="text-xs text-slate-500 mt-3 leading-relaxed">
-        One week is noise: answers vary between asks. The 4-week average is the signal.
+        One check is noise: answers vary between asks. The 4-check average is the signal.
         {weeks.length < 4 && ` Trend appears after 4 checks (${weeks.length} of 4).`}
       </p>
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 mt-4">
@@ -533,13 +533,13 @@ export function WeeklyHero({
   )
 }
 
-export function WhatChanged({ changes, title = "What changed this week" }: { changes: Change[]; title?: string }) {
+export function WhatChanged({ changes, title = "What changed since the last check" }: { changes: Change[]; title?: string }) {
   const list = changes.slice(0, 5)
   return (
     <section className={card}>
       <h2 className="font-bold text-lg">{title}</h2>
       {list.length === 0 ? (
-        <p className="text-sm text-slate-600 mt-3">No changes since last week.</p>
+        <p className="text-sm text-slate-600 mt-3">No changes since the last check.</p>
       ) : (
         <ul className="mt-3 space-y-2.5">
           {list.map((c, i) => (
@@ -1193,7 +1193,7 @@ export function planSteps(site: SiteReport, audit: Audit | "failed" | undefined,
       we: "We research and write the article, and publish it on your site.",
       // A client's step stays from day 0 on, so its evidence says when it was seen.
       why: `${client ? `On day 0, ${notYou}` : notYou[0].toUpperCase() + notYou.slice(1)} for it. ${andList(g.others.map((e) => LABEL[e]))} named ${andList(g.names.length > 3 ? [...top, "others"] : top)} instead.`,
-      change: "The assistants get a page of yours that answers this question directly. The weekly check shows whether their answers start naming you.",
+      change: "The assistants get a page of yours that answers this question directly. The check every two weeks shows whether their answers start naming you.",
       you: ARTICLE_YOU,
     }
   })
@@ -1246,7 +1246,7 @@ export function planSteps(site: SiteReport, audit: Audit | "failed" | undefined,
           why: client
             ? `On day 0, ${rival.domain}, a competitor's site, was cited for it in ${answers(best.n)}; you were named in ${best.named ? `${best.named} of them` : "none of them"}.`
             : `${rival.domain}, a competitor's site, is cited for it in ${answers(best.n)}; you're named in ${best.named ? `${best.named} of them` : "none of them"}.`,
-          change: "The assistants get a fuller answer of yours to quote for this question. The weekly check shows whether they start citing your site or naming you.",
+          change: "The assistants get a fuller answer of yours to quote for this question. The check every two weeks shows whether they start citing your site or naming you.",
           you: ARTICLE_YOU,
         })
     }
@@ -1385,7 +1385,7 @@ function articleStatus(q: string, work: PlanWork): StepStatus {
     text: `Published ${fmtDate(a.date)}`.trim(),
     tone: "done",
     link: a.url ? { href: a.url, text: "Read it →", external: true } : undefined,
-    week: now && now.of > 0 ? `This week: named by ${now.named} of ${now.of}${then && then.of > 0 ? ` (day 0: ${then.named} of ${then.of})` : ""}` : undefined,
+    week: now && now.of > 0 ? `Latest check: named by ${now.named} of ${now.of}${then && then.of > 0 ? ` (day 0: ${then.named} of ${then.of})` : ""}` : undefined,
   }
 }
 
@@ -1492,7 +1492,7 @@ export function YourPlan({ site, steps, ready, mode }: { site: SiteReport; steps
         <>
           <p className="text-xs text-slate-500 mt-1 leading-relaxed">
             {client
-              ? `What we do for ${site.domain}, most important first. Each step says where it stands, why and what it should change; the weekly check shows whether it did.`
+              ? `What we do for ${site.domain}, most important first. Each step says where it stands, why and what it should change; the check every two weeks shows whether it did.`
               : sample
                 ? `What we would do for ${site.domain}, most important first: why, from the report, and what it should change.`
                 : `What we do for ${site.domain} on the plan, most important first: why, from your report, and what it should change.`}
@@ -1547,11 +1547,11 @@ export function YourPlan({ site, steps, ready, mode }: { site: SiteReport; steps
             <div className="mt-5 rounded-xl bg-[#1b1916] text-white p-5 sm:p-6">
               <p className="font-extrabold text-lg">We do all of this on the plan</p>
               <p className="text-sm text-white/80 mt-1.5 leading-relaxed">
-                The articles, the fixes and the places the assistants quote, for {sample ? "your site" : site.domain}; and every week all 20
+                The articles, the fixes and the places the assistants quote, for {sample ? "your site" : site.domain}; and every two weeks all 20
                 questions put to all 4 assistants, 3 times each, so you see what moved.{isPreview(site) && " The full report comes with it."}
               </p>
               <p className="text-sm text-white/60 mt-2 leading-relaxed">
-                No one can promise that assistants will name you. We promise the work and an honest weekly count.
+                No one can promise that assistants will name you. We promise the work and an honest count every two weeks.
               </p>
               <div className="mt-4 flex flex-col sm:flex-row sm:items-center gap-3">
                 <p className="flex-1 text-sm text-white/80">
@@ -1811,7 +1811,7 @@ export function ReportSections({
           <WeeklyHero site={site} onShowBaseline={site.baseline ? onToggleBase : undefined} onOpenRun={onOpenRun} readOnly={readOnly} />
           <WhatChanged changes={latest.summary.changes ?? []} />
           {fromDay0 && (
-            <WhereNamed rows={latest.rows} engines={latest.engines} samples={latest.samples} asked={latest.finishedAt} title="This week's questions" />
+            <WhereNamed rows={latest.rows} engines={latest.engines} samples={latest.samples} asked={latest.finishedAt} title="Questions in this check" />
           )}
         </>
       ) : (
@@ -1884,10 +1884,10 @@ export function History({ site, openId, onOpen }: { site: SiteReport; openId: st
                 <span className="flex-1 min-w-0">
                   <span className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm">
                     <span className="font-semibold">{fmtDate(r.finishedAt)}</span>
-                    <span className="text-slate-500">{r.kind === "weekly" ? "Weekly check" : "Day-0 report"}</span>
+                    <span className="text-slate-500">{r.kind === "weekly" ? "Regular check" : "Day-0 report"}</span>
                     {r.id === latest.id && (
                       <span className="text-[10px] font-bold uppercase tracking-wide text-violet-700 bg-violet-100 rounded-full px-2 py-0.5">
-                        {latest.kind === "weekly" ? "This week" : "Latest"}
+                        Latest
                       </span>
                     )}
                     {missing.length > 0 && (
@@ -1934,7 +1934,7 @@ export function History({ site, openId, onOpen }: { site: SiteReport; openId: st
       </ul>
       {h.length === 1 && latest.kind === "baseline" && (
         <p className="text-xs text-slate-500 mt-3">
-          {onPlan(site) ? "The first weekly check comes about a week after day 0." : "Weekly checks come with the plan."}
+          {onPlan(site) ? "The first regular check comes about two weeks after day 0." : "A check every two weeks comes with the plan."}
         </p>
       )}
     </section>
@@ -1956,7 +1956,7 @@ export function RunView({
   const back = (
     <div>
       <button type="button" onClick={onBack} className="text-sm font-semibold text-violet-700 hover:underline">
-        ← Back to {site.latest?.kind === "weekly" ? "this week" : "the latest report"}
+        ← Back to {site.latest?.kind === "weekly" ? "the latest check" : "the latest report"}
       </button>
     </div>
   )
@@ -2000,7 +2000,7 @@ export function RunView({
     <>
       {back}
       <Hero report={run} />
-      {run.kind === "weekly" && <WhatChanged changes={run.summary.changes ?? []} title="What changed that week" />}
+      {run.kind === "weekly" && <WhatChanged changes={run.summary.changes ?? []} title="What changed in that check" />}
       {preview && <PreviewNote report={run} />}
       {preview ? (
         <>

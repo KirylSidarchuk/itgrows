@@ -32,14 +32,14 @@ const en = {
     "Site setup, with a launch report",
     "Up to 12 researched articles a month on your domain",
     "Profiles and editor letters on the sites AI quotes",
-    "All four assistants measured every week",
+    "All four assistants measured every two weeks",
     "Every article shown to you 2 days before it goes live",
   ],
   startMonthly: "Start monthly",
   startQuarter: (quarter: string) => `3 months upfront — ${quarter}, no setup fee`,
   startYearly: (year: string) => `Start yearly — ${year}`,
 
-  disclaimer: "No one can guarantee that an assistant will name a business. We measure and show you every week.",
+  disclaimer: "No one can guarantee that an assistant will name a business. We measure and show you every two weeks.",
 }
 
 export default defineMessages(en, {
@@ -67,14 +67,14 @@ export default defineMessages(en, {
       "Einrichtung der Website, mit Startbericht",
       "Bis zu 12 recherchierte Artikel pro Monat auf Ihrer Domain",
       "Profile und Briefe an Redaktionen der Websites, die KI zitiert",
-      "Alle vier Assistenten jede Woche gemessen",
+      "Alle vier Assistenten, alle zwei Wochen gemessen",
       "Jeden Artikel sehen Sie 2 Tage vor der Veröffentlichung",
     ],
     startMonthly: "Monatlich starten",
     startQuarter: (quarter) => `3 Monate im Voraus — ${quarter}, ohne Einrichtungsgebühr`,
     startYearly: (year) => `Jährlich starten — ${year}`,
 
-    disclaimer: "Niemand kann garantieren, dass ein Assistent ein Unternehmen nennt. Wir messen und zeigen es Ihnen jede Woche.",
+    disclaimer: "Niemand kann garantieren, dass ein Assistent ein Unternehmen nennt. Wir messen und zeigen es Ihnen alle zwei Wochen.",
   },
   fr: {
     h2: "Voyez où vous en êtes. Laissez-nous y remédier.",
@@ -100,14 +100,14 @@ export default defineMessages(en, {
       "Mise en place du site, avec un rapport de lancement",
       "Jusqu’à 12 articles documentés par mois sur votre domaine",
       "Profils et lettres aux rédactions des sites que l’IA cite",
-      "Les quatre assistants mesurés chaque semaine",
+      "Les quatre assistants mesurés toutes les deux semaines",
       "Chaque article vous est montré 2 jours avant sa mise en ligne",
     ],
     startMonthly: "Commencer au mois",
     startQuarter: (quarter) => `3 mois d’avance — ${quarter}, sans frais de mise en place`,
     startYearly: (year) => `Commencer à l’année — ${year}`,
 
-    disclaimer: "Personne ne peut garantir qu’un assistant mentionnera une entreprise. Nous mesurons et vous montrons les résultats chaque semaine.",
+    disclaimer: "Personne ne peut garantir qu’un assistant mentionnera une entreprise. Nous mesurons et vous montrons les résultats toutes les deux semaines.",
   },
   es: {
     h2: "Vea dónde está. Déjenos arreglarlo.",
@@ -133,14 +133,14 @@ export default defineMessages(en, {
       "Configuración del sitio, con un informe de lanzamiento",
       "Hasta 12 artículos documentados al mes en su dominio",
       "Perfiles y cartas a las redacciones de los sitios que cita la IA",
-      "Los cuatro asistentes medidos cada semana",
+      "Los cuatro asistentes medidos cada dos semanas",
       "Cada artículo se le muestra 2 días antes de publicarse",
     ],
     startMonthly: "Empezar mensual",
     startQuarter: (quarter) => `3 meses por adelantado — ${quarter}, sin cuota de configuración`,
     startYearly: (year) => `Empezar anual — ${year}`,
 
-    disclaimer: "Nadie puede garantizar que un asistente mencione a una empresa. Medimos y se lo mostramos cada semana.",
+    disclaimer: "Nadie puede garantizar que un asistente mencione a una empresa. Medimos y se lo mostramos cada dos semanas.",
   },
   ru: {
     h2: "Узнайте, где вы сейчас. А исправим — мы.",
@@ -166,13 +166,13 @@ export default defineMessages(en, {
       "Настройка сайта с отчётом о запуске",
       "До 12 статей с исследованием в месяц на вашем домене",
       "Профили и письма редакторам сайтов, которые цитирует ИИ",
-      "Все четыре ассистента — замер каждую неделю",
+      "Все четыре ассистента — замер раз в две недели",
       "Каждую статью вы видите за 2 дня до публикации",
     ],
     startMonthly: "Начать помесячно",
     startQuarter: (quarter) => `3 месяца вперёд — ${quarter}, без платы за настройку`,
     startYearly: (year) => `Начать на год — ${year}`,
 
-    disclaimer: "Никто не может гарантировать, что ассистент назовёт компанию. Мы измеряем и показываем вам результат каждую неделю.",
+    disclaimer: "Никто не может гарантировать, что ассистент назовёт компанию. Мы измеряем и показываем вам результат раз в две недели.",
   },
 })

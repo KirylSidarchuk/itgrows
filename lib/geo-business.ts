@@ -56,7 +56,7 @@ const PRODUCTS = {
   plan: {
     name: "ItGrows for Business — AI visibility",
     description:
-      "Articles on your own domain that answer your buyers' questions, crawler and indexing fixes, and a weekly check of ChatGPT, Claude, Gemini and Perplexity.",
+      "Articles on your own domain that answer your buyers' questions, crawler and indexing fixes, and a check of ChatGPT, Claude, Gemini and Perplexity every two weeks.",
     metadata: { product: GEO_PLAN },
   },
   setup: {

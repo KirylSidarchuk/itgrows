@@ -7,11 +7,11 @@
 // and the footer; it is not part of this description. Assistants were answering "a LinkedIn tool".
 
 export const ENTITY_ONE_LINER =
-  "ItGrows is an AI visibility (generative engine optimization, GEO) service for businesses: it publishes answer pages on the company's own website, makes the site readable for AI crawlers and search indexes, and checks every week whether ChatGPT, Claude, Gemini and Perplexity name the company."
+  "ItGrows is an AI visibility (generative engine optimization, GEO) service for businesses: it publishes answer pages on the company's own website, makes the site readable for AI crawlers and search indexes, and checks every two weeks whether ChatGPT, Claude, Gemini and Perplexity name the company."
 
 export const ENTITY_ABOUT = [
-  "ItGrows helps a company get named when its buyers ask an AI assistant. We put the questions those buyers ask to ChatGPT, Claude, Gemini and Perplexity, several times each, and record who is named and which sites are cited. Then we publish pages on the company's own domain that answer those questions, fix what stops AI crawlers and search indexes from reading the site, and measure again every week.",
-  "No one can guarantee that an assistant will name a business. We promise the work and an honest weekly count.",
+  "ItGrows helps a company get named when its buyers ask an AI assistant. We put the questions those buyers ask to ChatGPT, Claude, Gemini and Perplexity, several times each, and record who is named and which sites are cited. Then we publish pages on the company's own domain that answer those questions, fix what stops AI crawlers and search indexes from reading the site, and measure again every two weeks.",
+  "No one can guarantee that an assistant will name a business. We promise the work and an honest count every two weeks.",
 ]
 
 // Share images. The GEO one is drawn by app/og/geo; og-image.png shows the LinkedIn/X product.

@@ -58,6 +58,19 @@ export type PublishOutcome =
       counted: boolean
     }
 
+// Since 26 Oct 2026 (Kiryl) no article is written through a paid API: they are written in a Claude
+// session and stored on the row ready to publish (/root/blog_engine/session_stock.py save, which
+// marks them preparedBy "vm-writer" like the VM writer did). A due post without one is not generated
+// here any more. It waits: it stays "scheduled" with this note, the next run publishes it once the
+// article is stored, and Kiryl gets one Telegram line per post (the note is the flag that keeps later
+// runs quiet). The client's "Your articles" shows it as queued, as before.
+export const WAITING_FOR_ARTICLE = "waiting for the article"
+
+// Accounts whose due posts may still go through the old generator (/api/seo/generate): SEO-autopilot
+// users outside the GEO plan, if Kiryl decides to keep them on it. On 26 Oct 2026 every post due in
+// the next 30 days belonged to a GEO client (MagiScan, FreightSizer, firma-ausland), so nobody does.
+const GENERATE_FOR_USERS: ReadonlySet<string> = new Set<string>([])
+
 /** The site every article of a user is published to, the one rule for the nightly publisher, "Publish
  *  now" and the "Your articles" pages: the user's default site, else the oldest connected one. */
 export function pickPublishSite<T extends Pick<Site, "id" | "isDefault" | "createdAt">>(sites: readonly T[]): T | null {
@@ -171,10 +184,10 @@ export async function publishScheduledPost(duePost: ScheduledPost, ctx: PublishC
       coverImageUrl?: string
     }
 
-    // An article written ahead of time by the writer on the VM (blog_engine/client_writer.py:
-    // sources checked, editor-reviewed) is published as it is — with the client's edits, if they
-    // made any in "Your articles". Anything else is generated here, exactly as before — the VM
-    // writer failing must never stop a client's schedule.
+    // An article written ahead of time (blog_engine/client_writer.py, or since 26 Oct 2026 a Claude
+    // session through blog_engine/session_stock.py: sources checked, editor-reviewed) is published as
+    // it is — with the client's edits, if they made any in "Your articles". Without one the post
+    // waits for it (WAITING_FOR_ARTICLE); only GENERATE_FOR_USERS still get the old generator.
     // rewriteOf / targetSlug: set by the VM writer when the article replaces one already published
     // (our blog_posts slug, and the file name the client's receiver has it under).
     const prepared = post.articleData as (Partial<Article> & { preparedBy?: string; rewriteOf?: string; targetSlug?: string }) | null
@@ -215,6 +228,26 @@ export async function publishScheduledPost(duePost: ScheduledPost, ctx: PublishC
         metaDescription: prepared.metaDescription ?? "",
         keywords: prepared.keywords ?? [],
         coverImageUrl: prepared.coverImageUrl ?? undefined,
+      }
+    } else if (!GENERATE_FOR_USERS.has(post.userId)) {
+      // No article yet and no generator for this account: back to "scheduled", nothing else changed,
+      // until the session stores the article. Only the run that claimed the row gets here, so the
+      // note seen on the claimed row decides alone whether this is the first time (one line per post).
+      await db
+        .update(scheduledPosts)
+        .set({ status: "scheduled", publishError: WAITING_FOR_ARTICLE })
+        .where(and(eq(scheduledPosts.id, post.id), eq(scheduledPosts.status, "generating")))
+      if (post.publishError !== WAITING_FOR_ARTICLE) {
+        await sendOwner(
+          `📝 Статьи нет, публикация ждёт: ${site?.name ?? site?.siteSlug ?? "сайт не найден"} · ${post.scheduledDate} · «${post.keyword}». ` +
+            "Напиши её в сессии (session_stock.py todo), следующий запуск опубликует.",
+        )
+      }
+      return {
+        claimed: true,
+        error: null,
+        processed: { id: post.id, keyword: post.keyword, status: "waiting", error: WAITING_FOR_ARTICLE },
+        counted: false,
       }
     } else {
       // Generate article (internal call — pass secret to bypass user session check)

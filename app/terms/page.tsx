@@ -130,7 +130,7 @@ export default function TermsPage() {
               <li>
                 <strong>AI visibility</strong> (ItGrows for Business). We check whether ChatGPT, Claude, Gemini and Perplexity name a business when its
                 buyers ask them, get the business’s website ready for AI crawlers and search indexes, write and publish articles on the business’s own
-                domain, and measure again every week.
+                domain, and measure again every two weeks.
               </li>
               <li>
                 <strong>LinkedIn &amp; X posts.</strong> We draft posts in your voice for LinkedIn (personal profiles and Company Pages) and X, and publish
@@ -186,7 +186,7 @@ export default function TermsPage() {
             <p>
               The setup gets your site ready: it is tested the way AI crawlers see it, what blocks them is fixed with you, Bing and Google are set up,
               and you get a launch report on the “Your website” page. What the plan includes after that is listed on our pricing page when you buy it;
-              today that is the day-0 report, a weekly re-check against day 0, up to 12 researched articles a month on your own domain, and a monthly
+              today that is the day-0 report, a re-check against day 0 every two weeks, up to 12 researched articles a month on your own domain, and a monthly
               report. The plan has no trial period.
             </p>
             <p>
@@ -218,7 +218,7 @@ export default function TermsPage() {
               say. <strong>We do not guarantee that any AI assistant will name, recommend, cite or link to your business</strong>, and we do not
               guarantee any ranking, traffic, leads or sales.
             </p>
-            <p>What we do promise is the work described in your plan, and an honest count of what the assistants said, every week.</p>
+            <p>What we do promise is the work described in your plan, and an honest count of what the assistants said, every two weeks.</p>
           </Section>
 
           <Section id="client">
