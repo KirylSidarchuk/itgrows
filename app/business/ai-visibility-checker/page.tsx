@@ -5,6 +5,9 @@ import AuditForm from "../AuditForm"
 import ToolShell from "../_tools/ToolShell"
 import Faq, { faqSchema, type QA } from "../_tools/Faq"
 import { GEO_PRICES } from "@/lib/geo-pricing"
+import { noteCrawler } from "@/lib/crawler-log"
+import { guideFor } from "@/lib/geo-guides"
+import AboutItGrows from "@/components/geo/AboutItGrows"
 import { getLocale } from "@/lib/i18n/server"
 import { t } from "@/lib/i18n/messages"
 import { localizedMetadata } from "@/lib/i18n/metadata"
@@ -27,6 +30,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function AiVisibilityCheckerPage() {
   const locale = await getLocale()
+  void noteCrawler(localePath(locale, PATH))
   const m = t(locale, ns)
   const faq: QA[] = [{ q: m.faqAccount.q, a: m.faqAccount.a(GEO_PRICES.research.label) }, ...m.faq]
   const schema = {
@@ -77,13 +81,16 @@ export default async function AiVisibilityCheckerPage() {
 
           <h2 className="text-2xl font-extrabold tracking-tight mt-12">{m.notNamedTitle}</h2>
           <ul className="mt-4 space-y-2 text-slate-700 leading-relaxed list-disc pl-5">
-            <li>{rich(m.tipGuide, { link: (c) => linkTo("/business/blog/how-to-get-your-business-recommended-by-chatgpt", c) })}</li>
+            {/* German pages link the German guides (lib/geo-guides.ts); other languages the English ones. */}
+            <li>{rich(m.tipGuide, { link: (c) => linkTo(`/business/blog/${guideFor(locale, "how-to-get-your-business-recommended-by-chatgpt")}`, c) })}</li>
             <li>{rich(m.tipCrawler, { link: (c) => linkTo(localePath(locale, "/business/ai-crawler-checker"), c) })}</li>
-            <li>{rich(m.tipCauses, { link: (c) => linkTo("/business/blog/why-doesnt-chatgpt-mention-my-company", c) })}</li>
+            <li>{rich(m.tipCauses, { link: (c) => linkTo(`/business/blog/${guideFor(locale, "why-doesnt-chatgpt-mention-my-company")}`, c) })}</li>
           </ul>
 
           <Faq items={faq} />
         </article>
+
+        <AboutItGrows locale={locale} current={PATH} className="max-w-3xl mx-auto mt-16" />
       </main>
     </ToolShell>
   )

@@ -32,7 +32,7 @@ const ruDays = (n: number) => plural("ru", n, { one: `${n} дня`, other: `${n}
 const en = {
   metaTitle: "AI visibility for businesses: get named by ChatGPT | ItGrows",
   metaDescription:
-    "ItGrows makes companies visible in AI answers and drafts LinkedIn and X posts for founders. Check your site free in about 30 seconds.",
+    "ItGrows is an AI visibility (GEO) service: answer pages on your own website and a weekly check of four AI assistants. Check your site free in about 30 seconds.",
   ogTitle: "Get your company named by ChatGPT, Claude, Gemini and Perplexity",
   ogDescription: "Answer pages on your own domain, crawler and indexing fixes, and a weekly check of four assistants.",
 
@@ -69,14 +69,14 @@ const en = {
   openCabinet: "Open your cabinet",
 
   // Results
-  casesTitle: "What clients report",
+  casesTitle: "Results: two clients and our own marketplace",
   hundreds: "Hundreds",
   cases: [
     { kind: "B2B SaaS", l: "new B2B customers in one month, both from ChatGPT" },
     { kind: "iOS app", l: "of installs a month from ChatGPT, Claude and Gemini" },
-    { kind: "Course marketplace", l: "times AI assistants opened its pages while answering someone, in two weeks" },
+    { kind: "Our own course marketplace", l: "fetches of its pages by the answer and search agents of ChatGPT and Perplexity, in two weeks" },
   ],
-  casesNote: "As reported by the clients; pickaclass.com from its server log, August 2026.",
+  casesNote: "freightsizer.ai and magiscan.app: as reported by the clients. pickaclass.com is our own course marketplace: from its server log, 28 July – 11 August 2026.",
 
   // Pricing section
   talkFirst: "Or talk to us first →",
@@ -93,7 +93,7 @@ const en = {
     { q: "What is ItGrows?", a: ENTITY_ABOUT[0] },
     {
       q: "Is ItGrows a LinkedIn tool or an AI visibility service?",
-      a: "Both, as two products. For companies, ItGrows is an AI visibility (GEO) service. For founders and experts, it drafts LinkedIn and X posts in their own voice; that product is at itgrows.ai/personal.",
+      a: "An AI visibility (GEO) service for businesses. The LinkedIn and X post drafting you may have seen is a separate product for founders and experts, at itgrows.ai/personal.",
     },
     { q: "Which assistants do you measure?", a: "ChatGPT, Claude, Gemini and Perplexity, through their own APIs with web search on, three asks per question, because their answers vary." },
     { q: "Can you guarantee that ChatGPT will name us?", a: "No, and distrust anyone who does. No assistant sells organic placement or publishes how it chooses. We do the work that makes you findable and quotable, and we show you every week what changed." },
@@ -129,7 +129,7 @@ const en = {
       q: "Who is this wrong for?",
       a: `Anyone without real expertise to publish — the engine amplifies a point of view, it cannot invent one. Anyone needing a signed guarantee. And anyone who wants the work done for the price of a software tool: at ${month} a month the plan is priced against a fractional content hire. To see the full picture before deciding, the ${report} report shows where you stand and what we will do, and its price comes off the plan.`,
     },
-    { q: "Will this send us traffic from ChatGPT?", a: "Often little: assistants usually answer in place. We count whether you are named and cited. Some clients report customers, installs and leads that came from assistants." },
+    { q: "Will this send us traffic from ChatGPT?", a: "Often little: assistants usually answer in place. We count whether you are named and cited. Two clients report customers and installs that came from assistants; our own ASO agency, appslift, gets leads from them." },
     { q: "I use ItGrows for LinkedIn. Where is my cabinet?", a: "Where it always was: Sign in, then LinkedIn & X cabinet. Nothing changed for your posts, plan or billing." },
   ],
 
@@ -150,14 +150,14 @@ const en = {
 
 export default defineMessages(en, {
   de: {
-    metaTitle: "KI-Sichtbarkeit für Unternehmen: von ChatGPT genannt werden | ItGrows",
+    metaTitle: "KI-Sichtbarkeit: von ChatGPT genannt werden | ItGrows",
     metaDescription:
-      "ItGrows macht Unternehmen in KI-Antworten sichtbar und schreibt LinkedIn- und X-Posts für Gründer. Prüfen Sie Ihre Website kostenlos in etwa 30 Sekunden.",
+      "ItGrows, Dienst für KI-Sichtbarkeit (GEO): Antwortseiten auf Ihrer Website, ein wöchentlicher Check von vier KI-Assistenten. Kostenlos prüfen, etwa 30 Sekunden.",
     ogTitle: "Damit ChatGPT, Claude, Gemini und Perplexity Ihr Unternehmen nennen",
     ogDescription: "Antwortseiten auf Ihrer eigenen Domain, Korrekturen für Crawler und Indexierung und ein wöchentlicher Check von vier Assistenten.",
 
     orgDescription:
-      "ItGrows macht Unternehmen in KI-Antworten sichtbar: Antwortseiten auf der eigenen Domain, Korrekturen für KI-Crawler und Suchindizes und ein wöchentlicher Check von ChatGPT, Claude, Gemini und Perplexity. Außerdem entwirft ItGrows LinkedIn- und X-Posts für Gründer und Experten.",
+      "ItGrows ist ein Dienst für KI-Sichtbarkeit (Generative Engine Optimization, GEO) für Unternehmen: Er veröffentlicht Antwortseiten auf der eigenen Website des Unternehmens, macht die Website für KI-Crawler und Suchindizes lesbar und prüft jede Woche, ob ChatGPT, Claude, Gemini und Perplexity das Unternehmen nennen.",
     appName: "ItGrows KI-Sichtbarkeitscheck",
     appDescription:
       "Ein 30-Sekunden-Check, ob ChatGPT und Perplexity ein Unternehmen nennen, wenn seine Kunden fragen: fünf Kundenfragen, aus der Website abgeleitet und live mit Websuche beantwortet, dazu die stattdessen genannten Unternehmen und die zitierten Websites. Kostenlos: zwei Antworten sofort vollständig, alle fünf, sobald Sie ein Konto anlegen.",
@@ -185,14 +185,14 @@ export default defineMessages(en, {
     founderCta: "LinkedIn- & X-Posts →",
     openCabinet: "Zu Ihrem Bereich",
 
-    casesTitle: "Was Kunden berichten",
+    casesTitle: "Ergebnisse: zwei Kunden und unser eigener Marktplatz",
     hundreds: "Hunderte",
     cases: [
       { kind: "B2B-SaaS", l: "neue B2B-Kunden in einem Monat, beide über ChatGPT" },
       { kind: "iOS-App", l: "Installationen pro Monat über ChatGPT, Claude und Gemini" },
-      { kind: "Kursmarktplatz", l: "Mal öffneten KI-Assistenten in zwei Wochen seine Seiten, während sie jemandem antworteten" },
+      { kind: "Unser eigener Kursmarktplatz", l: "Abrufe seiner Seiten durch die Antwort- und Such-Agenten von ChatGPT und Perplexity, in zwei Wochen" },
     ],
-    casesNote: "Nach Angaben der Kunden; pickaclass.com laut eigenem Server-Log, August 2026.",
+    casesNote: "freightsizer.ai und magiscan.app: nach Angaben der Kunden. pickaclass.com ist unser eigener Kursmarktplatz: laut seinem Server-Log, 28. Juli – 11. August 2026.",
 
     talkFirst: "Oder sprechen Sie zuerst mit uns →",
     liPlans: (personal, duo, allIn) =>
@@ -209,7 +209,7 @@ export default defineMessages(en, {
       },
       {
         q: "Ist ItGrows ein LinkedIn-Tool oder ein Dienst für KI-Sichtbarkeit?",
-        a: "Beides, als zwei Produkte. Für Unternehmen ist ItGrows ein Dienst für KI-Sichtbarkeit (GEO). Für Gründer und Experten entwirft es LinkedIn- und X-Posts in ihrer eigenen Stimme; dieses Produkt finden Sie unter itgrows.ai/personal.",
+        a: "Ein Dienst für KI-Sichtbarkeit (GEO) für Unternehmen. Die Entwürfe für LinkedIn- und X-Posts, die Sie vielleicht kennen, sind ein separates Produkt für Gründer und Experten unter itgrows.ai/personal.",
       },
       { q: "Welche Assistenten messen Sie?", a: "ChatGPT, Claude, Gemini und Perplexity, über ihre eigenen APIs mit aktivierter Websuche, drei Anfragen pro Frage, weil ihre Antworten schwanken." },
       {
@@ -250,7 +250,7 @@ export default defineMessages(en, {
       },
       {
         q: "Bringt uns das Traffic von ChatGPT?",
-        a: "Oft wenig: Assistenten antworten meist direkt im Chat. Wir zählen, ob Sie genannt und zitiert werden. Einige Kunden berichten von Kunden, Installationen und Leads, die über Assistenten kamen.",
+        a: "Oft wenig: Assistenten antworten meist direkt im Chat. Wir zählen, ob Sie genannt und zitiert werden. Zwei Kunden berichten von Kunden und Installationen, die über Assistenten kamen; unsere eigene ASO-Agentur appslift erhält über sie Leads.",
       },
       {
         q: "Ich nutze ItGrows für LinkedIn. Wo ist mein Bereich?",
@@ -272,14 +272,14 @@ export default defineMessages(en, {
   },
 
   fr: {
-    metaTitle: "Visibilité dans l’IA pour les entreprises : soyez mentionné par ChatGPT | ItGrows",
+    metaTitle: "Visibilité dans l’IA : être mentionné par ChatGPT | ItGrows",
     metaDescription:
-      "ItGrows rend les entreprises visibles dans les réponses de l’IA et rédige des posts LinkedIn et X pour les fondateurs. Vérifiez gratuitement votre site en 30 secondes environ.",
+      "ItGrows, visibilité dans l’IA (GEO) : des pages de réponse sur votre site et une vérification hebdomadaire de quatre assistants. Test gratuit, 30 s environ.",
     ogTitle: "Faites mentionner votre entreprise par ChatGPT, Claude, Gemini et Perplexity",
     ogDescription: "Des pages de réponse sur votre propre domaine, des corrections pour les robots et l’indexation, et une vérification hebdomadaire de quatre assistants.",
 
     orgDescription:
-      "ItGrows rend les entreprises visibles dans les réponses de l’IA : des pages de réponse sur leur propre domaine, des corrections pour les robots d’IA et les index de recherche, et une vérification hebdomadaire de ChatGPT, Claude, Gemini et Perplexity. ItGrows rédige aussi des posts LinkedIn et X pour les fondateurs et les experts.",
+      "ItGrows est un service de visibilité dans l’IA (generative engine optimization, GEO) pour les entreprises : il publie des pages de réponse sur le propre site de l’entreprise, rend le site lisible pour les robots d’IA et les index de recherche, et vérifie chaque semaine si ChatGPT, Claude, Gemini et Perplexity mentionnent l’entreprise.",
     appName: "Test de visibilité IA ItGrows",
     appDescription:
       "Une vérification en 30 secondes : ChatGPT et Perplexity mentionnent-ils une entreprise quand ses clients posent la question ? Cinq questions de clients générées à partir du site, posées en direct avec la recherche web, avec les entreprises mentionnées à sa place et les sites cités. Gratuit : deux réponses complètes tout de suite, les cinq dès que vous créez un compte.",
@@ -307,14 +307,14 @@ export default defineMessages(en, {
     founderCta: "Posts LinkedIn et X →",
     openCabinet: "Ouvrir votre espace",
 
-    casesTitle: "Ce que rapportent nos clients",
+    casesTitle: "Résultats : deux clients et notre propre marketplace",
     hundreds: "Des centaines",
     cases: [
       { kind: "SaaS B2B", l: "nouveaux clients B2B en un mois, tous deux venus de ChatGPT" },
       { kind: "App iOS", l: "d’installations par mois venues de ChatGPT, Claude et Gemini" },
-      { kind: "Marketplace de cours", l: "fois où des assistants IA ont ouvert ses pages en répondant à quelqu’un, en deux semaines" },
+      { kind: "Notre propre marketplace de cours", l: "consultations de ses pages par les agents de réponse et de recherche de ChatGPT et Perplexity, en deux semaines" },
     ],
-    casesNote: "Selon les clients ; pickaclass.com d’après son journal serveur, août 2026.",
+    casesNote: "freightsizer.ai et magiscan.app : selon les clients. pickaclass.com est notre propre marketplace de cours : d’après son journal serveur, du 28 juillet au 11 août 2026.",
 
     talkFirst: "Ou parlez-nous d’abord →",
     liPlans: (personal, duo, allIn) =>
@@ -331,7 +331,7 @@ export default defineMessages(en, {
       },
       {
         q: "ItGrows est-il un outil LinkedIn ou un service de visibilité dans l’IA ?",
-        a: "Les deux, sous forme de deux produits. Pour les entreprises, ItGrows est un service de visibilité dans les réponses de l’IA (GEO). Pour les fondateurs et les experts, il rédige des posts LinkedIn et X dans leur propre style ; ce produit se trouve sur itgrows.ai/personal.",
+        a: "Un service de visibilité dans l’IA (GEO) pour les entreprises. La rédaction de posts LinkedIn et X que vous avez peut-être vue est un produit distinct, pour les fondateurs et les experts, sur itgrows.ai/personal.",
       },
       { q: "Quels assistants mesurez-vous ?", a: "ChatGPT, Claude, Gemini et Perplexity, via leurs propres API avec la recherche web activée, trois requêtes par question, car leurs réponses varient." },
       {
@@ -372,7 +372,7 @@ export default defineMessages(en, {
       },
       {
         q: "Cela nous apportera-t-il du trafic depuis ChatGPT ?",
-        a: "Souvent peu : les assistants répondent généralement sur place. Nous comptons si vous êtes mentionné et cité. Certains de nos clients font état de nouveaux clients, d’installations et de leads venus des assistants.",
+        a: "Souvent peu : les assistants répondent généralement sur place. Nous comptons si vous êtes mentionné et cité. Deux de nos clients font état de nouveaux clients et d’installations venus des assistants ; notre propre agence ASO, appslift, en reçoit des leads.",
       },
       {
         q: "J’utilise ItGrows pour LinkedIn. Où est mon espace ?",
@@ -394,14 +394,14 @@ export default defineMessages(en, {
   },
 
   es: {
-    metaTitle: "Visibilidad en IA para empresas: que ChatGPT le mencione | ItGrows",
+    metaTitle: "Visibilidad en IA: que ChatGPT le mencione | ItGrows",
     metaDescription:
-      "ItGrows hace visibles a las empresas en las respuestas de la IA y redacta publicaciones de LinkedIn y X para fundadores. Compruebe su sitio gratis en unos 30 segundos.",
+      "ItGrows, visibilidad en IA (GEO): páginas de respuesta en su sitio web y una comprobación semanal de cuatro asistentes. Compruebe su sitio gratis, unos 30 s.",
     ogTitle: "Haga que ChatGPT, Claude, Gemini y Perplexity mencionen su empresa",
     ogDescription: "Páginas de respuesta en su propio dominio, correcciones de rastreo e indexación y una comprobación semanal de cuatro asistentes.",
 
     orgDescription:
-      "ItGrows hace visibles a las empresas en las respuestas de la IA: páginas de respuesta en su propio dominio, correcciones para rastreadores de IA e índices de búsqueda, y una comprobación semanal de ChatGPT, Claude, Gemini y Perplexity. También redacta publicaciones de LinkedIn y X para fundadores y expertos.",
+      "ItGrows es un servicio de visibilidad en IA (generative engine optimization, GEO) para empresas: publica páginas de respuesta en el propio sitio web de la empresa, hace que el sitio sea legible para los rastreadores de IA y los índices de búsqueda, y comprueba cada semana si ChatGPT, Claude, Gemini y Perplexity mencionan a la empresa.",
     appName: "Comprobación de visibilidad en IA de ItGrows",
     appDescription:
       "Una comprobación de 30 segundos de si ChatGPT y Perplexity mencionan a una empresa cuando sus clientes preguntan: cinco preguntas de clientes generadas a partir del sitio, respondidas en directo con búsqueda web, con las empresas mencionadas en su lugar y los sitios citados. Gratis: dos respuestas completas al momento y las cinco en cuanto cree una cuenta.",
@@ -429,14 +429,14 @@ export default defineMessages(en, {
     founderCta: "Publicaciones en LinkedIn y X →",
     openCabinet: "Abrir su panel",
 
-    casesTitle: "Lo que cuentan los clientes",
+    casesTitle: "Resultados: dos clientes y nuestro propio marketplace",
     hundreds: "Cientos",
     cases: [
       { kind: "SaaS B2B", l: "clientes B2B nuevos en un mes, los dos desde ChatGPT" },
       { kind: "App de iOS", l: "de instalaciones al mes desde ChatGPT, Claude y Gemini" },
-      { kind: "Marketplace de cursos", l: "veces que los asistentes de IA abrieron sus páginas mientras respondían a alguien, en dos semanas" },
+      { kind: "Nuestro propio marketplace de cursos", l: "consultas de sus páginas por los agentes de respuesta y de búsqueda de ChatGPT y Perplexity, en dos semanas" },
     ],
-    casesNote: "Según los propios clientes; pickaclass.com, según el registro de su servidor, agosto de 2026.",
+    casesNote: "freightsizer.ai y magiscan.app: según los propios clientes. pickaclass.com es nuestro propio marketplace de cursos: según el registro de su servidor, del 28 de julio al 11 de agosto de 2026.",
 
     talkFirst: "O hable antes con nosotros →",
     liPlans: (personal, duo, allIn) =>
@@ -453,7 +453,7 @@ export default defineMessages(en, {
       },
       {
         q: "¿ItGrows es una herramienta para LinkedIn o un servicio de visibilidad en IA?",
-        a: "Ambas cosas, como dos productos. Para empresas, ItGrows es un servicio de visibilidad en las respuestas de la IA (GEO). Para fundadores y expertos, redacta publicaciones de LinkedIn y X con su propia voz; ese producto está en itgrows.ai/personal.",
+        a: "Un servicio de visibilidad en IA (GEO) para empresas. La redacción de publicaciones de LinkedIn y X que quizá conozca es un producto aparte para fundadores y expertos, en itgrows.ai/personal.",
       },
       { q: "¿Qué asistentes miden?", a: "ChatGPT, Claude, Gemini y Perplexity, a través de sus propias API con la búsqueda web activada, tres consultas por pregunta, porque sus respuestas varían." },
       {
@@ -494,7 +494,7 @@ export default defineMessages(en, {
       },
       {
         q: "¿Nos traerá tráfico desde ChatGPT?",
-        a: "A menudo poco: los asistentes suelen responder en el propio chat. Contamos si le mencionan y le citan. Algunos clientes nos cuentan que han conseguido clientes, instalaciones y leads a través de los asistentes.",
+        a: "A menudo poco: los asistentes suelen responder en el propio chat. Contamos si le mencionan y le citan. Dos clientes nos cuentan que han conseguido clientes e instalaciones a través de los asistentes; nuestra propia agencia de ASO, appslift, recibe leads de ellos.",
       },
       {
         q: "Uso ItGrows para LinkedIn. ¿Dónde está mi panel?",
@@ -516,14 +516,14 @@ export default defineMessages(en, {
   },
 
   ru: {
-    metaTitle: "Видимость в ИИ для бизнеса: пусть ChatGPT называет вас | ItGrows",
+    metaTitle: "Видимость в ИИ: пусть ChatGPT называет вас | ItGrows",
     metaDescription:
-      "ItGrows делает компании видимыми в ответах ИИ и пишет посты в LinkedIn и X для основателей. Проверьте свой сайт бесплатно, примерно за 30 секунд.",
+      "ItGrows — сервис видимости в ИИ (GEO): страницы-ответы на вашем сайте и еженедельная проверка четырёх ассистентов. Проверьте сайт бесплатно, около 30 секунд.",
     ogTitle: "Пусть ChatGPT, Claude, Gemini и Perplexity называют вашу компанию",
     ogDescription: "Страницы-ответы на вашем собственном домене, исправления для краулеров и индексации и еженедельная проверка четырёх ассистентов.",
 
     orgDescription:
-      "ItGrows делает компании видимыми в ответах ИИ: страницы-ответы на их собственном домене, исправления для ИИ-краулеров и поисковых индексов и еженедельная проверка ChatGPT, Claude, Gemini и Perplexity. Также ItGrows пишет черновики постов в LinkedIn и X для основателей и экспертов.",
+      "ItGrows — сервис видимости в ИИ (generative engine optimization, GEO) для бизнеса: публикует страницы-ответы на собственном сайте компании, делает сайт доступным для ИИ-краулеров и поисковых индексов и каждую неделю проверяет, называют ли компанию ChatGPT, Claude, Gemini и Perplexity.",
     appName: "Проверка видимости в ИИ от ItGrows",
     appDescription:
       "30-секундная проверка того, называют ли ChatGPT и Perplexity компанию, когда спрашивают её клиенты: пять клиентских вопросов, составленных по сайту, с ответами в реальном времени через веб-поиск, с компаниями, которых называют вместо неё, и процитированными сайтами. Бесплатно: два ответа целиком сразу, все пять — после создания аккаунта.",
@@ -551,14 +551,14 @@ export default defineMessages(en, {
     founderCta: "Посты для LinkedIn и X →",
     openCabinet: "Открыть кабинет",
 
-    casesTitle: "Что сообщают клиенты",
+    casesTitle: "Результаты: два клиента и наш собственный маркетплейс",
     hundreds: "Сотни",
     cases: [
       { kind: "B2B SaaS", l: "новых B2B-клиента за один месяц, оба — из ChatGPT" },
       { kind: "iOS-приложение", l: "установок в месяц из ChatGPT, Claude и Gemini" },
-      { kind: "Маркетплейс курсов", l: "раз ИИ-ассистенты открывали его страницы, отвечая кому-то, — за две недели" },
+      { kind: "Наш собственный маркетплейс курсов", l: "обращений к его страницам агентов ответа и поиска ChatGPT и Perplexity — за две недели" },
     ],
-    casesNote: "По данным клиентов; pickaclass.com — по логу своего сервера, август 2026.",
+    casesNote: "freightsizer.ai и magiscan.app — по данным клиентов. pickaclass.com — наш собственный маркетплейс курсов: по логу его сервера, 28 июля — 11 августа 2026.",
 
     talkFirst: "Или сначала напишите нам →",
     liPlans: (personal, duo, allIn) =>
@@ -575,7 +575,7 @@ export default defineMessages(en, {
       },
       {
         q: "ItGrows — это инструмент для LinkedIn или сервис видимости в ИИ?",
-        a: "И то и другое — это два продукта. Для компаний ItGrows — сервис видимости в ответах ИИ (GEO). Для основателей и экспертов он пишет черновики постов в LinkedIn и X их собственным голосом; этот продукт находится на itgrows.ai/personal.",
+        a: "Сервис видимости в ИИ (GEO) для бизнеса. Черновики постов для LinkedIn и X, которые вы могли видеть, — отдельный продукт для основателей и экспертов на itgrows.ai/personal.",
       },
       { q: "Какие ассистенты вы измеряете?", a: "ChatGPT, Claude, Gemini и Perplexity — через их собственные API с включённым веб-поиском, по три запроса на вопрос, потому что их ответы меняются." },
       {
@@ -616,7 +616,7 @@ export default defineMessages(en, {
       },
       {
         q: "Принесёт ли это нам трафик из ChatGPT?",
-        a: "Часто немного: ассистенты обычно отвечают прямо в чате. Мы считаем, называют ли вас и цитируют ли. Некоторые клиенты сообщают о покупателях, установках и лидах, пришедших из ассистентов.",
+        a: "Часто немного: ассистенты обычно отвечают прямо в чате. Мы считаем, называют ли вас и цитируют ли. Два клиента сообщают о покупателях и установках, пришедших из ассистентов; наше собственное ASO-агентство appslift получает из них лиды.",
       },
       {
         q: "Я пользуюсь ItGrows для LinkedIn. Где мой кабинет?",

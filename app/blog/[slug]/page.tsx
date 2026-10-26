@@ -5,6 +5,8 @@ import { db } from "@/lib/db"
 import { blogPosts } from "@/lib/db/schema"
 import { and, desc, eq, isNull, ne, or, sql } from "drizzle-orm"
 import { GEO_PRICES } from "@/lib/geo-pricing"
+import AboutItGrows from "@/components/geo/AboutItGrows"
+import AiVisibilityGuides from "@/components/geo/AiVisibilityGuides"
 
 // itgrows.ai internal blog owner — only their posts are publicly accessible at /blog
 const ITGROWS_OWNER_USER_ID = "7cd0011c-fadd-4ff5-bd1e-6445fea70b22"
@@ -149,8 +151,9 @@ export default async function BlogPostPage({
 }: {
   params: Promise<{ slug: string }>
 }) {
-  void noteCrawler("/blog/[slug]")
   const { slug } = await params
+  // The real address, so the log says which post a crawler read.
+  void noteCrawler(`/blog/${slug}`)
 
   const [post] = await db
     .select()
@@ -194,12 +197,16 @@ export default async function BlogPostPage({
     headline: post.title,
     description: post.metaDescription || post.title,
     datePublished: post.publishedAt.toISOString(),
-    dateModified: post.publishedAt.toISOString(),
+    dateModified: (post.updatedAt ?? post.publishedAt).toISOString(),
     inLanguage: lang,
+    // The same organization node as the home page and the guides (lib/entity.ts ORGANIZATION).
+    author: { "@type": "Organization", "@id": "https://www.itgrows.ai/#organization", name: "ItGrows", url: "https://www.itgrows.ai" },
     publisher: {
       "@type": "Organization",
-      name: "ItGrows.ai",
+      "@id": "https://www.itgrows.ai/#organization",
+      name: "ItGrows",
       url: "https://www.itgrows.ai",
+      logo: { "@type": "ImageObject", url: "https://www.itgrows.ai/logo.jpg" },
     },
     mainEntityOfPage: {
       "@type": "WebPage",
@@ -302,6 +309,10 @@ export default async function BlogPostPage({
               lead somewhere; without this every article is a dead end. */}
           <ReadNext current={post} related={related} />
 
+          {/* The main AI-visibility guides on every post: these posts are what assistants and
+              search indexes already know of the site, and they linked only to each other. */}
+          <AiVisibilityGuides className="mt-10" />
+
           {/* Back link */}
           <div className="mt-12 pt-8 border-t border-black/10">
             <Link
@@ -311,6 +322,8 @@ export default async function BlogPostPage({
               ← Back to Blog
             </Link>
           </div>
+
+          <AboutItGrows locale="en" className="mt-12" />
         </div>
       </main>
 

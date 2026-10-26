@@ -8,7 +8,7 @@ import { defineMessages } from "../messages"
 const en = {
   metaTitle: "AI visibility checker: does ChatGPT name you? | ItGrows",
   metaDescription:
-    "Enter your website: we ask ChatGPT and Perplexity five questions your buyers ask and show whether they name you, who they name instead and which sites they cite. Free, about 30 seconds.",
+    "Five questions your buyers ask, put live to ChatGPT and Perplexity: are you named, who is named instead, which sites are cited. Free, about 30 seconds.",
   ogTitle: "Does ChatGPT recommend your business? AI visibility check",
   ogDescription: "Five buyer questions, asked live to ChatGPT and Perplexity. See who they name instead of you.",
   schemaName: "ItGrows AI visibility checker",
@@ -53,9 +53,9 @@ const en = {
 
 export default defineMessages(en, {
   de: {
-    metaTitle: "KI-Sichtbarkeitscheck: Nennt ChatGPT Ihr Unternehmen? | ItGrows",
+    metaTitle: "KI-Sichtbarkeitscheck: Nennt ChatGPT Ihre Firma? | ItGrows",
     metaDescription:
-      "Geben Sie Ihre Website ein: Wir stellen ChatGPT und Perplexity fünf Fragen, wie Ihre Kunden sie stellen, und zeigen, ob Sie genannt werden, wer stattdessen genannt wird und welche Websites zitiert werden. Kostenlos, etwa 30 Sekunden.",
+      "Fünf Kundenfragen, live an ChatGPT und Perplexity gestellt: Werden Sie genannt, wer stattdessen, welche Websites werden zitiert? Kostenlos, etwa 30 Sekunden.",
     ogTitle: "Empfiehlt ChatGPT Ihr Unternehmen? Der KI-Sichtbarkeitscheck",
     ogDescription: "Fünf Kundenfragen, live an ChatGPT und Perplexity gestellt. Sehen Sie, wen die Assistenten statt Ihnen nennen.",
     schemaName: "ItGrows KI-Sichtbarkeitscheck",
@@ -98,9 +98,9 @@ export default defineMessages(en, {
     ],
   },
   fr: {
-    metaTitle: "Test de visibilité IA : ChatGPT vous mentionne-t-il ? | ItGrows",
+    metaTitle: "Visibilité IA : ChatGPT vous mentionne-t-il ? | ItGrows",
     metaDescription:
-      "Saisissez votre site : nous posons à ChatGPT et Perplexity cinq questions que posent vos clients, et vous montrons s’ils vous mentionnent, qui ils mentionnent à votre place et quels sites ils citent. Gratuit, environ 30 secondes.",
+      "Cinq questions de clients posées en direct à ChatGPT et Perplexity : êtes-vous mentionné, qui l’est à votre place, quels sites sont cités ? Gratuit, 30 s.",
     ogTitle: "ChatGPT recommande-t-il votre entreprise ? Test de visibilité IA",
     ogDescription: "Cinq questions de clients, posées en direct à ChatGPT et Perplexity. Découvrez qui ils mentionnent à votre place.",
     schemaName: "Test de visibilité IA ItGrows",
@@ -143,9 +143,9 @@ export default defineMessages(en, {
     ],
   },
   es: {
-    metaTitle: "Comprobador de visibilidad en IA: ¿ChatGPT menciona su empresa? | ItGrows",
+    metaTitle: "Visibilidad en IA: ¿ChatGPT menciona su empresa? | ItGrows",
     metaDescription:
-      "Introduzca su sitio: hacemos a ChatGPT y Perplexity cinco preguntas que hacen sus clientes y le mostramos si mencionan su empresa, a quién mencionan en su lugar y qué sitios citan. Gratis, unos 30 segundos.",
+      "Cinco preguntas de sus clientes, en directo a ChatGPT y Perplexity: si le mencionan, a quién mencionan en su lugar y qué sitios citan. Gratis, unos 30 segundos.",
     ogTitle: "¿ChatGPT recomienda su empresa? Comprobación de visibilidad en IA",
     ogDescription: "Cinco preguntas de clientes, hechas en directo a ChatGPT y Perplexity. Vea a quién mencionan en lugar de usted.",
     schemaName: "Comprobador de visibilidad en IA de ItGrows",
@@ -190,7 +190,7 @@ export default defineMessages(en, {
   ru: {
     metaTitle: "Проверка видимости в ИИ: называет ли вас ChatGPT? | ItGrows",
     metaDescription:
-      "Укажите свой сайт: мы зададим ChatGPT и Perplexity пять вопросов, которые задают ваши клиенты, и покажем, называют ли они вас, кого называют вместо вас и на какие сайты ссылаются. Бесплатно, около 30 секунд.",
+      "Пять вопросов ваших клиентов — вживую в ChatGPT и Perplexity: называют ли вас, кого называют вместо вас, какие сайты цитируют. Бесплатно, около 30 секунд.",
     ogTitle: "Рекомендует ли ChatGPT ваш бизнес? Проверка видимости в ИИ",
     ogDescription: "Пять вопросов ваших клиентов, заданных ChatGPT и Perplexity в реальном времени. Посмотрите, кого они называют вместо вас.",
     schemaName: "Проверка видимости в ИИ от ItGrows",

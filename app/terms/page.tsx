@@ -3,6 +3,8 @@ import type { ReactNode } from "react"
 import Link from "next/link"
 import { CREDIT_DAYS, GEO_PRICES } from "@/lib/geo-pricing"
 
+export const dynamic = "force-static"
+
 // Terms of Service for both products: AI visibility (ItGrows for Business) and LinkedIn & X posts.
 // Prices come from lib/geo-pricing.ts so this page never disagrees with the checkout. Refunds, taxes and
 // the effective date are the owner's decisions of 23 Oct 2026. Only the LinkedIn & X trial is called free.

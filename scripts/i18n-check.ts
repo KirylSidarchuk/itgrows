@@ -382,6 +382,44 @@ async function main() {
     assert.equal(r.locale, null)
   })
 
+  console.log("middleware: the guides (/business/blog/<slug>)")
+  const { GERMAN_GUIDE_SLUGS, GUIDE_SLUGS } = await import("../lib/geo-guides")
+  await check("German guide -> x-itg-locale de, Content-Language de, no redirect, no cookie (browser and bot)", async () => {
+    for (const ua of [BROWSER, "Mozilla/5.0 (compatible; bingbot/2.0; +http://www.bing.com/bingbot.htm)"]) {
+      const r = await call("/business/blog/geo-agentur-auswaehlen", { ua, lang: "en-US,en;q=0.9" })
+      assert.equal(r.status, 200)
+      assert.equal(r.location, null)
+      assert.equal(r.rewrite, null)
+      assert.equal(r.next, true)
+      assert.equal(r.locale, "de")
+      assert.equal(r.contentLanguage, "de")
+      assert.equal(r.cookie, null)
+    }
+  })
+  await check("every de-* guide of lib/geo-guides.ts is German at the edge, no English one is", async () => {
+    const wrong = Object.entries(GUIDE_SLUGS).filter(([k, s]) => GERMAN_GUIDE_SLUGS.has(s) !== k.startsWith("de-"))
+    assert.deepEqual(wrong, [])
+    for (const s of GERMAN_GUIDE_SLUGS) assert.equal((await call(`/business/blog/${s}`)).locale, "de", s)
+  })
+  await check("English guide with German Accept-Language and a client-sent x-itg-locale -> English, untouched", async () => {
+    const r = await call("/business/blog/geo-vs-seo", { lang: "de-DE,de;q=0.9", headers: { "x-itg-locale": "de" } })
+    assert.equal(r.location, null)
+    assert.equal(r.next, true)
+    assert.equal(r.locale, null)
+    assert.equal(r.contentLanguage, null)
+    assert.equal(r.cookie, null)
+  })
+  await check("German guide's markdown (.md) is left alone", async () => {
+    const r = await call("/business/blog/geo-agentur-auswaehlen.md")
+    assert.equal(r.next, true)
+    assert.equal(r.locale, null)
+  })
+  await check("/de/business/blog/<German guide> -> 307 to the unprefixed guide (unchanged)", async () => {
+    const r = await call("/de/business/blog/geo-agentur-auswaehlen", { lang: "de" })
+    assert.equal(r.status, 307)
+    assert.equal(r.location, "/business/blog/geo-agentur-auswaehlen")
+  })
+
   console.log("matcher")
   const requireFromRoot = createRequire(path.join(ROOT, "package.json"))
   const { getMiddlewareMatchers } = requireFromRoot("next/dist/build/analysis/get-page-static-info.js") as {
@@ -401,9 +439,13 @@ async function main() {
     const missing = ["/dashboard", "/dashboard/a", "/business/dashboard", "/business/dashboard/plan", "/cabinet", "/cabinet/a"].filter((p) => !matched(p))
     assert.deepEqual(missing, [])
   })
+  await check("the guides are matched (for the German ones' language)", () => {
+    const missing = ["/business/blog/geo-agentur-auswaehlen", "/business/blog/geo-vs-seo"].filter((p) => !matched(p))
+    assert.deepEqual(missing, [])
+  })
   await check("English-only and system paths are not matched", () => {
     const extra = [
-      "/personal", "/company", "/reddit", "/blog", "/blog/x", "/business", "/business/blog", "/business/blog/x",
+      "/personal", "/company", "/reddit", "/blog", "/blog/x", "/business", "/business/blog", "/business/blog/x/y",
       "/api/geo/teaser", "/_next/static/chunks/a.js", "/og/geo", "/privacy", "/terms", "/sitemap.xml", "/robots.txt",
       "/deutsch", "/rus", "/english", "/enterprise",
     ].filter(matched)

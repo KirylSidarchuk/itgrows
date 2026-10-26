@@ -7,7 +7,7 @@ import { defineMessages } from "../messages"
 const en = {
   metaTitle: "AI crawler checker: is your site blocking GPTBot? | ItGrows",
   metaDescription:
-    "Check your robots.txt and server for GPTBot, OAI-SearchBot, ClaudeBot, PerplexityBot, Googlebot and Bingbot, including rules that quietly close pages in your sitemap.",
+    "Check your robots.txt and server for GPTBot, OAI-SearchBot, ClaudeBot, PerplexityBot, Googlebot and Bingbot, including rules that quietly close sitemap pages.",
   ogTitle: "Is your site blocking AI crawlers? Check it in seconds",
   ogDescription: "We test the pages in your sitemap against your robots.txt for each AI crawler, and ask your server as each one.",
   schemaName: "ItGrows AI crawler checker",
@@ -48,7 +48,7 @@ export default defineMessages(en, {
   de: {
     metaTitle: "KI-Crawler-Check: Blockiert Ihre Website GPTBot? | ItGrows",
     metaDescription:
-      "Prüfen Sie Ihre robots.txt und Ihren Server für GPTBot, OAI-SearchBot, ClaudeBot, PerplexityBot, Googlebot und Bingbot – einschließlich Regeln, die Seiten Ihrer Sitemap unbemerkt sperren.",
+      "Prüfen Sie robots.txt und Server für GPTBot, ClaudeBot, PerplexityBot, Googlebot und Bingbot – auch Regeln, die Seiten Ihrer Sitemap unbemerkt sperren.",
     ogTitle: "Blockiert Ihre Website KI-Crawler? In Sekunden geprüft",
     ogDescription: "Wir testen die Seiten Ihrer Sitemap für jeden KI-Crawler gegen Ihre robots.txt und senden Ihrem Server Anfragen mit der Kennung jedes dieser Crawler.",
     schemaName: "ItGrows KI-Crawler-Check",
@@ -85,9 +85,9 @@ export default defineMessages(en, {
     ],
   },
   fr: {
-    metaTitle: "Test des robots d’IA : votre site bloque-t-il GPTBot ? | ItGrows",
+    metaTitle: "Robots d’IA : votre site bloque-t-il GPTBot ? | ItGrows",
     metaDescription:
-      "Vérifiez votre robots.txt et votre serveur pour GPTBot, OAI-SearchBot, ClaudeBot, PerplexityBot, Googlebot et Bingbot, y compris les règles qui ferment discrètement des pages de votre sitemap.",
+      "Vérifiez robots.txt et serveur pour GPTBot, ClaudeBot, PerplexityBot, Googlebot et Bingbot, y compris les règles qui ferment en silence des pages du sitemap.",
     ogTitle: "Votre site bloque-t-il les robots d’IA ? Vérifiez-le en quelques secondes",
     ogDescription: "Nous confrontons les pages de votre sitemap à votre robots.txt pour chaque robot d’IA, et interrogeons votre serveur en nous présentant comme chacun d’eux.",
     schemaName: "Test des robots d’IA ItGrows",
@@ -124,9 +124,9 @@ export default defineMessages(en, {
     ],
   },
   es: {
-    metaTitle: "Comprobador de rastreadores de IA: ¿su sitio bloquea a GPTBot? | ItGrows",
+    metaTitle: "Rastreadores de IA: ¿su sitio bloquea a GPTBot? | ItGrows",
     metaDescription:
-      "Compruebe su robots.txt y su servidor para GPTBot, OAI-SearchBot, ClaudeBot, PerplexityBot, Googlebot y Bingbot, incluidas las reglas que cierran sin avisar páginas de su sitemap.",
+      "Compruebe robots.txt y servidor para GPTBot, ClaudeBot, PerplexityBot, Googlebot y Bingbot, incluidas las reglas que cierran sin avisar páginas de su sitemap.",
     ogTitle: "¿Su sitio bloquea a los rastreadores de IA? Compruébelo en segundos",
     ogDescription: "Probamos las páginas de su sitemap contra su robots.txt para cada rastreador de IA y consultamos a su servidor identificándonos como cada uno de ellos.",
     schemaName: "Comprobador de rastreadores de IA de ItGrows",
@@ -163,9 +163,9 @@ export default defineMessages(en, {
     ],
   },
   ru: {
-    metaTitle: "Проверка ИИ-краулеров: не блокирует ли ваш сайт GPTBot? | ItGrows",
+    metaTitle: "Проверка ИИ-краулеров: блокирует ли сайт GPTBot? | ItGrows",
     metaDescription:
-      "Проверьте robots.txt и сервер для GPTBot, OAI-SearchBot, ClaudeBot, PerplexityBot, Googlebot и Bingbot, включая правила, которые незаметно закрывают страницы из вашего sitemap.",
+      "Проверьте robots.txt и сервер для GPTBot, ClaudeBot, PerplexityBot, Googlebot и Bingbot, включая правила, которые незаметно закрывают страницы из sitemap.",
     ogTitle: "Не закрыт ли ваш сайт для ИИ-краулеров? Проверка за секунды",
     ogDescription: "Мы сверяем страницы из вашего sitemap с robots.txt для каждого ИИ-краулера и обращаемся к вашему серверу от имени каждого из них.",
     schemaName: "Проверка ИИ-краулеров от ItGrows",

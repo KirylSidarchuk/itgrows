@@ -2,6 +2,8 @@ import type { Metadata } from "next"
 import PersonalHome from "./PersonalHome"
 import { OG_PERSONAL } from "@/lib/entity"
 
+export const dynamic = "force-static"
+
 // The LinkedIn/X product's landing, moved here unchanged from "/" on 22 Oct 2026, when the front
 // page became the AI-visibility page.
 export const metadata: Metadata = {

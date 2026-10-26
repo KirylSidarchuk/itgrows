@@ -2,6 +2,8 @@ import type { Metadata } from "next"
 import type { ReactNode } from "react"
 import Link from "next/link"
 
+export const dynamic = "force-static"
+
 // Privacy & Cookie Policy for both products: AI visibility (ItGrows for Business) and LinkedIn & X
 // posts. It describes what the code stores and sends today (app/api/geo/**, app/api/track/**,
 // components/Analytics.tsx, components/AdsConversion.tsx, components/consent/**, app/layout.tsx,

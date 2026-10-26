@@ -1,10 +1,35 @@
+import type { Metadata } from "next"
 import Link from "next/link"
 import { noteCrawler } from "@/lib/crawler-log"
 import { db } from "@/lib/db"
 import { blogPosts } from "@/lib/db/schema"
 import { desc, eq } from "drizzle-orm"
+import AiVisibilityGuides from "@/components/geo/AiVisibilityGuides"
+import { OG_GEO } from "@/lib/entity"
 
 export const revalidate = 0 // always fetch fresh from DB
+
+// Its own title, description, canonical and og:url: without them the page took the root layout's
+// ("ItGrows.ai", og:url the home page) and had no canonical.
+// What the posts are about (26 Oct 2026: of 103 live posts, one is on AI assistants; the rest are
+// LinkedIn, X and content for founders and experts). The AI-visibility guides are /business/blog.
+const TITLE = "ItGrows blog: LinkedIn and X for founders and experts"
+const DESCRIPTION =
+  "Posts on LinkedIn and X for founders and experts: writing with AI in your own voice, ghostwriters, thought leadership and personal branding."
+export const metadata: Metadata = {
+  title: TITLE,
+  description: DESCRIPTION,
+  alternates: { canonical: "https://www.itgrows.ai/blog" },
+  openGraph: {
+    title: TITLE,
+    description: DESCRIPTION,
+    url: "https://www.itgrows.ai/blog",
+    siteName: "ItGrows.ai",
+    type: "website",
+    images: [OG_GEO],
+  },
+  twitter: { card: "summary_large_image", title: TITLE, description: DESCRIPTION, images: [OG_GEO.url] },
+}
 
 function stripHtml(html: string): string {
   return html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim()
@@ -61,13 +86,14 @@ export default async function BlogPage() {
             ItGrows.ai{" "}
             <span className="bg-gradient-to-r from-violet-600 to-pink-500 bg-clip-text text-transparent">Blog</span>
           </h1>
-          <p className="text-slate-600 text-lg">How AI assistants find, read and name people and companies — and what to do about it.</p>
+          <p className="text-slate-600 text-lg">LinkedIn, X and content for founders and experts: writing with AI in your own voice, ghostwriters, thought leadership and personal branding.</p>
         </div>
       </section>
 
       {/* Posts grid */}
       <section className="px-6 pb-24 pt-16">
         <div className="max-w-6xl mx-auto">
+          <AiVisibilityGuides className="mb-12" />
           {posts.length === 0 ? (
             <p className="text-slate-600 text-lg text-center py-16">No posts yet.</p>
           ) : (

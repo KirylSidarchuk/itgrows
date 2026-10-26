@@ -6,6 +6,9 @@ import { blogPosts } from "@/lib/db/schema"
 import { and, desc, eq, isNull, ne, sql } from "drizzle-orm"
 import sanitizeHtml from "sanitize-html"
 import type { Metadata } from "next"
+import AboutItGrows from "@/components/geo/AboutItGrows"
+import { liveGuides } from "@/components/geo/guide-data"
+import { guideAlternates, keepReadingCandidates } from "@/lib/geo-guides"
 
 const SITE_SLUG = "itgrows-business"
 const BASE = "https://www.itgrows.ai"
@@ -31,7 +34,7 @@ const UI = {
     keepReading: "Keep reading",
     home: "ItGrows for Business",
     // Our site in the post's language (the GEO site is translated: /de, 2f44505).
-    links: { home: "/", check: "/business/ai-visibility-checker", crawlers: "/business/ai-crawler-checker" },
+    links: { home: "/", all: "/business/blog", check: "/business/ai-visibility-checker", crawlers: "/business/ai-crawler-checker" },
   },
   de: {
     dateLocale: "de-DE",
@@ -46,7 +49,7 @@ const UI = {
     ctaCrawlers: "Sperre ich KI-Crawler aus?",
     keepReading: "Weiterlesen",
     home: "ItGrows für Unternehmen",
-    links: { home: "/de", check: "/de/business/ai-visibility-checker", crawlers: "/de/business/ai-crawler-checker" },
+    links: { home: "/de", all: "/business/blog#de", check: "/de/business/ai-visibility-checker", crawlers: "/de/business/ai-crawler-checker" },
   },
 }
 const uiFor = (lang: string | null) => UI[lang === "de" ? "de" : "en"]
@@ -90,6 +93,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   if (!post || post.redirectTo) return {}
 
   const imageUrl = `${BASE}/api/blog/image/${post.id}`
+  // The same guide in the other language (lib/geo-guides.ts), as hreflang; app/sitemap.ts lists it too.
+  const languages = guideAlternates(slug)
   return {
     title: post.title,
     description: post.metaDescription || post.title,
@@ -97,6 +102,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     alternates: {
       canonical: `${BASE}/business/blog/${slug}`,
       types: { "text/markdown": `${BASE}/business/blog/${slug}.md` },
+      ...(languages ? { languages } : {}),
     },
     openGraph: {
       title: post.title,
@@ -118,8 +124,9 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 }
 
 export default async function BusinessBlogPostPage({ params }: { params: Promise<{ slug: string }> }) {
-  void noteCrawler("/business/blog/[slug]")
   const { slug } = await params
+  // The real address, so the log says which guide a crawler read.
+  void noteCrawler(`/business/blog/${slug}`)
 
   const [post] = await db
     .select()
@@ -132,22 +139,30 @@ export default async function BusinessBlogPostPage({ params }: { params: Promise
   const lang = post.lang ?? "en"
   const ui = uiFor(post.lang)
 
-  // Siblings for the footer. The generator links inline where it fits; this guarantees every
-  // article has outbound paths into the cluster even when it did not. Same language only: a German
-  // reader offered English pages (or the reverse) has nowhere to go.
-  const related = await db
-    .select({ slug: blogPosts.slug, title: blogPosts.title, id: blogPosts.id })
-    .from(blogPosts)
-    .where(
-      and(
-        eq(blogPosts.siteSlug, SITE_SLUG),
-        ne(blogPosts.slug, slug),
-        isNull(blogPosts.redirectTo),
-        sql`coalesce(${blogPosts.lang}, 'en') = ${lang}`,
-      ),
-    )
-    .orderBy(desc(blogPosts.publishedAt))
-    .limit(4)
+  // "Keep reading": the main guide, the definition of GEO and the next guides of this one's topic
+  // (lib/geo-guides.ts), never the guide itself. The four newest articles used to stand here, so
+  // every guide linked to the same four and the main ones got almost no links. Same language only: a
+  // German reader offered English pages (or the reverse) has nowhere to go. A guide outside the
+  // topics (a new one) or a short topic is filled up with the newest guides of its language.
+  const guideLang = lang === "de" ? "de" : "en"
+  const picked = (await liveGuides(keepReadingCandidates(slug, guideLang))).slice(0, 4)
+  const newest =
+    picked.length >= 4
+      ? []
+      : await db
+          .select({ slug: blogPosts.slug, title: blogPosts.title })
+          .from(blogPosts)
+          .where(
+            and(
+              eq(blogPosts.siteSlug, SITE_SLUG),
+              ne(blogPosts.slug, slug),
+              isNull(blogPosts.redirectTo),
+              sql`coalesce(${blogPosts.lang}, 'en') = ${lang}`,
+            ),
+          )
+          .orderBy(desc(blogPosts.publishedAt))
+          .limit(8)
+  const related = [...picked, ...newest.filter((r) => !picked.some((p) => p.slug === r.slug))].slice(0, 4)
 
   const articleSchema = {
     "@context": "https://schema.org",
@@ -189,8 +204,9 @@ export default async function BusinessBlogPostPage({ params }: { params: Promise
 
   return (
     <div lang={lang} className="min-h-screen bg-[#f3f2f1] text-[#1b1916]">
-      {/* app/layout.tsx sets <html lang="en"> for every route; this tells search engines (Bing reads it)
-          the page's real language. React moves it into <head>. */}
+      {/* app/layout.tsx sets <html lang="de"> only for the German slugs in lib/geo-guides.ts (no database
+          in middleware.ts); this tells search engines (Bing reads it) the page's real language in every
+          case. React moves it into <head>. */}
       <meta httpEquiv="content-language" content={lang} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }} />
       {faqSchema && (
@@ -204,7 +220,7 @@ export default async function BusinessBlogPostPage({ params }: { params: Promise
             <img src="/logo.jpg" className="h-7 w-7 rounded-lg" alt="ItGrows" />
             <span>ItGrows.ai</span>
           </Link>
-          <Link href="/business/blog" className="text-sm text-slate-600 hover:text-[#1b1916] transition-colors shrink-0">
+          <Link href={ui.links.all} className="text-sm text-slate-600 hover:text-[#1b1916] transition-colors shrink-0">
             ← {ui.allArticles}
           </Link>
         </div>
@@ -278,7 +294,7 @@ export default async function BusinessBlogPostPage({ params }: { params: Promise
               <div className="grid sm:grid-cols-2 gap-4">
                 {related.map((r) => (
                   <Link
-                    key={r.id}
+                    key={r.slug}
                     href={`/business/blog/${r.slug}`}
                     className="block bg-white border border-black/10 rounded-2xl p-5 hover:border-violet-300 transition-colors"
                   >
@@ -288,6 +304,8 @@ export default async function BusinessBlogPostPage({ params }: { params: Promise
               </div>
             </div>
           )}
+
+          <AboutItGrows locale={guideLang} className="mt-12" />
         </div>
       </main>
 
@@ -295,7 +313,7 @@ export default async function BusinessBlogPostPage({ params }: { params: Promise
         <div className="max-w-6xl mx-auto">
           © 2026 ItGrows.ai ·{" "}
           <Link href={ui.links.home} className="hover:text-[#1b1916] transition-colors">{ui.home}</Link>{" · "}
-          <Link href="/business/blog" className="hover:text-[#1b1916] transition-colors">{ui.allArticles}</Link>
+          <Link href={ui.links.all} className="hover:text-[#1b1916] transition-colors">{ui.allArticles}</Link>
         </div>
       </footer>
     </div>

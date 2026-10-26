@@ -6,6 +6,7 @@ import VisitBeacon from "@/components/VisitBeacon"
 import AdsConversion from "@/components/AdsConversion"
 import ProductAnalytics from "@/components/Analytics"
 import ConsentedTrackers from "@/components/consent/ConsentedTrackers"
+import { getLocale } from "@/lib/i18n/server"
 import "./globals.css";
 
 const geistSans = Geist({
@@ -38,11 +39,13 @@ export const metadata: Metadata = {
     ],
   },
   title: "ItGrows.ai",
-  description: "AI visibility for companies, and LinkedIn and X posts for founders.",
+  // The fallback for pages without their own description: what ItGrows is, GEO only (lib/entity.ts).
+  description: "ItGrows is an AI visibility (GEO) service for businesses.",
   openGraph: {
     title: "ItGrows.ai",
-    description: "AI visibility for companies, and LinkedIn and X posts for founders.",
-    url: "https://www.itgrows.ai",
+    description: "ItGrows is an AI visibility (GEO) service for businesses.",
+    // No url here: every page inherited "https://www.itgrows.ai" as its og:url (/blog, /privacy,
+    // /terms). A page states its own address, or none.
     siteName: "ItGrows.ai",
     images: [{ url: "https://www.itgrows.ai/og-image.png", width: 1200, height: 630 }],
     type: "website",
@@ -50,7 +53,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "ItGrows.ai",
-    description: "AI visibility for companies, and LinkedIn and X posts for founders.",
+    description: "ItGrows is an AI visibility (GEO) service for businesses.",
     images: ["https://itgrows.ai/og-image.png"],
   },
 };
@@ -90,14 +93,22 @@ const GOOGLE_TAG_INIT = `
 })();
 `
 
-export default function RootLayout({
+// <html lang> is the language middleware.ts decided for this request (lib/i18n): "de" on /de/…,
+// the NEXT_LOCALE cookie on the unprefixed GEO pages, "de" on the German guides (/business/blog/<slug>,
+// lib/geo-guides.ts), "en" everywhere else (pages outside the middleware's paths never get the
+// header). Before 26 Oct 2026 it was "en" on every page, /de, /fr, /es and /ru included, against their
+// Content-Language and og:locale. Reading the request makes a route render per request; /personal,
+// /company, /privacy and /terms read nothing of it, so they say dynamic = "force-static": they stay
+// prerendered, and there the header is empty, so "en".
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const lang = await getLocale()
   return (
     <html
-      lang="en"
+      lang={lang}
       className={`${geistSans.variable} ${geistMono.variable} ${playfair.variable} h-full antialiased`}
     >
       <head>

@@ -1,22 +1,20 @@
 import type { Metadata } from "next"
-import { unstable_cache } from "next/cache"
 import Link from "next/link"
-import { db } from "@/lib/db"
-import { blogPosts } from "@/lib/db/schema"
-import { and, desc, eq, isNull, or } from "drizzle-orm"
 import AuditForm from "./business/AuditForm"
 import ContactForm from "./business/ContactForm"
 import HashForward from "./_home/HashForward"
 import SignIn from "./_home/SignIn"
 import SiteFooter from "./_home/SiteFooter"
 import { ORGANIZATION } from "@/lib/entity"
+import { noteCrawler } from "@/lib/crawler-log"
+import { mainGuides } from "@/components/geo/guide-data"
 import { FoundOnSites, VersusArticles, WorkSystem, geoIncluded } from "./business/GeoSections"
 import PricingPlans from "./business/PricingPlans"
 import { CREDIT_DAYS, GEO_PRICES, SAMPLE_PATH } from "@/lib/geo-pricing"
 import LanguageSwitcher from "@/components/i18n/LanguageSwitcher"
 import LocaleProvider from "@/components/i18n/LocaleProvider"
 import { getLocale } from "@/lib/i18n/server"
-import { t } from "@/lib/i18n/messages"
+import { defineMessages, t } from "@/lib/i18n/messages"
 import { localizedMetadata } from "@/lib/i18n/metadata"
 import { absoluteUrl, localePath } from "@/lib/i18n/paths"
 import { formatNumber } from "@/lib/i18n/format"
@@ -33,7 +31,7 @@ const BASE = "https://www.itgrows.ai"
 
 // The page is rendered per request: /de, /fr, /es and /ru are this same page, told apart by the
 // language middleware.ts puts on the request (lib/i18n). What used to be cached for an hour with the
-// page (the latest guides) is cached on its own below.
+// page (the guides) is cached on its own (components/geo/guide-data.ts).
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale()
@@ -83,41 +81,47 @@ const QUICK_CHECKS = [
 
 const price = (cents: number) => (cents / 100).toFixed(2)
 
-// The guides in the page's language: German on /de, English everywhere else (the old posts without
-// a language are English). The argument is part of the cache key. An hour, as the whole page was
-// cached before it became per-language. A failed query is not cached (it throws inside, and the
-// page shows no guides this time).
-const latestGuides = unstable_cache(
-  async (lang: "de" | "en") =>
-    db
-      .select({ slug: blogPosts.slug, title: blogPosts.title })
-      .from(blogPosts)
-      .where(
-        and(
-          eq(blogPosts.siteSlug, "itgrows-business"),
-          isNull(blogPosts.redirectTo),
-          lang === "de" ? eq(blogPosts.lang, "de") : or(eq(blogPosts.lang, "en"), isNull(blogPosts.lang)),
-        ),
-      )
-      .orderBy(desc(blogPosts.publishedAt))
-      .limit(6),
-  ["home-latest-guides-by-lang"],
-  { revalidate: 3600 },
+// Names of the plan's other offers in the Service JSON-LD (the report and the monthly plan are
+// home.ts offerReport and offerPlan); the wording follows the pricing cards, the prices come from
+// lib/geo-pricing.ts.
+const OFFER_NAMES = defineMessages(
+  {
+    setup: "AI visibility plan, one-time setup (free with 3 months or a year)",
+    quarter: "AI visibility plan, 3 months upfront, setup included",
+    year: (off: string) => `AI visibility plan, yearly (${off} off), setup included`,
+  },
+  {
+    de: {
+      setup: "Plan für KI-Sichtbarkeit, einmalige Einrichtung (entfällt bei 3 Monaten oder einem Jahr)",
+      quarter: "Plan für KI-Sichtbarkeit, 3 Monate im Voraus, ohne Einrichtungsgebühr",
+      year: (off) => `Plan für KI-Sichtbarkeit, jährlich (${off} Rabatt), ohne Einrichtungsgebühr`,
+    },
+    fr: {
+      setup: "Abonnement visibilité IA, mise en place (une seule fois, offerte pour 3 mois ou un an)",
+      quarter: "Abonnement visibilité IA, 3 mois d’avance, sans frais de mise en place",
+      year: (off) => `Abonnement visibilité IA, annuel (−${off}), sans frais de mise en place`,
+    },
+    es: {
+      setup: "Plan de visibilidad en IA, configuración inicial (pago único, sin coste con 3 meses o un año)",
+      quarter: "Plan de visibilidad en IA, 3 meses por adelantado, configuración inicial sin coste",
+      year: (off) => `Plan de visibilidad en IA, anual (${off} de descuento), configuración inicial sin coste`,
+    },
+    ru: {
+      setup: "Подписка на видимость в ИИ, разовая настройка (бесплатно при оплате 3 месяцев или года)",
+      quarter: "Подписка на видимость в ИИ, 3 месяца сразу, без платы за настройку",
+      year: (off) => `Подписка на видимость в ИИ, на год (скидка ${off}), без платы за настройку`,
+    },
+  },
 )
-
-async function guides(lang: "de" | "en") {
-  try {
-    return await latestGuides(lang)
-  } catch {
-    return []
-  }
-}
 
 export default async function Home() {
   const locale = await getLocale()
   const m = t(locale, homeMessages)
+  void noteCrawler(localePath(locale, "/"))
+  // The main guides in the page's language, always the same six (lib/geo-guides.ts): German on /de,
+  // English everywhere else (fr/es/ru say "(in English)" in the heading).
   const guideLang = locale === "de" ? "de" : "en"
-  const latest = await guides(guideLang)
+  const latest = await mainGuides(guideLang)
   // The yearly discount, from the prices themselves: "20%" in English, "20 %" in German and French.
   const yearOff = formatNumber(locale, 1 - GEO_PRICES.year.cents / (GEO_PRICES.month.cents * 12), { style: "percent", maximumFractionDigits: 0 })
   const FAQ = m.faq({
@@ -131,6 +135,7 @@ export default async function Home() {
     yearPerMonth: GEO_PRICES.year.perMonth,
     yearOff,
   })
+  const offerNames = t(locale, OFFER_NAMES)
   const home = absoluteUrl(locale, "/")
   const pricingUrl = absoluteUrl(locale, "/#geo-pricing")
   const schema = {
@@ -164,6 +169,23 @@ export default async function Home() {
             priceCurrency: "USD",
             url: pricingUrl,
             priceSpecification: { "@type": "UnitPriceSpecification", price: price(GEO_PRICES.month.cents), priceCurrency: "USD", unitText: "MONTH" },
+          },
+          { "@type": "Offer", name: offerNames.setup, price: price(GEO_PRICES.setup.cents), priceCurrency: "USD", url: pricingUrl },
+          {
+            "@type": "Offer",
+            name: offerNames.quarter,
+            price: price(GEO_PRICES.quarter.cents),
+            priceCurrency: "USD",
+            url: pricingUrl,
+            priceSpecification: { "@type": "UnitPriceSpecification", price: price(GEO_PRICES.quarter.cents), priceCurrency: "USD", billingDuration: "P3M" },
+          },
+          {
+            "@type": "Offer",
+            name: offerNames.year(yearOff),
+            price: price(GEO_PRICES.year.cents),
+            priceCurrency: "USD",
+            url: pricingUrl,
+            priceSpecification: { "@type": "UnitPriceSpecification", price: price(GEO_PRICES.year.cents), priceCurrency: "USD", unitText: "YEAR", billingDuration: "P1Y" },
           },
         ],
       },

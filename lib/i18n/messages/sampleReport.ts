@@ -1,16 +1,17 @@
 import { defineMessages } from "../messages"
 import { plural } from "../format"
 
-// app/business/sample-report/SampleReport.tsx (client): the frame around the sample report — its
-// header, the price line, the "not available" state and the closing block. The report's own cards
-// (ReportSections, YourPlan) come from app/business/dashboard and are translated with the cabinet.
+// app/business/sample-report/SampleReport.tsx (drawn on the server, then live in the browser): the
+// frame around the sample report — its header, the price line, the "not available" state and the
+// closing block. The report's own cards (ReportSections, YourPlan) come from app/business/dashboard
+// and are translated with the cabinet.
 // Prices, days, the domain and the date come in as arguments.
 
 // "в течение 30 дней", "в течение 21 дня".
 const ruDays = (n: number) => plural("ru", n, { one: `${n} дня`, other: `${n} дней` })
 
 const en = {
-  // <PriceLine>, under the header and in the closing block
+  // <PriceLine>, in the closing block (once: it used to repeat under the header)
   priceLine: (report: string, days: number) =>
     `The quick check is free and takes about 30 seconds: two answers show in full right away, all five once you create an account. With the account we also build this report for your site: the totals and the questions from your quick check are open, and the full report is ${report}, one payment. It comes off your first plan payment if you start the plan within ${days} days.`,
 

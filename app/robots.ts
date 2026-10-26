@@ -34,6 +34,8 @@ const AI_CRAWLERS = [
   "OAI-SearchBot",
   "ChatGPT-User",
   "ClaudeBot",
+  "Claude-User",
+  "Claude-SearchBot",
   "Claude-Web",
   "anthropic-ai",
   "PerplexityBot",
@@ -46,17 +48,24 @@ const AI_CRAWLERS = [
   "CCBot",
   "cohere-ai",
   "Meta-ExternalAgent",
+  "Meta-ExternalFetcher",
+  "MistralAI-User",
   "DuckAssistBot",
   "YouBot",
 ]
 
+// The article images (cover, og:image, the image in each Article's JSON-LD) are served from
+// /api/blog/image/…, under the closed /api/. The longer Allow wins over "Disallow: /api/" (RFC 9309),
+// in every group, so crawlers may fetch the images and nothing else under /api/.
+const ALLOW = ["/", "/blog/", "/blog/*", "/api/blog/image/"]
+
 export default function robots(): MetadataRoute.Robots {
   return {
     rules: [
-      { userAgent: "*", allow: ["/", "/blog/", "/blog/*"], disallow: PRIVATE },
+      { userAgent: "*", allow: ALLOW, disallow: PRIVATE },
       ...AI_CRAWLERS.map((userAgent) => ({
         userAgent,
-        allow: ["/", "/blog/", "/blog/*"],
+        allow: ALLOW,
         disallow: PRIVATE,
       })),
     ],

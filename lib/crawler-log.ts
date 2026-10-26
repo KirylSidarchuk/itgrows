@@ -14,10 +14,14 @@ import { sql } from "drizzle-orm"
 // Deliberately fire-and-forget and never awaited by the caller's render path: telemetry must
 // not be able to slow down or break a page a crawler is trying to read.
 
+// First match wins. Claude-User and Claude-SearchBot are Anthropic's live-answer and search
+// agents (ClaudeBot is its training crawler); without them a live read by Claude went unrecorded.
 const BOTS: [RegExp, string][] = [
   [/GPTBot/i, "GPTBot"],
   [/OAI-SearchBot/i, "OAI-SearchBot"],
   [/ChatGPT-User/i, "ChatGPT-User"],
+  [/Claude-User/i, "Claude-User"],
+  [/Claude-SearchBot/i, "Claude-SearchBot"],
   [/ClaudeBot/i, "ClaudeBot"],
   [/Claude-Web/i, "Claude-Web"],
   [/anthropic-ai/i, "anthropic-ai"],
@@ -25,6 +29,7 @@ const BOTS: [RegExp, string][] = [
   [/Perplexity-User/i, "Perplexity-User"],
   [/Google-Extended/i, "Google-Extended"],
   [/Googlebot/i, "Googlebot"],
+  [/GoogleOther/i, "GoogleOther"],
   [/Bingbot/i, "Bingbot"],
   [/Applebot-Extended/i, "Applebot-Extended"],
   [/Applebot/i, "Applebot"],
@@ -33,6 +38,8 @@ const BOTS: [RegExp, string][] = [
   [/CCBot/i, "CCBot"],
   [/cohere-ai/i, "cohere-ai"],
   [/Meta-ExternalAgent/i, "Meta-ExternalAgent"],
+  [/Meta-ExternalFetcher/i, "Meta-ExternalFetcher"],
+  [/MistralAI-User/i, "MistralAI-User"],
   [/DuckAssistBot/i, "DuckAssistBot"],
   [/YouBot/i, "YouBot"],
   [/SemrushBot|AhrefsBot|MJ12bot|DotBot/i, "seo-tool"],
