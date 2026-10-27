@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef, useEffect, useCallback } from "react"
+import { useState, useRef, useEffect, useCallback, useId } from "react"
 import AiAnswers, { type TeaserView } from "./AiAnswers"
 import OpenAnswersBar from "./OpenAnswersBar"
 import LocaleLink from "@/components/i18n/LocaleLink"
@@ -105,17 +105,72 @@ function isOurSite(raw: string) {
   return bareDomain(raw).replace(/:\d+$/, "").replace(/\.$/, "") === "itgrows.ai"
 }
 
+// What goes to the check (27.10). Visitors typed their business name, asked a question or pasted a
+// paragraph into the field. Only a website address is sent; anything else gets a hint under the
+// field, worked out here, before any request.
+
+/** One label of a host name, Latin or not (bäckerei.de, сайт.рф). */
+const HOST_LABEL = "[a-z0-9\\u00a1-\\uffff](?:[a-z0-9\\u00a1-\\uffff-]{0,61}[a-z0-9\\u00a1-\\uffff])?"
+/** A host name: labels, then an ending of letters (or its xn-- form). */
+const HOST = `(?:${HOST_LABEL}\\.)+(?:[a-z\\u00a1-\\uffff]{2,63}|xn--[a-z0-9-]{1,59})`
+/** The whole entry is a website address: a host with or without http(s)://, www., a port or a path. */
+const ADDRESS = new RegExp(`^(?:https?:\\/\\/)?${HOST}\\.?(?::\\d{1,5})?(?:[/?#]\\S*)?$`, "i")
+/** An address inside longer text, a URL or an email address included; group 1 is the host. */
+const ADDRESS_INSIDE = `(?:^|[^a-z0-9\\u00a1-\\uffff.-])(?:https?:\\/\\/)?(${HOST})(?![a-z0-9\\u00a1-\\uffff-])`
+/** File names look like addresses inside text (index.html, offer.pdf): never suggested. */
+const FILE_ENDINGS = new Set(["html", "htm", "php", "asp", "aspx", "jsp", "pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx", "txt", "csv", "jpg", "jpeg", "png", "gif", "webp", "svg", "mp4", "zip", "js", "css", "json", "xml"])
+/** Longer than this, an entry is never sent, only searched for an address. */
+const MAX_ENTRY = 300
+
+type Hint = { kind: "ending" | "question" | "didYouMean" | "invalid"; fill?: string }
+
+/** The first address inside a piece of text, as a bare host (no www.), or "". */
+function addressInside(text: string) {
+  const re = new RegExp(ADDRESS_INSIDE, "gi")
+  for (let m = re.exec(text); m; m = re.exec(text)) {
+    const host = m[1].toLowerCase().replace(/^www\./, "")
+    if (host.includes(".") && !FILE_ENDINGS.has(host.slice(host.lastIndexOf(".") + 1))) return host
+  }
+  return ""
+}
+
+/** An entry is sent when it is a website address; otherwise it gets a hint. null: nothing typed. */
+function checkEntry(raw: string): { send: string } | { hint: Hint } | null {
+  const text = raw.trim()
+  if (!text) return null
+  if (text.length <= MAX_ENTRY && ADDRESS.test(text)) return { send: text }
+  const inside = addressInside(text.slice(0, 5000))
+  if (inside) return { hint: { kind: "didYouMean", fill: inside } }
+  const words = text.split(/\s+/)
+  if (words.length >= 5 || /[?\uff1f]$/.test(text)) return { hint: { kind: "question" } }
+  if (text.length > MAX_ENTRY || text.includes(".")) return { hint: { kind: "invalid" } }
+  if (words.length > 1) return { hint: { kind: "ending" } }
+  // One word without an ending, most often the business name: offer it with .com.
+  const name = text
+    .toLowerCase()
+    .replace(/^https?:\/\//, "")
+    .replace(/[^a-z0-9\u00a1-\uffff-]/g, "")
+    .replace(/^-+|-+$/g, "")
+  return { hint: name && name.length <= 63 ? { kind: "ending", fill: `${name}.com` } : { kind: "invalid" } }
+}
+
 /** `note`: an optional line under the form before any check (the home page shows none since 27.10:
  *  Kiryl asked for the line to go). */
 export default function AuditForm({ note }: { note?: string } = {}) {
   const m = useT(ns)
   const locale = useLocale()
-  const [url, setUrl] = useState("")
+  // The field is uncontrolled: what was typed or pasted before the page's script started stays in
+  // it (27.10: a controlled field was emptied by hydration on slow phones), and every submit reads
+  // the field itself.
+  const inputId = useId()
+  const hintId = useId()
+  const [hint, setHint] = useState<Hint | null>(null)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState("")
   const [data, setData] = useState<Audit | null>(null)
   const [ours, setOurs] = useState(false)
   const urlRef = useRef<HTMLInputElement>(null)
+  const submitRef = useRef<HTMLButtonElement>(null)
 
   const [reportEmail, setReportEmail] = useState("")
   const [reportSent, setReportSent] = useState(false)
@@ -146,6 +201,12 @@ export default function AuditForm({ note }: { note?: string } = {}) {
   const consent = useConsent()
   const cookieSettingsOpen = useSettingsOpen()
   const cookieBannerUp = consent === "unset" || consent === "unknown" || cookieSettingsOpen
+
+  // A hint pushes the button down: on a phone it must not end up under the cookie banner (the
+  // button's scroll margin keeps it clear of the banner).
+  useEffect(() => {
+    if (hint) submitRef.current?.scrollIntoView({ block: "nearest", behavior: "smooth" })
+  }, [hint])
 
   // Card B starts folded: the assistants' answers are the news, the crawler check explains them.
   const [bOpen, setBOpen] = useState(false)
@@ -314,9 +375,42 @@ export default function AuditForm({ note }: { note?: string } = {}) {
     }
   }
 
-  async function run(e?: React.FormEvent) {
+  function run(e?: React.FormEvent) {
     e?.preventDefault()
-    if (!url.trim() || busy) return
+    void check(urlRef.current?.value ?? "")
+  }
+
+  // A tap on the button, or Enter, before the page's script has started: React keeps that submit
+  // and hands it to the form's action once the page is live (React 19). From then on onSubmit (run)
+  // takes every submit and this never runs. React resets the form after an action, so the typed text
+  // becomes the field's default first and survives the reset.
+  function replay(form: FormData) {
+    const el = urlRef.current
+    const raw = el?.value || String(form.get("site") ?? "")
+    if (el) el.defaultValue = raw
+    void check(raw)
+  }
+
+  // "Use smithplumbing.com" / "Use smith.com": the suggestion goes into the field; the visitor sends it.
+  function takeSuggestion(value: string) {
+    if (urlRef.current) urlRef.current.value = value
+    setHint(null)
+  }
+
+  async function check(raw: string) {
+    if (busy) return
+    const entry = checkEntry(raw)
+    if (!entry) {
+      urlRef.current?.focus()
+      return
+    }
+    if ("hint" in entry) {
+      setError("")
+      setHint(entry.hint)
+      return
+    }
+    setHint(null)
+    const url = entry.send
     if (isOurSite(url)) {
       // No check, no API call, no tracking: a friendly card where the results would be.
       aiToken.current++
@@ -377,21 +471,55 @@ export default function AuditForm({ note }: { note?: string } = {}) {
 
   return (
     <div className="max-w-2xl mx-auto text-left">
-      <form onSubmit={run} className="bg-white border border-black/10 rounded-2xl p-4 sm:p-5 shadow-lg shadow-violet-600/5">
-        <div className="flex flex-col sm:flex-row gap-3">
+      <form action={replay} onSubmit={run} className="bg-white border border-black/10 rounded-2xl p-4 sm:p-5 shadow-lg shadow-violet-600/5">
+        <label htmlFor={inputId} className="block text-sm font-semibold text-[#1b1916] mb-2">
+          {m.inputLabel}
+        </label>
+        <div className="flex flex-col sm:flex-row sm:flex-wrap gap-3">
           <input
             ref={urlRef}
+            id={inputId}
+            name="site"
             type="text"
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
+            inputMode="url"
+            autoCapitalize="none"
+            autoCorrect="off"
+            spellCheck={false}
+            autoComplete="url"
+            enterKeyHint="go"
+            onChange={() => setHint(null)}
             placeholder={m.placeholder}
-            aria-label={m.inputLabel}
+            aria-describedby={hint ? hintId : undefined}
             className="flex-1 rounded-xl border border-black/15 bg-white px-4 py-3.5 text-base text-[#1b1916] placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-400"
           />
+          {/* Under the field: between it and the button on phones, under both on wider screens. */}
+          {hint && (
+            <div id={hintId} role="status" className="flex flex-wrap items-center gap-x-3 gap-y-2 sm:order-last sm:basis-full">
+              <p className="text-sm text-slate-700">
+                {hint.kind === "ending"
+                  ? m.hintEnding
+                  : hint.kind === "question"
+                    ? m.hintQuestion
+                    : hint.kind === "didYouMean"
+                      ? m.hintDidYouMean(hint.fill ?? "")
+                      : m.invalidAddress}
+              </p>
+              {hint.fill && (
+                <button
+                  type="button"
+                  onClick={() => takeSuggestion(hint.fill ?? "")}
+                  className="rounded-lg border border-violet-200 bg-violet-50 hover:bg-violet-100 px-3 py-1.5 text-sm font-semibold text-violet-700 transition-colors"
+                >
+                  {m.hintUse(hint.fill)}
+                </button>
+              )}
+            </div>
+          )}
           <button
+            ref={submitRef}
             type="submit"
-            disabled={busy || aiRunning || url.trim().length < 3}
-            className="px-7 py-3.5 rounded-xl bg-violet-600 hover:bg-violet-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-base font-semibold transition-colors flex items-center justify-center gap-2 whitespace-nowrap"
+            disabled={busy || aiRunning}
+            className="scroll-mb-24 px-7 py-3.5 rounded-xl bg-violet-600 hover:bg-violet-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-base font-semibold transition-colors flex items-center justify-center gap-2 whitespace-nowrap"
           >
             {busy || aiRunning ? (
               <>

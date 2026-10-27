@@ -1,7 +1,8 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useSyncExternalStore } from "react"
 import Link from "next/link"
+import { usePathname } from "next/navigation"
 import {
   OPEN_SETTINGS_EVENT,
   SETTINGS_HASH,
@@ -13,6 +14,45 @@ import {
   useSettingsOpen,
   type ConsentChoice,
 } from "@/components/consent/consent"
+import { DEFAULT, LOCALES, PREFIXED, type Locale } from "@/lib/i18n/config"
+import { t } from "@/lib/i18n/messages"
+import { rich } from "@/lib/i18n/rich"
+import ns from "@/lib/i18n/messages/cookieBanner"
+
+// The banner sits in the root layout, outside the pages' LocaleProvider: its language is <html lang>,
+// which the layout sets for each request and LocaleProvider updates on client navigation.
+function pageLocale(): Locale {
+  const lang = document.documentElement.lang.slice(0, 2).toLowerCase()
+  return (LOCALES as readonly string[]).includes(lang) ? (lang as Locale) : DEFAULT
+}
+
+function subscribeLang(onChange: () => void) {
+  const observer = new MutationObserver(onChange)
+  observer.observe(document.documentElement, { attributes: true, attributeFilter: ["lang"] })
+  return () => observer.disconnect()
+}
+
+const serverLocale = (): Locale => DEFAULT
+
+// The type of the GEO pages (app/page.tsx and the other public pages set it on their own wrapper).
+// The banner is outside that wrapper, in <body>, so it names the same family itself; without it the
+// banner came out in the browser's default serif.
+const SANS = "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+
+// Which banner a page gets (27.10). The GEO site, in every language (/de, /fr, /es, /ru): its home,
+// /business and everything under it (the GEO cabinet and guides included), the blog, /about and the
+// legal pages. These get the compact phone banner at the top and the GEO type. Every other page keeps
+// the production banner exactly as it was: first of all the LinkedIn/X product (/personal, /company,
+// /cabinet, /dashboard, /reddit…), and /login and /signup, which that product shares.
+const GEO_PAGES: ReadonlySet<string> = new Set(["/", "/about", "/privacy", "/terms"])
+const GEO_SECTIONS = ["/business", "/blog"] // each with everything under it
+const LOCALE_PREFIX = new RegExp(`^/(?:${PREFIXED.join("|")})(?=/|$)`)
+
+function isGeoPage(pathname: string | null): boolean {
+  if (!pathname) return false
+  const path = pathname.replace(LOCALE_PREFIX, "").replace(/\/+$/, "") || "/"
+  return GEO_PAGES.has(path) || GEO_SECTIONS.some((s) => path === s || path.startsWith(`${s}/`))
+}
 
 // Keeps a record of each choice in our own analytics (no id unless the visitor accepted).
 function recordChoice(choice: ConsentChoice) {
@@ -48,6 +88,8 @@ export default function CookieBanner() {
   const settingsOpen = useSettingsOpen()
   const [details, setDetails] = useState(false)
   const [analyticsOn, setAnalyticsOn] = useState<boolean | null>(null)
+  const c = t(useSyncExternalStore(subscribeLang, pageLocale, serverLocale), ns)
+  const geo = isGeoPage(usePathname())
 
   useEffect(() => {
     window.openCookieSettings = openCookieSettings
@@ -104,6 +146,155 @@ export default function CookieBanner() {
     </Link>
   )
 
+  // GEO pages. Phones (narrower than 640 px): one short line and three small buttons, fixed at the
+  // TOP of the screen (below the notch), so that in no language does the banner cover the "Check my
+  // site" button (27.10); the full text is in the settings and the policy. From 640 px up the banner
+  // stays at the bottom, as before. The GEO type (SANS) throughout.
+  if (geo) {
+    return (
+      <div
+        role="dialog"
+        aria-label="Cookie settings"
+        style={{ fontFamily: SANS }}
+        className={`fixed top-0 sm:top-auto sm:bottom-0 left-0 right-0 z-50 bg-slate-900 text-white px-4 sm:px-6 ${
+          showSettings
+            ? "pt-[max(1rem,env(safe-area-inset-top))] pb-4 sm:pt-4 sm:pb-[max(1rem,env(safe-area-inset-bottom))]"
+            : "pt-[max(0.5rem,env(safe-area-inset-top))] pb-2 sm:pt-4 sm:pb-[max(1rem,env(safe-area-inset-bottom))]"
+        } shadow-lg`}
+      >
+        {!showSettings && (
+          <div className="sm:hidden flex flex-col gap-1.5">
+            <p className="text-xs leading-4 text-slate-200">
+              {rich(c.short, {
+                link: (chunk) => (
+                  <Link href="/privacy#cookies" className="underline text-violet-400 hover:text-violet-300 transition-colors">
+                    {chunk}
+                  </Link>
+                ),
+              })}
+            </p>
+            <div className="flex items-center justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setDetails(true)}
+                className="h-8 px-1.5 text-xs text-slate-300 underline hover:text-white transition-colors"
+              >
+                {c.settings}
+              </button>
+              <button
+                type="button"
+                onClick={() => done("declined")}
+                className="h-8 px-3 text-xs rounded border border-slate-600 bg-transparent text-slate-200 hover:bg-slate-700 transition-colors"
+              >
+                {c.decline}
+              </button>
+              <button
+                type="button"
+                onClick={() => done("accepted")}
+                className="h-8 px-3 text-xs rounded bg-violet-600 text-white hover:bg-violet-500 transition-colors font-medium"
+              >
+                {c.accept}
+              </button>
+            </div>
+          </div>
+        )}
+        {/* From 640 px up and the settings: the production banner's content. */}
+        {!showSettings ? (
+          <div className="max-w-6xl mx-auto hidden sm:flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-sm text-slate-200 leading-relaxed">
+              We use analytics and advertising cookies only if you accept. Essential cookies for sign-in are always on.{" "}
+              {policyLink}
+            </p>
+            <div className="flex flex-wrap items-center gap-3 shrink-0">
+              <button
+                type="button"
+                onClick={() => setDetails(true)}
+                className="px-1 py-2 text-sm text-slate-300 underline hover:text-white transition-colors"
+              >
+                Cookie settings
+              </button>
+              <button
+                type="button"
+                onClick={() => done("declined")}
+                className="px-4 py-2 text-sm rounded border border-slate-600 bg-transparent text-slate-200 hover:bg-slate-700 transition-colors"
+              >
+                Decline
+              </button>
+              <button
+                type="button"
+                onClick={() => done("accepted")}
+                className="px-4 py-2 text-sm rounded bg-violet-600 text-white hover:bg-violet-500 transition-colors font-medium"
+              >
+                Accept all
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="max-w-3xl mx-auto flex flex-col gap-3">
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-sm font-semibold">Cookie settings</p>
+              <button
+                type="button"
+                onClick={close}
+                aria-label="Close"
+                className="px-2 py-1 text-lg leading-none text-slate-400 hover:text-white transition-colors"
+              >
+                &times;
+              </button>
+            </div>
+
+            <div className="flex items-start justify-between gap-4 border-t border-slate-700 pt-3">
+              <div className="text-sm">
+                <p className="font-medium text-slate-100">Essential</p>
+                <p className="text-slate-400">Sign-in, security and your cookie choice.</p>
+              </div>
+              <span className="shrink-0 text-xs text-slate-400 pt-0.5">Always on</span>
+            </div>
+
+            <label className="flex items-start justify-between gap-4 border-t border-slate-700 pt-3 cursor-pointer">
+              <span className="text-sm">
+                <span className="block font-medium text-slate-100">Analytics and advertising</span>
+                <span className="block text-slate-400">Google Ads, Microsoft Clarity, Contentsquare, Vercel Analytics.</span>
+              </span>
+              <span className="relative inline-flex shrink-0 items-center mt-0.5">
+                <input
+                  type="checkbox"
+                  className="peer sr-only"
+                  checked={toggleValue}
+                  onChange={(e) => setAnalyticsOn(e.target.checked)}
+                />
+                <span className="h-6 w-11 rounded-full bg-slate-600 transition-colors peer-checked:bg-violet-600 peer-focus-visible:ring-2 peer-focus-visible:ring-violet-400" />
+                <span className="absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white transition-transform peer-checked:translate-x-5" />
+              </span>
+            </label>
+
+            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-700 pt-3">
+              <p className="text-xs text-slate-400">{policyLink}</p>
+              <div className="flex flex-wrap items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => done(toggleValue ? "accepted" : "declined")}
+                  className="px-4 py-2 text-sm rounded border border-slate-600 bg-transparent text-slate-200 hover:bg-slate-700 transition-colors"
+                >
+                  Save
+                </button>
+                <button
+                  type="button"
+                  onClick={() => done("accepted")}
+                  className="px-4 py-2 text-sm rounded bg-violet-600 text-white hover:bg-violet-500 transition-colors font-medium"
+                >
+                  Accept all
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    )
+  }
+
+  // Every other page (the LinkedIn/X product, /cabinet and the rest): the production banner,
+  // unchanged.
   return (
     <div
       role="dialog"

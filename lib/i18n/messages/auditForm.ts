@@ -1,7 +1,8 @@
 import { defineMessages } from "../messages"
 import { formatNumber, plural } from "../format"
 
-// app/business/AuditForm.tsx (client): the address form of the quick check, the crawler card
+// app/business/AuditForm.tsx (client): the address form of the quick check (its label above the
+// field, and the hints under it that the browser works out before anything is sent), the crawler card
 // under the assistants' answers (card B), the email capture when the live check fails, the
 // "answers ready" pill, and the phone bar that opens all the answers (openAllBar, rendered by
 // app/business/OpenAnswersBar.tsx). The answers card itself is app/business/AiAnswers.tsx
@@ -14,6 +15,10 @@ const en = {
   invalidAddress: "That does not look like a public website address.",
   inputLabel: "Your website address",
   placeholder: "yourcompany.com",
+  hintEnding: "Add the ending, like smithplumbing.com.",
+  hintQuestion: "This box needs your website address, not a question.",
+  hintDidYouMean: (address: string) => `Did you mean ${address}?`,
+  hintUse: (address: string) => `Use ${address}`,
   checking: "Checking…",
   submit: "Check my site →",
   oursTitle: "That's us — and we're doing just fine 🙂",
@@ -63,6 +68,10 @@ export default defineMessages(en, {
     invalidAddress: "Das sieht nicht nach der Adresse einer öffentlichen Website aus.",
     inputLabel: "Adresse Ihrer Website",
     placeholder: "ihrefirma.de",
+    hintEnding: "Ergänzen Sie die Endung, z. B. smithplumbing.com.",
+    hintQuestion: "In dieses Feld gehört die Adresse Ihrer Website, keine Frage.",
+    hintDidYouMean: (address) => `Meinten Sie ${address}?`,
+    hintUse: (address) => `${address} übernehmen`,
     checking: "Wird geprüft…",
     submit: "Meine Website prüfen →",
     oursTitle: "Das sind wir – und uns geht es bestens 🙂",
@@ -109,8 +118,12 @@ export default defineMessages(en, {
   fr: {
     failed: "Le test n’a pas abouti. Réessayez.",
     invalidAddress: "Cela ne ressemble pas à l’adresse d’un site web public.",
-    inputLabel: "Adresse de votre site web",
+    inputLabel: "Adresse de votre site",
     placeholder: "votreentreprise.fr",
+    hintEnding: "Ajoutez l’extension, par exemple smithplumbing.com.",
+    hintQuestion: "Ce champ attend l’adresse de votre site, pas une question.",
+    hintDidYouMean: (address) => `Vouliez-vous dire ${address} ?`,
+    hintUse: (address) => `Utiliser ${address}`,
     checking: "Vérification…",
     submit: "Vérifier mon site →",
     oursTitle: "C’est nous — et tout va très bien pour nous 🙂",
@@ -160,6 +173,10 @@ export default defineMessages(en, {
     invalidAddress: "Eso no parece la dirección de un sitio web público.",
     inputLabel: "Dirección de su sitio web",
     placeholder: "suempresa.es",
+    hintEnding: "Añada la extensión, por ejemplo smithplumbing.com.",
+    hintQuestion: "Este campo necesita la dirección de su sitio web, no una pregunta.",
+    hintDidYouMean: (address) => `¿Quiso decir ${address}?`,
+    hintUse: (address) => `Usar ${address}`,
     checking: "Comprobando…",
     submit: "Comprobar mi sitio →",
     oursTitle: "Esos somos nosotros, y nos va de maravilla 🙂",
@@ -209,6 +226,10 @@ export default defineMessages(en, {
     invalidAddress: "Это не похоже на адрес публичного сайта.",
     inputLabel: "Адрес вашего сайта",
     placeholder: "vash-sait.ru",
+    hintEnding: "Допишите окончание адреса, например smithplumbing.com.",
+    hintQuestion: "Сюда нужен адрес вашего сайта, а не вопрос.",
+    hintDidYouMean: (address) => `Возможно, вы имели в виду ${address}?`,
+    hintUse: (address) => `Использовать ${address}`,
     checking: "Проверяем…",
     submit: "Проверить сайт →",
     oursTitle: "Это мы — и у нас всё отлично 🙂",
