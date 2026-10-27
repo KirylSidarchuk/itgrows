@@ -6,6 +6,7 @@ import { geoCheck, type PublicRun } from "@/lib/geo-check"
 import { normaliseDomain } from "@/lib/geo-business"
 import { REPORT_SITES } from "@/lib/geo-pricing"
 import { sendOwner } from "@/lib/telegram"
+import { visitSource } from "@/lib/visit-source"
 
 // Follow a site from the AI-visibility cabinet. The VM records the follow and queues the day-0
 // report (20 questions x 4 assistants x 3 samples), or returns the one already made this week.
@@ -123,6 +124,6 @@ export async function POST(req: NextRequest) {
     )
     .catch(() => {})
 
-  void sendOwner(`👁 Кабинет GEO: ${session?.user?.email ?? userId} следит за ${r.data.domain}`)
+  void sendOwner(`👁 Кабинет GEO: ${session?.user?.email ?? userId} следит за ${r.data.domain}\n📍 ${await visitSource(req.headers)}`)
   return NextResponse.json({ domain: r.data.domain, status: r.data.status })
 }

@@ -3,6 +3,7 @@ import { sql } from "drizzle-orm"
 import { db } from "@/lib/db"
 import { geoCheck, clientIp, type PublicRun, type ResultRow } from "@/lib/geo-check"
 import { sendOwner } from "@/lib/telegram"
+import { visitSource } from "@/lib/visit-source"
 
 // The instant check on /business: five questions a buyer of this business would ask, put to ChatGPT
 // and Perplexity. POST starts it (or returns a result under a day old at once); GET ?id= follows it,
@@ -140,10 +141,10 @@ export async function POST(req: NextRequest) {
   }
   try {
     const r = await geoCheck<PublicRun>("/teaser", { url, ip: clientIp(req.headers) }, 25_000)
-    void sendOwner(teaserAlert(url, r.status, r.data))
+    void sendOwner(`${teaserAlert(url, r.status, r.data)}\n📍 ${await visitSource(req.headers)}`)
     return relay(r.status, r.data)
   } catch {
-    void sendOwner(`🔎 Анализатор: ${url} — сервис проверки не ответил`)
+    void sendOwner(`🔎 Анализатор: ${url} — сервис проверки не ответил\n📍 ${await visitSource(req.headers)}`)
     return NextResponse.json({ status: "failed", error: "unavailable" }, { status: 502 })
   }
 }

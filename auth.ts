@@ -7,8 +7,9 @@ import { db } from "@/lib/db"
 import { users, emailPins } from "@/lib/db/schema"
 import { eq, and, gt, desc, sql } from "drizzle-orm"
 import bcrypt from "bcryptjs"
-import { cookies } from "next/headers"
+import { cookies, headers } from "next/headers"
 import { sendOwner } from "@/lib/telegram"
+import { visitSource } from "@/lib/visit-source"
 
 // Retry a transient failure (dropped DB connection etc.) once before letting it
 // propagate — an uncaught throw here becomes /login?error=Configuration for the user.
@@ -21,9 +22,11 @@ async function withRetry<T>(fn: () => Promise<T>): Promise<T> {
   }
 }
 
-function notifyOwnerNewUser(email: string, via: string, gclid?: string) {
-  // Best-effort Telegram ping about a new signup; never blocks auth.
-  void sendOwner(`\u{1F195} New user (${via}): ${email}${gclid ? `\n\u{1F3AF} Google Ads (gclid ${gclid.slice(0, 16)}\u2026)` : ""}`)
+async function notifyOwnerNewUser(email: string, via: string, gclid?: string) {
+  // Best-effort Telegram ping about a new signup, with where the visit came from; never blocks auth.
+  let src = "неизвестно"
+  try { src = await visitSource(await headers()) } catch {}
+  void sendOwner(`\u{1F195} New user (${via}): ${email}${gclid ? `\n\u{1F3AF} Google Ads (gclid ${gclid.slice(0, 16)}\u2026)` : ""}\n\u{1F4CD} ${src}`)
 }
 
 // OAuth providers are added only when their credentials exist, so a deploy that
@@ -159,7 +162,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           // Key the ad click to the new user for attribution / future offline conversion import.
           let pinGclid: string | undefined
           try { pinGclid = (await cookies()).get("itg_gclid")?.value } catch {}
-          notifyOwnerNewUser(email, "PIN auth", pinGclid)
+          await notifyOwnerNewUser(email, "PIN auth", pinGclid)
           try {
             await db.execute(sql`INSERT INTO analytics_events (user_id, event, path, props) VALUES (${user.id}, 'signup', '/signup', ${JSON.stringify({ via: "pin", gclid: pinGclid ?? null })}::jsonb)`)
           } catch { /* analytics must never block auth */ }
@@ -205,7 +208,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
               .returning()
             let regGclid: string | undefined
             try { regGclid = (await cookies()).get("itg_gclid")?.value } catch {}
-            notifyOwnerNewUser(email, `${account.provider} sign-in`, regGclid)
+            await notifyOwnerNewUser(email, `${account.provider} sign-in`, regGclid)
             try {
               await db.execute(sql`INSERT INTO analytics_events (user_id, event, path, props) VALUES (${dbUser.id}, 'signup', '/signup', ${JSON.stringify({ via: account.provider, gclid: regGclid ?? null })}::jsonb)`)
             } catch { /* analytics must never block auth */ }

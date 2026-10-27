@@ -3,6 +3,7 @@ import { Resend } from "resend"
 import { db } from "@/lib/db"
 import { sql } from "drizzle-orm"
 import { sendOwner } from "@/lib/telegram"
+import { visitSource } from "@/lib/visit-source"
 
 // "Write to us" on the home page (app/business/ContactForm.tsx). Public and unauthenticated, so it
 // must work for a stranger. Stored in analytics_events first (event 'site_contact') and emailed
@@ -69,7 +70,7 @@ export async function POST(req: NextRequest) {
   }
 
   // A ping for every message that reaches us, as for every other inbound action.
-  void sendOwner(`📧 Сообщение с сайта: ${email} — ${company || name || "без имени"}\n${message.slice(0, 300)}`)
+  void sendOwner(`📧 Сообщение с сайта: ${email} — ${company || name || "без имени"}\n📍 ${await visitSource(req.headers)}\n${message.slice(0, 300)}`)
 
   let emailed = false
   try {
