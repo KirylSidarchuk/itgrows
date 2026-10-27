@@ -86,6 +86,12 @@ export default async function SignupConversion({ userId }: { userId: string }) {
     }
     if (++tries < 20) setTimeout(go, 300);
   })();
+  // Meta pixel, only if the visitor accepted cookies (it is loaded by ConsentedTrackers then).
+  var ftries = 0;
+  (function fb() {
+    if (typeof w.fbq === "function") { w.fbq("track", "CompleteRegistration", {}, { eventID: "signup_" + uid }); return; }
+    if (++ftries < 20) setTimeout(fb, 300);
+  })();
 })();`
 
   return (

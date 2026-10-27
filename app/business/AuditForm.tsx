@@ -52,8 +52,10 @@ function countCheck(domain: string | undefined) {
   if (checksCounted.has(key)) return
   checksCounted.add(key)
   try {
-    const w = window as unknown as { gtag?: (...args: unknown[]) => void }
+    const w = window as unknown as { gtag?: (...args: unknown[]) => void; fbq?: (...args: unknown[]) => void }
     w.gtag?.("event", "conversion", { send_to: CHECK_CONVERSION })
+    // Meta pixel: exists only after "Accept" (components/consent/ConsentedTrackers.tsx).
+    w.fbq?.("track", "Lead", { content_name: "quick_check" })
   } catch {
     // Analytics never gets in the way.
   }

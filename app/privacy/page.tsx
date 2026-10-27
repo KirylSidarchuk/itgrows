@@ -121,6 +121,10 @@ const COOKIES = [
     text: "Advertising measurement, on every page. Before you accept, and if you decline, it uses no cookies: Google receives only measurement signals without cookies and without the ad click id, used to count conversions from our ads in aggregate. After you accept, it measures whether visitors from our ads sign up or pay, and Google sets its own cookies.",
   },
   {
+    name: "Meta Pixel",
+    text: "Advertising measurement, loaded only after you accept. Tells Meta (Facebook and Instagram) when a visitor finishes the 30-second check, signs up or pays, so we can see which of our ads work. Meta sets its own cookies (_fbp, _fbc). If you decline or withdraw consent, it does not run.",
+  },
+  {
     name: "Contentsquare",
     text: "Analytics, loaded only after you accept. Records how pages are used: clicks, scrolling and page movement, which can include a replay of a visit.",
   },
@@ -138,6 +142,7 @@ const PROCESSORS = [
     text: "Their APIs answer the buyer questions we use to measure AI answers. Anthropic also helps research and write articles; Google Gemini, with OpenAI as a backup, writes LinkedIn and X drafts, images and the free post preview. We send them what the task needs: questions about your business, facts from your public site, your topics and drafts, and what you type into the free post preview.",
   },
   { name: "Google Ads", text: "Advertising measurement, see Cookies." },
+  { name: "Meta Platforms Ireland", text: "Advertising measurement for our Facebook and Instagram ads (the Meta Pixel), only after you accept, see Cookies." },
   { name: "Contentsquare, Microsoft Clarity", text: "Analytics of how our pages are used, see Cookies." },
   { name: "Telegram", text: "Internal notifications to our team about sign-ups, payments and messages, with the name, email and website involved." },
   { name: "LinkedIn, X", text: "When you connect them: we publish your posts through their APIs and read your posts’ statistics." },
@@ -164,7 +169,7 @@ export default function PrivacyPage() {
         <p className="text-[11px] uppercase tracking-[0.14em] font-bold text-violet-700">Legal</p>
         <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight mt-2">Privacy Policy &amp; Cookie Policy</h1>
         <p className="text-slate-500 text-sm mt-2">
-          Effective date: 23 October 2026
+          Effective date: 27 October 2026
         </p>
 
         <div className="mt-8 rounded-2xl border border-black/10 bg-white overflow-hidden">
@@ -288,8 +293,8 @@ export default function PrivacyPage() {
             <p>These are the cookies and browser storage items our site uses:</p>
             <Rows rows={COOKIES} />
             <p>
-              On your first visit a banner lets you accept or decline cookies, and remembers your choice. Contentsquare, Microsoft Clarity and
-              Vercel Analytics load only after you accept; if you decline, they do not run. The Google Ads tag is on every page, but until you
+              On your first visit a banner lets you accept or decline cookies, and remembers your choice. Contentsquare, Microsoft Clarity,
+              Vercel Analytics and the Meta Pixel load only after you accept; if you decline, they do not run. The Google Ads tag is on every page, but until you
               accept, and if you decline, it works without cookies: Google receives only measurement signals without cookies and without the ad
               click id, used to count conversions from our ads in aggregate.
             </p>

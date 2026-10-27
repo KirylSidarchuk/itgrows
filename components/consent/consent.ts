@@ -30,6 +30,7 @@ declare global {
     gtag?: (...args: unknown[]) => void
     dataLayer?: unknown[]
     clarity?: (...args: unknown[]) => void
+    fbq?: (...args: unknown[]) => void
     _uxa?: { push: (command: unknown[]) => unknown }
     openCookieSettings?: () => void
     // Defined by the inline script in app/layout.tsx.
@@ -82,10 +83,15 @@ function stopLoadedTrackers() {
   } catch {
     /* ignore */
   }
+  try {
+    window.fbq?.("consent", "revoke")
+  } catch {
+    /* ignore */
+  }
 }
 
 // Cookies the optional tools set on our own domain, plus our own optional items.
-const OPTIONAL_COOKIE = /^(itg_gclid|_gcl_.*|_clck|_clsk|_cs_.*)$/
+const OPTIONAL_COOKIE = /^(itg_gclid|_gcl_.*|_clck|_clsk|_cs_.*|_fbp|_fbc)$/
 
 function clearOptionalStorage() {
   try {

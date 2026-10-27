@@ -194,6 +194,22 @@ function SignupForm() {
     }
   }
 
+  const reportNewSignup = async () => {
+    try {
+      const ctl = new AbortController()
+      const timer = setTimeout(() => ctl.abort(), 2500)
+      const r = await fetch("/api/signup-status", { cache: "no-store", signal: ctl.signal })
+      clearTimeout(timer)
+      const j = (await r.json()) as { isNew?: boolean; id?: string }
+      if (!j.isNew || !j.id) return
+      const w = window as unknown as { gtag?: (...args: unknown[]) => void; fbq?: (...args: unknown[]) => void }
+      w.gtag?.("event", "conversion", { send_to: "AW-18160234884/SQ7pCN7Sk8gcEITjvNND", transaction_id: "signup_" + j.id })
+      w.fbq?.("track", "CompleteRegistration", {}, { eventID: "signup_" + j.id })
+    } catch {
+      // Analytics never blocks the sign-up.
+    }
+  }
+
   const handleVerifyPin = async (e: React.FormEvent) => {
     e.preventDefault()
     setError("")
@@ -205,11 +221,11 @@ function SignupForm() {
         setLoading(false)
         return
       }
-      // Google Ads: Sign-up conversion (primary optimization goal)
-      if (typeof window !== "undefined") {
-        const w = window as unknown as { gtag?: (...args: unknown[]) => void }
-        w.gtag?.("event", "conversion", { send_to: "AW-18160234884/SQ7pCN7Sk8gcEITjvNND" })
-      }
+      // Sign-up conversions (Google Ads primary goal, Meta pixel) only when this code created the
+      // account: /api/signup-status reads the "signup" row auth.ts writes at creation. An existing user
+      // signing in here counts as nothing. The account id is the transaction/event id, so the
+      // cabinet's components/SignupConversion.tsx can never count it a second time.
+      await reportNewSignup()
       sgTrack("signup_complete", { via: "pin", plan: planParam ?? undefined })
       // If the visitor picked a plan on the pricing card before registering, resume that checkout
       // instead of dropping them in the cabinet (plan param set by the landing's handleCheckout).
