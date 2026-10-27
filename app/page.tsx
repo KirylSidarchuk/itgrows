@@ -237,7 +237,7 @@ export default async function Home() {
               })}
             </h1>
             <p className="text-base sm:text-xl text-slate-600 max-w-2xl mx-auto mt-5 mb-8">{m.lead}</p>
-            <AuditForm note={m.heroNote} />
+            <AuditForm />
           </div>
         </section>
 

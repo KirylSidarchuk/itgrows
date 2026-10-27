@@ -60,7 +60,6 @@ const en = {
   // Hero: <g> is the gradient part
   h1: "Get your company named when buyers ask <g>ChatGPT, Claude, Gemini and Perplexity.</g>",
   lead: "We measure what four assistants answer about your field, fix what stops their crawlers and search indexes from reading your site, publish answer pages on your own domain, and count every two weeks whether each one names you.",
-  heroNote: "Free · about 30 seconds",
 
   // The LinkedIn/X product, one line
   founder: (from: string) =>
@@ -178,7 +177,6 @@ export default defineMessages(en, {
 
     h1: "Damit Ihr Unternehmen genannt wird, wenn Kunden <g>ChatGPT, Claude, Gemini und Perplexity</g> fragen.",
     lead: "Wir messen, was vier Assistenten zu Ihrem Fachgebiet antworten, beheben, was ihre Crawler und Suchindizes am Lesen Ihrer Website hindert, veröffentlichen Antwortseiten auf Ihrer eigenen Domain und zählen alle zwei Wochen, ob jeder von ihnen Sie nennt.",
-    heroNote: "Kostenlos · etwa 30 Sekunden",
 
     founder: (from) =>
       `<b>Gründer oder Experte?</b> ItGrows entwirft auch Ihre LinkedIn- und X-Posts in Ihrer eigenen Stimme — ab ${from}/Monat, 14 Tage zum Testen.`,
@@ -300,7 +298,6 @@ export default defineMessages(en, {
 
     h1: "Faites mentionner votre entreprise quand vos clients interrogent <g>ChatGPT, Claude, Gemini et Perplexity.</g>",
     lead: "Nous mesurons ce que quatre assistants répondent sur votre secteur, corrigeons ce qui empêche leurs robots et leurs index de recherche de lire votre site, publions des pages de réponse sur votre propre domaine et comptons toutes les deux semaines si chacun d’eux vous mentionne.",
-    heroNote: "Gratuit · environ 30 secondes",
 
     founder: (from) =>
       `<b>Fondateur ou expert ?</b> ItGrows rédige aussi vos posts LinkedIn et X dans votre style — à partir de ${from}/mois, 14 jours d’essai.`,
@@ -422,7 +419,6 @@ export default defineMessages(en, {
 
     h1: "Haga que mencionen su empresa cuando sus clientes pregunten a <g>ChatGPT, Claude, Gemini y Perplexity.</g>",
     lead: "Medimos lo que cuatro asistentes responden sobre su sector, corregimos lo que impide a sus rastreadores e índices de búsqueda leer su sitio, publicamos páginas de respuesta en su propio dominio y contamos cada dos semanas si cada uno de ellos menciona su empresa.",
-    heroNote: "Gratis · unos 30 segundos",
 
     founder: (from) =>
       `<b>¿Fundador o experto?</b> ItGrows también redacta sus publicaciones de LinkedIn y X con su propia voz — desde ${from}/mes, 14 días de prueba.`,
@@ -544,7 +540,6 @@ export default defineMessages(en, {
 
     h1: "Пусть вашу компанию называют, когда клиенты спрашивают <g>ChatGPT, Claude, Gemini и Perplexity.</g>",
     lead: "Мы измеряем, что четыре ассистента отвечают о вашей сфере, устраняем то, что мешает их краулерам и поисковым индексам читать ваш сайт, публикуем страницы-ответы на вашем собственном домене и раз в две недели считаем, называет ли вас каждый из них.",
-    heroNote: "Бесплатно · около 30 секунд",
 
     founder: (from) =>
       `<b>Основатель или эксперт?</b> ItGrows также пишет черновики ваших постов в LinkedIn и X вашим собственным голосом — от ${from}/мес., 14 дней пробного периода.`,
