@@ -10,7 +10,7 @@ import { noteCrawler } from "@/lib/crawler-log"
 import { mainGuides } from "@/components/geo/guide-data"
 import { FoundOnSites, VersusArticles, WorkSystem, geoIncluded } from "./business/GeoSections"
 import PricingPlans from "./business/PricingPlans"
-import { CREDIT_DAYS, GEO_PRICES, SAMPLE_PATH } from "@/lib/geo-pricing"
+import { GEO_PRICES, SAMPLE_PATH } from "@/lib/geo-pricing"
 import LanguageSwitcher from "@/components/i18n/LanguageSwitcher"
 import LocaleProvider from "@/components/i18n/LocaleProvider"
 import { getLocale } from "@/lib/i18n/server"
@@ -47,8 +47,6 @@ const CASES: { site: string; href?: string; n: number | "hundreds" }[] = [
   { site: "pickaclass.com", href: "https://www.pickaclass.com", n: 1918 },
 ]
 
-const R = GEO_PRICES.research
-
 // The LinkedIn/X product's prices (its own pricing lives on /personal).
 const LI = { personal: "$49", duo: "$99", allIn: "$199" }
 
@@ -83,7 +81,7 @@ const price = (cents: number) => (cents / 100).toFixed(2)
 
 // Names of the plan's other offers in the Service JSON-LD (the report and the monthly plan are
 // home.ts offerReport and offerPlan); the wording follows the pricing cards, the prices come from
-// lib/geo-pricing.ts.
+// lib/geo-pricing.ts. The detailed report is free once an account is created: its Offer is price 0.
 const OFFER_NAMES = defineMessages(
   {
     setup: "AI visibility plan, one-time setup (free with 3 months or a year)",
@@ -125,8 +123,6 @@ export default async function Home() {
   // The yearly discount, from the prices themselves: "20%" in English, "20 %" in German and French.
   const yearOff = formatNumber(locale, 1 - GEO_PRICES.year.cents / (GEO_PRICES.month.cents * 12), { style: "percent", maximumFractionDigits: 0 })
   const FAQ = m.faq({
-    report: R.label,
-    days: CREDIT_DAYS,
     sample: localePath(locale, SAMPLE_PATH),
     month: GEO_PRICES.month.label,
     setup: GEO_PRICES.setup.label,
@@ -161,7 +157,7 @@ export default async function Home() {
         description: m.serviceDescription,
         provider: { "@id": ORGANIZATION["@id"] },
         offers: [
-          { "@type": "Offer", name: m.offerReport, price: price(R.cents), priceCurrency: "USD", url: pricingUrl },
+          { "@type": "Offer", name: m.offerReport, price: "0", priceCurrency: "USD", url: pricingUrl },
           {
             "@type": "Offer",
             name: m.offerPlan,

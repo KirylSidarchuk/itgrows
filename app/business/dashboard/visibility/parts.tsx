@@ -4,10 +4,10 @@
 // scores; "you" is violet, everyone else slate; an assistant that could not be checked is shown as
 // such and left out of the totals — it never counts as "not named"; nothing is projected.
 //
-// The detailed report is paid for. Until it is, the server sends a preview (access "preview"): the
-// counts, the questions of the quick check with their answers, the rest as the question alone
-// ("locked" rows), three names given instead and how many sites are quoted. Nothing hidden reaches
-// the browser, so a locked row is drawn as a placeholder, never as data.
+// The detailed report is free once an account is created (since 27 Oct 2026) and always arrives
+// whole: every question with its answers, everyone named instead, every cited source. An account gets
+// it for one site, and a connection for one (lib/geo-pricing.ts); past that the page says "contact us
+// and we'll run it for you" (AddSite), never a price.
 //
 // What is sold, said the same way on every page: the report is the diagnosis plus the plan of what
 // WE do about it; the plan is us doing that work. The report never teaches how to do it yourself:
@@ -16,9 +16,9 @@
 // stands (site.work): the article's state, the launch items behind a fix, or what we set by hand;
 // "Planned" until there is something to say. Never why, never our notes, never a forecast.
 
-import { Fragment, useEffect, useState, type ReactNode } from "react"
+import { useEffect, useState } from "react"
 import { ENGINE_ICONS } from "../../engine-icons"
-import { CREDIT_DAYS, GEO_PRICES, REPORT_SITES, SAMPLE_PATH, type GeoInterval } from "@/lib/geo-pricing"
+import { GEO_PRICES, type GeoInterval } from "@/lib/geo-pricing"
 import { listQuestions } from "@/lib/geo-list-question"
 import { useT } from "@/components/i18n/LocaleProvider"
 import visibilityOpening from "@/lib/i18n/messages/visibilityOpening"
@@ -34,10 +34,7 @@ export interface EngineAnswer {
 }
 export interface Row {
   q: string
-  /** Absent on a locked row: the preview sends only the question. */
   engines?: Record<string, EngineAnswer>
-  /** Preview: the answers to this question are in the full report only. */
-  locked?: boolean
 }
 export interface Summary {
   named: number
@@ -48,10 +45,6 @@ export interface Summary {
   sources?: { domain: string; count: number; type: string }[]
   previous?: { kind: string; finished_at: string; named: number; of: number }
   changes?: Change[]
-  /** Preview: how many names given instead are left out of named_instead. */
-  rivalsMore?: number
-  /** Preview: how many cited sites the full report lists (sources is then empty). */
-  sourcesMore?: number
 }
 export type Change =
   | { type: "new"; engine: string; q: string }
@@ -75,12 +68,8 @@ export interface SiteReport {
   offering: string | null
   plan: string
   followedAt: string
-  /** "preview" until the report is bought or the site is on the plan. Absent means full. */
-  access?: "full" | "preview"
   /** A client we set up by hand (geo_clients) who owns this domain: read like a site on the plan. */
   client?: boolean
-  /** creditUntil: the report's price comes off the first plan payment until then. */
-  research?: { paidAt: string | null; creditUntil: string | null }
   planInterval?: GeoInterval | null
   pending: {
     kind: string
@@ -213,44 +202,14 @@ function firstSnippet(rows: Row[], engines: string[]) {
   return null
 }
 
-/** Questions of a report whose answers are in the full report only. */
-export const lockedCount = (rows: Row[]) => rows.filter((r) => r.locked).length
-
-/** A preview site: its detailed report is not bought and it is not on the plan. */
-export const isPreview = (site: SiteReport) => site.access === "preview"
-
-/** We do the work for this site: it is on the plan, or a client we set up by hand. No unlock, no
- *  offer of the plan; each step says where it stands. */
+/** We do the work for this site: it is on the plan, or a client we set up by hand. No offer of the
+ *  plan; each step says where it stands. */
 export const onPlan = (site: SiteReport) => site.plan === "paid" || site.client === true
 
 /** The report the detailed cards come from: a weekly check of five questions is not the full
  *  picture, so the day-0 report stays it. */
 export function fullReport(site: SiteReport) {
   return site.baseline && site.latest && site.latest.rows.length < site.baseline.rows.length ? site.baseline : site.latest
-}
-
-function Lock({ className = "w-3.5 h-3.5" }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 16 16" className={className} fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
-      <rect x="3" y="7" width="10" height="7" rx="1.5" />
-      <path d="M5.5 7V5a2.5 2.5 0 015 0v2" strokeLinecap="round" />
-    </svg>
-  )
-}
-
-/** Grey bars standing in for data the preview does not have. Decorative only. */
-function Placeholder({ lines = 3 }: { lines?: number }) {
-  const widths = ["w-3/4", "w-1/2", "w-2/3", "w-5/12"]
-  return (
-    <div aria-hidden className="space-y-2.5 blur-[2px] select-none">
-      {Array.from({ length: lines }, (_, i) => (
-        <div key={i} className="flex items-center gap-3">
-          <div className={`h-2.5 rounded-full bg-slate-200 ${widths[i % widths.length]}`} />
-          <div className="ml-auto h-2.5 w-6 rounded-full bg-slate-200" />
-        </div>
-      ))}
-    </div>
-  )
 }
 
 // ── banner while the full report runs ─────────────────────────────────────────────────────────
@@ -323,8 +282,6 @@ export function Hero({ report }: { report: Report }) {
   const l = report
   const s = l.summary
   const engines = ENGINES.filter((e) => s.engines[e])
-  // In a preview most rows carry no answers, so the per-assistant link count would undercount.
-  const partial = lockedCount(l.rows) > 0
   const cited = citedByEngine(l.rows)
   const skipped = engines.filter((e) => !s.engines[e].of)
   const snip = firstSnippet(l.rows, engines)
@@ -348,7 +305,7 @@ export function Hero({ report }: { report: Report }) {
       </p>
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 mt-4">
         {engines.map((e) => (
-          <Tile key={e} engine={e} named={s.engines[e].named} of={s.engines[e].of} linked={partial ? undefined : (cited[e] ?? 0)} />
+          <Tile key={e} engine={e} named={s.engines[e].named} of={s.engines[e].of} linked={cited[e] ?? 0} />
         ))}
       </div>
       {snip && (
@@ -579,7 +536,6 @@ export function WhatChanged({ changes, title = "What changed since the last chec
 export function NamedInstead({ summary, you, firstLook }: { summary: Summary; you: string; firstLook?: boolean }) {
   const top = summary.named_instead.slice(0, 8)
   const max = Math.max(summary.named, ...top.map((r) => r.count), 1)
-  const more = summary.rivalsMore ?? 0
   return (
     <section className={card}>
       <h2 className="font-bold text-lg">Named instead of you{firstLook ? " (first look)" : ""}</h2>
@@ -612,27 +568,7 @@ export function NamedInstead({ summary, you, firstLook }: { summary: Summary; yo
           ))}
         </ul>
       )}
-      {more > 0 && <LockedMore text={`and ${more} more named instead of you`} />}
     </section>
-  )
-}
-
-/** The line under a cut list in a preview: how much more the full report has. */
-function LockedMore({ text }: { text: string }) {
-  return (
-    <div className="mt-4">
-      <Placeholder lines={2} />
-      <p className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm">
-        <span className="inline-flex items-center gap-1.5 font-semibold text-slate-700">
-          <Lock className="w-3.5 h-3.5 text-violet-600" />
-          {text}
-        </span>
-        <span className="text-slate-500">— in the full report.</span>
-        <a href="#unlock" className="font-semibold text-violet-700 hover:underline">
-          Unlock
-        </a>
-      </p>
-    </div>
   )
 }
 
@@ -654,7 +590,6 @@ const TYPE: Record<string, { tag: string; what: string }> = {
 export function Sources({ summary }: { summary: Summary }) {
   const list = (summary.sources ?? []).slice(0, 10)
   const own = summary.own_cited ?? 0
-  const hidden = summary.sourcesMore ?? 0
   return (
     <section className={card}>
       <h2 className="font-bold text-lg">Sites the assistants rely on</h2>
@@ -662,9 +597,7 @@ export function Sources({ summary }: { summary: Summary }) {
       <div className={`mt-4 rounded-xl px-4 py-3 text-sm font-semibold ${own ? "bg-violet-50 text-violet-800" : "bg-[#f8f7f6] text-slate-700"}`}>
         {own ? `Your site: cited in ${own} answer${own === 1 ? "" : "s"}` : "Your site isn't cited yet."}
       </div>
-      {hidden > 0 ? (
-        <LockedMore text={`${hidden} source${hidden === 1 ? "" : "s"} the assistants quote`} />
-      ) : list.length === 0 ? (
+      {list.length === 0 ? (
         <p className="text-sm text-slate-600 mt-4">The assistants cited no sources for these questions.</p>
       ) : (
         <ul className="mt-3 divide-y divide-black/[0.06]">
@@ -797,26 +730,17 @@ export function WhereNamed({
   samples,
   asked,
   title = "Where you're named",
-  unlock,
 }: {
   rows: Row[]
   engines: string[]
   samples: number
   asked?: string
   title?: string
-  /** Preview: shown where the locked questions start. */
-  unlock?: ReactNode
 }) {
   const [openRow, setOpenRow] = useState<Row | null>(null)
   const grouped = rows.length === 20
   const groups = grouped ? GROUPS.map((g) => ({ ...g, rows: rows.slice(g.from, g.to) })) : [{ from: 0, to: rows.length, title: "", rows }]
-  const firstLocked = rows.findIndex((r) => r.locked)
-  // The group where the locked questions start is open, so the unlock panel is in view. Collapsed,
-  // that group still shows the panel under its title: every "#unlock" link on the page lands on it.
-  const [open, setOpen] = useState<Record<number, boolean>>(() => {
-    const at = grouped && firstLocked >= 0 ? groups.findIndex((g) => firstLocked < g.to) : 0
-    return { 0: true, [at]: true }
-  })
+  const [open, setOpen] = useState<Record<number, boolean>>({ 0: true })
   const cols = ENGINES.filter((e) => engines.includes(e))
 
   return (
@@ -824,7 +748,7 @@ export function WhereNamed({
       <h2 className="font-bold text-lg">{title}</h2>
       <p className="text-xs text-slate-500 mt-1 leading-relaxed">
         {samples > 1 ? `Darker dot = named in more of the ${samples} asks.` : "Filled dot = named."} Link mark = linked your site. Tap a
-        question for the answers.{firstLocked >= 0 && " Questions with a lock are answered in the full report."}
+        question for the answers.
       </p>
       <div className="flex items-center gap-4 text-[11px] text-slate-500 mt-2">
         <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-violet-600" /> named</span>
@@ -846,9 +770,7 @@ export function WhereNamed({
       {groups.map((g, gi) => {
         const pairs = g.rows.reduce((n, r) => n + cols.filter((e) => (r.engines?.[e]?.samples ?? 0) > 0).length, 0)
         const named = g.rows.reduce((n, r) => n + cols.filter((e) => (r.engines?.[e]?.named ?? 0) > 0).length, 0)
-        const locked = lockedCount(g.rows)
         const isOpen = !grouped || open[gi]
-        const holdsUnlock = Boolean(unlock) && firstLocked >= g.from && firstLocked < g.to
         return (
           <div key={gi} className="mt-2">
             {grouped && (
@@ -861,41 +783,14 @@ export function WhereNamed({
                 <span>
                   {isOpen ? "▾" : "▸"} {g.title}
                 </span>
-                {locked ? (
-                  <span className="shrink-0 inline-flex items-center gap-1.5 text-slate-500 font-medium tabular-nums whitespace-nowrap">
-                    <Lock className="w-3 h-3" />
-                    {locked === g.rows.length ? "In the full report" : `${g.rows.length - locked} of ${g.rows.length} shown`}
-                  </span>
-                ) : (
-                  <span className="text-slate-500 font-medium tabular-nums">
-                    {named} of {pairs}
-                  </span>
-                )}
+                <span className="text-slate-500 font-medium tabular-nums">
+                  {named} of {pairs}
+                </span>
               </button>
             )}
-            {holdsUnlock && !isOpen && <div className="py-4">{unlock}</div>}
             {isOpen && (
               <ul className="divide-y divide-black/[0.05]">
                 {g.rows.map((r, i) => {
-                  if (r.locked)
-                    return (
-                      <Fragment key={i}>
-                        {unlock && g.from + i === firstLocked && <li className="py-4">{unlock}</li>}
-                        <li className="py-3 px-1 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-                          <span className="flex-1 min-w-0 text-sm leading-snug line-clamp-2 text-slate-600">
-                            <Lock className="inline w-3 h-3 mr-1.5 -mt-0.5 text-slate-400" />
-                            {r.q}
-                          </span>
-                          <span className="flex self-end sm:self-auto" aria-label="Answers in the full report">
-                            {cols.map((e) => (
-                              <span key={e} className="w-11 sm:w-20 flex justify-center">
-                                <span aria-hidden className="block w-4 h-4 rounded-full bg-slate-200 blur-[2px]" />
-                              </span>
-                            ))}
-                          </span>
-                        </li>
-                      </Fragment>
-                    )
                   const instead = cols.flatMap((e) => r.engines?.[e]?.named_instead ?? []).filter((n, k, arr) => arr.indexOf(n) === k)
                   return (
                     <li key={i}>
@@ -1058,13 +953,11 @@ function seenIn(client: boolean, what: string, cited: string, named: string | nu
 }
 
 export function planSteps(site: SiteReport, audit: Audit | "failed" | undefined, client = false): Step[] {
-  // Steps come from the fullest report. A preview keeps to the few steps its open questions support;
-  // the full report lists every step, so it is always a superset of what the preview showed. A
+  // Steps come from the fullest report, every one of them (the report is shown whole). A
   // client's plan is the day-0 report's, the one the work started from: a step stays when it starts
   // to work (its status says so) and the weekly checks never reshuffle it.
   const l = client ? (site.baseline ?? site.latest) : fullReport(site)
   if (!l) return []
-  const preview = isPreview(site)
   const s = l.summary
   const ok = audit && audit !== "failed" ? audit : null
   const crawlers: Step[] = []
@@ -1179,7 +1072,6 @@ export function planSteps(site: SiteReport, audit: Audit | "failed" | undefined,
     })
     .filter((g): g is NonNullable<typeof g> => g !== null)
     .sort((a, b) => b.others.length - a.others.length || b.names.length - a.names.length || a.i - b.i)
-    .slice(0, preview ? 2 : undefined)
   const used = new Set(gaps.map((g) => g.q))
   const content: Step[] = gaps.map((g) => {
     const top = g.names.slice(0, 3)
@@ -1301,7 +1193,7 @@ export function planSteps(site: SiteReport, audit: Audit | "failed" | undefined,
     ...(tech.schema ? [tech.schema] : []),
     ...media,
     ...(tech.llms ? [tech.llms] : []),
-  ].slice(0, preview ? 6 : undefined)
+  ]
 }
 
 /** Who reads the plan: an account not on it (the offer, "Start the plan"), a client on the plan or
@@ -1320,6 +1212,8 @@ const TAG_TONE: Record<Step["kind"], string> = {
 // ── a client's plan: where each step stands ──
 
 const YOUR_ARTICLES = "/business/dashboard/articles"
+/** "Write to us" in the cabinet: ?site= picks the site, ?report= asks us to run a site's report. */
+const SUPPORT = "/business/dashboard/support"
 const YOUR_WEBSITE = "/business/dashboard/settings"
 
 /** What a step shows a client: one chip, at most one link, and for a published article the latest
@@ -1473,14 +1367,12 @@ function PlanStep({ n, step, status }: { n: number; step: Step; status: StepStat
   )
 }
 
-/** The end of the report: what we do for the site, step by step. One button, "Start the plan", for an
- *  account not on it; for a client, where each step stands and what is done. */
+/** The end of the report: what we do for the site, step by step. For an account not on the plan,
+ *  "Start the plan" and "Talk to us"; for a client, where each step stands and what is done. */
 export function YourPlan({ site, steps, ready, mode }: { site: SiteReport; steps: Step[]; ready: boolean; mode: PlanMode }) {
   const client = mode === "client"
   const done = client && site.work ? doneList(steps, site.work) : []
   const sample = mode === "sample"
-  const more = mode === "offer" ? lockedSteps(site) : null
-  const credit = mode === "offer" ? (site.research?.creditUntil ?? null) : null
   const planHref = sample ? PLAN_HOME : `/business/dashboard/plan?site=${encodeURIComponent(site.domain)}`
   const p = GEO_PRICES
   return (
@@ -1497,25 +1389,13 @@ export function YourPlan({ site, steps, ready, mode }: { site: SiteReport; steps
                 ? `What we would do for ${site.domain}, most important first: why, from the report, and what it should change.`
                 : `What we do for ${site.domain} on the plan, most important first: why, from your report, and what it should change.`}
           </p>
-          {steps.length === 0 && !more && <p className="text-sm text-slate-600 mt-4">Nothing in this report stands out as urgent.</p>}
+          {steps.length === 0 && <p className="text-sm text-slate-600 mt-4">Nothing in this report stands out as urgent.</p>}
           {steps.length > 0 && (
             <ol className="mt-4 space-y-3">
               {steps.map((st, i) => (
                 <PlanStep key={st.id} n={i + 1} step={st} status={client ? stepStatus(st, site.work) : null} />
               ))}
             </ol>
-          )}
-          {more && (
-            <div className="mt-3 rounded-xl border border-dashed border-violet-200 bg-violet-50/60 p-4 flex gap-3">
-              <Lock className="w-4 h-4 mt-0.5 shrink-0 text-violet-600" />
-              <p className="text-sm text-slate-700 leading-relaxed">
-                <span className="font-semibold text-[#1b1916]">More of your plan is in the full report ({p.research.label}):</span> the steps
-                that come from your other {more.questions} questions{more.sources > 0 && ` and the ${more.sources} sites the assistants quote`}.{" "}
-                <a href="#unlock" className="font-semibold text-violet-700 hover:underline">
-                  Unlock
-                </a>
-              </p>
-            </div>
           )}
           {done.length > 0 && (
             <div className="mt-5">
@@ -1548,7 +1428,7 @@ export function YourPlan({ site, steps, ready, mode }: { site: SiteReport; steps
               <p className="font-extrabold text-lg">We do all of this on the plan</p>
               <p className="text-sm text-white/80 mt-1.5 leading-relaxed">
                 The articles, the fixes and the places the assistants quote, for {sample ? "your site" : site.domain}; and every two weeks all 20
-                questions put to all 4 assistants, 3 times each, so you see what moved.{isPreview(site) && " The full report comes with it."}
+                questions put to all 4 assistants, 3 times each, so you see what moved.
               </p>
               <p className="text-sm text-white/60 mt-2 leading-relaxed">
                 No one can promise that assistants will name you. We promise the work and an honest count every two weeks.
@@ -1566,14 +1446,12 @@ export function YourPlan({ site, steps, ready, mode }: { site: SiteReport; steps
                 </a>
               </div>
               {!sample && (
-                <a href={SAMPLE_PATH} target="_blank" rel="noopener" className="mt-3 inline-block text-sm font-semibold text-violet-200 hover:text-white hover:underline">
-                  See a real report →
+                <a
+                  href={`${SUPPORT}?site=${encodeURIComponent(site.domain)}`}
+                  className="mt-3 inline-block text-sm font-semibold text-violet-200 hover:text-white hover:underline"
+                >
+                  Talk to us →
                 </a>
-              )}
-              {credit && (
-                <p className="text-sm text-violet-200 mt-3">
-                  Your {p.research.label} report comes off the first payment if you start by {fmtDate(credit)}.
-                </p>
               )}
             </div>
           )}
@@ -1583,192 +1461,7 @@ export function YourPlan({ site, steps, ready, mode }: { site: SiteReport; steps
   )
 }
 
-// ── the paid report: preview, unlock, credit ──────────────────────────────────────────────────
-
-function beacon(event: string, props: Record<string, unknown>) {
-  try {
-    navigator.sendBeacon("/api/track", JSON.stringify({ event, path: window.location.pathname, props, anon_id: localStorage.getItem("itg_anon") }))
-  } catch {}
-}
-
-/** Stripe Checkout for one site's detailed report. A site not followed yet is followed on payment. */
-const CHECKOUT_ERRORS: Record<string, string> = {
-  limit_user: "An account follows up to 3 sites, so this one can't be added. Nothing was charged.",
-  unreachable: "We couldn't open that site. Check the address; nothing was charged.",
-  invalid_domain: "That doesn't look like a website address. Nothing was charged.",
-  questions_failed: "We couldn't read enough on that site to work out what its buyers ask. Nothing was charged.",
-  limit_reads: "That's a lot of new sites for one day. Try again tomorrow; nothing was charged.",
-  payment_processing: "Your payment for this report is in. It unlocks within a few minutes; refresh the page shortly.",
-  slow: "Reading the site is taking longer than usual. Nothing was charged; try again in a few minutes.",
-}
-
-// A site not followed yet is read first (about a minute), so the payment never waits on it.
-const PREPARE_POLL_MS = 5_000
-const PREPARE_WAIT_MS = 3 * 60 * 1000
-
-export function UnlockButton({ domain, where, label }: { domain: string; where: string; label?: string }) {
-  const [busy, setBusy] = useState(false)
-  const [preparing, setPreparing] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-
-  async function go() {
-    setBusy(true)
-    setError(null)
-    beacon("geo_research_checkout", { domain, where })
-    const deadline = Date.now() + PREPARE_WAIT_MS
-    try {
-      for (;;) {
-        const r = await fetch("/api/geo/research-checkout", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ domain }),
-        })
-        const j = (await r.json().catch(() => ({}))) as { url?: string; error?: string; preparing?: boolean }
-        if (j.url) {
-          window.location.href = j.url
-          return
-        }
-        if (!j.preparing) {
-          setError(j.error === "already_unlocked" ? "already" : r.status === 401 ? "signin" : (j.error ?? "failed"))
-          break
-        }
-        if (Date.now() > deadline) {
-          setError("slow")
-          break
-        }
-        setPreparing(true)
-        await new Promise((done) => setTimeout(done, PREPARE_POLL_MS))
-      }
-    } catch {
-      setError("failed")
-    }
-    setPreparing(false)
-    setBusy(false)
-  }
-
-  return (
-    <div className="min-w-0">
-      <button
-        type="button"
-        onClick={go}
-        disabled={busy}
-        className="w-full sm:w-auto rounded-xl bg-violet-600 hover:bg-violet-500 disabled:opacity-60 text-white px-5 py-3 text-sm font-bold"
-      >
-        {preparing ? `Reading ${domain}…` : busy ? "Opening checkout…" : (label ?? `Unlock the full report — ${GEO_PRICES.research.label}`)}
-      </button>
-      {preparing && (
-        <p className="text-sm text-slate-600 mt-2">
-          First we read {domain} and work out what its buyers ask, about a minute. Checkout opens by itself; nothing is charged until
-          you pay there.
-        </p>
-      )}
-      {error === "already" && (
-        <p className="text-sm text-slate-700 mt-2">
-          This report is already unlocked.{" "}
-          <a href={`/business/dashboard/visibility?site=${encodeURIComponent(domain)}`} className="font-semibold text-violet-700 hover:underline">
-            Show it
-          </a>
-        </p>
-      )}
-      {error === "signin" && (
-        <p className="text-sm text-red-700 mt-2">
-          You&apos;re signed out.{" "}
-          <a href="/login?callbackUrl=/business/dashboard/visibility" className="font-semibold underline">
-            Sign in
-          </a>{" "}
-          and try again.
-        </p>
-      )}
-      {error && error !== "already" && error !== "signin" && (
-        <p className={`text-sm mt-2 ${error === "payment_processing" ? "text-slate-700" : "text-red-700"}`}>
-          {CHECKOUT_ERRORS[error] ?? "Checkout didn't open, and nothing was charged. Try again in a minute."}
-        </p>
-      )}
-    </div>
-  )
-}
-
-/** The one unlock panel, placed where the locked questions start. */
-export function UnlockPanel({ domain, report }: { domain: string; report: Report }) {
-  const s = report.summary
-  const questions = report.rows.length
-  const engines = report.engines.length
-  const rivals = s.named_instead.length + (s.rivalsMore ?? 0)
-  const sources = s.sourcesMore ?? 0
-  const inside = [
-    `All ${questions} questions, with what each of the ${engines} assistants answered`,
-    rivals ? `The ${rivals} businesses named instead of you, and how often` : "Who the assistants name instead of you",
-    sources ? `The ${sources} sites the assistants quote most` : "The sites the assistants quote",
-    "Your plan: what we do for your site, step by step, and why",
-  ]
-  return (
-    <div id="unlock" className="scroll-mt-24 rounded-2xl border border-violet-200 bg-gradient-to-b from-violet-50 to-white p-5 sm:p-6">
-      <p className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wide text-violet-700">
-        <Lock className="w-3.5 h-3.5" />
-        Below this line: the full report
-      </p>
-      <h3 className="mt-2 text-xl font-extrabold tracking-tight">
-        See the full report — {questions * engines * report.samples} answers
-      </h3>
-      <ul className="mt-3 space-y-1.5 text-sm text-slate-700">
-        {inside.map((i) => (
-          <li key={i} className="flex gap-2">
-            <span className="text-violet-600 shrink-0">✓</span>
-            {i}
-          </li>
-        ))}
-      </ul>
-      <p className="mt-4 flex items-baseline gap-x-2 flex-wrap">
-        <span className="text-2xl font-extrabold tabular-nums">{GEO_PRICES.research.label}</span>
-        <span className="text-sm text-slate-600">one payment, for {domain}</span>
-      </p>
-      <p className="text-sm text-slate-600 mt-1">Comes off your first plan payment if you start the plan within {CREDIT_DAYS} days.</p>
-      <div className="mt-4 flex flex-col sm:flex-row sm:items-center gap-3">
-        <UnlockButton domain={domain} where="panel" />
-        <a href={SAMPLE_PATH} target="_blank" rel="noopener" className="text-center sm:text-left text-sm font-semibold text-violet-700 hover:underline">
-          See a real report
-        </a>
-      </div>
-    </div>
-  )
-}
-
-/** Says openly, right under the headline, that this is a preview and what the rest costs. */
-export function PreviewNote({ report }: { report: Report }) {
-  const shown = report.rows.length - lockedCount(report.rows)
-  const all = report.rows.length
-  return (
-    <div className="rounded-2xl bg-white/80 border border-violet-200 px-4 py-3 flex flex-col sm:flex-row sm:items-center gap-x-4 gap-y-1.5 text-sm text-slate-700">
-      <p className="flex-1 flex gap-2 leading-relaxed">
-        <Lock className="w-4 h-4 mt-0.5 shrink-0 text-violet-600" />
-        <span>
-          The totals and the {shown} question{shown === 1 ? "" : "s"} from your quick check are open. The full report — all {all} questions,
-          every assistant, who is named instead, which sources they quote, and your plan — is {GEO_PRICES.research.label}.
-        </span>
-      </p>
-      <a href="#unlock" className="shrink-0 pl-6 sm:pl-0 font-semibold text-violet-700 hover:underline">
-        What&apos;s in it ↓
-      </a>
-    </div>
-  )
-}
-
-/** While the report's price still comes off the first plan payment. */
-export function CreditNote({ site }: { site: SiteReport }) {
-  const until = site.research?.creditUntil
-  if (!until || onPlan(site)) return null
-  return (
-    <a
-      href={`/business/dashboard/plan?site=${encodeURIComponent(site.domain)}`}
-      className="inline-flex items-center gap-1.5 rounded-full bg-violet-50 border border-violet-200 px-3.5 py-1.5 text-xs font-semibold text-violet-800 hover:bg-violet-100"
-    >
-      {GEO_PRICES.research.label} comes off your first plan payment until {fmtDate(until)} →
-    </a>
-  )
-}
-
-/** The report from the headline down to the questions; the cabinet and the public sample share it.
- *  A preview puts the questions first, so the unlock panel sits where the locked part starts. */
+/** The report from the headline down to the questions; the cabinet and the public sample share it. */
 export function ReportSections({
   site,
   showBase,
@@ -1787,23 +1480,7 @@ export function ReportSections({
   const full = fullReport(site)
   if (!latest || !full) return null
   const fromDay0 = full !== latest
-  const preview = !readOnly && !onPlan(site) && isPreview(site) && lockedCount(full.rows) > 0
   const you = site.business || site.domain
-  const rivalsAndSources = (
-    <div className="grid xl:grid-cols-2 gap-5">
-      <NamedInstead summary={full.summary} you={you} />
-      <Sources summary={full.summary} />
-    </div>
-  )
-  const questions = (
-    <WhereNamed
-      rows={full.rows}
-      engines={full.engines}
-      samples={full.samples}
-      asked={full.finishedAt}
-      unlock={preview ? <UnlockPanel domain={site.domain} report={full} /> : undefined}
-    />
-  )
   return (
     <>
       {latest.kind === "weekly" ? (
@@ -1817,7 +1494,6 @@ export function ReportSections({
       ) : (
         <Hero report={latest} />
       )}
-      {preview && <PreviewNote report={full} />}
       {fromDay0 && (
         <p className="text-xs font-semibold text-slate-600 px-1">
           From {readOnly ? "the" : "your"} day-0 report · {fmtDate(full.finishedAt)} · {full.rows.length} questions × {full.engines.length} assistants,{" "}
@@ -1825,17 +1501,11 @@ export function ReportSections({
         </p>
       )}
       {fromDay0 && showBase && <Hero report={full} />}
-      {preview ? (
-        <>
-          {questions}
-          {rivalsAndSources}
-        </>
-      ) : (
-        <>
-          {rivalsAndSources}
-          {questions}
-        </>
-      )}
+      <div className="grid xl:grid-cols-2 gap-5">
+        <NamedInstead summary={full.summary} you={you} />
+        <Sources summary={full.summary} />
+      </div>
+      <WhereNamed rows={full.rows} engines={full.engines} samples={full.samples} asked={full.finishedAt} />
     </>
   )
 }
@@ -1979,50 +1649,19 @@ export function RunView({
         </div>
       </>
     )
-  // Cut on the server like the page (a preview only ever reaches a day-0 report); laid out as ReportSections lays it.
-  const preview = !onPlan(site) && isPreview(site) && lockedCount(run.rows) > 0
-  const rivalsAndSources = (
-    <div className="grid xl:grid-cols-2 gap-5">
-      <NamedInstead summary={run.summary} you={site.business || site.domain} />
-      <Sources summary={run.summary} />
-    </div>
-  )
-  const questions = (
-    <WhereNamed
-      rows={run.rows}
-      engines={run.engines}
-      samples={run.samples}
-      asked={run.finishedAt}
-      unlock={preview ? <UnlockPanel domain={site.domain} report={run} /> : undefined}
-    />
-  )
+  // Laid out as ReportSections lays it.
   return (
     <>
       {back}
       <Hero report={run} />
       {run.kind === "weekly" && <WhatChanged changes={run.summary.changes ?? []} title="What changed in that check" />}
-      {preview && <PreviewNote report={run} />}
-      {preview ? (
-        <>
-          {questions}
-          {rivalsAndSources}
-        </>
-      ) : (
-        <>
-          {rivalsAndSources}
-          {questions}
-        </>
-      )}
+      <div className="grid xl:grid-cols-2 gap-5">
+        <NamedInstead summary={run.summary} you={site.business || site.domain} />
+        <Sources summary={run.summary} />
+      </div>
+      <WhereNamed rows={run.rows} engines={run.engines} samples={run.samples} asked={run.finishedAt} />
     </>
   )
-}
-
-/** Preview: what the locked part of the report would add to the plan. */
-function lockedSteps(site: SiteReport) {
-  const full = fullReport(site)
-  if (!full || !isPreview(site)) return null
-  const questions = lockedCount(full.rows)
-  return questions ? { questions, sources: full.summary.sourcesMore ?? 0 } : null
 }
 
 // ── placeholders and adding a site ────────────────────────────────────────────────────────────
@@ -2047,9 +1686,9 @@ const FOLLOW_ERRORS: Record<string, string> = {
   invalid_url: "That doesn't look like a website address. Enter it like yourcompany.com.",
 }
 
-// The account's own report, and what another site's costs; said the same way wherever it comes up.
-const reportSites = REPORT_SITES === 1 ? "one site" : `${REPORT_SITES} sites`
-const REPORT_LIMIT = `Your account includes the report for ${reportSites}; for another site the report is ${GEO_PRICES.research.label}.`
+/** /api/geo/follow's answers for a report past the free one: the account's site is taken
+ *  ("report_limit") or this connection already had one ("report_ip_used", geo_check/service.py). */
+export const REPORT_USED = new Set(["report_limit", "report_ip_used"])
 
 export function AddSite({
   onAdd,
@@ -2060,21 +1699,43 @@ export function AddSite({
 }: {
   onAdd: (site: string) => void
   busy: boolean
+  /** `domain` is empty when the page only knows the server would refuse a new site (after a reload). */
   error: { domain: string; error: string } | null
   first?: boolean
-  /** The account's report site is taken: another site's report is paid for. */
+  /** The server would refuse a new site (/api/geo/report reportLimit): another site's report is run on request. */
   reportUsed?: boolean
 }) {
+  const m = useT(visibilityOpening)
   const [v, setV] = useState("")
-  // /api/geo/follow refuses a site past the account's report (402 "report_limit"), naming the domain
-  // as the server spells it: its report is bought instead, and the purchase follows it.
-  const limit = error?.error === "report_limit" ? error.domain : null
+  // Past the free report (REPORT_USED, naming the domain as the server spells it) the form gives way to
+  // "contact us and we'll run it for you": any other site would be refused the same way. Never a price.
+  if (error && REPORT_USED.has(error.error))
+    return (
+      <section className={card} aria-live="polite">
+        <p className="font-bold text-lg leading-snug">{error.error === "report_ip_used" ? m.usedConnection : m.usedAccount}</p>
+        {error.domain && <p className="text-sm text-slate-600 mt-1 break-words">{m.site(error.domain)}</p>}
+        <a
+          href={error.domain ? `${SUPPORT}?report=${encodeURIComponent(error.domain)}` : SUPPORT}
+          className="mt-4 inline-flex justify-center w-full sm:w-auto rounded-xl bg-violet-600 hover:bg-violet-500 text-white px-6 py-3 text-sm font-semibold"
+        >
+          {m.contact}
+        </a>
+      </section>
+    )
   return (
     <section className={card}>
       <h2 className="font-bold text-lg">{first ? "See what AI assistants say about you" : "Add a site"}</h2>
       <p className="text-sm text-slate-600 mt-1 leading-relaxed">
-        We put 20 questions your buyers ask to ChatGPT, Claude, Gemini and Perplexity, 3 times each. About 10 minutes.
-        {reportUsed && ` ${REPORT_LIMIT}`}
+        We put 20 questions your buyers ask to ChatGPT, Claude, Gemini and Perplexity, 3 times each. About 10 minutes. Free.
+        {reportUsed && (
+          <>
+            {" "}
+            {m.reportUsedHint}{" "}
+            <a href={SUPPORT} className="font-semibold text-violet-700 hover:underline">
+              {m.contact}
+            </a>
+          </>
+        )}
       </p>
       <form
         onSubmit={(e) => {
@@ -2098,26 +1759,10 @@ export function AddSite({
           {busy ? "Starting…" : "Run my report"}
         </button>
       </form>
-      {limit ? (
-        <div className="mt-4 rounded-xl border border-violet-200 bg-violet-50/70 p-4">
-          <p className="font-semibold">{REPORT_LIMIT}</p>
-          <p className="text-sm text-slate-700 mt-1 leading-relaxed">
-            For {limit}: 20 questions its buyers ask, put to 4 assistants 3 times each, all of it open, with your plan. One payment; it comes
-            off your first plan payment if you start the plan within {CREDIT_DAYS} days.
-          </p>
-          <div className="mt-3 flex flex-col sm:flex-row sm:items-center gap-3">
-            <UnlockButton domain={limit} where="second_site" label={`Get the report for ${limit} — ${GEO_PRICES.research.label}`} />
-            <a href={SAMPLE_PATH} target="_blank" rel="noopener" className="text-center sm:text-left text-sm font-semibold text-violet-700 hover:underline">
-              See a real report
-            </a>
-          </div>
-        </div>
-      ) : (
-        error && (
-          <p className="text-sm text-red-700 mt-3">
-            {error.domain}: {FOLLOW_ERRORS[error.error] ?? "That didn't work. Try again in a minute."}
-          </p>
-        )
+      {error && (
+        <p className="text-sm text-red-700 mt-3">
+          {error.domain}: {FOLLOW_ERRORS[error.error] ?? "That didn't work. Try again in a minute."}
+        </p>
       )}
     </section>
   )

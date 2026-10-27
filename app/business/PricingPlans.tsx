@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import { CREDIT_DAYS, GEO_PRICES, SAMPLE_PATH, type GeoInterval } from "@/lib/geo-pricing"
+import { GEO_PRICES, SAMPLE_PATH, type GeoInterval } from "@/lib/geo-pricing"
 import LocaleLink from "@/components/i18n/LocaleLink"
 import { useLocale, useT } from "@/components/i18n/LocaleProvider"
 import { splitLocale, type Locale } from "@/lib/i18n/config"
@@ -12,9 +12,8 @@ import { GEO_CHECKED_KEY, GEO_HANDOFF_KEY, handOff, readChecked, type CheckedSit
 
 // The pricing block of "/": the quick check in one line, then the two offers side by side. What is
 // sold, said the same way everywhere: the quick check is free (two answers at once, all five with an account); the detailed report is the
-// diagnosis and our plan for the site — computed after the account is created, its totals and the
-// quick check's questions open, the whole of it for the report's price; the plan is us doing that
-// work, and the report's price comes off its first payment within CREDIT_DAYS. Every number comes
+// diagnosis and our plan for the site — computed after the account is created, and the whole of it
+// free (one site per account, since 27 Oct 2026); the plan is us doing that work. Every number comes
 // from lib/geo-pricing.ts; every string from lib/i18n/messages/pricingPlans.ts.
 //
 // The plan's buttons are the billing choices themselves: a Month / Year toggle; by the month there are
@@ -184,8 +183,8 @@ export default function PricingPlans({
         <div className="rounded-2xl bg-white border-2 border-violet-200 p-6 sm:p-7 flex flex-col">
           <h3 className="font-bold text-lg">{m.reportTitle}</h3>
           <p className="mt-2 flex items-baseline gap-2">
-            <span className="text-4xl font-extrabold tabular-nums">{P.research.label}</span>
-            <span className="text-sm text-slate-500">{m.onePayment}</span>
+            <span className="text-4xl font-extrabold">{m.free}</span>
+            <span className="text-sm text-slate-500">{m.withAccount}</span>
           </p>
           <p className="text-sm text-slate-600 mt-2">{m.reportLine}</p>
           <ul className="mt-5 space-y-2.5 text-sm text-slate-700">
@@ -199,9 +198,9 @@ export default function PricingPlans({
               onClick={() => (checked ? onSite("report") : track(locale, "report"))}
               className="block text-center rounded-xl bg-violet-600 hover:bg-violet-500 text-white px-5 py-3 text-sm font-semibold"
             >
-              {m.getReport(P.research.label)}
+              {m.getReport}
             </Go>
-            <p className="text-xs text-slate-500 text-center">{m.credit(CREDIT_DAYS)}</p>
+            <p className="text-xs text-slate-500 text-center">{m.freeNote}</p>
             <LocaleLink href={SAMPLE_PATH} onClick={() => track(locale, "sample")} className="block text-center text-sm font-semibold text-violet-700 hover:underline">
               {m.seeSample}
             </LocaleLink>

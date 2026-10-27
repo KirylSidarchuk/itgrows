@@ -1,6 +1,6 @@
 import { db } from "@/lib/db"
 import { sql } from "drizzle-orm"
-import { CREDIT_DAYS, SAMPLE_DOMAIN } from "@/lib/geo-pricing"
+import { SAMPLE_DOMAIN } from "@/lib/geo-pricing"
 import { clientOwnsSql } from "@/lib/geo-role"
 import { geoPlanBeforeSql, isGeoInterval } from "@/lib/geo-business"
 
@@ -12,13 +12,12 @@ import { geoPlanBeforeSql, isGeoInterval } from "@/lib/geo-business"
 //
 // Each site carries `client`: the viewer pays for the plan for it (a paid follow), or is a client we
 // set up by hand with that site listed as theirs in geo_client_sites (lib/geo-role.ts clientOwnsSql;
-// connected_sites is not read). A client
-// site, a bought report and the sample are shown whole ("full"); anything else is a preview of the
-// $19.99 report: the totals stay, the questions of the quick check keep their answers (the teaser
-// run's questions, or the profile's teaser picks when the site has no quick check yet), every other
-// question is shown as the question alone; the first PREVIEW_RIVALS of the names given instead; no
-// cited sources, only how many there are. The cut happens here, so the hidden answers never reach the
-// browser, and no question is answered in one part of the page and locked in another.
+// connected_sites is not read).
+//
+// The detailed report is free since 27 Oct 2026: every report a user can open here (a site they
+// follow, and the sample) is shown whole, every question with its answers, everyone named instead and
+// every cited source. How many reports an account and a connection get is decided when the site is
+// followed (/api/geo/follow, geo_check/service.py baseline), not here.
 //
 // The weekly re-measurement is part of the plan (geo_check/weekly.py runs it only for client sites):
 // a site that is not a client site shows its day-0 report alone, with no weekly runs in the report,
@@ -29,13 +28,9 @@ import { geoPlanBeforeSql, isGeoInterval } from "@/lib/geo-business"
 // by hand (status and date only, never our notes), and per question how many assistants named the
 // site in the latest weekly check and on day 0. Anyone else gets null.
 
-export const PREVIEW_RIVALS = 3
-
 type Row = Record<string, unknown>
 const rows = (r: unknown): Row[] => (Array.isArray(r) ? (r as Row[]) : ((r as { rows?: Row[] }).rows ?? []))
 const iso = (v: unknown) => (v ? new Date(v as string).toISOString() : null)
-const strs = (v: unknown) => (Array.isArray(v) ? v.map(String) : [])
-const DAY = 86_400_000
 
 interface Report {
   id: unknown
@@ -47,37 +42,10 @@ interface Report {
   rows: Row[]
 }
 
-/** The questions the quick check asks, open in the preview: the latest teaser run's, else the
- *  profile's teaser picks (1-based, out of its questions), as geo_check/service.py picks them. */
-function teaserQuestions(f: Row, teaserRows: Row[] | null): Set<string> {
-  if (teaserRows) return new Set(teaserRows.map((r) => String(r.q)))
-  const profile = strs(f.profile_questions)
-  const picks = strs(f.teaser_picks).map(Number)
-  return new Set(picks.filter((i) => i >= 1 && i <= profile.length).map((i) => profile[i - 1]))
-}
-
-/** The paid part of a report taken out; see the note at the top. */
-function preview(r: Report, open: Set<string>): Report {
-  const s = r.summary
-  const rivals = Array.isArray(s?.named_instead) ? s.named_instead : []
-  const sources = Array.isArray(s?.sources) ? s.sources : []
-  return {
-    ...r,
-    summary: s && {
-      ...s,
-      named_instead: rivals.slice(0, PREVIEW_RIVALS),
-      rivalsMore: Math.max(0, rivals.length - PREVIEW_RIVALS),
-      sources: [],
-      sourcesMore: sources.length,
-    },
-    rows: r.rows.map((row) => (open.has(String(row.q)) ? row : { q: row.q, locked: true })),
-  }
-}
-
 /** What the viewer may see of a site: whether its weekly runs are theirs (they belong to the plan),
- *  the full report or a preview, and `show`, which cuts a report to that. The page (siteReport) and a
- *  past report opened from the history (siteRunFor) both go through here, so they cannot be cut
- *  differently. `f` is a geo_sites row joined with the follow (or its stand-in for the sample). */
+ *  and the latest quick check. The page (siteReport) and a past report opened from the history
+ *  (siteRunFor) both go through here, so they cannot differ. Every report is shown whole (see the
+ *  note at the top). `f` is a geo_sites row joined with the follow (or its stand-in for the sample). */
 async function viewOf(f: Row, sample = false) {
   const client = !sample && f.client === true
   const teaser =
@@ -87,19 +55,11 @@ async function viewOf(f: Row, sample = false) {
         WHERE site_id = ${f.id as string} AND kind = 'teaser' AND status = 'done'
         ORDER BY created_at DESC LIMIT 1`)
     )[0] ?? null
-  const paidAt = iso(f.research_paid_at)
-  const access: "full" | "preview" = sample || client || paidAt ? "full" : "preview"
-  const asked = teaser?.results
-  const teaserRows = Array.isArray(asked) && asked.length ? (asked as Row[]) : null
-  const open = access === "full" ? new Set<string>() : teaserQuestions(f, teaserRows)
   return {
     client,
     // Weekly runs belong to the plan: only client sites (and the sample) show them.
     weekly: sample || client,
-    access,
-    paidAt,
     teaser,
-    show: (r: Report): Report => (access === "full" ? r : preview(r, open)),
   }
 }
 
@@ -296,7 +256,7 @@ async function planWork(f: Row, day0: Report, week: Report | null) {
 
 /** One site's report; `f` is a geo_sites row joined with the follow (or its stand-in for the sample). */
 async function siteReport(f: Row, sample = false) {
-  const { client, weekly, access, paidAt, teaser, show } = await viewOf(f, sample)
+  const { client, weekly, teaser } = await viewOf(f, sample)
   const runs = rows(
     await db.execute(sql`
       SELECT id, kind, status, engines, samples, jsonb_array_length(questions) AS n_questions,
@@ -326,9 +286,6 @@ async function siteReport(f: Row, sample = false) {
   const day0 = baseline ?? (latest?.kind === "baseline" ? latest : null)
 
   const plan = String(f.plan)
-  const creditEnd = paidAt ? new Date(paidAt).getTime() + CREDIT_DAYS * DAY : 0
-  const creditUntil =
-    paidAt && !f.research_credited_at && plan !== "paid" && creditEnd > Date.now() ? new Date(creditEnd).toISOString() : null
 
   return {
     domain: f.domain as string,
@@ -339,13 +296,11 @@ async function siteReport(f: Row, sample = false) {
     plan,
     followedAt: f.followed_at,
     client,
-    access,
-    research: { paidAt, creditUntil },
     // Whatever the plan was bought for: month, quarter or year (geo_follows.plan_interval).
     planInterval: isGeoInterval(f.plan_interval) ? f.plan_interval : null,
     // The site had a paid plan before, by anyone (lib/geo-business.ts geoPlanBeforeSql), so its one-time
     // setup is paid: /api/geo/checkout starts the month-to-month plan without it, and its first payment
-    // is GEO_PRICES.month alone (less a credit). False here can still turn out true in Stripe: the plan
+    // is GEO_PRICES.month alone. False here can still turn out true in Stripe: the plan
     // page asks /api/geo/launch/setup, which decides as checkout does.
     setupPaid: f.setup_paid === true,
     pending: pending && {
@@ -359,8 +314,8 @@ async function siteReport(f: Row, sample = false) {
       progress: pending.progress ?? null,
     },
     failed: !done.length && !pending && runs[0]?.status === "failed",
-    latest: latest && show(latest),
-    baseline: baseline && show(baseline),
+    latest,
+    baseline,
     work: client && day0 ? await planWork(f, day0, latest?.kind === "weekly" ? latest : null) : null,
     // Oldest first, counts only. Two runs compare only on the same basis, the same questions asked the
     // same number of times: an answer counts as named in at least 1 of N asks, so 3 asks read higher.
@@ -400,8 +355,7 @@ async function followsOf(userId: string, siteId?: string) {
     await db.execute(sql`
       SELECT s.id, s.domain, s.profile->>'business_name' AS business, s.profile->>'language' AS language,
              nullif(s.profile->>'local_city', '') AS city, s.profile->>'offering' AS offering,
-             s.profile->'questions' AS profile_questions, s.profile->'teaser' AS teaser_picks,
-             f.user_id, f.plan, f.created_at AS followed_at, f.research_paid_at, f.research_credited_at, f.plan_interval,
+             f.user_id, f.plan, f.created_at AS followed_at, f.plan_interval,
              (f.plan = 'paid' OR ${clientOwnsSql(sql.raw("f.user_id"), sql.raw("s.domain"))}) AS client,
              ${geoPlanBeforeSql(sql.raw("s.domain"))} AS setup_paid
       FROM geo_follows f JOIN geo_sites s ON s.id = f.site_id
@@ -410,14 +364,14 @@ async function followsOf(userId: string, siteId?: string) {
   )
 }
 
-/** The sites a user follows, oldest first, each cut to what they have paid for. */
+/** The sites a user follows, oldest first, each with its whole report. */
 export async function siteReportsFor(userId: string): Promise<SiteReportData[]> {
   const sites: SiteReportData[] = []
   for (const f of await followsOf(userId)) sites.push(await siteReport(f))
   return sites
 }
 
-/** One finished report from a site's history, cut exactly as the page cuts it, for
+/** One finished report from a site's history, whole, as the page shows it, for
  *  /api/geo/report/run. Null for anything the page would not show this user: a site they do not
  *  follow, a run not finished, a quick check, a weekly run of a site that is not theirs as a client. */
 export async function siteRunFor(userId: string, runId: string): Promise<Report | null> {
@@ -431,8 +385,7 @@ export async function siteRunFor(userId: string, runId: string): Promise<Report 
   if (!f) return null
   const view = await viewOf(f)
   if (run.kind === "weekly" && !view.weekly) return null
-  const report = await runReport(runId)
-  return report && view.show(report)
+  return runReport(runId)
 }
 
 /** The public sample: the whole report for SAMPLE_DOMAIN (our own appslift.com), whoever follows it.

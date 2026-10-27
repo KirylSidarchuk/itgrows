@@ -9,7 +9,8 @@ import { GEO_PLAN, GEO_RESEARCH, geoPlanCheckoutCompleted, notifyOwner, syncGeoS
 import { sendOwner } from "@/lib/telegram"
 import { sendFirstLaunchMail } from "@/app/api/geo/launch/_mail"
 
-// A bought AI-visibility report for a site nobody followed yet waits for the VM to follow it.
+// An AI-visibility report bought before it became free (27 Oct 2026), for a site nobody followed yet,
+// waits for the VM to follow it.
 export const maxDuration = 60
 
 function getStripe() {
@@ -70,7 +71,8 @@ export async function POST(req: NextRequest) {
       case "checkout.session.completed": {
         const session = event.data.object as Stripe.Checkout.Session
 
-        // A bought AI-visibility report: a one-time payment that never touches a subscription.
+        // An AI-visibility report bought before it became free (27 Oct 2026), from a checkout opened
+        // then: a one-time payment that never touches a subscription. No new one is opened.
         if (session.metadata?.plan === GEO_RESEARCH) {
           if (session.payment_status === "paid") await unlockGeoResearch(session, event.created)
           break

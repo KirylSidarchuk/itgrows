@@ -9,7 +9,9 @@ export const dynamic = "force-static"
 // components/Analytics.tsx, components/AdsConversion.tsx, components/consent/**, app/layout.tsx,
 // app/api/user/delete, and the daily retention purge on the VM, /root/geo_check/purge.py). Consent,
 // retention, transfers, the EU/UK contact and the effective date are the owner's decisions of 23 Oct 2026.
-// Visible text has no brackets, and AI visibility is never called free.
+// Visible text has no brackets. Free in AI visibility: the quick check and, since 27 Oct 2026, the
+// detailed report once an account is created (its IP address is kept with it, cleared by the purge
+// after 90 days like the quick check's).
 
 export const metadata: Metadata = {
   title: "Privacy Policy & Cookie Policy — ItGrows.ai",
@@ -238,10 +240,10 @@ export default function PrivacyPage() {
                 basis={CONTRACT}
               />
               <DataBlock
-                title="The quick check and the free post preview"
-                what="For the quick check: the site address you enter and your IP address. For the free post preview on the LinkedIn & X page: your IP address; what you type goes to the AI model that writes the preview and is not stored."
-                why="To limit the number of quick checks and previews per visitor and to prevent abuse. IP addresses are removed after 90 days."
-                basis={`${INTEREST} in keeping the quick check and the preview available and safe.`}
+                title="The quick check, the free report and the free post preview"
+                what="For the quick check: the site address you enter and your IP address. For the free detailed report: your IP address, saved with the report. For the free post preview on the LinkedIn & X page: your IP address; what you type goes to the AI model that writes the preview and is not stored."
+                why="To limit the number of quick checks, free reports and previews per visitor and to prevent abuse. IP addresses are removed after 90 days."
+                basis={`${INTEREST} in keeping the quick check, the free report and the preview available and safe.`}
               />
               <DataBlock
                 title="Articles and access to your site"
@@ -325,7 +327,7 @@ export default function PrivacyPage() {
             <List>
               <li>Account data: while your account exists; it is removed when you delete the account (see below). The answers we collected about a website and its quick-check results belong to the website and are kept without a time limit.</li>
               <li>
-                IP addresses saved with quick checks and free post previews, and the daily visitor hash: 90 days. The result of a quick check stays
+                IP addresses saved with quick checks, free reports and free post previews, and the daily visitor hash: 90 days. The result of a quick check stays
                 with the website, like the AI assistants’ other answers.
               </li>
               <li>Usage analytics: 24 months.</li>

@@ -3,7 +3,6 @@ import { Resend } from "resend"
 import { db } from "@/lib/db"
 import { sql } from "drizzle-orm"
 import { vmAuthorized, ENGINE_LABEL, ENGINE_ORDER, unsubscribeUrl, type RunSummary } from "@/lib/geo-check"
-import { CREDIT_DAYS, GEO_PRICES, SAMPLE_DOMAIN, SAMPLE_PATH } from "@/lib/geo-pricing"
 import { clientOwnsSql } from "@/lib/geo-role"
 
 // Called by the VM worker when a day-0 or weekly report is ready. Emails each follower of the site
@@ -12,9 +11,9 @@ import { clientOwnsSql } from "@/lib/geo-role"
 // sign-up and always goes. The weekly re-check is part of the plan, so weekly mail goes only to a
 // follower who pays the plan for the site or is a client we set up by hand with the site connected
 // (geo_clients, lib/geo-role.ts), and has not unsubscribed.
-// A follower without the plan or a bought report sees a preview in the cabinet, so their day-0
-// email shows only what the preview shows (the counts, the first names given instead, no sources),
-// says plainly what the full report costs, and links the real sample report.
+// The detailed report is free since 27 Oct 2026 and opens whole in the cabinet, so the day-0 email
+// gives the count, the first names given instead and the most-cited site, and links the report; a
+// follower not on the plan is told the report ends with our plan for the site, and how to reach us.
 // The VM authenticates with its API token.
 
 export const dynamic = "force-dynamic"
@@ -23,7 +22,6 @@ export const maxDuration = 60
 const APP = "https://www.itgrows.ai"
 const OWNER = "kiryl.sidarchuk@gmail.com"
 const REPORT = `${APP}/business/dashboard/visibility`
-const SAMPLE = `${APP}${SAMPLE_PATH}`
 
 type Row = Record<string, unknown>
 const rows = (r: unknown): Row[] => (Array.isArray(r) ? (r as Row[]) : ((r as { rows?: Row[] }).rows ?? []))
@@ -55,7 +53,6 @@ function readyEmail(
   questions: number,
   samples: number,
   s: RunSummary,
-  access: "full" | "preview",
   weekly: boolean
 ) {
   const who = esc(business || domain)
@@ -63,9 +60,7 @@ function readyEmail(
     .map((e) => `${ENGINE_LABEL[e]} ${s.engines[e].named}/${s.engines[e].of}`)
     .join(" &nbsp;·&nbsp; ")
   const rivals = s.named_instead.slice(0, 2)
-  // Sources are not in the preview; the email must not hand out what the cabinet keeps locked.
-  const source = access === "full" ? s.sources?.[0] : undefined
-  const R = GEO_PRICES.research
+  const source = s.sources?.[0]
   const href = `${REPORT}?site=${encodeURIComponent(domain)}`
   const subject = `${domain}: named in ${s.named} of ${s.of} AI answers`
   const html = wrap(`<p>Hi ${esc(first)},</p>
@@ -78,11 +73,11 @@ function readyEmail(
 ${rivals.length ? `<p style="font-size:14px">Named instead: ${rivals.map((r) => `<strong>${esc(r.name)}</strong> (${r.count})`).join(", ")}.</p>` : ""}
 ${source ? `<p style="font-size:14px">Most-cited site in your field: <strong>${esc(source.domain)}</strong> (${source.count} answers).</p>` : ""}
 ${
-  access === "full"
+  weekly
     ? button("See every answer →", href)
-    : `<p style="font-size:14px">Open now: the totals, and every answer to the 5 questions of the quick check. The full report — all ${questions} questions, everyone named instead of you, the sites the assistants quote, and your plan: what we will do and why — is <strong>${R.label}</strong>, one payment. If you start the plan within ${CREDIT_DAYS} days, the ${R.label} comes off your first plan payment.</p>
+    : `<p style="font-size:14px">All of it is open in your account, free: every answer to all ${questions} questions, everyone named instead of you, the sites the assistants quote, and at the end our plan for ${esc(domain)}: what we would do and why.</p>
 ${button("See your report →", href)}
-<p style="font-size:13px;margin-top:-10px"><a href="${SAMPLE}" style="color:#7c3aed">See a real report →</a> <span style="color:#888">(${SAMPLE_DOMAIN}, every answer open)</span></p>`
+<p style="font-size:13px;margin-top:-10px;color:#555">Questions about it? Just reply to this email.</p>`
 }
 ${weekly ? `<p style="color:#555;font-size:13px">We re-check every two weeks and tell you what changed.</p>` : ""}`)
   return { subject, html }
@@ -134,7 +129,7 @@ export async function POST(req: NextRequest) {
   const people = rows(
     await db.execute(sql`
       SELECT * FROM (
-        SELECT u.id, u.email, u.name, f.id AS follow_id, f.email_weekly, f.research_paid_at IS NOT NULL AS research_paid,
+        SELECT u.id, u.email, u.name, f.id AS follow_id, f.email_weekly,
                (f.plan = 'paid' OR ${clientOwnsSql(sql.raw("u.id"), sql`${String(run.domain)}`)}) AS client
         FROM geo_follows f
         JOIN users u ON u.id::text = f.user_id
@@ -160,7 +155,6 @@ export async function POST(req: NextRequest) {
           Number(run.n_questions ?? 20),
           Number(run.samples ?? 3),
           run.summary as RunSummary,
-          p.client === true || p.research_paid === true ? "full" : "preview",
           p.client === true
         )
     try {

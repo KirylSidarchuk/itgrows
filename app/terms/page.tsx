@@ -1,13 +1,15 @@
 import type { Metadata } from "next"
 import type { ReactNode } from "react"
 import Link from "next/link"
-import { CREDIT_DAYS, GEO_PRICES } from "@/lib/geo-pricing"
+import { GEO_PRICES } from "@/lib/geo-pricing"
 
 export const dynamic = "force-static"
 
 // Terms of Service for both products: AI visibility (ItGrows for Business) and LinkedIn & X posts.
-// Prices come from lib/geo-pricing.ts so this page never disagrees with the checkout. Refunds, taxes and
-// the effective date are the owner's decisions of 23 Oct 2026. Only the LinkedIn & X trial is called free.
+// Prices come from lib/geo-pricing.ts so this page never disagrees with the checkout. Refunds and taxes
+// are the owner's decisions of 23 Oct 2026. Since 27 Oct 2026 (the effective date) the detailed report
+// is free once an account is created, one per account and per connection; the quick check and the
+// LinkedIn & X trial are free too.
 
 export const metadata: Metadata = {
   title: "Terms of Service — ItGrows.ai",
@@ -84,7 +86,7 @@ export default function TermsPage() {
         <p className="text-[11px] uppercase tracking-[0.14em] font-bold text-violet-700">Legal</p>
         <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight mt-2">Terms of Service</h1>
         <p className="text-slate-500 text-sm mt-2">
-          Effective date: 23 October 2026
+          Effective date: 27 October 2026
         </p>
 
         <div className="mt-8 rounded-2xl border border-black/10 bg-white overflow-hidden">
@@ -94,7 +96,7 @@ export default function TermsPage() {
             <ul className="mt-3 space-y-2 text-sm text-slate-700 leading-relaxed list-disc pl-5">
               <li>ItGrows has two products: AI visibility for businesses, and LinkedIn &amp; X posts for founders and companies.</li>
               <li>
-                AI visibility: a quick check, a detailed report for {P.research.label} per site, and a plan at {P.month.label} a month plus a
+                AI visibility: a quick check, a detailed report that is free once you create an account, and a plan at {P.month.label} a month plus a
                 one-time {P.setup.label} setup (no setup fee when you pay for 3 months or a year). Cancel any time; the plan runs to the end of
                 the paid period.
               </li>
@@ -160,10 +162,9 @@ export default function TermsPage() {
             </p>
             <p>
               <strong>The detailed report</strong> asks 20 buyer questions to ChatGPT, Claude, Gemini and Perplexity, three times each, and shows
-              every answer, who is named instead of you, and which sites the assistants cite. When you create an account we build the report for one
-              site and open its totals and the answers to the quick check’s five questions. The whole report is <strong>{P.research.label}</strong>,
-              paid once per site. If you start the plan for the same site within {CREDIT_DAYS} days of buying its report, the {P.research.label} comes
-              off your first plan payment. The plan includes the full report for its site.
+              every answer, who is named instead of you, which sites the assistants cite, and our plan for the site. It is <strong>free</strong>: when
+              you create an account we build the whole report for one site. There is one free report per account and per internet connection; for
+              another site, write to us and we run it for you. The plan includes the full report for its site.
             </p>
             <p>
               Every result is a sample of what the assistants said at that moment. They can answer the same question differently the next time.
@@ -269,17 +270,12 @@ export default function TermsPage() {
               is shown at checkout. By buying a plan you authorise us to charge your payment method at each renewal until you cancel.
             </p>
             <p>
-              Cards and invoices for the AI visibility plan are in Stripe’s billing portal, opened from your cabinet. The report credit cannot be combined
-              with a promotion code. If a payment fails, Stripe tries again; if it keeps failing, the plan may stop.
+              Cards and invoices for the AI visibility plan are in Stripe’s billing portal, opened from your cabinet. If a payment fails, Stripe tries again; if it keeps failing, the plan may stop.
             </p>
           </Section>
 
           <Section id="refunds">
             <List>
-              <li>
-                <strong>The detailed report ({P.research.label}):</strong> if we cannot build the report for your site, we refund the{" "}
-                {P.research.label}.
-              </li>
               <li>
                 <strong>The setup ({P.setup.label}):</strong> not refundable once the setup work has started.
               </li>

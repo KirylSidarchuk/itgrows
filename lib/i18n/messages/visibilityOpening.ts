@@ -1,8 +1,10 @@
 import { defineMessages } from "../messages"
 
 // app/business/dashboard/visibility (OpeningSite in parts.tsx): the cabinet's first screen while the
-// site the visitor checked on the homepage is being followed, and the retry when that fails. The
-// cabinet has no LocaleProvider yet, so it reads English until it is translated.
+// site the visitor checked on the homepage is being followed, and the retry when that fails; and
+// (AddSite) what a sign-up past the free detailed report reads: one per account, one per connection,
+// then "contact us and we'll run it for you", never a price. The cabinet has no LocaleProvider yet,
+// so it reads English until it is translated.
 
 const en = {
   opening: (domain: string) => `Opening your answers for ${domain}…`,
@@ -13,6 +15,12 @@ const en = {
   reasonOther: "Something failed on our side. Try again in a minute.",
   retry: "Try again",
   other: "Check a different site",
+  // Past the free report (/api/geo/follow "report_ip_used" / "report_limit")
+  usedConnection: "Your free report is already used on this connection — contact us and we'll run it for you.",
+  usedAccount: "Your free report is already used on this account — contact us and we'll run it for you.",
+  site: (domain: string) => `Site: ${domain}`,
+  contact: "Contact us",
+  reportUsedHint: "Your account includes the free report for one site; for another, contact us and we'll run it for you.",
 }
 
 export default defineMessages(en, {
@@ -24,6 +32,11 @@ export default defineMessages(en, {
     reasonOther: "Bei uns ist etwas schiefgelaufen. Versuchen Sie es in einer Minute noch einmal.",
     retry: "Erneut versuchen",
     other: "Andere Website prüfen",
+    usedConnection: "Ihr kostenloser Bericht wurde über diese Verbindung bereits genutzt – schreiben Sie uns, und wir erstellen ihn für Sie.",
+    usedAccount: "Ihr kostenloser Bericht wurde in diesem Konto bereits genutzt – schreiben Sie uns, und wir erstellen ihn für Sie.",
+    site: (domain) => `Website: ${domain}`,
+    contact: "Kontakt aufnehmen",
+    reportUsedHint: "Ihr Konto enthält den kostenlosen Bericht für eine Website; für eine weitere schreiben Sie uns, und wir erstellen ihn für Sie.",
   },
   fr: {
     opening: (domain) => `Ouverture de vos réponses pour ${domain}…`,
@@ -33,6 +46,11 @@ export default defineMessages(en, {
     reasonOther: "Un problème est survenu de notre côté. Réessayez dans une minute.",
     retry: "Réessayer",
     other: "Vérifier un autre site",
+    usedConnection: "Votre rapport gratuit a déjà été utilisé depuis cette connexion — contactez-nous et nous le réaliserons pour vous.",
+    usedAccount: "Votre rapport gratuit a déjà été utilisé sur ce compte — contactez-nous et nous le réaliserons pour vous.",
+    site: (domain) => `Site : ${domain}`,
+    contact: "Nous contacter",
+    reportUsedHint: "Votre compte inclut le rapport gratuit pour un site ; pour un autre, contactez-nous et nous le réaliserons pour vous.",
   },
   es: {
     opening: (domain) => `Abriendo sus respuestas para ${domain}…`,
@@ -42,6 +60,11 @@ export default defineMessages(en, {
     reasonOther: "Algo falló por nuestra parte. Vuelva a intentarlo en un minuto.",
     retry: "Volver a intentar",
     other: "Comprobar otro sitio",
+    usedConnection: "Su informe gratuito ya se ha utilizado desde esta conexión: contáctenos y lo prepararemos para usted.",
+    usedAccount: "Su informe gratuito ya se ha utilizado en esta cuenta: contáctenos y lo prepararemos para usted.",
+    site: (domain) => `Sitio: ${domain}`,
+    contact: "Contactar",
+    reportUsedHint: "Su cuenta incluye el informe gratuito para un sitio; para otro, contáctenos y lo prepararemos para usted.",
   },
   ru: {
     opening: (domain) => `Открываем ваши ответы по ${domain}…`,
@@ -51,5 +74,10 @@ export default defineMessages(en, {
     reasonOther: "У нас что-то пошло не так. Попробуйте ещё раз через минуту.",
     retry: "Попробовать ещё раз",
     other: "Проверить другой сайт",
+    usedConnection: "Бесплатный отчёт с этого подключения уже использован — напишите нам, и мы сделаем его для вас.",
+    usedAccount: "Бесплатный отчёт в этом аккаунте уже использован — напишите нам, и мы сделаем его для вас.",
+    site: (domain) => `Сайт: ${domain}`,
+    contact: "Написать нам",
+    reportUsedHint: "В аккаунт входит бесплатный отчёт по одному сайту; для другого напишите нам, и мы сделаем его для вас.",
   },
 })

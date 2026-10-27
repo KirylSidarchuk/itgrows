@@ -2,7 +2,7 @@ import { db } from "@/lib/db"
 import { blogPosts } from "@/lib/db/schema"
 import { and, desc, eq, isNull } from "drizzle-orm"
 import { noteCrawler } from "@/lib/crawler-log"
-import { CREDIT_DAYS, GEO_PRICES, SAMPLE_PATH } from "@/lib/geo-pricing"
+import { GEO_PRICES, SAMPLE_PATH } from "@/lib/geo-pricing"
 import { ENTITY_ONE_LINER } from "@/lib/entity"
 import { llmsOrder } from "@/lib/geo-guides"
 
@@ -11,7 +11,6 @@ import { llmsOrder } from "@/lib/geo-guides"
 // it is what we want an assistant to know us for.
 
 const BASE = "https://www.itgrows.ai"
-const R = GEO_PRICES.research
 
 // Must run per request: a prerendered response is served from the CDN and never
 // reaches the server, so crawler visits would be invisible.
@@ -52,7 +51,7 @@ export async function GET() {
 - What it is: getting a business named, and its pages cited, when buyers ask AI assistants the questions of its field.
 - How it works: we put the questions a business's buyers ask to ChatGPT, Claude, Gemini and Perplexity, several times each, and record who is named and which sites are cited. Then we publish articles on the client's own domain that answer those questions, fix what keeps AI crawlers and search indexes from reading the site, and re-measure every two weeks.
 - Quick check (free): ${BASE}/ puts five buyer questions to ChatGPT and Perplexity in about 30 seconds, without an account; two answers show in full right away, all five once the visitor creates an account.
-- Detailed report (the diagnosis and our plan): ${R.label}, one payment per site. 20 buyer questions × ChatGPT, Claude, Gemini and Perplexity × 3 asks, who is named instead, which sites the assistants cite, and the plan of what we will do for the site. It is built once an account is created; its totals and the quick check's 5 questions are open, the whole report is ${R.label}. Its price comes off the first plan payment if the plan starts within ${CREDIT_DAYS} days. A real example: ${BASE}${SAMPLE_PATH}
+- Detailed report (the diagnosis and our plan): free once an account is created, one site per account. 20 buyer questions × ChatGPT, Claude, Gemini and Perplexity × 3 asks, every answer, who is named instead, which sites the assistants cite, and the plan of what we will do for the site; all of it is open. A real example: ${BASE}${SAMPLE_PATH}
 - The plan (done for you): ${GEO_PRICES.month.label} a month, month to month, plus a one-time ${GEO_PRICES.setup.label} setup (site and index setup, delivered as a launch report); the setup is free with ${GEO_PRICES.quarter.label} for 3 months paid upfront or ${GEO_PRICES.year.label} for a year (${GEO_PRICES.year.perMonth} a month, 20% off). The detailed report is included. Articles are ready 2 days before they go live; the client can edit or stop each one.
 - What clients report: FreightSizer (B2B SaaS) — 2 new B2B customers in one month, both from ChatGPT. MagiScan (iOS app) — hundreds of installs a month from ChatGPT, Claude and Gemini.
 - On our own products: appslift, our own app store optimisation agency — 2–5 leads a month from AI assistants. pickaclass.com, our own course marketplace — 1,918 fetches of its pages by the answer and search agents of ChatGPT and Perplexity in two weeks (its server log, 28 July – 11 August 2026).

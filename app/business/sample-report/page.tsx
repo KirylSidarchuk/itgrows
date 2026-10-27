@@ -12,7 +12,7 @@ import { localePath } from "@/lib/i18n/paths"
 import { getLocale } from "@/lib/i18n/server"
 import sampleReportPageNs from "@/lib/i18n/messages/sampleReportPage"
 
-// The real report shown next to every "buy the report" button: the whole detailed report of our own
+// The real report shown next to every "get the free report" button: the whole detailed report of our own
 // appslift.com. Indexed since 26 Oct 2026 (it was noindex): it is the proof of what the report is,
 // so the report itself is drawn on the server and is in the HTML a crawler reads, not fetched by the
 // browser afterwards. ToolShell provides the page's language.

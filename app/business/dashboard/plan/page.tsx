@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import { card, fmtDate, fullReport, onPlan, planSteps, type SiteReport } from "../visibility/parts"
-import { GEO_PRICES, REPORT_SITES, SAMPLE_PATH, firstPaymentCents, setupFree, usd } from "@/lib/geo-pricing"
+import { GEO_PRICES, SAMPLE_PATH, firstPaymentCents, setupFree, usd } from "@/lib/geo-pricing"
 
 // The plan, for one site, and its billing. It is a service, not a guide: the page says who does
 // what before it asks for money — we write, publish, fix indexing, prepare the places the
@@ -15,12 +15,16 @@ import { GEO_PRICES, REPORT_SITES, SAMPLE_PATH, firstPaymentCents, setupFree, us
 //
 // Three ways to pay, all from lib/geo-pricing.ts: by the month plus the one-time setup, 3 months
 // upfront, or a year (both with the setup free). The setup is once per site: a site that has had a
-// paid plan before, by anyone, reads "$499 a month" with no setup and a first payment of $499 (less a
-// credit), exactly what /api/geo/checkout charges (the report's setupPaid, and where that says no,
+// paid plan before, by anyone, reads "$499 a month" with no setup and a first payment of $499,
+// exactly what /api/geo/checkout charges (the report's setupPaid, and where that says no,
 // /api/geo/launch/setup, which decides as checkout does). A choice made
 // on the pricing block arrives as ?interval= (through sign-up, and kept for a day in case the site
 // has to be added first): the page opens on it and marks it. An account without a site enters it
-// here: it is followed (/api/geo/follow) and checkout opens for the chosen interval.
+// here: /api/geo/follow reads it with plan intent (no free-report limit applies, as nothing free is
+// given: the site is not followed and no report queued), checkout opens for it unfollowed ("add"),
+// and the Stripe webhook follows it and queues its report once the plan is paid (lib/geo-business.ts
+// followPaidSite). Back from paying for such a site before the webhook has followed it, the page says
+// "Payment received" and asks for the list again until the site is in it.
 //
 // A site on the plan, or of a client we set up by hand (site.client), shows "Plan & billing": the
 // plan, the places with "We're on it", Cancel plan (/api/geo/cancel: stops at the end of the paid
@@ -106,45 +110,37 @@ const PLACE: Record<string, { tag: string; what: string; we: string; you: string
 }
 const MAX_PLACES = 6
 
-const REPORT_LIMIT = `Your account includes the report for ${REPORT_SITES === 1 ? "one site" : `${REPORT_SITES} sites`}; for another site the report is ${P.research.label}.`
-
 const FOLLOW_ERRORS: Record<string, string> = {
   invalid_url: "That doesn't look like a website address. Enter it like yourcompany.com.",
   unreachable: "We couldn't open that site. Check the address, or write to us.",
   questions_failed: "We couldn't read enough text on that site. Write to us and we set it up with you.",
   limit_user: "An account follows up to 3 sites.",
   limit_reads: "That's a lot of new sites for one day. Try again tomorrow, or write to us.",
-  report_limit: REPORT_LIMIT,
 }
 
 const CHECKOUT_FAILED = "Checkout did not open. Try again in a minute."
 
 function plan(site: SiteReport) {
   const full = fullReport(site)
-  if (!full) return { questions: [] as string[], places: [] as { domain: string; count: number; type: string }[], placesMore: 0 }
-  // The questions of the first Article steps of "Your plan" as the offer shows it (in the preview only
-  // the quick check's questions have answers to go by): never a list question.
+  if (!full) return { questions: [] as string[], places: [] as { domain: string; count: number; type: string }[] }
+  // The questions of the first Article steps of "Your plan" as the offer shows it: never a list question.
   const questions = planSteps(site, undefined).flatMap((st) => (st.q !== undefined ? [st.q] : [])).slice(0, 5)
   const own = (d: string) => d === site.domain || d.endsWith(`.${site.domain}`)
   const places = (full.summary.sources ?? [])
     .filter((s) => s.type !== "competitor" && PLACE[s.type] && !own(s.domain))
     .slice(0, MAX_PLACES)
-  return { questions, places, placesMore: full.summary.sourcesMore ?? 0 }
+  return { questions, places }
 }
 
 function Places({
-  site,
   places,
-  placesMore,
   working,
 }: {
-  site: SiteReport
   places: { domain: string; count: number; type: string }[]
-  placesMore: number
   /** On the plan: every place reads "We're on it". */
   working: boolean
 }) {
-  if (!places.length && !placesMore) return null
+  if (!places.length) return null
   const lead = "font-semibold text-[#1b1916]"
   const chip = "text-[10px] font-bold uppercase tracking-wide rounded-full px-2 py-0.5"
   return (
@@ -153,43 +149,33 @@ function Places({
       <p className="text-sm text-slate-600 mt-1 leading-relaxed">
         We prepare everything (profile text, the letter to the editor...); from you only what needs your own login or approval.
       </p>
-      {places.length > 0 ? (
-        <ul className="mt-4 space-y-3">
-          {places.map((p) => {
-            const t = PLACE[p.type]
-            return (
-              <li key={p.domain} className="rounded-xl border border-black/[0.07] bg-white p-4">
-                <div className="flex flex-wrap items-center gap-1.5">
-                  <a href={`https://${p.domain}`} target="_blank" rel="noopener noreferrer nofollow" className="text-sm font-semibold break-all hover:text-violet-700">
-                    {p.domain}
-                  </a>
-                  <span className={`${chip} text-slate-600 bg-[#f8f7f6]`}>{t.tag}</span>
-                  {working && <span className={`${chip} text-green-800 bg-green-50 border border-green-200`}>We&apos;re on it</span>}
-                </div>
-                <p className="text-xs text-slate-500 mt-1">
-                  {`${t.what} Cited in ${p.count} answer${p.count === 1 ? "" : "s"} to your buyers' questions.`}
-                </p>
-                <p className="text-sm text-slate-600 leading-relaxed mt-2">
-                  <span className={lead}>We do: </span>
-                  {t.we}
-                </p>
-                <p className="text-sm text-slate-600 leading-relaxed mt-1">
-                  <span className={lead}>From you: </span>
-                  {t.you}
-                </p>
-              </li>
-            )
-          })}
-        </ul>
-      ) : (
-        <p className="mt-4 rounded-xl border border-dashed border-violet-200 bg-violet-50/60 px-4 py-3 text-sm text-slate-700">
-          The {placesMore} site{placesMore === 1 ? "" : "s"} the assistants quote for your questions {placesMore === 1 ? "is" : "are"} listed in your
-          full report; the plan covers them.{" "}
-          <Link href={`/business/dashboard/visibility?site=${encodeURIComponent(site.domain)}`} className="font-semibold text-violet-700 hover:underline">
-            Open the report
-          </Link>
-        </p>
-      )}
+      <ul className="mt-4 space-y-3">
+        {places.map((p) => {
+          const t = PLACE[p.type]
+          return (
+            <li key={p.domain} className="rounded-xl border border-black/[0.07] bg-white p-4">
+              <div className="flex flex-wrap items-center gap-1.5">
+                <a href={`https://${p.domain}`} target="_blank" rel="noopener noreferrer nofollow" className="text-sm font-semibold break-all hover:text-violet-700">
+                  {p.domain}
+                </a>
+                <span className={`${chip} text-slate-600 bg-[#f8f7f6]`}>{t.tag}</span>
+                {working && <span className={`${chip} text-green-800 bg-green-50 border border-green-200`}>We&apos;re on it</span>}
+              </div>
+              <p className="text-xs text-slate-500 mt-1">
+                {`${t.what} Cited in ${p.count} answer${p.count === 1 ? "" : "s"} to your buyers' questions.`}
+              </p>
+              <p className="text-sm text-slate-600 leading-relaxed mt-2">
+                <span className={lead}>We do: </span>
+                {t.we}
+              </p>
+              <p className="text-sm text-slate-600 leading-relaxed mt-1">
+                <span className={lead}>From you: </span>
+                {t.you}
+              </p>
+            </li>
+          )
+        })}
+      </ul>
     </section>
   )
 }
@@ -411,6 +397,8 @@ export default function PlanPage() {
   const [newSite, setNewSite] = useState("")
   // Per site: the setup paid before as checkout decides it (Stripe included), where the report said no.
   const [setupAsked, setSetupAsked] = useState<Record<string, boolean>>({})
+  // Back from paying for a site the webhook has not followed yet (it was bought unfollowed).
+  const [paidFor, setPaidFor] = useState("")
 
   useEffect(() => {
     const p = new URLSearchParams(window.location.search)
@@ -421,11 +409,32 @@ export default function PlanPage() {
         setJustPaid(p.get("paid") === "1")
         setSites(list)
         const asked = p.get("site")
-        setDomain(asked && list.some((s) => s.domain === asked) ? asked : (list[0]?.domain ?? ""))
-        if (!list.length && asked) setNewSite(asked)
+        const known = list.some((s) => s.domain === asked)
+        setDomain(asked && known ? asked : (list[0]?.domain ?? ""))
+        if (asked && !known && p.get("paid") === "1") setPaidFor(asked)
+        else if (!list.length && asked) setNewSite(asked)
       })
       .catch(() => setSites([]))
   }, [])
+
+  // The webhook follows a site bought unfollowed within seconds: ask for the list until it is in it.
+  useEffect(() => {
+    if (!paidFor) return
+    let tries = 0
+    const t = setInterval(() => {
+      if (++tries >= 36) clearInterval(t)
+      loadSites()
+        .then((list) => {
+          if (!list.some((s) => s.domain === paidFor)) return
+          clearInterval(t)
+          setSites(list)
+          setDomain(paidFor)
+          setPaidFor("")
+        })
+        .catch(() => {})
+    }, 5_000)
+    return () => clearInterval(t)
+  }, [paidFor])
 
   useEffect(() => {
     const s = sites?.find((x) => x.domain === domain)
@@ -445,6 +454,8 @@ export default function PlanPage() {
   async function start(interval: Interval) {
     setError("")
     let target = domain
+    // A site the account does not follow yet: read with plan intent (followed only once paid), then
+    // bought unfollowed.
     const adding = !sites?.some((s) => s.domain === domain)
     try {
       if (adding) {
@@ -452,7 +463,7 @@ export default function PlanPage() {
         const r = await fetch("/api/geo/follow", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ site: newSite.trim() }),
+          body: JSON.stringify({ site: newSite.trim(), plan: true }),
         })
         const j = (await r.json().catch(() => ({}))) as { domain?: string; error?: string }
         if (!r.ok || !j.domain) {
@@ -466,7 +477,7 @@ export default function PlanPage() {
       const r = await fetch("/api/geo/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ domain: target, interval }),
+        body: JSON.stringify({ domain: target, interval, ...(adding ? { add: true } : {}) }),
       })
       const j = (await r.json().catch(() => ({}))) as { url?: string; error?: string }
       if (j.url) {
@@ -476,20 +487,14 @@ export default function PlanPage() {
       setError(
         j.error === "already_paid"
           ? "This site is already on the plan."
-          : j.error === "not_followed"
-            ? "Add this site to the AI visibility report first."
-            : CHECKOUT_FAILED,
+          : j.error === "limit_user"
+            ? FOLLOW_ERRORS.limit_user
+            : j.error === "not_followed" && !adding
+              ? "Add this site to the AI visibility report first."
+              : CHECKOUT_FAILED,
       )
     } catch {
       setError(CHECKOUT_FAILED)
-    }
-    // A site added on the way stays added: show it as the page's site from now on.
-    if (adding && target) {
-      const list = await loadSites().catch(() => null)
-      if (list?.some((s) => s.domain === target)) {
-        setSites(list)
-        setDomain(target)
-      }
     }
     setBusy(null)
   }
@@ -499,29 +504,17 @@ export default function PlanPage() {
   const site = sites.find((s) => s.domain === domain) ?? null
   const working = site ? onPlan(site) : false
   const paid = site?.plan === "paid"
-  const { questions, places, placesMore } = site ? plan(site) : { questions: [], places: [], placesMore: 0 }
+  const { questions, places } = site ? plan(site) : { questions: [], places: [] }
   const named = site?.latest?.summary.named
   const of = site?.latest?.summary.of
-  // Set by the server only while the credit can still be used: bought, not yet credited, not expired.
-  const creditUntil = site?.research?.creditUntil ?? null
-  const credit = !!creditUntil
   const forSite = site?.domain ?? (newSite.trim() || "your site")
   // The site has had a paid plan before: the month-to-month plan starts without the setup.
   const setupPaid = site ? reportSetupPaid(site) || setupAsked[site.domain] === true : false
-  const firstCents = (i: Interval, withCredit: boolean) =>
-    firstPaymentCents(i, withCredit) - (!setupFree(i) && setupPaid ? P.setup.cents : 0)
+  const firstCents = (i: Interval) => firstPaymentCents(i) - (!setupFree(i) && setupPaid ? P.setup.cents : 0)
 
   const busyText = (i: Interval) =>
     busy?.interval === i ? (busy.stage === "follow" ? "Reading your site… up to a minute" : "Opening checkout…") : null
-  const firstPayment = (i: Interval) =>
-    credit ? (
-      <>
-        First payment <s className="text-white/40">{usd(firstCents(i, false))}</s>{" "}
-        <b className="text-white">{usd(firstCents(i, true))}</b>
-      </>
-    ) : (
-      <>First payment {usd(firstCents(i, false))}</>
-    )
+  const firstPayment = (i: Interval) => <>First payment {usd(firstCents(i))}</>
   const choice = (i: Interval, title: string, lines: React.ReactNode[], cta: string) => (
     <Choice
       key={i}
@@ -538,9 +531,9 @@ export default function PlanPage() {
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-10 space-y-5">
       <header>
-        <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">{working ? "Plan & billing" : "Articles written for you"}</h1>
-        {site && <p className="text-sm text-slate-600 mt-1">{[site.business, site.domain].filter(Boolean).join(" · ")}</p>}
-        {!working && (
+        <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">{working || paidFor ? "Plan & billing" : "Articles written for you"}</h1>
+        {site && !paidFor && <p className="text-sm text-slate-600 mt-1">{[site.business, site.domain].filter(Boolean).join(" · ")}</p>}
+        {!working && !paidFor && (
           <p className="text-sm text-[#1b1916] mt-2 max-w-2xl">
             We do this for you: on the plan we write, publish and measure for {forSite}. {ARTICLES_YOU} The report shows where you are
             missing; the plan is us doing the work.
@@ -558,7 +551,18 @@ export default function PlanPage() {
         )}
       </header>
 
-      {site && (working || justPaid) ? (
+      {paidFor ? (
+        <section className="rounded-2xl bg-green-50 border border-green-200 p-6" aria-live="polite">
+          <h2 className="font-extrabold text-lg text-green-900">Payment received — setting things up</h2>
+          <p className="mt-2 text-sm text-green-900 break-words">
+            We&apos;re adding {paidFor} to your account and starting its full AI visibility report. This page updates on its own; if it
+            hasn&apos;t in a few minutes, reload it.
+          </p>
+          <div className="mt-4 flex flex-wrap gap-3">
+            <Link href="/business/dashboard/support" className="rounded-xl bg-white border border-green-200 px-4 py-2.5 text-sm font-semibold">Write to us</Link>
+          </div>
+        </section>
+      ) : site && (working || justPaid) ? (
         <>
           <section className="rounded-2xl bg-green-50 border border-green-200 p-6">
             <h2 className="font-extrabold text-lg text-green-900">{justPaid && !working ? "Payment received — setting things up" : "Your plan is active"}</h2>
@@ -603,7 +607,7 @@ export default function PlanPage() {
             )}
           </section>
 
-          <Places site={site} places={places} placesMore={placesMore} working />
+          <Places places={places} working />
         </>
       ) : (
         <>
@@ -627,8 +631,8 @@ export default function PlanPage() {
             <section className={card}>
               <h2 className="font-bold text-lg">Your website</h2>
               <p className="text-sm text-slate-600 mt-1 leading-relaxed">
-                Enter your website, then choose how you pay. Your full AI visibility report comes with the plan; we start building it as soon as
-                your site is added.
+                Enter your website, then choose how you pay. Your full AI visibility report comes with the plan: we start building it as soon
+                as your payment goes through.
               </p>
               <input
                 value={newSite}
@@ -641,7 +645,7 @@ export default function PlanPage() {
             </section>
           )}
 
-          {site && <Places site={site} places={places} placesMore={placesMore} working={false} />}
+          {site && <Places places={places} working={false} />}
 
           <section className="rounded-2xl bg-[#1b1916] text-white p-6 sm:p-7">
             <div className="grid sm:grid-cols-2 gap-6">
@@ -690,11 +694,6 @@ export default function PlanPage() {
               )}
             </div>
 
-            {credit && (
-              <p className="mt-4 rounded-xl bg-violet-500/20 border border-violet-300/30 px-4 py-2.5 text-sm text-violet-100">
-                Your {P.research.label} report comes off the first payment (until {fmtDate(creditUntil)}).
-              </p>
-            )}
             {error && <p className="text-sm text-red-300 mt-3">{error}</p>}
             <p className="mt-4 text-sm">
               <Link href={SAMPLE_PATH} className="font-semibold text-violet-200 hover:text-white hover:underline">

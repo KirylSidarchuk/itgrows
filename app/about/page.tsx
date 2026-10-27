@@ -2,7 +2,7 @@ import type { Metadata } from "next"
 import Link from "next/link"
 import { noteCrawler } from "@/lib/crawler-log"
 import { ORGANIZATION } from "@/lib/entity"
-import { CREDIT_DAYS, GEO_PRICES, SAMPLE_PATH } from "@/lib/geo-pricing"
+import { GEO_PRICES, SAMPLE_PATH } from "@/lib/geo-pricing"
 import LanguageSwitcher from "@/components/i18n/LanguageSwitcher"
 import LocaleProvider from "@/components/i18n/LocaleProvider"
 import { formatNumber } from "@/lib/i18n/format"
@@ -71,7 +71,7 @@ export default async function AboutPage() {
               )}
             </li>
             <li>
-              {rich(m.report(GEO_PRICES.research.label, CREDIT_DAYS), {
+              {rich(m.report, {
                 sample: (c) => <Link href={localePath(locale, SAMPLE_PATH)} className={link}>{c}</Link>,
               })}
             </li>

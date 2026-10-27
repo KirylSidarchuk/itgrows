@@ -5,14 +5,13 @@
 // answers in per assistant). The result shows two answers in full; the other three arrive as their
 // question only — there is no answer data in the page to un-blur. The account offer sits right under
 // who was named instead, before the two answers: an account opens the other answers and, a few
-// minutes later, the detailed report's totals (a day-0 run takes about 6 minutes; the copy says
-// "about 10"). Under the two answers comes the paid report itself (lib/geo-pricing.ts), with a real
-// one a click away. Nothing here is called free: the quick check is the one free thing, and it is
-// described, not labelled. AuditForm owns the refs of the offer, the report card and the locked rows:
+// minutes later, the whole detailed report (a day-0 run takes about 6 minutes; the copy says
+// "about 10"). Under the two answers comes that report, free once an account is created
+// (lib/geo-pricing.ts), with a real one a click away. AuditForm owns the refs of the offer, the report card and the locked rows:
 // it watches them for geo_cta_seen and for the phone bar. Each locked row says which assistants
 // answered that question (the API sends their names, never the answers).
 
-import { CREDIT_DAYS, GEO_PRICES, SAMPLE_PATH } from "@/lib/geo-pricing"
+import { SAMPLE_PATH } from "@/lib/geo-pricing"
 import { useLocale, useT } from "@/components/i18n/LocaleProvider"
 import { INTL_LOCALE, type Locale } from "@/lib/i18n/config"
 import { localePath } from "@/lib/i18n/paths"
@@ -338,7 +337,7 @@ function Result({
         <div ref={reportRef} className="relative z-10 -mt-8 rounded-2xl bg-white border border-black/10 shadow-lg shadow-violet-600/10 p-5">
           <p className="font-extrabold text-lg leading-snug break-words">{m.reportTitle(domain)}</p>
           <p className="text-sm text-slate-600 mt-1.5 leading-relaxed">
-            {rich(m.reportBody(GEO_PRICES.research.label, CREDIT_DAYS), { b: (c) => <b className="text-[#1b1916]">{c}</b> })}
+            {rich(m.reportBody, { b: (c) => <b className="text-[#1b1916]">{c}</b> })}
           </p>
           <a href={signupHref} onClick={() => onCta("overlay")} className={CTA_BUTTON}>
             {ready ? m.ctaButton(total) : m.createAccount}
@@ -453,7 +452,7 @@ function Failed({
     return box(
       amber,
       m.limitTitle,
-      m.limitBody(GEO_PRICES.research.label),
+      m.limitBody,
       <>
         {primary(m.createAccount, () => onCta("limit"), signupHref)}
         <span className="text-sm text-slate-500">{m.tomorrow}</span>
@@ -522,7 +521,7 @@ export default function AiAnswers({
   onCta: (where: string) => void
   onRetry: () => void
   onOtherUrl: () => void
-  /** The account offer under the named-instead list, the paid-report card and the locked rows:
+  /** The account offer under the named-instead list, the free-report card and the locked rows:
    *  AuditForm watches all three. */
   ctaRef?: React.Ref<HTMLDivElement>
   reportRef?: React.Ref<HTMLDivElement>

@@ -1,11 +1,8 @@
 import { defineMessages } from "../messages"
-import { plural } from "../format"
 
-// app/business/PricingPlans.tsx (client): the pricing block of "/". Prices, days and the yearly
-// discount come in as arguments from lib/geo-pricing.ts; nothing here is a price.
-
-// "в течение 30 дней", "в течение 21 дня".
-const ruDays = (n: number) => plural("ru", n, { one: `${n} дня`, other: `${n} дней` })
+// app/business/PricingPlans.tsx (client): the pricing block of "/". Prices and the yearly discount
+// come in as arguments from lib/geo-pricing.ts; nothing here is a price. The detailed report is free
+// once an account is created (since 27 Oct 2026).
 
 const en = {
   h2: "See where you stand. Have us fix it.",
@@ -14,11 +11,12 @@ const en = {
   checked: "You've checked <site/>. <link>Open all 5 answers →</link>",
 
   reportTitle: "Detailed report",
-  onePayment: "one payment",
+  free: "Free",
+  withAccount: "once you create an account",
   reportLine: "Where you stand in all four assistants, and what we would do about it.",
   reportPoints: ["240 answers: 20 questions × 4 assistants × 3", "Who is named and quoted instead of you", "Your plan, step by step"],
-  getReport: (price: string) => `Get the report — ${price}`,
-  credit: (days: number) => `Comes off your first plan payment within ${days} days.`,
+  getReport: "Get the free report",
+  freeNote: "The full report is free once you create an account. One site per account.",
   seeSample: "See a real report →",
 
   planTitle: "The plan",
@@ -49,11 +47,12 @@ export default defineMessages(en, {
     checked: "Sie haben <site/> geprüft. <link>Alle 5 Antworten öffnen →</link>",
 
     reportTitle: "Ausführlicher Bericht",
-    onePayment: "einmalige Zahlung",
+    free: "Kostenlos",
+    withAccount: "sobald Sie ein Konto anlegen",
     reportLine: "Wo Sie in allen vier Assistenten stehen und was wir dagegen tun würden.",
     reportPoints: ["240 Antworten: 20 Fragen × 4 Assistenten × 3", "Wer statt Ihnen genannt und zitiert wird", "Ihr Maßnahmenplan, Schritt für Schritt"],
-    getReport: (price) => `Bericht kaufen — ${price}`,
-    credit: (days) => `Wird auf Ihre erste Plan-Zahlung angerechnet, wenn Sie den Plan innerhalb von ${days} Tagen starten.`,
+    getReport: "Kostenlosen Bericht erhalten",
+    freeNote: "Der vollständige Bericht ist kostenlos, sobald Sie ein Konto anlegen. Eine Website pro Konto.",
     seeSample: "Einen echten Bericht ansehen (auf Englisch) →",
 
     planTitle: "Der Plan",
@@ -82,11 +81,12 @@ export default defineMessages(en, {
     checked: "Vous avez vérifié <site/>. <link>Ouvrir les 5 réponses →</link>",
 
     reportTitle: "Rapport détaillé",
-    onePayment: "paiement unique",
+    free: "Gratuit",
+    withAccount: "dès que vous créez un compte",
     reportLine: "Où vous en êtes dans les quatre assistants, et ce que nous ferions pour y remédier.",
     reportPoints: ["240 réponses : 20 questions × 4 assistants × 3", "Qui est mentionné et cité à votre place", "Votre plan d’action, étape par étape"],
-    getReport: (price) => `Obtenir le rapport — ${price}`,
-    credit: (days) => `Déduit de votre premier paiement d’abonnement si vous démarrez dans les ${days} jours.`,
+    getReport: "Obtenir le rapport gratuit",
+    freeNote: "Le rapport complet est gratuit dès que vous créez un compte. Un site par compte.",
     seeSample: "Voir un vrai rapport (en anglais) →",
 
     planTitle: "L’abonnement",
@@ -115,11 +115,12 @@ export default defineMessages(en, {
     checked: "Ya ha comprobado <site/>. <link>Abrir las 5 respuestas →</link>",
 
     reportTitle: "Informe detallado",
-    onePayment: "pago único",
+    free: "Gratis",
+    withAccount: "en cuanto cree una cuenta",
     reportLine: "Dónde está usted en los cuatro asistentes y qué haríamos al respecto.",
     reportPoints: ["240 respuestas: 20 preguntas × 4 asistentes × 3", "A quién mencionan y citan en su lugar", "Su plan de acción, paso a paso"],
-    getReport: (price) => `Obtener el informe — ${price}`,
-    credit: (days) => `Se descuenta de su primer pago del plan si lo inicia en un plazo de ${days} días.`,
+    getReport: "Obtener el informe gratuito",
+    freeNote: "El informe completo es gratuito en cuanto cree una cuenta. Un sitio por cuenta.",
     seeSample: "Ver un informe real (en inglés) →",
 
     planTitle: "El plan",
@@ -148,11 +149,12 @@ export default defineMessages(en, {
     checked: "Вы проверили <site/>. <link>Открыть все 5 ответов →</link>",
 
     reportTitle: "Подробный отчёт",
-    onePayment: "один платёж",
+    free: "Бесплатно",
+    withAccount: "после создания аккаунта",
     reportLine: "Где вы находитесь во всех четырёх ассистентах и что мы с этим сделали бы.",
     reportPoints: ["240 ответов: 20 вопросов × 4 ассистента × 3", "Кого называют и цитируют вместо вас", "Ваш план действий, шаг за шагом"],
-    getReport: (price) => `Получить отчёт — ${price}`,
-    credit: (days) => `Засчитывается в первый платёж за подписку, если оформить её в течение ${ruDays(days)}.`,
+    getReport: "Получить бесплатный отчёт",
+    freeNote: "Полный отчёт бесплатный — достаточно создать аккаунт. Один сайт на аккаунт.",
     seeSample: "Посмотреть настоящий отчёт (на английском) →",
 
     planTitle: "Подписка",

@@ -1,11 +1,9 @@
 "use client"
 
 import { useCallback, useEffect, useRef, useState } from "react"
-import { REPORT_SITES } from "@/lib/geo-pricing"
 import {
   AddSite,
   Banner,
-  CreditNote,
   Crawlers,
   FirstLook,
   History,
@@ -18,9 +16,9 @@ import {
   YourPlan,
   card,
   fmtDate,
-  isPreview,
   onPlan,
   planSteps,
+  REPORT_USED,
   type Audit,
   type Report,
   type SiteReport,
@@ -30,17 +28,19 @@ import {
 // a client sees the weekly count. Arriving with ?site= (or the check's handoff) follows that site,
 // which queues the day-0 report on the VM; the page then follows it to completion.
 //
-// The detailed report is a preview until it is bought or the site is on the plan (see parts.tsx).
-// Stripe brings the buyer back with ?site=…&unlocked=1; the webhook may land a few seconds later, so
-// the page asks again until the site reads as unlocked. A site past the account's report is refused
-// by /api/geo/follow with "report_limit" (402); its report can be bought instead, and the purchase
-// follows it. The report ends with "Your plan": what we do, never how to do it yourself.
+// The detailed report is free and shown whole (since 27 Oct 2026). One per account and one per
+// connection: past that /api/geo/follow answers "report_limit" (402) or "report_ip_used" (429) and the
+// page says "contact us and we'll run it for you" (parts.tsx AddSite), never a price. Whether a new site
+// would be refused comes with the list (/api/geo/report reportLimit, lib/geo-free-report.ts): the hint
+// under "Add a site" shows only then, and an account without a site that was refused sees the
+// contact-us state again after a reload, not the empty form. The report ends with "Your plan": what we
+// do, never how to do it yourself; "Start the plan" and "Talk to us".
 //
 // A new account lands here straight from the sign-up: while the site it came with is being followed, the
 // first screen says "Opening your answers for …" (not an empty address form). If that follow fails, the
 // site stays in the address and the check's handoff stays in localStorage, and the page offers to try
-// again (the next visit retries too); only an answer a retry cannot change (report_limit, limit_user,
-// invalid_url) lets them go, and the form shows it.
+// again (the next visit retries too); only an answer a retry cannot change (report_limit,
+// report_ip_used, limit_user, invalid_url) lets them go, and the form shows it.
 //
 // Under the report, the history lists every finished report of the site; a row (or a bar of the
 // trend, or "View day-0 report") opens that report in place of this week's, until "Back".
@@ -49,8 +49,6 @@ import {
 // Fired once per site per browser, when the follow succeeds.
 const REPORT_CONVERSION = "AW-18160234884/GnV1COO4h-AcEITjvNND"
 const AUDIT_TTL_MS = 60 * 60 * 1000
-const UNLOCK_POLL_MS = 3_000
-const UNLOCK_WAIT_MS = 2 * 60 * 1000
 
 function bare(raw: string) {
   return raw
@@ -62,7 +60,7 @@ function bare(raw: string) {
 }
 
 // Errors of /api/geo/follow that trying again cannot change.
-const FINAL_ERRORS = new Set(["report_limit", "limit_user", "invalid_url"])
+const FINAL_ERRORS = new Set([...REPORT_USED, "limit_user", "invalid_url"])
 
 // The site the visitor came with is in: tidy the address bar and drop the quick check's handoff.
 function forgetArrival() {
@@ -91,17 +89,15 @@ export default function VisibilityPage() {
   const [adding, setAdding] = useState(false)
   const [showAdd, setShowAdd] = useState(false)
   const [followErr, setFollowErr] = useState<{ domain: string; error: string } | null>(null)
+  // What /api/geo/follow would answer now for a new site ("report_limit" / "report_ip_used"), or null.
+  const [reportLimit, setReportLimit] = useState<string | null>(null)
   // The site the visitor came with (?site= or the quick check's handoff), until it is followed.
   const [opening, setOpening] = useState<string | null>(null)
   const [audits, setAudits] = useState<Record<string, Audit | "failed">>({})
-  // A report opened from the history, and the ones fetched so far, by run and access: buying the
-  // report changes how a run is cut, so a run fetched as a preview is not shown once it is unlocked.
+  // A report opened from the history, and the ones fetched so far, by run.
   const [openRun, setOpenRun] = useState<{ domain: string; id: string } | null>(null)
   const [runs, setRuns] = useState<Record<string, Report | "failed">>({})
   const fetching = useRef(new Set<string>())
-  // Back from Stripe with a bought report: which site, since when, and whether it is taking long.
-  const [unlocking, setUnlocking] = useState<{ domain: string; since: number } | null>(null)
-  const [unlockSlow, setUnlockSlow] = useState(false)
   const started = useRef(false)
   // Whether the last list load worked, and a site followed while it did not: "Opening…" stays on screen
   // until a load brings the list (it is asked again while loading fails), not the empty address form.
@@ -113,8 +109,9 @@ export default function VisibilityPage() {
     try {
       const r = await fetch("/api/geo/report", { cache: "no-store" })
       if (!r.ok) throw new Error(String(r.status))
-      const j = (await r.json()) as { sites: SiteReport[] }
+      const j = (await r.json()) as { sites: SiteReport[]; reportLimit?: string | null }
       setSites(j.sites)
+      setReportLimit(j.reportLimit ?? null)
       setLoadFailed(false)
       listOk.current = true
       if (awaiting.current) {
@@ -150,8 +147,8 @@ export default function VisibilityPage() {
         }
         const j = (await r.json().catch(() => ({}))) as { domain?: string; status?: string; error?: string }
         if (!r.ok || !j.domain || j.error) {
-          // report_limit names the domain as the server spells it: the report is bought for that one.
-          const domain = (j.error === "report_limit" && j.domain) || bare(site)
+          // Past the free report the server names the domain as it spells it: the contact-us note names it.
+          const domain = (j.error && REPORT_USED.has(j.error) && j.domain) || bare(site)
           const error = j.error ?? "unavailable"
           setFollowErr({ domain, error })
           track("geo_follow_failed", { domain, error: j.error })
@@ -216,7 +213,6 @@ export default function VisibilityPage() {
     ;(async () => {
       const params = new URLSearchParams(window.location.search)
       let site = bare(params.get("site") ?? "")
-      const unlocked = params.get("unlocked") === "1"
       if (!site) {
         try {
           const h = JSON.parse(localStorage.getItem("itg_geo_handoff") ?? "null") as { site?: string; at?: number } | null
@@ -224,15 +220,9 @@ export default function VisibilityPage() {
         } catch {}
       }
       // Said at once, so the first screen is never the empty address form.
-      if (site && !unlocked) setOpening(site)
+      if (site) setOpening(site)
       const list = await load()
-      if (site && unlocked) {
-        // A bought report: the webhook unlocks the site (and follows it, if it is a new one). Not
-        // following it from here, which the account's report limit would refuse in the meantime.
-        setActive(site)
-        setUnlocking({ domain: site, since: Date.now() })
-        track("geo_research_return", { domain: site })
-      } else if (site && !list?.some((s) => s.domain === site)) {
+      if (site && !list?.some((s) => s.domain === site)) {
         // A new site, or the list did not load (a site already followed answers at once).
         await open(site)
         return
@@ -258,29 +248,13 @@ export default function VisibilityPage() {
     return () => clearInterval(t)
   }, [loadFailed, anyPending, load])
 
-  // After the purchase: ask again every few seconds until the site reads as unlocked.
-  const bought = unlocking ? sites?.find((s) => s.domain === unlocking.domain) : undefined
-  const unlockedNow = Boolean(bought && !isPreview(bought))
-  useEffect(() => {
-    if (!unlocking || unlockedNow) return
-    const t = setInterval(() => {
-      if (Date.now() - unlocking.since > UNLOCK_WAIT_MS) {
-        clearInterval(t)
-        setUnlockSlow(true)
-        return
-      }
-      load()
-    }, UNLOCK_POLL_MS)
-    return () => clearInterval(t)
-  }, [unlocking, unlockedNow, load])
-
   // The latest report and the day-0 one are in the payload; any other is fetched once when opened.
   const opened = site && openRun?.domain === site.domain ? openRun.id : null
-  const runKey = site && opened && opened !== site.baseline?.id ? `${opened}:${site.access ?? "full"}` : null
+  const runKey = site && opened && opened !== site.baseline?.id ? opened : null
   useEffect(() => {
     if (!runKey || runs[runKey] || fetching.current.has(runKey)) return
     fetching.current.add(runKey)
-    fetch(`/api/geo/report/run?id=${encodeURIComponent(runKey.split(":")[0])}`, { cache: "no-store" })
+    fetch(`/api/geo/report/run?id=${encodeURIComponent(runKey)}`, { cache: "no-store" })
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
       .then((j: { report: Report }) => setRuns((c) => ({ ...c, [runKey]: j.report })))
       .catch(() => setRuns((c) => ({ ...c, [runKey]: "failed" })))
@@ -321,12 +295,12 @@ export default function VisibilityPage() {
   }
 
   const audit = site ? audits[site.domain] : undefined
-  // On the plan, or a client we set up by hand: no unlock, no offer; the plan is the day-0 report's,
-  // each step with where it stands.
+  // On the plan, or a client we set up by hand: no offer; the plan is the day-0 report's, each step
+  // with where it stands.
   const client = site ? onPlan(site) : false
-  // The server's rule for a new site, as a hint before anyone types: sites neither bought nor on the
-  // plan (a client we set up by hand reads as unlocked everywhere, and has no limit).
-  const reportUsed = sites.filter(isPreview).length >= REPORT_SITES
+  // The server's answer for a new site, before anyone types (/api/geo/report reportLimit): with a site
+  // on screen a hint under "Add a site"; without one, the contact-us state in place of the empty form.
+  const limited = reportLimit !== null && REPORT_USED.has(reportLimit) ? { domain: "", error: reportLimit } : null
   const run = !site || !opened ? null : opened === site.baseline?.id ? site.baseline : (runKey && runs[runKey]) || "loading"
   // The latest report is the page itself: opening it goes back.
   const showRun = (id: string) => {
@@ -378,43 +352,7 @@ export default function VisibilityPage() {
             )}
           </div>
         )}
-        {site && (
-          <div className="mt-3 empty:hidden">
-            <CreditNote site={site} />
-          </div>
-        )}
       </header>
-
-      {unlocking &&
-        (unlockedNow ? (
-          <div className="rounded-2xl bg-green-50 border border-green-200 px-4 sm:px-5 py-3.5 flex items-start gap-3">
-            <p className="flex-1 text-sm text-green-900 leading-relaxed">
-              <b>Unlocked.</b>{" "}
-              {bought?.latest
-                ? `The full report for ${unlocking.domain} is below.`
-                : `Your report for ${unlocking.domain} is being built; all of it opens here when it's ready.`}
-            </p>
-            <button type="button" onClick={() => setUnlocking(null)} aria-label="Dismiss" className="text-xl leading-none text-green-800/60 hover:text-green-900">
-              ×
-            </button>
-          </div>
-        ) : unlockSlow ? (
-          <div className="rounded-2xl bg-amber-50 border border-amber-200 px-4 sm:px-5 py-3.5 text-sm text-amber-900 leading-relaxed">
-            <b>Not unlocked yet.</b> A payment can take a minute to confirm. Refresh this page shortly; if {unlocking.domain} is still
-            locked,{" "}
-            <a href="/business/dashboard/support" className="font-semibold underline">
-              write to us
-            </a>
-            .
-          </div>
-        ) : (
-          <div className="rounded-2xl bg-violet-50 border border-violet-200 px-4 sm:px-5 py-3.5 flex items-center gap-3 text-sm text-violet-900">
-            <span aria-hidden className="w-4 h-4 shrink-0 rounded-full border-2 border-violet-300 border-t-violet-700 animate-spin" />
-            <span>
-              <b>Thank you.</b> Unlocking the full report for {unlocking.domain}. This takes a few seconds.
-            </span>
-          </div>
-        ))}
 
       {loadFailed && (
         <div className={`${card} text-sm text-slate-700`}>We couldn&apos;t load your report just now. It retries on its own; you can also refresh.</div>
@@ -433,7 +371,13 @@ export default function VisibilityPage() {
         />
       ) : (
         (!site || showAdd || followErr) && (
-          <AddSite onAdd={follow} busy={adding} error={followErr} first={!site} reportUsed={Boolean(site) && reportUsed} />
+          <AddSite
+            onAdd={follow}
+            busy={adding}
+            error={followErr ?? (site ? null : limited)}
+            first={!site}
+            reportUsed={Boolean(site) && limited !== null}
+          />
         )
       )}
 

@@ -78,7 +78,7 @@ function track(event: string, props?: Record<string, unknown>) {
 
 // geo_cta_seen: an account offer was really on screen, once per place per page. Its `where` is the
 // name the click on that offer sends (geo_cta_click), so the two can be set against each other:
-// "inline" (the offer under who was named instead), "overlay" (the paid-report card under the two
+// "inline" (the offer under who was named instead), "overlay" (the free-report card under the two
 // answers), "locked-row" (the closed answers), "sticky" (the phone bar). The other clicks ("sample",
 // "failed", "questions-failed", "limit", "busy") have no seen event.
 const ctaSeen = new Set<string>()
@@ -234,7 +234,7 @@ export default function AuditForm({ note }: { note?: string } = {}) {
   }, [aiDone, aiInView])
 
   // When the answers fail, the crawler check is all there is: open it, and offer a person's reply by
-  // email. Not a free report: the detailed one is paid (lib/geo-pricing.ts).
+  // email. The detailed report itself needs an account (free once one is created, lib/geo-pricing.ts).
   useEffect(() => {
     if (aiFailed) setBOpen(true)
   }, [aiFailed])

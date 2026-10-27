@@ -1,11 +1,11 @@
 import { defineMessages } from "../messages"
-import { plural } from "../format"
 import { ENTITY_ABOUT, ENTITY_ONE_LINER } from "@/lib/entity"
 
 // app/about/page.tsx: metadata, the page's text and its structured data. English reads the shared
 // description of ItGrows from lib/entity.ts, so /about says what every other page and schema says;
 // the other languages carry their own copy of it (orgDescription and lead match orgDescription in
-// home.ts). Prices come in as arguments (lib/geo-pricing.ts).
+// home.ts). The plan's prices come in as arguments (lib/geo-pricing.ts); the detailed report is free
+// once an account is created (since 27 Oct 2026).
 // Owner's decision, 26 Oct 2026: the title, the lead and the Organization describe ItGrows as AI
 // visibility (GEO) only; the LinkedIn/X product keeps one short line of its own at the end (liLine).
 // Tags are links: <link> the plan (or /personal in liLine), <sample> the sample report, <check> the
@@ -21,9 +21,6 @@ type PlanVars = {
   yearOff: string
 }
 
-// "в течение 30 дней", "в течение 21 дня".
-const ruDays = (n: number) => plural("ru", n, { one: `${n} дня`, other: `${n} дней` })
-
 const en = {
   metaTitle: "About ItGrows: AI visibility for businesses",
   metaDescription:
@@ -38,8 +35,7 @@ const en = {
   offerTitle: "What we offer",
   plan: ({ month, setup, quarter, year, yearPerMonth, yearOff }: PlanVars) =>
     `<link>The plan</link>: we do the work on your own website and measure four assistants every two weeks. ${month} a month plus a one-time ${setup} setup; the setup is free when you pay ${quarter} for 3 months or ${year} for a year (${yearPerMonth} a month, ${yearOff} off).`,
-  report: (report: string, days: number) =>
-    `The detailed report, ${report} per site: 20 buyer questions put to ChatGPT, Claude, Gemini and Perplexity, 3 times each, who is named instead of you, which sites they cite, and our plan for your site. Its price comes off the plan if you start within ${days} days. <sample>See a real report</sample>.`,
+  report: "The detailed report, free for your site once you create an account: 20 buyer questions put to ChatGPT, Claude, Gemini and Perplexity, 3 times each, who is named instead of you, which sites they cite, and our plan for your site. <sample>See a real report</sample>.",
   checks:
     "<check>The quick check</check>: free, about 30 seconds; two answers right away, all five once you create an account. The <crawler>AI crawler check</crawler> shows which AI crawlers can read your site.",
   guides: "<guides>Guides</guides>: how AI assistants choose which businesses to name, and what a business can do about it.",
@@ -72,8 +68,7 @@ export default defineMessages(en, {
     offerTitle: "Was wir anbieten",
     plan: ({ month, setup, quarter, year, yearPerMonth, yearOff }) =>
       `<link>Der Plan</link>: Wir erledigen die Arbeit auf Ihrer eigenen Website und messen alle zwei Wochen vier Assistenten. ${month} pro Monat plus einmalig ${setup} für die Einrichtung; die Einrichtung entfällt, wenn Sie ${quarter} für 3 Monate oder ${year} für ein Jahr zahlen (${yearPerMonth} pro Monat, ${yearOff} Rabatt).`,
-    report: (report, days) =>
-      `Der ausführliche Bericht, ${report} pro Website: 20 Kundenfragen an ChatGPT, Claude, Gemini und Perplexity, jede dreimal gestellt, wer statt Ihnen genannt wird, welche Websites zitiert werden, und unser Maßnahmenplan für Ihre Website. Der Preis wird auf den Plan angerechnet, wenn Sie innerhalb von ${days} Tagen starten. <sample>Einen echten Bericht ansehen</sample>.`,
+    report: "Der ausführliche Bericht, kostenlos für Ihre Website, sobald Sie ein Konto anlegen: 20 Kundenfragen an ChatGPT, Claude, Gemini und Perplexity, jede dreimal gestellt, wer statt Ihnen genannt wird, welche Websites zitiert werden, und unser Maßnahmenplan für Ihre Website. <sample>Einen echten Bericht ansehen</sample>.",
     checks:
       "<check>Der Schnellcheck</check>: kostenlos, etwa 30 Sekunden; zwei Antworten sofort, alle fünf, sobald Sie ein Konto anlegen. Der <crawler>KI-Crawler-Check</crawler> zeigt, welche KI-Crawler Ihre Website lesen können.",
     guides: "<guides>Ratgeber</guides>: wie KI-Assistenten entscheiden, welche Unternehmen sie nennen, und was ein Unternehmen dafür tun kann.",
@@ -105,8 +100,7 @@ export default defineMessages(en, {
     offerTitle: "Ce que nous proposons",
     plan: ({ month, setup, quarter, year, yearPerMonth, yearOff }) =>
       `<link>L’abonnement</link> : nous faisons le travail sur votre propre site et mesurons quatre assistants toutes les deux semaines. ${month} par mois plus une mise en place de ${setup}, une seule fois ; la mise en place n’est pas facturée si vous payez ${quarter} pour 3 mois ou ${year} pour un an (${yearPerMonth} par mois, ${yearOff} de remise).`,
-    report: (report, days) =>
-      `Le rapport détaillé, ${report} par site : 20 questions de clients posées à ChatGPT, Claude, Gemini et Perplexity, 3 fois chacune, qui est mentionné à votre place, quels sites sont cités, et notre plan d’action pour votre site. Son prix est déduit de l’abonnement si vous commencez dans les ${days} jours. <sample>Voir un vrai rapport</sample>.`,
+    report: "Le rapport détaillé, gratuit pour votre site dès que vous créez un compte : 20 questions de clients posées à ChatGPT, Claude, Gemini et Perplexity, 3 fois chacune, qui est mentionné à votre place, quels sites sont cités, et notre plan d’action pour votre site. <sample>Voir un vrai rapport</sample>.",
     checks:
       "<check>La vérification rapide</check> : gratuite, environ 30 secondes ; deux réponses tout de suite, les cinq dès que vous créez un compte. Le <crawler>test des robots d’IA</crawler> montre quels robots d’IA peuvent lire votre site.",
     guides: "<guides>Guides</guides> : comment les assistants IA choisissent les entreprises qu’ils mentionnent, et ce qu’une entreprise peut faire.",
@@ -138,8 +132,7 @@ export default defineMessages(en, {
     offerTitle: "Qué ofrecemos",
     plan: ({ month, setup, quarter, year, yearPerMonth, yearOff }) =>
       `<link>El plan</link>: hacemos el trabajo en su propio sitio web y medimos cuatro asistentes cada dos semanas. ${month} al mes más una configuración inicial de ${setup}, pago único; la configuración no se cobra si paga ${quarter} por 3 meses o ${year} por un año (${yearPerMonth} al mes, ${yearOff} de descuento).`,
-    report: (report, days) =>
-      `El informe detallado, ${report} por sitio: 20 preguntas de clientes planteadas a ChatGPT, Claude, Gemini y Perplexity, 3 veces cada una, a quién mencionan en su lugar, qué sitios citan y nuestro plan de acción para su sitio. Su precio se descuenta del plan si empieza en un plazo de ${days} días. <sample>Ver un informe real</sample>.`,
+    report: "El informe detallado, gratuito para su sitio en cuanto cree una cuenta: 20 preguntas de clientes planteadas a ChatGPT, Claude, Gemini y Perplexity, 3 veces cada una, a quién mencionan en su lugar, qué sitios citan y nuestro plan de acción para su sitio. <sample>Ver un informe real</sample>.",
     checks:
       "<check>La comprobación rápida</check>: gratis, unos 30 segundos; dos respuestas al momento y las cinco en cuanto cree una cuenta. El <crawler>comprobador de rastreadores de IA</crawler> muestra qué rastreadores de IA pueden leer su sitio.",
     guides: "<guides>Guías</guides>: cómo eligen los asistentes de IA a qué empresas mencionar y qué puede hacer una empresa al respecto.",
@@ -171,8 +164,7 @@ export default defineMessages(en, {
     offerTitle: "Что мы предлагаем",
     plan: ({ month, setup, quarter, year, yearPerMonth, yearOff }) =>
       `<link>Подписка</link>: мы делаем работу на вашем собственном сайте и раз в две недели измеряем четыре ассистента. ${month} в месяц плюс разовая настройка за ${setup}; настройка не взимается, если вы платите ${quarter} за 3 месяца или ${year} за год (${yearPerMonth} в месяц, скидка ${yearOff}).`,
-    report: (report, days) =>
-      `Подробный отчёт — ${report} за сайт: 20 вопросов клиентов к ChatGPT, Claude, Gemini и Perplexity, по 3 раза каждый, кого называют вместо вас, какие сайты цитируют, и наш план действий для вашего сайта. Его цена засчитывается в подписку, если вы начнёте в течение ${ruDays(days)}. <sample>Посмотреть настоящий отчёт</sample>.`,
+    report: "Подробный отчёт — бесплатно для вашего сайта, достаточно создать аккаунт: 20 вопросов клиентов к ChatGPT, Claude, Gemini и Perplexity, по 3 раза каждый, кого называют вместо вас, какие сайты цитируют, и наш план действий для вашего сайта. <sample>Посмотреть настоящий отчёт</sample>.",
     checks:
       "<check>Быстрая проверка</check>: бесплатно, около 30 секунд; два ответа сразу, все пять — после создания аккаунта. <crawler>Проверка ИИ-краулеров</crawler> показывает, какие ИИ-краулеры могут читать ваш сайт.",
     guides: "<guides>Руководства</guides>: как ИИ-ассистенты выбирают, какие компании назвать, и что компания может для этого сделать.",

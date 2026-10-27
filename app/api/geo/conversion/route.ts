@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/auth"
-import { GEO_PLAN, GEO_RESEARCH, stripeClient } from "@/lib/geo-business"
+import { GEO_PLAN, stripeClient } from "@/lib/geo-business"
 
 // What a finished GEO checkout was worth, for the Google Ads conversion sent from the page Stripe
 // returns to (components/GeoPurchaseConversion.tsx). That page only knows the Checkout Session id
-// (?cs=, from {CHECKOUT_SESSION_ID} in the success_url of /api/geo/research-checkout and
-// /api/geo/checkout); this asks Stripe, so only a completed payment by this signed-in user counts,
-// with the amount and currency actually charged (Stripe may present another currency than USD).
+// (?cs=, from {CHECKOUT_SESSION_ID} in the success_url of /api/geo/checkout); this asks Stripe, so
+// only a completed payment by this signed-in user counts, with the amount and currency actually
+// charged (Stripe may present another currency than USD). Only the plan is sold: the detailed report
+// is free since 27 Oct 2026, so a report checkout (one opened before then) is no conversion.
 
 export const dynamic = "force-dynamic"
 
@@ -32,7 +33,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "not_found" }, { status: 404, headers: NO_STORE })
   }
 
-  const kind = checkout.metadata?.plan === GEO_RESEARCH ? "report" : checkout.metadata?.plan === GEO_PLAN ? "plan" : null
+  const kind = checkout.metadata?.plan === GEO_PLAN ? "plan" : null
   if (!kind) return NextResponse.json({ error: "not_found" }, { status: 404, headers: NO_STORE })
 
   const paid = checkout.status === "complete" && checkout.payment_status !== "unpaid"

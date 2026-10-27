@@ -7,7 +7,7 @@ import Link from "next/link"
 import OAuthButtons from "@/components/auth/OAuthButtons"
 import LocaleLink from "@/components/i18n/LocaleLink"
 import { useT } from "@/components/i18n/LocaleProvider"
-import { CREDIT_DAYS, GEO_PRICES } from "@/lib/geo-pricing"
+import { GEO_PRICES } from "@/lib/geo-pricing"
 import { isBareDomain } from "@/lib/geo-handoff"
 import { rich } from "@/lib/i18n/rich"
 import signupNs from "@/lib/i18n/messages/signup"
@@ -418,12 +418,12 @@ function SignupForm() {
           ) : fromAiCheck && aiSite ? (
             <>
               <h1 className="text-2xl font-bold text-[#1b1916] mt-4 break-words">{m.answersTitle(aiSite)}</h1>
-              <p className="text-slate-500 text-sm mt-1">{m.answersLead(GEO_PRICES.research.label)}</p>
+              <p className="text-slate-500 text-sm mt-1">{m.answersLead}</p>
             </>
           ) : fromAiCheck ? (
             <>
               <h1 className="text-2xl font-bold text-[#1b1916] mt-4">{m.reportTitle(aiSite)}</h1>
-              <p className="text-slate-500 text-sm mt-1">{m.reportLead(GEO_PRICES.research.label, CREDIT_DAYS)}</p>
+              <p className="text-slate-500 text-sm mt-1">{m.reportLead}</p>
             </>
           ) : handoff ? (
             <>

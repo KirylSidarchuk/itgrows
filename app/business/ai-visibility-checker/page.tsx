@@ -4,7 +4,6 @@ import Link from "next/link"
 import AuditForm from "../AuditForm"
 import ToolShell from "../_tools/ToolShell"
 import Faq, { faqSchema, type QA } from "../_tools/Faq"
-import { GEO_PRICES } from "@/lib/geo-pricing"
 import { noteCrawler } from "@/lib/crawler-log"
 import { guideFor } from "@/lib/geo-guides"
 import AboutItGrows from "@/components/geo/AboutItGrows"
@@ -32,7 +31,7 @@ export default async function AiVisibilityCheckerPage() {
   const locale = await getLocale()
   void noteCrawler(localePath(locale, PATH))
   const m = t(locale, ns)
-  const faq: QA[] = [{ q: m.faqAccount.q, a: m.faqAccount.a(GEO_PRICES.research.label) }, ...m.faq]
+  const faq: QA[] = [{ q: m.faqAccount.q, a: m.faqAccount.a }, ...m.faq]
   const schema = {
     "@context": "https://schema.org",
     "@graph": [

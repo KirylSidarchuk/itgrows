@@ -1,19 +1,15 @@
 import { defineMessages } from "../messages"
-import { plural } from "../format"
 import { ENTITY_ABOUT, ENTITY_ONE_LINER } from "@/lib/entity"
 
 // app/page.tsx ("/", and /de, /fr, /es, /ru): metadata, the page's own sections, the FAQ and the
-// human-readable structured data. Prices, days and paths come in as arguments (lib/geo-pricing.ts).
+// human-readable structured data. Prices and paths come in as arguments (lib/geo-pricing.ts); the
+// detailed report is free once an account is created (since 27 Oct 2026).
 // Terms used the same way across the GEO pages: report = Bericht / rapport / informe / отчёт; the plan
 // (paid) = Plan / abonnement / plan / подписка; our plan for a site = Maßnahmenplan / plan d'action /
 // plan de acción / план действий; setup = Einrichtung / mise en place / configuración inicial / настройка;
 // quick check = Schnellcheck / vérification rapide / comprobación rápida / быстрая проверка.
 
 type FaqVars = {
-  /** The detailed report's price label. */
-  report: string
-  /** Days within which the report's price comes off the plan. */
-  days: number
   /** The sample report's path in this language. */
   sample: string
   month: string
@@ -25,9 +21,6 @@ type FaqVars = {
   yearOff: string
 }
 type Faq = { q: string; a: string }[]
-
-// "в течение 30 дней", "в течение 21 дня".
-const ruDays = (n: number) => plural("ru", n, { one: `${n} дня`, other: `${n} дней` })
 
 const en = {
   metaTitle: "AI visibility for businesses: get named by ChatGPT | ItGrows",
@@ -88,7 +81,7 @@ const en = {
 
   // FAQ
   faqTitle: "Questions",
-  faq: ({ report, days, sample, month, setup, quarter, year, yearPerMonth, yearOff }: FaqVars): Faq => [
+  faq: ({ sample, month, setup, quarter, year, yearPerMonth, yearOff }: FaqVars): Faq => [
     { q: "What is ItGrows?", a: ENTITY_ABOUT[0] },
     {
       q: "Is ItGrows a LinkedIn tool or an AI visibility service?",
@@ -114,11 +107,11 @@ const en = {
     },
     {
       q: "Do you give us a guide to do it ourselves, or do the work?",
-      a: `We do the work. The detailed report (${report}) is the diagnosis and our plan: where you stand in all four assistants, who is named instead of you, and what we will do about it, step by step. On the plan we do that work: we publish answer pages on your domain, fix crawler access and indexing, and measure every two weeks. The report's price comes off the plan within ${days} days.`,
+      a: `We do the work. The detailed report (free once you create an account) is the diagnosis and our plan: where you stand in all four assistants, who is named instead of you, and what we will do about it, step by step. On the plan we do that work: we publish answer pages on your domain, fix crawler access and indexing, and measure every two weeks.`,
     },
     {
       q: "What does the detailed report cost?",
-      a: `${report}, one payment per site. The quick check on this page is free and takes about 30 seconds: 5 questions to ChatGPT and Perplexity, with two answers shown in full right away and all five once you create an account. With the account we also build the detailed report for your site — 20 questions to ChatGPT, Claude, Gemini and Perplexity, 3 asks each — with its totals and the 5 questions of the quick check open. The whole report is ${report}: every answer, everyone named instead of you, the sites the assistants quote, and our plan for your site. If you start the plan within ${days} days, the ${report} comes off your first payment. A real one: itgrows.ai${sample}.`,
+      a: `Nothing: the full report is free once you create an account, for one site per account. The quick check on this page is free too and takes about 30 seconds: 5 questions to ChatGPT and Perplexity, with two answers shown in full right away and all five once you create an account. With the account we also build the detailed report for your site — 20 questions to ChatGPT, Claude, Gemini and Perplexity, 3 asks each — and all of it is open: every answer, everyone named instead of you, the sites the assistants quote, and our plan for your site. A real one: itgrows.ai${sample}.`,
     },
     {
       q: "What does the plan cost?",
@@ -126,7 +119,7 @@ const en = {
     },
     {
       q: "Who is this wrong for?",
-      a: `Anyone without real expertise to publish — the engine amplifies a point of view, it cannot invent one. Anyone needing a signed guarantee. And anyone who wants the work done for the price of a software tool: at ${month} a month the plan is priced against a fractional content hire. To see the full picture before deciding, the ${report} report shows where you stand and what we will do, and its price comes off the plan.`,
+      a: `Anyone without real expertise to publish — the engine amplifies a point of view, it cannot invent one. Anyone needing a signed guarantee. And anyone who wants the work done for the price of a software tool: at ${month} a month the plan is priced against a fractional content hire. To see the full picture before deciding, the free report shows where you stand and what we will do.`,
     },
     { q: "Will this send us traffic from ChatGPT?", a: "Often little: assistants usually answer in place. We count whether you are named and cited. Two clients report customers and installs that came from assistants; our own ASO agency, appslift, gets leads from them." },
     { q: "I use ItGrows for LinkedIn. Where is my cabinet?", a: "Where it always was: Sign in, then LinkedIn & X cabinet. Nothing changed for your posts, plan or billing." },
@@ -200,7 +193,7 @@ export default defineMessages(en, {
     writeLead: "Fragen zu Ihrer Website, zum Plan oder zu etwas anderem. Wir antworten innerhalb eines Tages.",
 
     faqTitle: "Fragen",
-    faq: ({ report, days, sample, month, setup, quarter, year, yearPerMonth, yearOff }) => [
+    faq: ({ sample, month, setup, quarter, year, yearPerMonth, yearOff }) => [
       {
         q: "Was ist ItGrows?",
         a: "ItGrows hilft einem Unternehmen, genannt zu werden, wenn seine Kunden einen KI-Assistenten fragen. Wir stellen ChatGPT, Claude, Gemini und Perplexity die Fragen, die diese Kunden stellen, jeweils mehrmals, und halten fest, wer genannt wird und welche Websites zitiert werden. Dann veröffentlichen wir auf der eigenen Domain des Unternehmens Seiten, die diese Fragen beantworten, beheben, was KI-Crawler und Suchindizes am Lesen der Website hindert, und messen alle zwei Wochen erneut.",
@@ -232,11 +225,11 @@ export default defineMessages(en, {
       },
       {
         q: "Geben Sie uns eine Anleitung zum Selbermachen, oder erledigen Sie die Arbeit?",
-        a: `Wir erledigen die Arbeit. Der ausführliche Bericht (${report}) ist die Diagnose und unser Maßnahmenplan: wo Sie in allen vier Assistenten stehen, wer statt Ihnen genannt wird und was wir Schritt für Schritt dagegen tun. Im Plan erledigen wir diese Arbeit: Wir veröffentlichen Antwortseiten auf Ihrer Domain, beheben Probleme bei Crawler-Zugriff und Indexierung und messen alle zwei Wochen. Der Preis des Berichts wird auf den Plan angerechnet, wenn Sie ihn innerhalb von ${days} Tagen starten.`,
+        a: `Wir erledigen die Arbeit. Der ausführliche Bericht (kostenlos, sobald Sie ein Konto anlegen) ist die Diagnose und unser Maßnahmenplan: wo Sie in allen vier Assistenten stehen, wer statt Ihnen genannt wird und was wir Schritt für Schritt dagegen tun. Im Plan erledigen wir diese Arbeit: Wir veröffentlichen Antwortseiten auf Ihrer Domain, beheben Probleme bei Crawler-Zugriff und Indexierung und messen alle zwei Wochen.`,
       },
       {
         q: "Was kostet der ausführliche Bericht?",
-        a: `${report}, eine Zahlung pro Website. Der Schnellcheck auf dieser Seite ist kostenlos und dauert etwa 30 Sekunden: 5 Fragen an ChatGPT und Perplexity; zwei Antworten sehen Sie sofort vollständig, alle fünf, sobald Sie ein Konto anlegen. Mit dem Konto erstellen wir außerdem den ausführlichen Bericht für Ihre Website — 20 Fragen an ChatGPT, Claude, Gemini und Perplexity, je 3 Anfragen —; die Gesamtwerte und die 5 Fragen des Schnellchecks sind darin offen einsehbar. Der vollständige Bericht kostet ${report}: jede Antwort, alle, die statt Ihnen genannt werden, die Websites, die die Assistenten zitieren, und unser Maßnahmenplan für Ihre Website. Wenn Sie den Plan innerhalb von ${days} Tagen starten, werden die ${report} von Ihrer ersten Zahlung abgezogen. Ein echtes Beispiel (auf Englisch): itgrows.ai${sample}.`,
+        a: `Nichts: Der vollständige Bericht ist kostenlos, sobald Sie ein Konto anlegen, für eine Website pro Konto. Der Schnellcheck auf dieser Seite ist ebenfalls kostenlos und dauert etwa 30 Sekunden: 5 Fragen an ChatGPT und Perplexity; zwei Antworten sehen Sie sofort vollständig, alle fünf, sobald Sie ein Konto anlegen. Mit dem Konto erstellen wir außerdem den ausführlichen Bericht für Ihre Website — 20 Fragen an ChatGPT, Claude, Gemini und Perplexity, je 3 Anfragen —, und alles darin ist offen: jede Antwort, alle, die statt Ihnen genannt werden, die Websites, die die Assistenten zitieren, und unser Maßnahmenplan für Ihre Website. Ein echtes Beispiel (auf Englisch): itgrows.ai${sample}.`,
       },
       {
         q: "Was kostet der Plan?",
@@ -244,7 +237,7 @@ export default defineMessages(en, {
       },
       {
         q: "Für wen ist das nicht das Richtige?",
-        a: `Für alle ohne echte Expertise, die sie veröffentlichen könnten — die Engine verstärkt einen Standpunkt, sie kann keinen erfinden. Für alle, die eine unterschriebene Garantie brauchen. Und für alle, die diese Arbeit zum Preis eines Software-Tools wollen: Mit ${month} pro Monat ist der Plan an einer Teilzeitkraft für Content bemessen. Wenn Sie vor der Entscheidung das ganze Bild sehen möchten, zeigt der Bericht für ${report}, wo Sie stehen und was wir tun werden, und sein Preis wird auf den Plan angerechnet.`,
+        a: `Für alle ohne echte Expertise, die sie veröffentlichen könnten — die Engine verstärkt einen Standpunkt, sie kann keinen erfinden. Für alle, die eine unterschriebene Garantie brauchen. Und für alle, die diese Arbeit zum Preis eines Software-Tools wollen: Mit ${month} pro Monat ist der Plan an einer Teilzeitkraft für Content bemessen. Wenn Sie vor der Entscheidung das ganze Bild sehen möchten, zeigt der kostenlose Bericht, wo Sie stehen und was wir tun werden.`,
       },
       {
         q: "Bringt uns das Traffic von ChatGPT?",
@@ -321,7 +314,7 @@ export default defineMessages(en, {
     writeLead: "Une question sur votre site, l’abonnement ou autre chose ? Nous répondons sous 24 heures.",
 
     faqTitle: "Questions fréquentes",
-    faq: ({ report, days, sample, month, setup, quarter, year, yearPerMonth, yearOff }) => [
+    faq: ({ sample, month, setup, quarter, year, yearPerMonth, yearOff }) => [
       {
         q: "Qu’est-ce qu’ItGrows ?",
         a: "ItGrows aide une entreprise à être mentionnée quand ses clients interrogent un assistant IA. Nous posons à ChatGPT, Claude, Gemini et Perplexity les questions que posent ces clients, plusieurs fois chacune, et relevons qui est mentionné et quels sites sont cités. Puis nous publions sur le propre domaine de l’entreprise des pages qui répondent à ces questions, corrigeons ce qui empêche les robots d’IA et les index de recherche de lire le site, et mesurons de nouveau toutes les deux semaines.",
@@ -353,11 +346,11 @@ export default defineMessages(en, {
       },
       {
         q: "Nous donnez-vous un guide pour le faire nous-mêmes, ou faites-vous le travail ?",
-        a: `Nous faisons le travail. Le rapport détaillé (${report}) est le diagnostic et notre plan d’action : où vous en êtes dans les quatre assistants, qui est mentionné à votre place et ce que nous allons faire, étape par étape. Avec l’abonnement, nous faisons ce travail : nous publions des pages de réponse sur votre domaine, corrigeons l’accès des robots et l’indexation, et mesurons toutes les deux semaines. Le prix du rapport est déduit de l’abonnement s’il démarre dans les ${days} jours.`,
+        a: `Nous faisons le travail. Le rapport détaillé (gratuit dès que vous créez un compte) est le diagnostic et notre plan d’action : où vous en êtes dans les quatre assistants, qui est mentionné à votre place et ce que nous allons faire, étape par étape. Avec l’abonnement, nous faisons ce travail : nous publions des pages de réponse sur votre domaine, corrigeons l’accès des robots et l’indexation, et mesurons toutes les deux semaines.`,
       },
       {
         q: "Combien coûte le rapport détaillé ?",
-        a: `${report}, en un seul paiement par site. La vérification rapide de cette page est gratuite et prend environ 30 secondes : 5 questions à ChatGPT et Perplexity ; deux réponses s’affichent en entier tout de suite, les cinq dès que vous créez un compte. Avec ce compte, nous établissons aussi le rapport détaillé de votre site — 20 questions à ChatGPT, Claude, Gemini et Perplexity, 3 requêtes chacune —, dont les totaux et les 5 questions de la vérification rapide sont consultables. Le rapport complet coûte ${report} : chaque réponse, tous ceux qui sont mentionnés à votre place, les sites que citent les assistants et notre plan d’action pour votre site. Si vous démarrez l’abonnement dans les ${days} jours, les ${report} sont déduits de votre premier paiement. Un vrai rapport (en anglais) : itgrows.ai${sample}.`,
+        a: `Rien : le rapport complet est gratuit dès que vous créez un compte, pour un site par compte. La vérification rapide de cette page est gratuite elle aussi et prend environ 30 secondes : 5 questions à ChatGPT et Perplexity ; deux réponses s’affichent en entier tout de suite, les cinq dès que vous créez un compte. Avec ce compte, nous établissons aussi le rapport détaillé de votre site — 20 questions à ChatGPT, Claude, Gemini et Perplexity, 3 requêtes chacune —, et tout y est consultable : chaque réponse, tous ceux qui sont mentionnés à votre place, les sites que citent les assistants et notre plan d’action pour votre site. Un vrai rapport (en anglais) : itgrows.ai${sample}.`,
       },
       {
         q: "Combien coûte l’abonnement ?",
@@ -365,7 +358,7 @@ export default defineMessages(en, {
       },
       {
         q: "À qui ce service ne convient-il pas ?",
-        a: `Pour ceux qui n’ont pas de véritable expertise à publier — le moteur amplifie un point de vue, il ne peut pas en inventer un. Pour ceux qui exigent une garantie signée. Et pour ceux qui veulent ce travail au prix d’un logiciel : à ${month} par mois, l’abonnement se compare au coût d’un rédacteur à temps partiel. Pour avoir une vue complète avant de décider, le rapport à ${report} montre où vous en êtes et ce que nous ferons, et son prix est déduit de l’abonnement.`,
+        a: `Pour ceux qui n’ont pas de véritable expertise à publier — le moteur amplifie un point de vue, il ne peut pas en inventer un. Pour ceux qui exigent une garantie signée. Et pour ceux qui veulent ce travail au prix d’un logiciel : à ${month} par mois, l’abonnement se compare au coût d’un rédacteur à temps partiel. Pour avoir une vue complète avant de décider, le rapport gratuit montre où vous en êtes et ce que nous ferons.`,
       },
       {
         q: "Cela nous apportera-t-il du trafic depuis ChatGPT ?",
@@ -442,7 +435,7 @@ export default defineMessages(en, {
     writeLead: "Preguntas sobre su sitio, el plan o cualquier otra cosa. Respondemos en menos de un día.",
 
     faqTitle: "Preguntas",
-    faq: ({ report, days, sample, month, setup, quarter, year, yearPerMonth, yearOff }) => [
+    faq: ({ sample, month, setup, quarter, year, yearPerMonth, yearOff }) => [
       {
         q: "¿Qué es ItGrows?",
         a: "ItGrows ayuda a una empresa a que la mencionen cuando sus clientes preguntan a un asistente de IA. Planteamos a ChatGPT, Claude, Gemini y Perplexity las preguntas que hacen esos clientes, varias veces cada una, y registramos a quién mencionan y qué sitios citan. Después publicamos en el propio dominio de la empresa páginas que responden a esas preguntas, corregimos lo que impide a los rastreadores de IA y a los índices de búsqueda leer el sitio, y volvemos a medir cada dos semanas.",
@@ -474,11 +467,11 @@ export default defineMessages(en, {
       },
       {
         q: "¿Nos dan una guía para hacerlo nosotros mismos o hacen ustedes el trabajo?",
-        a: `Hacemos el trabajo. El informe detallado (${report}) es el diagnóstico y nuestro plan de acción: dónde está usted en los cuatro asistentes, a quién mencionan en su lugar y qué haremos al respecto, paso a paso. Con el plan hacemos ese trabajo: publicamos páginas de respuesta en su dominio, corregimos el acceso de los rastreadores y la indexación, y medimos cada dos semanas. El precio del informe se descuenta del plan si lo inicia en un plazo de ${days} días.`,
+        a: `Hacemos el trabajo. El informe detallado (gratuito en cuanto cree una cuenta) es el diagnóstico y nuestro plan de acción: dónde está usted en los cuatro asistentes, a quién mencionan en su lugar y qué haremos al respecto, paso a paso. Con el plan hacemos ese trabajo: publicamos páginas de respuesta en su dominio, corregimos el acceso de los rastreadores y la indexación, y medimos cada dos semanas.`,
       },
       {
         q: "¿Cuánto cuesta el informe detallado?",
-        a: `${report}, un único pago por sitio. La comprobación rápida de esta página es gratuita y tarda unos 30 segundos: 5 preguntas a ChatGPT y Perplexity; dos respuestas se ven completas al momento y las cinco, en cuanto cree una cuenta. Con esa cuenta elaboramos también el informe detallado de su sitio — 20 preguntas a ChatGPT, Claude, Gemini y Perplexity, 3 consultas cada una —, con sus totales y las 5 preguntas de la comprobación rápida a la vista. El informe completo cuesta ${report}: cada respuesta, todas las empresas mencionadas en su lugar, los sitios que citan los asistentes y nuestro plan de acción para su sitio. Si inicia el plan en un plazo de ${days} días, los ${report} se descuentan de su primer pago. Un ejemplo real (en inglés): itgrows.ai${sample}.`,
+        a: `Nada: el informe completo es gratuito en cuanto cree una cuenta, para un sitio por cuenta. La comprobación rápida de esta página también es gratuita y tarda unos 30 segundos: 5 preguntas a ChatGPT y Perplexity; dos respuestas se ven completas al momento y las cinco, en cuanto cree una cuenta. Con esa cuenta elaboramos también el informe detallado de su sitio — 20 preguntas a ChatGPT, Claude, Gemini y Perplexity, 3 consultas cada una —, y todo queda a la vista: cada respuesta, todas las empresas mencionadas en su lugar, los sitios que citan los asistentes y nuestro plan de acción para su sitio. Un ejemplo real (en inglés): itgrows.ai${sample}.`,
       },
       {
         q: "¿Cuánto cuesta el plan?",
@@ -486,7 +479,7 @@ export default defineMessages(en, {
       },
       {
         q: "¿Para quién no es esto?",
-        a: `Para quien no tenga conocimientos especializados reales que publicar — el motor amplifica un punto de vista, no puede inventarlo. Para quien necesite una garantía firmada. Y para quien quiera este trabajo al precio de una herramienta de software: a ${month} al mes, el plan se compara con contratar a un redactor a tiempo parcial. Para ver el panorama completo antes de decidir, el informe de ${report} muestra dónde está usted y qué haremos, y su precio se descuenta del plan.`,
+        a: `Para quien no tenga conocimientos especializados reales que publicar — el motor amplifica un punto de vista, no puede inventarlo. Para quien necesite una garantía firmada. Y para quien quiera este trabajo al precio de una herramienta de software: a ${month} al mes, el plan se compara con contratar a un redactor a tiempo parcial. Para ver el panorama completo antes de decidir, el informe gratuito muestra dónde está usted y qué haremos.`,
       },
       {
         q: "¿Nos traerá tráfico desde ChatGPT?",
@@ -563,7 +556,7 @@ export default defineMessages(en, {
     writeLead: "Вопросы о вашем сайте, подписке или о чём угодно ещё. Отвечаем в течение дня.",
 
     faqTitle: "Вопросы",
-    faq: ({ report, days, sample, month, setup, quarter, year, yearPerMonth, yearOff }) => [
+    faq: ({ sample, month, setup, quarter, year, yearPerMonth, yearOff }) => [
       {
         q: "Что такое ItGrows?",
         a: "ItGrows помогает компании добиться того, чтобы её называли, когда её клиенты спрашивают ИИ-ассистента. Мы задаём ChatGPT, Claude, Gemini и Perplexity вопросы, которые задают эти клиенты, по нескольку раз каждый, и фиксируем, кого называют и какие сайты цитируют. Затем публикуем на собственном домене компании страницы, отвечающие на эти вопросы, устраняем то, что мешает ИИ-краулерам и поисковым индексам читать сайт, и раз в две недели измеряем снова.",
@@ -595,11 +588,11 @@ export default defineMessages(en, {
       },
       {
         q: "Вы даёте инструкцию, чтобы мы всё сделали сами, или делаете работу?",
-        a: `Мы делаем работу. Подробный отчёт (${report}) — это диагноз и наш план действий: где вы находитесь во всех четырёх ассистентах, кого называют вместо вас и что мы будем с этим делать, шаг за шагом. По подписке мы делаем эту работу: публикуем страницы-ответы на вашем домене, исправляем доступ краулеров и индексацию и измеряем раз в две недели. Стоимость отчёта засчитывается в подписку, если вы оформите её в течение ${ruDays(days)}.`,
+        a: `Мы делаем работу. Подробный отчёт (бесплатный, достаточно создать аккаунт) — это диагноз и наш план действий: где вы находитесь во всех четырёх ассистентах, кого называют вместо вас и что мы будем с этим делать, шаг за шагом. По подписке мы делаем эту работу: публикуем страницы-ответы на вашем домене, исправляем доступ краулеров и индексацию и измеряем раз в две недели.`,
       },
       {
         q: "Сколько стоит подробный отчёт?",
-        a: `${report}, один платёж за сайт. Быстрая проверка на этой странице бесплатна и занимает около 30 секунд: 5 вопросов к ChatGPT и Perplexity; два ответа вы видите целиком сразу, все пять — когда создадите аккаунт. С аккаунтом мы также составим подробный отчёт по вашему сайту — 20 вопросов к ChatGPT, Claude, Gemini и Perplexity, по 3 запроса на каждый, — итоги и 5 вопросов быстрой проверки в нём открыты. Весь отчёт стоит ${report}: каждый ответ, все, кого называют вместо вас, сайты, которые цитируют ассистенты, и наш план действий для вашего сайта. Если вы оформите подписку в течение ${ruDays(days)}, ${report} вычитаются из первого платежа. Настоящий отчёт (на английском): itgrows.ai${sample}.`,
+        a: `Ничего: полный отчёт бесплатный — достаточно создать аккаунт, один сайт на аккаунт. Быстрая проверка на этой странице тоже бесплатна и занимает около 30 секунд: 5 вопросов к ChatGPT и Perplexity; два ответа вы видите целиком сразу, все пять — когда создадите аккаунт. С аккаунтом мы также составим подробный отчёт по вашему сайту — 20 вопросов к ChatGPT, Claude, Gemini и Perplexity, по 3 запроса на каждый, — и в нём открыто всё: каждый ответ, все, кого называют вместо вас, сайты, которые цитируют ассистенты, и наш план действий для вашего сайта. Настоящий отчёт (на английском): itgrows.ai${sample}.`,
       },
       {
         q: "Сколько стоит подписка?",
@@ -607,7 +600,7 @@ export default defineMessages(en, {
       },
       {
         q: "Кому это не подойдёт?",
-        a: `Тем, у кого нет настоящей экспертизы, которую можно публиковать, — движок усиливает точку зрения, но не может её придумать. Тем, кому нужна подписанная гарантия. И тем, кто хочет получить эту работу по цене программы: при ${month} в месяц подписка сопоставима с контент-специалистом на неполный день. Чтобы увидеть полную картину до решения, отчёт за ${report} покажет, где вы находитесь и что мы будем делать, а его стоимость засчитывается в подписку.`,
+        a: `Тем, у кого нет настоящей экспертизы, которую можно публиковать, — движок усиливает точку зрения, но не может её придумать. Тем, кому нужна подписанная гарантия. И тем, кто хочет получить эту работу по цене программы: при ${month} в месяц подписка сопоставима с контент-специалистом на неполный день. Чтобы увидеть полную картину до решения, бесплатный отчёт покажет, где вы находитесь и что мы будем делать.`,
       },
       {
         q: "Принесёт ли это нам трафик из ChatGPT?",

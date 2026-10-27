@@ -2,7 +2,7 @@
 
 import { Suspense } from "react"
 import { useLocale, useT } from "@/components/i18n/LocaleProvider"
-import { CREDIT_DAYS, GEO_PRICES, SAMPLE_DOMAIN } from "@/lib/geo-pricing"
+import { SAMPLE_DOMAIN } from "@/lib/geo-pricing"
 import { formatDate } from "@/lib/i18n/format"
 import sampleReportNs from "@/lib/i18n/messages/sampleReport"
 import { localePath } from "@/lib/i18n/paths"
@@ -11,7 +11,7 @@ import { ReportSections, YourPlan, card, fullReport, planSteps, type SiteReport 
 // The whole detailed report of our own appslift.com, drawn with the cabinet's own cards. The report
 // comes from the server (page.tsx reads it as /api/geo/sample does), so its totals and answers are
 // in the first HTML, for readers and crawlers alike. Read-only: the answers open, nothing is
-// followed or bought. "Your plan" comes from the report alone (no crawler check here) and leads to
+// followed. "Your plan" comes from the report alone (no crawler check here) and leads to
 // the plan on the home page.
 
 const CHECK = "/#geo-check"
@@ -20,7 +20,7 @@ function PriceLine({ className = "" }: { className?: string }) {
   const m = useT(sampleReportNs)
   return (
     <p className={`text-sm leading-relaxed ${className}`}>
-      {m.priceLine(GEO_PRICES.research.label, CREDIT_DAYS)}
+      {m.priceLine}
     </p>
   )
 }

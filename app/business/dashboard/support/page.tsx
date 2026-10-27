@@ -6,7 +6,9 @@ import { card } from "../visibility/parts"
 
 // "Write to us": one message box, the account email shown (replies go there), and optionally the
 // site the message is about. Posts to /api/business/contact, which emails and pings us; the page
-// only says "sent" when the server says the email went out.
+// only says "sent" when the server says the email went out. ?site= picks a followed site; ?report=
+// (from "contact us and we'll run it for you", past the free report) starts the message with the
+// request for that site's report.
 
 const FALLBACK = "kiryl@itgrows.ai"
 
@@ -29,16 +31,27 @@ export default function SupportPage() {
   const [sent, setSent] = useState(false)
 
   useEffect(() => {
-    const wanted = new URLSearchParams(window.location.search).get("site") ?? ""
+    const params = new URLSearchParams(window.location.search)
+    const wanted = params.get("site") ?? ""
+    const report = (params.get("report") ?? "").trim().slice(0, 200)
+    // Said once the sites are in, so the box is filled in the same render as the list.
+    const prefill = () => {
+      if (report) setMessage((m) => m || `Please run the AI visibility report for ${report}.`)
+    }
     fetch("/api/geo/report", { cache: "no-store" })
       .then((r) => (r.ok ? r.json() : { sites: [] }))
       .then((j: { sites?: { domain: string }[] }) => {
         const domains = (j.sites ?? []).map((s) => s.domain)
         setSites(domains)
+        prefill()
         if (domains.includes(wanted)) setSite(wanted)
-        else if (domains.length === 1) setSite(domains[0])
+        // A request for another site's report is about that site, not the one already followed.
+        else if (domains.length === 1 && !report) setSite(domains[0])
       })
-      .catch(() => setSites([]))
+      .catch(() => {
+        setSites([])
+        prefill()
+      })
   }, [])
 
   async function send(e: React.FormEvent) {

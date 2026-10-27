@@ -4,16 +4,16 @@ import { useEffect, useState } from "react"
 
 // Google Ads conversions for GEO payments (account ItGrows, tag AW-18160234884). Mounted in the GEO
 // cabinet layout (app/business/dashboard/layout.tsx). Stripe brings the buyer back with ?cs=<Checkout
-// Session id>; this asks /api/geo/conversion what was paid and sends it once: "GEO report bought"
-// ($19.99) or "GEO plan bought" (the first payment), with the real amount and currency and the
-// session id as transaction_id, so Google counts a reload of the page only once. gtag runs under
+// Session id>; this asks /api/geo/conversion what was paid and sends it once: "GEO plan bought" (the
+// first payment), with the real amount and currency and the session id as transaction_id, so Google
+// counts a reload of the page only once. The detailed report is free since 27 Oct 2026: nothing is
+// sent for it here (its old "GEO report bought" action is no longer fired). gtag runs under
 // Google Consent Mode basic (app/layout.tsx): the call is queued and reaches Google only after "Accept".
 // The same payment goes to the Meta pixel "ItGrows.ai" as Purchase, with the session id as eventID;
 // the pixel loads only after "Accept" (components/consent/ConsentedTrackers.tsx), and without it
 // nothing is sent to Meta.
 
 const SEND_TO = {
-  report: "AW-18160234884/bfDCCKP15qYdEITjvNND",
   plan: "AW-18160234884/tFwGCPK47qYdEITjvNND",
 } as const
 
@@ -41,7 +41,7 @@ function send(p: Paid) {
   soon(() => {
     const fbq = (window as unknown as { fbq?: Fbq }).fbq
     if (typeof fbq !== "function") return false
-    fbq("track", "Purchase", { value: p.value, currency: p.currency, content_name: p.kind === "plan" ? "GEO plan" : "GEO report" }, { eventID: p.id })
+    fbq("track", "Purchase", { value: p.value, currency: p.currency, content_name: "GEO plan" }, { eventID: p.id })
     return true
   })
 }

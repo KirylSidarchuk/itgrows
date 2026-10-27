@@ -2,22 +2,23 @@ import Stripe from "stripe"
 import { db } from "@/lib/db"
 import { users } from "@/lib/db/schema"
 import { eq, sql, type SQL } from "drizzle-orm"
-import { GEO_PRICES, type GeoInterval } from "@/lib/geo-pricing"
+import { GEO_PRICES, usd, type GeoInterval } from "@/lib/geo-pricing"
 import { geoCheck, type PublicRun } from "@/lib/geo-check"
 import { sendOwner } from "@/lib/telegram"
 
-// ItGrows for Business — AI visibility. Two things are sold, both kept apart from the LinkedIn/X
-// plans on purpose: they never touch users.subscriptionPlan or users.subscriptionStatus (those gate
-// the LinkedIn/X cabinet). Prices and terms live in lib/geo-pricing.ts.
+// ItGrows for Business — AI visibility. One thing is sold, kept apart from the LinkedIn/X plans on
+// purpose: it never touches users.subscriptionPlan or users.subscriptionStatus (those gate the
+// LinkedIn/X cabinet). Prices and terms live in lib/geo-pricing.ts.
 //
-// - The detailed report for one site, paid once (plan "geo_research"): geo_follows.research_paid_at.
-//   Its price comes off the first plan payment within CREDIT_DAYS (geo_follows.research_credited_at
-//   records that it was used).
 // - The plan (plan "geo_business"), by the month (plus the one-time setup), 3 months upfront or a year: a paying
 //   customer is a geo_follows row with plan = 'paid' and plan_interval for the site they bought it for.
+//   A site bought on the plan page before it was followed is followed here once paid (followPaidSite).
+// - The detailed report is free since 27 Oct 2026 (one per account and connection, lib/geo-pricing.ts).
+//   Until then it was sold once per site (plan "geo_research", geo_follows.research_paid_at); a
+//   checkout of it opened before that still lands in the webhook and is honoured (unlockGeoResearch),
+//   but no new one is opened (/api/geo/research-checkout answers 410).
 //
-// Stripe prices are found by their lookup keys and created on first use; the $19.99 credit is one
-// coupon with a fixed id, also created on first use.
+// Stripe prices are found by their lookup keys and created on first use.
 
 export const GEO_PLAN = "geo_business"
 export const GEO_RESEARCH = "geo_research"
@@ -50,7 +51,7 @@ export function normaliseDomain(raw: unknown): string | null {
 
 // ── Stripe prices ───────────────────────────────────────────────────────────────────────────
 
-type PriceKind = "research" | "setup" | GeoInterval
+type PriceKind = "setup" | GeoInterval
 
 const PRODUCTS = {
   plan: {
@@ -65,17 +66,10 @@ const PRODUCTS = {
       "Your site and its indexes made ready for the AI assistants: crawler access, sitemaps, Bing and Google, the blog. Delivered as a launch report. One-time.",
     metadata: { product: GEO_PLAN, kind: "setup" },
   },
-  research: {
-    name: "AI visibility report",
-    description:
-      "20 questions your buyers ask, put to ChatGPT, Claude, Gemini and Perplexity three times each: every answer, who is named instead of you, and the sites the assistants cite. One-time.",
-    metadata: { product: GEO_RESEARCH },
-  },
 }
 
 /** The product a new price goes under: the plan's prices share the product of the monthly one. */
 async function productFor(stripe: Stripe, kind: PriceKind): Promise<string> {
-  if (kind === "research") return (await stripe.products.create(PRODUCTS.research)).id
   if (kind === "setup") return (await stripe.products.create(PRODUCTS.setup)).id
   if (kind === "month") return (await stripe.products.create(PRODUCTS.plan)).id
   const month = await stripe.prices.retrieve(await geoPriceId(stripe, "month"))
@@ -94,7 +88,7 @@ export async function geoPriceId(stripe: Stripe, kind: PriceKind): Promise<strin
       currency: "usd",
       unit_amount: p.cents,
       lookup_key: p.lookupKey,
-      metadata: { product: kind === "research" ? GEO_RESEARCH : GEO_PLAN, kind },
+      metadata: { product: GEO_PLAN, kind },
       ...("interval" in p ? { recurring: { interval: p.interval, interval_count: p.intervalCount } } : {}),
     })
     return price.id
@@ -104,30 +98,6 @@ export async function geoPriceId(stripe: Stripe, kind: PriceKind): Promise<strin
     if (again) return again
     throw err
   }
-}
-
-/** The report's price off the first plan payment: an amount-off coupon used once per subscription. */
-export const RESEARCH_COUPON = `itgrows-geo-research-credit-${GEO_PRICES.research.cents}`
-
-export async function researchCreditCoupon(stripe: Stripe): Promise<string> {
-  try {
-    return (await stripe.coupons.retrieve(RESEARCH_COUPON)).id
-  } catch (err) {
-    if ((err as { code?: string }).code !== "resource_missing") throw err
-  }
-  try {
-    await stripe.coupons.create({
-      id: RESEARCH_COUPON,
-      name: `AI visibility report credit (${GEO_PRICES.research.label})`,
-      amount_off: GEO_PRICES.research.cents,
-      currency: "usd",
-      duration: "once",
-      metadata: { product: GEO_PLAN, kind: "research_credit" },
-    })
-  } catch (err) {
-    if ((err as { code?: string }).code !== "resource_already_exists") throw err
-  }
-  return RESEARCH_COUPON
 }
 
 /** The user's Stripe customer (the same one the LinkedIn/X plans use), created if they have none. */
@@ -219,8 +189,10 @@ export async function geoPlanPaidBefore(stripe: Stripe, _userId: string, custome
 /** Mirror a GEO subscription's state onto the follow it was bought for. What is written is the
  *  subscription as Stripe has it now, not the event's copy: events come out of order and are retried,
  *  and an old "active" must not put a cancelled customer back on the plan. A subscription that has
- *  ended leaves the follow paid while another live one covers the same site. A failed lookup throws,
- *  so Stripe sends the event again. */
+ *  ended leaves the follow paid while another live one covers the same site. A site bought before it
+ *  was followed (the plan page) is followed first, once the plan is paid (followPaidSite), whichever
+ *  event says so first. A failed lookup, or a follow that may still pass, throws, so Stripe sends the
+ *  event again. */
 export async function syncGeoSubscription(eventSub: Stripe.Subscription, event: string) {
   const stripe = stripeClient()
   let sub: Stripe.Subscription
@@ -240,6 +212,7 @@ export async function syncGeoSubscription(eventSub: Stripe.Subscription, event: 
     if (other) current = other
   }
   const paid = PAID.has(current.status)
+  if (paid) await followPaidSite(current.id, userId, domain)
   const interval = paid ? geoSubscriptionInterval(current) : null
   await db.execute(sql`
     UPDATE geo_follows f SET plan = ${paid ? "paid" : "free"}, plan_interval = ${interval}
@@ -274,24 +247,60 @@ async function buyer(userId: string) {
   return `${u?.name ?? ""} ${u?.email ?? ""}`.trim()
 }
 
-/** The plan was bought: the follow becomes paid. The plan includes the detailed report, so the report
- *  is marked bought too (research_session "plan:<checkout>") and stays open after the plan ends; and
- *  its credit is marked used whether or not it was applied, so no credit appears later for a report
- *  that was never paid for on its own. Safe to replay: every column keeps its first value. */
+/** A site bought on the plan page before it was followed (/api/geo/checkout "add": the plan page only
+ *  had the VM read it, so no report is handed out before payment), once Stripe says the plan is paid
+ *  (syncGeoSubscription): the VM follows it now and queues its day-0 report (or answers with the one
+ *  made this week), as for a site followed before checkout, with no address and no slot (a paid report
+ *  is held to neither free-report limit). The site was read minutes ago, so this is quick. What may
+ *  pass (the VM down or slow, the assistants' API failing while the questions are worked out) throws,
+ *  so Stripe retries the event; what will not pass is left to Kiryl. Each case reaches him once per
+ *  subscription. Nothing to do for a site already followed, or for an account that no longer exists.
+ *  Several events of one payment may ask at once: the VM queues one report per site (geo_check/service.py
+ *  baseline takes a lock per site), so the others get the one just queued. */
+async function followPaidSite(subscriptionId: string, userId: string, domain: string) {
+  const [state] = rows(
+    await db.execute(sql`
+      SELECT EXISTS (SELECT 1 FROM users u WHERE u.id::text = ${userId}) AS account,
+             EXISTS (SELECT 1 FROM geo_follows f JOIN geo_sites s ON s.id = f.site_id
+                     WHERE f.user_id = ${userId} AND s.domain = ${domain}) AS followed`)
+  )
+  if (state?.account !== true || state.followed === true) return
+  const r = await geoCheck<PublicRun>("/baseline", { domain, user_id: userId }, 50_000).catch(() => ({
+    status: 504,
+    data: { error: "timeout" } as Partial<PublicRun> & { error?: string },
+  }))
+  if (r.status === 200 || r.status === 202) return
+  const error = r.data.error ?? String(r.status)
+  if (r.status === 400 || r.status === 429 || (r.status === 422 && error !== "questions_failed")) {
+    if (await firstTime(userId, "geo_plan_unfollowable", { session: subscriptionId, domain, error }))
+      await notifyOwner(
+        `⚠️ План GEO оплачен, но сайт не подключился (${error}) — подключить руками и запустить отчёт.\n👤 ${await buyer(userId)}\n🌐 ${domain}\nStripe: ${subscriptionId}`
+      )
+    return
+  }
+  if (await firstTime(userId, "geo_plan_follow_retry", { session: subscriptionId, domain, error }))
+    await notifyOwner(
+      `⚠️ План GEO оплачен, сайт пока не подключился (${error}) — Stripe повторит сам. Если не пройдёт за день — подключить руками.\n👤 ${await buyer(userId)}\n🌐 ${domain}\nStripe: ${subscriptionId}`
+    )
+  throw new Error(`geo-check /baseline ${r.status} ${error}`)
+}
+
+/** The plan was bought: the follow becomes paid (syncGeoSubscription, which first follows a site
+ *  bought unfollowed). The checkout is recorded on the follow (research_session "plan:<checkout>",
+ *  which geoPlanBeforeSql reads: the site's setup is paid) and stays after the plan ends. Safe to
+ *  replay: every column keeps its first value. */
 export async function geoPlanCheckoutCompleted(session: Stripe.Checkout.Session, sub: Stripe.Subscription, event: string) {
   await syncGeoSubscription(sub, event)
   const userId = sub.metadata?.userId ?? session.metadata?.userId
   const domain = sub.metadata?.domain ?? session.metadata?.domain
   if (!userId || !domain) return
-  const credit = (session.metadata?.researchCredit ?? sub.metadata?.researchCredit) === "1"
   await db.execute(sql`
     UPDATE geo_follows f SET research_paid_at = COALESCE(f.research_paid_at, now()),
-                             research_session = COALESCE(f.research_session, ${`plan:${session.id}`}),
-                             research_credited_at = COALESCE(f.research_credited_at, now())
+                             research_session = COALESCE(f.research_session, ${`plan:${session.id}`})
     FROM geo_sites s
     WHERE s.id = f.site_id AND f.user_id = ${userId} AND s.domain = ${domain}`)
   const interval = geoSubscriptionInterval(sub) ?? "month"
-  if (!(await firstTime(userId, "geo_checkout_completed", { session: session.id, domain, interval, credit }))) return
+  if (!(await firstTime(userId, "geo_checkout_completed", { session: session.id, domain, interval }))) return
   const price = GEO_PRICES[interval]
   // metadata.setup = "0": the site had the plan before, so its one-time setup was not charged again.
   const setupCharged = (session.metadata?.setup ?? sub.metadata?.setup) !== "0"
@@ -304,13 +313,15 @@ export async function geoPlanCheckoutCompleted(session: Stripe.Checkout.Session,
           ? `${price.label}/мес + запуск ${GEO_PRICES.setup.label}`
           : `${price.label}/мес, запуск уже был оплачен раньше`
   await notifyOwner(
-    `💳 GEO оплачен: ${terms}${credit ? `, зачтён отчёт −${GEO_PRICES.research.label}` : ""}\n👤 ${await buyer(userId)}\n🌐 ${domain}\nДальше: подключить сайт клиента и поставить статьи.`
+    `💳 GEO оплачен: ${terms}\n👤 ${await buyer(userId)}\n🌐 ${domain}\nДальше: подключить сайт клиента и поставить статьи.`
   )
 }
 
-/** The detailed report was paid for: unlock it on the follow. A site the buyer does not follow yet
- *  (a site past the one the account includes) is followed first through the VM, which also queues
- *  its report; /api/geo/research-checkout has the VM read that site before the payment, so this call only writes.
+/** A report checkout opened before the report became free (27 Oct 2026) was paid: open it on the
+ *  follow, as it was sold. No new checkout of it is opened (/api/geo/research-checkout answers 410),
+ *  so this only honours a payment already on its way; the report itself is free now, so it opens the
+ *  same either way. A site the buyer does not follow yet is followed first through the VM, which also
+ *  queues its report (no address passed: a bought report is not held to the one-per-connection limit).
  *  What may pass — the VM down or slow, the assistants' API failing while the questions are worked
  *  out — throws, so Stripe retries the event; what will not pass is left to Kiryl to refund. Each case
  *  reaches him once per payment. Safe to replay; a second payment for a site already unlocked is
@@ -319,6 +330,7 @@ export async function unlockGeoResearch(session: Stripe.Checkout.Session, paidAt
   const userId = session.metadata?.userId
   let domain = normaliseDomain(session.metadata?.domain)
   if (!userId || !domain) return
+  const paid = usd(session.amount_total ?? 0)
   const findFollow = async (d: string) =>
     rows(
       await db.execute(sql`SELECT f.id FROM geo_follows f JOIN geo_sites s ON s.id = f.site_id
@@ -339,14 +351,14 @@ export async function unlockGeoResearch(session: Stripe.Checkout.Session, paidAt
       // is in, the report is not, so Kiryl refunds or sorts it out by hand.
       if (await firstTime(userId, "geo_research_unfollowable", { session: session.id, domain, error }))
         await notifyOwner(
-          `⚠️ Отчёт ${GEO_PRICES.research.label} оплачен, но сайт не подключился (${error}) — вернуть деньги или разобраться.\n👤 ${await buyer(userId)}\n🌐 ${domain}\nStripe: ${session.id}`
+          `⚠️ Старый платный отчёт (${paid}) оплачен, но сайт не подключился (${error}) — вернуть деньги или разобраться.\n👤 ${await buyer(userId)}\n🌐 ${domain}\nStripe: ${session.id}`
         )
       return
     }
     if (r.status !== 200 && r.status !== 202) {
       if (await firstTime(userId, "geo_research_retry", { session: session.id, domain, error }))
         await notifyOwner(
-          `⚠️ Отчёт ${GEO_PRICES.research.label} оплачен, сайт пока не подключился (${error}) — Stripe повторит сам. Если не пройдёт за день — вернуть деньги.\n👤 ${await buyer(userId)}\n🌐 ${domain}\nStripe: ${session.id}`
+          `⚠️ Старый платный отчёт (${paid}) оплачен, сайт пока не подключился (${error}) — Stripe повторит сам. Если не пройдёт за день — вернуть деньги.\n👤 ${await buyer(userId)}\n🌐 ${domain}\nStripe: ${session.id}`
         )
       throw new Error(`geo-check /baseline ${r.status} ${error}`)
     }
@@ -367,7 +379,7 @@ export async function unlockGeoResearch(session: Stripe.Checkout.Session, paidAt
     const [prev] = rows(await db.execute(sql`SELECT research_session FROM geo_follows WHERE id = ${follow.id as string}::uuid`))
     if (prev?.research_session !== session.id && (await firstTime(userId, "geo_research_duplicate", { session: session.id, domain })))
       await notifyOwner(
-        `⚠️ Второй платёж за уже открытый отчёт — вернуть ${GEO_PRICES.research.label}.\n👤 ${await buyer(userId)}\n🌐 ${domain}\nStripe: ${session.id}`
+        `⚠️ Второй платёж за уже открытый отчёт — вернуть ${paid}.\n👤 ${await buyer(userId)}\n🌐 ${domain}\nStripe: ${session.id}`
       )
     return
   }
@@ -375,7 +387,7 @@ export async function unlockGeoResearch(session: Stripe.Checkout.Session, paidAt
     .execute(sql`INSERT INTO analytics_events (user_id, event, path, props)
       VALUES (${userId}, 'geo_research_paid', '/stripe/webhook', ${JSON.stringify({ domain, session: session.id })}::jsonb)`)
     .catch(() => {})
-  await notifyOwner(`💳 GEO отчёт ${GEO_PRICES.research.label} оплачен\n👤 ${await buyer(userId)}\n🌐 ${domain}`)
+  await notifyOwner(`💳 GEO: оплачен старый платный отчёт (${paid}), открыт\n👤 ${await buyer(userId)}\n🌐 ${domain}`)
 }
 
 export async function notifyOwner(text: string) {
