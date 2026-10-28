@@ -25,14 +25,14 @@ const en = {
   ],
   readTitle: "How to read the result",
   readBody:
-    "<b>Named</b> means the answer mentions your business. <b>Cited</b> means it links your site as a source. The sites cited instead of you are where the assistants learn who exists in your field: directories, comparison pages, your competitors' own pages. One run is a first look, because answers vary between asks; the full report asks 20 questions to ChatGPT, Claude, Gemini and Perplexity, three times each.",
+    "<b>Named</b> means the answer mentions your business. <b>Cited</b> means it links your site as a source. The sites cited instead of you are where the assistants learn who exists in your field: directories, comparison pages, your competitors' own pages. One run is a first look, because answers vary between asks; the free report asks 20 questions to ChatGPT, Claude, Gemini and Perplexity, and on the plan we ask each of them three times every two weeks.",
   notNamedTitle: "If you are not named",
   tipGuide: "Start with the whole path: <link>how to get your business recommended by ChatGPT, Claude, Gemini and Perplexity</link>.",
   tipCrawler: "Check that crawlers can read you: <link>AI crawler check</link> — it tests your sitemap pages against your robots.txt for each crawler.",
   tipCauses: "See the usual causes: <link>why ChatGPT names your competitors and not you</link>.",
   faqAccount: {
     q: "Do I need an account for the check?",
-    a: "Not to run it: the check takes about 30 seconds without an account. It asks ChatGPT and Perplexity five questions and shows two answers in full right away; to open all five, you create an account, which costs nothing. With the account we also build the detailed report for your site (20 questions × 4 assistants × 3 asks): the full report is free once you create an account.",
+    a: "Not to run it: the check takes about 30 seconds without an account. It asks ChatGPT and Perplexity five questions and shows two answers in full right away; to open all five, you create an account, which costs nothing. With the account we also build the detailed report for your site (20 questions × 4 assistants): the full report is free once you create an account.",
   },
   faq: [
     {
@@ -41,7 +41,7 @@ const en = {
     },
     {
       q: "Why do the answers change if I run it again?",
-      a: "Assistants do not answer the same question the same way twice. That is why one check is a first look, and the full report asks every question three times and compares checks only on the same questions.",
+      a: "Assistants do not answer the same question the same way twice. That is why one check is a first look. On the plan we ask every question three times, every two weeks, and compare checks only on the same questions.",
     },
     {
       q: "Can anyone guarantee that ChatGPT will recommend my business?",
@@ -71,14 +71,14 @@ export default defineMessages(en, {
     ],
     readTitle: "So lesen Sie das Ergebnis",
     readBody:
-      "<b>Genannt</b> heißt: Die Antwort erwähnt Ihr Unternehmen. <b>Zitiert</b> heißt: Sie verlinkt Ihre Website als Quelle. Die Websites, die statt Ihrer zitiert werden, sind die Orte, an denen die Assistenten lernen, wer in Ihrer Branche existiert: Verzeichnisse, Vergleichsseiten, die eigenen Seiten Ihrer Wettbewerber. Ein Durchlauf ist ein erster Eindruck, denn die Antworten schwanken von Anfrage zu Anfrage; der vollständige Bericht stellt ChatGPT, Claude, Gemini und Perplexity 20 Fragen, jede dreimal.",
+      "<b>Genannt</b> heißt: Die Antwort erwähnt Ihr Unternehmen. <b>Zitiert</b> heißt: Sie verlinkt Ihre Website als Quelle. Die Websites, die statt Ihrer zitiert werden, sind die Orte, an denen die Assistenten lernen, wer in Ihrer Branche existiert: Verzeichnisse, Vergleichsseiten, die eigenen Seiten Ihrer Wettbewerber. Ein Durchlauf ist ein erster Eindruck, denn die Antworten schwanken von Anfrage zu Anfrage; der kostenlose Bericht stellt ChatGPT, Claude, Gemini und Perplexity 20 Fragen, und im Plan stellen wir jede davon alle zwei Wochen dreimal.",
     notNamedTitle: "Wenn Sie nicht genannt werden",
     tipGuide: "Beginnen Sie mit dem ganzen Weg: <link>wie Ihr Unternehmen von ChatGPT, Claude, Gemini und Perplexity empfohlen wird</link> (Leitfaden auf Englisch).",
     tipCrawler: "Prüfen Sie, ob Crawler Sie lesen können: <link>KI-Crawler-Check</link> – er testet Ihre Sitemap-Seiten für jeden Crawler gegen Ihre robots.txt.",
     tipCauses: "Die üblichen Ursachen: <link>warum ChatGPT Ihre Wettbewerber nennt und Sie nicht</link> (auf Englisch).",
     faqAccount: {
       q: "Brauche ich für den Check ein Konto?",
-      a: "Zum Starten nicht: Der Check läuft ohne Konto und dauert etwa 30 Sekunden. Er stellt ChatGPT und Perplexity fünf Fragen und zeigt zwei Antworten sofort vollständig; um alle fünf zu öffnen, legen Sie ein Konto an – das kostet nichts. Mit dem Konto erstellen wir außerdem den ausführlichen Bericht für Ihre Website (20 Fragen × 4 Assistenten × 3 Durchläufe): Der vollständige Bericht ist kostenlos, sobald Sie ein Konto anlegen.",
+      a: "Zum Starten nicht: Der Check läuft ohne Konto und dauert etwa 30 Sekunden. Er stellt ChatGPT und Perplexity fünf Fragen und zeigt zwei Antworten sofort vollständig; um alle fünf zu öffnen, legen Sie ein Konto an – das kostet nichts. Mit dem Konto erstellen wir außerdem den ausführlichen Bericht für Ihre Website (20 Fragen × 4 Assistenten): Der vollständige Bericht ist kostenlos, sobald Sie ein Konto anlegen.",
     },
     faq: [
       {
@@ -87,7 +87,7 @@ export default defineMessages(en, {
       },
       {
         q: "Warum ändern sich die Antworten, wenn ich den Check wiederhole?",
-        a: "Assistenten beantworten dieselbe Frage nie zweimal gleich. Deshalb ist ein einzelner Check ein erster Eindruck; der vollständige Bericht stellt jede Frage dreimal und vergleicht Messungen nur anhand derselben Fragen.",
+        a: "Assistenten beantworten dieselbe Frage nie zweimal gleich. Deshalb ist ein einzelner Check ein erster Eindruck. Im Plan stellen wir jede Frage alle zwei Wochen dreimal und vergleichen Messungen nur anhand derselben Fragen.",
       },
       {
         q: "Kann jemand garantieren, dass ChatGPT mein Unternehmen empfiehlt?",
@@ -115,14 +115,14 @@ export default defineMessages(en, {
     ],
     readTitle: "Comment lire le résultat",
     readBody:
-      "<b>Mentionné</b> signifie que la réponse parle de votre entreprise. <b>Cité</b> signifie qu’elle donne votre site en lien, comme source. Les sites cités à votre place sont ceux où les assistants apprennent qui existe dans votre secteur : annuaires, comparatifs, pages de vos concurrents. Un seul passage n’est qu’un premier aperçu, car les réponses varient d’une fois à l’autre ; le rapport complet pose 20 questions à ChatGPT, Claude, Gemini et Perplexity, trois fois chacune.",
+      "<b>Mentionné</b> signifie que la réponse parle de votre entreprise. <b>Cité</b> signifie qu’elle donne votre site en lien, comme source. Les sites cités à votre place sont ceux où les assistants apprennent qui existe dans votre secteur : annuaires, comparatifs, pages de vos concurrents. Un seul passage n’est qu’un premier aperçu, car les réponses varient d’une fois à l’autre ; le rapport gratuit pose 20 questions à ChatGPT, Claude, Gemini et Perplexity, et avec l’abonnement nous posons chacune trois fois toutes les deux semaines.",
     notNamedTitle: "Si vous n’êtes pas mentionné",
     tipGuide: "Commencez par la démarche complète : <link>comment faire recommander votre entreprise par ChatGPT, Claude, Gemini et Perplexity</link> (guide en anglais).",
     tipCrawler: "Vérifiez que les robots peuvent vous lire : <link>test des robots d’IA</link> — il confronte les pages de votre sitemap à votre robots.txt, robot par robot.",
     tipCauses: "Les causes habituelles : <link>pourquoi ChatGPT mentionne vos concurrents et pas vous</link> (en anglais).",
     faqAccount: {
       q: "Faut-il un compte pour le test ?",
-      a: "Pas pour le lancer : le test se fait sans compte, en 30 secondes environ. Il pose cinq questions à ChatGPT et Perplexity et affiche tout de suite deux réponses en entier ; pour ouvrir les cinq, vous créez un compte, ce qui ne coûte rien. Avec ce compte, nous établissons aussi le rapport détaillé de votre site (20 questions × 4 assistants × 3 requêtes) : le rapport complet est gratuit dès que vous créez un compte.",
+      a: "Pas pour le lancer : le test se fait sans compte, en 30 secondes environ. Il pose cinq questions à ChatGPT et Perplexity et affiche tout de suite deux réponses en entier ; pour ouvrir les cinq, vous créez un compte, ce qui ne coûte rien. Avec ce compte, nous établissons aussi le rapport détaillé de votre site (20 questions × 4 assistants) : le rapport complet est gratuit dès que vous créez un compte.",
     },
     faq: [
       {
@@ -131,7 +131,7 @@ export default defineMessages(en, {
       },
       {
         q: "Pourquoi les réponses changent-elles si je relance le test ?",
-        a: "Les assistants ne répondent jamais deux fois de la même façon à la même question. C’est pourquoi un test n’est qu’un premier aperçu, et le rapport complet pose chaque question trois fois et ne compare les mesures que sur les mêmes questions.",
+        a: "Les assistants ne répondent jamais deux fois de la même façon à la même question. C’est pourquoi un test n’est qu’un premier aperçu. Avec l’abonnement, nous posons chaque question trois fois toutes les deux semaines et ne comparons les mesures que sur les mêmes questions.",
       },
       {
         q: "Quelqu’un peut-il garantir que ChatGPT recommandera mon entreprise ?",
@@ -159,14 +159,14 @@ export default defineMessages(en, {
     ],
     readTitle: "Cómo leer el resultado",
     readBody:
-      "<b>Mencionado</b> significa que la respuesta nombra su empresa. <b>Citado</b> significa que enlaza su sitio como fuente. Los sitios citados en lugar del suyo son donde los asistentes aprenden quién existe en su sector: directorios, páginas comparativas, las propias páginas de sus competidores. Una sola ejecución es una primera impresión, porque las respuestas varían de una vez a otra; el informe completo hace 20 preguntas a ChatGPT, Claude, Gemini y Perplexity, tres veces cada una.",
+      "<b>Mencionado</b> significa que la respuesta nombra su empresa. <b>Citado</b> significa que enlaza su sitio como fuente. Los sitios citados en lugar del suyo son donde los asistentes aprenden quién existe en su sector: directorios, páginas comparativas, las propias páginas de sus competidores. Una sola ejecución es una primera impresión, porque las respuestas varían de una vez a otra; el informe gratuito hace 20 preguntas a ChatGPT, Claude, Gemini y Perplexity, y con el plan hacemos cada una tres veces cada dos semanas.",
     notNamedTitle: "Si no le mencionan",
     tipGuide: "Empiece por el camino completo: <link>cómo conseguir que ChatGPT, Claude, Gemini y Perplexity recomienden su empresa</link> (guía en inglés).",
     tipCrawler: "Compruebe que los rastreadores pueden leer su sitio: <link>comprobación de rastreadores de IA</link>; prueba las páginas de su sitemap contra su robots.txt para cada rastreador.",
     tipCauses: "Vea las causas habituales: <link>por qué ChatGPT menciona a sus competidores y no a usted</link> (en inglés).",
     faqAccount: {
       q: "¿Necesito una cuenta para la comprobación?",
-      a: "Para hacerla, no: la comprobación funciona sin cuenta, en unos 30 segundos. Hace cinco preguntas a ChatGPT y Perplexity y muestra al momento dos respuestas completas; para abrir las cinco, cree una cuenta, que no cuesta nada. Con esa cuenta elaboramos también el informe detallado de su sitio (20 preguntas × 4 asistentes × 3 consultas): el informe completo es gratuito en cuanto cree una cuenta.",
+      a: "Para hacerla, no: la comprobación funciona sin cuenta, en unos 30 segundos. Hace cinco preguntas a ChatGPT y Perplexity y muestra al momento dos respuestas completas; para abrir las cinco, cree una cuenta, que no cuesta nada. Con esa cuenta elaboramos también el informe detallado de su sitio (20 preguntas × 4 asistentes): el informe completo es gratuito en cuanto cree una cuenta.",
     },
     faq: [
       {
@@ -175,7 +175,7 @@ export default defineMessages(en, {
       },
       {
         q: "¿Por qué cambian las respuestas si repito la comprobación?",
-        a: "Los asistentes no responden dos veces igual a la misma pregunta. Por eso una comprobación es una primera impresión, y el informe completo hace cada pregunta tres veces y solo compara mediciones con las mismas preguntas.",
+        a: "Los asistentes no responden dos veces igual a la misma pregunta. Por eso una comprobación es una primera impresión. Con el plan hacemos cada pregunta tres veces cada dos semanas y solo comparamos mediciones con las mismas preguntas.",
       },
       {
         q: "¿Puede alguien garantizar que ChatGPT recomiende mi empresa?",
@@ -203,14 +203,14 @@ export default defineMessages(en, {
     ],
     readTitle: "Как читать результат",
     readBody:
-      "<b>Назван</b> — ответ упоминает вашу компанию. <b>Процитирован</b> — ответ ссылается на ваш сайт как на источник. Сайты, которые цитируют вместо вашего, — это места, где ассистенты узнают, кто есть в вашей сфере: каталоги, страницы сравнений, собственные страницы ваших конкурентов. Один прогон — лишь первый взгляд, потому что ответы меняются от запроса к запросу; полный отчёт задаёт ChatGPT, Claude, Gemini и Perplexity 20 вопросов, каждый по три раза.",
+      "<b>Назван</b> — ответ упоминает вашу компанию. <b>Процитирован</b> — ответ ссылается на ваш сайт как на источник. Сайты, которые цитируют вместо вашего, — это места, где ассистенты узнают, кто есть в вашей сфере: каталоги, страницы сравнений, собственные страницы ваших конкурентов. Один прогон — лишь первый взгляд, потому что ответы меняются от запроса к запросу; бесплатный отчёт задаёт ChatGPT, Claude, Gemini и Perplexity 20 вопросов, а по подписке мы каждые две недели задаём каждый из них три раза.",
     notNamedTitle: "Если вас не называют",
     tipGuide: "Начните с полного пути: <link>как добиться, чтобы ChatGPT, Claude, Gemini и Perplexity рекомендовали ваш бизнес</link> (руководство на английском).",
     tipCrawler: "Проверьте, могут ли краулеры вас прочитать: <link>проверка ИИ-краулеров</link> — она сверяет страницы из вашего sitemap с вашим robots.txt для каждого краулера.",
     tipCauses: "Типичные причины: <link>почему ChatGPT называет ваших конкурентов, а не вас</link> (на английском).",
     faqAccount: {
       q: "Нужен ли аккаунт для проверки?",
-      a: "Чтобы запустить проверку, аккаунт не нужен: она идёт примерно 30 секунд, задаёт ChatGPT и Perplexity пять вопросов и сразу показывает два ответа полностью. Чтобы открыть все пять, вы создаёте аккаунт — это бесплатно. С аккаунтом мы также составим подробный отчёт по вашему сайту (20 вопросов × 4 ассистента × 3 запроса): полный отчёт бесплатный — достаточно создать аккаунт.",
+      a: "Чтобы запустить проверку, аккаунт не нужен: она идёт примерно 30 секунд, задаёт ChatGPT и Perplexity пять вопросов и сразу показывает два ответа полностью. Чтобы открыть все пять, вы создаёте аккаунт — это бесплатно. С аккаунтом мы также составим подробный отчёт по вашему сайту (20 вопросов × 4 ассистента): полный отчёт бесплатный — достаточно создать аккаунт.",
     },
     faq: [
       {
@@ -219,7 +219,7 @@ export default defineMessages(en, {
       },
       {
         q: "Почему ответы меняются, если запустить проверку ещё раз?",
-        a: "Ассистенты не отвечают на один и тот же вопрос дважды одинаково. Поэтому одна проверка — это первый взгляд, а полный отчёт задаёт каждый вопрос три раза и сравнивает замеры только по одним и тем же вопросам.",
+        a: "Ассистенты не отвечают на один и тот же вопрос дважды одинаково. Поэтому одна проверка — это первый взгляд. По подписке мы каждые две недели задаём каждый вопрос три раза и сравниваем замеры только по одним и тем же вопросам.",
       },
       {
         q: "Может ли кто-то гарантировать, что ChatGPT будет рекомендовать мой бизнес?",

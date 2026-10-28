@@ -4,7 +4,8 @@
 //
 // - The quick check on the site (5 questions x ChatGPT + Perplexity): two answers open without an
 //   account, all five once one is created.
-// - Detailed report (20 questions x 4 assistants x 3 asks): free, whole, once an account is created,
+// - Detailed report (20 questions x 4 assistants, one ask each; 3 asks for a site on the plan, as its
+//   check every two weeks): free, whole, once an account is created,
 //   for REPORT_SITES site per account and one per connection (the VM, geo_check/service.py
 //   baseline(), refuses a second day-0 report asked from an address that already had one for another
 //   site: "report_ip_used"). Past either limit the cabinet says "contact us and we'll run it for

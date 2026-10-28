@@ -64,7 +64,7 @@ function readyEmail(
   const href = `${REPORT}?site=${encodeURIComponent(domain)}`
   const subject = `${domain}: named in ${s.named} of ${s.of} AI answers`
   const html = wrap(`<p>Hi ${esc(first)},</p>
-<p>Your AI visibility report for <strong>${esc(domain)}</strong> is ready. We asked ChatGPT, Claude, Gemini and Perplexity ${questions} questions your buyers ask, ${samples} times each.</p>
+<p>Your AI visibility report for <strong>${esc(domain)}</strong> is ready. We asked ChatGPT, Claude, Gemini and Perplexity ${questions} questions your buyers ask, ${samples === 1 ? "once each" : `${samples} times each`}.</p>
 <div style="background:#f8f7f6;border-radius:12px;padding:16px 18px;margin:18px 0">
   <div style="font-size:30px;font-weight:800;line-height:1.1;color:#7c3aed">${s.named} <span style="color:#94a3b8;font-size:18px">of ${s.of}</span></div>
   <div style="color:#555;font-size:13px;margin-top:2px">answers named ${who}</div>

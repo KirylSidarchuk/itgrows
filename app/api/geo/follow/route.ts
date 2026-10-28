@@ -10,7 +10,8 @@ import { sendOwner } from "@/lib/telegram"
 import { visitSource } from "@/lib/visit-source"
 
 // Follow a site from the AI-visibility cabinet. The VM records the follow and queues the day-0
-// report (20 questions x 4 assistants x 3 samples), or returns the one already made this week.
+// report (20 questions x 4 assistants, 1 sample for a free sign-up, 3 for a client we set up by hand),
+// or returns the one already made this week.
 //
 // A site the user already follows is answered from the database (the domain and the status of its
 // latest run) without asking the VM: /baseline queues a new day-0 report once the last one is a week

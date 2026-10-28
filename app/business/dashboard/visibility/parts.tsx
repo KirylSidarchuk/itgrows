@@ -227,6 +227,8 @@ export function Banner({ pending }: { pending: NonNullable<SiteReport["pending"]
   const queuedMin = (now - new Date(pending.createdAt).getTime()) / 60000
   const waiting = pending.status === "queued" && queuedMin > 2
   const weekly = pending.kind === "weekly"
+  // The time grows with the asks: 240 (3 asks each) take about 6 minutes, 80 (one each) about 3.
+  const minutes = Math.max(3, Math.ceil(1 + total / 50))
   return (
     <section className="rounded-2xl bg-violet-50 border border-violet-200 p-5">
       <p className="font-bold text-violet-900">
@@ -235,7 +237,9 @@ export function Banner({ pending }: { pending: NonNullable<SiteReport["pending"]
       <p className="text-sm text-violet-900/80 mt-1 leading-relaxed">
         {waiting
           ? "Many reports are running today. Yours starts as soon as there is room — we'll email you when it's ready."
-          : `${pending.questions} buyer questions × ${pending.engines.length} assistants, ${pending.samples} asks each, because answers vary. About 10 minutes; we'll email you.`}
+          : pending.samples > 1
+            ? `${pending.questions} buyer questions × ${pending.engines.length} assistants, ${pending.samples} asks each, because answers vary. About 10 minutes; we'll email you.`
+            : `${pending.questions} buyer questions × ${pending.engines.length} assistants, each asked once. About ${minutes} minutes; we'll email you.`}
       </p>
       {!waiting && (
         <>
@@ -310,8 +314,8 @@ export function Hero({ report }: { report: Report }) {
       </div>
       {snip && (
         <figure className="mt-4 rounded-xl border border-violet-100 bg-violet-50/60 p-4">
-          <blockquote className="text-sm text-slate-800 leading-relaxed">“{plain(snip.text)}”</blockquote>
-          <figcaption className="text-xs text-slate-500 mt-2">
+          <blockquote className="text-sm text-slate-800 leading-relaxed break-words">“{plain(snip.text)}”</blockquote>
+          <figcaption className="text-xs text-slate-500 mt-2 break-words">
             {LABEL[snip.e]}, asked “{snip.q}”
           </figcaption>
         </figure>
@@ -537,7 +541,7 @@ export function NamedInstead({ summary, you, firstLook }: { summary: Summary; yo
   const top = summary.named_instead.slice(0, 8)
   const max = Math.max(summary.named, ...top.map((r) => r.count), 1)
   return (
-    <section className={card}>
+    <section className={`${card} min-w-0`}>
       <h2 className="font-bold text-lg">Named instead of you{firstLook ? " (first look)" : ""}</h2>
       <p className="text-xs text-slate-500 mt-1 leading-relaxed">
         Businesses the assistants named for your questions, counted like you: answers out of {summary.of}.
@@ -548,8 +552,8 @@ export function NamedInstead({ summary, you, firstLook }: { summary: Summary; yo
         <ul className="mt-4 space-y-3">
           <li>
             <div className="flex items-center justify-between gap-3 text-sm">
-              <span className="font-bold text-violet-700 truncate">You · {you}</span>
-              <span className="font-bold text-violet-700 tabular-nums">{summary.named}</span>
+              <span className="min-w-0 font-bold text-violet-700 truncate">You · {you}</span>
+              <span className="shrink-0 font-bold text-violet-700 tabular-nums">{summary.named}</span>
             </div>
             <div className="mt-1 h-2 rounded-full bg-violet-50 overflow-hidden">
               <div className="h-full bg-violet-600 rounded-full" style={{ width: `${(summary.named / max) * 100}%` }} />
@@ -558,8 +562,8 @@ export function NamedInstead({ summary, you, firstLook }: { summary: Summary; yo
           {top.map((r) => (
             <li key={r.name}>
               <div className="flex items-center justify-between gap-3 text-sm">
-                <span className="font-medium truncate">{r.name}</span>
-                <span className="font-semibold text-slate-600 tabular-nums">{r.count}</span>
+                <span className="min-w-0 font-medium truncate">{r.name}</span>
+                <span className="shrink-0 font-semibold text-slate-600 tabular-nums">{r.count}</span>
               </div>
               <div className="mt-1 h-2 rounded-full bg-slate-100 overflow-hidden">
                 <div className="h-full bg-slate-400 rounded-full" style={{ width: `${(r.count / max) * 100}%` }} />
@@ -591,7 +595,7 @@ export function Sources({ summary }: { summary: Summary }) {
   const list = (summary.sources ?? []).slice(0, 10)
   const own = summary.own_cited ?? 0
   return (
-    <section className={card}>
+    <section className={`${card} min-w-0`}>
       <h2 className="font-bold text-lg">Sites the assistants rely on</h2>
       <p className="text-xs text-slate-500 mt-1">Cited as sources for your questions: what the assistants read before they answer.</p>
       <div className={`mt-4 rounded-xl px-4 py-3 text-sm font-semibold ${own ? "bg-violet-50 text-violet-800" : "bg-[#f8f7f6] text-slate-700"}`}>
@@ -604,8 +608,9 @@ export function Sources({ summary }: { summary: Summary }) {
           {list.map((s) => (
             <li key={s.domain} className="py-2.5">
               <div className="flex items-center justify-between gap-3">
-                <span className="flex items-center gap-2 min-w-0">
-                  <a href={`https://${s.domain}`} target="_blank" rel="noopener noreferrer nofollow" className="text-sm font-semibold truncate hover:text-violet-700">
+                {/* On a phone a long domain and its tag wrap onto two lines instead of widening the card. */}
+                <span className="flex flex-wrap items-center gap-x-2 gap-y-0.5 min-w-0">
+                  <a href={`https://${s.domain}`} target="_blank" rel="noopener noreferrer nofollow" className="max-w-full text-sm font-semibold truncate hover:text-violet-700">
                     {s.domain}
                   </a>
                   {TYPE[s.type] && (
@@ -618,7 +623,7 @@ export function Sources({ summary }: { summary: Summary }) {
                   {s.count} answer{s.count === 1 ? "" : "s"}
                 </span>
               </div>
-              {TYPE[s.type] && <p className="text-xs text-slate-500 mt-0.5">{TYPE[s.type].what}</p>}
+              {TYPE[s.type] && <p className="text-xs text-slate-500 mt-0.5 break-words">{TYPE[s.type].what}</p>}
             </li>
           ))}
         </ul>
@@ -687,7 +692,7 @@ function Drawer({ row, engines, samples, asked, onClose }: { row: Row; engines: 
                         : `Not named in ${a.samples} ask${a.samples === 1 ? "" : "s"}`}
                   </span>
                 </div>
-                {a.snippet && <p className="text-sm text-slate-700 mt-2 leading-relaxed">“{plain(a.snippet)}”</p>}
+                {a.snippet && <p className="text-sm text-slate-700 mt-2 leading-relaxed break-words">“{plain(a.snippet)}”</p>}
                 {a.named_instead.length > 0 && (
                   <div className="mt-2.5">
                     <p className="text-[11px] font-bold uppercase tracking-wide text-slate-500 mb-1">{a.named ? "Also named" : "Named instead"}</p>
@@ -774,17 +779,18 @@ export function WhereNamed({
         return (
           <div key={gi} className="mt-2">
             {grouped && (
+              // The count is labelled, so a closed group that names you nowhere reads as a result, not as empty.
               <button
                 type="button"
                 onClick={() => setOpen((o) => ({ ...o, [gi]: !o[gi] }))}
-                className="w-full flex items-center justify-between gap-3 py-2.5 text-left text-sm font-semibold"
+                className="w-full flex flex-col sm:flex-row sm:items-center sm:justify-between gap-0.5 sm:gap-3 py-2.5 text-left text-sm font-semibold"
                 aria-expanded={isOpen}
               >
                 <span>
                   {isOpen ? "▾" : "▸"} {g.title}
                 </span>
-                <span className="text-slate-500 font-medium tabular-nums">
-                  {named} of {pairs}
+                <span className="pl-4 sm:pl-0 text-xs sm:text-sm text-slate-500 font-medium tabular-nums">
+                  {g.rows.length} question{g.rows.length === 1 ? "" : "s"} · named in {named} of {pairs} answer{pairs === 1 ? "" : "s"}
                 </span>
               </button>
             )}
@@ -849,7 +855,7 @@ export function Crawlers({ audit }: { audit: Audit | "failed" | undefined }) {
         </p>
       ) : (
         // Full width on the page: the crawlers and the numbers side by side on a wide screen.
-        <div className="mt-4 grid lg:grid-cols-2 gap-x-8 gap-y-4 items-start">
+        <div className="mt-4 grid grid-cols-1 lg:grid-cols-2 gap-x-8 gap-y-4 items-start">
           <ul className="space-y-2">
             {audit.robots.bots.map((b) => {
               const live = audit.liveFetch.find((l) => l.bot === b.bot)
@@ -1318,46 +1324,57 @@ function doneList(steps: Step[], work: PlanWork) {
   return out.sort((a, b) => (b.date ?? "").localeCompare(a.date ?? ""))
 }
 
+const LINE = "text-sm text-slate-600 leading-relaxed mt-1 break-words"
+const LEAD = "font-semibold text-[#1b1916]"
+const CHIP = "text-[10px] font-bold uppercase tracking-wide rounded-full px-2 py-0.5"
+const STEP_N = "shrink-0 mt-px w-6 h-6 rounded-full grid place-items-center text-xs font-bold bg-violet-50 text-violet-700"
+
+/** Where a step stands, for a client: the chip and its link. */
+function StatusChip({ status }: { status: StepStatus }) {
+  return (
+    <>
+      <span className={`${CHIP} ${STATUS_TONE[status.tone]}`}>{status.text}</span>
+      {status.link && (
+        <a
+          href={status.link.href}
+          {...(status.link.external ? { target: "_blank", rel: "noopener" } : {})}
+          className="text-xs font-semibold text-violet-700 hover:underline"
+        >
+          {status.link.text}
+        </a>
+      )}
+    </>
+  )
+}
+
 function PlanStep({ n, step, status }: { n: number; step: Step; status: StepStatus | null }) {
-  const line = "text-sm text-slate-600 leading-relaxed mt-1 break-words"
-  const lead = "font-semibold text-[#1b1916]"
-  const chip = "text-[10px] font-bold uppercase tracking-wide rounded-full px-2 py-0.5"
   return (
     <li className="rounded-xl border border-black/[0.07] bg-white p-4">
       <div className="flex gap-3">
-        <span className="shrink-0 mt-px w-6 h-6 rounded-full grid place-items-center text-xs font-bold bg-violet-50 text-violet-700">{n}</span>
+        <span className={STEP_N}>{n}</span>
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-1.5">
-            <span className={`${chip} ${TAG_TONE[step.kind]}`}>{step.tag}</span>
-            {step.optional && <span className={`${chip} text-slate-500 bg-[#f8f7f6]`}>Optional</span>}
-            {status && <span className={`${chip} ${STATUS_TONE[status.tone]}`}>{status.text}</span>}
-            {status?.link && (
-              <a
-                href={status.link.href}
-                {...(status.link.external ? { target: "_blank", rel: "noopener" } : {})}
-                className="text-xs font-semibold text-violet-700 hover:underline"
-              >
-                {status.link.text}
-              </a>
-            )}
+            <span className={`${CHIP} ${TAG_TONE[step.kind]}`}>{step.tag}</span>
+            {step.optional && <span className={`${CHIP} text-slate-500 bg-[#f8f7f6]`}>Optional</span>}
+            {status && <StatusChip status={status} />}
           </div>
           <p className="mt-1.5 text-sm font-semibold leading-snug break-words">{step.title}</p>
           {status?.week && <p className="mt-1 text-xs font-semibold text-slate-700">{status.week}</p>}
-          <p className={`${line} mt-1.5`}>
-            <span className={lead}>We do: </span>
+          <p className={`${LINE} mt-1.5`}>
+            <span className={LEAD}>We do: </span>
             {step.we}
           </p>
-          <p className={line}>
-            <span className={lead}>Why: </span>
+          <p className={LINE}>
+            <span className={LEAD}>Why: </span>
             {step.why}
           </p>
-          <p className={line}>
-            <span className={lead}>What it should change: </span>
+          <p className={LINE}>
+            <span className={LEAD}>What it should change: </span>
             {step.change}
           </p>
           {step.you && (
-            <p className={line}>
-              <span className={lead}>From you: </span>
+            <p className={LINE}>
+              <span className={LEAD}>From you: </span>
               {step.you}
             </p>
           )}
@@ -1367,9 +1384,89 @@ function PlanStep({ n, step, status }: { n: number; step: Step; status: StepStat
   )
 }
 
+// The Article steps for the buyer questions (planSteps' "gap:" steps) differ only in the question and
+// its evidence. From ARTICLES_AS_ONE of them on they are one card: what we do, what it should change
+// and what we need from you said once, then the questions, each with its evidence and, for a client,
+// where its article stands. Every other step (fixes, profiles, the answer to a competitor's page,
+// media) keeps its own card.
+const ARTICLES_AS_ONE = 3
+const ARTICLES_SHOWN = 3
+type PlanItem = { step: Step } | { articles: Step[] }
+
+function planItems(steps: Step[]): PlanItem[] {
+  const articles = steps.filter((st) => st.id.startsWith("gap:"))
+  if (articles.length < ARTICLES_AS_ONE) return steps.map((step) => ({ step }))
+  const out: PlanItem[] = []
+  for (const step of steps) {
+    if (!step.id.startsWith("gap:")) out.push({ step })
+    else if (step === articles[0]) out.push({ articles })
+  }
+  return out
+}
+
+function ArticlesStep({ n, steps, work, client }: { n: number; steps: Step[]; work: PlanWork | null | undefined; client: boolean }) {
+  const [all, setAll] = useState(false)
+  const shown = all ? steps : steps.slice(0, ARTICLES_SHOWN)
+  return (
+    <li className="rounded-xl border border-black/[0.07] bg-white p-4">
+      <div className="flex gap-3">
+        <span className={STEP_N}>{n}</span>
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-1.5">
+            <span className={`${CHIP} ${TAG_TONE.write}`}>{steps[0].tag}</span>
+          </div>
+          <p className="mt-1.5 text-sm font-semibold leading-snug">Articles for {steps.length} of your buyer questions</p>
+          <p className={`${LINE} mt-1.5`}>
+            <span className={LEAD}>We do: </span>
+            We research and write an article for each question, and publish it on your site.
+          </p>
+          <p className={LINE}>
+            <span className={LEAD}>Why: </span>
+            {client ? "On day 0 the assistants" : "The assistants"} named others for these questions, not you.
+          </p>
+          <ol className="mt-2 space-y-2">
+            {shown.map((st) => {
+              const status = client ? stepStatus(st, work) : null
+              return (
+                <li key={st.id} className="rounded-lg bg-[#f8f7f6] px-3 py-2.5">
+                  {status && (
+                    <div className="mb-1 flex flex-wrap items-center gap-1.5">
+                      <StatusChip status={status} />
+                    </div>
+                  )}
+                  <p className="text-sm font-semibold leading-snug break-words">“{st.q}”</p>
+                  {status?.week && <p className="mt-0.5 text-xs font-semibold text-slate-700">{status.week}</p>}
+                  <p className="mt-0.5 text-xs text-slate-600 leading-relaxed break-words">{st.why}</p>
+                </li>
+              )
+            })}
+          </ol>
+          {steps.length > ARTICLES_SHOWN && (
+            <button type="button" onClick={() => setAll((v) => !v)} aria-expanded={all} className="mt-2 text-xs font-semibold text-violet-700 hover:underline">
+              {all ? "Show fewer" : `Show all ${steps.length} questions`}
+            </button>
+          )}
+          <p className={`${LINE} mt-2`}>
+            <span className={LEAD}>What it should change: </span>
+            The assistants get a page of yours that answers each question directly. The check every two weeks shows whether their answers
+            start naming you.
+          </p>
+          {steps[0].you && (
+            <p className={LINE}>
+              <span className={LEAD}>From you: </span>
+              {steps[0].you}
+            </p>
+          )}
+        </div>
+      </div>
+    </li>
+  )
+}
+
 /** The end of the report: what we do for the site, step by step. For an account not on the plan,
- *  "Start the plan" and "Talk to us", with its own prices (/api/geo/report price); for a client, where
- *  each step stands and what is done. The public sample names no price. */
+ *  "Start the plan" and "Talk to us", with its own prices (/api/geo/report price), right under the
+ *  plan's summary and before the steps; for a client, where each step stands and what is done. The
+ *  public sample names no price. The article steps for the buyer questions are one card (planItems). */
 export function YourPlan({
   site,
   steps,
@@ -1390,6 +1487,7 @@ export function YourPlan({
   const planHref = sample ? PLAN_HOME : `/business/dashboard/plan?site=${encodeURIComponent(site.domain)}`
   const p = sample ? null : (prices ?? null)
   const yearOff = `${Math.round(YEAR_DISCOUNT * 100)}% off`
+  const items = planItems(steps)
   return (
     <section id="your-plan" className={`${card} scroll-mt-24`}>
       <h2 className="font-bold text-lg">Your plan</h2>
@@ -1404,43 +1502,10 @@ export function YourPlan({
                 ? `What we would do for ${site.domain}, most important first: why, from the report, and what it should change.`
                 : `What we do for ${site.domain} on the plan, most important first: why, from your report, and what it should change.`}
           </p>
-          {steps.length === 0 && <p className="text-sm text-slate-600 mt-4">Nothing in this report stands out as urgent.</p>}
-          {steps.length > 0 && (
-            <ol className="mt-4 space-y-3">
-              {steps.map((st, i) => (
-                <PlanStep key={st.id} n={i + 1} step={st} status={client ? stepStatus(st, site.work) : null} />
-              ))}
-            </ol>
-          )}
-          {done.length > 0 && (
-            <div className="mt-5">
-              <p className={label}>Done</p>
-              <ul className="mt-2 rounded-xl border border-black/[0.07] bg-white divide-y divide-black/[0.06]">
-                {done.map((d) => (
-                  <li key={d.key} className="flex items-start gap-3 px-4 py-2.5 text-sm">
-                    <span aria-hidden className="mt-px font-bold text-green-700">✓</span>
-                    <span className="min-w-0 flex-1 break-words">
-                      {d.href ? (
-                        <a href={d.href} target="_blank" rel="noopener" className="hover:underline">
-                          {d.title}
-                        </a>
-                      ) : (
-                        d.title
-                      )}
-                    </span>
-                    <span className="shrink-0 text-xs text-slate-500 tabular-nums">{fmtDate(d.date)}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-          {client ? (
-            <a href={YOUR_ARTICLES} className="mt-4 inline-block text-sm font-semibold text-violet-700 hover:underline">
-              Your articles →
-            </a>
-          ) : (
-            <div className="mt-5 rounded-xl bg-[#1b1916] text-white p-5 sm:p-6">
-              <p className="font-extrabold text-lg">We do all of this on the plan</p>
+          {/* The offer comes right under the summary, not after every step. */}
+          {!client && (
+            <div className="mt-4 rounded-xl bg-[#1b1916] text-white p-5 sm:p-6">
+              <p className="font-extrabold text-lg">{steps.length > 0 ? "We do every step below on the plan" : "We do all of this on the plan"}</p>
               <p className="text-sm text-white/80 mt-1.5 leading-relaxed">
                 The articles, the fixes and the places the assistants quote, for {sample ? "your site" : site.domain}; and every two weeks all 20
                 questions put to all 4 assistants, 3 times each, so you see what moved.
@@ -1476,6 +1541,51 @@ export function YourPlan({
                 </a>
               )}
             </div>
+          )}
+          {steps.length === 0 && <p className="text-sm text-slate-600 mt-4">Nothing in this report stands out as urgent.</p>}
+          {items.length > 0 && (
+            <ol className="mt-4 space-y-3">
+              {items.map((it, i) =>
+                "articles" in it ? (
+                  <ArticlesStep key="articles" n={i + 1} steps={it.articles} work={site.work} client={client} />
+                ) : (
+                  <PlanStep key={it.step.id} n={i + 1} step={it.step} status={client ? stepStatus(it.step, site.work) : null} />
+                )
+              )}
+            </ol>
+          )}
+          {done.length > 0 && (
+            <div className="mt-5">
+              <p className={label}>Done</p>
+              <ul className="mt-2 rounded-xl border border-black/[0.07] bg-white divide-y divide-black/[0.06]">
+                {done.map((d) => (
+                  <li key={d.key} className="flex items-start gap-3 px-4 py-2.5 text-sm">
+                    <span aria-hidden className="mt-px font-bold text-green-700">✓</span>
+                    <span className="min-w-0 flex-1 break-words">
+                      {d.href ? (
+                        <a href={d.href} target="_blank" rel="noopener" className="hover:underline">
+                          {d.title}
+                        </a>
+                      ) : (
+                        d.title
+                      )}
+                    </span>
+                    <span className="shrink-0 text-xs text-slate-500 tabular-nums">{fmtDate(d.date)}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {client ? (
+            <a href={YOUR_ARTICLES} className="mt-4 inline-block text-sm font-semibold text-violet-700 hover:underline">
+              Your articles →
+            </a>
+          ) : (
+            steps.length > 0 && (
+              <a href={planHref} className="mt-4 inline-block text-sm font-semibold text-violet-700 hover:underline">
+                {sample ? "See the plan →" : "Start the plan →"}
+              </a>
+            )
           )}
         </>
       )}
@@ -1519,11 +1629,13 @@ export function ReportSections({
       {fromDay0 && (
         <p className="text-xs font-semibold text-slate-600 px-1">
           From {readOnly ? "the" : "your"} day-0 report · {fmtDate(full.finishedAt)} · {full.rows.length} questions × {full.engines.length} assistants,{" "}
-          {full.samples} asks each
+          {full.samples === 1 ? "each asked once" : `${full.samples} asks each`}
         </p>
       )}
       {fromDay0 && showBase && <Hero report={full} />}
-      <div className="grid xl:grid-cols-2 gap-5">
+      {/* One column below xl: without it the column takes the width of the longest line and the cards
+          run off a phone's screen. */}
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
         <NamedInstead summary={full.summary} you={you} />
         <Sources summary={full.summary} />
       </div>
@@ -1677,7 +1789,7 @@ export function RunView({
       {back}
       <Hero report={run} />
       {run.kind === "weekly" && <WhatChanged changes={run.summary.changes ?? []} title="What changed in that check" />}
-      <div className="grid xl:grid-cols-2 gap-5">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
         <NamedInstead summary={run.summary} you={site.business || site.domain} />
         <Sources summary={run.summary} />
       </div>
@@ -1748,7 +1860,7 @@ export function AddSite({
     <section className={card}>
       <h2 className="font-bold text-lg">{first ? "See what AI assistants say about you" : "Add a site"}</h2>
       <p className="text-sm text-slate-600 mt-1 leading-relaxed">
-        We put 20 questions your buyers ask to ChatGPT, Claude, Gemini and Perplexity, 3 times each. About 10 minutes. Free.
+        We put 20 questions your buyers ask to ChatGPT, Claude, Gemini and Perplexity. It takes a few minutes and it&apos;s free.
         {reportUsed && (
           <>
             {" "}

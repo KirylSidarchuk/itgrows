@@ -14,9 +14,9 @@ const en = {
 
   badge: "Sample report",
   h1: (domain: string) => `A real report: ${domain}`,
-  intro: "An app-store-optimisation agency (our own company). This is what the detailed report shows for your site.",
+  intro: "An app-store-optimisation agency (our own company). This is what the detailed report shows for your site. Here every question was asked 3 times, as on the plan every two weeks; your free report asks each question once.",
   checked: (date: string, questions: number, assistants: number, asks: number) =>
-    `Checked ${date} · ${questions} questions × ${assistants} assistants, ${asks} asks each`,
+    `Checked ${date} · ${questions} questions × ${assistants} assistants, ${asks === 1 ? "each asked once" : `${asks} asks each`}`,
   checkMySite: "Check my site",
 
   unavailable: "The sample report isn't available right now.",
@@ -33,7 +33,7 @@ export default defineMessages(en, {
 
     badge: "Beispielbericht",
     h1: (domain) => `Ein echter Bericht: ${domain}`,
-    intro: "Eine Agentur für App-Store-Optimierung (unser eigenes Unternehmen). So sieht der ausführliche Bericht für Ihre Website aus.",
+    intro: "Eine Agentur für App-Store-Optimierung (unser eigenes Unternehmen). So sieht der ausführliche Bericht für Ihre Website aus. Hier wurde jede Frage dreimal gestellt, wie im Plan alle zwei Wochen; Ihr kostenloser Bericht stellt jede Frage einmal.",
     checked: (date, questions, assistants, asks) =>
       `Geprüft am ${date} · ${questions} ${plural("de", questions, { one: "Frage", other: "Fragen" })} × ${assistants} ${plural("de", assistants, { one: "Assistent", other: "Assistenten" })}, je ${asks} ${plural("de", asks, { one: "Durchlauf", other: "Durchläufe" })}`,
     checkMySite: "Website prüfen",
@@ -51,7 +51,7 @@ export default defineMessages(en, {
 
     badge: "Exemple de rapport",
     h1: (domain) => `Un vrai rapport : ${domain}`,
-    intro: "Une agence d’optimisation pour les stores d’applications (notre propre entreprise). Voici ce que le rapport détaillé montre pour votre site.",
+    intro: "Une agence d’optimisation pour les stores d’applications (notre propre entreprise). Voici ce que le rapport détaillé montre pour votre site. Ici, chaque question a été posée 3 fois, comme avec l’abonnement toutes les deux semaines ; votre rapport gratuit pose chaque question une fois.",
     checked: (date, questions, assistants, asks) =>
       `Vérifié le ${date} · ${questions} ${plural("fr", questions, { one: "question", other: "questions" })} × ${assistants} ${plural("fr", assistants, { one: "assistant", other: "assistants" })}, ${asks} ${plural("fr", asks, { one: "requête", other: "requêtes" })} par question`,
     checkMySite: "Vérifier mon site",
@@ -69,7 +69,7 @@ export default defineMessages(en, {
 
     badge: "Informe de ejemplo",
     h1: (domain) => `Un informe real: ${domain}`,
-    intro: "Una agencia de optimización para tiendas de aplicaciones (nuestra propia empresa). Esto es lo que muestra el informe detallado de su sitio.",
+    intro: "Una agencia de optimización para tiendas de aplicaciones (nuestra propia empresa). Esto es lo que muestra el informe detallado de su sitio. Aquí cada pregunta se hizo 3 veces, como con el plan cada dos semanas; su informe gratuito hace cada pregunta una vez.",
     checked: (date, questions, assistants, asks) =>
       `Comprobado el ${date} · ${questions} ${plural("es", questions, { one: "pregunta", other: "preguntas" })} × ${assistants} ${plural("es", assistants, { one: "asistente", other: "asistentes" })}, ${asks} ${plural("es", asks, { one: "consulta", other: "consultas" })} por pregunta`,
     checkMySite: "Comprobar mi sitio",
@@ -87,7 +87,7 @@ export default defineMessages(en, {
 
     badge: "Пример отчёта",
     h1: (domain) => `Настоящий отчёт: ${domain}`,
-    intro: "Агентство по оптимизации приложений в магазинах (наша собственная компания). Вот что подробный отчёт показывает для вашего сайта.",
+    intro: "Агентство по оптимизации приложений в магазинах (наша собственная компания). Вот что подробный отчёт показывает для вашего сайта. Здесь каждый вопрос задан 3 раза, как по подписке раз в две недели; ваш бесплатный отчёт задаёт каждый вопрос один раз.",
     checked: (date, questions, assistants, asks) =>
       `Проверено ${date} · ${plural("ru", questions, { one: `${questions} вопрос`, few: `${questions} вопроса`, many: `${questions} вопросов`, other: `${questions} вопроса` })} × ${plural("ru", assistants, { one: `${assistants} ассистент`, few: `${assistants} ассистента`, many: `${assistants} ассистентов`, other: `${assistants} ассистента` })}, ${plural("ru", asks, { one: `по ${asks} запросу`, few: `по ${asks} запроса`, many: `по ${asks} запросов`, other: `по ${asks} запроса` })} на каждый`,
     checkMySite: "Проверить мой сайт",

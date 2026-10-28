@@ -429,7 +429,7 @@ export default function VisibilityPage() {
                   title={`First results · ${site.teaser.rows.length} questions, ${site.teaser.engines.length} assistants`}
                 />
               )}
-              <div className="grid xl:grid-cols-2 gap-5">
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
                 <Crawlers audit={audit} />
                 <YourPlan site={site} steps={[]} ready={false} mode={client ? "client" : "offer"} prices={price} />
               </div>

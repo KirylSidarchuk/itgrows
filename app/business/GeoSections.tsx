@@ -3,7 +3,8 @@
 // ends on "we do it", never on "how to". Built to be read in seconds; the detail sits in native
 // <details>, so it stays in the server-rendered HTML for crawlers.
 // Every number here comes from our own checks and code (Oct 2026), not from an industry study:
-//  - 240 = 20 questions x 4 assistants x 3 asks (geo_check baseline and the paid weekly run)
+//  - 240 = 20 questions x 4 assistants x 3 asks (the plan's day-0 report and its check every two
+//    weeks; the free report asks once: 80)
 //  - 11 crawlers = the bot user agents geo_onboard_check.py fetches a new client's site as
 //  - 3-5 sources = client_writer.py research step; findability = geo_findability.py (Mondays)
 //  - findings = the 19 Oct audit of three client sites plus our own robots.txt (fixed 21 Oct)

@@ -83,7 +83,7 @@ const en = {
       q: "Is ItGrows a LinkedIn tool or an AI visibility service?",
       a: "An AI visibility (GEO) service for businesses. The LinkedIn and X post drafting you may have seen is a separate product for founders and experts, at itgrows.ai/personal.",
     },
-    { q: "Which assistants do you measure?", a: "ChatGPT, Claude, Gemini and Perplexity, through their own APIs with web search on, three asks per question, because their answers vary." },
+    { q: "Which assistants do you measure?", a: "ChatGPT, Claude, Gemini and Perplexity, through their own APIs with web search on. On the plan every question is asked three times, because their answers vary; the free report asks each question once." },
     { q: "Can you guarantee that ChatGPT will name us?", a: "No, and distrust anyone who does. No assistant sells organic placement or publishes how it chooses. We do the work that makes you findable and quotable, and we show you every two weeks what changed." },
     {
       q: "What can you actually prove?",
@@ -107,7 +107,7 @@ const en = {
     },
     {
       q: "What does the detailed report cost?",
-      a: `Nothing: the full report is free once you create an account, for one site per account. The quick check on this page is free too and takes about 30 seconds: 5 questions to ChatGPT and Perplexity, with two answers shown in full right away and all five once you create an account. With the account we also build the detailed report for your site — 20 questions to ChatGPT, Claude, Gemini and Perplexity, 3 asks each — and all of it is open: every answer, everyone named instead of you, the sites the assistants quote, and our plan for your site. A real one: itgrows.ai${sample}.`,
+      a: `Nothing: the full report is free once you create an account, for one site per account. The quick check on this page is free too and takes about 30 seconds: 5 questions to ChatGPT and Perplexity, with two answers shown in full right away and all five once you create an account. With the account we also build the detailed report for your site — 20 questions to ChatGPT, Claude, Gemini and Perplexity — and all of it is open: every answer, everyone named instead of you, the sites the assistants quote, and our plan for your site. A real one: itgrows.ai${sample}.`,
     },
     {
       q: "What does the plan cost?",
@@ -197,7 +197,7 @@ export default defineMessages(en, {
         q: "Ist ItGrows ein LinkedIn-Tool oder ein Dienst für KI-Sichtbarkeit?",
         a: "Ein Dienst für KI-Sichtbarkeit (GEO) für Unternehmen. Die Entwürfe für LinkedIn- und X-Posts, die Sie vielleicht kennen, sind ein separates Produkt für Gründer und Experten unter itgrows.ai/personal.",
       },
-      { q: "Welche Assistenten messen Sie?", a: "ChatGPT, Claude, Gemini und Perplexity, über ihre eigenen APIs mit aktivierter Websuche, drei Anfragen pro Frage, weil ihre Antworten schwanken." },
+      { q: "Welche Assistenten messen Sie?", a: "ChatGPT, Claude, Gemini und Perplexity, über ihre eigenen APIs mit aktivierter Websuche. Im Plan stellen wir jede Frage dreimal, weil ihre Antworten schwanken; der kostenlose Bericht stellt jede Frage einmal." },
       {
         q: "Können Sie garantieren, dass ChatGPT uns nennt?",
         a: "Nein, und misstrauen Sie jedem, der das tut. Kein Assistent verkauft organische Platzierungen oder legt offen, wie er auswählt. Wir erledigen die Arbeit, die Sie auffindbar und zitierfähig macht, und zeigen Ihnen alle zwei Wochen, was sich verändert hat.",
@@ -224,7 +224,7 @@ export default defineMessages(en, {
       },
       {
         q: "Was kostet der ausführliche Bericht?",
-        a: `Nichts: Der vollständige Bericht ist kostenlos, sobald Sie ein Konto anlegen, für eine Website pro Konto. Der Schnellcheck auf dieser Seite ist ebenfalls kostenlos und dauert etwa 30 Sekunden: 5 Fragen an ChatGPT und Perplexity; zwei Antworten sehen Sie sofort vollständig, alle fünf, sobald Sie ein Konto anlegen. Mit dem Konto erstellen wir außerdem den ausführlichen Bericht für Ihre Website — 20 Fragen an ChatGPT, Claude, Gemini und Perplexity, je 3 Anfragen —, und alles darin ist offen: jede Antwort, alle, die statt Ihnen genannt werden, die Websites, die die Assistenten zitieren, und unser Maßnahmenplan für Ihre Website. Ein echtes Beispiel (auf Englisch): itgrows.ai${sample}.`,
+        a: `Nichts: Der vollständige Bericht ist kostenlos, sobald Sie ein Konto anlegen, für eine Website pro Konto. Der Schnellcheck auf dieser Seite ist ebenfalls kostenlos und dauert etwa 30 Sekunden: 5 Fragen an ChatGPT und Perplexity; zwei Antworten sehen Sie sofort vollständig, alle fünf, sobald Sie ein Konto anlegen. Mit dem Konto erstellen wir außerdem den ausführlichen Bericht für Ihre Website — 20 Fragen an ChatGPT, Claude, Gemini und Perplexity —, und alles darin ist offen: jede Antwort, alle, die statt Ihnen genannt werden, die Websites, die die Assistenten zitieren, und unser Maßnahmenplan für Ihre Website. Ein echtes Beispiel (auf Englisch): itgrows.ai${sample}.`,
       },
       {
         q: "Was kostet der Plan?",
@@ -317,7 +317,7 @@ export default defineMessages(en, {
         q: "ItGrows est-il un outil LinkedIn ou un service de visibilité dans l’IA ?",
         a: "Un service de visibilité dans l’IA (GEO) pour les entreprises. La rédaction de posts LinkedIn et X que vous avez peut-être vue est un produit distinct, pour les fondateurs et les experts, sur itgrows.ai/personal.",
       },
-      { q: "Quels assistants mesurez-vous ?", a: "ChatGPT, Claude, Gemini et Perplexity, via leurs propres API avec la recherche web activée, trois requêtes par question, car leurs réponses varient." },
+      { q: "Quels assistants mesurez-vous ?", a: "ChatGPT, Claude, Gemini et Perplexity, via leurs propres API avec la recherche web activée. Avec l’abonnement, chaque question est posée trois fois, car leurs réponses varient ; le rapport gratuit pose chaque question une fois." },
       {
         q: "Pouvez-vous garantir que ChatGPT nous mentionnera ?",
         a: "Non, et méfiez-vous de quiconque le promet. Aucun assistant ne vend de placement organique ni ne publie la façon dont il choisit. Nous faisons le travail qui vous rend trouvable et citable, et nous vous montrons toutes les deux semaines ce qui a changé.",
@@ -344,7 +344,7 @@ export default defineMessages(en, {
       },
       {
         q: "Combien coûte le rapport détaillé ?",
-        a: `Rien : le rapport complet est gratuit dès que vous créez un compte, pour un site par compte. La vérification rapide de cette page est gratuite elle aussi et prend environ 30 secondes : 5 questions à ChatGPT et Perplexity ; deux réponses s’affichent en entier tout de suite, les cinq dès que vous créez un compte. Avec ce compte, nous établissons aussi le rapport détaillé de votre site — 20 questions à ChatGPT, Claude, Gemini et Perplexity, 3 requêtes chacune —, et tout y est consultable : chaque réponse, tous ceux qui sont mentionnés à votre place, les sites que citent les assistants et notre plan d’action pour votre site. Un vrai rapport (en anglais) : itgrows.ai${sample}.`,
+        a: `Rien : le rapport complet est gratuit dès que vous créez un compte, pour un site par compte. La vérification rapide de cette page est gratuite elle aussi et prend environ 30 secondes : 5 questions à ChatGPT et Perplexity ; deux réponses s’affichent en entier tout de suite, les cinq dès que vous créez un compte. Avec ce compte, nous établissons aussi le rapport détaillé de votre site — 20 questions à ChatGPT, Claude, Gemini et Perplexity —, et tout y est consultable : chaque réponse, tous ceux qui sont mentionnés à votre place, les sites que citent les assistants et notre plan d’action pour votre site. Un vrai rapport (en anglais) : itgrows.ai${sample}.`,
       },
       {
         q: "Combien coûte l’abonnement ?",
@@ -437,7 +437,7 @@ export default defineMessages(en, {
         q: "¿ItGrows es una herramienta para LinkedIn o un servicio de visibilidad en IA?",
         a: "Un servicio de visibilidad en IA (GEO) para empresas. La redacción de publicaciones de LinkedIn y X que quizá conozca es un producto aparte para fundadores y expertos, en itgrows.ai/personal.",
       },
-      { q: "¿Qué asistentes miden?", a: "ChatGPT, Claude, Gemini y Perplexity, a través de sus propias API con la búsqueda web activada, tres consultas por pregunta, porque sus respuestas varían." },
+      { q: "¿Qué asistentes miden?", a: "ChatGPT, Claude, Gemini y Perplexity, a través de sus propias API con la búsqueda web activada. Con el plan hacemos cada pregunta tres veces, porque sus respuestas varían; el informe gratuito hace cada pregunta una vez." },
       {
         q: "¿Pueden garantizar que ChatGPT nos mencione?",
         a: "No, y desconfíe de quien lo haga. Ningún asistente vende posiciones orgánicas ni publica cómo elige. Hacemos el trabajo que permite encontrarle y citarle, y cada dos semanas le mostramos qué ha cambiado.",
@@ -464,7 +464,7 @@ export default defineMessages(en, {
       },
       {
         q: "¿Cuánto cuesta el informe detallado?",
-        a: `Nada: el informe completo es gratuito en cuanto cree una cuenta, para un sitio por cuenta. La comprobación rápida de esta página también es gratuita y tarda unos 30 segundos: 5 preguntas a ChatGPT y Perplexity; dos respuestas se ven completas al momento y las cinco, en cuanto cree una cuenta. Con esa cuenta elaboramos también el informe detallado de su sitio — 20 preguntas a ChatGPT, Claude, Gemini y Perplexity, 3 consultas cada una —, y todo queda a la vista: cada respuesta, todas las empresas mencionadas en su lugar, los sitios que citan los asistentes y nuestro plan de acción para su sitio. Un ejemplo real (en inglés): itgrows.ai${sample}.`,
+        a: `Nada: el informe completo es gratuito en cuanto cree una cuenta, para un sitio por cuenta. La comprobación rápida de esta página también es gratuita y tarda unos 30 segundos: 5 preguntas a ChatGPT y Perplexity; dos respuestas se ven completas al momento y las cinco, en cuanto cree una cuenta. Con esa cuenta elaboramos también el informe detallado de su sitio — 20 preguntas a ChatGPT, Claude, Gemini y Perplexity —, y todo queda a la vista: cada respuesta, todas las empresas mencionadas en su lugar, los sitios que citan los asistentes y nuestro plan de acción para su sitio. Un ejemplo real (en inglés): itgrows.ai${sample}.`,
       },
       {
         q: "¿Cuánto cuesta el plan?",
@@ -557,7 +557,7 @@ export default defineMessages(en, {
         q: "ItGrows — это инструмент для LinkedIn или сервис видимости в ИИ?",
         a: "Сервис видимости в ИИ (GEO) для бизнеса. Черновики постов для LinkedIn и X, которые вы могли видеть, — отдельный продукт для основателей и экспертов на itgrows.ai/personal.",
       },
-      { q: "Какие ассистенты вы измеряете?", a: "ChatGPT, Claude, Gemini и Perplexity — через их собственные API с включённым веб-поиском, по три запроса на вопрос, потому что их ответы меняются." },
+      { q: "Какие ассистенты вы измеряете?", a: "ChatGPT, Claude, Gemini и Perplexity — через их собственные API с включённым веб-поиском. По подписке мы задаём каждый вопрос три раза, потому что их ответы меняются; бесплатный отчёт задаёт каждый вопрос один раз." },
       {
         q: "Можете ли вы гарантировать, что ChatGPT будет нас называть?",
         a: "Нет, и не доверяйте тем, кто это гарантирует. Ни один ассистент не продаёт органические места и не раскрывает, как делает выбор. Мы делаем работу, благодаря которой вас можно найти и процитировать, и раз в две недели показываем, что изменилось.",
@@ -584,7 +584,7 @@ export default defineMessages(en, {
       },
       {
         q: "Сколько стоит подробный отчёт?",
-        a: `Ничего: полный отчёт бесплатный — достаточно создать аккаунт, один сайт на аккаунт. Быстрая проверка на этой странице тоже бесплатна и занимает около 30 секунд: 5 вопросов к ChatGPT и Perplexity; два ответа вы видите целиком сразу, все пять — когда создадите аккаунт. С аккаунтом мы также составим подробный отчёт по вашему сайту — 20 вопросов к ChatGPT, Claude, Gemini и Perplexity, по 3 запроса на каждый, — и в нём открыто всё: каждый ответ, все, кого называют вместо вас, сайты, которые цитируют ассистенты, и наш план действий для вашего сайта. Настоящий отчёт (на английском): itgrows.ai${sample}.`,
+        a: `Ничего: полный отчёт бесплатный — достаточно создать аккаунт, один сайт на аккаунт. Быстрая проверка на этой странице тоже бесплатна и занимает около 30 секунд: 5 вопросов к ChatGPT и Perplexity; два ответа вы видите целиком сразу, все пять — когда создадите аккаунт. С аккаунтом мы также составим подробный отчёт по вашему сайту — 20 вопросов к ChatGPT, Claude, Gemini и Perplexity — и в нём открыто всё: каждый ответ, все, кого называют вместо вас, сайты, которые цитируют ассистенты, и наш план действий для вашего сайта. Настоящий отчёт (на английском): itgrows.ai${sample}.`,
       },
       {
         q: "Сколько стоит подписка?",

@@ -162,7 +162,7 @@ export default function TermsPage() {
               are shown in full right away; the other answers open once you create an account. The number of quick checks per visitor per day is limited.
             </p>
             <p>
-              <strong>The detailed report</strong> asks 20 buyer questions to ChatGPT, Claude, Gemini and Perplexity, three times each, and shows
+              <strong>The detailed report</strong> asks 20 buyer questions to ChatGPT, Claude, Gemini and Perplexity (once each in the free report; on the plan, three times each, every two weeks) and shows
               every answer, who is named instead of you, which sites the assistants cite, and our plan for the site. It is <strong>free</strong>: when
               you create an account we build the whole report for one site. There is one free report per account and per internet connection; for
               another site, write to us and we run it for you. The plan includes the full report for its site.

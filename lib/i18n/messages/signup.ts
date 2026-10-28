@@ -22,10 +22,10 @@ const en = {
     "First your account, then your site: the plan is built from its report, and you see your price after your free report. Then you choose how to pay: by the month plus a one-time setup, or 3 months upfront or a year with the setup free.",
   // From the quick check with its site: the account opens the check's other answers
   answersTitle: (site: string) => `Open all 5 answers for ${site}`,
-  answersLead: "No card needed. Right after sign-up: the other 3 answers and everyone named instead of you. In about 10 minutes: 20 questions across ChatGPT, Claude, Gemini and Perplexity, 3 asks each. The full report is free once you create an account.",
+  answersLead: "No card needed. Right after sign-up: the other 3 answers and everyone named instead of you. In a few minutes: 20 questions across ChatGPT, Claude, Gemini and Perplexity. The full report is free once you create an account.",
   // From the quick check without a site
   reportTitle: (site: string) => (site ? `Your detailed AI report for ${site}` : "Your detailed AI report"),
-  reportLead: "No card needed. We put 20 buyer questions to ChatGPT, Claude, Gemini and Perplexity, 3 times each: every answer, who is named instead of you, the sites they quote, and our plan for your site. The full report is free once you create an account.",
+  reportLead: "No card needed. We put 20 buyer questions to ChatGPT, Claude, Gemini and Perplexity: every answer, who is named instead of you, the sites they quote, and our plan for your site. The full report is free once you create an account.",
   // LinkedIn/X trial: <b> is bold. The other languages call only the quick check and the detailed
   // report free (owner's rule for the translated site), never the account or the trial: they name the
   // trial and "no card".
@@ -92,9 +92,9 @@ export default defineMessages(en, {
     planLead:
       "Zuerst Ihr Konto, dann Ihre Website: Der Plan baut auf dem Bericht zu Ihrer Website auf, und Ihren Preis sehen Sie nach Ihrem kostenlosen Bericht. Danach wählen Sie, wie Sie zahlen: monatlich plus einmalige Einrichtung, oder 3 Monate im Voraus bzw. ein Jahr, jeweils ohne Einrichtungsgebühr.",
     answersTitle: (site) => `Alle 5 Antworten für ${site} öffnen`,
-    answersLead: "Keine Kreditkarte nötig. Direkt nach der Registrierung: die übrigen 3 Antworten und alle, die statt Ihnen genannt werden. Nach etwa 10 Minuten: 20 Fragen an ChatGPT, Claude, Gemini und Perplexity, jede dreimal gestellt. Der vollständige Bericht ist kostenlos, sobald Sie ein Konto anlegen.",
+    answersLead: "Keine Kreditkarte nötig. Direkt nach der Registrierung: die übrigen 3 Antworten und alle, die statt Ihnen genannt werden. Nach wenigen Minuten: 20 Fragen an ChatGPT, Claude, Gemini und Perplexity. Der vollständige Bericht ist kostenlos, sobald Sie ein Konto anlegen.",
     reportTitle: (site) => (site ? `Ihr ausführlicher KI-Bericht für ${site}` : "Ihr ausführlicher KI-Bericht"),
-    reportLead: "Keine Kreditkarte nötig. Wir stellen ChatGPT, Claude, Gemini und Perplexity 20 Fragen, wie Ihre Kunden sie stellen, jeweils dreimal: jede Antwort, wer statt Ihnen genannt wird, welche Websites zitiert werden, und unser Maßnahmenplan für Ihre Website. Der vollständige Bericht ist kostenlos, sobald Sie ein Konto anlegen.",
+    reportLead: "Keine Kreditkarte nötig. Wir stellen ChatGPT, Claude, Gemini und Perplexity 20 Fragen, wie Ihre Kunden sie stellen: jede Antwort, wer statt Ihnen genannt wird, welche Websites zitiert werden, und unser Maßnahmenplan für Ihre Website. Der vollständige Bericht ist kostenlos, sobald Sie ein Konto anlegen.",
     handoffTitle: "Nur noch ein Schritt — sichern Sie sich Ihre Posts",
     handoffLead: (n) =>
       `${n > 1 ? `Ihre ${n} Posts sind` : "Ihr Post ist"} gespeichert. Legen Sie ein Konto an und starten Sie Ihre <b>14-tägige Testphase</b> — keine Kreditkarte erforderlich.`,
@@ -150,9 +150,9 @@ export default defineMessages(en, {
     planLead:
       "D’abord votre compte, puis votre site : l’abonnement est établi à partir de son rapport, et vous voyez votre prix après votre rapport gratuit. Vous choisissez ensuite comment payer : au mois plus une mise en place facturée une seule fois, ou bien 3 mois d’avance ou un an, sans frais de mise en place.",
     answersTitle: (site) => `Ouvrir les 5 réponses pour ${site}`,
-    answersLead: "Aucune carte bancaire requise. Dès l’inscription : les 3 autres réponses et toutes les entreprises mentionnées à votre place. Environ 10 minutes plus tard : 20 questions posées à ChatGPT, Claude, Gemini et Perplexity, 3 fois chacune. Le rapport complet est gratuit dès que vous créez un compte.",
+    answersLead: "Aucune carte bancaire requise. Dès l’inscription : les 3 autres réponses et toutes les entreprises mentionnées à votre place. Quelques minutes plus tard : 20 questions posées à ChatGPT, Claude, Gemini et Perplexity. Le rapport complet est gratuit dès que vous créez un compte.",
     reportTitle: (site) => (site ? `Votre rapport IA détaillé pour ${site}` : "Votre rapport IA détaillé"),
-    reportLead: "Aucune carte bancaire requise. Nous posons 20 questions de clients à ChatGPT, Claude, Gemini et Perplexity, 3 fois chacune : chaque réponse, qui est mentionné à votre place, les sites cités et notre plan d’action pour votre site. Le rapport complet est gratuit dès que vous créez un compte.",
+    reportLead: "Aucune carte bancaire requise. Nous posons 20 questions de clients à ChatGPT, Claude, Gemini et Perplexity : chaque réponse, qui est mentionné à votre place, les sites cités et notre plan d’action pour votre site. Le rapport complet est gratuit dès que vous créez un compte.",
     handoffTitle: "Plus qu’une étape — récupérez vos posts",
     handoffLead: (n) =>
       `${n > 1 ? `Vos ${n} posts sont enregistrés` : "Votre post est enregistré"}. Créez un compte et commencez votre <b>essai de 14 jours</b> — aucune carte bancaire requise.`,
@@ -208,9 +208,9 @@ export default defineMessages(en, {
     planLead:
       "Primero su cuenta, después su sitio: el plan se elabora a partir de su informe, y verá su precio después de su informe gratuito. Luego elige cómo pagar: mensual más una configuración inicial (pago único), o bien 3 meses por adelantado o un año, sin cargo por la configuración inicial.",
     answersTitle: (site) => `Abrir las 5 respuestas de ${site}`,
-    answersLead: "No necesita tarjeta. Justo después de registrarse: las otras 3 respuestas y todos los mencionados en su lugar. En unos 10 minutos: 20 preguntas a ChatGPT, Claude, Gemini y Perplexity, 3 veces cada una. El informe completo es gratuito en cuanto cree una cuenta.",
+    answersLead: "No necesita tarjeta. Justo después de registrarse: las otras 3 respuestas y todos los mencionados en su lugar. En unos minutos: 20 preguntas a ChatGPT, Claude, Gemini y Perplexity. El informe completo es gratuito en cuanto cree una cuenta.",
     reportTitle: (site) => (site ? `Su informe detallado de IA para ${site}` : "Su informe detallado de IA"),
-    reportLead: "No necesita tarjeta. Planteamos 20 preguntas de clientes a ChatGPT, Claude, Gemini y Perplexity, 3 veces cada una: cada respuesta, a quién mencionan en su lugar, qué sitios citan y nuestro plan de acción para su sitio. El informe completo es gratuito en cuanto cree una cuenta.",
+    reportLead: "No necesita tarjeta. Planteamos 20 preguntas de clientes a ChatGPT, Claude, Gemini y Perplexity: cada respuesta, a quién mencionan en su lugar, qué sitios citan y nuestro plan de acción para su sitio. El informe completo es gratuito en cuanto cree una cuenta.",
     handoffTitle: "Solo falta un paso: recupere sus publicaciones",
     handoffLead: (n) =>
       `${n > 1 ? `Sus ${n} publicaciones están guardadas` : "Su publicación está guardada"}. Cree una cuenta y empiece su <b>prueba de 14 días</b>; no necesita tarjeta de crédito.`,
@@ -266,9 +266,9 @@ export default defineMessages(en, {
     planLead:
       "Сначала аккаунт, затем ваш сайт: подписка строится на основе его отчёта, а свою цену вы увидите после бесплатного отчёта. Потом вы выбираете, как платить: помесячно плюс разовая настройка, или 3 месяца вперёд, или год — в последних двух случаях без платы за настройку.",
     answersTitle: (site) => `Открыть все 5 ответов по ${site}`,
-    answersLead: "Карта не нужна. Сразу после регистрации — остальные 3 ответа и все, кого называют вместо вас. Примерно через 10 минут — 20 вопросов к ChatGPT, Claude, Gemini и Perplexity, каждый по 3 раза. Полный отчёт бесплатный — достаточно создать аккаунт.",
+    answersLead: "Карта не нужна. Сразу после регистрации — остальные 3 ответа и все, кого называют вместо вас. Через несколько минут — 20 вопросов к ChatGPT, Claude, Gemini и Perplexity. Полный отчёт бесплатный — достаточно создать аккаунт.",
     reportTitle: (site) => (site ? `Ваш подробный отчёт о видимости в ИИ для ${site}` : "Ваш подробный отчёт о видимости в ИИ"),
-    reportLead: "Карта не нужна. Мы задаём ChatGPT, Claude, Gemini и Perplexity 20 вопросов ваших клиентов, по 3 раза каждый: каждый ответ, кого называют вместо вас, какие сайты цитируют и наш план действий для вашего сайта. Полный отчёт бесплатный — достаточно создать аккаунт.",
+    reportLead: "Карта не нужна. Мы задаём ChatGPT, Claude, Gemini и Perplexity 20 вопросов ваших клиентов: каждый ответ, кого называют вместо вас, какие сайты цитируют и наш план действий для вашего сайта. Полный отчёт бесплатный — достаточно создать аккаунт.",
     handoffTitle: "Остался один шаг — заберите свои посты",
     handoffLead: (n) =>
       `${n > 1 ? `Ваши посты сохранены: ${n}` : "Ваш пост сохранён"}. Создайте аккаунт и начните <b>14-дневный пробный период</b> — банковская карта не нужна.`,
