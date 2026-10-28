@@ -10,11 +10,11 @@ import { noteCrawler } from "@/lib/crawler-log"
 import { mainGuides } from "@/components/geo/guide-data"
 import { FoundOnSites, VersusArticles, WorkSystem, geoIncluded } from "./business/GeoSections"
 import PricingPlans from "./business/PricingPlans"
-import { GEO_PRICES, SAMPLE_PATH } from "@/lib/geo-pricing"
+import { SAMPLE_PATH, YEAR_DISCOUNT } from "@/lib/geo-pricing"
 import LanguageSwitcher from "@/components/i18n/LanguageSwitcher"
 import LocaleProvider from "@/components/i18n/LocaleProvider"
 import { getLocale } from "@/lib/i18n/server"
-import { defineMessages, t } from "@/lib/i18n/messages"
+import { t } from "@/lib/i18n/messages"
 import { localizedMetadata } from "@/lib/i18n/metadata"
 import { absoluteUrl, localePath } from "@/lib/i18n/paths"
 import { formatNumber } from "@/lib/i18n/format"
@@ -25,7 +25,8 @@ import homeMessages from "@/lib/i18n/messages/home"
 // lives at /personal, one click away from here and from the sign-in menu. Since 22 Oct 2026 this is
 // also the AI-visibility page: /business redirects here (next.config.ts), so its contact form (#apply)
 // and its questions live on this page.
-// Every string is in lib/i18n/messages/home.ts, in five languages; prices stay in lib/geo-pricing.ts.
+// Every string is in lib/i18n/messages/home.ts, in five languages. No plan price is named here (the
+// price test shows it only in the cabinet, lib/geo-pricing.ts PRICE_TEST).
 
 const BASE = "https://www.itgrows.ai"
 
@@ -77,40 +78,8 @@ const QUICK_CHECKS = [
   },
 ]
 
-const price = (cents: number) => (cents / 100).toFixed(2)
-
-// Names of the plan's other offers in the Service JSON-LD (the report and the monthly plan are
-// home.ts offerReport and offerPlan); the wording follows the pricing cards, the prices come from
-// lib/geo-pricing.ts. The detailed report is free once an account is created: its Offer is price 0.
-const OFFER_NAMES = defineMessages(
-  {
-    setup: "AI visibility plan, one-time setup (free with 3 months or a year)",
-    quarter: "AI visibility plan, 3 months upfront, setup included",
-    year: (off: string) => `AI visibility plan, yearly (${off} off), setup included`,
-  },
-  {
-    de: {
-      setup: "Plan für KI-Sichtbarkeit, einmalige Einrichtung (entfällt bei 3 Monaten oder einem Jahr)",
-      quarter: "Plan für KI-Sichtbarkeit, 3 Monate im Voraus, ohne Einrichtungsgebühr",
-      year: (off) => `Plan für KI-Sichtbarkeit, jährlich (${off} Rabatt), ohne Einrichtungsgebühr`,
-    },
-    fr: {
-      setup: "Abonnement visibilité IA, mise en place (une seule fois, offerte pour 3 mois ou un an)",
-      quarter: "Abonnement visibilité IA, 3 mois d’avance, sans frais de mise en place",
-      year: (off) => `Abonnement visibilité IA, annuel (−${off}), sans frais de mise en place`,
-    },
-    es: {
-      setup: "Plan de visibilidad en IA, configuración inicial (pago único, sin coste con 3 meses o un año)",
-      quarter: "Plan de visibilidad en IA, 3 meses por adelantado, configuración inicial sin coste",
-      year: (off) => `Plan de visibilidad en IA, anual (${off} de descuento), configuración inicial sin coste`,
-    },
-    ru: {
-      setup: "Подписка на видимость в ИИ, разовая настройка (бесплатно при оплате 3 месяцев или года)",
-      quarter: "Подписка на видимость в ИИ, 3 месяца сразу, без платы за настройку",
-      year: (off) => `Подписка на видимость в ИИ, на год (скидка ${off}), без платы за настройку`,
-    },
-  },
-)
+// The Service JSON-LD offers the free report only: under the price test (lib/geo-pricing.ts
+// PRICE_TEST) the plan's price is shown only in the cabinet, so no Offer names it.
 
 export default async function Home() {
   const locale = await getLocale()
@@ -120,18 +89,9 @@ export default async function Home() {
   // English everywhere else (fr/es/ru say "(in English)" in the heading).
   const guideLang = locale === "de" ? "de" : "en"
   const latest = await mainGuides(guideLang)
-  // The yearly discount, from the prices themselves: "20%" in English, "20 %" in German and French.
-  const yearOff = formatNumber(locale, 1 - GEO_PRICES.year.cents / (GEO_PRICES.month.cents * 12), { style: "percent", maximumFractionDigits: 0 })
-  const FAQ = m.faq({
-    sample: localePath(locale, SAMPLE_PATH),
-    month: GEO_PRICES.month.label,
-    setup: GEO_PRICES.setup.label,
-    quarter: GEO_PRICES.quarter.label,
-    year: GEO_PRICES.year.label,
-    yearPerMonth: GEO_PRICES.year.perMonth,
-    yearOff,
-  })
-  const offerNames = t(locale, OFFER_NAMES)
+  // The yearly discount: "20%" in English, "20 %" in German and French.
+  const yearOff = formatNumber(locale, YEAR_DISCOUNT, { style: "percent", maximumFractionDigits: 0 })
+  const FAQ = m.faq({ sample: localePath(locale, SAMPLE_PATH), yearOff })
   const home = absoluteUrl(locale, "/")
   const pricingUrl = absoluteUrl(locale, "/#geo-pricing")
   const schema = {
@@ -158,31 +118,6 @@ export default async function Home() {
         provider: { "@id": ORGANIZATION["@id"] },
         offers: [
           { "@type": "Offer", name: m.offerReport, price: "0", priceCurrency: "USD", url: pricingUrl },
-          {
-            "@type": "Offer",
-            name: m.offerPlan,
-            price: price(GEO_PRICES.month.cents),
-            priceCurrency: "USD",
-            url: pricingUrl,
-            priceSpecification: { "@type": "UnitPriceSpecification", price: price(GEO_PRICES.month.cents), priceCurrency: "USD", unitText: "MONTH" },
-          },
-          { "@type": "Offer", name: offerNames.setup, price: price(GEO_PRICES.setup.cents), priceCurrency: "USD", url: pricingUrl },
-          {
-            "@type": "Offer",
-            name: offerNames.quarter,
-            price: price(GEO_PRICES.quarter.cents),
-            priceCurrency: "USD",
-            url: pricingUrl,
-            priceSpecification: { "@type": "UnitPriceSpecification", price: price(GEO_PRICES.quarter.cents), priceCurrency: "USD", billingDuration: "P3M" },
-          },
-          {
-            "@type": "Offer",
-            name: offerNames.year(yearOff),
-            price: price(GEO_PRICES.year.cents),
-            priceCurrency: "USD",
-            url: pricingUrl,
-            priceSpecification: { "@type": "UnitPriceSpecification", price: price(GEO_PRICES.year.cents), priceCurrency: "USD", unitText: "YEAR", billingDuration: "P1Y" },
-          },
         ],
       },
       {

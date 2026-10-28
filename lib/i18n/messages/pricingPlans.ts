@@ -1,8 +1,10 @@
 import { defineMessages } from "../messages"
 
-// app/business/PricingPlans.tsx (client): the pricing block of "/". Prices and the yearly discount
-// come in as arguments from lib/geo-pricing.ts; nothing here is a price. The detailed report is free
-// once an account is created (since 27 Oct 2026).
+// app/business/PricingPlans.tsx (client): the pricing block of "/". It names no plan price: under the
+// price test (lib/geo-pricing.ts PRICE_TEST, since 28 Oct 2026) the price is shown only in the
+// cabinet, so the block says "you see your price after your free report" (priceAfterReport). The
+// yearly discount comes in as an argument. The detailed report is free once an account is created
+// (since 27 Oct 2026).
 
 const en = {
   h2: "See where you stand. Have us fix it.",
@@ -23,9 +25,9 @@ const en = {
   billingPeriod: "Billing period",
   month: "Month",
   yearOff: (off: string) => `Year −${off}`,
-  perMonth: "/ month",
-  monthNote: (setup: string) => `+ ${setup} one-time setup · free with 3 months or a year`,
-  yearNote: (year: string) => `Billed ${year} a year · setup free`,
+  priceAfterReport: "You see your price after your free report.",
+  monthNote: "Month to month, plus a one-time setup · free with 3 months or a year",
+  yearNote: (off: string) => `Billed once a year, ${off} off · setup free`,
   planPoints: [
     "Site setup, with a launch report",
     "Up to 12 researched articles a month on your domain",
@@ -34,8 +36,8 @@ const en = {
     "Every article shown to you 2 days before it goes live",
   ],
   startMonthly: "Start monthly",
-  startQuarter: (quarter: string) => `3 months upfront — ${quarter}, no setup fee`,
-  startYearly: (year: string) => `Start yearly — ${year}`,
+  startQuarter: "3 months upfront, no setup fee",
+  startYearly: "Start yearly",
 
   disclaimer: "No one can guarantee that an assistant will name a business. We measure and show you every two weeks.",
 }
@@ -59,9 +61,9 @@ export default defineMessages(en, {
     billingPeriod: "Abrechnungszeitraum",
     month: "Monat",
     yearOff: (off) => `Jahr −${off}`,
-    perMonth: "/ Monat",
-    monthNote: (setup) => `+ ${setup} einmalige Einrichtung · entfällt bei Vorauszahlung von 3 Monaten oder einem Jahr`,
-    yearNote: (year) => `${year} jährlich abgerechnet · ohne Einrichtungsgebühr`,
+    priceAfterReport: "Ihren Preis sehen Sie nach Ihrem kostenlosen Bericht.",
+    monthNote: "Monatlich kündbar, plus einmalige Einrichtung · entfällt bei Vorauszahlung von 3 Monaten oder einem Jahr",
+    yearNote: (off) => `Einmal jährlich abgerechnet, ${off} Rabatt · ohne Einrichtungsgebühr`,
     planPoints: [
       "Einrichtung der Website, mit Startbericht",
       "Bis zu 12 recherchierte Artikel pro Monat auf Ihrer Domain",
@@ -70,8 +72,8 @@ export default defineMessages(en, {
       "Jeden Artikel sehen Sie 2 Tage vor der Veröffentlichung",
     ],
     startMonthly: "Monatlich starten",
-    startQuarter: (quarter) => `3 Monate im Voraus — ${quarter}, ohne Einrichtungsgebühr`,
-    startYearly: (year) => `Jährlich starten — ${year}`,
+    startQuarter: "3 Monate im Voraus, ohne Einrichtungsgebühr",
+    startYearly: "Jährlich starten",
 
     disclaimer: "Niemand kann garantieren, dass ein Assistent ein Unternehmen nennt. Wir messen und zeigen es Ihnen alle zwei Wochen.",
   },
@@ -93,9 +95,9 @@ export default defineMessages(en, {
     billingPeriod: "Période de facturation",
     month: "Mois",
     yearOff: (off) => `Année −${off}`,
-    perMonth: "/ mois",
-    monthNote: (setup) => `+ ${setup} de mise en place (une seule fois) · non facturée si vous payez 3 mois ou un an d’avance`,
-    yearNote: (year) => `Facturé ${year} par an · sans frais de mise en place`,
+    priceAfterReport: "Vous voyez votre prix après votre rapport gratuit.",
+    monthNote: "Sans engagement, plus une mise en place (une seule fois) · non facturée si vous payez 3 mois ou un an d’avance",
+    yearNote: (off) => `Facturé une fois par an, −${off} · sans frais de mise en place`,
     planPoints: [
       "Mise en place du site, avec un rapport de lancement",
       "Jusqu’à 12 articles documentés par mois sur votre domaine",
@@ -104,8 +106,8 @@ export default defineMessages(en, {
       "Chaque article vous est montré 2 jours avant sa mise en ligne",
     ],
     startMonthly: "Commencer au mois",
-    startQuarter: (quarter) => `3 mois d’avance — ${quarter}, sans frais de mise en place`,
-    startYearly: (year) => `Commencer à l’année — ${year}`,
+    startQuarter: "3 mois d’avance, sans frais de mise en place",
+    startYearly: "Commencer à l’année",
 
     disclaimer: "Personne ne peut garantir qu’un assistant mentionnera une entreprise. Nous mesurons et vous montrons les résultats toutes les deux semaines.",
   },
@@ -127,9 +129,9 @@ export default defineMessages(en, {
     billingPeriod: "Periodo de facturación",
     month: "Mes",
     yearOff: (off) => `Año −${off}`,
-    perMonth: "/ mes",
-    monthNote: (setup) => `+ ${setup} de configuración inicial (pago único) · no se cobra si paga 3 meses o un año por adelantado`,
-    yearNote: (year) => `Facturado ${year} al año · sin cuota de configuración`,
+    priceAfterReport: "Verá su precio después de su informe gratuito.",
+    monthNote: "Mes a mes, más una configuración inicial (pago único) · no se cobra si paga 3 meses o un año por adelantado",
+    yearNote: (off) => `Facturado una vez al año, ${off} de descuento · sin cuota de configuración`,
     planPoints: [
       "Configuración del sitio, con un informe de lanzamiento",
       "Hasta 12 artículos documentados al mes en su dominio",
@@ -138,8 +140,8 @@ export default defineMessages(en, {
       "Cada artículo se le muestra 2 días antes de publicarse",
     ],
     startMonthly: "Empezar mensual",
-    startQuarter: (quarter) => `3 meses por adelantado — ${quarter}, sin cuota de configuración`,
-    startYearly: (year) => `Empezar anual — ${year}`,
+    startQuarter: "3 meses por adelantado, sin cuota de configuración",
+    startYearly: "Empezar anual",
 
     disclaimer: "Nadie puede garantizar que un asistente mencione a una empresa. Medimos y se lo mostramos cada dos semanas.",
   },
@@ -161,9 +163,9 @@ export default defineMessages(en, {
     billingPeriod: "Период оплаты",
     month: "Месяц",
     yearOff: (off) => `Год −${off}`,
-    perMonth: "/ мес.",
-    monthNote: (setup) => `+ ${setup} разовая настройка · не взимается при оплате 3 месяцев или года`,
-    yearNote: (year) => `Оплата ${year} за год · без платы за настройку`,
+    priceAfterReport: "Свою цену вы увидите после бесплатного отчёта.",
+    monthNote: "Помесячно, плюс разовая настройка · не взимается при оплате 3 месяцев или года",
+    yearNote: (off) => `Оплата раз в год, скидка ${off} · без платы за настройку`,
     planPoints: [
       "Настройка сайта с отчётом о запуске",
       "До 12 статей с исследованием в месяц на вашем домене",
@@ -172,8 +174,8 @@ export default defineMessages(en, {
       "Каждую статью вы видите за 2 дня до публикации",
     ],
     startMonthly: "Начать помесячно",
-    startQuarter: (quarter) => `3 месяца вперёд — ${quarter}, без платы за настройку`,
-    startYearly: (year) => `Начать на год — ${year}`,
+    startQuarter: "3 месяца вперёд, без платы за настройку",
+    startYearly: "Начать на год",
 
     disclaimer: "Никто не может гарантировать, что ассистент назовёт компанию. Мы измеряем и показываем вам результат раз в две недели.",
   },

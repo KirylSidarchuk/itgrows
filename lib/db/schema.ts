@@ -24,6 +24,9 @@ export const users = pgTable("users", {
   trialReminder1Sent: boolean("trial_reminder_1_sent").notNull().default(false),
   trialReminderLastSent: boolean("trial_reminder_last_sent").notNull().default(false),
   trialDiscountSent: boolean("trial_discount_sent").notNull().default(false),
+  // The AI-visibility plan's price test: the monthly price in cents drawn at creation, kept for good;
+  // null = the one price (lib/geo-pricing.ts PRICE_TEST, lib/db/migrations/add_geo_price_variant.sql).
+  geoPriceVariant: integer("geo_price_variant"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 })
 

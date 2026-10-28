@@ -4,19 +4,15 @@ import { ENTITY_ABOUT, ENTITY_ONE_LINER } from "@/lib/entity"
 // app/about/page.tsx: metadata, the page's text and its structured data. English reads the shared
 // description of ItGrows from lib/entity.ts, so /about says what every other page and schema says;
 // the other languages carry their own copy of it (orgDescription and lead match orgDescription in
-// home.ts). The plan's prices come in as arguments (lib/geo-pricing.ts); the detailed report is free
-// once an account is created (since 27 Oct 2026).
+// home.ts). No plan price is named: under the price test (lib/geo-pricing.ts PRICE_TEST, since
+// 28 Oct 2026) the price is shown only in the cabinet; the yearly discount comes in as an argument. The
+// detailed report is free once an account is created (since 27 Oct 2026).
 // Owner's decision, 26 Oct 2026: the title, the lead and the Organization describe ItGrows as AI
 // visibility (GEO) only; the LinkedIn/X product keeps one short line of its own at the end (liLine).
 // Tags are links: <link> the plan (or /personal in liLine), <sample> the sample report, <check> the
 // quick check, <crawler> the crawler check, <guides> the guides.
 
 type PlanVars = {
-  month: string
-  setup: string
-  quarter: string
-  year: string
-  yearPerMonth: string
   /** The yearly discount, already formatted ("20%"). */
   yearOff: string
 }
@@ -33,8 +29,8 @@ const en = {
   paragraphs: ENTITY_ABOUT,
 
   offerTitle: "What we offer",
-  plan: ({ month, setup, quarter, year, yearPerMonth, yearOff }: PlanVars) =>
-    `<link>The plan</link>: we do the work on your own website and measure four assistants every two weeks. ${month} a month plus a one-time ${setup} setup; the setup is free when you pay ${quarter} for 3 months or ${year} for a year (${yearPerMonth} a month, ${yearOff} off).`,
+  plan: ({ yearOff }: PlanVars) =>
+    `<link>The plan</link>: we do the work on your own website and measure four assistants every two weeks. By the month, plus a one-time setup that is free when you pay for 3 months or a year upfront (a year is ${yearOff} off). You see your price after your free report.`,
   report: "The detailed report, free for your site once you create an account: 20 buyer questions put to ChatGPT, Claude, Gemini and Perplexity, 3 times each, who is named instead of you, which sites they cite, and our plan for your site. <sample>See a real report</sample>.",
   checks:
     "<check>The quick check</check>: free, about 30 seconds; two answers right away, all five once you create an account. The <crawler>AI crawler check</crawler> shows which AI crawlers can read your site.",
@@ -66,8 +62,8 @@ export default defineMessages(en, {
     ],
 
     offerTitle: "Was wir anbieten",
-    plan: ({ month, setup, quarter, year, yearPerMonth, yearOff }) =>
-      `<link>Der Plan</link>: Wir erledigen die Arbeit auf Ihrer eigenen Website und messen alle zwei Wochen vier Assistenten. ${month} pro Monat plus einmalig ${setup} für die Einrichtung; die Einrichtung entfällt, wenn Sie ${quarter} für 3 Monate oder ${year} für ein Jahr zahlen (${yearPerMonth} pro Monat, ${yearOff} Rabatt).`,
+    plan: ({ yearOff }) =>
+      `<link>Der Plan</link>: Wir erledigen die Arbeit auf Ihrer eigenen Website und messen alle zwei Wochen vier Assistenten. Monatlich, plus eine einmalige Einrichtung, die entfällt, wenn Sie 3 Monate oder ein Jahr im Voraus zahlen (ein Jahr mit ${yearOff} Rabatt). Ihren Preis sehen Sie nach Ihrem kostenlosen Bericht.`,
     report: "Der ausführliche Bericht, kostenlos für Ihre Website, sobald Sie ein Konto anlegen: 20 Kundenfragen an ChatGPT, Claude, Gemini und Perplexity, jede dreimal gestellt, wer statt Ihnen genannt wird, welche Websites zitiert werden, und unser Maßnahmenplan für Ihre Website. <sample>Einen echten Bericht ansehen</sample>.",
     checks:
       "<check>Der Schnellcheck</check>: kostenlos, etwa 30 Sekunden; zwei Antworten sofort, alle fünf, sobald Sie ein Konto anlegen. Der <crawler>KI-Crawler-Check</crawler> zeigt, welche KI-Crawler Ihre Website lesen können.",
@@ -98,8 +94,8 @@ export default defineMessages(en, {
     ],
 
     offerTitle: "Ce que nous proposons",
-    plan: ({ month, setup, quarter, year, yearPerMonth, yearOff }) =>
-      `<link>L’abonnement</link> : nous faisons le travail sur votre propre site et mesurons quatre assistants toutes les deux semaines. ${month} par mois plus une mise en place de ${setup}, une seule fois ; la mise en place n’est pas facturée si vous payez ${quarter} pour 3 mois ou ${year} pour un an (${yearPerMonth} par mois, ${yearOff} de remise).`,
+    plan: ({ yearOff }) =>
+      `<link>L’abonnement</link> : nous faisons le travail sur votre propre site et mesurons quatre assistants toutes les deux semaines. Au mois, plus une mise en place facturée une seule fois, offerte si vous payez 3 mois ou un an d’avance (l’année avec ${yearOff} de remise). Vous voyez votre prix après votre rapport gratuit.`,
     report: "Le rapport détaillé, gratuit pour votre site dès que vous créez un compte : 20 questions de clients posées à ChatGPT, Claude, Gemini et Perplexity, 3 fois chacune, qui est mentionné à votre place, quels sites sont cités, et notre plan d’action pour votre site. <sample>Voir un vrai rapport</sample>.",
     checks:
       "<check>La vérification rapide</check> : gratuite, environ 30 secondes ; deux réponses tout de suite, les cinq dès que vous créez un compte. Le <crawler>test des robots d’IA</crawler> montre quels robots d’IA peuvent lire votre site.",
@@ -130,8 +126,8 @@ export default defineMessages(en, {
     ],
 
     offerTitle: "Qué ofrecemos",
-    plan: ({ month, setup, quarter, year, yearPerMonth, yearOff }) =>
-      `<link>El plan</link>: hacemos el trabajo en su propio sitio web y medimos cuatro asistentes cada dos semanas. ${month} al mes más una configuración inicial de ${setup}, pago único; la configuración no se cobra si paga ${quarter} por 3 meses o ${year} por un año (${yearPerMonth} al mes, ${yearOff} de descuento).`,
+    plan: ({ yearOff }) =>
+      `<link>El plan</link>: hacemos el trabajo en su propio sitio web y medimos cuatro asistentes cada dos semanas. Mensual, más una configuración inicial de pago único que no se cobra si paga 3 meses o un año por adelantado (el año con un ${yearOff} de descuento). Verá su precio después de su informe gratuito.`,
     report: "El informe detallado, gratuito para su sitio en cuanto cree una cuenta: 20 preguntas de clientes planteadas a ChatGPT, Claude, Gemini y Perplexity, 3 veces cada una, a quién mencionan en su lugar, qué sitios citan y nuestro plan de acción para su sitio. <sample>Ver un informe real</sample>.",
     checks:
       "<check>La comprobación rápida</check>: gratis, unos 30 segundos; dos respuestas al momento y las cinco en cuanto cree una cuenta. El <crawler>comprobador de rastreadores de IA</crawler> muestra qué rastreadores de IA pueden leer su sitio.",
@@ -162,8 +158,8 @@ export default defineMessages(en, {
     ],
 
     offerTitle: "Что мы предлагаем",
-    plan: ({ month, setup, quarter, year, yearPerMonth, yearOff }) =>
-      `<link>Подписка</link>: мы делаем работу на вашем собственном сайте и раз в две недели измеряем четыре ассистента. ${month} в месяц плюс разовая настройка за ${setup}; настройка не взимается, если вы платите ${quarter} за 3 месяца или ${year} за год (${yearPerMonth} в месяц, скидка ${yearOff}).`,
+    plan: ({ yearOff }) =>
+      `<link>Подписка</link>: мы делаем работу на вашем собственном сайте и раз в две недели измеряем четыре ассистента. Помесячно, плюс разовая настройка, которая не взимается при оплате 3 месяцев или года вперёд (год — со скидкой ${yearOff}). Свою цену вы увидите после бесплатного отчёта.`,
     report: "Подробный отчёт — бесплатно для вашего сайта, достаточно создать аккаунт: 20 вопросов клиентов к ChatGPT, Claude, Gemini и Perplexity, по 3 раза каждый, кого называют вместо вас, какие сайты цитируют, и наш план действий для вашего сайта. <sample>Посмотреть настоящий отчёт</sample>.",
     checks:
       "<check>Быстрая проверка</check>: бесплатно, около 30 секунд; два ответа сразу, все пять — после создания аккаунта. <crawler>Проверка ИИ-краулеров</crawler> показывает, какие ИИ-краулеры могут читать ваш сайт.",

@@ -2,11 +2,12 @@ import { defineMessages } from "../messages"
 
 // app/business/GeoSections.tsx: WorkSystem (work), FoundOnSites (found), VersusArticles (versus) and
 // what the plan includes (included). The big numbers of the five stages stay in the component; the
-// findings' numbers carry words, so they are here. Prices come in as arguments.
+// findings' numbers carry words, so they are here. No plan price is named: under the price test
+// (lib/geo-pricing.ts PRICE_TEST) the price is shown only in the cabinet.
 
 const en = {
   work: {
-    kicker: (month: string) => `What we run for you · ${month} a month`,
+    kicker: "What we run for you",
     h2: "An article is the last step, not the product",
     lead: "Five stages. We do the work, every week. You see every article 2 days before it goes live, and can edit or stop it.",
     stages: [
@@ -74,8 +75,8 @@ const en = {
     ],
     footnote: "Some agencies do more than write. Ask them for their latest count against day 0.",
   },
-  included: (setup: string) => [
-    `Setup: your site tested as 11 crawlers, blockers fixed, Bing and Google set up — one-time ${setup}, free with 3 months or a year`,
+  included: [
+    "Setup: your site tested as 11 crawlers, blockers fixed, Bing and Google set up — one-time, free with 3 months or a year",
     "Day 0: the full detailed report — 240 answers from ChatGPT, Claude, Gemini and Perplexity — included",
     "Every two weeks: the same count against day 0, whether the assistants can find your articles, and who is quoted instead",
     "Up to 12 researched articles a month on your own domain, 3–5 sources each",
@@ -90,7 +91,7 @@ const en = {
 export default defineMessages(en, {
   de: {
     work: {
-      kicker: (month) => `Was wir für Sie leisten · ${month} pro Monat`,
+      kicker: "Was wir für Sie leisten",
       h2: "Ein Artikel ist der letzte Schritt, nicht das Produkt",
       lead: "Fünf Stufen. Wir erledigen die Arbeit, jede Woche. Sie sehen jeden Artikel 2 Tage vor der Veröffentlichung und können ihn bearbeiten oder stoppen.",
       stages: [
@@ -157,8 +158,8 @@ export default defineMessages(en, {
       ],
       footnote: "Manche Agenturen tun mehr als schreiben. Fragen Sie sie nach ihrer letzten Zählung im Vergleich zu Tag 0.",
     },
-    included: (setup) => [
-      `Einrichtung: Ihre Website mit 11 Crawler-Kennungen getestet, Blockaden behoben, Bing und Google eingerichtet — einmalig ${setup}, entfällt bei Vorauszahlung von 3 Monaten oder einem Jahr`,
+    included: [
+      "Einrichtung: Ihre Website mit 11 Crawler-Kennungen getestet, Blockaden behoben, Bing und Google eingerichtet — einmalig, entfällt bei Vorauszahlung von 3 Monaten oder einem Jahr",
       "Tag 0: der vollständige ausführliche Bericht — 240 Antworten von ChatGPT, Claude, Gemini und Perplexity — inklusive",
       "Alle zwei Wochen: dieselbe Zählung im Vergleich zu Tag 0, ob die Assistenten Ihre Artikel finden und wer stattdessen zitiert wird",
       "Bis zu 12 recherchierte Artikel pro Monat auf Ihrer eigenen Domain, je 3–5 Quellen",
@@ -172,7 +173,7 @@ export default defineMessages(en, {
 
   fr: {
     work: {
-      kicker: (month) => `Ce que nous faisons pour vous · ${month} par mois`,
+      kicker: "Ce que nous faisons pour vous",
       h2: "Un article est la dernière étape, pas le produit",
       lead: "Cinq étapes. Nous faisons le travail, chaque semaine. Vous voyez chaque article 2 jours avant sa mise en ligne, et pouvez le modifier ou l’arrêter.",
       stages: [
@@ -239,8 +240,8 @@ export default defineMessages(en, {
       ],
       footnote: "Certaines agences font plus qu’écrire. Demandez-leur leur dernier décompte comparé au jour 0.",
     },
-    included: (setup) => [
-      `Mise en place : votre site testé avec 11 robots, blocages corrigés, Bing et Google configurés — ${setup} une seule fois, non facturée si vous payez 3 mois ou un an d’avance`,
+    included: [
+      "Mise en place : votre site testé avec 11 robots, blocages corrigés, Bing et Google configurés — une seule fois, non facturée si vous payez 3 mois ou un an d’avance",
       "Jour 0 : le rapport détaillé complet — 240 réponses de ChatGPT, Claude, Gemini et Perplexity — inclus",
       "Toutes les deux semaines : le même décompte comparé au jour 0, la capacité des assistants à trouver vos articles, et qui est cité à votre place",
       "Jusqu’à 12 articles documentés par mois sur votre propre domaine, 3 à 5 sources chacun",
@@ -254,7 +255,7 @@ export default defineMessages(en, {
 
   es: {
     work: {
-      kicker: (month) => `Lo que hacemos por usted · ${month} al mes`,
+      kicker: "Lo que hacemos por usted",
       h2: "Un artículo es el último paso, no el producto",
       lead: "Cinco etapas. Hacemos el trabajo, cada semana. Usted ve cada artículo 2 días antes de que se publique y puede editarlo o detenerlo.",
       stages: [
@@ -321,8 +322,8 @@ export default defineMessages(en, {
       ],
       footnote: "Algunas agencias hacen algo más que escribir. Pídales su último recuento frente al día 0.",
     },
-    included: (setup) => [
-      `Configuración inicial: su sitio probado con 11 rastreadores, bloqueos corregidos, Bing y Google configurados — ${setup} una sola vez, no se cobra si paga 3 meses o un año por adelantado`,
+    included: [
+      "Configuración inicial: su sitio probado con 11 rastreadores, bloqueos corregidos, Bing y Google configurados — pago único, no se cobra si paga 3 meses o un año por adelantado",
       "Día 0: el informe detallado completo — 240 respuestas de ChatGPT, Claude, Gemini y Perplexity — incluido",
       "Cada dos semanas: el mismo recuento frente al día 0, si los asistentes pueden encontrar sus artículos y a quién citan en su lugar",
       "Hasta 12 artículos documentados al mes en su propio dominio, con 3–5 fuentes cada uno",
@@ -336,7 +337,7 @@ export default defineMessages(en, {
 
   ru: {
     work: {
-      kicker: (month) => `Что мы делаем для вас · ${month} в месяц`,
+      kicker: "Что мы делаем для вас",
       h2: "Статья — последний шаг, а не продукт",
       lead: "Пять этапов. Работу делаем мы, каждую неделю. Вы видите каждую статью за 2 дня до публикации и можете её отредактировать или остановить.",
       stages: [
@@ -403,8 +404,8 @@ export default defineMessages(en, {
       ],
       footnote: "Некоторые агентства делают больше, чем пишут. Попросите у них последний подсчёт в сравнении с днём 0.",
     },
-    included: (setup) => [
-      `Настройка: ваш сайт проверен от имени 11 краулеров, блокировки устранены, Bing и Google настроены — разово ${setup}, не взимается при оплате 3 месяцев или года`,
+    included: [
+      "Настройка: ваш сайт проверен от имени 11 краулеров, блокировки устранены, Bing и Google настроены — разово, не взимается при оплате 3 месяцев или года",
       "День 0: полный подробный отчёт — 240 ответов ChatGPT, Claude, Gemini и Perplexity — включён",
       "Раз в две недели: тот же подсчёт в сравнении с днём 0, могут ли ассистенты найти ваши статьи и кого цитируют вместо вас",
       "До 12 статей с исследованием в месяц на вашем собственном домене, по 3–5 источников в каждой",

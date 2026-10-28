@@ -18,7 +18,7 @@
 
 import { useEffect, useState } from "react"
 import { ENGINE_ICONS } from "../../engine-icons"
-import { GEO_PRICES, type GeoInterval } from "@/lib/geo-pricing"
+import { YEAR_DISCOUNT, type GeoInterval, type GeoPrices } from "@/lib/geo-pricing"
 import { listQuestions } from "@/lib/geo-list-question"
 import { useT } from "@/components/i18n/LocaleProvider"
 import visibilityOpening from "@/lib/i18n/messages/visibilityOpening"
@@ -1196,9 +1196,9 @@ export function planSteps(site: SiteReport, audit: Audit | "failed" | undefined,
   ]
 }
 
-/** Who reads the plan: an account not on it (the offer, "Start the plan"), a client on the plan or
- *  set up by hand (where each step stands), or a visitor of the public sample (read-only; the plan's
- *  prices are on the home page). */
+/** Who reads the plan: an account not on it (the offer, "Start the plan", at its own prices), a client
+ *  on the plan or set up by hand (where each step stands), or a visitor of the public sample
+ *  (read-only, and no price: the price test shows prices only in the cabinet, lib/geo-pricing.ts). */
 export type PlanMode = "offer" | "client" | "sample"
 
 const PLAN_HOME = "/#geo-pricing"
@@ -1368,13 +1368,28 @@ function PlanStep({ n, step, status }: { n: number; step: Step; status: StepStat
 }
 
 /** The end of the report: what we do for the site, step by step. For an account not on the plan,
- *  "Start the plan" and "Talk to us"; for a client, where each step stands and what is done. */
-export function YourPlan({ site, steps, ready, mode }: { site: SiteReport; steps: Step[]; ready: boolean; mode: PlanMode }) {
+ *  "Start the plan" and "Talk to us", with its own prices (/api/geo/report price); for a client, where
+ *  each step stands and what is done. The public sample names no price. */
+export function YourPlan({
+  site,
+  steps,
+  ready,
+  mode,
+  prices,
+}: {
+  site: SiteReport
+  steps: Step[]
+  ready: boolean
+  mode: PlanMode
+  /** The account's plan prices; null while they load or if they could not be read: no price is named. */
+  prices?: GeoPrices | null
+}) {
   const client = mode === "client"
   const done = client && site.work ? doneList(steps, site.work) : []
   const sample = mode === "sample"
   const planHref = sample ? PLAN_HOME : `/business/dashboard/plan?site=${encodeURIComponent(site.domain)}`
-  const p = GEO_PRICES
+  const p = sample ? null : (prices ?? null)
+  const yearOff = `${Math.round(YEAR_DISCOUNT * 100)}% off`
   return (
     <section id="your-plan" className={`${card} scroll-mt-24`}>
       <h2 className="font-bold text-lg">Your plan</h2>
@@ -1434,10 +1449,17 @@ export function YourPlan({ site, steps, ready, mode }: { site: SiteReport; steps
                 No one can promise that assistants will name you. We promise the work and an honest count every two weeks.
               </p>
               <div className="mt-4 flex flex-col sm:flex-row sm:items-center gap-3">
-                <p className="flex-1 text-sm text-white/80">
-                  <b className="text-white tabular-nums">{p.month.label}</b> a month plus a one-time {p.setup.label} setup. The setup is free with
-                  3 months upfront (<b className="text-white tabular-nums">{p.quarter.label}</b>) or a year (<b className="text-white tabular-nums">{p.year.label}</b>, 20% off).
-                </p>
+                {p ? (
+                  <p className="flex-1 text-sm text-white/80">
+                    <b className="text-white tabular-nums">{p.month.label}</b> a month plus a one-time {p.setup.label} setup. The setup is free with
+                    3 months upfront (<b className="text-white tabular-nums">{p.quarter.label}</b>) or a year (<b className="text-white tabular-nums">{p.year.label}</b>, {yearOff}).
+                  </p>
+                ) : (
+                  <p className="flex-1 text-sm text-white/80">
+                    By the month plus a one-time setup; the setup is free with 3 months upfront or a year ({yearOff}).{" "}
+                    {sample ? "You see your price after your free report." : "You see your price on the next page."}
+                  </p>
+                )}
                 <a
                   href={planHref}
                   className="w-full sm:w-auto inline-flex justify-center rounded-xl bg-white text-[#1b1916] hover:bg-violet-50 px-5 py-3 text-sm font-bold"

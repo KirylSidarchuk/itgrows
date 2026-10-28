@@ -1,9 +1,9 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import Link from "next/link"
 import { card, fmtDate, fullReport, onPlan, planSteps, type SiteReport } from "../visibility/parts"
-import { GEO_PRICES, SAMPLE_PATH, firstPaymentCents, setupFree, usd } from "@/lib/geo-pricing"
+import { SAMPLE_PATH, YEAR_DISCOUNT, firstPaymentCents, setupFree, usd, type GeoPrices } from "@/lib/geo-pricing"
 
 // The plan, for one site, and its billing. It is a service, not a guide: the page says who does
 // what before it asks for money — we write, publish, fix indexing, prepare the places the
@@ -13,10 +13,13 @@ import { GEO_PRICES, SAMPLE_PATH, firstPaymentCents, setupFree, usd } from "@/li
 // named and it is not, never a list question (lib/geo-list-question.ts); the directories,
 // marketplaces, media and discussions the assistants cite become the places we prepare.
 //
-// Three ways to pay, all from lib/geo-pricing.ts: by the month plus the one-time setup, 3 months
-// upfront, or a year (both with the setup free). The setup is once per site: a site that has had a
-// paid plan before, by anyone, reads "$499 a month" with no setup and a first payment of $499,
-// exactly what /api/geo/checkout charges (the report's setupPaid, and where that says no,
+// Three ways to pay, at the account's own prices (/api/geo/report price, lib/geo-price-test.ts: the
+// price test's variant, or the one price): by the month plus the one-time setup, 3 months upfront, or
+// a year (both with the setup free). This is the only place, with the end of the report, that names a
+// plan price; showing it is counted per variant (/api/geo/plan-view: geo_plan_view). Without the
+// prices (they could not be read) the page names none and offers no checkout. The setup is once per
+// site: a site that has had a paid plan before, by anyone, reads "<month> a month" with no setup and a
+// first payment of one month, exactly what /api/geo/checkout charges (the report's setupPaid, and where that says no,
 // /api/geo/launch/setup, which decides as checkout does). A choice made
 // on the pricing block arrives as ?interval= (through sign-up, and kept for a day in case the site
 // has to be added first): the page opens on it and marks it. An account without a site enters it
@@ -31,8 +34,6 @@ import { GEO_PRICES, SAMPLE_PATH, firstPaymentCents, setupFree, usd } from "@/li
 // period, with undo) and Card and invoices (/api/geo/portal, which cannot cancel or switch plans).
 
 type Interval = "month" | "quarter" | "year"
-
-const P = GEO_PRICES
 
 const WE_DO = [
   "Write articles that answer the questions your buyers ask, with sources, in your language, and publish them on your domain",
@@ -50,11 +51,15 @@ const YOU_DO = [
   "What needs your own login or approval on the sites the assistants quote: claiming a profile, approving a letter.",
 ]
 
-const BILLED: Record<string, string> = {
-  month: `${P.month.label} a month`,
-  quarter: `${P.quarter.label} every 3 months`,
-  year: `${P.year.label} a year`,
+/** The billing line of a plan the site has, at the prices it was bought at (/api/geo/report paidPrice). */
+function billed(p: GeoPrices, interval: string): string | null {
+  if (interval === "month") return `${p.month.label} a month`
+  if (interval === "quarter") return `${p.quarter.label} every 3 months`
+  if (interval === "year") return `${p.year.label} a year`
+  return null
 }
+
+const YEAR_OFF = `${Math.round(YEAR_DISCOUNT * 100)}% off`
 
 const INTERVALS: Interval[] = ["month", "quarter", "year"]
 const CHOICE_KEY = "itg_geo_interval"
@@ -379,15 +384,19 @@ function LaunchNeeds({ domain }: { domain: string }) {
 /** The site's one-time setup is paid already, by our records (/api/geo/report setupPaid). */
 const reportSetupPaid = (s: SiteReport) => (s as SiteReport & { setupPaid?: boolean }).setupPaid === true
 
-/** The signed-in account's sites, each cut to what it has paid for (lib/geo-report.ts). */
-async function loadSites(): Promise<SiteReport[]> {
+type Loaded = { sites: SiteReport[]; prices: { now: GeoPrices; paid: GeoPrices } | null }
+
+/** The signed-in account's sites, each cut to what it has paid for (lib/geo-report.ts), and its plan
+ *  prices: what a new plan costs it, and what a plan it has was bought at. */
+async function loadSites(): Promise<Loaded> {
   const r = await fetch("/api/geo/report", { cache: "no-store" })
-  const j = (r.ok ? await r.json() : { sites: [] }) as { sites?: SiteReport[] }
-  return j.sites ?? []
+  const j = (r.ok ? await r.json() : { sites: [] }) as { sites?: SiteReport[]; price?: GeoPrices | null; paidPrice?: GeoPrices | null }
+  return { sites: j.sites ?? [], prices: j.price && j.paidPrice ? { now: j.price, paid: j.paidPrice } : null }
 }
 
 export default function PlanPage() {
   const [sites, setSites] = useState<SiteReport[] | null>(null)
+  const [prices, setPrices] = useState<Loaded["prices"]>(null)
   const [domain, setDomain] = useState("")
   const [justPaid, setJustPaid] = useState(false)
   const [busy, setBusy] = useState<{ interval: Interval; stage: "follow" | "checkout" } | null>(null)
@@ -404,9 +413,10 @@ export default function PlanPage() {
     const p = new URLSearchParams(window.location.search)
     const chosen = chosenInterval(p)
     loadSites()
-      .then((list) => {
+      .then(({ sites: list, prices: loaded }) => {
         if (chosen) setPicked(chosen)
         setJustPaid(p.get("paid") === "1")
+        setPrices(loaded)
         setSites(list)
         const asked = p.get("site")
         const known = list.some((s) => s.domain === asked)
@@ -424,7 +434,7 @@ export default function PlanPage() {
     const t = setInterval(() => {
       if (++tries >= 36) clearInterval(t)
       loadSites()
-        .then((list) => {
+        .then(({ sites: list }) => {
           if (!list.some((s) => s.domain === paidFor)) return
           clearInterval(t)
           setSites(list)
@@ -450,6 +460,21 @@ export default function PlanPage() {
       current = false
     }
   }, [sites, domain, setupAsked])
+
+  // geo_plan_view: the prices were on screen, once per page load; the server records the variant.
+  const viewSent = useRef(false)
+  useEffect(() => {
+    if (viewSent.current || sites === null || !prices || paidFor) return
+    const s = sites.find((x) => x.domain === domain)
+    if (s && (onPlan(s) || justPaid)) return
+    viewSent.current = true
+    fetch("/api/geo/plan-view", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ domain: s?.domain ?? null }),
+      keepalive: true,
+    }).catch(() => {})
+  }, [sites, prices, domain, justPaid, paidFor])
 
   async function start(interval: Interval) {
     setError("")
@@ -510,11 +535,13 @@ export default function PlanPage() {
   const forSite = site?.domain ?? (newSite.trim() || "your site")
   // The site has had a paid plan before: the month-to-month plan starts without the setup.
   const setupPaid = site ? reportSetupPaid(site) || setupAsked[site.domain] === true : false
-  const firstCents = (i: Interval) => firstPaymentCents(i) - (!setupFree(i) && setupPaid ? P.setup.cents : 0)
+  const P = prices?.now
+  const firstCents = (p: GeoPrices, i: Interval) => firstPaymentCents(p, i) - (!setupFree(i) && setupPaid ? p.setup.cents : 0)
+  const billedLine = site?.planInterval && prices ? billed(prices.paid, site.planInterval) : null
 
   const busyText = (i: Interval) =>
     busy?.interval === i ? (busy.stage === "follow" ? "Reading your site… up to a minute" : "Opening checkout…") : null
-  const firstPayment = (i: Interval) => <>First payment {usd(firstCents(i))}</>
+  const firstPayment = (p: GeoPrices, i: Interval) => <>First payment {usd(firstCents(p, i))}</>
   const choice = (i: Interval, title: string, lines: React.ReactNode[], cta: string) => (
     <Choice
       key={i}
@@ -590,7 +617,7 @@ export default function PlanPage() {
               <>
                 <p className="text-sm text-slate-600 mt-1">
                   AI visibility for {site.domain}
-                  {site.planInterval && BILLED[site.planInterval] ? <>: <b className="text-[#1b1916]">{BILLED[site.planInterval]}</b></> : null}.
+                  {billedLine ? <>: <b className="text-[#1b1916]">{billedLine}</b></> : null}.
                 </p>
                 <div className="mt-4 space-y-5">
                   <ManageSubscription />
@@ -668,31 +695,38 @@ export default function PlanPage() {
 
             <h2 className="mt-6 font-extrabold text-xl break-all">Start for {forSite}</h2>
 
-            <div className="mt-4 grid gap-3 sm:grid-cols-3">
-              {choice(
-                "month",
-                setupPaid ? `${P.month.label} a month` : `${P.month.label} a month + ${P.setup.label} setup`,
-                [
-                  firstPayment("month"),
-                  setupPaid
-                    ? "Billed monthly."
-                    : `Billed monthly. The ${P.setup.label} setup is one-time: your site and its indexes made ready, with a launch report.`,
-                ],
-                "Start monthly",
-              )}
-              {choice(
-                "quarter",
-                `${P.quarter.label} for 3 months upfront`,
-                [firstPayment("quarter"), `${P.quarter.perMonth} a month, billed every 3 months.${setupPaid ? "" : " Setup free."}`],
-                "Pay 3 months",
-              )}
-              {choice(
-                "year",
-                `${P.year.label} for a year`,
-                [firstPayment("year"), `${P.year.perMonth} a month, 20% off.${setupPaid ? "" : " Setup free."}`],
-                "Pay a year",
-              )}
-            </div>
+            {P ? (
+              <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                {choice(
+                  "month",
+                  setupPaid ? `${P.month.label} a month` : `${P.month.label} a month + ${P.setup.label} setup`,
+                  [
+                    firstPayment(P, "month"),
+                    setupPaid
+                      ? "Billed monthly."
+                      : `Billed monthly. The ${P.setup.label} setup is one-time: your site and its indexes made ready, with a launch report.`,
+                  ],
+                  "Start monthly",
+                )}
+                {choice(
+                  "quarter",
+                  `${P.quarter.label} for 3 months upfront`,
+                  [firstPayment(P, "quarter"), `${P.quarter.perMonth} a month, billed every 3 months.${setupPaid ? "" : " Setup free."}`],
+                  "Pay 3 months",
+                )}
+                {choice(
+                  "year",
+                  `${P.year.label} for a year`,
+                  [firstPayment(P, "year"), `${P.year.perMonth} a month, ${YEAR_OFF}.${setupPaid ? "" : " Setup free."}`],
+                  "Pay a year",
+                )}
+              </div>
+            ) : (
+              <p className="mt-4 text-sm text-white/80">
+                Your prices did not load. Reload the page in a minute, or{" "}
+                <Link href="/business/dashboard/support" className="font-semibold text-violet-200 hover:text-white hover:underline">write to us</Link>.
+              </p>
+            )}
 
             {error && <p className="text-sm text-red-300 mt-3">{error}</p>}
             <p className="mt-4 text-sm">

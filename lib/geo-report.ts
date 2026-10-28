@@ -300,7 +300,7 @@ async function siteReport(f: Row, sample = false) {
     planInterval: isGeoInterval(f.plan_interval) ? f.plan_interval : null,
     // The site had a paid plan before, by anyone (lib/geo-business.ts geoPlanBeforeSql), so its one-time
     // setup is paid: /api/geo/checkout starts the month-to-month plan without it, and its first payment
-    // is GEO_PRICES.month alone. False here can still turn out true in Stripe: the plan
+    // is one month alone, at the account's price. False here can still turn out true in Stripe: the plan
     // page asks /api/geo/launch/setup, which decides as checkout does.
     setupPaid: f.setup_paid === true,
     pending: pending && {

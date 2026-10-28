@@ -10,6 +10,7 @@ import bcrypt from "bcryptjs"
 import { cookies, headers } from "next/headers"
 import { sendOwner } from "@/lib/telegram"
 import { visitSource } from "@/lib/visit-source"
+import { drawPriceVariant } from "@/lib/geo-pricing"
 
 // Retry a transient failure (dropped DB connection etc.) once before letting it
 // propagate — an uncaught throw here becomes /login?error=Configuration for the user.
@@ -156,6 +157,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
               name: pinRecord.name ?? email.split("@")[0],
               emailVerified: new Date(),
               plan: "starter",
+              // The AI-visibility plan's price, drawn once for a new account (lib/geo-pricing.ts PRICE_TEST).
+              geoPriceVariant: drawPriceVariant(),
             })
             .returning()
 
@@ -204,6 +207,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 name: (profile?.name as string | undefined) ?? user?.name ?? email.split("@")[0],
                 emailVerified: new Date(),
                 plan: "starter",
+                geoPriceVariant: drawPriceVariant(),
               })
               .returning()
             let regGclid: string | undefined

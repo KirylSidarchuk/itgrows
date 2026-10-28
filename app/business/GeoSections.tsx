@@ -11,7 +11,6 @@
 // Server components that read the page's language themselves (lib/i18n/server); every string is in
 // lib/i18n/messages/geoSections.ts.
 
-import { GEO_PRICES } from "@/lib/geo-pricing"
 import type { Locale } from "@/lib/i18n/config"
 import { t } from "@/lib/i18n/messages"
 import geoSections from "@/lib/i18n/messages/geoSections"
@@ -85,7 +84,7 @@ export async function WorkSystem({ id = "how" }: { id?: string }) {
   return (
     <section id={id} className="px-4 sm:px-6 py-14 sm:py-20 scroll-mt-20">
       <div className="max-w-5xl mx-auto">
-        <p className="text-[11px] uppercase tracking-[0.15em] font-bold text-violet-600 text-center mb-3">{m.kicker(GEO_PRICES.month.label)}</p>
+        <p className="text-[11px] uppercase tracking-[0.15em] font-bold text-violet-600 text-center mb-3">{m.kicker}</p>
         <h2 className="text-2xl sm:text-4xl font-extrabold mb-3 tracking-tight text-center">{m.h2}</h2>
         <p className="text-slate-600 text-center mb-10 sm:mb-14 text-sm sm:text-base">{m.lead}</p>
 
@@ -263,5 +262,5 @@ export async function VersusArticles({ id }: { id?: string }) {
 
 /** What the plan includes, in a language (was GEO_INCLUDED): plain strings, so a client component can take it. */
 export function geoIncluded(locale: Locale): string[] {
-  return t(locale, geoSections).included(GEO_PRICES.setup.label)
+  return [...t(locale, geoSections).included]
 }

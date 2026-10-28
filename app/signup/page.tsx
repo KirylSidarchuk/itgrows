@@ -7,7 +7,6 @@ import Link from "next/link"
 import OAuthButtons from "@/components/auth/OAuthButtons"
 import LocaleLink from "@/components/i18n/LocaleLink"
 import { useT } from "@/components/i18n/LocaleProvider"
-import { GEO_PRICES } from "@/lib/geo-pricing"
 import { isBareDomain } from "@/lib/geo-handoff"
 import { rich } from "@/lib/i18n/rich"
 import signupNs from "@/lib/i18n/messages/signup"
@@ -413,7 +412,7 @@ function SignupForm() {
           {aiForPlan ? (
             <>
               <h1 className="text-2xl font-bold text-[#1b1916] mt-4">{m.planTitle}</h1>
-              <p className="text-slate-500 text-sm mt-1">{m.planLead(GEO_PRICES.month.label, GEO_PRICES.setup.label, GEO_PRICES.quarter.label, GEO_PRICES.year.label)}</p>
+              <p className="text-slate-500 text-sm mt-1">{m.planLead}</p>
             </>
           ) : fromAiCheck && aiSite ? (
             <>

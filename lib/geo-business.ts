@@ -2,7 +2,8 @@ import Stripe from "stripe"
 import { db } from "@/lib/db"
 import { users } from "@/lib/db/schema"
 import { eq, sql, type SQL } from "drizzle-orm"
-import { GEO_PRICES, usd, type GeoInterval } from "@/lib/geo-pricing"
+import { GEO_PRICES, GEO_RECURRING, ONE_PRICE_MONTH, geoPrices, usd, type GeoInterval, type GeoPriceKind, type GeoPrices } from "@/lib/geo-pricing"
+import { variantLine } from "@/lib/geo-price-test"
 import { geoCheck, type PublicRun } from "@/lib/geo-check"
 import { sendOwner } from "@/lib/telegram"
 
@@ -18,7 +19,9 @@ import { sendOwner } from "@/lib/telegram"
 //   checkout of it opened before that still lands in the webhook and is honoured (unlockGeoResearch),
 //   but no new one is opened (/api/geo/research-checkout answers 410).
 //
-// Stripe prices are found by their lookup keys and created on first use.
+// The one price's Stripe prices are found by their lookup keys and created on first use; a price of
+// the price test (lib/geo-pricing.ts PRICE_TEST) is charged inline (price_data) under the same
+// products, so it needs no Stripe price of its own (geoLineItems).
 
 export const GEO_PLAN = "geo_business"
 export const GEO_RESEARCH = "geo_research"
@@ -51,7 +54,7 @@ export function normaliseDomain(raw: unknown): string | null {
 
 // ── Stripe prices ───────────────────────────────────────────────────────────────────────────
 
-type PriceKind = "setup" | GeoInterval
+type PriceKind = GeoPriceKind
 
 const PRODUCTS = {
   plan: {
@@ -76,20 +79,23 @@ async function productFor(stripe: Stripe, kind: PriceKind): Promise<string> {
   return typeof month.product === "string" ? month.product : month.product.id
 }
 
-/** A GEO price, found by its lookup key in lib/geo-pricing.ts; created once on first use. */
+/** A price of the one price, found by its lookup key in lib/geo-pricing.ts; created once on first use. */
 export async function geoPriceId(stripe: Stripe, kind: PriceKind): Promise<string> {
   const p = GEO_PRICES[kind]
-  const find = async () => (await stripe.prices.list({ lookup_keys: [p.lookupKey], active: true, limit: 1 })).data[0]?.id
+  const key = p.lookupKey
+  if (!key) throw new Error(`no lookup key for the one price's ${kind}`)
+  const find = async () => (await stripe.prices.list({ lookup_keys: [key], active: true, limit: 1 })).data[0]?.id
   const found = await find()
   if (found) return found
   try {
+    const rec = kind === "setup" ? null : GEO_RECURRING[kind]
     const price = await stripe.prices.create({
       product: await productFor(stripe, kind),
       currency: "usd",
       unit_amount: p.cents,
-      lookup_key: p.lookupKey,
+      lookup_key: key,
       metadata: { product: GEO_PLAN, kind },
-      ...("interval" in p ? { recurring: { interval: p.interval, interval_count: p.intervalCount } } : {}),
+      ...(rec ? { recurring: { interval: rec.interval, interval_count: rec.intervalCount } } : {}),
     })
     return price.id
   } catch (err) {
@@ -98,6 +104,37 @@ export async function geoPriceId(stripe: Stripe, kind: PriceKind): Promise<strin
     if (again) return again
     throw err
   }
+}
+
+/** A line of a Checkout Session, as stripe.checkout.sessions.create takes it. */
+type CheckoutLine = NonNullable<NonNullable<Parameters<Stripe["checkout"]["sessions"]["create"]>[0]>["line_items"]>[number]
+
+/** The product a price goes under: the plan's for the plan, the setup's for the setup — the products
+ *  of the one price's monthly and setup prices. */
+async function geoProductId(stripe: Stripe, kind: PriceKind): Promise<string> {
+  const price = await stripe.prices.retrieve(await geoPriceId(stripe, kind === "setup" ? "setup" : "month"))
+  return typeof price.product === "string" ? price.product : price.product.id
+}
+
+/** The Checkout lines for the plan at an account's prices (lib/geo-price-test.ts accountPrices), and
+ *  the setup with it when it is charged: the one price by its Stripe prices (lookup keys); a price of
+ *  the test inline (price_data), on the same products and billing periods, so Stripe needs no price
+ *  object made for it and the webhook reads the interval from the subscription as before. */
+export async function geoLineItems(stripe: Stripe, p: GeoPrices, interval: GeoInterval, setup: boolean): Promise<CheckoutLine[]> {
+  const line = async (kind: PriceKind): Promise<CheckoutLine> => {
+    if (p[kind].lookupKey) return { price: await geoPriceId(stripe, kind), quantity: 1 }
+    const rec = kind === "setup" ? null : GEO_RECURRING[kind]
+    return {
+      quantity: 1,
+      price_data: {
+        currency: "usd",
+        product: await geoProductId(stripe, kind),
+        unit_amount: p[kind].cents,
+        ...(rec ? { recurring: { interval: rec.interval, interval_count: rec.intervalCount } } : {}),
+      },
+    }
+  }
+  return [await line(interval), ...(setup ? [await line("setup")] : [])]
 }
 
 /** The user's Stripe customer (the same one the LinkedIn/X plans use), created if they have none. */
@@ -301,19 +338,34 @@ export async function geoPlanCheckoutCompleted(session: Stripe.Checkout.Session,
     WHERE s.id = f.site_id AND f.user_id = ${userId} AND s.domain = ${domain}`)
   const interval = geoSubscriptionInterval(sub) ?? "month"
   if (!(await firstTime(userId, "geo_checkout_completed", { session: session.id, domain, interval }))) return
-  const price = GEO_PRICES[interval]
+  // The prices it was bought at (/api/geo/checkout metadata): month_cents, the monthly price, and
+  // variant, the price test's variant or "none" for the one price outside the test. A checkout opened
+  // before the test has neither: the one price.
+  const meta = (k: string) => sub.metadata?.[k] ?? session.metadata?.[k]
+  const monthCents = Number(meta("month_cents")) || ONE_PRICE_MONTH
+  const variant = Number(meta("variant")) || null
+  const p = geoPrices(monthCents)
+  const price = p[interval]
   // metadata.setup = "0": the site had the plan before, so its one-time setup was not charged again.
-  const setupCharged = (session.metadata?.setup ?? sub.metadata?.setup) !== "0"
+  const setupCharged = meta("setup") !== "0"
+  await firstTime(userId, "geo_plan_paid", {
+    session: session.id,
+    domain,
+    interval,
+    variant,
+    month_cents: monthCents,
+    amount: session.amount_total ?? null,
+  })
   const terms =
     interval === "quarter"
       ? `${price.label} за 3 мес`
       : interval === "year"
         ? `${price.label} за год`
         : setupCharged
-          ? `${price.label}/мес + запуск ${GEO_PRICES.setup.label}`
+          ? `${price.label}/мес + запуск ${p.setup.label}`
           : `${price.label}/мес, запуск уже был оплачен раньше`
   await notifyOwner(
-    `💳 GEO оплачен: ${terms}\n👤 ${await buyer(userId)}\n🌐 ${domain}\nДальше: подключить сайт клиента и поставить статьи.`
+    `💳 GEO оплачен: ${terms}\n🧪 ${variantLine(variant, monthCents)} · списано ${usd(session.amount_total ?? 0)}\n👤 ${await buyer(userId)}\n🌐 ${domain}\nДальше: подключить сайт клиента и поставить статьи.`
   )
 }
 

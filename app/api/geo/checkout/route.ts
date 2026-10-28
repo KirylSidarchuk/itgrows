@@ -5,20 +5,24 @@ import { db } from "@/lib/db"
 import { sql } from "drizzle-orm"
 import {
   GEO_PLAN,
+  geoLineItems,
   geoPlanPaidBefore,
-  geoPriceId,
   isGeoInterval,
   liveGeoSubscriptions,
   normaliseDomain,
   stripeClient,
   stripeCustomerFor,
 } from "@/lib/geo-business"
-import { GEO_PRICES, firstPaymentCents, setupFree } from "@/lib/geo-pricing"
+import { setupFree } from "@/lib/geo-pricing"
+import { accountPrices, variantLine } from "@/lib/geo-price-test"
 import { sendOwner } from "@/lib/telegram"
 
-// Start the AI-visibility plan for one of the user's followed sites: $499 by the month plus the
-// one-time $499 setup, or $1,497 for 3 months / $4,788 for a year with the setup free. Stripe
-// Checkout, no trial; the webhook
+// Start the AI-visibility plan for one of the user's followed sites, at the account's own prices
+// (lib/geo-price-test.ts accountPrices: the price test's variant, or the one price): the monthly
+// price plus a one-time setup of one month, or 3 months / a year (20% off) with the setup free —
+// exactly what the plan page shows. The one price goes by its Stripe prices, a test price inline
+// (lib/geo-business.ts geoLineItems); metadata month_cents and variant say which, for the webhook
+// (Telegram, geo_plan_paid) and geo_checkout_started. Stripe Checkout, no trial; the webhook
 // turns the follow into plan = 'paid'. The setup is charged once per site: a site this user has had
 // the plan for before starts the month-to-month plan without it (lib/geo-business.ts geoPlanPaidBefore;
 // /api/geo/report shows it as setupPaid). The detailed report is free, so nothing comes off the first
@@ -76,14 +80,20 @@ export async function POST(req: NextRequest) {
   // The month-to-month plan carries the one-time setup on its first invoice; 3 months and a year do
   // not, nor does a site that has had the plan before (its setup was done then).
   const setupCharged = !setupFree(interval) && !(await geoPlanPaidBefore(stripe, userId, customer, site))
-  const lineItems = [
-    { price: await geoPriceId(stripe, interval), quantity: 1 },
-    ...(setupCharged ? [{ price: await geoPriceId(stripe, "setup"), quantity: 1 }] : []),
-  ]
-  const cents = firstPaymentCents(interval) - (setupFree(interval) || setupCharged ? 0 : GEO_PRICES.setup.cents)
+  const { variant, prices } = await accountPrices(userId)
+  const lineItems = await geoLineItems(stripe, prices, interval, setupCharged)
+  const cents = prices[interval].cents + (setupCharged ? prices.setup.cents : 0)
 
   const back = `https://www.itgrows.ai/business/dashboard/plan?site=${encodeURIComponent(site)}`
-  const meta = { userId, plan: GEO_PLAN, domain: site, interval, setup: setupCharged ? "1" : "0" }
+  const meta = {
+    userId,
+    plan: GEO_PLAN,
+    domain: site,
+    interval,
+    setup: setupCharged ? "1" : "0",
+    month_cents: String(prices.monthCents),
+    variant: variant === null ? "none" : String(variant),
+  }
   const checkout = await stripe.checkout.sessions.create({
     customer,
     mode: "subscription",
@@ -99,8 +109,8 @@ export async function POST(req: NextRequest) {
   await db
     .execute(sql`INSERT INTO analytics_events (user_id, event, path, props)
       VALUES (${userId}, 'geo_checkout_started', '/business/dashboard/plan',
-              ${JSON.stringify({ domain: site, interval, setup: setupCharged, cents, session: checkout.id })}::jsonb)`)
+              ${JSON.stringify({ domain: site, interval, setup: setupCharged, cents, session: checkout.id, variant, month_cents: prices.monthCents })}::jsonb)`)
     .catch(() => {})
-  void sendOwner(`🛒 Открыл оплату GEO: ${session?.user?.email ?? userId} — ${site}, ${interval}`)
+  void sendOwner(`🛒 Открыл оплату GEO: ${session?.user?.email ?? userId} — ${site}, ${interval}\n🧪 ${variantLine(variant, prices.monthCents)}`)
   return NextResponse.json({ url: checkout.url })
 }

@@ -23,6 +23,7 @@ import {
   type Report,
   type SiteReport,
 } from "./parts"
+import type { GeoPrices } from "@/lib/geo-pricing"
 
 // The AI-visibility report: where a new account lands after the quick check on the site, and where
 // a client sees the weekly count. Arriving with ?site= (or the check's handoff) follows that site,
@@ -91,6 +92,8 @@ export default function VisibilityPage() {
   const [followErr, setFollowErr] = useState<{ domain: string; error: string } | null>(null)
   // What /api/geo/follow would answer now for a new site ("report_limit" / "report_ip_used"), or null.
   const [reportLimit, setReportLimit] = useState<string | null>(null)
+  // The account's plan prices, for the end of the report (lib/geo-price-test.ts); null: no price named.
+  const [price, setPrice] = useState<GeoPrices | null>(null)
   // The site the visitor came with (?site= or the quick check's handoff), until it is followed.
   const [opening, setOpening] = useState<string | null>(null)
   const [audits, setAudits] = useState<Record<string, Audit | "failed">>({})
@@ -109,9 +112,10 @@ export default function VisibilityPage() {
     try {
       const r = await fetch("/api/geo/report", { cache: "no-store" })
       if (!r.ok) throw new Error(String(r.status))
-      const j = (await r.json()) as { sites: SiteReport[]; reportLimit?: string | null }
+      const j = (await r.json()) as { sites: SiteReport[]; reportLimit?: string | null; price?: GeoPrices | null }
       setSites(j.sites)
       setReportLimit(j.reportLimit ?? null)
+      setPrice(j.price ?? null)
       setLoadFailed(false)
       listOk.current = true
       if (awaiting.current) {
@@ -396,7 +400,7 @@ export default function VisibilityPage() {
               )}
               <History site={site} openId={opened} onOpen={showRun} />
               <Crawlers audit={audit} />
-              <YourPlan site={site} steps={planSteps(site, audit, client)} ready mode={client ? "client" : "offer"} />
+              <YourPlan site={site} steps={planSteps(site, audit, client)} ready mode={client ? "client" : "offer"} prices={price} />
             </>
           ) : (
             <>
@@ -427,7 +431,7 @@ export default function VisibilityPage() {
               )}
               <div className="grid xl:grid-cols-2 gap-5">
                 <Crawlers audit={audit} />
-                <YourPlan site={site} steps={[]} ready={false} mode={client ? "client" : "offer"} />
+                <YourPlan site={site} steps={[]} ready={false} mode={client ? "client" : "offer"} prices={price} />
               </div>
               <Pending title="Sites the assistants rely on" />
             </>
