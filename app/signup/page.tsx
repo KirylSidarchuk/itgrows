@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { signIn } from "next-auth/react"
 import Link from "next/link"
 import OAuthButtons from "@/components/auth/OAuthButtons"
+import GuestRewardNote from "@/components/geo/GuestRewardNote"
 import LocaleLink from "@/components/i18n/LocaleLink"
 import { useT } from "@/components/i18n/LocaleProvider"
 import { isBareDomain } from "@/lib/geo-handoff"
@@ -25,6 +26,10 @@ function SignupForm() {
   const aiSite = isBareDomain(siteParam) ? siteParam : ""
   // "Start the plan" on the pricing block: the same account, headed for the plan rather than the report.
   const aiForPlan = fromAiCheck && callbackUrl.startsWith("/business/dashboard/plan")
+  // Headed for the AI-visibility cabinet (the quick check, the pricing block, or /login's "Sign up" from
+  // the header's sign-in, which keeps its callbackUrl): the report's heading, and a launch reward won on
+  // the website's wheel is reminded (components/geo/GuestRewardNote.tsx).
+  const toGeo = callbackUrl.startsWith("/business")
 
   // Funnel step events (page view -> oauth click / email submit -> complete) so we can see
   // exactly where /signup loses people instead of guessing.
@@ -419,7 +424,7 @@ function SignupForm() {
               <h1 className="text-2xl font-bold text-[#1b1916] mt-4 break-words">{m.answersTitle(aiSite)}</h1>
               <p className="text-slate-500 text-sm mt-1">{m.answersLead}</p>
             </>
-          ) : fromAiCheck ? (
+          ) : fromAiCheck || toGeo ? (
             <>
               <h1 className="text-2xl font-bold text-[#1b1916] mt-4">{m.reportTitle(aiSite)}</h1>
               <p className="text-slate-500 text-sm mt-1">{m.reportLead}</p>
@@ -442,6 +447,7 @@ function SignupForm() {
               <span className="text-slate-600">{m.quickCheck}</span> <strong>{m.quickNamed(aiQuick.named, aiQuick.of)}</strong>
             </div>
           )}
+          {toGeo && <GuestRewardNote where="signup" className="mb-5" />}
           {handoff && !fromAiCheck && (
             <div className="mb-5 rounded-xl border border-violet-200 bg-violet-50 p-3 flex gap-3 items-start">
               {handoff.images?.[0] && (
@@ -495,7 +501,7 @@ function SignupForm() {
           </form>
           <p className="text-center text-sm text-slate-500 mt-6">
             {m.haveAccount}{" "}
-            <LocaleLink href={fromAiCheck ? `/login?callbackUrl=${encodeURIComponent(callbackUrl)}` : "/login"} className="text-violet-600 hover:underline font-medium">{m.signIn}</LocaleLink>
+            <LocaleLink href={fromAiCheck || toGeo ? `/login?callbackUrl=${encodeURIComponent(callbackUrl)}` : "/login"} className="text-violet-600 hover:underline font-medium">{m.signIn}</LocaleLink>
           </p>
         </div>
         <p className="text-center text-xs text-slate-400 mt-6">

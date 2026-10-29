@@ -7,7 +7,10 @@ import { defineMessages } from "../messages"
 // sits in the root layout, outside the pages' LocaleProvider, and reads the language from <html lang>.
 // No prices here, as nowhere on the public pages: the rewards by name only (the prices are inside the
 // account). `rewards` and `segments` (two short lines on the wheel) follow WHEEL_REWARDS. The terms are
-// in English only, so the other languages say so on the link. DE: Sie, FR: vous, ES: usted, RU: вы.
+// in English only, so the other languages say so on the link. After the spin, `claimHow` says what
+// claims the reward and `cta` names it (Kiryl, 29 Oct 2026: the button said "free report" under a won
+// reward); only the check and the report are called free, never the account (as signup.ts and
+// aiAnswers.ts). DE: Sie, FR: vous, ES: usted, RU: вы.
 
 type Rewards = Record<WheelReward, string>
 type Lines = Record<WheelReward, string[]>
@@ -35,8 +38,8 @@ const en = {
   close: "Close",
   wonLabel: "Your launch reward",
   keptUntil: (date: string) => `Kept until ${date}.`,
-  wonNext: "Create your account and get your free report: your reward is waiting there.",
-  cta: "Get my free report",
+  claimHow: "To claim it: enter your site, create an account and get your free report. The reward then moves into that account.",
+  cta: "Claim my reward",
   terms: "Terms",
   failed: "That didn't go through. Try again in a minute.",
   announce: (reward: string, date: string) => `Your reward: ${reward}, kept until ${date}.`,
@@ -66,8 +69,9 @@ export default defineMessages(en, {
     close: "Schließen",
     wonLabel: "Ihr Startbonus",
     keptUntil: (date) => `Reserviert bis ${date}.`,
-    wonNext: "Legen Sie Ihr Konto an und holen Sie sich Ihren kostenlosen Bericht: Dort wartet Ihr Bonus.",
-    cta: "Kostenlosen Bericht holen",
+    claimHow:
+      "So lösen Sie ihn ein: Geben Sie Ihre Website ein, legen Sie ein Konto an und erhalten Sie Ihren kostenlosen Bericht. Dann geht der Bonus in dieses Konto über.",
+    cta: "Bonus sichern",
     terms: "Bedingungen (Englisch)",
     failed: "Das hat nicht geklappt. Bitte versuchen Sie es in einer Minute erneut.",
     announce: (reward, date) => `Ihr Bonus: ${reward}, reserviert bis ${date}.`,
@@ -95,8 +99,8 @@ export default defineMessages(en, {
     close: "Fermer",
     wonLabel: "Votre offre de lancement",
     keptUntil: (date) => `Gardée jusqu’au ${date}.`,
-    wonNext: "Créez votre compte et recevez votre rapport gratuit : votre offre vous y attend.",
-    cta: "Obtenir mon rapport gratuit",
+    claimHow: "Pour en profiter : saisissez votre site, créez un compte et recevez votre rapport gratuit. L’offre passe alors dans ce compte.",
+    cta: "Récupérer mon offre",
     terms: "Conditions (en anglais)",
     failed: "Cela n’a pas abouti. Réessayez dans une minute.",
     announce: (reward, date) => `Votre offre : ${reward}, gardée jusqu’au ${date}.`,
@@ -124,8 +128,8 @@ export default defineMessages(en, {
     close: "Cerrar",
     wonLabel: "Su recompensa de lanzamiento",
     keptUntil: (date) => `Guardada hasta el ${date}.`,
-    wonNext: "Cree su cuenta y reciba su informe gratuito: su recompensa le espera allí.",
-    cta: "Obtener mi informe gratuito",
+    claimHow: "Para obtenerla: introduzca su sitio, cree una cuenta y reciba su informe gratuito. La recompensa pasará entonces a esa cuenta.",
+    cta: "Obtener mi recompensa",
     terms: "Condiciones (en inglés)",
     failed: "No se ha podido completar. Inténtelo de nuevo en un minuto.",
     announce: (reward, date) => `Su recompensa: ${reward}, guardada hasta el ${date}.`,
@@ -153,8 +157,8 @@ export default defineMessages(en, {
     close: "Закрыть",
     wonLabel: "Ваш стартовый бонус",
     keptUntil: (date) => `Хранится до ${date}.`,
-    wonNext: "Создайте аккаунт и получите бесплатный отчёт: бонус будет ждать вас там.",
-    cta: "Получить бесплатный отчёт",
+    claimHow: "Как забрать: введите адрес сайта, создайте аккаунт и получите бесплатный отчёт. Бонус перейдёт в этот аккаунт.",
+    cta: "Забрать бонус",
     terms: "Условия (на английском)",
     failed: "Не получилось. Попробуйте ещё раз через минуту.",
     announce: (reward, date) => `Ваш бонус: ${reward}, хранится до ${date}.`,

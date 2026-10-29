@@ -5,9 +5,10 @@ import { usePathname, useRouter } from "next/navigation"
 import { consentedAnonId } from "@/components/consent/consent"
 import { PromoWheel, SEG_COLORS, SPIN_MS, prefersStill, spinAngle } from "@/components/geo/PromoWheel"
 import { markExitWheelSpun } from "@/lib/geo-exit-wheel"
+import { holdGuestReward, rewardUntil } from "@/lib/geo-guest-reward"
 import { GEO_SANS } from "@/lib/geo-pages"
 import { PROMO_WHEEL, WHEEL_REWARDS, isWheelReward, type GuestPromoView, type WheelReward } from "@/lib/geo-promo"
-import { INTL_LOCALE, type Locale } from "@/lib/i18n/config"
+import type { Locale } from "@/lib/i18n/config"
 import { t } from "@/lib/i18n/messages"
 import { localePath } from "@/lib/i18n/paths"
 import { usePageLocale } from "@/lib/i18n/page-locale"
@@ -20,8 +21,11 @@ import ns from "@/lib/i18n/messages/exitWheel"
 // timer, no prices (they are only inside the account), a plain "No thanks", and the odds said (each
 // reward the same chance). The reward is drawn on the server (POST /api/geo/promo/guest-spin) and the
 // wheel turns to it (not with prefers-reduced-motion). After the spin: the reward, the date it is kept
-// until, and "Get my free report", which closes the dialog and puts the cursor in the address field of
-// the quick check on this page (app/business/AuditForm.tsx), or on the home page in this language.
+// until, what claims it (the site, an account, the free report), and "Claim my reward", which closes
+// the dialog and puts the cursor in the address field of the quick check on this page
+// (app/business/AuditForm.tsx), or on the home page in this language. From then on the reward is
+// reminded at that form, at the check's account offer and on /signup and /login
+// (components/geo/GuestRewardNote.tsx; handed over here with holdGuestReward, no request).
 // Texts: lib/i18n/messages/exitWheel.ts, in the page's language (<html lang>).
 // Counted like every public-page event (/api/track, an id only after "Accept"): geo_wheel_exit_seen
 // (props.lang, props.path) when it opens, geo_wheel_exit_spin (props.reward, .lang, .path, .fresh).
@@ -37,7 +41,8 @@ export async function rewardKept(): Promise<boolean> {
     const r = await fetch(API, { cache: "no-store" })
     const j = (r.ok ? await r.json() : null) as GuestPromoView | null
     if (!j?.reward) return false
-    markExitWheelSpun()
+    markExitWheelSpun(j.reward.expiresAt)
+    holdGuestReward(j.reward)
     return true
   } catch {
     return false
@@ -86,11 +91,12 @@ export default function ExitWheelModal({ onClose }: { onClose: () => void }) {
   const [openedOn] = useState(pathname)
   const titleId = useId()
   const lineId = useId()
+  const claimId = useId()
   const box = useRef<HTMLDivElement>(null)
   const spinRef = useRef<HTMLButtonElement>(null)
   const ctaRef = useRef<HTMLButtonElement>(null)
   const seen = useRef(false)
-  /** "Get my free report" puts focus in the form: it is not handed back on close. */
+  /** "Claim my reward" puts focus in the form: it is not handed back on close. */
   const toForm = useRef(false)
   const [busy, setBusy] = useState(false)
   const [spin, setSpin] = useState<{ angle: number; animate: boolean } | null>(null)
@@ -98,8 +104,7 @@ export default function ExitWheelModal({ onClose }: { onClose: () => void }) {
   const [error, setError] = useState("")
   const [said, setSaid] = useState("")
 
-  const until = (iso: string) =>
-    new Date(iso).toLocaleString(INTL_LOCALE[locale], { day: "numeric", month: "long", hour: "numeric", minute: "2-digit" })
+  const until = (iso: string) => rewardUntil(locale, iso)
 
   // Open: the page behind stays still (its scrollbar's room kept, so nothing shifts) and focus moves in.
   // Closed: focus goes back where it was.
@@ -156,7 +161,7 @@ export default function ExitWheelModal({ onClose }: { onClose: () => void }) {
     return () => document.removeEventListener("keydown", onKey)
   }, [onClose, busy])
 
-  // The reward is on screen: focus moves to "Get my free report".
+  // The reward is on screen: focus moves to "Claim my reward".
   useEffect(() => {
     if (won) ctaRef.current?.focus()
   }, [won])
@@ -174,7 +179,7 @@ export default function ExitWheelModal({ onClose }: { onClose: () => void }) {
         setBusy(false)
         return
       }
-      markExitWheelSpun()
+      markExitWheelSpun(got.expiresAt)
       track("geo_wheel_exit_spin", { reward: got.id, lang: locale, path: location.pathname, fresh: Boolean(j.fresh) })
       const still = prefersStill()
       setSpin({ angle: spinAngle(got.id, still), animate: !still })
@@ -184,6 +189,8 @@ export default function ExitWheelModal({ onClose }: { onClose: () => void }) {
           setWon({ id: got.id, expiresAt: got.expiresAt })
           setSaid(m.announce(m.rewards[got.id], until(got.expiresAt)))
           setBusy(false)
+          // The reminders at the check's form and offer and on sign-up show it from now on.
+          holdGuestReward(got)
         },
         still ? 0 : SPIN_MS + 100
       )
@@ -193,7 +200,7 @@ export default function ExitWheelModal({ onClose }: { onClose: () => void }) {
     }
   }
 
-  function getReport() {
+  function claimReward() {
     toForm.current = true
     onClose()
     window.setTimeout(() => goToCheck((href) => router.push(href), locale), 0)
@@ -239,7 +246,9 @@ export default function ExitWheelModal({ onClose }: { onClose: () => void }) {
                 <p className="text-[11px] font-bold uppercase tracking-wide text-violet-700">{m.wonLabel}</p>
                 <p className="mt-1 text-lg font-extrabold leading-snug">{m.rewards[won.id]}</p>
                 <p className="mt-2 text-sm text-slate-700">{m.keptUntil(until(won.expiresAt))}</p>
-                <p className="mt-1 text-sm leading-relaxed text-slate-600">{m.wonNext}</p>
+                <p id={claimId} className="mt-1 text-sm leading-relaxed text-slate-600">
+                  {m.claimHow}
+                </p>
               </>
             ) : (
               <>
@@ -268,7 +277,8 @@ export default function ExitWheelModal({ onClose }: { onClose: () => void }) {
             <button
               ref={ctaRef}
               type="button"
-              onClick={getReport}
+              onClick={claimReward}
+              aria-describedby={claimId}
               className={`rounded-xl bg-violet-600 px-5 py-3 text-sm font-bold text-white hover:bg-violet-500 ${focusRing}`}
             >
               {m.cta}

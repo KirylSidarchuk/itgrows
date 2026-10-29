@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, useCallback, useId } from "react"
 import AiAnswers, { type TeaserView } from "./AiAnswers"
 import OpenAnswersBar from "./OpenAnswersBar"
+import GuestRewardNote from "@/components/geo/GuestRewardNote"
 import LocaleLink from "@/components/i18n/LocaleLink"
 import { useLocale, useT } from "@/components/i18n/LocaleProvider"
 import { useConsent, useSettingsOpen } from "@/components/consent/consent"
@@ -535,6 +536,10 @@ export default function AuditForm({ note }: { note?: string } = {}) {
         {error && <p className="text-sm text-red-600 mt-3">{error}</p>}
       </form>
       {note && !aiOn && !data && <p className="text-xs text-slate-500 mt-3 text-center">{note}</p>}
+      {/* A launch reward won on the website's wheel, before a check: what it is, until when, what
+          claims it (a signed-out visitor whose browser holds one; components/geo/GuestRewardNote.tsx).
+          Once a check runs, its account offer says it instead (AiAnswers). */}
+      {!aiOn && !data && <GuestRewardNote where="check" className="mt-3" />}
 
       {ours && (
         <div role="status" className="mt-5 rounded-2xl border border-violet-200 bg-violet-50/70 px-5 py-5 text-center">

@@ -9,8 +9,12 @@
 // "about 10"). Under the two answers comes that report, free once an account is created
 // (lib/geo-pricing.ts), with a real one a click away. AuditForm owns the refs of the offer, the report card and the locked rows:
 // it watches them for geo_cta_seen and for the phone bar. Each locked row says which assistants
-// answered that question (the API sends their names, never the answers).
+// answered that question (the API sends their names, never the answers). A launch reward won on the
+// website's wheel (signed out) is reminded at the first account offer (the one under who was named
+// instead, else the free-report card) and in the failure boxes that offer an account
+// (components/geo/GuestRewardNote.tsx "gate").
 
+import GuestRewardNote from "@/components/geo/GuestRewardNote"
 import { SAMPLE_PATH } from "@/lib/geo-pricing"
 import { useLocale, useT } from "@/components/i18n/LocaleProvider"
 import { INTL_LOCALE, type Locale } from "@/lib/i18n/config"
@@ -321,6 +325,7 @@ function Result({
               {m.ctaButton(total)}
             </a>
             <p className="text-xs text-slate-500 mt-2.5 text-center leading-relaxed">{m.ctaSignIn}</p>
+            <GuestRewardNote where="gate" onTint className="mt-3" />
           </div>
         )}
       </div>
@@ -351,6 +356,7 @@ function Result({
           >
             {m.seeReport}
           </a>
+          {!ready && <GuestRewardNote where="gate" className="mt-3" />}
         </div>
 
         <div ref={lockedRef} className="mt-5 space-y-4 pb-5">
@@ -418,12 +424,14 @@ function Failed({
   const m = useT(ns)
   const e = view.error ?? "check_failed"
   const amber = "bg-amber-50 border-amber-200"
-  const box = (tone: string, title: string, body: string, actions: React.ReactNode, note?: string) => (
+  // `reward`: a box that offers an account also reminds a launch reward won on the website.
+  const box = (tone: string, title: string, body: string, actions: React.ReactNode, note?: string, reward = false) => (
     <div className={`m-4 rounded-xl border ${tone} p-4 sm:p-5`}>
       <p className="font-extrabold text-base leading-snug">{title}</p>
       <p className="text-sm text-slate-700 mt-1.5 leading-relaxed">{body}</p>
       <div className="mt-4 flex flex-col sm:flex-row gap-2.5 sm:items-center">{actions}</div>
       {note && <p className="text-xs text-slate-500 mt-2.5">{note}</p>}
+      {reward && <GuestRewardNote where="gate" onTint className="mt-3" />}
     </div>
   )
   const primary = (label: string, onClick?: () => void, href?: string) =>
@@ -456,7 +464,9 @@ function Failed({
       <>
         {primary(m.createAccount, () => onCta("limit"), signupHref)}
         <span className="text-sm text-slate-500">{m.tomorrow}</span>
-      </>
+      </>,
+      undefined,
+      true
     )
   if (e === "busy")
     return box(
@@ -464,7 +474,8 @@ function Failed({
       m.busyTitle,
       m.busyBody,
       primary(m.createAccount, () => onCta("busy"), signupHref),
-      m.busyNote
+      m.busyNote,
+      true
     )
   if (e === "unreachable") {
     const reason = REASON.find(([re]) => re.test(view.reason ?? ""))?.[1]
@@ -486,7 +497,8 @@ function Failed({
         {primary(m.tryAgain, onRetry)}
         {account("questions-failed")}
       </>,
-      m.notCounted
+      m.notCounted,
+      true
     )
   if (e === "invalid_url")
     return box(amber, m.invalidTitle, m.invalidBody, primary(m.otherUrl, onOtherUrl))
@@ -498,7 +510,8 @@ function Failed({
       {primary(m.tryAgain, onRetry)}
       {account("failed")}
     </>,
-    m.notCounted
+    m.notCounted,
+    true
   )
 }
 

@@ -4,6 +4,7 @@ import { Suspense, useState, useEffect } from "react"
 import { signIn } from "next-auth/react"
 import { useRouter, useSearchParams } from "next/navigation"
 import OAuthButtons from "@/components/auth/OAuthButtons"
+import GuestRewardNote from "@/components/geo/GuestRewardNote"
 import LocaleLink from "@/components/i18n/LocaleLink"
 import { useT } from "@/components/i18n/LocaleProvider"
 import loginNs from "@/lib/i18n/messages/login"
@@ -13,6 +14,10 @@ function LoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const callbackUrl = searchParams.get("callbackUrl") ?? "/cabinet"
+  // Headed for the AI-visibility cabinet (the header's "Sign in", the cabinet's own redirect): a launch
+  // reward won on the website's wheel is reminded here (components/geo/GuestRewardNote.tsx), and
+  // "Sign up" keeps the way there (without its callbackUrl, /signup ends in the LinkedIn cabinet).
+  const toGeo = callbackUrl.startsWith("/business")
 
   // NextAuth lands here with ?error=Configuration|OAuthCallbackError|... when a sign-in
   // flow blows up server-side. Show a human message instead of a silent bare form, and
@@ -140,6 +145,7 @@ function LoginForm() {
           {m.authError}
         </div>
       )}
+      {toGeo && <GuestRewardNote where="login" className="mb-4" />}
       <OAuthButtons callbackUrl={callbackUrl} googleFirst={callbackUrl.startsWith("/business")} />
       <form onSubmit={handleSendPin} className="space-y-4">
         <div>
@@ -165,7 +171,12 @@ function LoginForm() {
       </form>
       <p className="text-center text-sm text-slate-500 mt-6">
         {m.noAccount}{" "}
-        <LocaleLink href="/signup" className="text-violet-600 hover:underline font-medium">{m.signUp}</LocaleLink>
+        <LocaleLink
+          href={toGeo ? `/signup?callbackUrl=${encodeURIComponent(callbackUrl)}` : "/signup"}
+          className="text-violet-600 hover:underline font-medium"
+        >
+          {m.signUp}
+        </LocaleLink>
       </p>
     </div>
   )
