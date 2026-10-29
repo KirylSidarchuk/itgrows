@@ -27,6 +27,9 @@ export const users = pgTable("users", {
   // The AI-visibility plan's price test: the monthly price in cents drawn at creation, kept for good;
   // null = the one price (lib/geo-pricing.ts PRICE_TEST, lib/db/migrations/add_geo_price_variant.sql).
   geoPriceVariant: integer("geo_price_variant"),
+  // The launch-rewards wheel: the account's one spin and its reward, null = never spun (lib/geo-promo.ts,
+  // lib/db/migrations/add_geo_promo.sql).
+  geoPromo: jsonb("geo_promo"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 })
 

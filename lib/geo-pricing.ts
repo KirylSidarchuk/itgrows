@@ -26,6 +26,9 @@
 // and the articles name none: "you see your price after your free report". Counted per variant:
 // geo_plan_view, geo_checkout_started, geo_plan_paid (analytics_events, props.variant).
 //
+// The launch-rewards wheel (lib/geo-promo.ts PROMO_WHEEL, since 29 Oct 2026) comes on top of these
+// prices: the same four rewards for every variant, applied at checkout to the account's own prices.
+//
 // Back to one price, with no other edit: `enabled: false` puts everyone on ONE_PRICE_MONTH (and new
 // accounts get no variant); `variants: [<cents>]` puts every account of the test on that one price
 // (accounts from before the test stay on ONE_PRICE_MONTH). A variant dropped from a longer list sends
@@ -81,10 +84,14 @@ export type GeoPrices = { monthCents: number } & Record<GeoPriceKind, GeoPrice>
 export const usd = (cents: number) =>
   "$" + (cents / 100).toLocaleString("en-US", { minimumFractionDigits: cents % 100 ? 2 : 0, maximumFractionDigits: 2 })
 
+/** A year's monthly figure at a discount, in cents, rounded to whole dollars ($499 at 20% off -> $399;
+ *  the launch reward's 30% off, lib/geo-promo.ts, -> $349). */
+export const yearMonthCents = (monthCents: number, discount: number) => Math.round((monthCents * (1 - discount)) / 100) * 100
+
 /** The plan's prices for a monthly price: the setup costs one month; 3 months are three; a year is
  *  twelve at YEAR_DISCOUNT off, the monthly figure rounded to whole dollars ($499 -> $399, $4,788). */
 export function geoPrices(monthCents: number): GeoPrices {
-  const yearMonth = Math.round((monthCents * (1 - YEAR_DISCOUNT)) / 100) * 100
+  const yearMonth = yearMonthCents(monthCents, YEAR_DISCOUNT)
   const one = monthCents === ONE_PRICE_MONTH
   const price = (kind: GeoPriceKind, cents: number, perMonth: number): GeoPrice => ({
     cents,

@@ -22,6 +22,7 @@ import { YEAR_DISCOUNT, type GeoInterval, type GeoPrices } from "@/lib/geo-prici
 import { listQuestions } from "@/lib/geo-list-question"
 import { useT } from "@/components/i18n/LocaleProvider"
 import visibilityOpening from "@/lib/i18n/messages/visibilityOpening"
+import { ReportRewards } from "../launch-wheel"
 
 export interface EngineAnswer {
   named: number
@@ -1466,7 +1467,9 @@ function ArticlesStep({ n, steps, work, client }: { n: number; steps: Step[]; wo
 /** The end of the report: what we do for the site, step by step. For an account not on the plan,
  *  "Start the plan" and "Talk to us", with its own prices (/api/geo/report price), right under the
  *  plan's summary and before the steps; for a client, where each step stands and what is done. The
- *  public sample names no price. The article steps for the buyer questions are one card (planItems). */
+ *  public sample names no price. The article steps for the buyer questions are one card (planItems).
+ *  Under "Start the plan", for an account that may have one, the launch-rewards wheel or the reward
+ *  won (../launch-wheel.tsx; never on the sample, never for a client). */
 export function YourPlan({
   site,
   steps,
@@ -1540,6 +1543,7 @@ export function YourPlan({
                   Talk to us →
                 </a>
               )}
+              {!sample && <ReportRewards site={site.domain} prices={p} planHref={planHref} />}
             </div>
           )}
           {steps.length === 0 && <p className="text-sm text-slate-600 mt-4">Nothing in this report stands out as urgent.</p>}

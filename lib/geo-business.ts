@@ -4,6 +4,7 @@ import { users } from "@/lib/db/schema"
 import { eq, sql, type SQL } from "drizzle-orm"
 import { GEO_PRICES, GEO_RECURRING, ONE_PRICE_MONTH, geoPrices, usd, type GeoInterval, type GeoPriceKind, type GeoPrices } from "@/lib/geo-pricing"
 import { variantLine } from "@/lib/geo-price-test"
+import { REWARD_RU, isWheelReward, monthsLater, rewardTerms, type WheelReward } from "@/lib/geo-promo"
 import { geoCheck, type PublicRun } from "@/lib/geo-check"
 import { sendOwner } from "@/lib/telegram"
 
@@ -21,7 +22,8 @@ import { sendOwner } from "@/lib/telegram"
 //
 // The one price's Stripe prices are found by their lookup keys and created on first use; a price of
 // the price test (lib/geo-pricing.ts PRICE_TEST) is charged inline (price_data) under the same
-// products, so it needs no Stripe price of its own (geoLineItems).
+// products, so it needs no Stripe price of its own (geoLineItems). A launch reward of the wheel
+// (lib/geo-promo.ts) changes the first payment (geoCheckoutPlan); the webhook marks it used.
 
 export const GEO_PLAN = "geo_business"
 export const GEO_RESEARCH = "geo_research"
@@ -135,6 +137,143 @@ export async function geoLineItems(stripe: Stripe, p: GeoPrices, interval: GeoIn
     }
   }
   return [await line(interval), ...(setup ? [await line("setup")] : [])]
+}
+
+// ── launch rewards (lib/geo-promo.ts) ───────────────────────────────────────────────────────
+
+/** The coupon of the "first month 50% off" reward: 50% off the plan's product (so not the setup line),
+ *  on the first invoice only. The one Stripe object the rewards need: found by its id, made on first use. */
+export const HALF_MONTH_COUPON = "itgrows-geo-launch-month-half"
+
+async function halfMonthCoupon(stripe: Stripe): Promise<string> {
+  const find = async () => {
+    try {
+      return (await stripe.coupons.retrieve(HALF_MONTH_COUPON)).id
+    } catch (err) {
+      if ((err as { code?: string }).code === "resource_missing") return null
+      throw err
+    }
+  }
+  const found = await find()
+  if (found) return found
+  try {
+    const coupon = await stripe.coupons.create({
+      id: HALF_MONTH_COUPON,
+      name: "Launch reward: first month 50% off",
+      percent_off: 50,
+      duration: "once",
+      applies_to: { products: [await geoProductId(stripe, "month")] },
+      metadata: { product: GEO_PLAN, kind: "launch_reward", reward: "month_half" },
+    })
+    return coupon.id
+  } catch (err) {
+    // Two first checkouts at once: the other one created it.
+    const again = await find()
+    if (again) return again
+    throw err
+  }
+}
+
+/** What a plan checkout charges, with a launch reward or without. */
+export interface GeoCheckoutPlan {
+  lineItems: CheckoutLine[]
+  /** The first-month reward's coupon. */
+  discounts?: { coupon: string }[]
+  /** A first payment that covers more than one period: the subscription's first charge waits until
+   *  then (Stripe's trial_end), in Unix seconds. */
+  trialEnd?: number
+  /** Checkout's text above the pay button: what the reward does and when the next payment is. */
+  note?: string
+  /** The first payment, in cents, and whether the setup is on it. */
+  cents: number
+  setup: boolean
+}
+
+const longDate = (unix: number) =>
+  new Date(unix * 1000).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" })
+
+/** The checkout of the plan at an account's prices. Without a reward: geoLineItems, as before. With
+ *  one (matched to this site and way to pay by lib/geo-promo-server.ts checkoutReward):
+ *  - setup_free: the month without its setup line;
+ *  - month_half: the month and the setup as usual, with the coupon (50% off the plan's line, once);
+ *  - quarter_plus_month: the 3 months as a one-time line on the plan's product, and the quarterly plan
+ *    with a trial until 4 months from now, when its first charge, at the regular price, comes;
+ *  - year_30: the year at 30% off as a one-time line, and the yearly plan at its regular price with a
+ *    trial until a year from now.
+ *  Stripe puts a subscription checkout's one-time lines on its first invoice, charged at once, also
+ *  with a trial; Checkout shows the time paid for as a trial, so the note says what it is. */
+export async function geoCheckoutPlan(
+  stripe: Stripe,
+  p: GeoPrices,
+  interval: GeoInterval,
+  setupCharged: boolean,
+  reward: WheelReward | null
+): Promise<GeoCheckoutPlan> {
+  if (!reward)
+    return {
+      lineItems: await geoLineItems(stripe, p, interval, setupCharged),
+      cents: p[interval].cents + (setupCharged ? p.setup.cents : 0),
+      setup: setupCharged,
+    }
+  const t = rewardTerms(p, reward, setupCharged)
+  const once = async (cents: number): Promise<CheckoutLine> => ({
+    quantity: 1,
+    price_data: { currency: "usd", product: await geoProductId(stripe, "month"), unit_amount: cents },
+  })
+  switch (reward) {
+    case "setup_free":
+      return {
+        lineItems: await geoLineItems(stripe, p, "month", false),
+        cents: t.afterCents,
+        setup: false,
+        note: `Launch reward: free setup. You pay ${p.month.label} for your first month and no setup fee; then ${p.month.label} a month.`,
+      }
+    case "month_half":
+      return {
+        lineItems: await geoLineItems(stripe, p, "month", setupCharged),
+        discounts: [{ coupon: await halfMonthCoupon(stripe) }],
+        cents: t.afterCents,
+        setup: setupCharged,
+        note: `Launch reward: your first month is 50% off, ${usd(t.planCents)} instead of ${p.month.label}${
+          setupCharged ? `, plus the one-time ${p.setup.label} setup` : ""
+        }; then ${p.month.label} a month.`,
+      }
+    case "quarter_plus_month": {
+      const next = monthsLater(new Date(), t.months)
+      return {
+        lineItems: [await once(t.planCents), ...(await geoLineItems(stripe, p, "quarter", false))],
+        trialEnd: next,
+        cents: t.afterCents,
+        setup: false,
+        note: `Launch reward: 3 months + 1 month free. You pay ${p.quarter.label} today for your first 4 months (Stripe shows them as a trial). Your next payment, ${p.quarter.label} for 3 months, is on ${longDate(next)}.`,
+      }
+    }
+    case "year_30": {
+      const next = monthsLater(new Date(), t.months)
+      return {
+        lineItems: [await once(t.planCents), ...(await geoLineItems(stripe, p, "year", false))],
+        trialEnd: next,
+        cents: t.afterCents,
+        setup: false,
+        note: `Launch reward: a year at 30% off. You pay ${usd(t.planCents)} today for your first year (Stripe shows it as a trial). The plan renews at ${p.year.label} a year on ${longDate(next)} unless you cancel.`,
+      }
+    }
+  }
+}
+
+/** A plan paid with a reward, for Kiryl's Telegram line. */
+function rewardPaidRu(reward: WheelReward, p: GeoPrices, setupCharged: boolean): string {
+  const t = rewardTerms(p, reward, setupCharged)
+  switch (reward) {
+    case "setup_free":
+      return `${p.month.label}/мес, запуск бесплатно (награда)`
+    case "month_half":
+      return `первый месяц ${usd(t.planCents)} (−50%), дальше ${p.month.label}/мес${setupCharged ? ` + запуск ${p.setup.label}` : ", запуск уже был оплачен раньше"}`
+    case "quarter_plus_month":
+      return `${p.quarter.label} за 3 мес + 1 мес в подарок (следующее списание через 4 мес)`
+    case "year_30":
+      return `${usd(t.planCents)} за первый год (−30%), дальше ${p.year.label}/год`
+  }
 }
 
 /** The user's Stripe customer (the same one the LinkedIn/X plans use), created if they have none. */
@@ -337,11 +476,19 @@ export async function geoPlanCheckoutCompleted(session: Stripe.Checkout.Session,
     FROM geo_sites s
     WHERE s.id = f.site_id AND f.user_id = ${userId} AND s.domain = ${domain}`)
   const interval = geoSubscriptionInterval(sub) ?? "month"
+  const meta = (k: string) => sub.metadata?.[k] ?? session.metadata?.[k]
+  // A launch reward of the wheel was applied (/api/geo/checkout metadata.reward, lib/geo-promo.ts): it
+  // is used now, once; a failure throws, so Stripe sends the event again. Safe to replay.
+  const rewardMeta = meta("reward")
+  const reward = isWheelReward(rewardMeta) ? rewardMeta : null
+  if (reward)
+    await db.execute(sql`
+      UPDATE users SET geo_promo = geo_promo || jsonb_build_object('used_at', now(), 'session', ${session.id}::text)
+      WHERE id::text = ${userId} AND geo_promo->>'reward' = ${reward} AND geo_promo->>'used_at' IS NULL`)
   if (!(await firstTime(userId, "geo_checkout_completed", { session: session.id, domain, interval }))) return
   // The prices it was bought at (/api/geo/checkout metadata): month_cents, the monthly price, and
   // variant, the price test's variant or "none" for the one price outside the test. A checkout opened
   // before the test has neither: the one price.
-  const meta = (k: string) => sub.metadata?.[k] ?? session.metadata?.[k]
   const monthCents = Number(meta("month_cents")) || ONE_PRICE_MONTH
   const variant = Number(meta("variant")) || null
   const p = geoPrices(monthCents)
@@ -355,9 +502,11 @@ export async function geoPlanCheckoutCompleted(session: Stripe.Checkout.Session,
     variant,
     month_cents: monthCents,
     amount: session.amount_total ?? null,
+    reward,
   })
-  const terms =
-    interval === "quarter"
+  const terms = reward
+    ? rewardPaidRu(reward, p, setupCharged)
+    : interval === "quarter"
       ? `${price.label} за 3 мес`
       : interval === "year"
         ? `${price.label} за год`
@@ -365,7 +514,9 @@ export async function geoPlanCheckoutCompleted(session: Stripe.Checkout.Session,
           ? `${price.label}/мес + запуск ${p.setup.label}`
           : `${price.label}/мес, запуск уже был оплачен раньше`
   await notifyOwner(
-    `💳 GEO оплачен: ${terms}\n🧪 ${variantLine(variant, monthCents)} · списано ${usd(session.amount_total ?? 0)}\n👤 ${await buyer(userId)}\n🌐 ${domain}\nДальше: подключить сайт клиента и поставить статьи.`
+    `💳 GEO оплачен: ${terms}\n🧪 ${variantLine(variant, monthCents)} · списано ${usd(session.amount_total ?? 0)}${
+      reward ? `\n🎡 награда колеса: ${REWARD_RU[reward]}` : ""
+    }\n👤 ${await buyer(userId)}\n🌐 ${domain}\nДальше: подключить сайт клиента и поставить статьи.`
   )
 }
 

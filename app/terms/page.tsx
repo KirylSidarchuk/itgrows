@@ -11,7 +11,8 @@ export const dynamic = "force-static"
 // Refunds and taxes
 // are the owner's decisions of 23 Oct 2026. Since 27 Oct 2026 (the effective date) the detailed report
 // is free once an account is created, one per account and per connection; the quick check and the
-// LinkedIn & X trial are free too.
+// LinkedIn & X trial are free too. Since 29 Oct 2026 the cabinet has the launch-rewards wheel
+// (lib/geo-promo.ts): its terms are the "Launch rewards" paragraph of the plan section (#launch-rewards).
 
 export const metadata: Metadata = {
   title: "Terms of Service — ItGrows.ai",
@@ -87,7 +88,7 @@ export default function TermsPage() {
         <p className="text-[11px] uppercase tracking-[0.14em] font-bold text-violet-700">Legal</p>
         <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight mt-2">Terms of Service</h1>
         <p className="text-slate-500 text-sm mt-2">
-          Effective date: 28 October 2026
+          Effective date: 29 October 2026
         </p>
 
         <div className="mt-8 rounded-2xl border border-black/10 bg-white overflow-hidden">
@@ -202,6 +203,16 @@ export default function TermsPage() {
             <p>
               <strong>Cancelling.</strong> You can cancel any time on the Plan page of your cabinet. The cancellation takes effect at the end of the
               period you have paid for: until then the plan keeps running, and you can take the cancellation back. Nothing is charged after that.
+            </p>
+            <p id="launch-rewards" className="scroll-mt-6">
+              <strong>Launch rewards.</strong> After your free report, an account that has never had the plan can spin the launch-rewards wheel in
+              the cabinet once. Everyone wins one of four rewards, each with the same chance, chosen by our server at the moment of the spin: free
+              setup on the month-to-month plan; the first month at 50% off on the month-to-month plan; 3 months upfront with a fourth month free
+              (you pay for 3 months, and the next payment is 4 months later); or a year upfront at 30% off instead of 20%. The reward is for the
+              site of your report and for the way to pay it names, and it applies to the first payment of the plan if you start it within 7 days of
+              the spin (the date and time are shown in your cabinet). Later payments are at your regular price. With the 3-month and yearly
+              rewards, Stripe shows the time you have paid for as a trial. A reward cannot be combined with a promotion code, moved to another
+              account or site, or exchanged for cash.
             </p>
           </Section>
 

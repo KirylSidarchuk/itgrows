@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from "react"
 import Link from "next/link"
 import { card, fmtDate, fullReport, onPlan, planSteps, type SiteReport } from "../visibility/parts"
 import { SAMPLE_PATH, YEAR_DISCOUNT, firstPaymentCents, setupFree, usd, type GeoPrices } from "@/lib/geo-pricing"
+import { REWARD_INTERVAL, monthsLater, rewardTerms } from "@/lib/geo-promo"
+import { LaunchRewards, liveReward, useMinuteNow, usePromo } from "../launch-wheel"
 
 // The plan, for one site, and its billing. It is a service, not a guide: the page says who does
 // what before it asks for money — we write, publish, fix indexing, prepare the places the
@@ -28,6 +30,11 @@ import { SAMPLE_PATH, YEAR_DISCOUNT, firstPaymentCents, setupFree, usd, type Geo
 // and the Stripe webhook follows it and queues its report once the plan is paid (lib/geo-business.ts
 // followPaidSite). Back from paying for such a site before the webhook has followed it, the page says
 // "Payment received" and asks for the list again until the site is in it.
+//
+// The launch-rewards wheel (../launch-wheel.tsx, lib/geo-promo.ts) sits above the ways to pay for an
+// account that may spin; once a reward is won for this site, the way to pay it is for shows the price
+// with it (the regular figure struck through), what it gives and when the next payment comes, exactly
+// what /api/geo/checkout then charges (it applies the reward itself, from the server's record).
 //
 // A site on the plan, or of a client we set up by hand (site.client), shows "Plan & billing": the
 // plan, the places with "We're on it", Cancel plan (/api/geo/cancel: stops at the end of the paid
@@ -192,9 +199,10 @@ function Choice({
   busyText,
   disabled,
   picked,
+  reward,
   onClick,
 }: {
-  title: string
+  title: React.ReactNode
   lines: React.ReactNode[]
   cta: string
   /** Set while this option is opening checkout. */
@@ -202,15 +210,22 @@ function Choice({
   disabled: boolean
   /** The option chosen on the pricing block. */
   picked: boolean
+  /** The account's launch reward applies to this option. */
+  reward: boolean
   onClick: () => void
 }) {
   return (
     <div
       className={`rounded-xl p-4 sm:p-5 flex flex-col border ${
-        picked ? "bg-white/[0.1] border-violet-300 ring-2 ring-violet-400/50" : "bg-white/[0.06] border-white/15"
+        picked
+          ? "bg-white/[0.1] border-violet-300 ring-2 ring-violet-400/50"
+          : reward
+            ? "bg-white/[0.08] border-cyan-300/70"
+            : "bg-white/[0.06] border-white/15"
       }`}
     >
       {picked && <p className="text-[11px] font-bold uppercase tracking-wide text-violet-300 mb-1">Your choice</p>}
+      {reward && <p className="text-[11px] font-bold uppercase tracking-wide text-cyan-300 mb-1">Your launch reward</p>}
       <p className="font-extrabold text-lg leading-snug">{title}</p>
       <div className="mt-1.5 space-y-0.5 text-sm text-white/70 flex-1">
         {lines.map((l, i) => <p key={i}>{l}</p>)}
@@ -408,6 +423,9 @@ export default function PlanPage() {
   const [setupAsked, setSetupAsked] = useState<Record<string, boolean>>({})
   // Back from paying for a site the webhook has not followed yet (it was bought unfollowed).
   const [paidFor, setPaidFor] = useState("")
+  // The launch-rewards wheel and the reward won (../launch-wheel.tsx); the clock for the next payment's date.
+  const [promo, setPromo] = usePromo()
+  const now = useMinuteNow()
 
   useEffect(() => {
     const p = new URLSearchParams(window.location.search)
@@ -539,10 +557,22 @@ export default function PlanPage() {
   const firstCents = (p: GeoPrices, i: Interval) => firstPaymentCents(p, i) - (!setupFree(i) && setupPaid ? p.setup.cents : 0)
   const billedLine = site?.planInterval && prices ? billed(prices.paid, site.planInterval) : null
 
+  // The reward won for this site, and what it does to the way to pay it is for (null for the others).
+  const won = site && P ? liveReward(promo, site.domain) : null
+  const rewarded = (i: Interval) => (P && won && REWARD_INTERVAL[won] === i ? rewardTerms(P, won, !setupPaid) : null)
+  const tm = rewarded("month")
+  const tq = rewarded("quarter")
+  const ty = rewarded("year")
+  const struck = (s: string) => <s className="text-white/45 font-normal">{s}</s>
+  const was = (before: number, after: number) => (before !== after ? <>{struck(usd(before))} </> : null)
+  const nextOn = (months: number) =>
+    now > 0 ? `on ${fmtDate(new Date(monthsLater(new Date(now), months) * 1000).toISOString())}` : `${months} months after you start`
+  const SETUP_LINE = (p: GeoPrices) => `The ${p.setup.label} setup is one-time: your site and its indexes made ready, with a launch report.`
+
   const busyText = (i: Interval) =>
     busy?.interval === i ? (busy.stage === "follow" ? "Reading your site… up to a minute" : "Opening checkout…") : null
   const firstPayment = (p: GeoPrices, i: Interval) => <>First payment {usd(firstCents(p, i))}</>
-  const choice = (i: Interval, title: string, lines: React.ReactNode[], cta: string) => (
+  const choice = (i: Interval, title: React.ReactNode, lines: React.ReactNode[], cta: string) => (
     <Choice
       key={i}
       title={title}
@@ -551,6 +581,7 @@ export default function PlanPage() {
       busyText={busyText(i)}
       disabled={busy !== null || (!site && newSite.trim().length < 3)}
       picked={picked === i}
+      reward={won !== null && REWARD_INTERVAL[won] === i}
       onClick={() => start(i)}
     />
   )
@@ -695,29 +726,77 @@ export default function PlanPage() {
 
             <h2 className="mt-6 font-extrabold text-xl break-all">Start for {forSite}</h2>
 
+            {site && P && <LaunchRewards promo={promo} onChange={setPromo} site={site.domain} prices={P} where="plan" />}
+
             {P ? (
               <div className="mt-4 grid gap-3 sm:grid-cols-3">
                 {choice(
                   "month",
-                  setupPaid ? `${P.month.label} a month` : `${P.month.label} a month + ${P.setup.label} setup`,
-                  [
-                    firstPayment(P, "month"),
-                    setupPaid
-                      ? "Billed monthly."
-                      : `Billed monthly. The ${P.setup.label} setup is one-time: your site and its indexes made ready, with a launch report.`,
-                  ],
+                  tm && won === "setup_free" && !setupPaid ? (
+                    <>
+                      {P.month.label} a month + {struck(`${P.setup.label} setup`)} free setup
+                    </>
+                  ) : setupPaid ? (
+                    `${P.month.label} a month`
+                  ) : (
+                    `${P.month.label} a month + ${P.setup.label} setup`
+                  ),
+                  tm
+                    ? [
+                        <>
+                          First payment {was(tm.beforeCents, tm.afterCents)}
+                          {usd(tm.afterCents)}
+                        </>,
+                        won === "month_half"
+                          ? `Launch reward: your first month ${usd(tm.planCents)} instead of ${P.month.label}, then ${P.month.label} a month.${
+                              setupPaid ? "" : ` ${SETUP_LINE(P)}`
+                            }`
+                          : "Launch reward: no setup fee. Billed monthly.",
+                      ]
+                    : [firstPayment(P, "month"), setupPaid ? "Billed monthly." : `Billed monthly. ${SETUP_LINE(P)}`],
                   "Start monthly",
                 )}
                 {choice(
                   "quarter",
-                  `${P.quarter.label} for 3 months upfront`,
-                  [firstPayment(P, "quarter"), `${P.quarter.perMonth} a month, billed every 3 months.${setupPaid ? "" : " Setup free."}`],
+                  tq ? (
+                    <>
+                      {P.quarter.label} for {struck("3")} 4 months
+                    </>
+                  ) : (
+                    `${P.quarter.label} for 3 months upfront`
+                  ),
+                  tq
+                    ? [
+                        firstPayment(P, "quarter"),
+                        <>
+                          Launch reward: the 4th month is free, {struck(P.quarter.perMonth)} {usd(Math.round(tq.planCents / 4))} a month. Next
+                          payment: {P.quarter.label} {nextOn(4)}, then every 3 months.{setupPaid ? "" : " Setup free."}
+                        </>,
+                      ]
+                    : [firstPayment(P, "quarter"), `${P.quarter.perMonth} a month, billed every 3 months.${setupPaid ? "" : " Setup free."}`],
                   "Pay 3 months",
                 )}
                 {choice(
                   "year",
-                  `${P.year.label} for a year`,
-                  [firstPayment(P, "year"), `${P.year.perMonth} a month, ${YEAR_OFF}.${setupPaid ? "" : " Setup free."}`],
+                  ty ? (
+                    <>
+                      {struck(P.year.label)} {usd(ty.planCents)} for your first year
+                    </>
+                  ) : (
+                    `${P.year.label} for a year`
+                  ),
+                  ty
+                    ? [
+                        <>
+                          First payment {was(ty.beforeCents, ty.afterCents)}
+                          {usd(ty.afterCents)}
+                        </>,
+                        <>
+                          Launch reward: 30% off instead of {Math.round(YEAR_DISCOUNT * 100)}%, {struck(P.year.perMonth)} {usd(ty.planCents / 12)} a
+                          month. It renews at {P.year.label} a year {nextOn(12)}.{setupPaid ? "" : " Setup free."}
+                        </>,
+                      ]
+                    : [firstPayment(P, "year"), `${P.year.perMonth} a month, ${YEAR_OFF}.${setupPaid ? "" : " Setup free."}`],
                   "Pay a year",
                 )}
               </div>
