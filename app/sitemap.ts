@@ -22,8 +22,8 @@ const PAGE_LASTMOD = {
   "/business/sample-report": "2026-10-26",
   "/about": "2026-10-26",
   "/reddit": "2026-10-14",
-  "/privacy": "2026-07-01",
-  "/terms": "2026-07-01",
+  "/privacy": "2026-10-29",
+  "/terms": "2026-10-29",
 } as const
 // The day the page around every guide and /blog post last changed (26.10: the "AI visibility
 // guides" block, "Keep reading" by topic, the "About ItGrows" box): a post is listed as modified on

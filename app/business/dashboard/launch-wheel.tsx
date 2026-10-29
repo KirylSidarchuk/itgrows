@@ -11,6 +11,7 @@ import {
   type PromoView,
   type WheelReward,
 } from "@/lib/geo-promo"
+import { PromoWheel, SEG_COLORS, SPIN_MS, prefersStill, restAngle, spinAngle } from "@/components/geo/PromoWheel"
 
 // The launch-rewards wheel in the GEO cabinet (the rules: lib/geo-promo.ts): at the end of the report,
 // next to "Start the plan" (visibility/parts.tsx YourPlan), and on the plan page above the ways to pay
@@ -18,15 +19,16 @@ import {
 // reward is drawn on the server when "Spin the wheel" is pressed (POST /api/geo/promo/spin) and the
 // wheel then turns to it, for about 2.5 s, landing inside its segment, never on an edge. With
 // prefers-reduced-motion it does not turn: the result shows at once. The wheel itself is a picture
-// (aria-hidden); the four rewards are listed as text, the button is a real button and the result is
-// announced. After the spin: the reward, what it gives at the account's prices, the date it ends and
-// what is left of it. Nothing shows while the state loads, for a site the reward is not for, or for an
-// account that cannot spin (paying, a client set up by hand, no report yet, or the wheel off).
+// (components/geo/PromoWheel.tsx, shared with the website's exit-intent wheel; aria-hidden); the four
+// rewards are listed as text, the button is a real button and the result is announced. After the spin:
+// the reward, what it gives at the account's prices, the date it ends and what is left of it. Nothing
+// shows while the state loads, for a site the reward is not for, or for an account that cannot spin
+// (paying, a client set up by hand, no report yet, or the wheel off). A reward won on the website before
+// the account (exit intent) moves in when the state loads (GET /api/geo/promo/spin) and shows here the
+// same way; until the free report is ready, PendingReward says it is waiting.
 
-const SPIN_MS = 2500
-const TURNS = 5
-/** The segments, clockwise from the top, in the order of WHEEL_REWARDS; white text on each is 5.4:1 or more. */
-const SEG_COLORS = ["#7c3aed", "#0e7490", "#6d28d9", "#155e75"]
+/** The wheel's labels in the cabinet (English). */
+const LABELS = Object.fromEntries(WHEEL_REWARDS.map((r) => [r, REWARD_TEXT[r].segment])) as Record<WheelReward, [string, string]>
 /** The CTA of each way to pay on the plan page. */
 const OPTION_CTA = { month: "Start monthly", quarter: "Pay 3 months", year: "Pay a year" } as const
 
@@ -79,51 +81,6 @@ export function timeLeft(ms: number): string {
   if (d >= 1) return `${d} day${d === 1 ? "" : "s"} ${h} h left`
   if (h >= 1) return `${h} h ${m} min left`
   return `${m} min left`
-}
-
-/** The wheel's turn that puts the reward's segment under the pointer at the top. */
-const restAngle = (r: WheelReward) => (360 - (WHEEL_REWARDS.indexOf(r) * 90 + 45)) % 360
-
-function segment(i: number) {
-  const p = (deg: number) => {
-    const a = (deg * Math.PI) / 180
-    return `${(100 + 96 * Math.sin(a)).toFixed(2)} ${(100 - 96 * Math.cos(a)).toFixed(2)}`
-  }
-  return `M100 100 L${p(i * 90)} A96 96 0 0 1 ${p((i + 1) * 90)} Z`
-}
-
-function Wheel({ angle, animate, won }: { angle: number; animate: boolean; won: WheelReward | null }) {
-  return (
-    <div className="relative mx-auto w-36 h-36 sm:w-40 sm:h-40 shrink-0" aria-hidden>
-      <div
-        className="absolute inset-0 motion-reduce:transition-none!"
-        style={{
-          transform: `rotate(${angle}deg)`,
-          transition: animate ? `transform ${SPIN_MS}ms cubic-bezier(0.12, 0.65, 0.18, 1)` : "none",
-        }}
-      >
-        <svg viewBox="0 0 200 200" className="w-full h-full">
-          {WHEEL_REWARDS.map((r, i) => (
-            <g key={r} opacity={won && won !== r ? 0.4 : 1}>
-              <path d={segment(i)} fill={SEG_COLORS[i]} stroke="#1b1916" strokeWidth="2" />
-              <g transform={`rotate(${i * 90 + 45} 100 100)`}>
-                <text x="100" y="40" textAnchor="middle" fill="#fff" fontSize="12" fontWeight="800">
-                  {REWARD_TEXT[r].segment[0]}
-                </text>
-                <text x="100" y="55" textAnchor="middle" fill="#fff" fontSize="12" fontWeight="800">
-                  {REWARD_TEXT[r].segment[1]}
-                </text>
-              </g>
-            </g>
-          ))}
-          <circle cx="100" cy="100" r="15" fill="#1b1916" stroke="#fff" strokeWidth="3" />
-        </svg>
-      </div>
-      <svg viewBox="0 0 24 20" className="absolute left-1/2 -top-1.5 w-6 h-5 -translate-x-1/2">
-        <path d="M2 2 H22 L12 18 Z" fill="#fff" stroke="#1b1916" strokeWidth="2" strokeLinejoin="round" />
-      </svg>
-    </div>
-  )
 }
 
 /**
@@ -185,10 +142,8 @@ export function LaunchRewards({
         setBusy(false)
         return
       }
-      const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches
-      // Anywhere inside the segment but its outer quarters: it lands clearly on the reward.
-      const jitter = (Math.random() - 0.5) * 40
-      setSpin({ angle: (still ? 0 : TURNS * 360) + restAngle(won.id) + jitter, animate: !still })
+      const still = prefersStill()
+      setSpin({ angle: spinAngle(won.id, still), animate: !still })
       window.setTimeout(
         () => {
           setSpin((s) => (s ? { ...s, animate: false } : s))
@@ -224,7 +179,7 @@ export function LaunchRewards({
   return (
     <div className={box}>
       <div className="flex flex-col sm:flex-row sm:items-center gap-5">
-        <Wheel angle={angle} animate={Boolean(spin?.animate)} won={shown?.id ?? null} />
+        <PromoWheel angle={angle} animate={Boolean(spin?.animate)} won={shown?.id ?? null} labels={LABELS} />
         <div className="min-w-0 flex-1">
           {shown ? (
             <>
@@ -290,4 +245,17 @@ export function LaunchRewards({
 export function ReportRewards({ site, prices, planHref }: { site: string; prices: GeoPrices | null; planHref: string }) {
   const [promo, setPromo] = usePromo(PROMO_WHEEL.enabled || PROMO_WHEEL.honourWon)
   return <LaunchRewards promo={promo} onChange={setPromo} site={site} prices={prices} where="report" planHref={planHref} />
+}
+
+/** While the free report is being made ("Your plan" before it is ready): a reward won on the website
+ *  before the account waits for it, and moves in once the report is ready (lib/geo-promo-server.ts). */
+export function PendingReward() {
+  const [promo] = usePromo(PROMO_WHEEL.enabled || PROMO_WHEEL.honourWon)
+  const p = promo?.pending
+  if (!p) return null
+  return (
+    <p className="mt-3 rounded-lg border border-violet-200 bg-violet-50 px-3 py-2 text-sm text-violet-900">
+      Your launch reward ({REWARD_TEXT[p.id].title.toLowerCase()}) is waiting: it applies once your free report is ready.
+    </p>
+  )
 }

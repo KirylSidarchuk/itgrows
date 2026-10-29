@@ -22,7 +22,7 @@ import { YEAR_DISCOUNT, type GeoInterval, type GeoPrices } from "@/lib/geo-prici
 import { listQuestions } from "@/lib/geo-list-question"
 import { useT } from "@/components/i18n/LocaleProvider"
 import visibilityOpening from "@/lib/i18n/messages/visibilityOpening"
-import { ReportRewards } from "../launch-wheel"
+import { PendingReward, ReportRewards } from "../launch-wheel"
 
 export interface EngineAnswer {
   named: number
@@ -1469,7 +1469,8 @@ function ArticlesStep({ n, steps, work, client }: { n: number; steps: Step[]; wo
  *  plan's summary and before the steps; for a client, where each step stands and what is done. The
  *  public sample names no price. The article steps for the buyer questions are one card (planItems).
  *  Under "Start the plan", for an account that may have one, the launch-rewards wheel or the reward
- *  won (../launch-wheel.tsx; never on the sample, never for a client). */
+ *  won (../launch-wheel.tsx; never on the sample, never for a client). Before the report is ready, a
+ *  reward won on the website before the account is said to be waiting for it (PendingReward). */
 export function YourPlan({
   site,
   steps,
@@ -1495,7 +1496,10 @@ export function YourPlan({
     <section id="your-plan" className={`${card} scroll-mt-24`}>
       <h2 className="font-bold text-lg">Your plan</h2>
       {!ready ? (
-        <p className="text-sm text-slate-500 mt-3">Fills in when your full report is ready.</p>
+        <>
+          <p className="text-sm text-slate-500 mt-3">Fills in when your full report is ready.</p>
+          {mode === "offer" && <PendingReward />}
+        </>
       ) : (
         <>
           <p className="text-xs text-slate-500 mt-1 leading-relaxed">

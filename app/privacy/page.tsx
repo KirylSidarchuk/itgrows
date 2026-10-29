@@ -11,7 +11,8 @@ export const dynamic = "force-static"
 // retention, transfers, the EU/UK contact and the effective date are the owner's decisions of 23 Oct 2026.
 // Visible text has no brackets. Free in AI visibility: the quick check and, since 27 Oct 2026, the
 // detailed report once an account is created (its IP address is kept with it, cleared by the purge
-// after 90 days like the quick check's).
+// after 90 days like the quick check's). Since 29 Oct 2026 the website may offer the launch-rewards
+// wheel before an account (components/geo/ExitWheel.tsx): itg_wheel and itg_exit_wheel below.
 
 export const metadata: Metadata = {
   title: "Privacy Policy & Cookie Policy — ItGrows.ai",
@@ -111,6 +112,14 @@ const COOKIES = [
   { name: "Sign-in cookie", text: "Keeps you signed in. Essential. Lasts until you sign out or it expires." },
   { name: "cookie_consent", text: "Stored in your browser. Remembers what you chose in the cookie banner. Essential." },
   {
+    name: "itg_wheel",
+    text: "Set only when you spin the launch-rewards wheel on our website before you have an account. Keeps the reward you won for 7 days, so that it can apply to the account you create. Essential for that. With the reward we keep a one-way code made from your internet address, so that each address gets one reward.",
+  },
+  {
+    name: "itg_exit_wheel",
+    text: "Stored in your browser when the launch-rewards wheel is shown on our website, so that it is not shown again for 30 days, or ever again once you have spun it.",
+  },
+  {
     name: "itg_anon, itg_seen, itgrows_welcome_tracked, itg_trial_fired",
     text: "Only after you accept. Stored in your browser: itg_anon is a random id for our own analytics; the others mark the current visit and a sign-up or trial already counted, and are cleared when you close the tab.",
   },
@@ -171,7 +180,7 @@ export default function PrivacyPage() {
         <p className="text-[11px] uppercase tracking-[0.14em] font-bold text-violet-700">Legal</p>
         <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight mt-2">Privacy Policy &amp; Cookie Policy</h1>
         <p className="text-slate-500 text-sm mt-2">
-          Effective date: 27 October 2026
+          Effective date: 29 October 2026
         </p>
 
         <div className="mt-8 rounded-2xl border border-black/10 bg-white overflow-hidden">
@@ -327,7 +336,7 @@ export default function PrivacyPage() {
             <List>
               <li>Account data: while your account exists; it is removed when you delete the account (see below). The answers we collected about a website and its quick-check results belong to the website and are kept without a time limit.</li>
               <li>
-                IP addresses saved with quick checks, free reports and free post previews, and the daily visitor hash: 90 days. The result of a quick check stays
+                IP addresses saved with quick checks, free reports and free post previews, the code made from your internet address with a launch-rewards wheel spin, and the daily visitor hash: 90 days. The result of a quick check stays
                 with the website, like the AI assistants’ other answers.
               </li>
               <li>Usage analytics: 24 months.</li>

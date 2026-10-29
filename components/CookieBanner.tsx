@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, useSyncExternalStore } from "react"
+import { useEffect, useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import {
@@ -14,45 +14,22 @@ import {
   useSettingsOpen,
   type ConsentChoice,
 } from "@/components/consent/consent"
-import { DEFAULT, LOCALES, PREFIXED, type Locale } from "@/lib/i18n/config"
+import { GEO_SANS, isGeoPage } from "@/lib/geo-pages"
 import { t } from "@/lib/i18n/messages"
+import { usePageLocale } from "@/lib/i18n/page-locale"
 import { rich } from "@/lib/i18n/rich"
 import ns from "@/lib/i18n/messages/cookieBanner"
 
 // The banner sits in the root layout, outside the pages' LocaleProvider: its language is <html lang>,
-// which the layout sets for each request and LocaleProvider updates on client navigation.
-function pageLocale(): Locale {
-  const lang = document.documentElement.lang.slice(0, 2).toLowerCase()
-  return (LOCALES as readonly string[]).includes(lang) ? (lang as Locale) : DEFAULT
-}
-
-function subscribeLang(onChange: () => void) {
-  const observer = new MutationObserver(onChange)
-  observer.observe(document.documentElement, { attributes: true, attributeFilter: ["lang"] })
-  return () => observer.disconnect()
-}
-
-const serverLocale = (): Locale => DEFAULT
-
-// The type of the GEO pages (app/page.tsx and the other public pages set it on their own wrapper).
-// The banner is outside that wrapper, in <body>, so it names the same family itself; without it the
-// banner came out in the browser's default serif.
-const SANS = "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
-
-// Which banner a page gets (27.10). The GEO site, in every language (/de, /fr, /es, /ru): its home,
-// /business and everything under it (the GEO cabinet and guides included), the blog, /about and the
-// legal pages. These get the compact phone banner at the top and the GEO type. Every other page keeps
+// which the layout sets for each request and LocaleProvider updates on client navigation
+// (lib/i18n/page-locale.ts). It is outside the pages' wrapper too, in <body>, so on the GEO pages it
+// names their type itself (GEO_SANS); without it the banner came out in the browser's default serif.
+//
+// Which banner a page gets (27.10). The GEO site, in every language (lib/geo-pages.ts isGeoPage: its
+// home, /business and everything under it, the GEO cabinet and guides included, the blog, /about and
+// the legal pages) gets the compact phone banner at the top and the GEO type. Every other page keeps
 // the production banner exactly as it was: first of all the LinkedIn/X product (/personal, /company,
 // /cabinet, /dashboard, /reddit…), and /login and /signup, which that product shares.
-const GEO_PAGES: ReadonlySet<string> = new Set(["/", "/about", "/privacy", "/terms"])
-const GEO_SECTIONS = ["/business", "/blog"] // each with everything under it
-const LOCALE_PREFIX = new RegExp(`^/(?:${PREFIXED.join("|")})(?=/|$)`)
-
-function isGeoPage(pathname: string | null): boolean {
-  if (!pathname) return false
-  const path = pathname.replace(LOCALE_PREFIX, "").replace(/\/+$/, "") || "/"
-  return GEO_PAGES.has(path) || GEO_SECTIONS.some((s) => path === s || path.startsWith(`${s}/`))
-}
 
 // Keeps a record of each choice in our own analytics (no id unless the visitor accepted).
 function recordChoice(choice: ConsentChoice) {
@@ -88,7 +65,7 @@ export default function CookieBanner() {
   const settingsOpen = useSettingsOpen()
   const [details, setDetails] = useState(false)
   const [analyticsOn, setAnalyticsOn] = useState<boolean | null>(null)
-  const c = t(useSyncExternalStore(subscribeLang, pageLocale, serverLocale), ns)
+  const c = t(usePageLocale(), ns)
   const geo = isGeoPage(usePathname())
 
   useEffect(() => {
@@ -149,13 +126,13 @@ export default function CookieBanner() {
   // GEO pages. Phones (narrower than 640 px): one short line and three small buttons, fixed at the
   // TOP of the screen (below the notch), so that in no language does the banner cover the "Check my
   // site" button (27.10); the full text is in the settings and the policy. From 640 px up the banner
-  // stays at the bottom, as before. The GEO type (SANS) throughout.
+  // stays at the bottom, as before. The GEO type (GEO_SANS) throughout.
   if (geo) {
     return (
       <div
         role="dialog"
         aria-label="Cookie settings"
-        style={{ fontFamily: SANS }}
+        style={{ fontFamily: GEO_SANS }}
         className={`fixed top-0 sm:top-auto sm:bottom-0 left-0 right-0 z-50 bg-slate-900 text-white px-4 sm:px-6 ${
           showSettings
             ? "pt-[max(1rem,env(safe-area-inset-top))] pb-4 sm:pt-4 sm:pb-[max(1rem,env(safe-area-inset-bottom))]"

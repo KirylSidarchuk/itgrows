@@ -27,12 +27,36 @@ import { usd, yearMonthCents, type GeoInterval, type GeoPrices } from "@/lib/geo
 //
 // Off, with no other edit: `enabled: false` hides the wheel and stops new spins; rewards already won
 // still apply until their date (a promise made), unless `honourWon` is false too.
+//
+// The same wheel on the website, before an account (exit intent; Kiryl, 29 Oct 2026: "может еще когда
+// человек собирается закрыть сайт показывать ему колесо?"). On the public GEO pages, a signed-out
+// visitor on a computer who moves to leave after 15 s on the site is offered one spin
+// (components/geo/ExitWheel.tsx; not again for 30 days once shown, never once spun; never on phones or
+// tablets). The reward is drawn on the server as the cabinet's (lib/geo-promo-server.ts drawReward) and
+// kept PROMO_WHEEL.validDays in geo_guest_promos (lib/db/migrations/add_geo_guest_promos.sql), one per
+// browser (the GUEST_WHEEL_COOKIE, set on the spin) and one per internet address
+// (POST /api/geo/promo/guest-spin). It moves to the account the visitor creates (users.geo_promo, by
+// "exit-wheel", with the website's dates) when the cabinet loads its wheel with that cookie and the
+// account has its free report and may have a reward (none yet, not a hand-set client, never had the
+// plan); until the report is ready the cabinet says the reward is waiting. Public pages name no price:
+// the rewards by name only. Counted as geo_wheel_exit_seen, geo_wheel_exit_spin (props.reward, .lang,
+// .path) and geo_wheel_claimed (props.reward, props.source "exit"); Telegram on the move to an account.
+// `exitIntent: false` turns the website's wheel off alone; `enabled: false` turns it off too, and
+// rewards already won on the website still move to accounts while `honourWon` holds.
 
-export const PROMO_WHEEL: { enabled: boolean; validDays: number; honourWon: boolean } = {
+export const PROMO_WHEEL: { enabled: boolean; validDays: number; honourWon: boolean; exitIntent: boolean } = {
   enabled: true,
   validDays: 7,
   honourWon: true,
+  /** The wheel on the website when a visitor moves to leave (needs `enabled` too). */
+  exitIntent: true,
 }
+
+/** The website's exit-intent wheel is on: the dialog and new spins there. */
+export const exitWheelOn = () => PROMO_WHEEL.enabled && PROMO_WHEEL.exitIntent
+
+/** The browser's cookie that keeps a reward won on the website (its geo_guest_promos token). */
+export const GUEST_WHEEL_COOKIE = "itg_wheel"
 
 /** The rewards in the order of the wheel's segments, clockwise from the top. */
 export const WHEEL_REWARDS = ["setup_free", "month_half", "quarter_plus_month", "year_30"] as const
@@ -141,6 +165,9 @@ export interface PromoState {
   /** Set by the webhook once the plan is paid with it. */
   used_at?: string
   session?: string
+  /** How it came, when not from the cabinet's spin: "exit-wheel" (won on the website before the
+   *  account), "owner-letter-2026-10-29" (written by hand, as promised in Kiryl's letters). */
+  by?: string
 }
 
 /** What the cabinet gets (GET /api/geo/promo/spin): whether this account can spin now, for which site,
@@ -158,6 +185,16 @@ export interface PromoView {
     /** Not used, not past its date, and rewards apply (PROMO_WHEEL). */
     live: boolean
   } | null
+  /** A reward won on the website before the account, waiting for its free report: it moves in once the
+   *  report is ready (lib/geo-promo-server.ts promoView). */
+  pending: { id: WheelReward; expiresAt: string } | null
+}
+
+/** The website's wheel (GET and POST /api/geo/promo/guest-spin): this browser's reward, or none.
+ *  `fresh` (POST): drawn by this spin, not one this browser or its internet address already had. */
+export interface GuestPromoView {
+  reward: { id: WheelReward; expiresAt: string; claimed: boolean } | null
+  fresh?: boolean
 }
 
 /** Rewards won apply at checkout: the wheel is on, or it is off and they are still honoured. */

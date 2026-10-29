@@ -6,6 +6,8 @@ import VisitBeacon from "@/components/VisitBeacon"
 import AdsConversion from "@/components/AdsConversion"
 import ProductAnalytics from "@/components/Analytics"
 import ConsentedTrackers from "@/components/consent/ConsentedTrackers"
+import ExitWheel from "@/components/geo/ExitWheel"
+import { exitWheelOn } from "@/lib/geo-promo"
 import { getLocale } from "@/lib/i18n/server"
 import "./globals.css";
 
@@ -115,7 +117,13 @@ export default async function RootLayout({
         <script id="google-tag-consent" dangerouslySetInnerHTML={{ __html: GOOGLE_TAG_INIT }} />
       </head>
       <body className="min-h-full flex flex-col">
-        <SessionProvider>{children}</SessionProvider>
+        <SessionProvider>
+          {children}
+          {/* The launch-rewards wheel when a signed-out visitor on a computer moves to leave a public GEO
+              page (components/geo/ExitWheel.tsx; off with PROMO_WHEEL.exitIntent or .enabled false in
+              lib/geo-promo.ts). Nothing of it is in the server HTML; its dialog loads only when it may open. */}
+          {exitWheelOn() && <ExitWheel />}
+        </SessionProvider>
         <VisitBeacon />
         <AdsConversion />
         <ProductAnalytics />

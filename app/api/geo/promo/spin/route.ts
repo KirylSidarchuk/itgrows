@@ -1,8 +1,8 @@
-import { NextResponse } from "next/server"
+import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/auth"
 import { db } from "@/lib/db"
 import { sql } from "drizzle-orm"
-import { REWARD_RU } from "@/lib/geo-promo"
+import { GUEST_WHEEL_COOKIE, REWARD_RU } from "@/lib/geo-promo"
 import { promoView, spinWheel } from "@/lib/geo-promo-server"
 import { accountPrices, variantLine } from "@/lib/geo-price-test"
 import { sendOwner } from "@/lib/telegram"
@@ -14,27 +14,31 @@ import { sendOwner } from "@/lib/telegram"
 // has never had the plan and is not a client set up by hand: else 403 { error: "not_eligible" }, or
 // "off" with PROMO_WHEEL.enabled false. A fresh spin is counted (analytics_events 'geo_wheel_spin',
 // props.reward and props.variant, the price test's variant decided here) and told to Kiryl.
+// A reward won on the website before the account (its browser's itg_wheel cookie, lib/geo-promo.ts
+// GUEST_WHEEL_COOKIE) moves to the account here, on GET or POST, once its free report is ready
+// (lib/geo-promo-server.ts claim, which counts and tells it); until then GET says it is waiting
+// (PromoView.pending), and POST does not draw another.
 
 export const dynamic = "force-dynamic"
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   const session = await auth()
   const userId = session?.user?.id
   if (!userId) return NextResponse.json({ error: "unauthorized" }, { status: 401 })
   try {
-    return NextResponse.json(await promoView(userId))
+    return NextResponse.json(await promoView(userId, req.cookies.get(GUEST_WHEEL_COOKIE)?.value))
   } catch {
     return NextResponse.json({ error: "unavailable" }, { status: 502 })
   }
 }
 
-export async function POST() {
+export async function POST(req: NextRequest) {
   const session = await auth()
   const userId = session?.user?.id
   if (!userId) return NextResponse.json({ error: "unauthorized" }, { status: 401 })
   let result: Awaited<ReturnType<typeof spinWheel>>
   try {
-    result = await spinWheel(userId)
+    result = await spinWheel(userId, req.cookies.get(GUEST_WHEEL_COOKIE)?.value)
   } catch {
     return NextResponse.json({ error: "unavailable" }, { status: 502 })
   }

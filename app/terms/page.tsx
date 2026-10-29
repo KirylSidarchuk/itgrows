@@ -13,6 +13,8 @@ export const dynamic = "force-static"
 // is free once an account is created, one per account and per connection; the quick check and the
 // LinkedIn & X trial are free too. Since 29 Oct 2026 the cabinet has the launch-rewards wheel
 // (lib/geo-promo.ts): its terms are the "Launch rewards" paragraph of the plan section (#launch-rewards).
+// The same day the wheel was also offered on the website before an account (exit intent), in the same
+// paragraph: once per browser and internet address, the reward kept 7 days for the account created.
 
 export const metadata: Metadata = {
   title: "Terms of Service — ItGrows.ai",
@@ -212,7 +214,9 @@ export default function TermsPage() {
               site of your report and for the way to pay it names, and it applies to the first payment of the plan if you start it within 7 days of
               the spin (the date and time are shown in your cabinet). Later payments are at your regular price. With the 3-month and yearly
               rewards, Stripe shows the time you have paid for as a trial. A reward cannot be combined with a promotion code, moved to another
-              account or site, or exchanged for cash.
+              account or site, or exchanged for cash. The wheel may also be offered on our website before you create an account, once per
+              browser and internet address. A reward won there is kept for 7 days from the spin and applies, under the same conditions, to the
+              account you create, for the site of its free report once that report is ready. Each account gets one reward.
             </p>
           </Section>
 

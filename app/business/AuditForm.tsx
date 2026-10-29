@@ -480,6 +480,7 @@ export default function AuditForm({ note }: { note?: string } = {}) {
             ref={urlRef}
             id={inputId}
             name="site"
+            data-geo-check-site=""
             type="text"
             inputMode="url"
             autoCapitalize="none"

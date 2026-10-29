@@ -24,6 +24,7 @@ import {
   type SiteReport,
 } from "./parts"
 import type { GeoPrices } from "@/lib/geo-pricing"
+import { PendingReward } from "../launch-wheel"
 
 // The AI-visibility report: where a new account lands after the quick check on the site, and where
 // a client sees the weekly count. Arriving with ?site= (or the check's handoff) follows that site,
@@ -384,6 +385,7 @@ export default function VisibilityPage() {
           />
         )
       )}
+      {!site && !opening && <PendingReward />}
 
       {site && (
         <>
