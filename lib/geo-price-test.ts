@@ -7,7 +7,8 @@ import { ONE_PRICE_MONTH, PRICE_TEST, accountMonthCents, geoPrices, type GeoPric
 // (geo_clients) is on the one price whatever it says. /api/geo/report hands the prices to the plan
 // page and the end of the report, /api/geo/checkout charges them, and the analytics events carry the
 // variant: geo_plan_view (/api/geo/plan-view), geo_checkout_started (/api/geo/checkout) and
-// geo_plan_paid (the webhook, lib/geo-business.ts geoPlanCheckoutCompleted).
+// geo_plan_paid (the webhook, lib/geo-business.ts geoPlanCheckoutCompleted). With the test off (since
+// 30 Oct 2026) every account gets the one price and variant null, `paid` included.
 
 type Row = Record<string, unknown>
 const rows = (r: unknown): Row[] => (Array.isArray(r) ? (r as Row[]) : ((r as { rows?: Row[] }).rows ?? []))
@@ -18,8 +19,8 @@ export interface AccountPrices {
   variant: number | null
   /** What a new plan costs this account now. */
   prices: GeoPrices
-  /** What a plan it already has was bought at, for the billing line: its own variant, still after the
-   *  test is switched off (Stripe keeps charging what was bought). */
+  /** What a plan it already has was bought at, for the billing line: its own variant while the test
+   *  runs, the one price once it is off (a checkout then charges the one price, whatever the variant). */
   paid: GeoPrices
 }
 
@@ -37,12 +38,14 @@ export async function accountPrices(userId: string): Promise<AccountPrices> {
   return {
     variant: own && PRICE_TEST.enabled ? month : null,
     prices: geoPrices(month),
-    paid: geoPrices(own ? stored : ONE_PRICE_MONTH),
+    paid: geoPrices(own && PRICE_TEST.enabled ? stored : ONE_PRICE_MONTH),
   }
 }
 
-/** The variant for a Telegram line: "$299 (тест цены)", or the one price outside the test. */
+/** The variant for a Telegram line: "тест цены, вариант $299/мес" (a checkout opened under the test),
+ *  the one price outside a running test, or, with the test off, the one price for everyone. */
 export function variantLine(variant: number | null, monthCents: number): string {
   const p = geoPrices(monthCents)
-  return variant === null ? `старая цена ${p.month.label}/мес (вне теста)` : `тест цены, вариант ${p.month.label}/мес`
+  if (variant !== null) return `тест цены, вариант ${p.month.label}/мес`
+  return PRICE_TEST.enabled ? `старая цена ${p.month.label}/мес (вне теста)` : `единая цена ${p.month.label}/мес`
 }

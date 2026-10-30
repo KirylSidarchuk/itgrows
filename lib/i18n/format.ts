@@ -8,6 +8,13 @@ export function formatNumber(locale: Locale, n: number, options?: Intl.NumberFor
   return new Intl.NumberFormat(INTL_LOCALE[locale], options).format(n)
 }
 
+/** A price in US dollars, from cents, the way the language writes it: "$4,788" (en), "4.788 $" (de),
+ *  "4 788 $US" (fr), "4788 US$" (es), "4 788 $" (ru). Cents only when there are any. */
+export function formatUsd(locale: Locale, cents: number): string {
+  const digits = cents % 100 ? 2 : 0
+  return formatNumber(locale, cents / 100, { style: "currency", currency: "USD", minimumFractionDigits: digits, maximumFractionDigits: digits })
+}
+
 /** A date in the language's own order and month names. Default: "21 October 2026" style. */
 export function formatDate(
   locale: Locale,

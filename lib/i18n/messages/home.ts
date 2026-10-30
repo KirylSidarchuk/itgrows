@@ -2,14 +2,14 @@ import { defineMessages } from "../messages"
 import { ENTITY_ABOUT, ENTITY_ONE_LINER } from "@/lib/entity"
 
 // app/page.tsx ("/", and /de, /fr, /es, /ru): metadata, the page's own sections, the FAQ and the
-// human-readable structured data. Paths and the yearly discount come in as arguments; no plan price is
-// named: under the price test (lib/geo-pricing.ts PRICE_TEST, since 28 Oct 2026) the price is shown
-// only in the cabinet, "you see your price after your free report". The detailed report is free once
-// an account is created (since 27 Oct 2026).
+// human-readable structured data. Paths, the plan's prices and the yearly discount come in as
+// arguments (lib/geo-pricing.ts geoPriceLabels: the one price, written the language's way). The price
+// test of 28–30 Oct 2026, when no price was named here, is over (owner's decision, 30 Oct 2026). The
+// detailed report is free once an account is created (since 27 Oct 2026).
 // Since 30 Oct 2026 the page's headline promise is the growth guarantee (growthGuarantee.ts,
-// /terms#growth-guarantee). No other guarantee word, no invented numbers or cases, no plan price, no
-// client results (removed by the owner 30 Oct). The FAQ's only figures are the sourced ones of the
-// "why" block (geoSections.ts why), with their sources.
+// /terms#growth-guarantee). No other guarantee word, no invented numbers or cases, no client results
+// (removed by the owner 30 Oct). The FAQ's only figures are the plan's prices and the sourced ones of
+// the "why" block (geoSections.ts why), with their sources.
 // Terms used the same way across the GEO pages: report = Bericht / rapport / informe / отчёт; the plan
 // (paid) = Plan / abonnement / plan / подписка; our plan for a site = Maßnahmenplan / plan d'action /
 // plan de acción / план действий; setup = Einrichtung / mise en place / configuración inicial / настройка;
@@ -18,6 +18,12 @@ import { ENTITY_ABOUT, ENTITY_ONE_LINER } from "@/lib/entity"
 type FaqVars = {
   /** The sample report's path in this language. */
   sample: string
+  /** The plan's prices, already formatted (lib/geo-pricing.ts geoPriceLabels). */
+  month: string
+  setup: string
+  quarter: string
+  year: string
+  yearPerMonth: string
   /** The yearly discount, already formatted ("20%"). */
   yearOff: string
 }
@@ -40,6 +46,10 @@ const en = {
   serviceDescription:
     "Gets a business named when its customers ask ChatGPT, Claude, Gemini and Perplexity: answer articles on the business's own domain, crawler and indexing fixes, profiles prepared on the sites the assistants quote, and the customers' questions re-asked to all four assistants every two weeks.",
   offerReport: "Detailed AI visibility report",
+  offerPlan: "AI visibility plan, monthly",
+  offerSetup: "AI visibility plan, one-time setup (free with 3 months or a year)",
+  offerQuarter: "AI visibility plan, 3 months upfront, setup included",
+  offerYear: (off: string) => `AI visibility plan, yearly (${off} off), setup included`,
 
   // Navigation, in the page's order
   navWhy: "Why now",
@@ -70,7 +80,7 @@ const en = {
 
   // FAQ: the same 15 questions in the same order in every language
   faqTitle: "Questions",
-  faq: ({ sample, yearOff }: FaqVars): Faq => [
+  faq: ({ sample, month, setup, quarter, year, yearPerMonth, yearOff }: FaqVars): Faq => [
     { q: "What is ItGrows?", a: ENTITY_ABOUT[0] },
     {
       q: "Will ChatGPT name us?",
@@ -110,7 +120,7 @@ const en = {
     },
     {
       q: "What does the plan cost?",
-      a: `You see your price after your free report: it is shown in your account before you pay anything. The plan is billed by the month, month to month, plus a one-time setup (your site and its indexes made ready, delivered as a launch report); the setup is free when you pay for 3 months upfront or for a year, and a year is ${yearOff} off. The detailed report is included.`,
+      a: `${month} a month, month to month, plus a one-time ${setup} setup: your site and its indexes made ready, delivered as a launch report. The setup is free when you pay ${quarter} for 3 months upfront or ${year} for a year (${yearPerMonth} a month, ${yearOff} off). The detailed report is included.`,
     },
     {
       q: "Who is this for?",
@@ -160,6 +170,10 @@ export default defineMessages(en, {
     serviceDescription:
       "Sorgt dafür, dass ein Unternehmen genannt wird, wenn seine Kunden ChatGPT, Claude, Gemini und Perplexity fragen: Antwortartikel auf der eigenen Domain des Unternehmens, Korrekturen bei Crawler-Zugriff und Indexierung, vorbereitete Profile auf den Websites, die die Assistenten zitieren, und alle zwei Wochen die Fragen der Kunden erneut an alle vier Assistenten.",
     offerReport: "Ausführlicher Bericht zur KI-Sichtbarkeit",
+    offerPlan: "Plan für KI-Sichtbarkeit, monatlich",
+    offerSetup: "Plan für KI-Sichtbarkeit, einmalige Einrichtung (entfällt bei 3 Monaten oder einem Jahr)",
+    offerQuarter: "Plan für KI-Sichtbarkeit, 3 Monate im Voraus, ohne Einrichtungsgebühr",
+    offerYear: (off) => `Plan für KI-Sichtbarkeit, jährlich (${off} Rabatt), ohne Einrichtungsgebühr`,
 
     navWhy: "Warum jetzt",
     navHow: "So funktioniert es",
@@ -184,7 +198,7 @@ export default defineMessages(en, {
     writeLead: "Ihre Website, Ihre Branche, wer an Ihrer Stelle genannt wird, der Plan: Fragen Sie, was Sie wollen. Wir antworten innerhalb eines Tages.",
 
     faqTitle: "Fragen",
-    faq: ({ sample, yearOff }) => [
+    faq: ({ sample, month, setup, quarter, year, yearPerMonth, yearOff }) => [
       {
         q: "Was ist ItGrows?",
         a: "ItGrows sorgt dafür, dass ein Unternehmen genannt wird, wenn seine Kunden einen KI-Assistenten fragen. Wir stellen ChatGPT, Claude, Gemini und Perplexity die Fragen, die diese Kunden stellen, jeweils mehrmals, und sehen, wer an seiner Stelle genannt wird und welche Websites zitiert werden. Dann erledigen wir die Arbeit: Wir öffnen die Website für KI-Crawler und Suchindizes, veröffentlichen auf der eigenen Domain des Unternehmens Seiten, die diese Fragen beantworten, und bereiten seine Profile auf den Websites vor, die die Assistenten zitieren. Alle zwei Wochen fragen wir erneut und legen überall nach, wo das Unternehmen noch fehlt.",
@@ -227,7 +241,7 @@ export default defineMessages(en, {
       },
       {
         q: "Was kostet der Plan?",
-        a: `Ihren Preis sehen Sie nach Ihrem kostenlosen Bericht: Er steht in Ihrem Konto, bevor Sie etwas bezahlen. Der Plan wird monatlich abgerechnet und ist monatlich kündbar, dazu kommt eine einmalige Einrichtung (Ihre Website und ihre Indizes werden startklar gemacht, geliefert als Startbericht); die Einrichtungsgebühr entfällt, wenn Sie 3 Monate im Voraus oder ein Jahr zahlen, und ein Jahr kostet ${yearOff} weniger. Der ausführliche Bericht ist inbegriffen.`,
+        a: `${month} pro Monat, monatlich kündbar, plus eine einmalige Einrichtung für ${setup}: Ihre Website und ihre Indizes werden startklar gemacht, geliefert als Startbericht. Die Einrichtungsgebühr entfällt, wenn Sie ${quarter} für 3 Monate im Voraus oder ${year} für ein Jahr zahlen (${yearPerMonth} pro Monat, ${yearOff} Rabatt). Der ausführliche Bericht ist inbegriffen.`,
       },
       {
         q: "Für wen ist das?",
@@ -277,6 +291,10 @@ export default defineMessages(en, {
     serviceDescription:
       "Fait mentionner une entreprise quand ses clients interrogent ChatGPT, Claude, Gemini et Perplexity : des articles de réponse sur le propre domaine de l’entreprise, des corrections de l’accès des robots et de l’indexation, des profils préparés sur les sites que citent les assistants, et les questions des clients reposées aux quatre assistants toutes les deux semaines.",
     offerReport: "Rapport détaillé de visibilité dans l’IA",
+    offerPlan: "Abonnement visibilité IA, mensuel",
+    offerSetup: "Abonnement visibilité IA, mise en place (une seule fois, offerte pour 3 mois ou un an)",
+    offerQuarter: "Abonnement visibilité IA, 3 mois d’avance, sans frais de mise en place",
+    offerYear: (off) => `Abonnement visibilité IA, annuel (−${off}), sans frais de mise en place`,
 
     navWhy: "Pourquoi maintenant",
     navHow: "Fonctionnement",
@@ -301,7 +319,7 @@ export default defineMessages(en, {
     writeLead: "Votre site, votre secteur, qui est mentionné à votre place, l’abonnement : demandez ce que vous voulez. Nous répondons sous 24 heures.",
 
     faqTitle: "Questions fréquentes",
-    faq: ({ sample, yearOff }) => [
+    faq: ({ sample, month, setup, quarter, year, yearPerMonth, yearOff }) => [
       {
         q: "Qu’est-ce qu’ItGrows ?",
         a: "ItGrows fait mentionner une entreprise quand ses clients interrogent un assistant IA. Nous posons à ChatGPT, Claude, Gemini et Perplexity les questions que posent ces clients, plusieurs fois chacune, et voyons qui est mentionné à sa place et quels sites sont cités. Puis nous faisons le travail : nous ouvrons le site aux robots d’IA et aux index de recherche, publions sur le propre domaine de l’entreprise des pages qui répondent à ces questions, et préparons ses profils sur les sites que citent les assistants. Toutes les deux semaines, nous reposons les questions et poussons partout où l’entreprise manque encore.",
@@ -344,7 +362,7 @@ export default defineMessages(en, {
       },
       {
         q: "Combien coûte l’abonnement ?",
-        a: `Vous voyez votre prix après votre rapport gratuit : il s’affiche dans votre compte avant tout paiement. L’abonnement est facturé au mois, sans engagement, plus une mise en place facturée une seule fois (votre site et ses index préparés, livrés sous forme de rapport de lancement) ; la mise en place n’est pas facturée si vous payez 3 mois d’avance ou un an, et l’année bénéficie de ${yearOff} de remise. Le rapport détaillé est inclus.`,
+        a: `${month} par mois, sans engagement, plus une mise en place de ${setup}, facturée une seule fois : votre site et ses index préparés, livrés sous forme de rapport de lancement. La mise en place n’est pas facturée si vous payez 3 mois d’avance (${quarter}) ou un an (${year}, soit ${yearPerMonth} par mois, ${yearOff} de remise). Le rapport détaillé est inclus.`,
       },
       {
         q: "À qui s’adresse ce service ?",
@@ -394,6 +412,10 @@ export default defineMessages(en, {
     serviceDescription:
       "Consigue que mencionen a una empresa cuando sus clientes preguntan a ChatGPT, Claude, Gemini y Perplexity: artículos de respuesta en el propio dominio de la empresa, correcciones del acceso de rastreadores y de la indexación, perfiles preparados en los sitios que citan los asistentes y las preguntas de los clientes planteadas de nuevo a los cuatro asistentes cada dos semanas.",
     offerReport: "Informe detallado de visibilidad en IA",
+    offerPlan: "Plan de visibilidad en IA, mensual",
+    offerSetup: "Plan de visibilidad en IA, configuración inicial (pago único, sin coste con 3 meses o un año)",
+    offerQuarter: "Plan de visibilidad en IA, 3 meses por adelantado, configuración inicial sin coste",
+    offerYear: (off) => `Plan de visibilidad en IA, anual (${off} de descuento), configuración inicial sin coste`,
 
     navWhy: "Por qué ahora",
     navHow: "Cómo funciona",
@@ -418,7 +440,7 @@ export default defineMessages(en, {
     writeLead: "Su sitio, su sector, a quién mencionan en su lugar, el plan: pregunte lo que quiera. Respondemos en menos de un día.",
 
     faqTitle: "Preguntas",
-    faq: ({ sample, yearOff }) => [
+    faq: ({ sample, month, setup, quarter, year, yearPerMonth, yearOff }) => [
       {
         q: "¿Qué es ItGrows?",
         a: "ItGrows consigue que mencionen a una empresa cuando sus clientes preguntan a un asistente de IA. Planteamos a ChatGPT, Claude, Gemini y Perplexity las preguntas que hacen esos clientes, varias veces cada una, y vemos a quién mencionan en su lugar y qué sitios citan. Después hacemos el trabajo: abrimos el sitio a los rastreadores de IA y a los índices de búsqueda, publicamos en el propio dominio de la empresa páginas que responden a esas preguntas y preparamos sus perfiles en los sitios que citan los asistentes. Cada dos semanas volvemos a preguntar y empujamos allí donde la empresa aún no aparece.",
@@ -461,7 +483,7 @@ export default defineMessages(en, {
       },
       {
         q: "¿Cuánto cuesta el plan?",
-        a: `Verá su precio después de su informe gratuito: aparece en su cuenta antes de pagar nada. El plan se factura al mes, mes a mes, más una configuración inicial de pago único (su sitio y sus índices listos, entregados como un informe de lanzamiento); la configuración inicial no se cobra si paga 3 meses por adelantado o un año, y el año tiene un ${yearOff} de descuento. El informe detallado está incluido.`,
+        a: `${month} al mes, mes a mes, más una configuración inicial de ${setup} (pago único): su sitio y sus índices listos, entregados como un informe de lanzamiento. La configuración inicial no se cobra si paga 3 meses por adelantado (${quarter}) o un año (${year}, ${yearPerMonth} al mes, un ${yearOff} de descuento). El informe detallado está incluido.`,
       },
       {
         q: "¿Para quién es esto?",
@@ -511,6 +533,10 @@ export default defineMessages(en, {
     serviceDescription:
       "Добивается, чтобы компанию называли, когда её клиенты спрашивают ChatGPT, Claude, Gemini и Perplexity: статьи-ответы на собственном домене компании, исправление доступа краулеров и индексации, подготовленные профили на сайтах, которые цитируют ассистенты, и вопросы клиентов, заново заданные всем четырём ассистентам раз в две недели.",
     offerReport: "Подробный отчёт о видимости в ИИ",
+    offerPlan: "Подписка на видимость в ИИ, помесячно",
+    offerSetup: "Подписка на видимость в ИИ, разовая настройка (бесплатно при оплате 3 месяцев или года)",
+    offerQuarter: "Подписка на видимость в ИИ, 3 месяца сразу, без платы за настройку",
+    offerYear: (off) => `Подписка на видимость в ИИ, на год (скидка ${off}), без платы за настройку`,
 
     navWhy: "Зачем",
     navHow: "Как работает",
@@ -535,7 +561,7 @@ export default defineMessages(en, {
     writeLead: "Ваш сайт, ваша сфера, кого называют вместо вас, подписка — спрашивайте о чём угодно. Отвечаем в течение дня.",
 
     faqTitle: "Вопросы",
-    faq: ({ sample, yearOff }) => [
+    faq: ({ sample, month, setup, quarter, year, yearPerMonth, yearOff }) => [
       {
         q: "Что такое ItGrows?",
         a: "ItGrows добивается, чтобы компанию называли, когда её клиенты спрашивают ИИ-ассистента. Мы задаём ChatGPT, Claude, Gemini и Perplexity вопросы, которые задают эти клиенты, по нескольку раз каждый, и видим, кого называют вместо неё и какие сайты цитируют. Затем делаем работу: открываем сайт для ИИ-краулеров и поисковых индексов, публикуем на собственном домене компании страницы, отвечающие на эти вопросы, и готовим её профили на сайтах, которые цитируют ассистенты. Раз в две недели спрашиваем снова и дожимаем везде, где компании ещё нет.",
@@ -578,7 +604,7 @@ export default defineMessages(en, {
       },
       {
         q: "Сколько стоит подписка?",
-        a: `Свою цену вы увидите после бесплатного отчёта: она показана в вашем аккаунте до любой оплаты. Подписка оплачивается помесячно, плюс разовая настройка (ваш сайт и его индексы готовятся к работе, результат — отчёт о запуске); плата за настройку не взимается, если вы платите за 3 месяца вперёд или за год, а год — со скидкой ${yearOff}. Подробный отчёт входит в стоимость.`,
+        a: `${month} в месяц с помесячной оплатой, плюс разовая настройка за ${setup}: ваш сайт и его индексы готовятся к работе, результат — отчёт о запуске. Плата за настройку не взимается, если вы платите ${quarter} за 3 месяца вперёд или ${year} за год (${yearPerMonth} в месяц, скидка ${yearOff}). Подробный отчёт входит в стоимость.`,
       },
       {
         q: "Для кого это?",

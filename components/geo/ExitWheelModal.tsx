@@ -18,7 +18,7 @@ import ns from "@/lib/i18n/messages/exitWheel"
 // page (opened by ./ExitWheel.tsx, which loads this file only then; the rules: lib/geo-promo.ts).
 // A dialog: labelled by its title, focus moves in and stays in (Tab cycles), Esc, the close button,
 // "No thanks" and a click on the backdrop close it, and focus goes back to where it was. Honest: no
-// timer, no prices (they are only inside the account), a plain "No thanks", and the odds said (each
+// timer, no prices (the rewards by name only), a plain "No thanks", and the odds said (each
 // reward the same chance). The reward is drawn on the server (POST /api/geo/promo/guest-spin) and the
 // wheel turns to it (not with prefers-reduced-motion). After the spin: the reward, the date it is kept
 // until, what claims it (the site, an account, the free report), and "Claim my reward", which closes

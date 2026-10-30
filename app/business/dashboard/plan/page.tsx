@@ -17,8 +17,8 @@ import { LaunchRewards, liveReward, useMinuteNow, usePromo } from "../launch-whe
 //
 // Three ways to pay, at the account's own prices (/api/geo/report price, lib/geo-price-test.ts: the
 // price test's variant, or the one price): by the month plus the one-time setup, 3 months upfront, or
-// a year (both with the setup free). This is the only place, with the end of the report, that names a
-// plan price; showing it is counted per variant (/api/geo/plan-view: geo_plan_view). Without the
+// a year (both with the setup free). Since the price test ended (30 Oct 2026) that is the one price for
+// every account, as on the public pages; showing it is counted (/api/geo/plan-view: geo_plan_view). Without the
 // prices (they could not be read) the page names none and offers no checkout. The setup is once per
 // site: a site that has had a paid plan before, by anyone, reads "<month> a month" with no setup and a
 // first payment of one month, exactly what /api/geo/checkout charges (the report's setupPaid, and where that says no,

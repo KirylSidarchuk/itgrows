@@ -7,13 +7,16 @@ import Link from "next/link"
 import OAuthButtons from "@/components/auth/OAuthButtons"
 import GuestRewardNote from "@/components/geo/GuestRewardNote"
 import LocaleLink from "@/components/i18n/LocaleLink"
-import { useT } from "@/components/i18n/LocaleProvider"
+import { useLocale, useT } from "@/components/i18n/LocaleProvider"
+import { geoPriceLabels } from "@/lib/geo-pricing"
 import { isBareDomain } from "@/lib/geo-handoff"
 import { rich } from "@/lib/i18n/rich"
 import signupNs from "@/lib/i18n/messages/signup"
 
 function SignupForm() {
   const m = useT(signupNs)
+  // The plan's prices for the "Start the plan" heading, written the page language's way.
+  const prices = geoPriceLabels(useLocale())
   const router = useRouter()
   const searchParams = useSearchParams()
   const callbackUrl = searchParams.get("callbackUrl") ?? "/cabinet"
@@ -417,7 +420,7 @@ function SignupForm() {
           {aiForPlan ? (
             <>
               <h1 className="text-2xl font-bold text-[#1b1916] mt-4">{m.planTitle}</h1>
-              <p className="text-slate-500 text-sm mt-1">{m.planLead}</p>
+              <p className="text-slate-500 text-sm mt-1">{m.planLead(prices.month, prices.setup, prices.quarter, prices.year)}</p>
             </>
           ) : fromAiCheck && aiSite ? (
             <>

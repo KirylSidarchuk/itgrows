@@ -2,7 +2,7 @@ import type { Metadata } from "next"
 import Link from "next/link"
 import { noteCrawler } from "@/lib/crawler-log"
 import { ORGANIZATION } from "@/lib/entity"
-import { SAMPLE_PATH, YEAR_DISCOUNT } from "@/lib/geo-pricing"
+import { SAMPLE_PATH, YEAR_DISCOUNT, geoPriceLabels } from "@/lib/geo-pricing"
 import LanguageSwitcher from "@/components/i18n/LanguageSwitcher"
 import LocaleProvider from "@/components/i18n/LocaleProvider"
 import { formatNumber } from "@/lib/i18n/format"
@@ -34,8 +34,9 @@ export default async function AboutPage() {
   const locale = await getLocale()
   const m = t(locale, aboutNs)
   void noteCrawler(localePath(locale, "/about"))
-  // The yearly discount: "20%" in English, "20 %" in German and French. No plan price is named (the
-  // price test shows it only in the cabinet, lib/geo-pricing.ts PRICE_TEST).
+  // The plan's prices, written the language's way (lib/geo-pricing.ts geoPriceLabels), and the yearly
+  // discount: "20%" in English, "20 %" in German and French.
+  const prices = geoPriceLabels(locale)
   const yearOff = formatNumber(locale, YEAR_DISCOUNT, { style: "percent", maximumFractionDigits: 0 })
   const schema = {
     "@context": "https://schema.org",
@@ -62,7 +63,7 @@ export default async function AboutPage() {
           <ul className="mt-3 space-y-3 text-slate-700 leading-relaxed list-disc pl-5">
             <li>
               {rich(
-                m.plan({ yearOff }),
+                m.plan({ ...prices, yearOff }),
                 { link: (c) => <Link href={localePath(locale, "/#geo-pricing")} className={link}>{c}</Link> },
               )}
             </li>

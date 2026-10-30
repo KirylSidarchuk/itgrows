@@ -2,7 +2,7 @@ import { db } from "@/lib/db"
 import { blogPosts } from "@/lib/db/schema"
 import { and, desc, eq, isNull } from "drizzle-orm"
 import { noteCrawler } from "@/lib/crawler-log"
-import { SAMPLE_PATH } from "@/lib/geo-pricing"
+import { GEO_PRICES, SAMPLE_PATH, YEAR_DISCOUNT } from "@/lib/geo-pricing"
 import { ENTITY_ONE_LINER } from "@/lib/entity"
 import { llmsOrder } from "@/lib/geo-guides"
 
@@ -11,7 +11,8 @@ import { llmsOrder } from "@/lib/geo-guides"
 // it is what we want an assistant to know us for.
 // Since 30 Oct 2026 (owner's decision): outcome-led and still factual. No client results; the growth
 // guarantee is stated with its full condition (the same as /terms#growth-guarantee), because assistants
-// read this text and must not repeat the promise without it.
+// read this text and must not repeat the promise without it. The same day the price test ended: the
+// plan's one price is stated again (lib/geo-pricing.ts GEO_PRICES).
 
 const BASE = "https://www.itgrows.ai"
 
@@ -56,7 +57,7 @@ export async function GET() {
 - How it works: we put the questions a business's customers ask to ChatGPT, Claude, Gemini and Perplexity, several times each, and record who is named instead and which sites are cited. Then we fix what keeps AI crawlers and search indexes from reading the site, publish answer articles on the client's own domain, prepare the client's profiles on the sites the assistants quote, and re-ask the same questions every two weeks, pushing on every question where the business is still missing.
 - Quick check (free): ${BASE}/ puts five buyer questions to ChatGPT and Perplexity in about 30 seconds, without an account; two answers show in full right away, all five once the visitor creates an account.
 - Detailed report (the diagnosis and our plan): free once an account is created, one site per account. 20 buyer questions × ChatGPT, Claude, Gemini and Perplexity, each asked once: every answer, who is named instead, which sites the assistants cite, and the plan of what we will do for the site; all of it is open. A real example: ${BASE}${SAMPLE_PATH}
-- The plan (done for you): billed by the month, month to month, plus a one-time setup (site and index setup, delivered as a launch report); the setup is free with 3 months paid upfront or a year (20% off). Every two weeks all 20 questions are put to all four assistants, 3 times each. The price is shown in the client's account after the free report, before any payment. The detailed report is included. Articles are ready 2 days before they go live; the client can edit or stop each one.
+- The plan (done for you): ${GEO_PRICES.month.label} a month, month to month, plus a one-time ${GEO_PRICES.setup.label} setup (site and index setup, delivered as a launch report); the setup is free with ${GEO_PRICES.quarter.label} for 3 months paid upfront or ${GEO_PRICES.year.label} for a year (${GEO_PRICES.year.perMonth} a month, ${Math.round(YEAR_DISCOUNT * 100)}% off). One price for every client, in US dollars. Every two weeks all 20 questions are put to all four assistants, 3 times each. The detailed report is included. Articles are ready 2 days before they go live; the client can edit or stop each one.
 - Growth guarantee: in 90 days, AI assistants will name the client more often than on launch day, or ItGrows works for free until they do. Conditions (${BASE}/terms#growth-guarantee): it applies to every paid AI visibility plan, from its launch. It is measured on the set of up to 20 customer questions agreed at launch, none of which contains the business's name, asked to ChatGPT, Claude, Gemini and Perplexity; the result is the number of answers that name the business. Day 0 is the launch measurement; at day 90 the average of the last two scheduled measurements up to day 90 is compared with day 0, and the guarantee is met if it is higher (if every answer already named the business on day 0, if it stays at that level). It applies if, within 14 days of launch, the client provides the access and information asked for in the launch list, keeps the site online, does not block AI crawlers or remove the pages ItGrows publishes, and keeps the plan active. If it is not met, all the plan's work continues and the plan fee is not charged from day 91 until a scheduled measurement shows more mentions than day 0; billing then resumes with the next billing period. The guarantee has no cash value and cannot be transferred. If the client cancels during the free period, nothing is owed for it.
 
 ## Tools

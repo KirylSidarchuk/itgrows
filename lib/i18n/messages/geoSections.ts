@@ -2,8 +2,8 @@ import { defineMessages } from "../messages"
 
 // app/business/GeoSections.tsx: WorkSystem (work), WhyThisMatters (why), VersusArticles (versus) and
 // what the plan includes (included). The big numbers of the five stages stay in the component; the
-// findings' numbers carry words, so they are here. No plan price is named: under the price test
-// (lib/geo-pricing.ts PRICE_TEST) the price is shown only in the cabinet.
+// findings' numbers carry words, so they are here. The plan's price is named by the pricing card and
+// the FAQ (pricingPlans.ts, home.ts), not here.
 // Since 30 Oct 2026 (owner's decision) the copy sells the outcome: no hedging lines, no guarantee word
 // (the one guarantee is growthGuarantee.ts), and the why block's figures and sources stay as checked.
 

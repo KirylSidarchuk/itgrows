@@ -1,6 +1,11 @@
+import type { Locale } from "@/lib/i18n/config"
+import { formatUsd } from "@/lib/i18n/format"
+
 // AI-visibility pricing, in one place: the site, the cabinet and Stripe Checkout all read it.
-// Decided by Kiryl on 22 Oct 2026; the detailed report is free since 27 Oct 2026; the plan's monthly
-// price is an A/B test since 28 Oct 2026 (Kiryl, 27 Oct: "цена только внутри кабинета").
+// Decided by Kiryl on 22 Oct 2026; the detailed report is free since 27 Oct 2026. The plan's monthly
+// price was an A/B test from 28 to 30 Oct 2026 (Kiryl, 27 Oct: "цена только внутри кабинета"); Kiryl
+// ended it on 30 Oct 2026 ("цены нет вообще, это так не работает, цены должны быть"): one price for
+// every account, $499 a month, and the public pages name it again.
 //
 // - The quick check on the site (5 questions x ChatGPT + Perplexity): two answers open without an
 //   account, all five once one is created.
@@ -17,22 +22,30 @@
 //   3 months, $4,788 for a year ($399 a month). Its Stripe prices are found by lookup key (GEO_PRICES);
 //   a test price is charged inline (lib/geo-business.ts geoLineItems), so it needs no Stripe price.
 //
-// The price test (PRICE_TEST): every account created while it runs gets one of the variants at
-// random, uniform, in the same insert that creates it (users.geo_price_variant: auth.ts and
-// app/api/register/route.ts, drawPriceVariant), and keeps it. Accounts from before the test (NULL)
-// and clients set up by hand (geo_clients) stay on the one price; paying clients are never re-priced,
-// Stripe keeps charging what they bought. Only the cabinet shows a price (the plan page, the end of
-// the report, checkout: lib/geo-price-test.ts accountPrices); the public pages, llms.txt, the JSON-LD
-// and the articles name none: "you see your price after your free report". Counted per variant:
-// geo_plan_view, geo_checkout_started, geo_plan_paid (analytics_events, props.variant).
+// The public pages name the one price (GEO_PRICES), each in its language's way (geoPriceLabels):
+// the pricing card and the FAQ of "/" (app/business/PricingPlans.tsx, lib/i18n/messages/home.ts), the
+// home page's JSON-LD offers, /about, /signup, the sample report, llms.txt, the terms and the blog
+// posts' footer; the writer of our own articles has the same figures (VM /root/blog_engine
+// own_geo_facts.json).
+//
+// The price test (PRICE_TEST), off since 30 Oct 2026. While it ran, every account created got one of
+// the variants at random, uniform, in the same insert that creates it (users.geo_price_variant:
+// auth.ts and app/api/register/route.ts, drawPriceVariant), and keeps it. Accounts from before the
+// test (NULL) and clients set up by hand (geo_clients) stayed on the one price; paying clients are
+// never re-priced, Stripe keeps charging what they bought. While it ran only the cabinet showed a
+// price (the plan page, the end of the report, checkout: lib/geo-price-test.ts accountPrices) and the
+// public pages named none. Counted per variant: geo_plan_view, geo_checkout_started, geo_plan_paid
+// (analytics_events, props.variant). With it off, every account (those given a variant while it ran
+// too) sees and is charged ONE_PRICE_MONTH, new accounts get no variant, and the events carry variant
+// null.
 //
 // The launch-rewards wheel (lib/geo-promo.ts PROMO_WHEEL, since 29 Oct 2026) comes on top of these
-// prices: the same four rewards for every variant, applied at checkout to the account's own prices.
+// prices: the same four rewards for every account, applied at checkout to the account's prices.
 //
-// Back to one price, with no other edit: `enabled: false` puts everyone on ONE_PRICE_MONTH (and new
-// accounts get no variant); `variants: [<cents>]` puts every account of the test on that one price
-// (accounts from before the test stay on ONE_PRICE_MONTH). A variant dropped from a longer list sends
-// its accounts to ONE_PRICE_MONTH.
+// To test again: `enabled: true` gives new accounts one of `variants`; `variants: [<cents>]` puts every
+// account of the test on that one price (accounts from before the test stay on ONE_PRICE_MONTH). A
+// variant dropped from a longer list sends its accounts to ONE_PRICE_MONTH. The public pages would then
+// name ONE_PRICE_MONTH while accounts in the test see their own price: change them with it.
 
 /** Sites an account has the free detailed report computed for. Past that /api/geo/follow answers
  *  "report_limit" and the cabinet offers to run another site's report on request ("contact us"). */
@@ -44,9 +57,10 @@ export type GeoPriceKind = "setup" | GeoInterval
 /** The one price, a month, in cents: every account outside the test, and everyone with it off. */
 export const ONE_PRICE_MONTH = 49900
 
-/** The A/B test of the plan's monthly price, in cents (Kiryl, 27 Oct 2026). See the top of the file. */
+/** The A/B test of the plan's monthly price, in cents (Kiryl, 27 Oct 2026; ended by him on 30 Oct 2026:
+ *  one price for everyone, named on the public pages). See the top of the file. */
 export const PRICE_TEST: { enabled: boolean; variants: readonly number[] } = {
-  enabled: true,
+  enabled: false,
   variants: [29900, 39900, 49900, 59900],
 }
 
@@ -108,9 +122,32 @@ export function geoPrices(monthCents: number): GeoPrices {
   }
 }
 
-/** The one price: $499 a month, a $499 setup, $1,497 for 3 months, $4,788 for a year. Only for what
- *  is not an account's own price: the Stripe prices by lookup key and a checkout from before the test. */
+/** The one price: $499 a month, a $499 setup, $1,497 for 3 months, $4,788 for a year ($399 a month).
+ *  What the public pages name, the Stripe prices by lookup key, and a checkout from before the test. */
 export const GEO_PRICES = geoPrices(ONE_PRICE_MONTH)
+
+/** The plan's prices as a page in one language writes them (lib/i18n/format.ts formatUsd). */
+export interface GeoPriceLabels {
+  month: string
+  setup: string
+  quarter: string
+  year: string
+  /** What a year comes to a month. */
+  yearPerMonth: string
+}
+
+/** The one price (or another) for a public page in its language: "$499", "$1,497", "$4,788" and "$399"
+ *  in English; "499 $", "1.497 $", "4.788 $" and "399 $" in German. */
+export function geoPriceLabels(locale: Locale, p: GeoPrices = GEO_PRICES): GeoPriceLabels {
+  const f = (cents: number) => formatUsd(locale, cents)
+  return {
+    month: f(p.month.cents),
+    setup: f(p.setup.cents),
+    quarter: f(p.quarter.cents),
+    year: f(p.year.cents),
+    yearPerMonth: f(yearMonthCents(p.monthCents, YEAR_DISCOUNT)),
+  }
+}
 
 /** The setup fee is charged only on the month-to-month plan. */
 export const setupFree = (i: GeoInterval) => i !== "month"
@@ -121,7 +158,7 @@ export function firstPaymentCents(p: GeoPrices, i: GeoInterval) {
 }
 
 /** A new account's monthly price while the test runs: one of PRICE_TEST.variants at random, uniform.
- *  Null with the test off: the account is on the one price, as before the test. */
+ *  Null with the test off (since 30 Oct 2026): the account is on the one price. */
 export function drawPriceVariant(): number | null {
   const v = PRICE_TEST.variants
   if (!PRICE_TEST.enabled || !v.length) return null

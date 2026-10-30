@@ -20,7 +20,7 @@ import wheel from "@/lib/i18n/messages/exitWheel"
 //   "signup", "login": /signup and /login on the way to the AI-visibility cabinet.
 // `onTint`: on a coloured card (a white note instead of a violet one). Texts:
 // lib/i18n/messages/guestReward.ts; the reward's name from the wheel's own texts (exitWheel.ts). No
-// prices, as nowhere on the public pages.
+// prices: the rewards by name only.
 
 export type GuestRewardPlace = "check" | "gate" | "signup" | "login"
 

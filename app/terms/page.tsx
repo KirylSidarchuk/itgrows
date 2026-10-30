@@ -1,13 +1,14 @@
 import type { Metadata } from "next"
 import type { ReactNode } from "react"
 import Link from "next/link"
+import { GEO_PRICES, YEAR_DISCOUNT } from "@/lib/geo-pricing"
 
 export const dynamic = "force-static"
 
 // Terms of Service for both products: AI visibility (ItGrows for Business) and LinkedIn & X posts.
-// No plan price is written here: under the price test (lib/geo-pricing.ts PRICE_TEST, since 28 Oct
-// 2026) each account is shown its own price in the cabinet before it pays, and that is the price
-// charged; the structure (setup = one month, 3 months, a year 20% off) is the same for every price.
+// Prices come from lib/geo-pricing.ts (GEO_PRICES, the one price) so this page never disagrees with the
+// checkout. From 28 to 30 Oct 2026 a price test showed each account its own price in the cabinet and this
+// page named none; on 30 Oct 2026 the owner ended it, and the one price is written here again.
 // Refunds and taxes
 // are the owner's decisions of 23 Oct 2026. Since 27 Oct 2026 (the effective date) the detailed report
 // is free once an account is created, one per account and per connection; the quick check and the
@@ -26,6 +27,8 @@ export const metadata: Metadata = {
   alternates: { canonical: "https://www.itgrows.ai/terms" },
 }
 
+const P = GEO_PRICES
+const YEAR_OFF = `${Math.round(YEAR_DISCOUNT * 100)}%`
 const CONTACT = "kiryl@itgrows.ai"
 
 const SECTIONS = [
@@ -105,9 +108,9 @@ export default function TermsPage() {
             <ul className="mt-3 space-y-2 text-sm text-slate-700 leading-relaxed list-disc pl-5">
               <li>ItGrows has two products: AI visibility for businesses, and LinkedIn &amp; X posts for founders and companies.</li>
               <li>
-                AI visibility: a quick check, a detailed report that is free once you create an account, and a plan billed by the month plus a
-                one-time setup (no setup fee when you pay for 3 months or a year), at the price shown in your account before you pay. Cancel any
-                time; the plan runs to the end of the paid period.
+                AI visibility: a quick check, a detailed report that is free once you create an account, and a plan at {P.month.label} a month plus a
+                one-time {P.setup.label} setup (no setup fee when you pay for 3 months or a year). Cancel any time; the plan runs to the end of
+                the paid period.
               </li>
               <li>You see every article 2 days before it goes live, and can edit or stop it.</li>
               <li>
@@ -187,20 +190,16 @@ export default function TermsPage() {
           </Section>
 
           <Section id="plan">
-            <p>
-              The plan is bought for one site, at the price shown in your account (on the Plan page and at checkout) before you pay; that is the
-              price you are charged. You choose how to pay:
-            </p>
+            <p>The plan is bought for one site. You choose how to pay:</p>
             <List>
               <li>
-                <strong>Month to month:</strong> the monthly price, plus a one-time setup charged with the first payment; the setup costs the same as
-                one month.
+                <strong>Month to month:</strong> {P.month.label} a month, plus a one-time {P.setup.label} setup charged with the first payment.
               </li>
               <li>
-                <strong>3 months upfront:</strong> three months’ price every 3 months, no setup fee.
+                <strong>3 months upfront:</strong> {P.quarter.label} every 3 months, no setup fee.
               </li>
               <li>
-                <strong>A year upfront:</strong> twelve months at 20% off, billed once a year, no setup fee.
+                <strong>A year upfront:</strong> {P.year.label} a year ({P.year.perMonth} a month, {YEAR_OFF} off), no setup fee.
               </li>
             </List>
             <p>
@@ -339,7 +338,7 @@ export default function TermsPage() {
           <Section id="refunds">
             <List>
               <li>
-                <strong>The setup:</strong> not refundable once the setup work has started.
+                <strong>The setup ({P.setup.label}):</strong> not refundable once the setup work has started.
               </li>
               <li>
                 <strong>The AI visibility plan:</strong> payments are not refunded for a period that has started. Cancelling takes effect at the end

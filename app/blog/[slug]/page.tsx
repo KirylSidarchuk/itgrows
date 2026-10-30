@@ -4,6 +4,7 @@ import Link from "next/link"
 import { db } from "@/lib/db"
 import { blogPosts } from "@/lib/db/schema"
 import { and, desc, eq, isNull, ne, or, sql } from "drizzle-orm"
+import { GEO_PRICES } from "@/lib/geo-pricing"
 import AboutItGrows from "@/components/geo/AboutItGrows"
 import AiVisibilityGuides from "@/components/geo/AiVisibilityGuides"
 
@@ -120,8 +121,8 @@ function ReadNext({ current, related }: { current: BlogRow; related: BlogRow[] }
             <p className="text-[#1b1916] font-semibold mb-2">We do this for companies.</p>
             <p className="text-sm text-[#1b1916]/70 leading-relaxed mb-4">
               Answer-shaped articles published on your own domain, so an assistant has something of
-              yours to quote. By the month plus a one-time setup, included with 3 months or a year; you see
-              your price after your free report.
+              yours to quote. {GEO_PRICES.month.label} a month plus a one-time {GEO_PRICES.setup.label} setup;
+              the setup is included with 3 months or a year.
             </p>
             <Link href="/" className="inline-flex items-center gap-2 rounded-xl bg-violet-600 hover:bg-violet-500 text-white px-5 py-2.5 text-sm font-semibold transition-colors">
               See how it works →

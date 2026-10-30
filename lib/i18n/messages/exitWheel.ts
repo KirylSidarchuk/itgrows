@@ -5,8 +5,8 @@ import { defineMessages } from "../messages"
 // components/geo/ExitWheelModal.tsx (client): the launch-rewards wheel offered on the public GEO pages
 // when a signed-out visitor on a computer moves to leave (lib/geo-promo.ts PROMO_WHEEL.exitIntent). It
 // sits in the root layout, outside the pages' LocaleProvider, and reads the language from <html lang>.
-// No prices here, as nowhere on the public pages: the rewards by name only (the prices are inside the
-// account). `rewards` and `segments` (two short lines on the wheel) follow WHEEL_REWARDS. The terms are
+// No prices here: the rewards by name only (the plan's price is on the pricing card, lib/geo-pricing.ts).
+// `rewards` and `segments` (two short lines on the wheel) follow WHEEL_REWARDS. The terms are
 // in English only, so the other languages say so on the link. After the spin, `claimHow` says what
 // claims the reward and `cta` names it (Kiryl, 29 Oct 2026: the button said "free report" under a won
 // reward); only the check and the report are called free, never the account (as signup.ts and

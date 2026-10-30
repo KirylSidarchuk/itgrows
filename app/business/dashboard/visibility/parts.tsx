@@ -18,7 +18,7 @@
 
 import { useEffect, useState } from "react"
 import { ENGINE_ICONS } from "../../engine-icons"
-import { YEAR_DISCOUNT, type GeoInterval, type GeoPrices } from "@/lib/geo-pricing"
+import { GEO_PRICES, YEAR_DISCOUNT, type GeoInterval, type GeoPrices } from "@/lib/geo-pricing"
 import { listQuestions } from "@/lib/geo-list-question"
 import { useT } from "@/components/i18n/LocaleProvider"
 import visibilityOpening from "@/lib/i18n/messages/visibilityOpening"
@@ -1205,7 +1205,7 @@ export function planSteps(site: SiteReport, audit: Audit | "failed" | undefined,
 
 /** Who reads the plan: an account not on it (the offer, "Start the plan", at its own prices), a client
  *  on the plan or set up by hand (where each step stands), or a visitor of the public sample
- *  (read-only, and no price: the price test shows prices only in the cabinet, lib/geo-pricing.ts). */
+ *  (read-only, with the one price the public pages name, GEO_PRICES in lib/geo-pricing.ts). */
 export type PlanMode = "offer" | "client" | "sample"
 
 const PLAN_HOME = "/#geo-pricing"
@@ -1467,7 +1467,7 @@ function ArticlesStep({ n, steps, work, client }: { n: number; steps: Step[]; wo
 /** The end of the report: what we do for the site, step by step. For an account not on the plan,
  *  "Start the plan" and "Talk to us", with its own prices (/api/geo/report price), right under the
  *  plan's summary and before the steps; for a client, where each step stands and what is done. The
- *  public sample names no price. The article steps for the buyer questions are one card (planItems).
+ *  public sample names the one price (GEO_PRICES). The article steps for the buyer questions are one card (planItems).
  *  Under "Start the plan", for an account that may have one, the launch-rewards wheel or the reward
  *  won (../launch-wheel.tsx; never on the sample, never for a client). Before the report is ready, a
  *  reward won on the website before the account is said to be waiting for it (PendingReward). */
@@ -1489,7 +1489,7 @@ export function YourPlan({
   const done = client && site.work ? doneList(steps, site.work) : []
   const sample = mode === "sample"
   const planHref = sample ? PLAN_HOME : `/business/dashboard/plan?site=${encodeURIComponent(site.domain)}`
-  const p = sample ? null : (prices ?? null)
+  const p = sample ? GEO_PRICES : (prices ?? null)
   const yearOff = `${Math.round(YEAR_DISCOUNT * 100)}% off`
   const items = planItems(steps)
   return (
@@ -1529,7 +1529,7 @@ export function YourPlan({
                 ) : (
                   <p className="flex-1 text-sm text-white/80">
                     By the month plus a one-time setup; the setup is free with 3 months upfront or a year ({yearOff}).{" "}
-                    {sample ? "You see your price after your free report." : "You see your price on the next page."}
+                    You see your price on the next page.
                   </p>
                 )}
                 <a

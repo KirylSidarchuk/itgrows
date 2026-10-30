@@ -14,8 +14,8 @@ import { usd, yearMonthCents, type GeoInterval, type GeoPrices } from "@/lib/geo
 //
 // A reward is for the site of the report, for the way to pay it names, and for 7 days from the spin
 // (a real date, shown with what is left). It changes the first payment only; later payments are at the
-// account's regular price. It comes on top of the account's price-test variant (lib/geo-pricing.ts
-// PRICE_TEST): the same rewards for every variant, so the test stays valid. It is not combined with a
+// account's regular price. It comes on top of the account's price (lib/geo-pricing.ts; while the price
+// test ran, 28–30 Oct 2026, the same rewards for every variant). It is not combined with a
 // promotion code. Paying accounts, accounts that had the plan, and clients set up by hand never see
 // the wheel. Terms: app/terms/page.tsx #launch-rewards. Counted as geo_wheel_seen, geo_wheel_spin
 // (props.reward, props.variant) and, once paid, geo_plan_paid props.reward.
@@ -38,7 +38,7 @@ import { usd, yearMonthCents, type GeoInterval, type GeoPrices } from "@/lib/geo
 // (POST /api/geo/promo/guest-spin). It moves to the account the visitor creates (users.geo_promo, by
 // "exit-wheel", with the website's dates) when the cabinet loads its wheel with that cookie and the
 // account has its free report and may have a reward (none yet, not a hand-set client, never had the
-// plan); until the report is ready the cabinet says the reward is waiting. Public pages name no price:
+// plan); until the report is ready the cabinet says the reward is waiting. The wheel names no price:
 // the rewards by name only. Counted as geo_wheel_exit_seen, geo_wheel_exit_spin (props.reward, .lang,
 // .path) and geo_wheel_claimed (props.reward, props.source "exit"); Telegram on the move to an account.
 // `exitIntent: false` turns the website's wheel off alone; `enabled: false` turns it off too, and
