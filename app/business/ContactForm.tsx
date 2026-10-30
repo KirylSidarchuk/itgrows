@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { useT } from "@/components/i18n/LocaleProvider"
 import ns from "@/lib/i18n/messages/contactForm"
+import { SHINE_BUTTON } from "@/components/geo/motion"
 
 // Google Ads conversion for a submitted message. Fired only after the API confirms the message was
 // received, so the campaign optimises against messages we actually got rather than button presses.
@@ -127,7 +128,7 @@ export default function ContactForm() {
       <button
         type="submit"
         disabled={!valid || busy}
-        className="w-full rounded-xl bg-violet-600 hover:bg-violet-500 disabled:opacity-50 disabled:cursor-not-allowed text-white px-8 py-3.5 text-base font-semibold transition-colors flex items-center justify-center gap-2"
+        className={`w-full rounded-xl bg-violet-600 hover:bg-violet-500 disabled:opacity-50 disabled:cursor-not-allowed text-white px-8 py-3.5 text-base font-semibold flex items-center justify-center gap-2 ${SHINE_BUTTON}`}
       >
         {busy ? (
           <>

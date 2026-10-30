@@ -256,3 +256,29 @@
 .article-content tbody tr:nth-child(even) {
   background: #f8f7f5 !important;
 }
+
+/* The scroll reveal of "/" (app/_home/ScrollReveal.tsx; the owner's request of 30 Oct 2026). It acts
+   only under <html class="js-reveal">, which that script adds (never without JavaScript, never for a
+   crawler, never with "reduce motion", which this query also requires): elsewhere a ".reveal" block is
+   plain and fully visible. A block not shown yet is transparent but keeps its place and stays in the
+   accessibility tree; when it is shown, it fades in and rises 12px over 500 ms, once, after its own
+   --reveal-delay (a grid's stagger). Opacity and transform only, so nothing around it moves; the
+   animation keeps nothing once it ends. On paper, everything prints. */
+@keyframes reveal-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@media screen and (prefers-reduced-motion: no-preference) {
+  .js-reveal .reveal:not(.is-in) {
+    opacity: 0;
+  }
+  .js-reveal .reveal.reveal-anim {
+    animation: reveal-in 500ms cubic-bezier(0.22, 1, 0.36, 1) var(--reveal-delay, 0ms) backwards;
+  }
+}

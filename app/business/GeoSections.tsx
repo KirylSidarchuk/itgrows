@@ -17,6 +17,9 @@
 // What none of them says is how: which rules, which tests, which order.
 // Server components that read the page's language themselves (lib/i18n/server); every string is in
 // lib/i18n/messages/geoSections.ts.
+// Their cards lift on hover and keyboard focus and their big numbers grow a little (components/geo/
+// motion.ts); the ones marked "reveal" fade in as they scroll into view (app/_home/ScrollReveal.tsx,
+// mounted by the page). Owner's request, 30 Oct 2026.
 
 import type { ReactNode } from "react"
 import type { Locale } from "@/lib/i18n/config"
@@ -26,6 +29,7 @@ import { rich } from "@/lib/i18n/rich"
 import geoSections from "@/lib/i18n/messages/geoSections"
 import growthGuarantee from "@/lib/i18n/messages/growthGuarantee"
 import { getLocale } from "@/lib/i18n/server"
+import { LIFT, LIFT_ACCENT, LIFT_DARK, NUM, SHINE, STEP, STEP_NODE } from "@/components/geo/motion"
 
 // "See the plan" points at the pricing section of the page the block sits on: "/" prefixes its GEO
 // section ids with "geo-" (#geo-pricing); a page without the prefix would use #pricing.
@@ -101,19 +105,19 @@ export async function WorkSystem({ id = "how" }: { id?: string }) {
 
         <div className="relative">
           {/* The road: vertical on the phone, through the node centres on desktop */}
-          <div aria-hidden className="lg:hidden absolute left-[27px] top-7 bottom-7 w-0.5 rounded-full bg-gradient-to-b from-violet-300 via-violet-500 to-cyan-400" />
-          <div aria-hidden className="hidden lg:block absolute top-[27px] left-[10%] right-[10%] h-0.5 rounded-full bg-gradient-to-r from-violet-300 via-violet-500 to-cyan-400" />
+          <div aria-hidden className="reveal lg:hidden absolute left-[27px] top-7 bottom-7 w-0.5 rounded-full bg-gradient-to-b from-violet-300 via-violet-500 to-cyan-400" />
+          <div aria-hidden className="reveal hidden lg:block absolute top-[27px] left-[10%] right-[10%] h-0.5 rounded-full bg-gradient-to-r from-violet-300 via-violet-500 to-cyan-400" />
           <ol className="relative grid gap-5 lg:grid-cols-5 lg:gap-6">
             {stages.map((s, i) => (
-              <li key={s.step} className="relative flex lg:flex-col lg:items-center gap-4 lg:gap-0 lg:text-center">
-                <div className="relative z-10 w-14 h-14 shrink-0 rounded-full bg-white border-2 border-violet-200 text-violet-600 flex items-center justify-center shadow-sm lg:mb-4">
+              <li key={s.step} className={`reveal group relative flex lg:flex-col lg:items-center gap-4 lg:gap-0 lg:text-center ${STEP}`}>
+                <div className={`relative z-10 w-14 h-14 shrink-0 rounded-full bg-white border-2 border-violet-200 text-violet-600 flex items-center justify-center shadow-sm lg:mb-4 ${STEP_NODE}`}>
                   <StageIcon name={s.icon} />
                 </div>
                 <div className="min-w-0">
                   <p className="text-[11px] font-bold uppercase tracking-widest text-violet-600">
                     {String(i + 1).padStart(2, "0")} · {s.step}
                   </p>
-                  <p className="text-4xl lg:text-5xl font-extrabold tracking-tighter leading-none mt-1.5 bg-gradient-to-r from-violet-600 to-cyan-500 bg-clip-text text-transparent">
+                  <p className={`text-4xl lg:text-5xl font-extrabold tracking-tighter leading-none mt-1.5 bg-gradient-to-r from-violet-600 to-cyan-500 bg-clip-text text-transparent ${NUM} lg:origin-center`}>
                     {s.n}
                   </p>
                   <p className="text-sm font-semibold leading-snug mt-1.5">{s.l}</p>
@@ -142,7 +146,7 @@ export async function WorkSystem({ id = "how" }: { id?: string }) {
 
         <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4 text-center sm:text-left">
           <p className="text-sm sm:text-base font-semibold max-w-xl">{m.closing}</p>
-          <a href={pricingAnchor(id)} className="shrink-0 rounded-xl bg-violet-600 hover:bg-violet-500 text-white px-5 py-3 text-sm font-semibold shadow-lg shadow-violet-600/20">
+          <a href={pricingAnchor(id)} className={`shrink-0 rounded-xl bg-violet-600 hover:bg-violet-500 text-white px-5 py-3 text-sm font-semibold shadow-lg shadow-violet-600/20 ${SHINE}`}>
             {m.seePlan}
           </a>
         </div>
@@ -306,9 +310,9 @@ export async function WhyThisMatters({ id = "geo-why", checkHref = "#geo-check" 
               ? "md:col-span-2 lg:col-span-3 md:flex-row md:items-center md:gap-8 bg-gradient-to-br from-violet-500/20 to-cyan-400/10 border-violet-400/30"
               : `bg-white/[0.06] border-white/10 ${i === figures.length - 1 ? "md:col-span-2 lg:col-span-1" : ""}`
             return (
-              <li key={i} className={`flex flex-col rounded-2xl border p-5 sm:p-6 ${tile}`}>
+              <li key={i} className={`reveal group flex flex-col rounded-2xl border p-5 sm:p-6 ${tile} ${LIFT_DARK}`}>
                 <p
-                  className={`font-extrabold tracking-tighter leading-none bg-gradient-to-r from-violet-300 to-cyan-300 bg-clip-text text-transparent ${
+                  className={`font-extrabold tracking-tighter leading-none bg-gradient-to-r from-violet-300 to-cyan-300 bg-clip-text text-transparent ${NUM} ${
                     hero ? "text-4xl sm:text-6xl lg:text-7xl md:shrink-0" : "text-4xl"
                   }`}
                 >
@@ -328,7 +332,7 @@ export async function WhyThisMatters({ id = "geo-why", checkHref = "#geo-check" 
           {columns.map((col) => (
             <div
               key={col.title}
-              className={`rounded-2xl border p-5 sm:p-6 md:row-span-5 md:grid md:grid-rows-subgrid ${
+              className={`reveal rounded-2xl border p-5 sm:p-6 md:row-span-5 md:grid md:grid-rows-subgrid ${LIFT_DARK} ${
                 col.answer ? "bg-gradient-to-br from-violet-500/20 to-cyan-400/10 border-violet-400/30" : "bg-white/[0.04] border-white/10"
               }`}
             >
@@ -372,11 +376,11 @@ export async function WhyThisMatters({ id = "geo-why", checkHref = "#geo-check" 
           })}
         </p>
 
-        <div className="mt-10 sm:mt-14 rounded-2xl border border-violet-400/40 bg-violet-500/10 px-5 py-5 sm:px-8 sm:py-6 flex flex-col md:flex-row items-center gap-4 md:gap-8">
+        <div className="reveal mt-10 sm:mt-14 rounded-2xl border border-violet-400/40 bg-violet-500/10 px-5 py-5 sm:px-8 sm:py-6 flex flex-col md:flex-row items-center gap-4 md:gap-8">
           <p className="flex-1 text-center md:text-left text-base sm:text-lg text-white font-semibold leading-relaxed">{m.closing}</p>
           <a
             href={checkHref}
-            className="shrink-0 rounded-xl bg-violet-600 hover:bg-violet-500 text-white px-5 py-3 text-sm sm:text-base font-semibold shadow-lg shadow-violet-600/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-300"
+            className={`shrink-0 rounded-xl bg-violet-600 hover:bg-violet-500 text-white px-5 py-3 text-sm sm:text-base font-semibold shadow-lg shadow-violet-600/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-300 ${SHINE}`}
           >
             {m.cta}
           </a>
@@ -419,7 +423,7 @@ export async function VersusArticles({ id }: { id?: string }) {
           {m.h2}
         </h2>
         <div className="grid gap-4 md:grid-cols-2 md:gap-6 lg:gap-8">
-          <div className="rounded-3xl border border-black/10 bg-white/60 p-6 sm:p-8 lg:p-10">
+          <div className={`reveal rounded-3xl border border-black/10 bg-white/60 p-6 sm:p-8 lg:p-10 ${LIFT}`}>
             <h3 className="min-h-8 flex items-center pb-5 border-b border-black/10 text-xl sm:text-2xl font-extrabold tracking-tight text-slate-700">
               {m.them.title}
             </h3>
@@ -433,7 +437,7 @@ export async function VersusArticles({ id }: { id?: string }) {
             </ul>
           </div>
 
-          <div className="flex flex-col rounded-3xl border border-violet-700 bg-gradient-to-br from-violet-600 to-violet-700 p-6 sm:p-8 lg:p-10 text-white shadow-xl shadow-violet-600/25">
+          <div className={`reveal flex flex-col rounded-3xl border border-violet-700 bg-gradient-to-br from-violet-600 to-violet-700 p-6 sm:p-8 lg:p-10 text-white shadow-xl shadow-violet-600/25 ${LIFT_ACCENT}`}>
             <h3 className="min-h-8 flex items-center gap-3 pb-5 border-b border-white/20 text-xl sm:text-2xl font-extrabold tracking-tight">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/logo.jpg" className="h-8 w-8 rounded-lg" alt="" />

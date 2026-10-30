@@ -3,6 +3,7 @@ import Link from "next/link"
 import AuditForm from "./business/AuditForm"
 import ContactForm from "./business/ContactForm"
 import HashForward from "./_home/HashForward"
+import ScrollReveal from "./_home/ScrollReveal"
 import SignIn from "./_home/SignIn"
 import SiteFooter from "./_home/SiteFooter"
 import { ORGANIZATION } from "@/lib/entity"
@@ -16,6 +17,7 @@ import LocaleProvider from "@/components/i18n/LocaleProvider"
 import { getLocale } from "@/lib/i18n/server"
 import { t } from "@/lib/i18n/messages"
 import { localizedMetadata } from "@/lib/i18n/metadata"
+import { LIFT, SHINE } from "@/components/geo/motion"
 import { absoluteUrl, localePath } from "@/lib/i18n/paths"
 import { formatNumber } from "@/lib/i18n/format"
 import { rich } from "@/lib/i18n/rich"
@@ -34,6 +36,10 @@ import growthGuarantee from "@/lib/i18n/messages/growthGuarantee"
 // how, versus, pricing, questions, then the contact form with the guarantee as the closing call.
 // The guarantee's line keeps its "*" and nothing under it; its footnote (the condition and the link to
 // /terms#growth-guarantee) is the last line of the page, in SiteFooter.
+// Since 30 Oct 2026 the page moves a little (owner's request): cards lift on hover and keyboard focus,
+// buttons shine (components/geo/motion.ts), and the blocks below the hero fade in as they scroll into
+// view ("reveal", app/_home/ScrollReveal.tsx). The server HTML shows everything; the hero, the nav and
+// the footer never carry "reveal".
 
 const BASE = "https://www.itgrows.ai"
 
@@ -167,6 +173,7 @@ export default async function Home() {
       <div className="min-h-screen text-[#1b1916] scroll-smooth" style={{ backgroundColor: "#f3f2f1", fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" }}>
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />
         <HashForward />
+        <ScrollReveal />
 
         <nav className="border-b border-black/10 px-4 sm:px-6 py-4 sticky top-0 z-40" style={{ backgroundColor: "#f3f2f1" }}>
           <div className="max-w-6xl mx-auto flex items-center justify-between gap-4">
@@ -186,7 +193,7 @@ export default async function Home() {
             <div className="flex items-center gap-4">
               <LanguageSwitcher />
               <SignIn />
-              <a href="#geo-check" className="hidden sm:inline-block whitespace-nowrap rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-sm font-semibold px-4 py-2.5">
+              <a href="#geo-check" className={`hidden sm:inline-block whitespace-nowrap rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-sm font-semibold px-4 py-2.5 ${SHINE}`}>
                 {m.checkMySite}
               </a>
             </div>
@@ -203,7 +210,7 @@ export default async function Home() {
             </h1>
             {/* The growth guarantee, the page's headline promise: its line with the "*" and nothing under
                 it; the footnote (the condition and the link to the Terms) is the last line of the page. */}
-            <div className="max-w-2xl mx-auto mt-6 mb-8 rounded-2xl border-2 border-violet-300 bg-white/70 px-5 py-4">
+            <div className={`max-w-2xl mx-auto mt-6 mb-8 rounded-2xl border-2 border-violet-300 bg-white/70 px-5 py-4 ${LIFT}`}>
               <p className="text-[11px] uppercase tracking-[0.15em] font-bold text-violet-600">{g.label}</p>
               <p className="mt-1 text-lg sm:text-2xl font-extrabold leading-snug">{g.line}</p>
             </div>
@@ -235,7 +242,7 @@ export default async function Home() {
             <h2 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-center mb-8">{m.faqTitle}</h2>
             <div className="space-y-2.5">
               {FAQ.map((f) => (
-                <details key={f.q} className="bg-white border border-black/10 rounded-2xl overflow-hidden group">
+                <details key={f.q} className={`reveal bg-white border border-black/10 rounded-2xl overflow-hidden group ${LIFT}`}>
                   <summary className="cursor-pointer list-none [&::-webkit-details-marker]:hidden px-5 py-4 font-semibold text-sm sm:text-base flex items-center justify-between gap-4">
                     <h3>{f.q}</h3>
                     <span className="text-violet-600 text-xl shrink-0 leading-none transition-transform group-open:rotate-45" aria-hidden>+</span>
@@ -253,7 +260,7 @@ export default async function Home() {
           <div className="max-w-xl mx-auto">
             <h2 className="text-2xl sm:text-4xl font-extrabold mb-3 tracking-tight text-center">{m.writeTitle}</h2>
             <p className="text-slate-600 text-center mb-6 text-sm sm:text-base">{m.writeLead}</p>
-            <div className="mb-8 rounded-2xl border border-violet-200 bg-white px-5 py-4 text-center">
+            <div className={`mb-8 rounded-2xl border border-violet-200 bg-white px-5 py-4 text-center ${LIFT}`}>
               <p className="font-bold">{g.line}</p>
             </div>
             <ContactForm />
@@ -269,7 +276,7 @@ export default async function Home() {
                 <Link
                   key={c.href}
                   href={localePath(locale, c.href)}
-                  className="group flex items-start gap-4 rounded-2xl bg-white border border-black/10 p-5 sm:p-6 transition duration-200 hover:-translate-y-1 hover:border-violet-300 hover:shadow-lg hover:shadow-violet-600/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400"
+                  className={`reveal group flex items-start gap-4 rounded-2xl bg-white border border-black/10 p-5 sm:p-6 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400 ${LIFT}`}
                 >
                   <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-violet-100 text-violet-600 ring-4 ring-violet-50">
                     {c.icon}
@@ -278,7 +285,7 @@ export default async function Home() {
                     <span className="block font-bold text-base sm:text-lg leading-snug">{m.quickChecks[i].title}</span>
                     <span className="block text-sm text-slate-600 mt-1 leading-relaxed">{m.quickChecks[i].line}</span>
                     <span className="inline-flex items-center gap-1 mt-3 text-sm font-semibold text-violet-700">
-                      {m.runIt} <span aria-hidden className="transition-transform duration-200 group-hover:translate-x-1">→</span>
+                      {m.runIt} <span aria-hidden className="transition-transform duration-200 motion-safe:group-hover:translate-x-1 motion-safe:group-focus-visible:translate-x-1">→</span>
                     </span>
                   </span>
                 </Link>
@@ -293,7 +300,7 @@ export default async function Home() {
               <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight">{m.guidesTitle}</h2>
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
                 {latest.map((g) => (
-                  <Link key={g.slug} href={`/business/blog/${g.slug}`} className="rounded-2xl bg-white border border-black/10 p-5 hover:border-violet-300 font-semibold text-sm leading-snug">
+                  <Link key={g.slug} href={`/business/blog/${g.slug}`} className={`reveal rounded-2xl bg-white border border-black/10 p-5 font-semibold text-sm leading-snug ${LIFT}`}>
                     {g.title}
                   </Link>
                 ))}

@@ -7,6 +7,7 @@ import Faq, { faqSchema, type QA } from "../_tools/Faq"
 import { noteCrawler } from "@/lib/crawler-log"
 import { guideFor } from "@/lib/geo-guides"
 import AboutItGrows from "@/components/geo/AboutItGrows"
+import { LIFT } from "@/components/geo/motion"
 import { getLocale } from "@/lib/i18n/server"
 import { t } from "@/lib/i18n/messages"
 import { localizedMetadata } from "@/lib/i18n/metadata"
@@ -91,7 +92,7 @@ export default async function AiVisibilityCheckerPage() {
           <Faq items={faq} />
         </article>
 
-        <AboutItGrows locale={locale} current={PATH} className="max-w-3xl mx-auto mt-16" />
+        <AboutItGrows locale={locale} current={PATH} className={`max-w-3xl mx-auto mt-16 ${LIFT}`} />
       </main>
     </ToolShell>
   )

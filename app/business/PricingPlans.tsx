@@ -10,6 +10,7 @@ import { rich } from "@/lib/i18n/rich"
 import pricingPlans from "@/lib/i18n/messages/pricingPlans"
 import growthGuarantee from "@/lib/i18n/messages/growthGuarantee"
 import { GEO_CHECKED_KEY, GEO_HANDOFF_KEY, handOff, readChecked, type CheckedSite } from "@/lib/geo-handoff"
+import { LIFT, LIFT_DARK, NUM, SHINE } from "@/components/geo/motion"
 
 // The pricing block of "/": the quick check in one line, then the two offers side by side. What is
 // sold, said the same way everywhere: the quick check is free (two answers at once, all five with an account); the detailed report is the
@@ -22,6 +23,9 @@ import { GEO_CHECKED_KEY, GEO_HANDOFF_KEY, handOff, readChecked, type CheckedSit
 // Since 30 Oct 2026 (owner's decision) the plan card carries the growth guarantee's line with its "*"
 // (growthGuarantee.ts) above its buttons; its footnote with the link to the conditions is the last line
 // of the page (app/_home/SiteFooter.tsx), not here.
+// Since 30 Oct 2026 (owner's request) the two cards lift on hover and keyboard focus, their prices
+// grow a little and the buttons shine (components/geo/motion.ts); the cards fade in as they scroll
+// into view ("reveal", app/_home/ScrollReveal.tsx).
 //
 // The plan's buttons are the billing choices themselves: a Month / Year toggle; by the month there are
 // two (monthly plus the one-time setup, or 3 months upfront with the setup free), by the year one.
@@ -188,10 +192,10 @@ export default function PricingPlans({
 
       <div className="grid md:grid-cols-2 gap-4 mt-8">
         {/* The detailed report */}
-        <div className="rounded-2xl bg-white border-2 border-violet-200 p-6 sm:p-7 flex flex-col">
+        <div className={`reveal group rounded-2xl bg-white border-2 border-violet-200 p-6 sm:p-7 flex flex-col ${LIFT}`}>
           <h3 className="font-bold text-lg">{m.reportTitle}</h3>
-          <p className="mt-2 flex items-baseline gap-2">
-            <span className="text-4xl font-extrabold">{m.free}</span>
+          <p className="mt-2 flex items-baseline gap-3">
+            <span className={`text-4xl font-extrabold ${NUM}`}>{m.free}</span>
             <span className="text-sm text-slate-500">{m.withAccount}</span>
           </p>
           <p className="text-sm text-slate-600 mt-2">{m.reportLine}</p>
@@ -204,7 +208,7 @@ export default function PricingPlans({
             <Go
               href={checked ? siteHref(checked.site) : REPORT_HREF}
               onClick={() => (checked ? onSite("report") : track(locale, "report"))}
-              className="block text-center rounded-xl bg-violet-600 hover:bg-violet-500 text-white px-5 py-3 text-sm font-semibold"
+              className={`block text-center rounded-xl bg-violet-600 hover:bg-violet-500 text-white px-5 py-3 text-sm font-semibold ${SHINE}`}
             >
               {m.getReport}
             </Go>
@@ -216,7 +220,7 @@ export default function PricingPlans({
         </div>
 
         {/* The plan */}
-        <div className="rounded-2xl bg-[#1b1916] text-white p-6 sm:p-7 flex flex-col">
+        <div className={`reveal group rounded-2xl bg-[#1b1916] text-white p-6 sm:p-7 flex flex-col ${LIFT_DARK}`}>
           <div className="flex items-center justify-between gap-3">
             <h3 className="font-bold text-lg">{m.planTitle}</h3>
             <div role="group" aria-label={m.billingPeriod} className="inline-flex rounded-full bg-white/10 p-1 text-xs font-semibold">
@@ -236,8 +240,8 @@ export default function PricingPlans({
               ))}
             </div>
           </div>
-          <p className="mt-2 flex items-baseline gap-1.5">
-            <span className="text-4xl font-extrabold tabular-nums">{period === "month" ? P.month : P.yearPerMonth}</span>
+          <p className="mt-2 flex items-baseline gap-2.5">
+            <span className={`text-4xl font-extrabold tabular-nums ${NUM}`}>{period === "month" ? P.month : P.yearPerMonth}</span>
             <span className="text-white/60 font-semibold">{m.perMonth}</span>
           </p>
           <p className="text-sm text-white/70 mt-2">{period === "month" ? m.monthNote(P.setup) : m.yearNote(P.year)}</p>
@@ -260,7 +264,7 @@ export default function PricingPlans({
                 onClick={() => track(locale, "plan", { interval: i })}
                 className={`block text-center rounded-xl px-5 py-3 text-sm font-semibold ${
                   n === 0 ? "bg-white text-[#1b1916] hover:bg-violet-50" : "border border-white/25 hover:bg-white/[0.06]"
-                }`}
+                } ${SHINE}`}
               >
                 {label}
               </Go>

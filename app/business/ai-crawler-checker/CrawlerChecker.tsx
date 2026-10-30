@@ -5,6 +5,7 @@ import { useLocale, useT } from "@/components/i18n/LocaleProvider"
 import { formatNumber } from "@/lib/i18n/format"
 import { localePath } from "@/lib/i18n/paths"
 import ns from "@/lib/i18n/messages/crawlerChecker"
+import { SHINE, SHINE_BUTTON } from "@/components/geo/motion"
 
 interface PathBlock {
   bot: string
@@ -83,7 +84,7 @@ export default function CrawlerChecker() {
         <button
           type="submit"
           disabled={busy || url.trim().length < 3}
-          className="px-7 py-3.5 rounded-xl bg-violet-600 hover:bg-violet-500 disabled:opacity-50 text-white text-base font-semibold whitespace-nowrap"
+          className={`px-7 py-3.5 rounded-xl bg-violet-600 hover:bg-violet-500 disabled:opacity-50 text-white text-base font-semibold whitespace-nowrap ${SHINE_BUTTON}`}
         >
           {busy ? m.checking : m.submit}
         </button>
@@ -153,7 +154,7 @@ export default function CrawlerChecker() {
             <dd className="text-right font-semibold">{r.llmsTxt ? m.yes : m.no}</dd>
           </dl>
           <div className="px-5 py-4">
-            <a href={localePath(locale, "/business/ai-visibility-checker")} className="block text-center rounded-xl bg-violet-600 hover:bg-violet-500 text-white px-6 py-3 text-sm font-semibold">
+            <a href={localePath(locale, "/business/ai-visibility-checker")} className={`block text-center rounded-xl bg-violet-600 hover:bg-violet-500 text-white px-6 py-3 text-sm font-semibold ${SHINE}`}>
               {m.nextCta}
             </a>
           </div>
