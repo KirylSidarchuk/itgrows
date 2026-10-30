@@ -1,8 +1,7 @@
-import { callLLM, openaiGenerateImage } from "@/lib/llm-client"
+import { callLLM, openaiGenerateImage, llmApiKey } from "@/lib/llm-client"
 import { storeAndRecordImage } from "@/lib/image-store"
 
 const PROXY_URL = "http://34.60.133.229:4000"
-const LLM_API_KEY = process.env.LLM_API_KEY ?? "jtotFgxS1WQorT52LZym2ncyYzboliS6p04RqUwneFI"
 
 const IMAGE_MODELS = [
   "gemini-3-pro-image-preview",
@@ -23,7 +22,7 @@ async function tryGenerateImage(model: string, imagePrompt: string): Promise<str
     try {
       const imgRes = await fetch(`${PROXY_URL}/images/generate`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${LLM_API_KEY}` },
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${llmApiKey()}` },
         body: JSON.stringify({ model, prompt: imagePrompt }),
       })
       const imgDuration = Date.now() - imgStart

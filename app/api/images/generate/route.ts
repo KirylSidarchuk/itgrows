@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/auth"
-import { openaiGenerateImage } from "@/lib/llm-client"
+import { openaiGenerateImage, llmApiKey } from "@/lib/llm-client"
 import { checkImageGenLimit, recordImageGen } from "@/lib/rate-limit"
 
 export const maxDuration = 300
 
 const PROXY_URL = "http://34.60.133.229:4000"
-const LLM_API_KEY = process.env.LLM_API_KEY ?? "jtotFgxS1WQorT52LZym2ncyYzboliS6p04RqUwneFI"
 const LLM_MODELS = ["gemini-2.5-flash-lite", "gemini-2.5-flash", "gemini-2.5-pro"]
 
 export async function POST(req: NextRequest) {
@@ -33,7 +32,7 @@ export async function POST(req: NextRequest) {
     try {
       const promptRes = await fetch(`${PROXY_URL}/v1/chat/completions`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${LLM_API_KEY}` },
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${llmApiKey()}` },
         body: JSON.stringify({
           model: LLM_MODELS[attempt],
           messages: [{
@@ -70,7 +69,7 @@ Return ONLY the image prompt, nothing else.`
     try {
       const imgRes = await fetch(`${PROXY_URL}/images/generate`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${LLM_API_KEY}` },
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${llmApiKey()}` },
         body: JSON.stringify({
           model: IMAGE_MODELS[attempt],
           prompt: imagePrompt,

@@ -3,11 +3,10 @@ import { auth } from "@/auth"
 import { db } from "@/lib/db"
 import { twitterPosts } from "@/lib/db/schema"
 import { eq, and } from "drizzle-orm"
-import { openaiGenerateImage } from "@/lib/llm-client"
+import { openaiGenerateImage, llmApiKey } from "@/lib/llm-client"
 import { checkImageGenLimit, recordImageGen } from "@/lib/rate-limit"
 
 const IMAGE_API_URL = "http://34.60.133.229:4000/images/generate"
-const IMAGE_API_KEY = process.env.LLM_API_KEY ?? "jtotFgxS1WQorT52LZym2ncyYzboliS6p04RqUwneFI"
 const IMAGE_MODEL = "gemini-3-pro-image-preview"
 
 interface GenerateImageRequest {
@@ -60,7 +59,7 @@ export async function POST(req: NextRequest) {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${IMAGE_API_KEY}`,
+          Authorization: `Bearer ${llmApiKey()}`,
         },
         body: JSON.stringify({ model: IMAGE_MODEL, prompt: imagePrompt }),
       })

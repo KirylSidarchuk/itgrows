@@ -5,10 +5,10 @@ import { linkedinAccounts, linkedinBriefs, users } from "@/lib/db/schema"
 import { eq, and, sql } from "drizzle-orm"
 import { hasAccess } from "@/lib/access"
 import { notifyOwner } from "@/lib/telegram"
+import { llmApiKey } from "@/lib/llm-client"
 
 const LLM_BASE_URL = "http://34.60.133.229:4000"
 const LLM_MODEL = "gemini-2.5-flash-lite"
-const LLM_API_KEY = process.env.LLM_API_KEY ?? "jtotFgxS1WQorT52LZym2ncyYzboliS6p04RqUwneFI"
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
@@ -312,7 +312,7 @@ export async function GET(req: NextRequest) {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
-              Authorization: `Bearer ${LLM_API_KEY}`,
+              Authorization: `Bearer ${llmApiKey()}`,
             },
             body: JSON.stringify({
               model: LLM_MODEL,

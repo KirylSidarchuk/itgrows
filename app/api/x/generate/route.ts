@@ -5,13 +5,12 @@ import { twitterAccounts, twitterPosts, linkedinBriefs, twitterBriefs, twitterCo
 import { eq, and, or, desc } from "drizzle-orm"
 import { hasAccess } from "@/lib/access"
 import { checkXGenerateRateLimit } from "@/lib/rate-limit"
-import { openaiChat } from "@/lib/llm-client"
+import { openaiChat, llmApiKey } from "@/lib/llm-client"
 
 export const maxDuration = 300
 
 const LLM_BASE_URL = "http://34.60.133.229:4000"
 const LLM_MODEL = "claude-sonnet-4-6"
-const LLM_API_KEY = process.env.LLM_API_KEY ?? "jtotFgxS1WQorT52LZym2ncyYzboliS6p04RqUwneFI"
 
 const MAX_POSTS = 14
 
@@ -133,7 +132,7 @@ ${jsonInstruction}`
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${LLM_API_KEY}`,
+          Authorization: `Bearer ${llmApiKey()}`,
         },
         body: JSON.stringify({
           model: modelToUse,

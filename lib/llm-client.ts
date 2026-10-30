@@ -1,6 +1,12 @@
 const LLM_BASE_URL = "http://34.60.133.229:4000"
-const LLM_API_KEY = process.env.LLM_API_KEY ?? "jtotFgxS1WQorT52LZym2ncyYzboliS6p04RqUwneFI"
 const LLM_MODELS = ["gemini-2.5-flash-lite", "gemini-2.5-flash", "gemini-2.5-pro"]
+
+// Gateway key comes only from the environment; no fallback in code.
+export function llmApiKey(): string {
+  const key = process.env.LLM_API_KEY
+  if (!key) throw new Error("LLM_API_KEY is not set")
+  return key
+}
 
 // OpenAI fallback — used only when the primary gateway is unavailable.
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY
@@ -37,7 +43,7 @@ export async function callLLM(messages: LLMMessage[], options: LLMOptions = {}):
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${LLM_API_KEY}`,
+          Authorization: `Bearer ${llmApiKey()}`,
         },
         body: JSON.stringify({
           model,

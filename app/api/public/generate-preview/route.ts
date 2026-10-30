@@ -2,14 +2,13 @@ import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db"
 import { ghostModeLogs } from "@/lib/db/schema"
 import { getClientIP, checkGhostGlobalDailyCap } from "@/lib/rate-limit"
-import { openaiChat, openaiGenerateImage } from "@/lib/llm-client"
+import { openaiChat, openaiGenerateImage, llmApiKey } from "@/lib/llm-client"
 import { eq, and, sql } from "drizzle-orm"
 
 export const maxDuration = 120
 
 // Lifetime limit: max 2 requests per IP address (persisted in DB)
 
-const LLM_KEY = process.env.LLM_API_KEY ?? "jtotFgxS1WQorT52LZym2ncyYzboliS6p04RqUwneFI"
 const LLM_BASE = "http://34.60.133.229:4000"
 
 const IMAGE_MODELS = [
@@ -33,7 +32,7 @@ async function generateImageForPost(postContent: string): Promise<string | null>
   try {
     const promptRes = await withTimeout(fetch(`${LLM_BASE}/v1/chat/completions`, {
       method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${LLM_KEY}` },
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${llmApiKey()}` },
       body: JSON.stringify({
         model: "gemini-2.5-flash-lite",
         messages: [{
@@ -56,7 +55,7 @@ async function generateImageForPost(postContent: string): Promise<string | null>
     try {
       const imgRes = await withTimeout(fetch(`${LLM_BASE}/images/generate`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${LLM_KEY}` },
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${llmApiKey()}` },
         body: JSON.stringify({ model, prompt: imagePrompt }),
       }), 45000)
       if (!imgRes.ok) continue
@@ -157,7 +156,7 @@ Return ONLY a valid JSON array of exactly 3 strings. No markdown, no code blocks
     try {
       const res = await fetch(`${LLM_BASE}/v1/chat/completions`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${LLM_KEY}` },
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${llmApiKey()}` },
         body: JSON.stringify({
           model: "gemini-2.5-flash",
           messages: [{ role: "user", content: prompt }],
