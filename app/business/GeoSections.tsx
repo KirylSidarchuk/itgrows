@@ -1,19 +1,28 @@
-// The three blocks that say what the plan actually runs, on "/" (/business redirects there).
-// They describe work we do for the client on the plan, not steps for the reader to follow: each block
-// ends on "we do it", never on "how to". Built to be read in seconds; the detail sits in native
-// <details>, so it stays in the server-rendered HTML for crawlers.
-// Every number here comes from our own checks and code (Oct 2026), not from an industry study:
+// The three blocks between the cases and the pricing on "/" (/business redirects there): what the plan
+// actually runs (WorkSystem), why being in the answer matters (WhyThisMatters) and why it is not paying
+// for articles (VersusArticles). WorkSystem and VersusArticles describe work we do for the client on the
+// plan, not steps for the reader to follow: each ends on "we do it", never on "how to". Built to be
+// read in seconds; the detail sits in native <details>, so it stays in the server-rendered HTML for
+// crawlers.
+// Every number in WorkSystem and VersusArticles comes from our own checks and code (Oct 2026), not
+// from an industry study:
 //  - 240 = 20 questions x 4 assistants x 3 asks (the plan's day-0 report and its check every two
 //    weeks; the free report asks once: 80)
 //  - 11 crawlers = the bot user agents geo_onboard_check.py fetches a new client's site as
 //  - 3-5 sources = client_writer.py research step; findability = geo_findability.py (Mondays)
-//  - findings = the 19 Oct audit of three client sites plus our own robots.txt (fixed 21 Oct)
-// What it deliberately does not say is how: which rules, which tests, which order.
+//  - 26 = full recounts a year: the re-measure runs every two weeks since 26 Oct 2026 (it was 52, weekly)
+// WhyThisMatters is the exception: third-party figures only, each linked to its source on the page
+// (WHY below says where each was checked). It replaced "Publishing is not the same as being found"
+// (owner, 29 Oct 2026).
+// What none of them says is how: which rules, which tests, which order.
 // Server components that read the page's language themselves (lib/i18n/server); every string is in
 // lib/i18n/messages/geoSections.ts.
 
+import type { ReactNode } from "react"
 import type { Locale } from "@/lib/i18n/config"
+import { formatNumber } from "@/lib/i18n/format"
 import { t } from "@/lib/i18n/messages"
+import { rich } from "@/lib/i18n/rich"
 import geoSections from "@/lib/i18n/messages/geoSections"
 import { getLocale } from "@/lib/i18n/server"
 
@@ -64,7 +73,7 @@ const STAGES: { icon: keyof typeof ICONS; n: string }[] = [
   { icon: "doors", n: "11" },
   { icon: "index", n: "4" },
   { icon: "write", n: "3–5" },
-  { icon: "repeat", n: "52" },
+  { icon: "repeat", n: "26" },
 ]
 
 function StageIcon({ name }: { name: keyof typeof ICONS }) {
@@ -141,42 +150,237 @@ export async function WorkSystem({ id = "how" }: { id?: string }) {
   )
 }
 
-/**
- * An evidence wall on dark. Desktop: the first finding spans two columns, four tiles follow, the
- * closing line runs full width under them. Phone: one column of tiles.
- */
-export async function FoundOnSites({ id }: { id?: string }) {
-  const m = t(await getLocale(), geoSections).found
+// The sources of WhyThisMatters. Each figure was checked on its page on 29 Oct 2026 (quoted words are
+// the page's own):
+//  - OpenAI, 31 Aug 2026: "more than 1 billion weekly active users"; "Advertising does not influence
+//    the answers ChatGPT provides."
+//  - BrightLocal, Local Consumer Review Survey 2026, 1,002 US adults: use of ChatGPT and other
+//    generative AI tools "for local recommendations ... rising from 6% last year to 45%"
+//  - G2, March 2026, 1,076 B2B software buyers: "69% of buyers chose a different vendor than initially
+//    planned, simply because it was part of the chatbot's recommendation"
+//  - Pew Research Center, browsing data of 900 US adults, March 2025: a traditional result was clicked
+//    in 8% of visits with an AI summary, 15% without
+//  - WordStream by LocaliQ 2026, 13,474 US Google and Microsoft search campaigns, Apr 2025 - Mar 2026,
+//    "averages" are medians: cost per lead $66.69; Attorneys & Legal Services $131.63, Home & Home
+//    Improvement $90.92, Dentists & Dental Services $72.97
+//  - First Page Sage, B2B CAC from its own clients, Jan 2022 - Aug 2025, inorganic ("primarily PPC / SEM
+//    and Paid Social"): Legal Services $1,245, Transportation & Logistics $732, Construction $486
+//  - Alphabet 10-K 2025: Google Search & other, cost-per-click change 2024 -> 2025: 7%
+//  - Meta 10-K 2025: "average price per ad increased 9% year-over-year in 2025"
+// None of it is our own result and nothing here promises one: no ItGrows price, no "you will be
+// named", no AI traffic.
+const WHY_SOURCES = {
+  openai: "https://openai.com/index/expanding-access-to-ai-with-chatgpt-ads/",
+  brightlocal: "https://www.brightlocal.com/research/local-consumer-review-survey/",
+  g2: "https://company.g2.com/news/g2-research-the-answer-economy",
+  pew: "https://www.pewresearch.org/short-reads/2025/07/22/google-users-are-less-likely-to-click-on-links-when-an-ai-summary-appears-in-the-results/",
+  wordstream: "https://www.wordstream.com/blog/2026-google-ads-benchmarks",
+  firstPageSage: "https://firstpagesage.com/marketing/average-customer-acquisition-cost-cac-by-industry-b2b-edition-fc/",
+  alphabet10k: "https://www.sec.gov/Archives/edgar/data/1652044/000165204426000018/goog-20251231.htm",
+  meta10k: "https://www.sec.gov/Archives/edgar/data/1326801/000162828026003942/meta-20251231.htm",
+} as const
+
+// The figures themselves; formatted per language on the page ("45%", "45 %"; "$66.69", "66,69 $").
+const WHY = {
+  local: 0.45,
+  localYearBefore: 0.06,
+  localAsked: 1002,
+  vendor: 0.69,
+  vendorAsked: 1076,
+  clickWithAi: 0.08,
+  clickWithout: 0.15,
+  pewPanel: 900,
+  lead: { avg: 66.69, law: 131.63, home: 90.92, dent: 72.97 },
+  customer: { legal: 1245, logistics: 732, construction: 486 },
+  cpc: 0.07,
+  pricePerAd: 0.09,
+}
+
+/** A source link: a new tab, an arrow for the eye and a note for screen readers. */
+function SourceLink({ href, newTab, children }: { href: string; newTab: string; children: ReactNode }) {
   return (
-    <section id={id} className="px-4 sm:px-6 py-14 sm:py-20 scroll-mt-20" style={{ backgroundColor: "#1b1916" }}>
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener"
+      className="underline underline-offset-2 decoration-white/30 hover:decoration-white hover:text-white rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-300"
+    >
+      {children}
+      <span aria-hidden>{"\u00a0↗"}</span>
+      <span className="sr-only"> {newTab}</span>
+    </a>
+  )
+}
+
+type WhyRow = { k: string; v: ReactNode; source?: ReactNode }
+
+/**
+ * Why being in the answer matters, on dark: four third-party figures (the first as a wide hero), paid
+ * search ads against being named in the answer, the honest closing and the check. Desktop: the two
+ * columns of the comparison share their rows (subgrid), so each row lines up across. Phone: one column,
+ * the comparison as two stacked cards. Every figure links to its source.
+ */
+export async function WhyThisMatters({ id = "geo-why", checkHref = "#geo-check" }: { id?: string; checkHref?: string }) {
+  const locale = await getLocale()
+  const m = t(locale, geoSections).why
+  const c = m.compare
+  const pct = (n: number) => formatNumber(locale, n, { style: "percent", maximumFractionDigits: 0 })
+  const usd = (n: number, digits = 2) =>
+    formatNumber(locale, n, { style: "currency", currency: "USD", minimumFractionDigits: digits, maximumFractionDigits: digits })
+  const num = (n: number) => formatNumber(locale, n)
+  const source = (href: string, label: string) => (
+    <SourceLink href={href} newTab={m.newTab}>
+      {label}
+    </SourceLink>
+  )
+
+  const figures: { n: ReactNode; l: string; source: ReactNode }[] = [
+    { n: m.users.n, l: m.users.l, source: source(WHY_SOURCES.openai, `OpenAI, ${m.users.src}`) },
+    { n: pct(WHY.local), l: m.local.l(pct(WHY.localYearBefore)), source: source(WHY_SOURCES.brightlocal, `BrightLocal, ${m.local.src(num(WHY.localAsked))}`) },
+    { n: pct(WHY.vendor), l: m.vendor.l, source: source(WHY_SOURCES.g2, `G2, ${m.vendor.src(num(WHY.vendorAsked))}`) },
+    {
+      n: (
+        <>
+          {pct(WHY.clickWithAi)} <span className="text-[0.45em] tracking-normal text-slate-300">{m.clicks.vs}</span> {pct(WHY.clickWithout)}
+        </>
+      ),
+      l: m.clicks.l,
+      source: source(WHY_SOURCES.pew, `Pew Research Center, ${m.clicks.src(num(WHY.pewPanel))}`),
+    },
+  ]
+
+  const big = (x: ReactNode) => <b className="text-2xl sm:text-3xl font-extrabold tracking-tight">{x}</b>
+  const columns: { title: string; answer: boolean; rows: WhyRow[] }[] = [
+    {
+      title: c.colA,
+      answer: false,
+      rows: [
+        {
+          k: c.lead.k,
+          v: rich(c.lead.a(usd(WHY.lead.avg), usd(WHY.lead.law), usd(WHY.lead.home), usd(WHY.lead.dent)), { b: big }),
+          source: source(WHY_SOURCES.wordstream, "WordStream by LocaliQ, 2026"),
+        },
+        {
+          k: c.customer.k,
+          v: c.customer.a(usd(WHY.customer.legal, 0), usd(WHY.customer.logistics, 0), usd(WHY.customer.construction, 0)),
+          source: source(WHY_SOURCES.firstPageSage, "First Page Sage"),
+        },
+        { k: c.stop.k, v: c.stop.a },
+        { k: c.buy.k, v: c.buy.a },
+      ],
+    },
+    {
+      title: c.colB,
+      answer: true,
+      rows: [
+        { k: c.lead.k, v: c.lead.b },
+        {
+          k: c.customer.k,
+          v: (
+            <>
+              <span aria-hidden>—</span>
+              <span className="sr-only">{c.customer.none}</span>
+            </>
+          ),
+        },
+        { k: c.stop.k, v: c.stop.b },
+        { k: c.buy.k, v: rich(c.buy.b, { en: (x) => <span lang="en">{x}</span> }), source: source(WHY_SOURCES.openai, "OpenAI") },
+      ],
+    },
+  ]
+
+  return (
+    <section id={id} aria-labelledby={`${id}-title`} className="px-4 sm:px-6 py-14 sm:py-20 scroll-mt-20" style={{ backgroundColor: "#1b1916" }}>
       <div className="max-w-5xl mx-auto">
-        <h2 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-white text-center">{m.h2}</h2>
-        <p className="text-slate-400 text-center mt-3 mb-10 text-sm sm:text-base">{m.lead}</p>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-          {m.items.map((f, i) => (
+        <p className="text-[11px] uppercase tracking-[0.15em] font-bold text-violet-300 text-center mb-3">{m.kicker}</p>
+        <h2 id={`${id}-title`} className="text-2xl sm:text-4xl font-extrabold tracking-tight text-white text-center text-balance max-w-4xl mx-auto">
+          {m.h2}
+        </h2>
+        <p className="text-slate-300 text-center mt-4 text-base sm:text-lg max-w-2xl mx-auto">{m.lead}</p>
+
+        <ul className="grid md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mt-10 sm:mt-12">
+          {figures.map((f, i) => {
+            const hero = i === 0
+            const tile = hero
+              ? "md:col-span-2 lg:col-span-3 md:flex-row md:items-center md:gap-8 bg-gradient-to-br from-violet-500/20 to-cyan-400/10 border-violet-400/30"
+              : `bg-white/[0.06] border-white/10 ${i === figures.length - 1 ? "md:col-span-2 lg:col-span-1" : ""}`
+            return (
+              <li key={i} className={`flex flex-col rounded-2xl border p-5 sm:p-6 ${tile}`}>
+                <p
+                  className={`font-extrabold tracking-tighter leading-none bg-gradient-to-r from-violet-300 to-cyan-300 bg-clip-text text-transparent ${
+                    hero ? "text-4xl sm:text-6xl lg:text-7xl md:shrink-0" : "text-4xl"
+                  }`}
+                >
+                  {f.n}
+                </p>
+                <div className={hero ? "mt-3 md:mt-0" : "mt-3 flex flex-1 flex-col"}>
+                  <p className={`font-bold text-white leading-snug ${hero ? "text-lg sm:text-2xl" : "text-base"}`}>{f.l}</p>
+                  <p className={`text-xs text-slate-400 ${hero ? "mt-2" : "mt-auto pt-3"}`}>{f.source}</p>
+                </div>
+              </li>
+            )
+          })}
+        </ul>
+
+        <h3 className="mt-14 sm:mt-20 text-xl sm:text-3xl font-extrabold tracking-tight text-white text-center">{c.h3}</h3>
+        <div className="mt-6 sm:mt-8 grid gap-3 md:grid-cols-2 md:grid-rows-[repeat(5,auto)] md:gap-x-4 md:gap-y-0">
+          {columns.map((col) => (
             <div
-              key={f.n}
-              className={`rounded-2xl border p-5 sm:p-6 ${
-                i === 0 ? "sm:col-span-2 bg-gradient-to-br from-violet-500/20 to-cyan-400/10 border-violet-400/30" : "bg-white/[0.06] border-white/10"
+              key={col.title}
+              className={`rounded-2xl border p-5 sm:p-6 md:row-span-5 md:grid md:grid-rows-subgrid ${
+                col.answer ? "bg-gradient-to-br from-violet-500/20 to-cyan-400/10 border-violet-400/30" : "bg-white/[0.04] border-white/10"
               }`}
             >
-              <p
-                className={`font-extrabold tracking-tighter leading-none ${
-                  i === 0
-                    ? "text-5xl sm:text-7xl bg-gradient-to-r from-violet-300 to-cyan-300 bg-clip-text text-transparent"
-                    : "text-4xl sm:text-5xl text-white"
-                }`}
-              >
-                {f.n}
-              </p>
-              <p className={`font-bold text-white leading-snug mt-3 ${i === 0 ? "text-lg sm:text-2xl" : "text-base"}`}>{f.h}</p>
-              <p className="text-sm text-slate-400 mt-1.5 leading-relaxed">{f.d}</p>
+              <h4 className="flex items-center gap-2.5 pb-3 text-lg sm:text-xl font-extrabold text-white">
+                <span
+                  aria-hidden
+                  className={`w-6 h-6 shrink-0 rounded-full flex items-center justify-center text-xs font-bold ${
+                    col.answer ? "bg-white text-violet-700" : "bg-white/10 text-slate-300"
+                  }`}
+                >
+                  {col.answer ? "✓" : "$"}
+                </span>
+                {col.title}
+              </h4>
+              <dl className="md:row-span-4 md:grid md:grid-rows-subgrid">
+                {col.rows.map((r) => (
+                  <div key={r.k} className="border-t border-white/10 py-4 last:pb-0">
+                    <dt className={`text-[11px] font-bold uppercase tracking-wider ${col.answer ? "text-violet-300" : "text-slate-400"}`}>{r.k}</dt>
+                    <dd className="mt-1.5 text-sm sm:text-base text-white leading-relaxed">
+                      {r.v}
+                      {r.source && <span className="block mt-1.5 text-xs text-slate-400">{r.source}</span>}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
             </div>
           ))}
         </div>
-        <p className="mt-4 rounded-2xl border border-violet-400/40 bg-violet-500/10 px-5 py-4 text-center text-sm sm:text-base text-white font-semibold leading-relaxed">
-          {m.closing}
+        <p className="mt-5 text-center text-sm text-slate-300 leading-relaxed max-w-3xl mx-auto">
+          {rich(m.costs(pct(WHY.cpc), pct(WHY.pricePerAd)), {
+            g: (x) => (
+              <SourceLink href={WHY_SOURCES.alphabet10k} newTab={m.newTab}>
+                {x}
+              </SourceLink>
+            ),
+            m: (x) => (
+              <SourceLink href={WHY_SOURCES.meta10k} newTab={m.newTab}>
+                {x}
+              </SourceLink>
+            ),
+          })}
         </p>
+
+        <div className="mt-10 sm:mt-14 rounded-2xl border border-violet-400/40 bg-violet-500/10 px-5 py-5 sm:px-8 sm:py-6 flex flex-col md:flex-row items-center gap-4 md:gap-8">
+          <p className="flex-1 text-center md:text-left text-base sm:text-lg text-white font-semibold leading-relaxed">{m.closing}</p>
+          <a
+            href={checkHref}
+            className="shrink-0 rounded-xl bg-violet-600 hover:bg-violet-500 text-white px-5 py-3 text-sm sm:text-base font-semibold shadow-lg shadow-violet-600/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-300"
+          >
+            {m.cta}
+          </a>
+        </div>
+        <p className="mt-6 text-xs text-slate-400 leading-relaxed max-w-3xl mx-auto text-center">{m.footnote}</p>
       </div>
     </section>
   )

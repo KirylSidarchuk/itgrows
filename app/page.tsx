@@ -8,7 +8,7 @@ import SiteFooter from "./_home/SiteFooter"
 import { ORGANIZATION } from "@/lib/entity"
 import { noteCrawler } from "@/lib/crawler-log"
 import { mainGuides } from "@/components/geo/guide-data"
-import { FoundOnSites, VersusArticles, WorkSystem, geoIncluded } from "./business/GeoSections"
+import { VersusArticles, WhyThisMatters, WorkSystem, geoIncluded } from "./business/GeoSections"
 import PricingPlans from "./business/PricingPlans"
 import { SAMPLE_PATH, YEAR_DISCOUNT } from "@/lib/geo-pricing"
 import LanguageSwitcher from "@/components/i18n/LanguageSwitcher"
@@ -193,7 +193,7 @@ export default async function Home() {
 
         <WorkSystem id="geo-how" />
 
-        <FoundOnSites id="geo-found" />
+        <WhyThisMatters id="geo-why" checkHref="#geo-check" />
 
         <VersusArticles id="geo-versus" />
 

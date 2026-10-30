@@ -1,6 +1,6 @@
 import { defineMessages } from "../messages"
 
-// app/business/GeoSections.tsx: WorkSystem (work), FoundOnSites (found), VersusArticles (versus) and
+// app/business/GeoSections.tsx: WorkSystem (work), WhyThisMatters (why), VersusArticles (versus) and
 // what the plan includes (included). The big numbers of the five stages stay in the component; the
 // findings' numbers carry words, so they are here. No plan price is named: under the price test
 // (lib/geo-pricing.ts PRICE_TEST) the price is shown only in the cabinet.
@@ -41,17 +41,56 @@ const en = {
     closing: "None of this shows in an article. All of it decides whether an assistant ever reads one.",
     seePlan: "See the plan →",
   },
-  found: {
-    h2: "Publishing is not the same as being found",
-    lead: "Our own checks, October 2026: client sites and itgrows.ai itself.",
-    items: [
-      { n: "1 of 18", h: "articles ChatGPT found by their exact title", d: "Yet Google had indexed nearly every article on one site." },
-      { n: "128 MB", h: "one blog index page, images embedded", d: "Google reads the first 15 MB. Links sat below." },
-      { n: "0", h: "new articles in Google after three weeks", d: "Crawlers were led only to old pages." },
-      { n: "2", h: "addresses per article, each posing as original", d: "It competes with itself." },
-      { n: "1 line", h: "in robots.txt, meant to hide one page", d: "It hid every address starting with that letter." },
-    ],
-    closing: "Every one of these sites was publishing. On the plan, the same checks run on yours every two weeks.",
+  // WhyThisMatters (why): third-party figures, each linked to its source in the component. The
+  // numbers are formatted per language there (formatNumber), and the source names stay there too.
+  why: {
+    kicker: "Why this matters",
+    h2: "Your customers ask AI who to pick. It names a few businesses. If it's not you, it's your competitor.",
+    lead: "Not on page two. Not in an ad. In the answer, the first thing they read.",
+    users: { n: "1 billion+", l: "people use ChatGPT every week.", src: "August 2026" },
+    local: {
+      l: (was: string) => `of US consumers use ChatGPT and other AI tools for local business recommendations. A year earlier: ${was}.`,
+      src: (n: string) => `2026 (${n} US adults)`,
+    },
+    vendor: {
+      l: "of B2B software buyers chose a different vendor than they had planned because a chatbot recommended it.",
+      src: (n: string) => `March 2026 (${n} buyers)`,
+    },
+    clicks: {
+      vs: "vs",
+      l: "When Google shows its AI answer, people click a regular result about half as often.",
+      src: (n: string) => `March 2025 browsing data (${n} US adults)`,
+    },
+    compare: {
+      h3: "Paid ads vs. being the answer",
+      colA: "Paid search ads",
+      colB: "Named in the AI answer",
+      lead: {
+        k: "One lead costs",
+        a: (avg: string, law: string, home: string, dent: string) =>
+          `<b>${avg}</b> on average in the US. Lawyers ${law} · home improvement ${home} · dentists ${dent}.`,
+        b: "No price per click, lead or customer. You pay for the work.",
+      },
+      customer: {
+        k: "One customer costs",
+        a: (legal: string, logistics: string, construction: string) => `Legal ${legal} · logistics ${logistics} · construction ${construction} (B2B).`,
+        none: "No price per customer.",
+      },
+      stop: { k: "You stop paying", a: "The leads stop that day.", b: "Doesn't depend on your ad budget." },
+      buy: {
+        k: "Can money buy the spot?",
+        a: "Yes. That's the auction.",
+        b: "Not in ChatGPT: <en>“Advertising does not influence the answers ChatGPT provides.”</en>",
+      },
+    },
+    costs: (cpc: string, perAd: string) =>
+      `Clicks keep getting pricier: <g>Google's cost per click rose ${cpc} in 2025</g>, <m>Meta's average price per ad rose ${perAd}</m>.`,
+    closing:
+      "Nobody can guarantee a mention, and anyone who promises one is lying. We don't promise. We count: your customers' questions, four assistants, every two weeks.",
+    cta: "Check my site →",
+    footnote:
+      "Ad costs: WordStream by LocaliQ 2026, US Google and Microsoft search campaigns, April 2025 – March 2026; the publisher's averages are medians; a lead is an inquiry, not a sale. Cost per customer: First Page Sage's own B2B client data, January 2022 – August 2025; “paid” there means mainly search ads and paid social. Each survey figure shows who was asked and when.",
+    newTab: "(opens in a new tab)",
   },
   versus: {
     h2: "Why this is not paying for articles",
@@ -125,17 +164,53 @@ export default defineMessages(en, {
       closing: "Nichts davon sieht man einem Artikel an. All das entscheidet, ob ein Assistent ihn je liest.",
       seePlan: "Zum Plan →",
     },
-    found: {
-      h2: "Veröffentlichen heißt nicht gefunden werden",
-      lead: "Unsere eigenen Checks, Oktober 2026: Kundenwebsites und itgrows.ai selbst.",
-      items: [
-        { n: "1 von 18", h: "Artikeln fand ChatGPT über ihren exakten Titel", d: "Dabei hatte Google auf einer der Websites fast jeden Artikel indexiert." },
-        { n: "128 MB", h: "eine Blog-Übersichtsseite, Bilder eingebettet", d: "Google liest die ersten 15 MB. Die Links standen weiter unten." },
-        { n: "0", h: "neue Artikel in Google nach drei Wochen", d: "Crawler wurden nur zu alten Seiten geführt." },
-        { n: "2", h: "Adressen pro Artikel, jede gibt sich als Original aus", d: "Der Artikel konkurriert mit sich selbst." },
-        { n: "1 Zeile", h: "in robots.txt, die eine Seite verbergen sollte", d: "Sie verbarg jede Adresse, die mit diesem Buchstaben beginnt." },
-      ],
-      closing: "Auf jeder dieser Websites wurde veröffentlicht. Mit dem Plan laufen dieselben Checks alle zwei Wochen auch für Ihre Website.",
+    why: {
+      kicker: "Warum das zählt",
+      h2: "Ihre Kunden fragen die KI, wen sie wählen sollen. Die KI nennt ein paar Unternehmen. Sind Sie es nicht, ist es Ihr Wettbewerber.",
+      lead: "Nicht auf Seite zwei. Nicht in einer Anzeige. In der Antwort – das Erste, was sie lesen.",
+      users: { n: "1 Milliarde+", l: "Menschen nutzen ChatGPT jede Woche.", src: "August 2026" },
+      local: {
+        l: (was) => `der US-Verbraucher nutzen ChatGPT und andere KI-Tools für Empfehlungen zu lokalen Unternehmen. Ein Jahr zuvor: ${was}.`,
+        src: (n) => `2026 (${n} Erwachsene in den USA)`,
+      },
+      vendor: {
+        l: "der B2B-Softwarekäufer haben sich für einen anderen Anbieter entschieden als geplant, weil ein Chatbot ihn empfohlen hat.",
+        src: (n) => `März 2026 (${n} Käufer)`,
+      },
+      clicks: {
+        vs: "vs.",
+        l: "Wenn Google seine KI-Antwort zeigt, klicken Menschen nur etwa halb so oft auf ein normales Suchergebnis.",
+        src: (n) => `Browserdaten März 2025 (${n} Erwachsene in den USA)`,
+      },
+      compare: {
+        h3: "Anzeigen kaufen vs. selbst die Antwort sein",
+        colA: "Bezahlte Suchanzeigen",
+        colB: "In der KI-Antwort genannt",
+        lead: {
+          k: "Ein Lead kostet",
+          a: (avg, law, home, dent) => `<b>${avg}</b> im Schnitt in den USA. Anwälte ${law} · Haus und Renovierung ${home} · Zahnärzte ${dent}.`,
+          b: "Kein Preis pro Klick, Lead oder Kunde. Sie bezahlen die Arbeit.",
+        },
+        customer: {
+          k: "Ein Kunde kostet",
+          a: (legal, logistics, construction) => `Rechtsdienstleistungen ${legal} · Logistik ${logistics} · Bau ${construction} (B2B).`,
+          none: "Kein Preis pro Kunde.",
+        },
+        stop: { k: "Wenn Sie nicht mehr zahlen", a: "Die Leads bleiben am selben Tag aus.", b: "Hängt nicht von Ihrem Werbebudget ab." },
+        buy: {
+          k: "Lässt sich der Platz kaufen?",
+          a: "Ja. Genau das ist die Auktion.",
+          b: "Nicht bei ChatGPT: „<en>Advertising does not influence the answers ChatGPT provides.</en>“ [Übersetzung: Werbung beeinflusst nicht die Antworten, die ChatGPT gibt.]",
+        },
+      },
+      costs: (cpc, perAd) =>
+        `Klicks werden immer teurer: <g>Googles Kosten pro Klick stiegen 2025 um ${cpc}</g>, <m>der durchschnittliche Preis pro Anzeige bei Meta um ${perAd}</m>.`,
+      closing:
+        "Niemand kann eine Nennung garantieren, und wer eine verspricht, lügt. Wir versprechen nichts. Wir zählen: die Fragen Ihrer Kunden, vier Assistenten, alle zwei Wochen.",
+      cta: "Website prüfen →",
+      footnote:
+        "Werbekosten: WordStream by LocaliQ 2026, Suchkampagnen bei Google und Microsoft in den USA, April 2025 – März 2026; die Durchschnittswerte des Herausgebers sind Mediane; ein Lead ist eine Anfrage, kein Verkauf. Kosten pro Kunde: eigene B2B-Kundendaten von First Page Sage, Januar 2022 – August 2025; „bezahlt“ heißt dort vor allem Suchanzeigen und bezahlte Social-Media-Werbung. Bei jeder Umfragezahl steht, wer wann befragt wurde.",
+      newTab: "(öffnet in neuem Tab)",
     },
     versus: {
       h2: "Warum Sie hier nicht für Artikel bezahlen",
@@ -207,17 +282,55 @@ export default defineMessages(en, {
       closing: "Rien de tout cela ne se voit dans un article. Tout cela décide si un assistant en lira un jour.",
       seePlan: "Voir l’abonnement →",
     },
-    found: {
-      h2: "Publier ne veut pas dire être trouvé",
-      lead: "Nos propres vérifications, octobre 2026 : des sites clients et itgrows.ai lui-même.",
-      items: [
-        { n: "1 sur 18", h: "articles trouvés par ChatGPT à partir de leur titre exact", d: "Pourtant, Google avait indexé presque tous les articles de l’un des sites." },
-        { n: "128 Mo", h: "une page d’index de blog, images intégrées", d: "Google lit les 15 premiers Mo. Les liens se trouvaient plus bas." },
-        { n: "0", h: "nouvel article dans Google après trois semaines", d: "Les robots n’étaient dirigés que vers d’anciennes pages." },
-        { n: "2", h: "adresses par article, chacune se faisant passer pour l’original", d: "L’article se fait concurrence à lui-même." },
-        { n: "1 ligne", h: "dans robots.txt, censée masquer une page", d: "Elle masquait toutes les adresses commençant par cette lettre." },
-      ],
-      closing: "Chacun de ces sites publiait. Avec l’abonnement, les mêmes vérifications tournent sur le vôtre toutes les deux semaines.",
+    why: {
+      kicker: "Pourquoi c’est important",
+      h2: "Vos clients demandent à l’IA qui choisir. Elle cite quelques entreprises. Si ce n’est pas vous, c’est votre concurrent.",
+      lead: "Pas en page deux. Pas dans une annonce. Dans la réponse, la première chose qu’ils lisent.",
+      users: { n: "1 milliard+", l: "de personnes utilisent ChatGPT chaque semaine.", src: "août 2026" },
+      local: {
+        l: (was) =>
+          `des consommateurs américains utilisent ChatGPT et d’autres outils d’IA pour obtenir des recommandations d’entreprises locales. Un an plus tôt : ${was}.`,
+        src: (n) => `2026 (${n} adultes aux États-Unis)`,
+      },
+      vendor: {
+        l: "des acheteurs de logiciels B2B ont choisi un autre fournisseur que prévu parce qu’un chatbot le recommandait.",
+        src: (n) => `mars 2026 (${n} acheteurs)`,
+      },
+      clicks: {
+        vs: "contre",
+        l: "Quand Google affiche sa réponse IA, les internautes cliquent environ deux fois moins souvent sur un résultat classique.",
+        src: (n) => `navigation de mars 2025 (${n} adultes aux États-Unis)`,
+      },
+      compare: {
+        h3: "Publicité payante ou être la réponse",
+        colA: "Liens sponsorisés",
+        colB: "Cité dans la réponse de l’IA",
+        lead: {
+          k: "Un lead coûte",
+          a: (avg, law, home, dent) =>
+            `<b>${avg}</b> en moyenne aux États-Unis. Avocats ${law} · rénovation de l’habitat ${home} · dentistes ${dent}.`,
+          b: "Aucun prix par clic, par lead ou par client. Vous payez le travail.",
+        },
+        customer: {
+          k: "Un client coûte",
+          a: (legal, logistics, construction) => `Juridique ${legal} · logistique ${logistics} · construction ${construction} (B2B).`,
+          none: "Aucun prix par client.",
+        },
+        stop: { k: "Si vous arrêtez de payer", a: "Les leads s’arrêtent le jour même.", b: "Ne dépend pas de votre budget publicitaire." },
+        buy: {
+          k: "L’argent peut-il acheter la place ?",
+          a: "Oui. C’est le principe des enchères.",
+          b: "Pas dans ChatGPT : « <en>Advertising does not influence the answers ChatGPT provides.</en> » [traduction : la publicité n’influence pas les réponses que fournit ChatGPT.]",
+        },
+      },
+      costs: (cpc, perAd) =>
+        `Les clics coûtent toujours plus cher : <g>le coût par clic de Google a augmenté de ${cpc} en 2025</g>, <m>le prix moyen par publicité de Meta de ${perAd}</m>.`,
+      closing:
+        "Personne ne peut garantir une mention, et quiconque en promet une ment. Nous ne promettons rien. Nous comptons : les questions de vos clients, quatre assistants, toutes les deux semaines.",
+      cta: "Vérifier mon site →",
+      footnote:
+        "Coûts publicitaires : WordStream by LocaliQ 2026, campagnes sur le réseau de recherche Google et Microsoft aux États-Unis, avril 2025 – mars 2026 ; les moyennes de l’éditeur sont des médianes ; un lead est une demande, pas une vente. Coût par client : données B2B des propres clients de First Page Sage, janvier 2022 – août 2025 ; « payant » y désigne surtout les annonces sur les moteurs de recherche et les réseaux sociaux payants. Chaque chiffre d’enquête indique qui a été interrogé et quand.",
+      newTab: "(s’ouvre dans un nouvel onglet)",
     },
     versus: {
       h2: "Pourquoi ce n’est pas un simple achat d’articles",
@@ -289,17 +402,55 @@ export default defineMessages(en, {
       closing: "Nada de esto se ve en un artículo. Todo ello decide si un asistente llegará a leer alguno.",
       seePlan: "Ver el plan →",
     },
-    found: {
-      h2: "Publicar no es lo mismo que ser encontrado",
-      lead: "Nuestras propias comprobaciones, octubre de 2026: sitios de clientes y el propio itgrows.ai.",
-      items: [
-        { n: "1 de 18", h: "artículos que ChatGPT encontró por su título exacto", d: "Y eso que Google había indexado casi todos los artículos de uno de los sitios." },
-        { n: "128 MB", h: "una página índice de blog, con imágenes incrustadas", d: "Google lee los primeros 15 MB. Los enlaces estaban más abajo." },
-        { n: "0", h: "artículos nuevos en Google tras tres semanas", d: "Los rastreadores solo se dirigían a páginas antiguas." },
-        { n: "2", h: "direcciones por artículo, cada una haciéndose pasar por la original", d: "El artículo compite consigo mismo." },
-        { n: "1 línea", h: "en robots.txt, pensada para ocultar una página", d: "Ocultaba todas las direcciones que empezaban por esa letra." },
-      ],
-      closing: "Todos estos sitios estaban publicando. Con el plan, las mismas comprobaciones se hacen en el suyo cada dos semanas.",
+    why: {
+      kicker: "Por qué importa",
+      h2: "Sus clientes le preguntan a la IA a quién elegir. La IA nombra unas pocas empresas. Si no es usted, es su competidor.",
+      lead: "No en la segunda página. No en un anuncio. En la respuesta, lo primero que leen.",
+      users: { n: "+1000 millones", l: "de personas usan ChatGPT cada semana.", src: "agosto de 2026" },
+      local: {
+        l: (was) =>
+          `de los consumidores de EE. UU. usan ChatGPT y otras herramientas de IA para obtener recomendaciones de negocios locales. Un año antes: ${was}.`,
+        src: (n) => `2026 (${n} adultos de EE. UU.)`,
+      },
+      vendor: {
+        l: "de los compradores de software B2B eligieron un proveedor distinto del previsto porque se lo recomendó un chatbot.",
+        src: (n) => `marzo de 2026 (${n} compradores)`,
+      },
+      clicks: {
+        vs: "vs.",
+        l: "Cuando Google muestra su respuesta de IA, la gente hace clic en un resultado normal con aproximadamente la mitad de frecuencia.",
+        src: (n) => `navegación de marzo de 2025 (${n} adultos de EE. UU.)`,
+      },
+      compare: {
+        h3: "Anuncios de pago frente a ser la respuesta",
+        colA: "Anuncios de búsqueda de pago",
+        colB: "Mencionado en la respuesta de la IA",
+        lead: {
+          k: "Un lead cuesta",
+          a: (avg, law, home, dent) =>
+            `<b>${avg}</b> de media en EE. UU. Abogados ${law} · reformas del hogar ${home} · dentistas ${dent}.`,
+          b: "Sin precio por clic, por lead ni por cliente. Usted paga por el trabajo.",
+        },
+        customer: {
+          k: "Un cliente cuesta",
+          a: (legal, logistics, construction) => `Servicios jurídicos ${legal} · logística ${logistics} · construcción ${construction} (B2B).`,
+          none: "Sin precio por cliente.",
+        },
+        stop: { k: "Si deja de pagar", a: "Los leads se acaban ese mismo día.", b: "No depende de su presupuesto publicitario." },
+        buy: {
+          k: "¿Se puede comprar el puesto?",
+          a: "Sí. En eso consiste la subasta.",
+          b: "En ChatGPT, no: «<en>Advertising does not influence the answers ChatGPT provides.</en>» [traducción: la publicidad no influye en las respuestas que da ChatGPT.]",
+        },
+      },
+      costs: (cpc, perAd) =>
+        `Los clics son cada vez más caros: <g>el coste por clic de Google subió un ${cpc} en 2025</g> y <m>el precio medio por anuncio de Meta, un ${perAd}</m>.`,
+      closing:
+        "Nadie puede garantizar una mención, y quien se la prometa miente. Nosotros no prometemos. Contamos: las preguntas de sus clientes, cuatro asistentes, cada dos semanas.",
+      cta: "Comprobar mi sitio →",
+      footnote:
+        "Costes publicitarios: WordStream by LocaliQ 2026, campañas de búsqueda de Google y Microsoft en EE. UU., abril de 2025 – marzo de 2026; las medias del editor son medianas; un lead es una consulta, no una venta. Coste por cliente: datos propios de First Page Sage sobre sus clientes B2B, enero de 2022 – agosto de 2025; «de pago» significa allí sobre todo anuncios de búsqueda y redes sociales de pago. Cada cifra de encuesta indica a quién se preguntó y cuándo.",
+      newTab: "(se abre en una pestaña nueva)",
     },
     versus: {
       h2: "Por qué esto no es pagar por artículos",
@@ -363,7 +514,7 @@ export default defineMessages(en, {
         },
         {
           step: "Повторный замер",
-          l: "полных пересчёта в год — в сравнении с днём 0",
+          l: "полных пересчётов в год — в сравнении с днём 0",
           d: "Те же вопросы в сравнении с днём 0, раз в две недели. Отдельный тест показывает, может ли каждый ассистент вообще найти ваши опубликованные статьи, чтобы пробел в индексации поймали и исправили, а не приняли за слабые тексты. Раз в месяц — отчёт на вашем языке, который читает человек, прежде чем он попадёт к вам.",
         },
       ],
@@ -371,17 +522,53 @@ export default defineMessages(en, {
       closing: "Ничего из этого не видно в статье. Но именно это решает, прочитает ли её ассистент хоть когда-нибудь.",
       seePlan: "Смотреть подписку →",
     },
-    found: {
-      h2: "Публиковать — не то же самое, что быть найденным",
-      lead: "Наши собственные проверки, октябрь 2026: сайты клиентов и сам itgrows.ai.",
-      items: [
-        { n: "1 из 18", h: "статей ChatGPT нашёл по точному заголовку", d: "При этом Google проиндексировал почти все статьи одного из сайтов." },
-        { n: "128 МБ", h: "одна страница-индекс блога со встроенными картинками", d: "Google читает первые 15 МБ. Ссылки были ниже." },
-        { n: "0", h: "новых статей в Google через три недели", d: "Краулеров вели только на старые страницы." },
-        { n: "2", h: "адреса на статью, и каждый выдаёт себя за оригинал", d: "Статья конкурирует сама с собой." },
-        { n: "1 строка", h: "в robots.txt, которая должна была скрыть одну страницу", d: "Она скрыла все адреса, начинающиеся с этой буквы." },
-      ],
-      closing: "На каждом из этих сайтов выходили публикации. С подпиской те же проверки раз в две недели идут и на вашем сайте.",
+    why: {
+      kicker: "Почему это важно",
+      h2: "Ваши клиенты спрашивают ИИ, кого выбрать. Он называет несколько компаний. Если не вас — значит, вашего конкурента.",
+      lead: "Не на второй странице. Не в рекламе. В ответе — первое, что они читают.",
+      users: { n: "1 млрд+", l: "человек пользуются ChatGPT каждую неделю.", src: "август 2026" },
+      local: {
+        l: (was) => `потребителей в США обращаются к ChatGPT и другим ИИ-инструментам за рекомендациями местных компаний. Годом раньше — ${was}.`,
+        src: (n) => `2026 (${n} взрослых в США)`,
+      },
+      vendor: {
+        l: "покупателей B2B-софта выбрали не того поставщика, которого планировали, потому что его посоветовал чат-бот.",
+        src: (n) => `март 2026 (${n} покупателей)`,
+      },
+      clicks: {
+        vs: "против",
+        l: "Когда Google показывает свой ИИ-ответ, люди кликают по обычному результату примерно вдвое реже.",
+        src: (n) => `данные о посещениях за март 2025 (${n} взрослых в США)`,
+      },
+      compare: {
+        h3: "Платная реклама против места в ответе ИИ",
+        colA: "Платная поисковая реклама",
+        colB: "Вас называет ИИ",
+        lead: {
+          k: "Один лид стоит",
+          a: (avg, law, home, dent) => `<b>${avg}</b> в среднем в США. Юристы ${law} · ремонт дома ${home} · стоматологи ${dent}.`,
+          b: "Нет цены за клик, лид или клиента. Вы платите за работу.",
+        },
+        customer: {
+          k: "Один клиент стоит",
+          a: (legal, logistics, construction) => `Юридические услуги ${legal} · логистика ${logistics} · строительство ${construction} (B2B).`,
+          none: "Нет цены за клиента.",
+        },
+        stop: { k: "Если перестать платить", a: "Лиды заканчиваются в тот же день.", b: "Не зависит от вашего рекламного бюджета." },
+        buy: {
+          k: "Можно ли купить место?",
+          a: "Да. Это и есть аукцион.",
+          b: "Не в ChatGPT: «<en>Advertising does not influence the answers ChatGPT provides.</en>» [перевод: реклама не влияет на ответы, которые даёт ChatGPT.]",
+        },
+      },
+      costs: (cpc, perAd) =>
+        `Клики всё дороже: <g>цена клика в Google выросла в 2025 году на ${cpc}</g>, <m>средняя цена за объявление у Meta — на ${perAd}</m>.`,
+      closing:
+        "Никто не может гарантировать упоминание, а тот, кто его обещает, лжёт. Мы не обещаем. Мы считаем: вопросы ваших клиентов, четыре ассистента, каждые две недели.",
+      cta: "Проверить мой сайт →",
+      footnote:
+        "Стоимость рекламы: WordStream by LocaliQ 2026, поисковые кампании Google и Microsoft в США, апрель 2025 – март 2026; средние значения издателя — медианы; лид — это обращение, а не продажа. Стоимость клиента: собственные данные First Page Sage по B2B-клиентам, январь 2022 – август 2025; «платные» там — в основном поисковая реклама и платные соцсети. У каждой цифры из опроса указано, кого и когда спрашивали.",
+      newTab: "(откроется в новой вкладке)",
     },
     versus: {
       h2: "Почему это не оплата статей",
