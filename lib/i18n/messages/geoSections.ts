@@ -94,27 +94,31 @@ const en = {
       "Ad costs: WordStream by LocaliQ 2026, US Google and Microsoft search campaigns, April 2025 – March 2026; the publisher's averages are medians; a lead is an inquiry, not a sale. Cost per customer: First Page Sage's own B2B client data, January 2022 – August 2025; “paid” there means mainly search ads and paid social. Each survey figure shows who was asked and when.",
     newTab: "(opens in a new tab)",
   },
+  // Owner-approved copy, 30 Oct 2026: two panels, what article-only services do (them) and what we
+  // do (us). The last line on our side is the growth guarantee, rendered by the component from
+  // growthGuarantee.ts (label and line, with its "*"); its footnote stays at the bottom of the page.
   versus: {
-    h2: "Articles alone won't get you named. Here's what does.",
-    colA: "Article-only service",
-    colB: "ItGrows plan",
-    // a: what an article-only service does; b: what the plan does; k + d: the detail (k is followed by ".").
-    rows: [
-      { a: "A keyword list", b: "240 answers read first", k: "Before writing", d: "Who ChatGPT, Claude, Gemini and Perplexity name today, and who they quote." },
-      { a: "Crawlers not checked", b: "Tested as 11 crawlers", k: "Can assistants reach your site?", d: "Blockers are found and fixed with you before the first article." },
-      {
-        a: "Publish and hope",
-        b: "Findability tested every two weeks",
-        k: "Is each page in the index each assistant searches?",
-        d: "New pages are submitted to Bing on publication (blogs we host), and every two weeks we test whether each assistant can find them.",
-      },
-      { a: "Duplicates not checked", b: "Duplicates found, fixed", k: "Duplicate addresses, sitemaps that miss new pages", d: "We find them on your site and fix them." },
-      { a: "Unwinnable topics written", b: "Spotted before you spend", k: "Questions no own-site article can win", d: "Found before your budget goes into them." },
-      { a: "Facts up to the writer", b: "3–5 sources, each read", k: "Facts and sources", d: "Every source read before it is cited; an editor pass and automated checks on every article." },
-      { a: "Proof: articles, traffic", b: "Proof: count vs day 0", k: "Proof", d: "The same questions against day 0, every two weeks, across four assistants." },
-      { a: "You pay for words", b: "You pay to get named", k: "What you pay for", d: "Everything that gets you found, read and quoted, and a recount every two weeks of where you're named." },
-    ],
-    footnote: "Ask any agency for its count against day 0. With us you see yours every two weeks.",
+    h2: "Others sell articles. We get you named.",
+    them: {
+      title: "Article-only services",
+      lines: [
+        "Publish articles and hope someone quotes them",
+        "Promise results, guarantee nothing",
+        "Never check whether AI assistants can even reach your site",
+        "Leave the blockers on your site as they are",
+        "Never ask ChatGPT whether it names you",
+      ],
+    },
+    us: {
+      title: "ItGrows",
+      lines: [
+        "We read 240 AI answers before writing a word: who's named today, and who's quoted",
+        "We test your site as 11 AI crawlers and fix what blocks them",
+        "We publish the answers they quote, on your own domain",
+        "We get you onto the sites the assistants cite",
+        "We re-ask your customers' questions every two weeks and push wherever you're missing",
+      ],
+    },
   },
   included: [
     "Setup: your site tested as 11 crawlers, blockers fixed, Bing and Google set up — one-time, free with 3 months or a year",
@@ -215,25 +219,27 @@ export default defineMessages(en, {
       newTab: "(öffnet in neuem Tab)",
     },
     versus: {
-      h2: "Artikel allein bringen Sie nicht in die Antworten. Das hier schon.",
-      colA: "Reiner Artikeldienst",
-      colB: "ItGrows-Plan",
-      rows: [
-        { a: "Eine Keyword-Liste", b: "Zuerst 240 Antworten gelesen", k: "Vor dem Schreiben", d: "Wen ChatGPT, Claude, Gemini und Perplexity heute nennen und wen sie zitieren." },
-        { a: "Crawler nicht geprüft", b: "Mit 11 Crawler-Kennungen getestet", k: "Erreichbarkeit für Assistenten", d: "Blockaden werden vor dem ersten Artikel gefunden und mit Ihnen behoben." },
-        {
-          a: "Veröffentlichen und hoffen",
-          b: "Auffindbarkeit alle zwei Wochen getestet",
-          k: "Jede Seite im Index jedes Assistenten",
-          d: "Neue Seiten werden bei Veröffentlichung bei Bing eingereicht (bei Blogs, die wir hosten), und alle zwei Wochen testen wir, ob jeder Assistent sie finden kann.",
-        },
-        { a: "Duplikate nicht geprüft", b: "Duplikate gefunden, behoben", k: "Doppelte Adressen, Sitemaps ohne neue Seiten", d: "Wir finden sie auf Ihrer Website und beheben sie." },
-        { a: "Aussichtslose Themen geschrieben", b: "Erkannt, bevor Sie zahlen", k: "Fragen, die kein Artikel auf der eigenen Website gewinnen kann", d: "Erkannt, bevor Ihr Budget hineinfließt." },
-        { a: "Fakten nach Gutdünken des Autors", b: "3–5 Quellen, jede gelesen", k: "Fakten und Quellen", d: "Jede Quelle wird gelesen, bevor sie zitiert wird; Lektorat und automatische Prüfungen bei jedem Artikel." },
-        { a: "Beleg: Artikel, Traffic", b: "Beleg: Zählung vs. Tag 0", k: "Belege", d: "Dieselben Fragen im Vergleich zu Tag 0, alle zwei Wochen, über vier Assistenten." },
-        { a: "Sie zahlen für Wörter", b: "Sie zahlen dafür, genannt zu werden", k: "Wofür Sie zahlen", d: "Alles, was dafür sorgt, dass Sie gefunden, gelesen und zitiert werden, und alle zwei Wochen eine neue Zählung, wo Sie genannt werden." },
-      ],
-      footnote: "Fragen Sie jede Agentur nach ihrer Zählung im Vergleich zu Tag 0. Bei uns sehen Sie Ihre alle zwei Wochen.",
+      h2: "Andere verkaufen Artikel. Wir sorgen dafür, dass Sie genannt werden.",
+      them: {
+        title: "Reine Artikeldienste",
+        lines: [
+          "Veröffentlichen Artikel und hoffen, dass jemand sie zitiert",
+          "Versprechen Ergebnisse, garantieren nichts",
+          "Prüfen nie, ob KI-Assistenten Ihre Website überhaupt erreichen",
+          "Lassen die Blockaden auf Ihrer Website, wie sie sind",
+          "Fragen ChatGPT nie, ob es Sie nennt",
+        ],
+      },
+      us: {
+        title: "ItGrows",
+        lines: [
+          "Wir lesen 240 KI-Antworten, bevor wir ein Wort schreiben: wer heute genannt und wer zitiert wird",
+          "Wir testen Ihre Website mit den Kennungen von 11 KI-Crawlern und beheben alles, was diese blockiert",
+          "Wir veröffentlichen die Antworten, die die Assistenten zitieren – auf Ihrer eigenen Domain",
+          "Wir bringen Sie auf die Websites, die die Assistenten zitieren",
+          "Wir stellen die Fragen Ihrer Kunden alle zwei Wochen neu und legen überall nach, wo Sie noch fehlen",
+        ],
+      },
     },
     included: [
       "Einrichtung: Ihre Website mit 11 Crawler-Kennungen getestet, Blockaden behoben, Bing und Google eingerichtet — einmalig, entfällt bei Vorauszahlung von 3 Monaten oder einem Jahr",
@@ -335,25 +341,27 @@ export default defineMessages(en, {
       newTab: "(s’ouvre dans un nouvel onglet)",
     },
     versus: {
-      h2: "Des articles seuls ne vous feront pas mentionner. Voici ce qui le fait.",
-      colA: "Rédaction d’articles seule",
-      colB: "Abonnement ItGrows",
-      rows: [
-        { a: "Une liste de mots-clés", b: "D’abord 240 réponses lues", k: "Avant d’écrire", d: "Qui ChatGPT, Claude, Gemini et Perplexity mentionnent aujourd’hui, et qui ils citent." },
-        { a: "Robots non vérifiés", b: "Testé avec 11 robots", k: "Accès des assistants à votre site", d: "Les blocages sont trouvés et corrigés avec vous avant le premier article." },
-        {
-          a: "Publier et espérer",
-          b: "Trouvabilité testée toutes les deux semaines",
-          k: "Chaque page dans l’index de chaque assistant",
-          d: "Les nouvelles pages sont soumises à Bing dès leur publication (blogs que nous hébergeons), et toutes les deux semaines nous testons si chaque assistant peut les trouver.",
-        },
-        { a: "Doublons non vérifiés", b: "Doublons trouvés et corrigés", k: "Adresses en double, sitemaps sans les nouvelles pages", d: "Nous les trouvons sur votre site et les corrigeons." },
-        { a: "Sujets perdus d’avance rédigés quand même", b: "Repérés avant la dépense", k: "Questions qu’aucun article sur votre site ne peut gagner", d: "Repérées avant que votre budget n’y passe." },
-        { a: "Faits laissés au rédacteur", b: "3 à 5 sources, toutes lues", k: "Faits et sources", d: "Chaque source est lue avant d’être citée ; relecture éditoriale et contrôles automatiques sur chaque article." },
-        { a: "Preuve : articles, trafic", b: "Preuve : décompte vs jour 0", k: "Preuve", d: "Les mêmes questions comparées au jour 0, toutes les deux semaines, sur quatre assistants." },
-        { a: "Vous payez des mots", b: "Vous payez pour être mentionné", k: "Ce pour quoi vous payez", d: "Tout ce qui vous fait trouver, lire et citer, et un nouveau décompte toutes les deux semaines de là où vous êtes mentionné." },
-      ],
-      footnote: "Demandez à n’importe quelle agence son décompte comparé au jour 0. Chez nous, vous voyez le vôtre toutes les deux semaines.",
+      h2: "Les autres vendent des articles. Nous vous faisons mentionner.",
+      them: {
+        title: "Services qui ne font que des articles",
+        lines: [
+          "Publient des articles et espèrent qu’on les cite",
+          "Promettent des résultats, ne garantissent rien",
+          "Ne vérifient même pas si les assistants IA peuvent accéder à votre site",
+          "Laissent les blocages de votre site en l’état",
+          "Ne demandent jamais à ChatGPT s’il vous mentionne",
+        ],
+      },
+      us: {
+        title: "ItGrows",
+        lines: [
+          "Nous lisons 240 réponses d’IA avant d’écrire un mot : qui est mentionné aujourd’hui et qui est cité",
+          "Nous testons votre site avec 11 robots d’IA et corrigeons ce qui les bloque",
+          "Nous publions les réponses que les assistants citent, sur votre propre domaine",
+          "Nous vous faisons apparaître sur les sites que les assistants citent",
+          "Toutes les deux semaines, nous reposons les questions de vos clients et redoublons d’efforts partout où vous êtes encore absent",
+        ],
+      },
     },
     included: [
       "Mise en place : votre site testé avec 11 robots, blocages corrigés, Bing et Google configurés — une seule fois, non facturée si vous payez 3 mois ou un an d’avance",
@@ -455,25 +463,27 @@ export default defineMessages(en, {
       newTab: "(se abre en una pestaña nueva)",
     },
     versus: {
-      h2: "Los artículos solos no hacen que le mencionen. Esto sí.",
-      colA: "Servicio solo de artículos",
-      colB: "Plan de ItGrows",
-      rows: [
-        { a: "Una lista de palabras clave", b: "Primero, 240 respuestas leídas", k: "Antes de escribir", d: "A quién mencionan hoy ChatGPT, Claude, Gemini y Perplexity, y a quién citan." },
-        { a: "Rastreadores sin revisar", b: "Probado con 11 rastreadores", k: "Acceso de los asistentes a su sitio", d: "Los bloqueos se detectan y se corrigen con usted antes del primer artículo." },
-        {
-          a: "Publicar y esperar",
-          b: "Se comprueba cada dos semanas si le encuentran",
-          k: "Cada página en el índice de cada asistente",
-          d: "Las páginas nuevas se envían a Bing al publicarse (en los blogs que alojamos), y cada dos semanas comprobamos si cada asistente puede encontrarlas.",
-        },
-        { a: "Duplicados sin revisar", b: "Duplicados detectados y corregidos", k: "Direcciones duplicadas, sitemaps sin las páginas nuevas", d: "Los encontramos en su sitio y los corregimos." },
-        { a: "Temas imposibles, escritos igual", b: "Detectados antes de gastar", k: "Preguntas que ningún artículo propio puede ganar", d: "Se detectan antes de que su presupuesto se vaya en ellas." },
-        { a: "Datos a criterio del redactor", b: "3–5 fuentes, todas leídas", k: "Datos y fuentes", d: "Cada fuente se lee antes de citarla; revisión editorial y controles automáticos en cada artículo." },
-        { a: "Prueba: artículos, tráfico", b: "Prueba: recuento vs. día 0", k: "Pruebas", d: "Las mismas preguntas frente al día 0, cada dos semanas, en cuatro asistentes." },
-        { a: "Paga por palabras", b: "Paga por que le mencionen", k: "Por lo que paga", d: "Todo lo que hace que le encuentren, le lean y le citen, y un nuevo recuento cada dos semanas de dónde le mencionan." },
-      ],
-      footnote: "Pida a cualquier agencia su recuento frente al día 0. Con nosotros ve el suyo cada dos semanas.",
+      h2: "Otros venden artículos. Nosotros conseguimos que le mencionen.",
+      them: {
+        title: "Servicios solo de artículos",
+        lines: [
+          "Publican artículos y esperan que alguien los cite",
+          "Prometen resultados, no garantizan nada",
+          "Ni siquiera comprueban si los asistentes de IA pueden acceder a su sitio",
+          "Dejan los bloqueos de su sitio tal como están",
+          "Nunca preguntan a ChatGPT si le menciona a usted",
+        ],
+      },
+      us: {
+        title: "ItGrows",
+        lines: [
+          "Leemos 240 respuestas de IA antes de escribir una sola palabra: a quién mencionan hoy y a quién citan",
+          "Probamos su sitio con 11 rastreadores de IA y corregimos lo que los bloquea",
+          "Publicamos en su propio dominio las respuestas que los asistentes citan",
+          "Conseguimos que aparezca en los sitios que los asistentes toman como fuente",
+          "Cada dos semanas volvemos a hacer las preguntas de sus clientes y reforzamos el trabajo allí donde aún no aparece",
+        ],
+      },
     },
     included: [
       "Configuración inicial: su sitio probado con 11 rastreadores, bloqueos corregidos, Bing y Google configurados — pago único, no se cobra si paga 3 meses o un año por adelantado",
@@ -573,25 +583,27 @@ export default defineMessages(en, {
       newTab: "(откроется в новой вкладке)",
     },
     versus: {
-      h2: "Одни статьи не сделают так, чтобы вас называли. А вот это — сделает.",
-      colA: "Сервис «только статьи»",
-      colB: "Подписка ItGrows",
-      rows: [
-        { a: "Список ключевых слов", b: "Сначала 240 прочитанных ответов", k: "До написания", d: "Кого сегодня называют ChatGPT, Claude, Gemini и Perplexity и кого цитируют." },
-        { a: "Краулеры не проверены", b: "Проверка от имени 11 краулеров", k: "Доступ ассистентов к сайту", d: "Блокировки находим и устраняем вместе с вами до первой статьи." },
-        {
-          a: "Опубликовать и надеяться",
-          b: "Находимость — раз в две недели",
-          k: "Каждая страница — в индексе каждого ассистента",
-          d: "Новые страницы отправляются в Bing при публикации (в блогах, которые хостим мы), и раз в две недели мы проверяем, может ли каждый ассистент их найти.",
-        },
-        { a: "Дубли не проверены", b: "Дубли найдены и исправлены", k: "Дубли адресов, sitemap без новых страниц", d: "Находим их на вашем сайте и исправляем." },
-        { a: "Пишут на безнадёжные темы", b: "Выявляем до трат", k: "Вопросы, которые не выиграть статьёй на своём сайте", d: "Находим их, прежде чем на них уйдёт ваш бюджет." },
-        { a: "Факты — на совести автора", b: "3–5 источников, каждый прочитан", k: "Факты и источники", d: "Каждый источник прочитан до цитирования; редакторская вычитка и автоматические проверки для каждой статьи." },
-        { a: "Доказательство: статьи, трафик", b: "Доказательство: сравнение с днём 0", k: "Доказательства", d: "Те же вопросы в сравнении с днём 0, раз в две недели, в четырёх ассистентах." },
-        { a: "Вы платите за слова", b: "Вы платите за то, чтобы вас называли", k: "За что вы платите", d: "Всё, благодаря чему вас находят, читают и цитируют, и новый подсчёт раз в две недели — где вас называют." },
-      ],
-      footnote: "Попросите любое агентство показать подсчёт в сравнении с днём 0. У нас вы видите свой раз в две недели.",
+      h2: "Другие продают статьи. Мы добиваемся, чтобы вас называли.",
+      them: {
+        title: "Сервисы «только статьи»",
+        lines: [
+          "Публикуют статьи и надеются, что их кто-нибудь процитирует",
+          "Обещают результат, но ничего не гарантируют",
+          "Даже не проверяют, могут ли ИИ-ассистенты вообще попасть на ваш сайт",
+          "Оставляют блокировки на вашем сайте как есть",
+          "Никогда не спрашивают ChatGPT, называет ли он вас",
+        ],
+      },
+      us: {
+        title: "ItGrows",
+        lines: [
+          "Читаем 240 ответов ИИ, прежде чем написать хоть слово: кого называют сегодня и кого цитируют",
+          "Проверяем ваш сайт от имени 11 ИИ-краулеров и устраняем всё, что их блокирует",
+          "Публикуем на вашем собственном домене ответы, которые ассистенты цитируют",
+          "Размещаем вас на сайтах, на которые ссылаются ассистенты",
+          "Раз в две недели заново задаём вопросы ваших клиентов и усиливаем работу везде, где вас пока нет",
+        ],
+      },
     },
     included: [
       "Настройка: ваш сайт проверен от имени 11 краулеров, блокировки устранены, Bing и Google настроены — разово, не взимается при оплате 3 месяцев или года",

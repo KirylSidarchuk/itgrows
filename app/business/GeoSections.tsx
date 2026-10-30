@@ -24,6 +24,7 @@ import { formatNumber } from "@/lib/i18n/format"
 import { t } from "@/lib/i18n/messages"
 import { rich } from "@/lib/i18n/rich"
 import geoSections from "@/lib/i18n/messages/geoSections"
+import growthGuarantee from "@/lib/i18n/messages/growthGuarantee"
 import { getLocale } from "@/lib/i18n/server"
 
 // "See the plan" points at the pricing section of the page the block sits on: "/" prefixes its GEO
@@ -386,80 +387,75 @@ export async function WhyThisMatters({ id = "geo-why", checkHref = "#geo-check" 
   )
 }
 
+// The ✓ and ✗ of the versus panels, drawn inline so every font shows the same mark.
+function VersusMark({ yes }: { yes?: boolean }) {
+  return (
+    <span
+      aria-hidden
+      className={`mt-px w-6 h-6 shrink-0 rounded-full flex items-center justify-center ${yes ? "bg-white text-violet-700" : "bg-rose-100 text-rose-600"}`}
+    >
+      <svg viewBox="0 0 24 24" className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={3} strokeLinecap="round" strokeLinejoin="round">
+        {yes ? <path d="M5 12.5l4.5 4.5L19 7.5" /> : <path d="M7 7l10 10M17 7L7 17" />}
+      </svg>
+    </span>
+  )
+}
+
 /**
- * Seven contrasts as cards, then the one that sums them up. A card: what the plan does (bold), the
- * detail, and under a rule what an article-only service does instead. The first card spans both
- * columns; the last pair ("what you pay for") closes the block on dark. No disclosure: the detail is
- * what makes each short phrase readable, so it stays visible (and in the HTML for crawlers).
+ * Two panels, side by side on desktop with equal heights, stacked on the phone (article-only first):
+ * what an article-only service does, muted with a red ✗ per line, and what we do, on violet with a ✓
+ * per line. Our last line is the growth guarantee (growthGuarantee.ts, label and line with its "*");
+ * nothing under it here, its footnote is the last line of the page.
  */
 export async function VersusArticles({ id }: { id?: string }) {
-  const m = t(await getLocale(), geoSections).versus
-  const cards = m.rows.slice(0, -1)
-  const last = m.rows[m.rows.length - 1]
+  const locale = await getLocale()
+  const m = t(locale, geoSections).versus
+  const g = t(locale, growthGuarantee)
+  const titleId = id ? `${id}-title` : undefined
   return (
-    <section id={id} className="px-4 sm:px-6 py-14 sm:py-20 scroll-mt-20" style={{ backgroundColor: "#ebe9e5" }}>
-      <div className="max-w-4xl mx-auto">
-        <h2 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-center mb-10">{m.h2}</h2>
-        <div className="grid sm:grid-cols-2 gap-3 sm:gap-4">
-          {cards.map((r, i) => {
-            const hero = i === 0
-            return (
-              <div
-                key={r.k}
-                className={`flex flex-col rounded-2xl border p-5 sm:p-6 ${
-                  hero ? "sm:col-span-2 bg-gradient-to-br from-violet-600 to-violet-700 border-violet-700 text-white shadow-lg shadow-violet-600/20" : "bg-white border-black/10"
-                }`}
-              >
-                <div className="flex items-start gap-3">
-                  <span
-                    aria-hidden
-                    className={`mt-1 w-6 h-6 shrink-0 rounded-full flex items-center justify-center text-xs font-bold ${
-                      hero ? "bg-white text-violet-700" : "bg-violet-600 text-white"
-                    }`}
-                  >
-                    ✓
-                  </span>
-                  <p className={`font-extrabold tracking-tight leading-tight ${hero ? "text-2xl sm:text-3xl" : "text-lg sm:text-xl text-[#1b1916]"}`}>{r.b}</p>
-                </div>
-                <p className={`text-sm leading-relaxed mt-2.5 ${hero ? "text-violet-100 sm:text-base" : "text-slate-600"}`}>
-                  <b className={hero ? "text-white" : "text-[#1b1916]"}>{/[.?!]$/.test(r.k) ? r.k : `${r.k}.`}</b> {r.d}
-                </p>
-                <div className="mt-auto pt-4">
-                  <p className={`border-t pt-3 flex items-center gap-2 text-sm ${hero ? "border-white/20 text-violet-200" : "border-black/[0.07] text-slate-500"}`}>
-                    <span
-                      aria-hidden
-                      className={`w-5 h-5 shrink-0 rounded-full flex items-center justify-center text-[10px] font-bold ${
-                        hero ? "bg-white/15 text-white" : "bg-rose-50 text-rose-500"
-                      }`}
-                    >
-                      ✕
-                    </span>
-                    <span className={`text-[10px] font-bold uppercase tracking-wider shrink-0 ${hero ? "text-violet-300" : "text-slate-400"}`}>{m.colA}:</span>
-                    <span>{r.a}</span>
-                  </p>
-                </div>
-              </div>
-            )
-          })}
-        </div>
-
-        <div className="mt-3 sm:mt-4 rounded-2xl px-5 py-6 sm:px-8 sm:py-8" style={{ backgroundColor: "#1b1916" }}>
-          <p className="text-[11px] font-bold uppercase tracking-widest text-slate-500 text-center">{last.k}</p>
-          <div className="mt-4 grid sm:grid-cols-2 gap-5 sm:gap-0 items-center text-center">
-            <div className="sm:pr-6">
-              <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500">{m.colA}</p>
-              <p className="mt-1.5 text-xl sm:text-2xl font-bold text-slate-500 line-through decoration-rose-500/70 decoration-2">{last.a}</p>
-            </div>
-            <div className="sm:pl-6 sm:border-l sm:border-white/10">
-              <p className="text-[11px] font-bold uppercase tracking-wider text-violet-300">{m.colB}</p>
-              <p className="mt-1.5 text-2xl sm:text-3xl font-extrabold tracking-tight leading-tight bg-gradient-to-r from-violet-300 to-cyan-300 bg-clip-text text-transparent">
-                {last.b}
-              </p>
-            </div>
+    <section id={id} aria-labelledby={titleId} className="px-4 sm:px-6 py-14 sm:py-20 scroll-mt-20" style={{ backgroundColor: "#ebe9e5" }}>
+      <div className="max-w-5xl mx-auto">
+        <h2 id={titleId} className="text-2xl sm:text-4xl font-extrabold tracking-tight text-center text-balance mb-10 sm:mb-14">
+          {m.h2}
+        </h2>
+        <div className="grid gap-4 md:grid-cols-2 md:gap-6 lg:gap-8">
+          <div className="rounded-3xl border border-black/10 bg-white/60 p-6 sm:p-8 lg:p-10">
+            <h3 className="min-h-8 flex items-center pb-5 border-b border-black/10 text-xl sm:text-2xl font-extrabold tracking-tight text-slate-700">
+              {m.them.title}
+            </h3>
+            <ul className="mt-6 space-y-5">
+              {m.them.lines.map((line) => (
+                <li key={line} className="flex items-start gap-3 text-base text-slate-600 leading-relaxed">
+                  <VersusMark />
+                  <span>{line}</span>
+                </li>
+              ))}
+            </ul>
           </div>
-          <p className="mt-5 text-sm text-slate-400 leading-relaxed text-center max-w-xl mx-auto">{last.d}</p>
+
+          <div className="flex flex-col rounded-3xl border border-violet-700 bg-gradient-to-br from-violet-600 to-violet-700 p-6 sm:p-8 lg:p-10 text-white shadow-xl shadow-violet-600/25">
+            <h3 className="min-h-8 flex items-center gap-3 pb-5 border-b border-white/20 text-xl sm:text-2xl font-extrabold tracking-tight">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/logo.jpg" className="h-8 w-8 rounded-lg" alt="" />
+              {m.us.title}
+            </h3>
+            <ul className="mt-6 flex flex-1 flex-col gap-5">
+              {m.us.lines.map((line) => (
+                <li key={line} className="flex items-start gap-3 text-base leading-relaxed">
+                  <VersusMark yes />
+                  <span>{line}</span>
+                </li>
+              ))}
+              <li className="mt-auto flex items-start gap-3 rounded-2xl bg-white/10 ring-1 ring-white/25 p-4 sm:p-5">
+                <VersusMark yes />
+                <span>
+                  <span className="block text-[11px] uppercase tracking-[0.15em] font-bold text-violet-200">{g.label}</span>
+                  <span className="block mt-1 text-base sm:text-lg font-bold leading-snug">{g.line}</span>
+                </span>
+              </li>
+            </ul>
+          </div>
         </div>
-        <p className="text-center text-xs sm:text-sm text-slate-500 mt-5">{m.footnote}</p>
       </div>
     </section>
   )
