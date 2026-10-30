@@ -98,6 +98,18 @@ export default function CookieBanner() {
     }
   }, [])
 
+  // GEO pages (30.10): the banner's height, for the empty block that ends the page while it is open
+  // (see the GEO branch below). ResizeObserver reports the size once on observe and on every change
+  // (the text wrapping, the settings opening).
+  const [bannerEl, setBannerEl] = useState<HTMLDivElement | null>(null)
+  const [bannerH, setBannerH] = useState(0)
+  useEffect(() => {
+    if (!bannerEl) return
+    const ro = new ResizeObserver(() => setBannerH(bannerEl.offsetHeight))
+    ro.observe(bannerEl)
+    return () => ro.disconnect()
+  }, [bannerEl])
+
   if (consent === "unknown") return null
   const chosen = consent === "accepted" || consent === "declined"
   if (chosen && !settingsOpen) return null
@@ -129,131 +141,79 @@ export default function CookieBanner() {
   // stays at the bottom, as before. The GEO type (GEO_SANS) throughout.
   if (geo) {
     return (
-      <div
-        role="dialog"
-        aria-label="Cookie settings"
-        style={{ fontFamily: GEO_SANS }}
-        className={`fixed top-0 sm:top-auto sm:bottom-0 left-0 right-0 z-50 bg-slate-900 text-white px-4 sm:px-6 ${
-          showSettings
-            ? "pt-[max(1rem,env(safe-area-inset-top))] pb-4 sm:pt-4 sm:pb-[max(1rem,env(safe-area-inset-bottom))]"
-            : "pt-[max(0.5rem,env(safe-area-inset-top))] pb-2 sm:pt-4 sm:pb-[max(1rem,env(safe-area-inset-bottom))]"
-        } shadow-lg`}
-      >
-        {!showSettings && (
-          <div className="sm:hidden flex flex-col gap-1.5">
-            <p className="text-xs leading-4 text-slate-200">
-              {rich(c.short, {
-                link: (chunk) => (
-                  <Link href="/privacy#cookies" className="underline text-violet-400 hover:text-violet-300 transition-colors">
-                    {chunk}
-                  </Link>
-                ),
-              })}
-            </p>
-            <div className="flex items-center justify-end gap-2">
-              <button
-                type="button"
-                onClick={() => setDetails(true)}
-                className="h-8 px-1.5 text-xs text-slate-300 underline hover:text-white transition-colors"
-              >
-                {c.settings}
-              </button>
-              <button
-                type="button"
-                onClick={() => done("declined")}
-                className="h-8 px-3 text-xs rounded border border-slate-600 bg-transparent text-slate-200 hover:bg-slate-700 transition-colors"
-              >
-                {c.decline}
-              </button>
-              <button
-                type="button"
-                onClick={() => done("accepted")}
-                className="h-8 px-3 text-xs rounded bg-violet-600 text-white hover:bg-violet-500 transition-colors font-medium"
-              >
-                {c.accept}
-              </button>
-            </div>
-          </div>
-        )}
-        {/* From 640 px up and the settings: the production banner's content. */}
-        {!showSettings ? (
-          <div className="max-w-6xl mx-auto hidden sm:flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-sm text-slate-200 leading-relaxed">
-              We use analytics and advertising cookies only if you accept. Essential cookies for sign-in are always on.{" "}
-              {policyLink}
-            </p>
-            <div className="flex flex-wrap items-center gap-3 shrink-0">
-              <button
-                type="button"
-                onClick={() => setDetails(true)}
-                className="px-1 py-2 text-sm text-slate-300 underline hover:text-white transition-colors"
-              >
-                Cookie settings
-              </button>
-              <button
-                type="button"
-                onClick={() => done("declined")}
-                className="px-4 py-2 text-sm rounded border border-slate-600 bg-transparent text-slate-200 hover:bg-slate-700 transition-colors"
-              >
-                Decline
-              </button>
-              <button
-                type="button"
-                onClick={() => done("accepted")}
-                className="px-4 py-2 text-sm rounded bg-violet-600 text-white hover:bg-violet-500 transition-colors font-medium"
-              >
-                Accept all
-              </button>
-            </div>
-          </div>
-        ) : (
-          <div className="max-w-3xl mx-auto flex flex-col gap-3">
-            <div className="flex items-center justify-between gap-3">
-              <p className="text-sm font-semibold">Cookie settings</p>
-              <button
-                type="button"
-                onClick={close}
-                aria-label="Close"
-                className="px-2 py-1 text-lg leading-none text-slate-400 hover:text-white transition-colors"
-              >
-                &times;
-              </button>
-            </div>
-
-            <div className="flex items-start justify-between gap-4 border-t border-slate-700 pt-3">
-              <div className="text-sm">
-                <p className="font-medium text-slate-100">Essential</p>
-                <p className="text-slate-400">Sign-in, security and your cookie choice.</p>
-              </div>
-              <span className="shrink-0 text-xs text-slate-400 pt-0.5">Always on</span>
-            </div>
-
-            <label className="flex items-start justify-between gap-4 border-t border-slate-700 pt-3 cursor-pointer">
-              <span className="text-sm">
-                <span className="block font-medium text-slate-100">Analytics and advertising</span>
-                <span className="block text-slate-400">Google Ads, Microsoft Clarity, Contentsquare, Vercel Analytics.</span>
-              </span>
-              <span className="relative inline-flex shrink-0 items-center mt-0.5">
-                <input
-                  type="checkbox"
-                  className="peer sr-only"
-                  checked={toggleValue}
-                  onChange={(e) => setAnalyticsOn(e.target.checked)}
-                />
-                <span className="h-6 w-11 rounded-full bg-slate-600 transition-colors peer-checked:bg-violet-600 peer-focus-visible:ring-2 peer-focus-visible:ring-violet-400" />
-                <span className="absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white transition-transform peer-checked:translate-x-5" />
-              </span>
-            </label>
-
-            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-700 pt-3">
-              <p className="text-xs text-slate-400">{policyLink}</p>
-              <div className="flex flex-wrap items-center gap-3">
+      <>
+        {/* From 640 px up the banner covers the bottom of the screen: this empty block of its height
+            ends the page while it is open, so the page's last line (the growth guarantee's footnote)
+            scrolls up above it. Phones (banner at the top) do not get it. */}
+        <div aria-hidden className="hidden sm:block shrink-0" style={{ height: bannerH }} />
+        <div
+          ref={setBannerEl}
+          role="dialog"
+          aria-label="Cookie settings"
+          style={{ fontFamily: GEO_SANS }}
+          className={`fixed top-0 sm:top-auto sm:bottom-0 left-0 right-0 z-50 bg-slate-900 text-white px-4 sm:px-6 ${
+            showSettings
+              ? "pt-[max(1rem,env(safe-area-inset-top))] pb-4 sm:pt-4 sm:pb-[max(1rem,env(safe-area-inset-bottom))]"
+              : "pt-[max(0.5rem,env(safe-area-inset-top))] pb-2 sm:pt-4 sm:pb-[max(1rem,env(safe-area-inset-bottom))]"
+          } shadow-lg`}
+        >
+          {!showSettings && (
+            <div className="sm:hidden flex flex-col gap-1.5">
+              <p className="text-xs leading-4 text-slate-200">
+                {rich(c.short, {
+                  link: (chunk) => (
+                    <Link href="/privacy#cookies" className="underline text-violet-400 hover:text-violet-300 transition-colors">
+                      {chunk}
+                    </Link>
+                  ),
+                })}
+              </p>
+              <div className="flex items-center justify-end gap-2">
                 <button
                   type="button"
-                  onClick={() => done(toggleValue ? "accepted" : "declined")}
+                  onClick={() => setDetails(true)}
+                  className="h-8 px-1.5 text-xs text-slate-300 underline hover:text-white transition-colors"
+                >
+                  {c.settings}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => done("declined")}
+                  className="h-8 px-3 text-xs rounded border border-slate-600 bg-transparent text-slate-200 hover:bg-slate-700 transition-colors"
+                >
+                  {c.decline}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => done("accepted")}
+                  className="h-8 px-3 text-xs rounded bg-violet-600 text-white hover:bg-violet-500 transition-colors font-medium"
+                >
+                  {c.accept}
+                </button>
+              </div>
+            </div>
+          )}
+          {/* From 640 px up and the settings: the production banner's content. */}
+          {!showSettings ? (
+            <div className="max-w-6xl mx-auto hidden sm:flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-sm text-slate-200 leading-relaxed">
+                We use analytics and advertising cookies only if you accept. Essential cookies for sign-in are always on.{" "}
+                {policyLink}
+              </p>
+              <div className="flex flex-wrap items-center gap-3 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setDetails(true)}
+                  className="px-1 py-2 text-sm text-slate-300 underline hover:text-white transition-colors"
+                >
+                  Cookie settings
+                </button>
+                <button
+                  type="button"
+                  onClick={() => done("declined")}
                   className="px-4 py-2 text-sm rounded border border-slate-600 bg-transparent text-slate-200 hover:bg-slate-700 transition-colors"
                 >
-                  Save
+                  Decline
                 </button>
                 <button
                   type="button"
@@ -264,9 +224,68 @@ export default function CookieBanner() {
                 </button>
               </div>
             </div>
-          </div>
-        )}
-      </div>
+          ) : (
+            <div className="max-w-3xl mx-auto flex flex-col gap-3">
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-sm font-semibold">Cookie settings</p>
+                <button
+                  type="button"
+                  onClick={close}
+                  aria-label="Close"
+                  className="px-2 py-1 text-lg leading-none text-slate-400 hover:text-white transition-colors"
+                >
+                  &times;
+                </button>
+              </div>
+
+              <div className="flex items-start justify-between gap-4 border-t border-slate-700 pt-3">
+                <div className="text-sm">
+                  <p className="font-medium text-slate-100">Essential</p>
+                  <p className="text-slate-400">Sign-in, security and your cookie choice.</p>
+                </div>
+                <span className="shrink-0 text-xs text-slate-400 pt-0.5">Always on</span>
+              </div>
+
+              <label className="flex items-start justify-between gap-4 border-t border-slate-700 pt-3 cursor-pointer">
+                <span className="text-sm">
+                  <span className="block font-medium text-slate-100">Analytics and advertising</span>
+                  <span className="block text-slate-400">Google Ads, Microsoft Clarity, Contentsquare, Vercel Analytics.</span>
+                </span>
+                <span className="relative inline-flex shrink-0 items-center mt-0.5">
+                  <input
+                    type="checkbox"
+                    className="peer sr-only"
+                    checked={toggleValue}
+                    onChange={(e) => setAnalyticsOn(e.target.checked)}
+                  />
+                  <span className="h-6 w-11 rounded-full bg-slate-600 transition-colors peer-checked:bg-violet-600 peer-focus-visible:ring-2 peer-focus-visible:ring-violet-400" />
+                  <span className="absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white transition-transform peer-checked:translate-x-5" />
+                </span>
+              </label>
+
+              <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-700 pt-3">
+                <p className="text-xs text-slate-400">{policyLink}</p>
+                <div className="flex flex-wrap items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => done(toggleValue ? "accepted" : "declined")}
+                    className="px-4 py-2 text-sm rounded border border-slate-600 bg-transparent text-slate-200 hover:bg-slate-700 transition-colors"
+                  >
+                    Save
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => done("accepted")}
+                    className="px-4 py-2 text-sm rounded bg-violet-600 text-white hover:bg-violet-500 transition-colors font-medium"
+                  >
+                    Accept all
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </>
     )
   }
 

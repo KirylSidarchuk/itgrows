@@ -15,6 +15,10 @@ export const dynamic = "force-static"
 // (lib/geo-promo.ts): its terms are the "Launch rewards" paragraph of the plan section (#launch-rewards).
 // The same day the wheel was also offered on the website before an account (exit intent), in the same
 // paragraph: once per browser and internet address, the reward kept 7 days for the account created.
+// Since 30 Oct 2026 (owner's decision) the growth guarantee (#growth-guarantee): the one guarantee the
+// marketing pages make. Its conditions are the owner's text, addressed to "you"; the home page, the
+// pricing card, the footer, llms.txt and the cabinet's plan page link here. The same day the "In short"
+// line, #no-guarantee and #liability were reworded so that the growth guarantee is their one exception.
 
 export const metadata: Metadata = {
   title: "Terms of Service — ItGrows.ai",
@@ -30,7 +34,8 @@ const SECTIONS = [
   { id: "visibility", title: "AI visibility: what you get" },
   { id: "plan", title: "AI visibility: the plan, renewal and cancelling" },
   { id: "articles", title: "AI visibility: articles on your site" },
-  { id: "no-guarantee", title: "No guarantee of AI answers" },
+  { id: "growth-guarantee", title: "Growth guarantee" },
+  { id: "no-guarantee", title: "AI answers beyond the growth guarantee" },
   { id: "client", title: "AI visibility: what we need from you" },
   { id: "social", title: "LinkedIn & X posts" },
   { id: "payments", title: "Payments" },
@@ -90,7 +95,7 @@ export default function TermsPage() {
         <p className="text-[11px] uppercase tracking-[0.14em] font-bold text-violet-700">Legal</p>
         <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight mt-2">Terms of Service</h1>
         <p className="text-slate-500 text-sm mt-2">
-          Effective date: 29 October 2026
+          Effective date: 30 October 2026
         </p>
 
         <div className="mt-8 rounded-2xl border border-black/10 bg-white overflow-hidden">
@@ -105,7 +110,13 @@ export default function TermsPage() {
                 time; the plan runs to the end of the paid period.
               </li>
               <li>You see every article 2 days before it goes live, and can edit or stop it.</li>
-              <li>Nobody can guarantee that an AI assistant will name a business. We promise the work and an honest count.</li>
+              <li>
+                Every paid AI visibility plan carries the{" "}
+                <a href="#growth-guarantee" className="text-violet-700 underline">
+                  growth guarantee (section 6)
+                </a>
+                . Beyond it, we do not promise any particular answer, wording or ranking in any assistant.
+              </li>
               <li>LinkedIn &amp; X: posts wait in your queue, where you can edit or delete them; a 14-day free trial needs no card.</li>
               <li>Payments go through Stripe. We never see your card number. Prices are in US dollars and exclude taxes; any tax is shown at checkout.</li>
             </ul>
@@ -233,13 +244,44 @@ export default function TermsPage() {
             </List>
           </Section>
 
+          <Section id="growth-guarantee">
+            <p>
+              <strong>In 90 days, AI assistants will name you more often than on launch day — or we work for free.</strong> If they do not, we
+              keep working for free until they do, on these conditions:
+            </p>
+            <ol className="list-decimal pl-5 space-y-1.5">
+              <li>It applies to every paid ItGrows for Business (AI visibility, GEO) plan, from its launch.</li>
+              <li>
+                It is measured with our standard measurement: the set of up to 20 customer questions agreed at launch, none of which contains your
+                business’s name, asked to ChatGPT, Claude, Gemini and Perplexity. The result is the number of answers that name your business.
+              </li>
+              <li>
+                Day 0 is the launch measurement. At day 90 we compare the average of the last two scheduled measurements up to day 90 with day 0.
+                The guarantee is met if that average is higher than day 0 (if every answer already named your business on day 0, if it stays at
+                that level).
+              </li>
+              <li>
+                It applies if, within 14 days of launch, you provide the access and information we ask for in the launch list, keep the site
+                online, do not block AI crawlers or remove the pages we publish, and keep the plan active.
+              </li>
+              <li>
+                If it is not met, we continue all the plan’s work and do not charge the plan fee from day 91 until a scheduled measurement shows
+                more mentions than day 0; billing then resumes with the next billing period. The guarantee has no cash value and cannot be
+                transferred. If you cancel during the free period, nothing is owed for it.
+              </li>
+            </ol>
+          </Section>
+
           <Section id="no-guarantee">
             <p>
               ChatGPT, Claude, Gemini, Perplexity and the search engines they use are run by other companies, and they alone decide what their answers
-              say. <strong>We do not guarantee that any AI assistant will name, recommend, cite or link to your business</strong>, and we do not
-              guarantee any ranking, traffic, leads or sales.
+              say. <strong>Apart from the growth guarantee in section 6, we do not guarantee that a particular assistant names, recommends, cites or
+              links to your business in a particular answer</strong>, and we do not guarantee any particular wording, ranking, traffic, leads or sales.
             </p>
-            <p>What we do promise is the work described in your plan, and an honest count of what the assistants said, every two weeks.</p>
+            <p>
+              What we do promise is the work described in your plan, the count of what the assistants said every two weeks, and the growth guarantee in
+              section 6.
+            </p>
           </Section>
 
           <Section id="client">
@@ -364,8 +406,8 @@ export default function TermsPage() {
 
           <Section id="liability">
             <p>
-              ItGrows is provided “as is”, without warranties of any kind, express or implied. We do not guarantee that content will achieve any
-              particular engagement, growth or business result.
+              Except as set out in the growth guarantee (section 6), ItGrows is provided “as is”, without warranties of any kind, express or implied,
+              and we do not guarantee that content will achieve any particular engagement, growth or business result.
             </p>
             <p>
               To the maximum extent permitted by law, we are not liable for any indirect, incidental, special, consequential or punitive damages,

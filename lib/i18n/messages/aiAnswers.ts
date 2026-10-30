@@ -42,11 +42,11 @@ const en = {
   askedAt: (today: boolean, time: string) => `Asked ${today ? "today" : "yesterday"} at ${time}`,
   joinAnd: (names: string[]) => names.join(" and "),
   subZero: (several: boolean, who: string, domain: string) =>
-    `We asked ${who} 5 questions your buyers ask. ${several ? `Neither named ${domain}` : `It didn't name ${domain}`}.`,
+    `We asked ${who} 5 questions your buyers ask. ${several ? `Neither named ${domain}` : `It didn't name ${domain}`}. A buyer asking this today doesn't hear your name.`,
   subAll: (several: boolean, who: string, domain: string) =>
-    `${several ? "Both assistants" : who} named ${domain} in every answer. This check covered 2 of the 4 assistants we track.`,
+    `${several ? "Both assistants" : who} named ${domain} in every answer. This check asks 2 of the 4 assistants: your free report shows whether Claude and Gemini name you too.`,
   subSome: (several: boolean, named: number, rest: number, who: string) =>
-    `You came up in ${named} answer${named === 1 ? "" : "s"}. In the other ${rest}, ${who} answered without you.`,
+    `You came up in ${named} answer${named === 1 ? "" : "s"}. In the other ${rest}, ${who} answered without you. That's where we start.`,
   ofAnswersNamed: (named: number, of: number) => `of ${of} answers named you`,
   silentNote: (several: boolean, names: string) => `${names} didn't respond and ${several ? "are" : "is"} left out of the count.`,
   engineOf: (of: number) => `of ${of}`,
@@ -57,11 +57,11 @@ const en = {
   inAnswers: (n: number) => ` — in ${n} answer${n === 1 ? "" : "s"}`,
   ctaTitle: (n: number) => (n === 1 ? "The other answer is ready" : `The other ${n} answers are ready`),
   ctaBody: (all: boolean, n: number) =>
-    `Create an account to open ${n === 1 ? "it" : "them"} and see ${all ? "everyone else they name" : "everyone named instead of you"}. In about 10 minutes you also get the full report across ChatGPT, Claude, Gemini and Perplexity, free. No card needed.`,
+    `Create an account to open ${n === 1 ? "it" : "them"} and see ${all ? "everyone else they name" : "exactly who's named instead of you"}. In about 10 minutes you also get the full report across ChatGPT, Claude, Gemini and Perplexity, free. No card needed.`,
   ctaButton: (total: number) => `Create account — open all ${total} answers`,
   ctaSignIn: "Google, LinkedIn or a code by email.",
   reportTitle: (domain: string) => `The detailed report for ${domain}`,
-  reportBody: "20 buyer questions to ChatGPT, Claude, Gemini and Perplexity — who gets named, which sites they quote, and our plan for your site. <b>The full report is free once you create an account.</b>",
+  reportBody: "20 buyer questions to ChatGPT, Claude, Gemini and Perplexity: who gets named in your place, which sites they quote, and our plan to get you in. <b>The full report is free once you create an account.</b>",
   seeReport: "See a real report →",
   lockedNote: (several: boolean, names: string) => `${names} — answered. Opens in your account.`,
   footnote: (asked: string) => `${asked}, web search on. Answers vary between runs — on the plan we ask each question 3 times, every two weeks.`,
@@ -129,11 +129,11 @@ export default defineMessages(en, {
     askedAt: (today, time) => `${today ? "Heute" : "Gestern"} um ${time} gefragt`,
     joinAnd: (names) => names.join(" und "),
     subZero: (several, who, domain) =>
-      `Wir haben ${who} 5 Fragen gestellt, wie Ihre Kunden sie stellen. ${several ? `Keiner der beiden hat ${domain} genannt.` : `${domain} wurde nicht genannt.`}`,
+      `Wir haben ${who} 5 Fragen gestellt, wie Ihre Kunden sie stellen. ${several ? `Keiner der beiden hat ${domain} genannt.` : `${domain} wurde nicht genannt.`} Ein Kunde, der das heute fragt, hört Ihren Namen nicht.`,
     subAll: (several, who, domain) =>
-      `${several ? "Beide Assistenten haben" : `${who} hat`} ${domain} in jeder Antwort genannt. Dieser Check deckt 2 der 4 Assistenten ab, die wir verfolgen.`,
+      `${several ? "Beide Assistenten haben" : `${who} hat`} ${domain} in jeder Antwort genannt. Dieser Check fragt 2 der 4 Assistenten: Ihr kostenloser Bericht zeigt, ob auch Claude und Gemini Sie nennen.`,
     subSome: (several, named, rest, who) =>
-      `Sie wurden in ${named} ${named === 1 ? "Antwort" : "Antworten"} genannt. In ${rest === 1 ? "der anderen" : `den anderen ${rest}`} ${several ? "haben" : "hat"} ${who} ohne Sie geantwortet.`,
+      `Sie wurden in ${named} ${named === 1 ? "Antwort" : "Antworten"} genannt. In ${rest === 1 ? "der anderen" : `den anderen ${rest}`} ${several ? "haben" : "hat"} ${who} ohne Sie geantwortet. Genau dort setzen wir an.`,
     ofAnswersNamed: (named, of) => `von ${of} Antworten ${named === 1 ? "nennt" : "nennen"} Sie`,
     silentNote: (several, names) =>
       `${names} ${several ? "haben" : "hat"} nicht geantwortet und ${several ? "werden" : "wird"} nicht mitgezählt.`,
@@ -145,11 +145,11 @@ export default defineMessages(en, {
     inAnswers: (n) => ` – in ${n} ${n === 1 ? "Antwort" : "Antworten"}`,
     ctaTitle: (n) => (n === 1 ? "Die andere Antwort liegt bereit" : `Die anderen ${n} Antworten liegen bereit`),
     ctaBody: (all, n) =>
-      `Legen Sie ein Konto an, um ${n === 1 ? "die Antwort" : "die Antworten"} zu öffnen und ${all ? "zu sehen, wen die Assistenten außer Ihnen noch nennen" : "alle zu sehen, die statt Ihnen genannt werden"}. In etwa 10 Minuten erhalten Sie außerdem den vollständigen Bericht für ChatGPT, Claude, Gemini und Perplexity, kostenlos. Keine Kreditkarte nötig.`,
+      `Legen Sie ein Konto an, um ${n === 1 ? "die Antwort" : "die Antworten"} zu öffnen und ${all ? "zu sehen, wen die Assistenten außer Ihnen noch nennen" : "genau zu sehen, wer statt Ihnen genannt wird"}. In etwa 10 Minuten erhalten Sie außerdem den vollständigen Bericht für ChatGPT, Claude, Gemini und Perplexity, kostenlos. Keine Kreditkarte nötig.`,
     ctaButton: (total) => `Konto anlegen – alle ${total} Antworten öffnen`,
     ctaSignIn: "Mit Google, LinkedIn oder einem Code per E-Mail.",
     reportTitle: (domain) => `Der ausführliche Bericht für ${domain}`,
-    reportBody: "20 Kundenfragen an ChatGPT, Claude, Gemini und Perplexity – wer genannt wird, welche Websites zitiert werden und unser Maßnahmenplan für Ihre Website. <b>Der vollständige Bericht ist kostenlos, sobald Sie ein Konto anlegen.</b>",
+    reportBody: "20 Kundenfragen an ChatGPT, Claude, Gemini und Perplexity: wer an Ihrer Stelle genannt wird, welche Websites zitiert werden und unser Maßnahmenplan, mit dem wir Sie in die Antworten bringen. <b>Der vollständige Bericht ist kostenlos, sobald Sie ein Konto anlegen.</b>",
     seeReport: "Einen echten Bericht ansehen (auf Englisch) →",
     lockedNote: (several, names) => `${names} – beantwortet. In Ihrem Konto abrufbar.`,
     footnote: (asked) =>
@@ -216,11 +216,11 @@ export default defineMessages(en, {
     askedAt: (today, time) => `Posées ${today ? "aujourd’hui" : "hier"} à ${time}`,
     joinAnd: (names) => names.join(" et "),
     subZero: (several, who, domain) =>
-      `Nous avons posé à ${who} 5 questions que posent vos clients. ${several ? "Aucun des deux n’a mentionné" : "Il n’a pas mentionné"} ${domain}.`,
+      `Nous avons posé à ${who} 5 questions que posent vos clients. ${several ? "Aucun des deux n’a mentionné" : "Il n’a pas mentionné"} ${domain}. Un client qui pose la question aujourd’hui n’entend pas votre nom.`,
     subAll: (several, who, domain) =>
-      `${several ? "Les deux assistants ont" : `${who} a`} mentionné ${domain} dans chaque réponse. Ce test couvrait 2 des 4 assistants que nous suivons.`,
+      `${several ? "Les deux assistants ont" : `${who} a`} mentionné ${domain} dans chaque réponse. Ce test interroge 2 des 4 assistants : votre rapport gratuit montre si Claude et Gemini vous mentionnent aussi.`,
     subSome: (several, named, rest, who) =>
-      `Vous apparaissez dans ${named} ${named > 1 ? "réponses" : "réponse"}. Dans ${rest > 1 ? `les ${rest} autres` : "l’autre"}, ${who} ${several ? "ont" : "a"} répondu sans vous.`,
+      `Vous apparaissez dans ${named} ${named > 1 ? "réponses" : "réponse"}. Dans ${rest > 1 ? `les ${rest} autres` : "l’autre"}, ${who} ${several ? "ont" : "a"} répondu sans vous. C’est là que nous commençons.`,
     ofAnswersNamed: (named, of) => `${named > 1 ? "réponses" : "réponse"} sur ${of} vous ${named > 1 ? "mentionnent" : "mentionne"}`,
     silentNote: (several, names) =>
       `${names} n’${several ? "ont" : "a"} pas répondu et ${several ? "sont exclus" : "est exclu"} du décompte.`,
@@ -232,11 +232,11 @@ export default defineMessages(en, {
     inAnswers: (n) => ` — dans ${n} ${n > 1 ? "réponses" : "réponse"}`,
     ctaTitle: (n) => (n > 1 ? `Les ${n} autres réponses sont prêtes` : "L’autre réponse est prête"),
     ctaBody: (all, n) =>
-      `Créez un compte pour ${n > 1 ? "les ouvrir" : "l’ouvrir"} et ${all ? "voir quelles autres entreprises ils mentionnent" : "voir toutes les entreprises mentionnées à votre place"}. Dans une dizaine de minutes, vous recevrez aussi le rapport complet sur ChatGPT, Claude, Gemini et Perplexity, gratuitement. Aucune carte bancaire requise.`,
+      `Créez un compte pour ${n > 1 ? "les ouvrir" : "l’ouvrir"} et ${all ? "voir quelles autres entreprises ils mentionnent" : "voir exactement qui est mentionné à votre place"}. Dans une dizaine de minutes, vous recevrez aussi le rapport complet sur ChatGPT, Claude, Gemini et Perplexity, gratuitement. Aucune carte bancaire requise.`,
     ctaButton: (total) => `Créer un compte — ouvrir les ${total} réponses`,
     ctaSignIn: "Google, LinkedIn ou un code par e-mail.",
     reportTitle: (domain) => `Le rapport détaillé pour ${domain}`,
-    reportBody: "20 questions de clients posées à ChatGPT, Claude, Gemini et Perplexity — qui est mentionné, quels sites ils citent, et notre plan d’action pour votre site. <b>Le rapport complet est gratuit dès que vous créez un compte.</b>",
+    reportBody: "20 questions de clients posées à ChatGPT, Claude, Gemini et Perplexity : qui est mentionné à votre place, quels sites ils citent, et notre plan d’action pour vous faire entrer dans les réponses. <b>Le rapport complet est gratuit dès que vous créez un compte.</b>",
     seeReport: "Voir un vrai rapport (en anglais) →",
     lockedNote: (several, names) => `${names} — ${several ? "ont" : "a"} répondu. À ouvrir dans votre compte.`,
     footnote: (asked) =>
@@ -304,11 +304,11 @@ export default defineMessages(en, {
     askedAt: (today, time) => `Preguntado ${today ? "hoy" : "ayer"} a las ${time}`,
     joinAnd: (names) => names.join(" y "),
     subZero: (several, who, domain) =>
-      `Hicimos a ${who} 5 preguntas que hacen sus clientes. ${several ? "Ninguno de los dos mencionó" : "No mencionó"} ${domain}.`,
+      `Hicimos a ${who} 5 preguntas que hacen sus clientes. ${several ? "Ninguno de los dos mencionó" : "No mencionó"} ${domain}. Un cliente que pregunta esto hoy no oye su nombre.`,
     subAll: (several, who, domain) =>
-      `${several ? "Ambos asistentes mencionaron" : `${who} mencionó`} ${domain} en todas las respuestas. Esta comprobación cubrió 2 de los 4 asistentes que seguimos.`,
+      `${several ? "Ambos asistentes mencionaron" : `${who} mencionó`} ${domain} en todas las respuestas. Esta comprobación pregunta a 2 de los 4 asistentes: su informe gratuito muestra si Claude y Gemini también le mencionan.`,
     subSome: (several, named, rest, who) =>
-      `Usted apareció en ${named} ${named === 1 ? "respuesta" : "respuestas"}. En ${rest === 1 ? "la otra" : `las otras ${rest}`}, ${who} ${several ? "respondieron" : "respondió"} sin usted.`,
+      `Usted apareció en ${named} ${named === 1 ? "respuesta" : "respuestas"}. En ${rest === 1 ? "la otra" : `las otras ${rest}`}, ${who} ${several ? "respondieron" : "respondió"} sin usted. Ahí es donde empezamos.`,
     ofAnswersNamed: (named, of) => `de ${of} respuestas ${named === 1 ? "le menciona" : "le mencionan"}`,
     silentNote: (several, names) => `${names} no ${several ? "respondieron y quedan" : "respondió y queda"} fuera del recuento.`,
     engineOf: (of) => `de ${of}`,
@@ -319,11 +319,11 @@ export default defineMessages(en, {
     inAnswers: (n) => ` — en ${n} ${n === 1 ? "respuesta" : "respuestas"}`,
     ctaTitle: (n) => (n === 1 ? "La otra respuesta está lista" : `Las otras ${n} respuestas están listas`),
     ctaBody: (all, n) =>
-      `Cree una cuenta para ${n === 1 ? "abrirla" : "abrirlas"} y ${all ? "ver a quién más mencionan" : "ver a todos los que mencionan en su lugar"}. En unos 10 minutos tendrá además el informe completo de ChatGPT, Claude, Gemini y Perplexity, gratis. No hace falta tarjeta.`,
+      `Cree una cuenta para ${n === 1 ? "abrirla" : "abrirlas"} y ${all ? "ver a quién más mencionan" : "ver exactamente a quién mencionan en su lugar"}. En unos 10 minutos tendrá además el informe completo de ChatGPT, Claude, Gemini y Perplexity, gratis. No hace falta tarjeta.`,
     ctaButton: (total) => `Crear cuenta y abrir las ${total} respuestas`,
     ctaSignIn: "Google, LinkedIn o un código por email.",
     reportTitle: (domain) => `El informe detallado de ${domain}`,
-    reportBody: "20 preguntas de clientes a ChatGPT, Claude, Gemini y Perplexity: a quién mencionan, qué sitios citan y nuestro plan de acción para su sitio. <b>El informe completo es gratuito en cuanto cree una cuenta.</b>",
+    reportBody: "20 preguntas de clientes a ChatGPT, Claude, Gemini y Perplexity: a quién mencionan en su lugar, qué sitios citan y nuestro plan de acción para que le mencionen. <b>El informe completo es gratuito en cuanto cree una cuenta.</b>",
     seeReport: "Ver un informe real (en inglés) →",
     lockedNote: (several, names) => `${names}: ya ${several ? "han" : "ha"} respondido. Disponible en su cuenta.`,
     footnote: (asked) =>
@@ -392,11 +392,11 @@ export default defineMessages(en, {
     askedAt: (today, time) => `Спросили ${today ? "сегодня" : "вчера"} в ${time}`,
     joinAnd: (names) => names.join(" и "),
     subZero: (several, who, domain) =>
-      `Мы задали ${who} 5 вопросов, которые задают ваши клиенты. ${several ? "Ни один из них не назвал" : "Ассистент не назвал"} ${domain}.`,
+      `Мы задали ${who} 5 вопросов, которые задают ваши клиенты. ${several ? "Ни один из них не назвал" : "Ассистент не назвал"} ${domain}. Клиент, который спрашивает об этом сегодня, вашего имени не слышит.`,
     subAll: (several, who, domain) =>
-      `${several ? "Оба ассистента назвали" : `${who} назвал`} ${domain} в каждом ответе. Эта проверка охватила 2 из 4 ассистентов, которых мы отслеживаем.`,
+      `${several ? "Оба ассистента назвали" : `${who} назвал`} ${domain} в каждом ответе. Эта проверка опрашивает 2 из 4 ассистентов: бесплатный отчёт покажет, называют ли вас Claude и Gemini.`,
     subSome: (several, named, rest, who) =>
-      `Вас назвали в ${plural("ru", named, { one: `${named} ответе`, other: `${named} ответах` })}. ${rest === 1 ? "В оставшемся ответе" : `В остальных ${plural("ru", rest, { one: `${rest} ответе`, other: `${rest} ответах` })}`} ${who} ${several ? "обошлись" : "обошёлся"} без вас.`,
+      `Вас назвали в ${plural("ru", named, { one: `${named} ответе`, other: `${named} ответах` })}. ${rest === 1 ? "В оставшемся ответе" : `В остальных ${plural("ru", rest, { one: `${rest} ответе`, other: `${rest} ответах` })}`} ${who} ${several ? "обошлись" : "обошёлся"} без вас. С этого мы и начинаем.`,
     ofAnswersNamed: (named, of) =>
       `из ${of} ${plural("ru", of, { one: "ответа", other: "ответов" })} ${plural("ru", named, { one: "назвал", other: "назвали" })} вас`,
     silentNote: (several, names) =>
@@ -410,12 +410,12 @@ export default defineMessages(en, {
     ctaTitle: (n) =>
       n === 1 ? "Ещё один ответ готов" : `Остальные ${plural("ru", n, { one: `${n} ответ`, few: `${n} ответа`, other: `${n} ответов` })} готовы`,
     ctaBody: (all, n) =>
-      `Создайте аккаунт, чтобы открыть ${n === 1 ? "его" : "их"} и увидеть ${all ? "всех, кого ещё они называют" : "всех, кого назвали вместо вас"}. Примерно через 10 минут вы также получите полный отчёт по ChatGPT, Claude, Gemini и Perplexity — бесплатно. Карта не нужна.`,
+      `Создайте аккаунт, чтобы открыть ${n === 1 ? "его" : "их"} и увидеть${all ? " всех, кого ещё они называют" : ", кого именно назвали вместо вас"}. Примерно через 10 минут вы также получите полный отчёт по ChatGPT, Claude, Gemini и Perplexity — бесплатно. Карта не нужна.`,
     ctaButton: (total) =>
       `Создать аккаунт — открыть все ${plural("ru", total, { one: `${total} ответ`, few: `${total} ответа`, other: `${total} ответов` })}`,
     ctaSignIn: "Google, LinkedIn или код по email.",
     reportTitle: (domain) => `Подробный отчёт по ${domain}`,
-    reportBody: "20 вопросов клиентов к ChatGPT, Claude, Gemini и Perplexity — кого называют, какие сайты цитируют и наш план действий для вашего сайта. <b>Полный отчёт бесплатный — достаточно создать аккаунт.</b>",
+    reportBody: "20 вопросов клиентов к ChatGPT, Claude, Gemini и Perplexity: кого называют вместо вас, какие сайты цитируют и наш план действий, чтобы называли вас. <b>Полный отчёт бесплатный — достаточно создать аккаунт.</b>",
     seeReport: "Посмотреть настоящий отчёт (на английском) →",
     lockedNote: (several, names) => `${names} — ${several ? "ответили" : "ответил"}. Откроется в вашем аккаунте.`,
     footnote: (asked) =>

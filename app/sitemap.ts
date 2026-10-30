@@ -14,16 +14,16 @@ export const revalidate = 0
 // changed) go by, so a page edited without a new date here is not fetched again for the edit.
 // One date covers all five languages of a localized page.
 const PAGE_LASTMOD = {
-  "/": "2026-10-26",
+  "/": "2026-10-30",
   "/personal": "2026-10-22",
   "/company": "2026-10-01",
-  "/business/ai-visibility-checker": "2026-10-26",
-  "/business/ai-crawler-checker": "2026-10-26",
-  "/business/sample-report": "2026-10-26",
-  "/about": "2026-10-26",
+  "/business/ai-visibility-checker": "2026-10-30",
+  "/business/ai-crawler-checker": "2026-10-30",
+  "/business/sample-report": "2026-10-30",
+  "/about": "2026-10-30",
   "/reddit": "2026-10-14",
   "/privacy": "2026-10-29",
-  "/terms": "2026-10-29",
+  "/terms": "2026-10-30",
 } as const
 // The day the page around every guide and /blog post last changed (26.10: the "AI visibility
 // guides" block, "Keep reading" by topic, the "About ItGrows" box): a post is listed as modified on

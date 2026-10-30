@@ -84,6 +84,8 @@ export default async function AiVisibilityCheckerPage() {
             <li>{rich(m.tipGuide, { link: (c) => linkTo(`/business/blog/${guideFor(locale, "how-to-get-your-business-recommended-by-chatgpt")}`, c) })}</li>
             <li>{rich(m.tipCrawler, { link: (c) => linkTo(localePath(locale, "/business/ai-crawler-checker"), c) })}</li>
             <li>{rich(m.tipCauses, { link: (c) => linkTo(`/business/blog/${guideFor(locale, "why-doesnt-chatgpt-mention-my-company")}`, c) })}</li>
+            {/* Since 30 Oct 2026: the last tip offers the plan itself. */}
+            <li>{rich(m.tipPlan, { link: (c) => linkTo(localePath(locale, "/#geo-pricing"), c) })}</li>
           </ul>
 
           <Faq items={faq} />

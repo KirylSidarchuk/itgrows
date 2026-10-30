@@ -1,4 +1,4 @@
-// The three blocks between the cases and the pricing on "/" (/business redirects there): what the plan
+// The three blocks of "/" (why, how, versus; /business redirects there): what the plan
 // actually runs (WorkSystem), why being in the answer matters (WhyThisMatters) and why it is not paying
 // for articles (VersusArticles). WorkSystem and VersusArticles describe work we do for the client on the
 // plan, not steps for the reader to follow: each ends on "we do it", never on "how to". Built to be
@@ -167,8 +167,8 @@ export async function WorkSystem({ id = "how" }: { id?: string }) {
 //    and Paid Social"): Legal Services $1,245, Transportation & Logistics $732, Construction $486
 //  - Alphabet 10-K 2025: Google Search & other, cost-per-click change 2024 -> 2025: 7%
 //  - Meta 10-K 2025: "average price per ad increased 9% year-over-year in 2025"
-// None of it is our own result and nothing here promises one: no ItGrows price, no "you will be
-// named", no AI traffic.
+// None of it is our own result: no ItGrows price, no invented number, no promise beyond the growth
+// guarantee (lib/i18n/messages/growthGuarantee.ts).
 const WHY_SOURCES = {
   openai: "https://openai.com/index/expanding-access-to-ai-with-chatgpt-ads/",
   brightlocal: "https://www.brightlocal.com/research/local-consumer-review-survey/",
@@ -216,7 +216,7 @@ type WhyRow = { k: string; v: ReactNode; source?: ReactNode }
 
 /**
  * Why being in the answer matters, on dark: four third-party figures (the first as a wide hero), paid
- * search ads against being named in the answer, the honest closing and the check. Desktop: the two
+ * search ads against being named in the answer, the closing and the check. Desktop: the two
  * columns of the comparison share their rows (subgrid), so each row lines up across. Phone: one column,
  * the comparison as two stacked cards. Every figure links to its source.
  */

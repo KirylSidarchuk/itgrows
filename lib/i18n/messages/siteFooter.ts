@@ -1,10 +1,11 @@
 import { defineMessages } from "../messages"
 
 // app/_home/SiteFooter.tsx: the footer of the public pages. Column titles and link labels by key;
-// the addresses stay in the component.
+// the addresses stay in the component. Since 30 Oct 2026 the last line is the growth guarantee's
+// footnote (growthGuarantee.ts footnote, linked to /terms#growth-guarantee), in place of the old disclaimer.
 
 const en = {
-  tagline: "We get companies ready to be named by ChatGPT, Claude, Gemini and Perplexity, and count every two weeks whether they are.",
+  tagline: "We get businesses named by ChatGPT, Claude, Gemini and Perplexity, and recount every two weeks.",
   titles: {
     geo: "AI visibility",
     tools: "Tools",
@@ -12,7 +13,7 @@ const en = {
     company: "Company",
   },
   links: {
-    check: "Check your site",
+    check: "Check your site free",
     pricing: "Pricing",
     sample: "A real report",
     guides: "Guides",
@@ -26,12 +27,11 @@ const en = {
     privacy: "Privacy",
     terms: "Terms",
   },
-  disclaimer: "No one can guarantee that an assistant will name a business. We promise the work and an honest count every two weeks.",
 }
 
 export default defineMessages(en, {
   de: {
-    tagline: "Wir bereiten Unternehmen darauf vor, von ChatGPT, Claude, Gemini und Perplexity genannt zu werden, und zählen alle zwei Wochen, ob sie genannt werden.",
+    tagline: "Wir sorgen dafür, dass ChatGPT, Claude, Gemini und Perplexity Unternehmen nennen, und zählen alle zwei Wochen nach.",
     titles: {
       geo: "KI-Sichtbarkeit",
       tools: "Tools",
@@ -39,7 +39,7 @@ export default defineMessages(en, {
       company: "Unternehmen",
     },
     links: {
-      check: "Website prüfen",
+      check: "Website kostenlos prüfen",
       pricing: "Preise",
       sample: "Ein echter Bericht",
       guides: "Leitfäden",
@@ -53,10 +53,9 @@ export default defineMessages(en, {
       privacy: "Datenschutz",
       terms: "Nutzungsbedingungen",
     },
-    disclaimer: "Niemand kann garantieren, dass ein Assistent ein Unternehmen nennt. Wir versprechen die Arbeit und eine ehrliche Zählung alle zwei Wochen.",
   },
   fr: {
-    tagline: "Nous préparons les entreprises à être mentionnées par ChatGPT, Claude, Gemini et Perplexity, et comptons toutes les deux semaines si elles le sont.",
+    tagline: "Nous faisons mentionner les entreprises par ChatGPT, Claude, Gemini et Perplexity, et refaisons le décompte toutes les deux semaines.",
     titles: {
       geo: "Visibilité IA",
       tools: "Outils",
@@ -64,7 +63,7 @@ export default defineMessages(en, {
       company: "Entreprise",
     },
     links: {
-      check: "Vérifier votre site",
+      check: "Vérifier votre site gratuitement",
       pricing: "Tarifs",
       sample: "Un vrai rapport",
       guides: "Guides",
@@ -78,10 +77,9 @@ export default defineMessages(en, {
       privacy: "Confidentialité",
       terms: "Conditions",
     },
-    disclaimer: "Personne ne peut garantir qu’un assistant mentionnera une entreprise. Nous promettons le travail et un décompte honnête toutes les deux semaines.",
   },
   es: {
-    tagline: "Preparamos a las empresas para que ChatGPT, Claude, Gemini y Perplexity las mencionen, y contamos cada dos semanas si lo hacen.",
+    tagline: "Conseguimos que ChatGPT, Claude, Gemini y Perplexity mencionen a las empresas, y volvemos a contar cada dos semanas.",
     titles: {
       geo: "Visibilidad en IA",
       tools: "Herramientas",
@@ -89,7 +87,7 @@ export default defineMessages(en, {
       company: "Empresa",
     },
     links: {
-      check: "Comprobar su sitio",
+      check: "Comprobar su sitio gratis",
       pricing: "Precios",
       sample: "Un informe real",
       guides: "Guías",
@@ -103,10 +101,9 @@ export default defineMessages(en, {
       privacy: "Privacidad",
       terms: "Términos",
     },
-    disclaimer: "Nadie puede garantizar que un asistente mencione a una empresa. Prometemos el trabajo y un recuento honesto cada dos semanas.",
   },
   ru: {
-    tagline: "Мы готовим компании к тому, чтобы их называли ChatGPT, Claude, Gemini и Perplexity, и раз в две недели считаем, называют ли их.",
+    tagline: "Мы добиваемся, чтобы бизнес называли ChatGPT, Claude, Gemini и Perplexity, и пересчитываем раз в две недели.",
     titles: {
       geo: "Видимость в ИИ",
       tools: "Инструменты",
@@ -114,7 +111,7 @@ export default defineMessages(en, {
       company: "Компания",
     },
     links: {
-      check: "Проверить сайт",
+      check: "Проверить сайт бесплатно",
       pricing: "Цены",
       sample: "Настоящий отчёт",
       guides: "Руководства",
@@ -128,6 +125,5 @@ export default defineMessages(en, {
       privacy: "Конфиденциальность",
       terms: "Условия",
     },
-    disclaimer: "Никто не может гарантировать, что ассистент назовёт компанию. Мы обещаем работу и честный подсчёт раз в две недели.",
   },
 })

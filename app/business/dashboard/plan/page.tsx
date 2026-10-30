@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react"
 import Link from "next/link"
-import { card, fmtDate, fullReport, onPlan, planSteps, type SiteReport } from "../visibility/parts"
+import { GuaranteeFootnote, card, fmtDate, fullReport, onPlan, planSteps, type SiteReport } from "../visibility/parts"
 import { SAMPLE_PATH, YEAR_DISCOUNT, firstPaymentCents, setupFree, usd, type GeoPrices } from "@/lib/geo-pricing"
 import { REWARD_INTERVAL, monthsLater, rewardTerms } from "@/lib/geo-promo"
 import { LaunchRewards, liveReward, useMinuteNow, usePromo } from "../launch-wheel"
@@ -39,6 +39,11 @@ import { LaunchRewards, liveReward, useMinuteNow, usePromo } from "../launch-whe
 // A site on the plan, or of a client we set up by hand (site.client), shows "Plan & billing": the
 // plan, the places with "We're on it", Cancel plan (/api/geo/cancel: stops at the end of the paid
 // period, with undo) and Card and invoices (/api/geo/portal, which cannot cancel or switch plans).
+//
+// Since 30 Oct 2026 (owner's decision) the page sells the outcome and carries the growth guarantee's line,
+// with its "*", next to the ways to pay; its footnote with the link to /terms#growth-guarantee is the last
+// small line of the page (GuaranteeFootnote, visibility/parts.tsx). Prices, rewards and checkout are
+// unchanged.
 
 type Interval = "month" | "quarter" | "year"
 
@@ -46,7 +51,7 @@ const WE_DO = [
   "Write articles that answer the questions your buyers ask, with sources, in your language, and publish them on your domain",
   "Fix crawler access and indexing: robots.txt, sitemaps, Bing and Google, IndexNow",
   "Prepare your profiles and listings on the sites the assistants quote, and the letters to their editors",
-  "Put all 20 questions to ChatGPT, Claude, Gemini and Perplexity, 3 asks each, every two weeks",
+  "Put all 20 questions to ChatGPT, Claude, Gemini and Perplexity, 3 asks each, every two weeks, and push wherever you're still missing",
   "A monthly report, read by a person before it reaches you",
 ]
 
@@ -589,12 +594,12 @@ export default function PlanPage() {
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-10 space-y-5">
       <header>
-        <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">{working || paidFor ? "Plan & billing" : "Articles written for you"}</h1>
+        <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">{working || paidFor ? "Plan & billing" : "We get you into the answers"}</h1>
         {site && !paidFor && <p className="text-sm text-slate-600 mt-1">{[site.business, site.domain].filter(Boolean).join(" · ")}</p>}
         {!working && !paidFor && (
           <p className="text-sm text-[#1b1916] mt-2 max-w-2xl">
-            We do this for you: on the plan we write, publish and measure for {forSite}. {ARTICLES_YOU} The report shows where you are
-            missing; the plan is us doing the work.
+            Your report shows where the assistants name someone else. On the plan we fix that for {forSite}: we write, publish, fix and
+            re-ask every two weeks, and keep pushing until you&apos;re in the answers. {ARTICLES_YOU}
           </p>
         )}
         {sites.length > 1 && (
@@ -677,8 +682,8 @@ export default function PlanPage() {
               </p>
               {questions.length > 0 && (
                 <>
-                  <h2 className="font-bold mt-5">The first articles we would write for you</h2>
-                  <p className="text-xs text-slate-500 mt-1">Questions where the assistants named others and not you.</p>
+                  <h2 className="font-bold mt-5">The first articles we&apos;ll write to get you in</h2>
+                  <p className="text-xs text-slate-500 mt-1">Questions where the assistants name others right now, not you.</p>
                   <ol className="mt-3 space-y-2 list-decimal pl-5 text-sm">
                     {questions.map((q) => <li key={q}>{q}</li>)}
                   </ol>
@@ -708,7 +713,7 @@ export default function PlanPage() {
           <section className="rounded-2xl bg-[#1b1916] text-white p-6 sm:p-7">
             <div className="grid sm:grid-cols-2 gap-6">
               <div>
-                <h2 className="font-extrabold text-xl">What we do</h2>
+                <h2 className="font-extrabold text-xl">What we do to get you named</h2>
                 <ul className="mt-3 space-y-2 text-sm text-white/85">
                   {WE_DO.map((i) => <li key={i} className="flex gap-2"><span className="text-violet-300">✓</span>{i}</li>)}
                 </ul>
@@ -720,11 +725,13 @@ export default function PlanPage() {
                 </ul>
               </div>
             </div>
-            <p className="text-sm text-white/60 mt-5">No one can promise that assistants will name you. We promise the work and an honest count every two weeks.</p>
+            {/* The growth guarantee (owner's decision, 30 Oct 2026): the line with its "*"; its footnote is the
+                last line of the page. */}
+            <p className="mt-5 text-base sm:text-lg font-extrabold text-white">In 90 days, AI assistants will name you more often than on launch day — or we work for free.*</p>
 
             {site && <LaunchNeeds key={site.domain} domain={site.domain} />}
 
-            <h2 className="mt-6 font-extrabold text-xl break-all">Start for {forSite}</h2>
+            <h2 className="mt-6 font-extrabold text-xl break-all">Get {forSite} into the answers</h2>
 
             {site && P && <LaunchRewards promo={promo} onChange={setPromo} site={site.domain} prices={P} where="plan" />}
 
@@ -817,6 +824,9 @@ export default function PlanPage() {
               Secure payment by Stripe. Cancel any time on this page once your plan is active: it stops at the end of the paid period.
             </p>
           </section>
+
+          {/* The growth guarantee's footnote: the last small line at the bottom of the page. */}
+          <GuaranteeFootnote />
         </>
       )}
     </div>

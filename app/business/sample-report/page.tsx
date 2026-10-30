@@ -51,7 +51,7 @@ export default async function SampleReportPage() {
   void noteCrawler(localePath(locale, "/business/sample-report"))
   const site = await sample()
   return (
-    <ToolShell>
+    <ToolShell guaranteeFootnote={site !== null}>
       <SampleReport site={site} />
     </ToolShell>
   )

@@ -16,6 +16,8 @@ import aboutNs from "@/lib/i18n/messages/about"
 // What ItGrows is, for people and for the machines that read it: AI visibility (GEO) only, as the
 // Organization in lib/entity.ts says (owner's decision, 26 Oct 2026). The LinkedIn/X product is one
 // short line at the end, with its own pages at /personal.
+// Since 30 Oct 2026 (owner's decision) no client results here; the second paragraph is the growth
+// guarantee's line and the link to its conditions (lib/entity.ts ENTITY_ABOUT[1]).
 
 // The LinkedIn/X product's entry price (its own pages are English and unprefixed).
 const LI_FROM = "$49"
@@ -82,8 +84,6 @@ export default async function AboutPage() {
               })}
             </li>
           </ul>
-          <h2 className="text-xl font-bold mt-10">{m.resultsTitle}</h2>
-          <p className="mt-3 text-slate-700 leading-relaxed">{m.results}</p>
           <h2 className="text-xl font-bold mt-10">{m.contactTitle}</h2>
           <p className="mt-3 text-slate-700"><a href="mailto:kiryl@itgrows.ai" className="text-violet-700">kiryl@itgrows.ai</a></p>
           <p className="mt-12 pt-6 border-t border-black/10 text-sm text-slate-500">

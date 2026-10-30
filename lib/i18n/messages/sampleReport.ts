@@ -7,6 +7,8 @@ import { plural } from "../format"
 // and are translated with the cabinet.
 // The domain and the date come in as arguments. The report is free once an account is created
 // (since 27 Oct 2026), so the price line names no price.
+// `honesty` keeps its key name; since 30 Oct 2026 (owner's decision) it sells the report and the work
+// instead of the old "no one can promise" line.
 
 const en = {
   // <PriceLine>, in the closing block (once: it used to repeat under the header)
@@ -22,9 +24,9 @@ const en = {
   unavailable: "The sample report isn't available right now.",
   unavailableHint: "Try again in a few minutes, or run the quick check on your own site.",
 
-  sameTitle: "The same report for your site",
+  sameTitle: "Get this report for your site, free",
   honesty:
-    "No one can promise that assistants will name you. The report shows where you stand, honestly, and what we would do about it.",
+    "Every business named in your place, the sites the assistants quote, and our plan to get you in. Then we do the work.",
 }
 
 export default defineMessages(en, {
@@ -41,9 +43,9 @@ export default defineMessages(en, {
     unavailable: "Der Beispielbericht ist gerade nicht verfügbar.",
     unavailableHint: "Versuchen Sie es in ein paar Minuten erneut, oder machen Sie den Schnellcheck für Ihre eigene Website.",
 
-    sameTitle: "Derselbe Bericht für Ihre Website",
+    sameTitle: "Holen Sie sich diesen Bericht für Ihre Website, kostenlos",
     honesty:
-      "Niemand kann versprechen, dass Assistenten Sie nennen werden. Der Bericht zeigt ehrlich, wo Sie stehen und was wir daran ändern würden.",
+      "Jedes Unternehmen, das an Ihrer Stelle genannt wird, die Websites, die die Assistenten zitieren, und unser Maßnahmenplan, mit dem wir Sie in die Antworten bringen. Dann erledigen wir die Arbeit.",
   },
 
   fr: {
@@ -59,9 +61,9 @@ export default defineMessages(en, {
     unavailable: "L’exemple de rapport n’est pas disponible pour le moment.",
     unavailableHint: "Réessayez dans quelques minutes, ou lancez la vérification rapide sur votre propre site.",
 
-    sameTitle: "Le même rapport pour votre site",
+    sameTitle: "Obtenez ce rapport pour votre site, gratuitement",
     honesty:
-      "Personne ne peut promettre que les assistants vous mentionneront. Le rapport montre honnêtement où vous en êtes, et ce que nous ferions pour y remédier.",
+      "Chaque entreprise mentionnée à votre place, les sites que citent les assistants et notre plan d’action pour vous faire entrer dans les réponses. Ensuite, nous faisons le travail.",
   },
 
   es: {
@@ -77,9 +79,9 @@ export default defineMessages(en, {
     unavailable: "El informe de ejemplo no está disponible en este momento.",
     unavailableHint: "Vuelva a intentarlo en unos minutos o haga la comprobación rápida de su propio sitio.",
 
-    sameTitle: "El mismo informe para su sitio",
+    sameTitle: "Consiga este informe para su sitio, gratis",
     honesty:
-      "Nadie puede prometer que los asistentes le mencionen. El informe muestra con honestidad dónde está y qué haríamos al respecto.",
+      "Cada empresa mencionada en su lugar, los sitios que citan los asistentes y nuestro plan de acción para que le mencionen. Después hacemos el trabajo.",
   },
 
   ru: {
@@ -95,8 +97,8 @@ export default defineMessages(en, {
     unavailable: "Пример отчёта сейчас недоступен.",
     unavailableHint: "Попробуйте через несколько минут или запустите быструю проверку своего сайта.",
 
-    sameTitle: "Такой же отчёт для вашего сайта",
+    sameTitle: "Получите такой отчёт по своему сайту бесплатно",
     honesty:
-      "Никто не может обещать, что ассистенты вас назовут. Отчёт честно показывает, где вы сейчас и что мы бы с этим сделали.",
+      "Каждая компания, которую называют вместо вас, сайты, которые цитируют ассистенты, и наш план действий, чтобы называли вас. А дальше работу делаем мы.",
   },
 })

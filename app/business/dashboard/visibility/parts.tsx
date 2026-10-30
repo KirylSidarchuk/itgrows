@@ -1515,11 +1515,11 @@ export function YourPlan({
               <p className="font-extrabold text-lg">{steps.length > 0 ? "We do every step below on the plan" : "We do all of this on the plan"}</p>
               <p className="text-sm text-white/80 mt-1.5 leading-relaxed">
                 The articles, the fixes and the places the assistants quote, for {sample ? "your site" : site.domain}; and every two weeks all 20
-                questions put to all 4 assistants, 3 times each, so you see what moved.
+                questions put to all 4 assistants, 3 times each, so you see what moved and we push wherever you&apos;re still missing.
               </p>
-              <p className="text-sm text-white/60 mt-2 leading-relaxed">
-                No one can promise that assistants will name you. We promise the work and an honest count every two weeks.
-              </p>
+              {/* The growth guarantee (owner's decision, 30 Oct 2026): the line with its "*"; its footnote
+                  (GuaranteeFootnote) is the last line of the page. */}
+              <p className="text-sm sm:text-base font-bold text-white mt-3">In 90 days, AI assistants will name you more often than on launch day — or we work for free.*</p>
               <div className="mt-4 flex flex-col sm:flex-row sm:items-center gap-3">
                 {p ? (
                   <p className="flex-1 text-sm text-white/80">
@@ -1598,6 +1598,21 @@ export function YourPlan({
         </>
       )}
     </section>
+  )
+}
+
+/** The growth guarantee's footnote (owner's decision, 30 Oct 2026): the guarantee's line (YourPlan, the
+ *  plan page) carries only its "*"; this, the condition with the link to the Terms, is the last small line
+ *  at the bottom of the cabinet page. English, as the line is. */
+export function GuaranteeFootnote() {
+  return (
+    <p className="text-xs text-slate-500">
+      * Growth guarantee: we keep working for free until they do. Conditions:{" "}
+      <a href="/terms#growth-guarantee" className="underline">
+        Terms
+      </a>
+      .
+    </p>
   )
 }
 

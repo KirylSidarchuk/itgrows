@@ -24,7 +24,7 @@ export default function SignIn() {
 
   return (
     <div ref={ref} className="relative">
-      <button type="button" onClick={() => setOpen((v) => !v)} className="text-sm text-slate-600 hover:text-[#1b1916] font-medium flex items-center gap-1" aria-expanded={open}>
+      <button type="button" onClick={() => setOpen((v) => !v)} className="whitespace-nowrap text-sm text-slate-600 hover:text-[#1b1916] font-medium flex items-center gap-1" aria-expanded={open}>
         {status === "authenticated" ? m.openCabinet : m.signIn} <span aria-hidden>▾</span>
       </button>
       {open && (

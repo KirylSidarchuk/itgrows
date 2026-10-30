@@ -6,6 +6,7 @@ import {
   Banner,
   Crawlers,
   FirstLook,
+  GuaranteeFootnote,
   History,
   NamedInstead,
   OpeningSite,
@@ -440,6 +441,8 @@ export default function VisibilityPage() {
           )}
         </>
       )}
+      {/* The growth guarantee's footnote, the last line of the page, wherever YourPlan above shows its line. */}
+      {site?.latest && !client && <GuaranteeFootnote />}
     </div>
   )
 }

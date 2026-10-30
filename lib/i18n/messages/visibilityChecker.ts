@@ -4,18 +4,20 @@ import { defineMessages } from "../messages"
 // app/business/AuditForm.tsx, namespace auditForm). No price is written here: the check and the
 // detailed report (once an account is created) are both free.
 // <link>…</link> is the link inside a tip; <b>…</b> is bold.
+// Since 30 Oct 2026 (owner's decision) the page sells the outcome: no "can anyone guarantee" question,
+// and tipPlan points at the plan (/#geo-pricing).
 
 const en = {
   metaTitle: "AI visibility checker: does ChatGPT name you? | ItGrows",
   metaDescription:
     "Five questions your buyers ask, put live to ChatGPT and Perplexity: are you named, who is named instead, which sites are cited. Free, about 30 seconds.",
-  ogTitle: "Does ChatGPT recommend your business? AI visibility check",
+  ogTitle: "Does ChatGPT recommend you or your competitor? Free AI visibility check",
   ogDescription: "Five buyer questions, asked live to ChatGPT and Perplexity. See who they name instead of you.",
   schemaName: "ItGrows AI visibility checker",
   schemaDescription:
     "A 30-second check of whether ChatGPT and Perplexity name a business when its buyers ask: five buyer questions generated from the site, answered live with web search, with the businesses named instead and the sites cited.",
   eyebrow: "AI visibility check · free",
-  h1: "Does ChatGPT recommend your business?",
+  h1: "Does ChatGPT recommend your business, or your competitor?",
   lead: "Enter your site. We write five questions your buyers would ask and put them to ChatGPT and Perplexity, live, with web search on. You see whether they name you, who they name instead and which sites they cite. About 30 seconds.",
   whatTitle: "What the check does",
   steps: [
@@ -26,10 +28,11 @@ const en = {
   readTitle: "How to read the result",
   readBody:
     "<b>Named</b> means the answer mentions your business. <b>Cited</b> means it links your site as a source. The sites cited instead of you are where the assistants learn who exists in your field: directories, comparison pages, your competitors' own pages. One run is a first look, because answers vary between asks; the free report asks 20 questions to ChatGPT, Claude, Gemini and Perplexity, and on the plan we ask each of them three times every two weeks.",
-  notNamedTitle: "If you are not named",
+  notNamedTitle: "Not named? Here's how to get in.",
   tipGuide: "Start with the whole path: <link>how to get your business recommended by ChatGPT, Claude, Gemini and Perplexity</link>.",
   tipCrawler: "Check that crawlers can read you: <link>AI crawler check</link> — it tests your sitemap pages against your robots.txt for each crawler.",
   tipCauses: "See the usual causes: <link>why ChatGPT names your competitors and not you</link>.",
+  tipPlan: "Or have us do it all: <link>see the plan</link>.",
   faqAccount: {
     q: "Do I need an account for the check?",
     a: "Not to run it: the check takes about 30 seconds without an account. It asks ChatGPT and Perplexity five questions and shows two answers in full right away; to open all five, you create an account, which costs nothing. With the account we also build the detailed report for your site (20 questions × 4 assistants): the full report is free once you create an account.",
@@ -44,8 +47,8 @@ const en = {
       a: "Assistants do not answer the same question the same way twice. That is why one check is a first look. On the plan we ask every question three times, every two weeks, and compare checks only on the same questions.",
     },
     {
-      q: "Can anyone guarantee that ChatGPT will recommend my business?",
-      a: "No. No assistant sells organic placement or publishes how it chooses. What can be done is making your site readable and indexed, publishing pages that answer your buyers' questions, being present on the sites assistants cite, and measuring the result honestly.",
+      q: "How do I get ChatGPT to recommend my business?",
+      a: "Make your site readable to AI crawlers, get your pages into the index each assistant searches (Bing for ChatGPT, Brave for Claude, Google for Gemini, Perplexity's own), publish pages that answer your buyers' questions, and be present on the sites the assistants cite. ItGrows does all of it for you, and re-asks your buyers' questions to all four assistants every two weeks, pushing wherever you're still missing.",
     },
   ],
 }
@@ -55,13 +58,13 @@ export default defineMessages(en, {
     metaTitle: "KI-Sichtbarkeitscheck: Nennt ChatGPT Ihre Firma? | ItGrows",
     metaDescription:
       "Fünf Kundenfragen, live an ChatGPT und Perplexity gestellt: Werden Sie genannt, wer stattdessen, welche Websites werden zitiert? Kostenlos, etwa 30 Sekunden.",
-    ogTitle: "Empfiehlt ChatGPT Ihr Unternehmen? Der KI-Sichtbarkeitscheck",
+    ogTitle: "Empfiehlt ChatGPT Sie oder Ihren Wettbewerber? Kostenloser KI-Sichtbarkeitscheck",
     ogDescription: "Fünf Kundenfragen, live an ChatGPT und Perplexity gestellt. Sehen Sie, wen die Assistenten statt Ihnen nennen.",
     schemaName: "ItGrows KI-Sichtbarkeitscheck",
     schemaDescription:
       "Ein 30-Sekunden-Check, ob ChatGPT und Perplexity ein Unternehmen nennen, wenn seine Kunden fragen: fünf aus der Website abgeleitete Kundenfragen, live mit Websuche beantwortet, mit den stattdessen genannten Unternehmen und den zitierten Websites.",
     eyebrow: "KI-Sichtbarkeitscheck · kostenlos",
-    h1: "Empfiehlt ChatGPT Ihr Unternehmen?",
+    h1: "Empfiehlt ChatGPT Ihr Unternehmen – oder Ihren Wettbewerber?",
     lead: "Geben Sie Ihre Website ein. Wir formulieren fünf Fragen, die Ihre Kunden stellen würden, und stellen sie ChatGPT und Perplexity – live, mit eingeschalteter Websuche. Sie sehen, ob Sie genannt werden, wer stattdessen genannt wird und welche Websites zitiert werden. Dauert etwa 30 Sekunden.",
     whatTitle: "Was der Check macht",
     steps: [
@@ -72,10 +75,11 @@ export default defineMessages(en, {
     readTitle: "So lesen Sie das Ergebnis",
     readBody:
       "<b>Genannt</b> heißt: Die Antwort erwähnt Ihr Unternehmen. <b>Zitiert</b> heißt: Sie verlinkt Ihre Website als Quelle. Die Websites, die statt Ihrer zitiert werden, sind die Orte, an denen die Assistenten lernen, wer in Ihrer Branche existiert: Verzeichnisse, Vergleichsseiten, die eigenen Seiten Ihrer Wettbewerber. Ein Durchlauf ist ein erster Eindruck, denn die Antworten schwanken von Anfrage zu Anfrage; der kostenlose Bericht stellt ChatGPT, Claude, Gemini und Perplexity 20 Fragen, und im Plan stellen wir jede davon alle zwei Wochen dreimal.",
-    notNamedTitle: "Wenn Sie nicht genannt werden",
+    notNamedTitle: "Nicht genannt? So kommen Sie hinein.",
     tipGuide: "Beginnen Sie mit dem ganzen Weg: <link>wie Ihr Unternehmen von ChatGPT, Claude, Gemini und Perplexity empfohlen wird</link> (Leitfaden auf Englisch).",
     tipCrawler: "Prüfen Sie, ob Crawler Sie lesen können: <link>KI-Crawler-Check</link> – er testet Ihre Sitemap-Seiten für jeden Crawler gegen Ihre robots.txt.",
     tipCauses: "Die üblichen Ursachen: <link>warum ChatGPT Ihre Wettbewerber nennt und Sie nicht</link> (auf Englisch).",
+    tipPlan: "Oder lassen Sie uns alles erledigen: <link>zum Plan</link>.",
     faqAccount: {
       q: "Brauche ich für den Check ein Konto?",
       a: "Zum Starten nicht: Der Check läuft ohne Konto und dauert etwa 30 Sekunden. Er stellt ChatGPT und Perplexity fünf Fragen und zeigt zwei Antworten sofort vollständig; um alle fünf zu öffnen, legen Sie ein Konto an – das kostet nichts. Mit dem Konto erstellen wir außerdem den ausführlichen Bericht für Ihre Website (20 Fragen × 4 Assistenten): Der vollständige Bericht ist kostenlos, sobald Sie ein Konto anlegen.",
@@ -90,8 +94,8 @@ export default defineMessages(en, {
         a: "Assistenten beantworten dieselbe Frage nie zweimal gleich. Deshalb ist ein einzelner Check ein erster Eindruck. Im Plan stellen wir jede Frage alle zwei Wochen dreimal und vergleichen Messungen nur anhand derselben Fragen.",
       },
       {
-        q: "Kann jemand garantieren, dass ChatGPT mein Unternehmen empfiehlt?",
-        a: "Nein. Kein Assistent verkauft organische Platzierungen oder legt offen, wie er auswählt. Möglich ist Folgendes: Ihre Website lesbar und indexierbar machen, Seiten veröffentlichen, die die Fragen Ihrer Kunden beantworten, auf den Websites präsent sein, die die Assistenten zitieren, und das Ergebnis ehrlich messen.",
+        q: "Wie bringe ich ChatGPT dazu, mein Unternehmen zu empfehlen?",
+        a: "Machen Sie Ihre Website für KI-Crawler lesbar, bringen Sie Ihre Seiten in den Index, den jeder Assistent durchsucht (Bing für ChatGPT, Brave für Claude, Google für Gemini, den eigenen von Perplexity), veröffentlichen Sie Seiten, die die Fragen Ihrer Kunden beantworten, und seien Sie auf den Websites präsent, die die Assistenten zitieren. ItGrows erledigt all das für Sie und stellt die Fragen Ihrer Kunden alle zwei Wochen erneut allen vier Assistenten – und legt überall nach, wo Sie noch fehlen.",
       },
     ],
   },
@@ -99,13 +103,13 @@ export default defineMessages(en, {
     metaTitle: "Visibilité IA : ChatGPT vous mentionne-t-il ? | ItGrows",
     metaDescription:
       "Cinq questions de clients posées en direct à ChatGPT et Perplexity : êtes-vous mentionné, qui l’est à votre place, quels sites sont cités ? Gratuit, 30 s.",
-    ogTitle: "ChatGPT recommande-t-il votre entreprise ? Test de visibilité IA",
+    ogTitle: "ChatGPT vous recommande-t-il, ou votre concurrent ? Test de visibilité IA gratuit",
     ogDescription: "Cinq questions de clients, posées en direct à ChatGPT et Perplexity. Découvrez qui ils mentionnent à votre place.",
     schemaName: "Test de visibilité IA ItGrows",
     schemaDescription:
       "Un test de 30 secondes pour savoir si ChatGPT et Perplexity mentionnent une entreprise quand ses clients posent la question : cinq questions de clients rédigées à partir du site, posées en direct avec recherche web, avec les entreprises mentionnées à sa place et les sites cités.",
     eyebrow: "Test de visibilité IA · gratuit",
-    h1: "ChatGPT recommande-t-il votre entreprise ?",
+    h1: "ChatGPT recommande-t-il votre entreprise, ou votre concurrent ?",
     lead: "Saisissez votre site. Nous rédigeons cinq questions que vos clients poseraient et les soumettons à ChatGPT et Perplexity, en direct, recherche web activée. Vous voyez s’ils vous mentionnent, qui ils mentionnent à votre place et quels sites ils citent. Environ 30 secondes.",
     whatTitle: "Ce que fait le test",
     steps: [
@@ -116,10 +120,11 @@ export default defineMessages(en, {
     readTitle: "Comment lire le résultat",
     readBody:
       "<b>Mentionné</b> signifie que la réponse parle de votre entreprise. <b>Cité</b> signifie qu’elle donne votre site en lien, comme source. Les sites cités à votre place sont ceux où les assistants apprennent qui existe dans votre secteur : annuaires, comparatifs, pages de vos concurrents. Un seul passage n’est qu’un premier aperçu, car les réponses varient d’une fois à l’autre ; le rapport gratuit pose 20 questions à ChatGPT, Claude, Gemini et Perplexity, et avec l’abonnement nous posons chacune trois fois toutes les deux semaines.",
-    notNamedTitle: "Si vous n’êtes pas mentionné",
+    notNamedTitle: "Pas mentionné ? Voici comment y entrer.",
     tipGuide: "Commencez par la démarche complète : <link>comment faire recommander votre entreprise par ChatGPT, Claude, Gemini et Perplexity</link> (guide en anglais).",
     tipCrawler: "Vérifiez que les robots peuvent vous lire : <link>test des robots d’IA</link> — il confronte les pages de votre sitemap à votre robots.txt, robot par robot.",
     tipCauses: "Les causes habituelles : <link>pourquoi ChatGPT mentionne vos concurrents et pas vous</link> (en anglais).",
+    tipPlan: "Ou confiez-nous tout : <link>voir l’abonnement</link>.",
     faqAccount: {
       q: "Faut-il un compte pour le test ?",
       a: "Pas pour le lancer : le test se fait sans compte, en 30 secondes environ. Il pose cinq questions à ChatGPT et Perplexity et affiche tout de suite deux réponses en entier ; pour ouvrir les cinq, vous créez un compte, ce qui ne coûte rien. Avec ce compte, nous établissons aussi le rapport détaillé de votre site (20 questions × 4 assistants) : le rapport complet est gratuit dès que vous créez un compte.",
@@ -134,8 +139,8 @@ export default defineMessages(en, {
         a: "Les assistants ne répondent jamais deux fois de la même façon à la même question. C’est pourquoi un test n’est qu’un premier aperçu. Avec l’abonnement, nous posons chaque question trois fois toutes les deux semaines et ne comparons les mesures que sur les mêmes questions.",
       },
       {
-        q: "Quelqu’un peut-il garantir que ChatGPT recommandera mon entreprise ?",
-        a: "Non. Aucun assistant ne vend de placement organique ni ne publie sa façon de choisir. Ce qu’on peut faire : rendre votre site lisible et indexé, publier des pages qui répondent aux questions de vos clients, être présent sur les sites que citent les assistants, et mesurer le résultat honnêtement.",
+        q: "Comment faire pour que ChatGPT recommande mon entreprise ?",
+        a: "Rendez votre site lisible pour les robots d’IA, faites entrer vos pages dans l’index où cherche chaque assistant (Bing pour ChatGPT, Brave pour Claude, Google pour Gemini, celui de Perplexity), publiez des pages qui répondent aux questions de vos clients, et soyez présent sur les sites que citent les assistants. ItGrows fait tout cela pour vous, et repose les questions de vos clients aux quatre assistants toutes les deux semaines, en poussant partout où vous manquez encore.",
       },
     ],
   },
@@ -143,13 +148,13 @@ export default defineMessages(en, {
     metaTitle: "Visibilidad en IA: ¿ChatGPT menciona su empresa? | ItGrows",
     metaDescription:
       "Cinco preguntas de sus clientes, en directo a ChatGPT y Perplexity: si le mencionan, a quién mencionan en su lugar y qué sitios citan. Gratis, unos 30 segundos.",
-    ogTitle: "¿ChatGPT recomienda su empresa? Comprobación de visibilidad en IA",
+    ogTitle: "¿ChatGPT le recomienda a usted o a su competidor? Comprobación gratuita de visibilidad en IA",
     ogDescription: "Cinco preguntas de clientes, hechas en directo a ChatGPT y Perplexity. Vea a quién mencionan en lugar de usted.",
     schemaName: "Comprobador de visibilidad en IA de ItGrows",
     schemaDescription:
       "Una comprobación de 30 segundos de si ChatGPT y Perplexity mencionan una empresa cuando sus clientes preguntan: cinco preguntas de clientes generadas a partir del sitio, respondidas en directo con búsqueda web, con las empresas mencionadas en su lugar y los sitios citados.",
     eyebrow: "Comprobación de visibilidad en IA · gratis",
-    h1: "¿ChatGPT recomienda su empresa?",
+    h1: "¿ChatGPT recomienda a su empresa o a su competidor?",
     lead: "Introduzca su sitio. Redactamos cinco preguntas que harían sus clientes y se las planteamos a ChatGPT y Perplexity, en directo y con la búsqueda web activada. Verá si mencionan su empresa, a quién mencionan en su lugar y qué sitios citan. Unos 30 segundos.",
     whatTitle: "Qué hace la comprobación",
     steps: [
@@ -160,10 +165,11 @@ export default defineMessages(en, {
     readTitle: "Cómo leer el resultado",
     readBody:
       "<b>Mencionado</b> significa que la respuesta nombra su empresa. <b>Citado</b> significa que enlaza su sitio como fuente. Los sitios citados en lugar del suyo son donde los asistentes aprenden quién existe en su sector: directorios, páginas comparativas, las propias páginas de sus competidores. Una sola ejecución es una primera impresión, porque las respuestas varían de una vez a otra; el informe gratuito hace 20 preguntas a ChatGPT, Claude, Gemini y Perplexity, y con el plan hacemos cada una tres veces cada dos semanas.",
-    notNamedTitle: "Si no le mencionan",
+    notNamedTitle: "¿No le mencionan? Así se entra.",
     tipGuide: "Empiece por el camino completo: <link>cómo conseguir que ChatGPT, Claude, Gemini y Perplexity recomienden su empresa</link> (guía en inglés).",
     tipCrawler: "Compruebe que los rastreadores pueden leer su sitio: <link>comprobación de rastreadores de IA</link>; prueba las páginas de su sitemap contra su robots.txt para cada rastreador.",
     tipCauses: "Vea las causas habituales: <link>por qué ChatGPT menciona a sus competidores y no a usted</link> (en inglés).",
+    tipPlan: "O deje que lo hagamos todo nosotros: <link>vea el plan</link>.",
     faqAccount: {
       q: "¿Necesito una cuenta para la comprobación?",
       a: "Para hacerla, no: la comprobación funciona sin cuenta, en unos 30 segundos. Hace cinco preguntas a ChatGPT y Perplexity y muestra al momento dos respuestas completas; para abrir las cinco, cree una cuenta, que no cuesta nada. Con esa cuenta elaboramos también el informe detallado de su sitio (20 preguntas × 4 asistentes): el informe completo es gratuito en cuanto cree una cuenta.",
@@ -178,8 +184,8 @@ export default defineMessages(en, {
         a: "Los asistentes no responden dos veces igual a la misma pregunta. Por eso una comprobación es una primera impresión. Con el plan hacemos cada pregunta tres veces cada dos semanas y solo comparamos mediciones con las mismas preguntas.",
       },
       {
-        q: "¿Puede alguien garantizar que ChatGPT recomiende mi empresa?",
-        a: "No. Ningún asistente vende posiciones orgánicas ni publica cómo elige. Lo que sí se puede hacer es conseguir que su sitio sea legible y esté indexado, publicar páginas que respondan a las preguntas de sus clientes, estar presente en los sitios que citan los asistentes y medir el resultado con honestidad.",
+        q: "¿Cómo consigo que ChatGPT recomiende mi empresa?",
+        a: "Haga que su sitio sea legible para los rastreadores de IA, meta sus páginas en el índice en el que busca cada asistente (Bing para ChatGPT, Brave para Claude, Google para Gemini, el propio de Perplexity), publique páginas que respondan a las preguntas de sus clientes y esté presente en los sitios que citan los asistentes. ItGrows lo hace todo por usted, y vuelve a plantear las preguntas de sus clientes a los cuatro asistentes cada dos semanas, empujando allí donde aún no aparece.",
       },
     ],
   },
@@ -187,13 +193,13 @@ export default defineMessages(en, {
     metaTitle: "Проверка видимости в ИИ: называет ли вас ChatGPT? | ItGrows",
     metaDescription:
       "Пять вопросов ваших клиентов — вживую в ChatGPT и Perplexity: называют ли вас, кого называют вместо вас, какие сайты цитируют. Бесплатно, около 30 секунд.",
-    ogTitle: "Рекомендует ли ChatGPT ваш бизнес? Проверка видимости в ИИ",
+    ogTitle: "Кого рекомендует ChatGPT — вас или конкурента? Бесплатная проверка видимости в ИИ",
     ogDescription: "Пять вопросов ваших клиентов, заданных ChatGPT и Perplexity в реальном времени. Посмотрите, кого они называют вместо вас.",
     schemaName: "Проверка видимости в ИИ от ItGrows",
     schemaDescription:
       "30-секундная проверка того, называют ли ChatGPT и Perplexity компанию, когда её клиенты задают вопросы: пять клиентских вопросов, составленных по сайту, ответы в реальном времени с веб-поиском, компании, названные вместо неё, и цитируемые сайты.",
     eyebrow: "Проверка видимости в ИИ · бесплатно",
-    h1: "Рекомендует ли ChatGPT ваш бизнес?",
+    h1: "Кого рекомендует ChatGPT — ваш бизнес или конкурента?",
     lead: "Укажите свой сайт. Мы составим пять вопросов, которые задали бы ваши клиенты, и зададим их ChatGPT и Perplexity в реальном времени, с включённым веб-поиском. Вы увидите, называют ли они вас, кого называют вместо вас и на какие сайты ссылаются. Около 30 секунд.",
     whatTitle: "Что делает проверка",
     steps: [
@@ -204,10 +210,11 @@ export default defineMessages(en, {
     readTitle: "Как читать результат",
     readBody:
       "<b>Назван</b> — ответ упоминает вашу компанию. <b>Процитирован</b> — ответ ссылается на ваш сайт как на источник. Сайты, которые цитируют вместо вашего, — это места, где ассистенты узнают, кто есть в вашей сфере: каталоги, страницы сравнений, собственные страницы ваших конкурентов. Один прогон — лишь первый взгляд, потому что ответы меняются от запроса к запросу; бесплатный отчёт задаёт ChatGPT, Claude, Gemini и Perplexity 20 вопросов, а по подписке мы каждые две недели задаём каждый из них три раза.",
-    notNamedTitle: "Если вас не называют",
+    notNamedTitle: "Вас не называют? Вот как попасть в ответы.",
     tipGuide: "Начните с полного пути: <link>как добиться, чтобы ChatGPT, Claude, Gemini и Perplexity рекомендовали ваш бизнес</link> (руководство на английском).",
     tipCrawler: "Проверьте, могут ли краулеры вас прочитать: <link>проверка ИИ-краулеров</link> — она сверяет страницы из вашего sitemap с вашим robots.txt для каждого краулера.",
     tipCauses: "Типичные причины: <link>почему ChatGPT называет ваших конкурентов, а не вас</link> (на английском).",
+    tipPlan: "Или поручите всё нам: <link>смотреть подписку</link>.",
     faqAccount: {
       q: "Нужен ли аккаунт для проверки?",
       a: "Чтобы запустить проверку, аккаунт не нужен: она идёт примерно 30 секунд, задаёт ChatGPT и Perplexity пять вопросов и сразу показывает два ответа полностью. Чтобы открыть все пять, вы создаёте аккаунт — это бесплатно. С аккаунтом мы также составим подробный отчёт по вашему сайту (20 вопросов × 4 ассистента): полный отчёт бесплатный — достаточно создать аккаунт.",
@@ -222,8 +229,8 @@ export default defineMessages(en, {
         a: "Ассистенты не отвечают на один и тот же вопрос дважды одинаково. Поэтому одна проверка — это первый взгляд. По подписке мы каждые две недели задаём каждый вопрос три раза и сравниваем замеры только по одним и тем же вопросам.",
       },
       {
-        q: "Может ли кто-то гарантировать, что ChatGPT будет рекомендовать мой бизнес?",
-        a: "Нет. Ни один ассистент не продаёт органические места и не раскрывает, как делает выбор. Можно другое: сделать сайт читаемым и проиндексированным, публиковать страницы с ответами на вопросы ваших клиентов, присутствовать на сайтах, которые цитируют ассистенты, и честно измерять результат.",
+        q: "Как добиться, чтобы ChatGPT рекомендовал мой бизнес?",
+        a: "Сделайте сайт читаемым для ИИ-краулеров, заведите страницы в индекс, по которому ищет каждый ассистент (Bing для ChatGPT, Brave для Claude, Google для Gemini, собственный у Perplexity), публикуйте страницы с ответами на вопросы ваших клиентов и присутствуйте на сайтах, которые цитируют ассистенты. ItGrows делает всё это за вас и раз в две недели заново задаёт вопросы ваших клиентов всем четырём ассистентам — и дожимает везде, где вас ещё нет.",
       },
     ],
   },

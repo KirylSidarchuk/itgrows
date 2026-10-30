@@ -10,7 +10,6 @@ import { useConsent, useSettingsOpen } from "@/components/consent/consent"
 import { handOff, rememberChecked } from "@/lib/geo-handoff"
 import { formatNumber } from "@/lib/i18n/format"
 import { localePath } from "@/lib/i18n/paths"
-import { rich } from "@/lib/i18n/rich"
 import ns from "@/lib/i18n/messages/auditForm"
 
 type Verdict = "blocked" | "allowed" | "wildcard" | "none"
@@ -664,17 +663,8 @@ export default function AuditForm({ note }: { note?: string } = {}) {
 
           {bOpen && (
             <>
-              <div className="px-5 pb-1">
+              <div className="px-5 pb-4">
                 <p className="text-sm text-slate-700 leading-relaxed">{m.answerPagesExplain(answers)}</p>
-              </div>
-
-              {/* What we measured ourselves. (The 90-day projection that stood above was a forecast,
-                  and the page makes no promises: removed 25 Oct.) */}
-              <div className="p-4">
-                <div className="rounded-xl bg-[#f8f7f6] p-4">
-                  <p className="text-[11px] font-bold uppercase tracking-wide text-slate-500 mb-2">{m.logsEyebrow}</p>
-                  <p className="text-sm text-slate-700 leading-relaxed">{rich(m.logsBody, { b: (c) => <b>{c}</b> })}</p>
-                </div>
               </div>
 
               {/* Per-bot access */}

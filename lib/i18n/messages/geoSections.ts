@@ -4,47 +4,49 @@ import { defineMessages } from "../messages"
 // what the plan includes (included). The big numbers of the five stages stay in the component; the
 // findings' numbers carry words, so they are here. No plan price is named: under the price test
 // (lib/geo-pricing.ts PRICE_TEST) the price is shown only in the cabinet.
+// Since 30 Oct 2026 (owner's decision) the copy sells the outcome: no hedging lines, no guarantee word
+// (the one guarantee is growthGuarantee.ts), and the why block's figures and sources stay as checked.
 
 const en = {
   work: {
-    kicker: "What we run for you",
-    h2: "An article is the last step, not the product",
-    lead: "Five stages. We do the work, every week. You see every article 2 days before it goes live, and can edit or stop it.",
+    kicker: "How we get you named",
+    h2: "Five steps that put you in the answer. We do all five.",
+    lead: "We do the work every week and keep pushing until the assistants name you. You see every article 2 days before it goes live, and can edit or stop it.",
     stages: [
       {
-        step: "Measure",
-        l: "answers read before we write a word",
-        d: "Twenty questions your buyers ask, put to all four assistants three times each, because their answers change from one ask to the next. Who is named, which pages are quoted, and what kind of site each source is: a competitor, a review site, a directory and an official source each call for a different move. Some questions no article on your own site can win; we find out which before your budget goes into them.",
+        step: "Find the gap",
+        l: "answers read to find who's taking your spot",
+        d: "Twenty questions your customers ask, put to all four assistants three times each. We see exactly who is named in your place, which pages get quoted, and what kind of site each source is: a competitor, a review site, a directory, an official source. Each one is beaten a different way. Questions no page on your own site can win are spotted before your budget goes into them.",
       },
       {
         step: "Open the doors",
-        l: "crawlers your site is tested as",
-        d: "Before the first article, on every domain you own: certificates, redirects, your host's firewall, robots.txt, sitemaps. Whatever stops GPTBot, ClaudeBot, PerplexityBot and the rest, we find and fix with you.",
+        l: "AI crawlers we test your site as",
+        d: "A site the assistants can't read can't be named. Before the first article we test every domain you own as GPTBot, ClaudeBot, PerplexityBot and the rest: certificates, redirects, your host's firewall, robots.txt, sitemaps. Every blocker we find, we fix with you.",
       },
       {
-        step: "Get indexed",
-        l: "search indexes, one per assistant",
-        d: "ChatGPT searches through Bing, Claude through Brave, Gemini through Google, Perplexity through its own. A page Google has indexed can still be invisible to the other three. On blogs we host, every new page is submitted to Bing within half an hour, and every article keeps one address.",
+        step: "Get into every index",
+        l: "indexes you must be in, one per assistant",
+        d: "ChatGPT searches Bing. Claude searches Brave. Gemini searches Google. Perplexity searches its own index. Rank on Google alone and you can be invisible to the other three, so we work all four. On blogs we host, every new page goes to Bing within half an hour, and every article keeps one address.",
       },
       {
-        step: "Write",
+        step: "Write to be quoted",
         l: "sources read and cited per article",
-        d: "Research on live search, and every source is read before it is cited. An editor pass checks each claim against your product facts and the sources, then automated checks go over the rest. A topic too close to one you already have is not written. You see every article 2 days before it goes live, and can edit or stop it.",
+        d: "Pages built to be the one an assistant quotes: researched on live search, every source read before it is cited, every claim checked against your product facts by an editor pass, then automated checks. No near-duplicates of topics you already have. You see every article 2 days before it goes live, and can edit or stop it.",
       },
       {
-        step: "Re-measure",
+        step: "Re-ask and push",
         l: "full recounts a year, against day 0",
-        d: "The same questions against day 0, every two weeks. A separate test tells us whether each assistant can find your published articles at all, so a gap in indexing is caught and fixed instead of being mistaken for weak writing. Once a month, a report in your language, read by a person before it reaches you.",
+        d: "Every two weeks the same questions go back to all four assistants, against day 0. Wherever you're still missing is where the next work goes. A separate test checks that each assistant can find your new articles, so an indexing gap gets fixed instead of blamed on the writing. Once a month, a report in your language, read by a person before it reaches you.",
       },
     ],
-    inside: "What runs inside each stage",
-    closing: "None of this shows in an article. All of it decides whether an assistant ever reads one.",
-    seePlan: "See the plan →",
+    inside: "What we do inside each step",
+    closing: "Anyone can publish an article. We do everything that decides whether an assistant reads it and names you.",
+    seePlan: "Get me into the answers →",
   },
   // WhyThisMatters (why): third-party figures, each linked to its source in the component. The
   // numbers are formatted per language there (formatNumber), and the source names stay there too.
   why: {
-    kicker: "Why this matters",
+    kicker: "What you're losing right now",
     h2: "Your customers ask AI who to pick. It names a few businesses. If it's not you, it's your competitor.",
     lead: "Not on page two. Not in an ad. In the answer, the first thing they read.",
     users: { n: "1 billion+", l: "people use ChatGPT every week.", src: "August 2026" },
@@ -86,14 +88,14 @@ const en = {
     costs: (cpc: string, perAd: string) =>
       `Clicks keep getting pricier: <g>Google's cost per click rose ${cpc} in 2025</g>, <m>Meta's average price per ad rose ${perAd}</m>.`,
     closing:
-      "Nobody can guarantee a mention, and anyone who promises one is lying. We don't promise. We count: your customers' questions, four assistants, every two weeks.",
-    cta: "Check my site →",
+      "Every week you're not in the answer, those customers go to whoever is. See who's getting yours: free, in 30 seconds.",
+    cta: "See who's taking my customers →",
     footnote:
       "Ad costs: WordStream by LocaliQ 2026, US Google and Microsoft search campaigns, April 2025 – March 2026; the publisher's averages are medians; a lead is an inquiry, not a sale. Cost per customer: First Page Sage's own B2B client data, January 2022 – August 2025; “paid” there means mainly search ads and paid social. Each survey figure shows who was asked and when.",
     newTab: "(opens in a new tab)",
   },
   versus: {
-    h2: "Why this is not paying for articles",
+    h2: "Articles alone won't get you named. Here's what does.",
     colA: "Article-only service",
     colB: "ItGrows plan",
     // a: what an article-only service does; b: what the plan does; k + d: the detail (k is followed by ".").
@@ -110,14 +112,14 @@ const en = {
       { a: "Unwinnable topics written", b: "Spotted before you spend", k: "Questions no own-site article can win", d: "Found before your budget goes into them." },
       { a: "Facts up to the writer", b: "3–5 sources, each read", k: "Facts and sources", d: "Every source read before it is cited; an editor pass and automated checks on every article." },
       { a: "Proof: articles, traffic", b: "Proof: count vs day 0", k: "Proof", d: "The same questions against day 0, every two weeks, across four assistants." },
-      { a: "You pay for words", b: "You pay to be findable", k: "What you pay for", d: "Being findable, readable and quotable, and an honest count of whether you are named." },
+      { a: "You pay for words", b: "You pay to get named", k: "What you pay for", d: "Everything that gets you found, read and quoted, and a recount every two weeks of where you're named." },
     ],
-    footnote: "Some agencies do more than write. Ask them for their latest count against day 0.",
+    footnote: "Ask any agency for its count against day 0. With us you see yours every two weeks.",
   },
   included: [
     "Setup: your site tested as 11 crawlers, blockers fixed, Bing and Google set up — one-time, free with 3 months or a year",
     "Day 0: the full detailed report — 240 answers from ChatGPT, Claude, Gemini and Perplexity — included",
-    "Every two weeks: the same count against day 0, whether the assistants can find your articles, and who is quoted instead",
+    "Every two weeks: your customers' questions re-asked to all four assistants against day 0, who is quoted instead of you, and the next push wherever you're missing",
     "Up to 12 researched articles a month on your own domain, 3–5 sources each",
     "The sites the assistants quote instead of you: we prepare the profiles and the letters to editors",
     "Blog hosting with the machine-readable layer built in — one DNS record",
@@ -130,42 +132,42 @@ const en = {
 export default defineMessages(en, {
   de: {
     work: {
-      kicker: "Was wir für Sie leisten",
-      h2: "Ein Artikel ist der letzte Schritt, nicht das Produkt",
-      lead: "Fünf Stufen. Wir erledigen die Arbeit, jede Woche. Sie sehen jeden Artikel 2 Tage vor der Veröffentlichung und können ihn bearbeiten oder stoppen.",
+      kicker: "So bringen wir Sie in die Antworten",
+      h2: "Fünf Schritte, die Sie in die Antwort bringen. Wir erledigen alle fünf.",
+      lead: "Wir erledigen die Arbeit jede Woche und legen nach, bis die Assistenten Sie nennen. Sie sehen jeden Artikel 2 Tage vor der Veröffentlichung und können ihn bearbeiten oder stoppen.",
       stages: [
         {
-          step: "Messen",
-          l: "Antworten gelesen, bevor wir ein Wort schreiben",
-          d: "Zwanzig Fragen, die Ihre Kunden stellen, an alle vier Assistenten, jeweils dreimal, weil sich ihre Antworten von Anfrage zu Anfrage ändern. Wer genannt wird, welche Seiten zitiert werden und welche Art von Website jede Quelle ist: Ein Wettbewerber, ein Bewertungsportal, ein Verzeichnis und eine offizielle Quelle verlangen jeweils einen anderen Schritt. Manche Fragen kann kein Artikel auf Ihrer eigenen Website gewinnen; wir finden heraus, welche, bevor Ihr Budget hineinfließt.",
+          step: "Lücke finden",
+          l: "Antworten gelesen, um zu sehen, wer Ihren Platz einnimmt",
+          d: "Zwanzig Fragen, die Ihre Kunden stellen, an alle vier Assistenten, jeweils dreimal. Wir sehen genau, wer an Ihrer Stelle genannt wird, welche Seiten zitiert werden und welche Art von Website jede Quelle ist: ein Wettbewerber, ein Bewertungsportal, ein Verzeichnis, eine offizielle Quelle. Jede schlägt man auf andere Weise. Fragen, die keine Seite auf Ihrer eigenen Website gewinnen kann, werden erkannt, bevor Ihr Budget hineinfließt.",
         },
         {
           step: "Türen öffnen",
-          l: "Crawler-Kennungen, mit denen wir Ihre Website testen",
-          d: "Vor dem ersten Artikel, auf jeder Ihrer Domains: Zertifikate, Weiterleitungen, die Firewall Ihres Hosters, robots.txt, Sitemaps. Was GPTBot, ClaudeBot, PerplexityBot und die anderen aufhält, finden und beheben wir gemeinsam mit Ihnen.",
+          l: "KI-Crawler, als die wir Ihre Website testen",
+          d: "Eine Website, die die Assistenten nicht lesen können, kann nicht genannt werden. Vor dem ersten Artikel testen wir jede Ihrer Domains als GPTBot, ClaudeBot, PerplexityBot und die anderen: Zertifikate, Weiterleitungen, die Firewall Ihres Hosters, robots.txt, Sitemaps. Jede Blockade, die wir finden, beheben wir mit Ihnen.",
         },
         {
-          step: "Indexiert werden",
-          l: "Suchindizes, einer pro Assistent",
-          d: "ChatGPT sucht über Bing, Claude über Brave, Gemini über Google, Perplexity über einen eigenen Index. Eine Seite, die Google indexiert hat, kann für die anderen drei trotzdem unsichtbar sein. Bei Blogs, die wir hosten, wird jede neue Seite innerhalb einer halben Stunde bei Bing eingereicht, und jeder Artikel behält eine einzige Adresse.",
+          step: "In jeden Index kommen",
+          l: "Indizes, in denen Sie sein müssen, einer pro Assistent",
+          d: "ChatGPT sucht über Bing. Claude über Brave. Gemini über Google. Perplexity über einen eigenen Index. Wer nur bei Google rankt, kann für die anderen drei unsichtbar sein, deshalb bearbeiten wir alle vier. Bei Blogs, die wir hosten, geht jede neue Seite innerhalb einer halben Stunde an Bing, und jeder Artikel behält eine einzige Adresse.",
         },
         {
-          step: "Schreiben",
+          step: "Schreiben, um zitiert zu werden",
           l: "Quellen pro Artikel gelesen und zitiert",
-          d: "Recherche mit Live-Suche, und jede Quelle wird gelesen, bevor sie zitiert wird. Ein Lektorat prüft jede Aussage anhand Ihrer Produktfakten und der Quellen, danach übernehmen automatische Prüfungen den Rest. Ein Thema, das einem vorhandenen zu nahe kommt, wird nicht geschrieben. Sie sehen jeden Artikel 2 Tage vor der Veröffentlichung und können ihn bearbeiten oder stoppen.",
+          d: "Seiten, die darauf gebaut sind, die eine zu sein, die ein Assistent zitiert: mit Live-Suche recherchiert, jede Quelle gelesen, bevor sie zitiert wird, jede Aussage von einem Lektorat anhand Ihrer Produktfakten geprüft, danach automatische Prüfungen. Keine Beinahe-Duplikate von Themen, die Sie schon haben. Sie sehen jeden Artikel 2 Tage vor der Veröffentlichung und können ihn bearbeiten oder stoppen.",
         },
         {
-          step: "Neu messen",
+          step: "Neu fragen und nachlegen",
           l: "vollständige Nachzählungen pro Jahr, im Vergleich zu Tag 0",
-          d: "Dieselben Fragen im Vergleich zu Tag 0, alle zwei Wochen. Ein separater Test zeigt uns, ob jeder Assistent Ihre veröffentlichten Artikel überhaupt finden kann, damit eine Indexierungslücke erkannt und behoben wird, statt für schwache Texte gehalten zu werden. Einmal im Monat ein Bericht in Ihrer Sprache, von einem Menschen gelesen, bevor er Sie erreicht.",
+          d: "Alle zwei Wochen gehen dieselben Fragen erneut an alle vier Assistenten, im Vergleich zu Tag 0. Wo Sie noch fehlen, dorthin geht die nächste Arbeit. Ein separater Test prüft, ob jeder Assistent Ihre neuen Artikel finden kann, damit eine Indexierungslücke behoben wird, statt den Texten angelastet zu werden. Einmal im Monat ein Bericht in Ihrer Sprache, von einem Menschen gelesen, bevor er Sie erreicht.",
         },
       ],
-      inside: "Was in jeder Stufe passiert",
-      closing: "Nichts davon sieht man einem Artikel an. All das entscheidet, ob ein Assistent ihn je liest.",
-      seePlan: "Zum Plan →",
+      inside: "Was wir in jedem Schritt tun",
+      closing: "Einen Artikel veröffentlichen kann jeder. Wir erledigen alles, was entscheidet, ob ein Assistent ihn liest und Sie nennt.",
+      seePlan: "Bringen Sie mich in die Antworten →",
     },
     why: {
-      kicker: "Warum das zählt",
+      kicker: "Was Ihnen gerade entgeht",
       h2: "Ihre Kunden fragen die KI, wen sie wählen sollen. Die KI nennt ein paar Unternehmen. Sind Sie es nicht, ist es Ihr Wettbewerber.",
       lead: "Nicht auf Seite zwei. Nicht in einer Anzeige. In der Antwort – das Erste, was sie lesen.",
       users: { n: "1 Milliarde+", l: "Menschen nutzen ChatGPT jede Woche.", src: "August 2026" },
@@ -206,14 +208,14 @@ export default defineMessages(en, {
       costs: (cpc, perAd) =>
         `Klicks werden immer teurer: <g>Googles Kosten pro Klick stiegen 2025 um ${cpc}</g>, <m>der durchschnittliche Preis pro Anzeige bei Meta um ${perAd}</m>.`,
       closing:
-        "Niemand kann eine Nennung garantieren, und wer eine verspricht, lügt. Wir versprechen nichts. Wir zählen: die Fragen Ihrer Kunden, vier Assistenten, alle zwei Wochen.",
-      cta: "Website prüfen →",
+        "Jede Woche, in der Sie nicht in der Antwort stehen, gehen diese Kunden zu dem, der dort steht. Sehen Sie, wer Ihre bekommt: kostenlos, in 30 Sekunden.",
+      cta: "Wer nimmt mir die Kunden weg? →",
       footnote:
         "Werbekosten: WordStream by LocaliQ 2026, Suchkampagnen bei Google und Microsoft in den USA, April 2025 – März 2026; die Durchschnittswerte des Herausgebers sind Mediane; ein Lead ist eine Anfrage, kein Verkauf. Kosten pro Kunde: eigene B2B-Kundendaten von First Page Sage, Januar 2022 – August 2025; „bezahlt“ heißt dort vor allem Suchanzeigen und bezahlte Social-Media-Werbung. Bei jeder Umfragezahl steht, wer wann befragt wurde.",
       newTab: "(öffnet in neuem Tab)",
     },
     versus: {
-      h2: "Warum Sie hier nicht für Artikel bezahlen",
+      h2: "Artikel allein bringen Sie nicht in die Antworten. Das hier schon.",
       colA: "Reiner Artikeldienst",
       colB: "ItGrows-Plan",
       rows: [
@@ -229,14 +231,14 @@ export default defineMessages(en, {
         { a: "Aussichtslose Themen geschrieben", b: "Erkannt, bevor Sie zahlen", k: "Fragen, die kein Artikel auf der eigenen Website gewinnen kann", d: "Erkannt, bevor Ihr Budget hineinfließt." },
         { a: "Fakten nach Gutdünken des Autors", b: "3–5 Quellen, jede gelesen", k: "Fakten und Quellen", d: "Jede Quelle wird gelesen, bevor sie zitiert wird; Lektorat und automatische Prüfungen bei jedem Artikel." },
         { a: "Beleg: Artikel, Traffic", b: "Beleg: Zählung vs. Tag 0", k: "Belege", d: "Dieselben Fragen im Vergleich zu Tag 0, alle zwei Wochen, über vier Assistenten." },
-        { a: "Sie zahlen für Wörter", b: "Sie zahlen für Auffindbarkeit", k: "Wofür Sie zahlen", d: "Auffindbar, lesbar und zitierfähig zu sein, und eine ehrliche Zählung, ob Sie genannt werden." },
+        { a: "Sie zahlen für Wörter", b: "Sie zahlen dafür, genannt zu werden", k: "Wofür Sie zahlen", d: "Alles, was dafür sorgt, dass Sie gefunden, gelesen und zitiert werden, und alle zwei Wochen eine neue Zählung, wo Sie genannt werden." },
       ],
-      footnote: "Manche Agenturen tun mehr als schreiben. Fragen Sie sie nach ihrer letzten Zählung im Vergleich zu Tag 0.",
+      footnote: "Fragen Sie jede Agentur nach ihrer Zählung im Vergleich zu Tag 0. Bei uns sehen Sie Ihre alle zwei Wochen.",
     },
     included: [
       "Einrichtung: Ihre Website mit 11 Crawler-Kennungen getestet, Blockaden behoben, Bing und Google eingerichtet — einmalig, entfällt bei Vorauszahlung von 3 Monaten oder einem Jahr",
       "Tag 0: der vollständige ausführliche Bericht — 240 Antworten von ChatGPT, Claude, Gemini und Perplexity — inklusive",
-      "Alle zwei Wochen: dieselbe Zählung im Vergleich zu Tag 0, ob die Assistenten Ihre Artikel finden und wer stattdessen zitiert wird",
+      "Alle zwei Wochen: die Fragen Ihrer Kunden erneut an alle vier Assistenten im Vergleich zu Tag 0, wer statt Ihnen zitiert wird, und der nächste Schub überall, wo Sie fehlen",
       "Bis zu 12 recherchierte Artikel pro Monat auf Ihrer eigenen Domain, je 3–5 Quellen",
       "Die Websites, die die Assistenten statt Ihnen zitieren: Wir bereiten die Profile und die Briefe an die Redaktionen vor",
       "Blog-Hosting mit eingebauter maschinenlesbarer Ebene — ein DNS-Eintrag",
@@ -248,42 +250,42 @@ export default defineMessages(en, {
 
   fr: {
     work: {
-      kicker: "Ce que nous faisons pour vous",
-      h2: "Un article est la dernière étape, pas le produit",
-      lead: "Cinq étapes. Nous faisons le travail, chaque semaine. Vous voyez chaque article 2 jours avant sa mise en ligne, et pouvez le modifier ou l’arrêter.",
+      kicker: "Comment nous vous faisons mentionner",
+      h2: "Cinq étapes qui vous placent dans la réponse. Nous faisons les cinq.",
+      lead: "Nous faisons le travail chaque semaine et poussons jusqu’à ce que les assistants vous mentionnent. Vous voyez chaque article 2 jours avant sa mise en ligne, et pouvez le modifier ou l’arrêter.",
       stages: [
         {
-          step: "Mesurer",
-          l: "réponses lues avant d’écrire un mot",
-          d: "Vingt questions que posent vos clients, soumises aux quatre assistants trois fois chacune, car leurs réponses changent d’une requête à l’autre. Qui est mentionné, quelles pages sont citées et quel type de site est chaque source : un concurrent, un site d’avis, un annuaire et une source officielle appellent chacun une réponse différente. Certaines questions, aucun article sur votre propre site ne peut les gagner ; nous identifions lesquelles avant que votre budget n’y passe.",
+          step: "Trouver la brèche",
+          l: "réponses lues pour savoir qui prend votre place",
+          d: "Vingt questions que posent vos clients, soumises aux quatre assistants trois fois chacune. Nous voyons exactement qui est mentionné à votre place, quelles pages sont citées et quel type de site est chaque source : un concurrent, un site d’avis, un annuaire, une source officielle. On ne passe pas devant chacune de la même façon. Les questions qu’aucune page de votre propre site ne peut gagner sont repérées avant que votre budget n’y passe.",
         },
         {
           step: "Ouvrir les portes",
-          l: "robots simulés pour tester votre site",
-          d: "Avant le premier article, sur chacun de vos domaines : certificats, redirections, pare-feu de votre hébergeur, robots.txt, sitemaps. Tout ce qui bloque GPTBot, ClaudeBot, PerplexityBot et les autres, nous le trouvons et le corrigeons avec vous.",
+          l: "robots d’IA simulés pour tester votre site",
+          d: "Un site que les assistants ne peuvent pas lire ne peut pas être mentionné. Avant le premier article, nous testons chacun de vos domaines en nous présentant comme GPTBot, ClaudeBot, PerplexityBot et les autres : certificats, redirections, pare-feu de votre hébergeur, robots.txt, sitemaps. Chaque blocage trouvé, nous le corrigeons avec vous.",
         },
         {
-          step: "Être indexé",
-          l: "index de recherche, un par assistant",
-          d: "ChatGPT cherche via Bing, Claude via Brave, Gemini via Google, Perplexity via son propre index. Une page indexée par Google peut rester invisible pour les trois autres. Sur les blogs que nous hébergeons, chaque nouvelle page est soumise à Bing en moins d’une demi-heure, et chaque article garde une seule adresse.",
+          step: "Entrer dans chaque index",
+          l: "index où vous devez figurer, un par assistant",
+          d: "ChatGPT cherche via Bing. Claude via Brave. Gemini via Google. Perplexity via son propre index. Être bien classé sur Google seul peut vous laisser invisible pour les trois autres, alors nous travaillons les quatre. Sur les blogs que nous hébergeons, chaque nouvelle page part vers Bing en moins d’une demi-heure, et chaque article garde une seule adresse.",
         },
         {
-          step: "Écrire",
+          step: "Écrire pour être cité",
           l: "sources lues et citées par article",
-          d: "Des recherches en direct sur le web, et chaque source est lue avant d’être citée. Une relecture éditoriale vérifie chaque affirmation au regard des faits de votre produit et des sources, puis des contrôles automatiques passent sur le reste. Un sujet trop proche d’un sujet existant n’est pas écrit. Vous voyez chaque article 2 jours avant sa mise en ligne, et pouvez le modifier ou l’arrêter.",
+          d: "Des pages conçues pour être celle que cite l’assistant : documentées par une recherche en direct, chaque source lue avant d’être citée, chaque affirmation vérifiée par une relecture éditoriale au regard des faits de votre produit, puis des contrôles automatiques. Pas de quasi-doublons de sujets que vous avez déjà. Vous voyez chaque article 2 jours avant sa mise en ligne, et pouvez le modifier ou l’arrêter.",
         },
         {
-          step: "Remesurer",
+          step: "Redemander et pousser",
           l: "décomptes complets par an, comparés au jour 0",
-          d: "Les mêmes questions comparées au jour 0, toutes les deux semaines. Un test distinct nous dit si chaque assistant parvient seulement à trouver vos articles publiés, pour qu’un trou d’indexation soit repéré et corrigé au lieu d’être pris pour une faiblesse rédactionnelle. Une fois par mois, un rapport dans votre langue, relu par une personne avant de vous parvenir.",
+          d: "Toutes les deux semaines, les mêmes questions repartent vers les quatre assistants, comparées au jour 0. Là où vous manquez encore, c’est là que va le travail suivant. Un test distinct vérifie que chaque assistant trouve vos nouveaux articles, pour qu’un trou d’indexation soit corrigé au lieu d’être mis sur le compte de la rédaction. Une fois par mois, un rapport dans votre langue, relu par une personne avant de vous parvenir.",
         },
       ],
-      inside: "Ce qui se passe à chaque étape",
-      closing: "Rien de tout cela ne se voit dans un article. Tout cela décide si un assistant en lira un jour.",
-      seePlan: "Voir l’abonnement →",
+      inside: "Ce que nous faisons à chaque étape",
+      closing: "N’importe qui peut publier un article. Nous faisons tout ce qui décide si un assistant le lit et vous mentionne.",
+      seePlan: "Faites-moi entrer dans les réponses →",
     },
     why: {
-      kicker: "Pourquoi c’est important",
+      kicker: "Ce que vous perdez en ce moment",
       h2: "Vos clients demandent à l’IA qui choisir. Elle cite quelques entreprises. Si ce n’est pas vous, c’est votre concurrent.",
       lead: "Pas en page deux. Pas dans une annonce. Dans la réponse, la première chose qu’ils lisent.",
       users: { n: "1 milliard+", l: "de personnes utilisent ChatGPT chaque semaine.", src: "août 2026" },
@@ -326,14 +328,14 @@ export default defineMessages(en, {
       costs: (cpc, perAd) =>
         `Les clics coûtent toujours plus cher : <g>le coût par clic de Google a augmenté de ${cpc} en 2025</g>, <m>le prix moyen par publicité de Meta de ${perAd}</m>.`,
       closing:
-        "Personne ne peut garantir une mention, et quiconque en promet une ment. Nous ne promettons rien. Nous comptons : les questions de vos clients, quatre assistants, toutes les deux semaines.",
-      cta: "Vérifier mon site →",
+        "Chaque semaine où vous n’êtes pas dans la réponse, ces clients vont chez ceux qui y sont. Voyez qui récupère les vôtres : gratuitement, en 30 secondes.",
+      cta: "Qui me prend mes clients ? →",
       footnote:
         "Coûts publicitaires : WordStream by LocaliQ 2026, campagnes sur le réseau de recherche Google et Microsoft aux États-Unis, avril 2025 – mars 2026 ; les moyennes de l’éditeur sont des médianes ; un lead est une demande, pas une vente. Coût par client : données B2B des propres clients de First Page Sage, janvier 2022 – août 2025 ; « payant » y désigne surtout les annonces sur les moteurs de recherche et les réseaux sociaux payants. Chaque chiffre d’enquête indique qui a été interrogé et quand.",
       newTab: "(s’ouvre dans un nouvel onglet)",
     },
     versus: {
-      h2: "Pourquoi ce n’est pas un simple achat d’articles",
+      h2: "Des articles seuls ne vous feront pas mentionner. Voici ce qui le fait.",
       colA: "Rédaction d’articles seule",
       colB: "Abonnement ItGrows",
       rows: [
@@ -349,14 +351,14 @@ export default defineMessages(en, {
         { a: "Sujets perdus d’avance rédigés quand même", b: "Repérés avant la dépense", k: "Questions qu’aucun article sur votre site ne peut gagner", d: "Repérées avant que votre budget n’y passe." },
         { a: "Faits laissés au rédacteur", b: "3 à 5 sources, toutes lues", k: "Faits et sources", d: "Chaque source est lue avant d’être citée ; relecture éditoriale et contrôles automatiques sur chaque article." },
         { a: "Preuve : articles, trafic", b: "Preuve : décompte vs jour 0", k: "Preuve", d: "Les mêmes questions comparées au jour 0, toutes les deux semaines, sur quatre assistants." },
-        { a: "Vous payez des mots", b: "Vous payez pour être trouvable", k: "Ce pour quoi vous payez", d: "Être trouvable, lisible et citable, et un décompte honnête de vos mentions." },
+        { a: "Vous payez des mots", b: "Vous payez pour être mentionné", k: "Ce pour quoi vous payez", d: "Tout ce qui vous fait trouver, lire et citer, et un nouveau décompte toutes les deux semaines de là où vous êtes mentionné." },
       ],
-      footnote: "Certaines agences font plus qu’écrire. Demandez-leur leur dernier décompte comparé au jour 0.",
+      footnote: "Demandez à n’importe quelle agence son décompte comparé au jour 0. Chez nous, vous voyez le vôtre toutes les deux semaines.",
     },
     included: [
       "Mise en place : votre site testé avec 11 robots, blocages corrigés, Bing et Google configurés — une seule fois, non facturée si vous payez 3 mois ou un an d’avance",
       "Jour 0 : le rapport détaillé complet — 240 réponses de ChatGPT, Claude, Gemini et Perplexity — inclus",
-      "Toutes les deux semaines : le même décompte comparé au jour 0, la capacité des assistants à trouver vos articles, et qui est cité à votre place",
+      "Toutes les deux semaines : les questions de vos clients reposées aux quatre assistants par rapport au jour 0, qui est cité à votre place, et la prochaine poussée partout où vous manquez",
       "Jusqu’à 12 articles documentés par mois sur votre propre domaine, 3 à 5 sources chacun",
       "Les sites que citent les assistants à votre place : nous préparons les profils et les lettres aux rédactions",
       "Hébergement de blog avec la couche lisible par machine intégrée — un seul enregistrement DNS",
@@ -368,42 +370,42 @@ export default defineMessages(en, {
 
   es: {
     work: {
-      kicker: "Lo que hacemos por usted",
-      h2: "Un artículo es el último paso, no el producto",
-      lead: "Cinco etapas. Hacemos el trabajo, cada semana. Usted ve cada artículo 2 días antes de que se publique y puede editarlo o detenerlo.",
+      kicker: "Cómo conseguimos que le mencionen",
+      h2: "Cinco pasos que le ponen en la respuesta. Hacemos los cinco.",
+      lead: "Hacemos el trabajo cada semana y seguimos empujando hasta que los asistentes le mencionen. Usted ve cada artículo 2 días antes de que se publique y puede editarlo o detenerlo.",
       stages: [
         {
-          step: "Medir",
-          l: "respuestas leídas antes de escribir una palabra",
-          d: "Veinte preguntas que hacen sus clientes, planteadas a los cuatro asistentes tres veces cada una, porque sus respuestas cambian de una consulta a otra. A quién mencionan, qué páginas citan y qué tipo de sitio es cada fuente: un competidor, un sitio de reseñas, un directorio y una fuente oficial requieren cada uno una jugada distinta. Hay preguntas que ningún artículo en su propio sitio puede ganar; averiguamos cuáles antes de que su presupuesto se vaya en ellas.",
+          step: "Encontrar el hueco",
+          l: "respuestas leídas para ver quién ocupa su lugar",
+          d: "Veinte preguntas que hacen sus clientes, planteadas a los cuatro asistentes tres veces cada una. Vemos exactamente a quién mencionan en su lugar, qué páginas citan y qué tipo de sitio es cada fuente: un competidor, un sitio de reseñas, un directorio, una fuente oficial. A cada uno se le gana de una forma distinta. Las preguntas que ninguna página de su propio sitio puede ganar se detectan antes de que su presupuesto se vaya en ellas.",
         },
         {
           step: "Abrir las puertas",
-          l: "rastreadores con los que probamos su sitio",
-          d: "Antes del primer artículo, en cada dominio que tenga: certificados, redirecciones, el firewall de su hosting, robots.txt, sitemaps. Lo que frene a GPTBot, ClaudeBot, PerplexityBot y los demás, lo encontramos y lo corregimos con usted.",
+          l: "rastreadores de IA con los que probamos su sitio",
+          d: "Un sitio que los asistentes no pueden leer no puede ser mencionado. Antes del primer artículo probamos cada dominio que tenga como GPTBot, ClaudeBot, PerplexityBot y los demás: certificados, redirecciones, el firewall de su hosting, robots.txt, sitemaps. Cada bloqueo que encontramos lo corregimos con usted.",
         },
         {
-          step: "Indexarse",
-          l: "índices de búsqueda, uno por asistente",
-          d: "ChatGPT busca a través de Bing, Claude a través de Brave, Gemini a través de Google y Perplexity con su propio índice. Una página que Google ha indexado puede seguir siendo invisible para los otros tres. En los blogs que alojamos, cada página nueva se envía a Bing en menos de media hora, y cada artículo conserva una sola dirección.",
+          step: "Entrar en cada índice",
+          l: "índices en los que debe estar, uno por asistente",
+          d: "ChatGPT busca a través de Bing. Claude, a través de Brave. Gemini, a través de Google. Perplexity, con su propio índice. Si solo posiciona en Google, puede ser invisible para los otros tres, así que trabajamos los cuatro. En los blogs que alojamos, cada página nueva llega a Bing en menos de media hora, y cada artículo conserva una sola dirección.",
         },
         {
-          step: "Escribir",
+          step: "Escribir para ser citado",
           l: "fuentes leídas y citadas por artículo",
-          d: "Investigación con búsqueda en directo, y cada fuente se lee antes de citarla. Una revisión editorial contrasta cada afirmación con los datos de su producto y con las fuentes, y después controles automáticos repasan el resto. No se escribe un tema demasiado parecido a otro que ya tenga. Usted ve cada artículo 2 días antes de que se publique y puede editarlo o detenerlo.",
+          d: "Páginas hechas para ser la que cita el asistente: investigadas con búsqueda en directo, cada fuente leída antes de citarla, cada afirmación contrastada con los datos de su producto en una revisión editorial y después controles automáticos. Nada casi duplicado de temas que ya tiene. Usted ve cada artículo 2 días antes de que se publique y puede editarlo o detenerlo.",
         },
         {
-          step: "Volver a medir",
+          step: "Volver a preguntar y empujar",
           l: "recuentos completos al año, frente al día 0",
-          d: "Las mismas preguntas frente al día 0, cada dos semanas. Una prueba aparte nos dice si cada asistente puede siquiera encontrar sus artículos publicados, para que un fallo de indexación se detecte y se corrija en lugar de confundirse con textos flojos. Una vez al mes, un informe en su idioma, leído por una persona antes de llegarle.",
+          d: "Cada dos semanas las mismas preguntas vuelven a los cuatro asistentes, frente al día 0. Allí donde aún no aparece es adonde va el siguiente trabajo. Una prueba aparte comprueba que cada asistente encuentra sus artículos nuevos, para que un fallo de indexación se corrija en lugar de achacarse a los textos. Una vez al mes, un informe en su idioma, leído por una persona antes de llegarle.",
         },
       ],
-      inside: "Qué ocurre en cada etapa",
-      closing: "Nada de esto se ve en un artículo. Todo ello decide si un asistente llegará a leer alguno.",
-      seePlan: "Ver el plan →",
+      inside: "Qué hacemos en cada paso",
+      closing: "Cualquiera puede publicar un artículo. Nosotros hacemos todo lo que decide si un asistente lo lee y le menciona.",
+      seePlan: "Quiero estar en las respuestas →",
     },
     why: {
-      kicker: "Por qué importa",
+      kicker: "Lo que está perdiendo ahora mismo",
       h2: "Sus clientes le preguntan a la IA a quién elegir. La IA nombra unas pocas empresas. Si no es usted, es su competidor.",
       lead: "No en la segunda página. No en un anuncio. En la respuesta, lo primero que leen.",
       users: { n: "+1000 millones", l: "de personas usan ChatGPT cada semana.", src: "agosto de 2026" },
@@ -446,14 +448,14 @@ export default defineMessages(en, {
       costs: (cpc, perAd) =>
         `Los clics son cada vez más caros: <g>el coste por clic de Google subió un ${cpc} en 2025</g> y <m>el precio medio por anuncio de Meta, un ${perAd}</m>.`,
       closing:
-        "Nadie puede garantizar una mención, y quien se la prometa miente. Nosotros no prometemos. Contamos: las preguntas de sus clientes, cuatro asistentes, cada dos semanas.",
-      cta: "Comprobar mi sitio →",
+        "Cada semana que no está en la respuesta, esos clientes se van con quien sí está. Vea quién se queda con los suyos: gratis, en 30 segundos.",
+      cta: "¿Quién se lleva mis clientes? →",
       footnote:
         "Costes publicitarios: WordStream by LocaliQ 2026, campañas de búsqueda de Google y Microsoft en EE. UU., abril de 2025 – marzo de 2026; las medias del editor son medianas; un lead es una consulta, no una venta. Coste por cliente: datos propios de First Page Sage sobre sus clientes B2B, enero de 2022 – agosto de 2025; «de pago» significa allí sobre todo anuncios de búsqueda y redes sociales de pago. Cada cifra de encuesta indica a quién se preguntó y cuándo.",
       newTab: "(se abre en una pestaña nueva)",
     },
     versus: {
-      h2: "Por qué esto no es pagar por artículos",
+      h2: "Los artículos solos no hacen que le mencionen. Esto sí.",
       colA: "Servicio solo de artículos",
       colB: "Plan de ItGrows",
       rows: [
@@ -469,14 +471,14 @@ export default defineMessages(en, {
         { a: "Temas imposibles, escritos igual", b: "Detectados antes de gastar", k: "Preguntas que ningún artículo propio puede ganar", d: "Se detectan antes de que su presupuesto se vaya en ellas." },
         { a: "Datos a criterio del redactor", b: "3–5 fuentes, todas leídas", k: "Datos y fuentes", d: "Cada fuente se lee antes de citarla; revisión editorial y controles automáticos en cada artículo." },
         { a: "Prueba: artículos, tráfico", b: "Prueba: recuento vs. día 0", k: "Pruebas", d: "Las mismas preguntas frente al día 0, cada dos semanas, en cuatro asistentes." },
-        { a: "Paga por palabras", b: "Paga por que le encuentren", k: "Por lo que paga", d: "Poder ser encontrado, leído y citado, y un recuento honesto de si le mencionan." },
+        { a: "Paga por palabras", b: "Paga por que le mencionen", k: "Por lo que paga", d: "Todo lo que hace que le encuentren, le lean y le citen, y un nuevo recuento cada dos semanas de dónde le mencionan." },
       ],
-      footnote: "Algunas agencias hacen algo más que escribir. Pídales su último recuento frente al día 0.",
+      footnote: "Pida a cualquier agencia su recuento frente al día 0. Con nosotros ve el suyo cada dos semanas.",
     },
     included: [
       "Configuración inicial: su sitio probado con 11 rastreadores, bloqueos corregidos, Bing y Google configurados — pago único, no se cobra si paga 3 meses o un año por adelantado",
       "Día 0: el informe detallado completo — 240 respuestas de ChatGPT, Claude, Gemini y Perplexity — incluido",
-      "Cada dos semanas: el mismo recuento frente al día 0, si los asistentes pueden encontrar sus artículos y a quién citan en su lugar",
+      "Cada dos semanas: las preguntas de sus clientes planteadas de nuevo a los cuatro asistentes frente al día 0, a quién citan en su lugar y el siguiente empuje allí donde no aparece",
       "Hasta 12 artículos documentados al mes en su propio dominio, con 3–5 fuentes cada uno",
       "Los sitios que citan los asistentes en su lugar: preparamos los perfiles y las cartas a las redacciones",
       "Alojamiento del blog con la capa legible por máquinas integrada — un solo registro DNS",
@@ -488,42 +490,42 @@ export default defineMessages(en, {
 
   ru: {
     work: {
-      kicker: "Что мы делаем для вас",
-      h2: "Статья — последний шаг, а не продукт",
-      lead: "Пять этапов. Работу делаем мы, каждую неделю. Вы видите каждую статью за 2 дня до публикации и можете её отредактировать или остановить.",
+      kicker: "Как мы добиваемся, чтобы вас называли",
+      h2: "Пять шагов, которые приводят вас в ответ. Все пять делаем мы.",
+      lead: "Мы делаем работу каждую неделю и дожимаем, пока ассистенты не начнут называть вас. Вы видите каждую статью за 2 дня до публикации и можете её отредактировать или остановить.",
       stages: [
         {
-          step: "Замер",
-          l: "ответов прочитано, прежде чем мы напишем хоть слово",
-          d: "Двадцать вопросов, которые задают ваши клиенты, — каждому из четырёх ассистентов по три раза, потому что их ответы меняются от запроса к запросу. Кого называют, какие страницы цитируют и что за сайт каждый источник: конкурент, сайт отзывов, каталог и официальный источник требуют разных шагов. Некоторые вопросы не выиграть ни одной статьёй на вашем собственном сайте; мы выясняем, какие именно, прежде чем на них уйдёт ваш бюджет.",
+          step: "Найти пробел",
+          l: "ответов прочитано, чтобы увидеть, кто занимает ваше место",
+          d: "Двадцать вопросов, которые задают ваши клиенты, — каждому из четырёх ассистентов по три раза. Мы видим, кого именно называют вместо вас, какие страницы цитируют и что за сайт каждый источник: конкурент, сайт отзывов, каталог, официальный источник. Каждого обходят по-своему. Вопросы, которые не выиграть ни одной страницей на вашем собственном сайте, мы выявляем до того, как на них уйдёт ваш бюджет.",
         },
         {
           step: "Открыть двери",
-          l: "краулеров, которыми мы проверяем ваш сайт",
-          d: "До первой статьи, на каждом вашем домене: сертификаты, редиректы, файрвол хостинга, robots.txt, sitemap. Всё, что мешает GPTBot, ClaudeBot, PerplexityBot и остальным, мы находим и исправляем вместе с вами.",
+          l: "ИИ-краулеров, от имени которых мы проверяем ваш сайт",
+          d: "Сайт, который ассистенты не могут прочитать, они не могут и назвать. До первой статьи мы проверяем каждый ваш домен от имени GPTBot, ClaudeBot, PerplexityBot и остальных: сертификаты, редиректы, файрвол хостинга, robots.txt, sitemap. Каждую найденную блокировку устраняем вместе с вами.",
         },
         {
-          step: "Индексация",
-          l: "поисковых индекса, по одному на ассистента",
-          d: "ChatGPT ищет через Bing, Claude — через Brave, Gemini — через Google, Perplexity — через собственный индекс. Страница, которую проиндексировал Google, может оставаться невидимой для остальных трёх. В блогах, которые хостим мы, каждая новая страница отправляется в Bing в течение получаса, а у каждой статьи остаётся один адрес.",
+          step: "Попасть в каждый индекс",
+          l: "индекса, в которых вам нужно быть, — по одному на ассистента",
+          d: "ChatGPT ищет через Bing. Claude — через Brave. Gemini — через Google. Perplexity — через собственный индекс. Если вы есть только в Google, для остальных трёх вас может не существовать, поэтому мы работаем со всеми четырьмя. В блогах, которые хостим мы, каждая новая страница уходит в Bing в течение получаса, а у каждой статьи остаётся один адрес.",
         },
         {
-          step: "Тексты",
+          step: "Писать, чтобы цитировали",
           l: "источников прочитано и процитировано на статью",
-          d: "Исследование через живой поиск: каждый источник мы читаем, прежде чем процитировать. Редакторская вычитка сверяет каждое утверждение с фактами о вашем продукте и с источниками, затем всё остальное проходит автоматическую проверку. Тему, слишком близкую к уже существующей, не пишем. Вы видите каждую статью за 2 дня до публикации и можете её отредактировать или остановить.",
+          d: "Страницы, сделанные так, чтобы ассистент цитировал именно их: исследование через живой поиск, каждый источник прочитан до цитирования, каждое утверждение сверено редактором с фактами о вашем продукте, затем автоматические проверки. Никаких почти-дублей тем, которые у вас уже есть. Вы видите каждую статью за 2 дня до публикации и можете её отредактировать или остановить.",
         },
         {
-          step: "Повторный замер",
+          step: "Переспросить и дожать",
           l: "полных пересчётов в год — в сравнении с днём 0",
-          d: "Те же вопросы в сравнении с днём 0, раз в две недели. Отдельный тест показывает, может ли каждый ассистент вообще найти ваши опубликованные статьи, чтобы пробел в индексации поймали и исправили, а не приняли за слабые тексты. Раз в месяц — отчёт на вашем языке, который читает человек, прежде чем он попадёт к вам.",
+          d: "Раз в две недели те же вопросы снова уходят ко всем четырём ассистентам — в сравнении с днём 0. Где вас ещё нет, туда и идёт следующая работа. Отдельный тест проверяет, находит ли каждый ассистент ваши новые статьи, чтобы пробел в индексации исправили, а не списали на тексты. Раз в месяц — отчёт на вашем языке, который читает человек, прежде чем он попадёт к вам.",
         },
       ],
-      inside: "Что происходит на каждом этапе",
-      closing: "Ничего из этого не видно в статье. Но именно это решает, прочитает ли её ассистент хоть когда-нибудь.",
-      seePlan: "Смотреть подписку →",
+      inside: "Что мы делаем на каждом шаге",
+      closing: "Опубликовать статью может кто угодно. Мы делаем всё, от чего зависит, прочитает ли её ассистент и назовёт ли вас.",
+      seePlan: "Хочу в ответы ИИ →",
     },
     why: {
-      kicker: "Почему это важно",
+      kicker: "Что вы теряете прямо сейчас",
       h2: "Ваши клиенты спрашивают ИИ, кого выбрать. Он называет несколько компаний. Если не вас — значит, вашего конкурента.",
       lead: "Не на второй странице. Не в рекламе. В ответе — первое, что они читают.",
       users: { n: "1 млрд+", l: "человек пользуются ChatGPT каждую неделю.", src: "август 2026" },
@@ -564,14 +566,14 @@ export default defineMessages(en, {
       costs: (cpc, perAd) =>
         `Клики всё дороже: <g>цена клика в Google выросла в 2025 году на ${cpc}</g>, <m>средняя цена за объявление у Meta — на ${perAd}</m>.`,
       closing:
-        "Никто не может гарантировать упоминание, а тот, кто его обещает, лжёт. Мы не обещаем. Мы считаем: вопросы ваших клиентов, четыре ассистента, каждые две недели.",
-      cta: "Проверить мой сайт →",
+        "Каждую неделю, пока вас нет в ответе, эти клиенты уходят к тем, кто там есть. Посмотрите, кто забирает ваших: бесплатно, за 30 секунд.",
+      cta: "Кто забирает моих клиентов? →",
       footnote:
         "Стоимость рекламы: WordStream by LocaliQ 2026, поисковые кампании Google и Microsoft в США, апрель 2025 – март 2026; средние значения издателя — медианы; лид — это обращение, а не продажа. Стоимость клиента: собственные данные First Page Sage по B2B-клиентам, январь 2022 – август 2025; «платные» там — в основном поисковая реклама и платные соцсети. У каждой цифры из опроса указано, кого и когда спрашивали.",
       newTab: "(откроется в новой вкладке)",
     },
     versus: {
-      h2: "Почему это не оплата статей",
+      h2: "Одни статьи не сделают так, чтобы вас называли. А вот это — сделает.",
       colA: "Сервис «только статьи»",
       colB: "Подписка ItGrows",
       rows: [
@@ -587,14 +589,14 @@ export default defineMessages(en, {
         { a: "Пишут на безнадёжные темы", b: "Выявляем до трат", k: "Вопросы, которые не выиграть статьёй на своём сайте", d: "Находим их, прежде чем на них уйдёт ваш бюджет." },
         { a: "Факты — на совести автора", b: "3–5 источников, каждый прочитан", k: "Факты и источники", d: "Каждый источник прочитан до цитирования; редакторская вычитка и автоматические проверки для каждой статьи." },
         { a: "Доказательство: статьи, трафик", b: "Доказательство: сравнение с днём 0", k: "Доказательства", d: "Те же вопросы в сравнении с днём 0, раз в две недели, в четырёх ассистентах." },
-        { a: "Вы платите за слова", b: "Вы платите за находимость", k: "За что вы платите", d: "За то, чтобы вас можно было найти, прочитать и процитировать, — и за честный подсчёт того, называют ли вас." },
+        { a: "Вы платите за слова", b: "Вы платите за то, чтобы вас называли", k: "За что вы платите", d: "Всё, благодаря чему вас находят, читают и цитируют, и новый подсчёт раз в две недели — где вас называют." },
       ],
-      footnote: "Некоторые агентства делают больше, чем пишут. Попросите у них последний подсчёт в сравнении с днём 0.",
+      footnote: "Попросите любое агентство показать подсчёт в сравнении с днём 0. У нас вы видите свой раз в две недели.",
     },
     included: [
       "Настройка: ваш сайт проверен от имени 11 краулеров, блокировки устранены, Bing и Google настроены — разово, не взимается при оплате 3 месяцев или года",
       "День 0: полный подробный отчёт — 240 ответов ChatGPT, Claude, Gemini и Perplexity — включён",
-      "Раз в две недели: тот же подсчёт в сравнении с днём 0, могут ли ассистенты найти ваши статьи и кого цитируют вместо вас",
+      "Раз в две недели: вопросы ваших клиентов заново ко всем четырём ассистентам в сравнении с днём 0, кого цитируют вместо вас, и следующий рывок везде, где вас нет",
       "До 12 статей с исследованием в месяц на вашем собственном домене, по 3–5 источников в каждой",
       "Сайты, которые ассистенты цитируют вместо вас: мы готовим профили и письма редакторам",
       "Хостинг блога со встроенным машиночитаемым слоем — одна DNS-запись",

@@ -8,6 +8,7 @@ import { splitLocale, type Locale } from "@/lib/i18n/config"
 import { formatNumber } from "@/lib/i18n/format"
 import { rich } from "@/lib/i18n/rich"
 import pricingPlans from "@/lib/i18n/messages/pricingPlans"
+import growthGuarantee from "@/lib/i18n/messages/growthGuarantee"
 import { GEO_CHECKED_KEY, GEO_HANDOFF_KEY, handOff, readChecked, type CheckedSite } from "@/lib/geo-handoff"
 
 // The pricing block of "/": the quick check in one line, then the two offers side by side. What is
@@ -17,6 +18,9 @@ import { GEO_CHECKED_KEY, GEO_HANDOFF_KEY, handOff, readChecked, type CheckedSit
 // price: under the price test (lib/geo-pricing.ts PRICE_TEST) each account sees its own price in the
 // cabinet only, so the card says "you see your price after your free report". The yearly discount
 // comes from lib/geo-pricing.ts; every string from lib/i18n/messages/pricingPlans.ts.
+// Since 30 Oct 2026 (owner's decision) the plan card carries the growth guarantee's line with its "*"
+// (growthGuarantee.ts) above its buttons; its footnote with the link to the conditions is the last line
+// of the page (app/_home/SiteFooter.tsx), not here.
 //
 // The plan's buttons are the billing choices themselves: a Month / Year toggle; by the month there are
 // two (monthly plus the one-time setup, or 3 months upfront with the setup free), by the year one.
@@ -95,6 +99,7 @@ export default function PricingPlans({
   included: readonly string[]
 }) {
   const m = useT(pricingPlans)
+  const g = useT(growthGuarantee)
   const locale = useLocale()
   const [period, setPeriod] = useState<"month" | "year">("month")
 
@@ -237,6 +242,10 @@ export default function PricingPlans({
               </Tick>
             ))}
           </ul>
+          <div className="mt-5 rounded-xl border border-violet-400/40 bg-violet-500/10 p-4">
+            <p className="text-[11px] uppercase tracking-[0.15em] font-bold text-violet-300">{g.label}</p>
+            <p className="mt-1 font-bold text-white leading-snug">{g.line}</p>
+          </div>
           <div className="mt-auto pt-7 space-y-2.5">
             {start[period].map(({ i, label }, n) => (
               <Go
@@ -256,8 +265,6 @@ export default function PricingPlans({
           </div>
         </div>
       </div>
-
-      <p className="text-center text-xs text-slate-500 mt-5">{m.disclaimer}</p>
     </div>
   )
 }

@@ -6,12 +6,17 @@
 // product is a separate product with its own pages (/personal) and its own line in the navigation
 // and the footer; it is not part of this description. Assistants were answering "a LinkedIn tool".
 
+// Since 30 Oct 2026 (owner's decision) ENTITY_ABOUT[1] states the growth guarantee's line and the link
+// to its conditions (/terms#growth-guarantee), without the qualifier ('until they do' is only in the
+// footnote, llms.txt and the Terms): it renders only on /about, as plain text. No other guarantee,
+// number or client result belongs here.
+
 export const ENTITY_ONE_LINER =
-  "ItGrows is an AI visibility (generative engine optimization, GEO) service for businesses: it publishes answer pages on the company's own website, makes the site readable for AI crawlers and search indexes, and checks every two weeks whether ChatGPT, Claude, Gemini and Perplexity name the company."
+  "ItGrows is an AI visibility (generative engine optimization, GEO) service that gets businesses named when their customers ask ChatGPT, Claude, Gemini and Perplexity: it publishes answer pages on the company's own website, makes the site readable for AI crawlers and search indexes, and re-asks the customers' questions to all four assistants every two weeks."
 
 export const ENTITY_ABOUT = [
-  "ItGrows helps a company get named when its buyers ask an AI assistant. We put the questions those buyers ask to ChatGPT, Claude, Gemini and Perplexity, several times each, and record who is named and which sites are cited. Then we publish pages on the company's own domain that answer those questions, fix what stops AI crawlers and search indexes from reading the site, and measure again every two weeks.",
-  "No one can guarantee that an assistant will name a business. We promise the work and an honest count every two weeks.",
+  "ItGrows gets a company named when its customers ask an AI assistant. We put the questions those customers ask to ChatGPT, Claude, Gemini and Perplexity, several times each, and see who is named in its place and which sites are cited. Then we do the work: we open the site to AI crawlers and search indexes, publish pages on the company's own domain that answer those questions, and prepare its profiles on the sites the assistants quote. Every two weeks we ask again and push wherever the company is still missing.",
+  "Every paid plan carries a growth guarantee: in 90 days, AI assistants will name you more often than on launch day, or we work for free (conditions: itgrows.ai/terms#growth-guarantee).",
 ]
 
 // Share images. The GEO one is drawn by app/og/geo; og-image.png shows the LinkedIn/X product.

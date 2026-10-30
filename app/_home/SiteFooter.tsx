@@ -1,13 +1,18 @@
 import Link from "next/link"
 import { t } from "@/lib/i18n/messages"
+import growthGuarantee from "@/lib/i18n/messages/growthGuarantee"
 import siteFooter from "@/lib/i18n/messages/siteFooter"
 import { localePath } from "@/lib/i18n/paths"
+import { rich } from "@/lib/i18n/rich"
 import { getLocale } from "@/lib/i18n/server"
 
 // The footer of the public pages ("/"; /business redirects there). Short on purpose: what ItGrows is
 // in one line, then the way around the site. The long description lives on /about.
 // A server component that reads the page's language itself (lib/i18n/server), so any page can use it
 // as it is; labels in lib/i18n/messages/siteFooter.ts. Links to the public GEO pages keep the language.
+// Since 30 Oct 2026 the last line is the growth guarantee's footnote (growthGuarantee.ts footnote): the
+// one place on the page with its condition and the link to /terms#growth-guarantee (English only, the
+// same address in every language). The guarantee's line higher up the page carries only the "*".
 
 type M = (typeof siteFooter)["en"]
 
@@ -50,6 +55,7 @@ const COLUMNS: { title: keyof M["titles"]; links: { href: string; label: keyof M
 export default async function SiteFooter() {
   const locale = await getLocale()
   const m = t(locale, siteFooter)
+  const g = t(locale, growthGuarantee)
   return (
     <footer className="bg-[#1b1916] text-slate-400 px-4 sm:px-6 pt-14 pb-8">
       <div className="max-w-6xl mx-auto">
@@ -77,9 +83,19 @@ export default async function SiteFooter() {
             ))}
           </div>
         </div>
-        <div className="mt-12 pt-6 border-t border-white/10 flex flex-col sm:flex-row gap-2 sm:justify-between text-xs text-slate-500">
+        <div className="mt-12 pt-6 border-t border-white/10 text-xs text-slate-500">
           <p>© 2026 ItGrows.ai</p>
-          <p>{m.disclaimer}</p>
+          {/* The growth guarantee's footnote, the last line of the page: the "*" of its line above (hero,
+              plan card, FAQ, #apply) points here. */}
+          <p className="mt-3 text-[11px] leading-relaxed text-slate-400">
+            {rich(g.footnote, {
+              link: (c) => (
+                <Link href="/terms#growth-guarantee" className="underline hover:text-white">
+                  {c}
+                </Link>
+              ),
+            })}
+          </p>
         </div>
       </div>
     </footer>

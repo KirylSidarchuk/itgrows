@@ -3,6 +3,8 @@ import { defineMessages } from "../messages"
 // app/business/ai-crawler-checker/page.tsx: the page around the crawler check (the form and the
 // result are app/business/ai-crawler-checker/CrawlerChecker.tsx, namespace crawlerChecker).
 // <code>…</code> is a robots.txt path, <link>…</link> the link inside a tip.
+// Since 30 Oct 2026 (owner's decision) our own robots.txt mistake is out of the story: the section shows
+// the risk to the reader's site, and the closing tip leads to the visibility check.
 
 const en = {
   metaTitle: "AI crawler checker: is your site blocking GPTBot? | ItGrows",
@@ -16,14 +18,14 @@ const en = {
   eyebrow: "AI crawler check · no signup",
   h1: "Is your site blocking AI crawlers?",
   lead: "Enter your site. We read your robots.txt the way crawlers do, test the pages in your sitemap against it for GPTBot, OAI-SearchBot, ClaudeBot, PerplexityBot, Googlebot and Bingbot, and ask your server as each AI crawler.",
-  whyTitle: "Why we built this",
+  whyTitle: "One rule can lock AI out of your best pages",
   whyBody:
-    "On itgrows.ai a robots.txt rule meant to hide one redirect page, <code>/b</code>, was written as a prefix. From 11 August to 21 October 2026 it also closed <code>/blog</code>, <code>/business</code> and every one of our guides to all crawlers. The pages loaded fine in a browser, the rule looked harmless, and Bing listed our business page as “discovered but not crawled” the whole time. Reading the rules did not reveal it; testing real URLs against them does.",
+    "One robots.txt rule can shut every AI crawler out of your best pages while the site looks fine in a browser: a rule meant for one page, <code>/b</code>, also closes <code>/blog</code> and <code>/business</code>, because rules match prefixes. Reading the rules won't show it. Testing real URLs against them does, and that's what this check does.",
   whatTitle: "What to do with the result",
   tipRules:
     "Rules closing pages you want read: rewrite them so they match only what you meant, for example with a trailing <code>$</code>. See <link>is your website blocking AI crawlers</link>.",
   tipServer: "A crawler refused by your server: it is your firewall or CDN, not robots.txt. See <link>GPTBot blocked by Cloudflare</link>.",
-  tipOpen: "Everything open: the next question is whether the assistants name you. Run the <link>AI visibility check</link>.",
+  tipOpen: "Everything open? Now see whether the assistants actually name you: run the <link>AI visibility check</link>.",
   faq: [
     {
       q: "How does the check decide whether a page is blocked?",
@@ -31,7 +33,7 @@ const en = {
     },
     {
       q: "Why would robots.txt block pages I never meant to block?",
-      a: "Rules are prefixes. A rule written for one page, such as Disallow: /b, also matches /blog and /business. We made exactly this mistake on itgrows.ai and it closed our guides to every crawler for ten weeks before we noticed.",
+      a: "Rules are prefixes. A rule written for one page, such as Disallow: /b, also matches /blog and /business, and quietly closes them to every crawler. This check tests your real sitemap pages against your rules, so it catches that.",
     },
     {
       q: "My robots.txt allows everything. Can crawlers still be blocked?",
@@ -57,14 +59,14 @@ export default defineMessages(en, {
     eyebrow: "KI-Crawler-Check · ohne Anmeldung",
     h1: "Blockiert Ihre Website KI-Crawler?",
     lead: "Geben Sie Ihre Website ein. Wir lesen Ihre robots.txt so, wie Crawler es tun, testen die Seiten Ihrer Sitemap dagegen für GPTBot, OAI-SearchBot, ClaudeBot, PerplexityBot, Googlebot und Bingbot und senden Ihrem Server Anfragen mit der Kennung jedes KI-Crawlers.",
-    whyTitle: "Warum wir das gebaut haben",
+    whyTitle: "Eine einzige Regel kann KI von Ihren besten Seiten aussperren",
     whyBody:
-      "Auf itgrows.ai war eine robots.txt-Regel, die eine einzige Weiterleitungsseite verbergen sollte, <code>/b</code>, als Präfix geschrieben. Vom 11. August bis zum 21. Oktober 2026 sperrte sie außerdem <code>/blog</code>, <code>/business</code> und jeden unserer Leitfäden für alle Crawler. Im Browser luden die Seiten problemlos, die Regel sah harmlos aus, und Bing führte unsere Business-Seite die ganze Zeit als „entdeckt, aber nicht gecrawlt“. Das Lesen der Regeln hat es nicht verraten; das Testen echter URLs gegen sie schon.",
+      "Eine einzige robots.txt-Regel kann jeden KI-Crawler von Ihren besten Seiten aussperren, während die Website im Browser einwandfrei aussieht: Eine Regel für eine einzige Seite, <code>/b</code>, sperrt auch <code>/blog</code> und <code>/business</code>, weil Regeln als Präfix wirken. Das Lesen der Regeln verrät es nicht. Das Testen echter URLs gegen sie schon, und genau das macht dieser Check.",
     whatTitle: "Was Sie mit dem Ergebnis tun können",
     tipRules:
       "Regeln, die Seiten sperren, die gelesen werden sollen: Schreiben Sie sie so um, dass sie nur das treffen, was gemeint war, zum Beispiel mit einem abschließenden <code>$</code>. Siehe <link>Blockiert Ihre Website KI-Crawler?</link> (auf Englisch).",
     tipServer: "Ein Crawler, den Ihr Server abweist: Das liegt an Ihrer Firewall oder Ihrem CDN, nicht an der robots.txt. Siehe <link>GPTBot von Cloudflare blockiert</link> (auf Englisch).",
-    tipOpen: "Alles offen: Die nächste Frage ist, ob die Assistenten Sie nennen. Starten Sie den <link>KI-Sichtbarkeitscheck</link>.",
+    tipOpen: "Alles offen? Dann sehen Sie jetzt, ob die Assistenten Sie tatsächlich nennen: Starten Sie den <link>KI-Sichtbarkeitscheck</link>.",
     faq: [
       {
         q: "Wie entscheidet der Check, ob eine Seite gesperrt ist?",
@@ -72,7 +74,7 @@ export default defineMessages(en, {
       },
       {
         q: "Warum sollte robots.txt Seiten sperren, die ich nie sperren wollte?",
-        a: "Regeln sind Präfixe. Eine Regel für eine einzelne Seite, etwa Disallow: /b, trifft auch /blog und /business. Genau diesen Fehler haben wir auf itgrows.ai gemacht, und er hat unsere Leitfäden zehn Wochen lang für alle Crawler gesperrt, bevor wir ihn bemerkten.",
+        a: "Regeln sind Präfixe. Eine Regel für eine einzelne Seite, etwa Disallow: /b, trifft auch /blog und /business und sperrt sie unbemerkt für jeden Crawler. Dieser Check testet Ihre echten Sitemap-Seiten gegen Ihre Regeln und findet genau das.",
       },
       {
         q: "Meine robots.txt erlaubt alles. Können Crawler trotzdem blockiert sein?",
@@ -96,14 +98,14 @@ export default defineMessages(en, {
     eyebrow: "Test des robots d’IA · sans inscription",
     h1: "Votre site bloque-t-il les robots d’IA ?",
     lead: "Saisissez votre site. Nous lisons votre robots.txt comme le font les robots, testons les pages de votre sitemap au regard de ses règles pour GPTBot, OAI-SearchBot, ClaudeBot, PerplexityBot, Googlebot et Bingbot, et interrogeons votre serveur en nous présentant comme chaque robot d’IA.",
-    whyTitle: "Pourquoi nous l’avons conçu",
+    whyTitle: "Une seule règle peut fermer vos meilleures pages à l’IA",
     whyBody:
-      "Sur itgrows.ai, une règle robots.txt censée masquer une seule page de redirection, <code>/b</code>, était écrite comme un préfixe. Du 11 août au 21 octobre 2026, elle a aussi fermé <code>/blog</code>, <code>/business</code> et chacun de nos guides à tous les robots. Les pages s’affichaient normalement dans un navigateur, la règle semblait inoffensive, et Bing a classé notre page business comme « découverte mais non explorée » pendant tout ce temps. Lire les règles ne l’a pas révélé ; les confronter à de vraies URL, si.",
+      "Une seule règle robots.txt peut fermer vos meilleures pages à tous les robots d’IA alors que le site s’affiche normalement dans un navigateur : une règle prévue pour une seule page, <code>/b</code>, ferme aussi <code>/blog</code> et <code>/business</code>, car les règles fonctionnent par préfixe. Lire les règles ne le révèle pas. Les confronter à de vraies URL, si : c’est ce que fait ce test.",
     whatTitle: "Que faire du résultat",
     tipRules:
       "Des règles ferment des pages que vous voulez faire lire : réécrivez-les pour qu’elles ne visent que ce que vous vouliez, par exemple avec un <code>$</code> final. Voir <link>votre site bloque-t-il les robots d’IA</link> (en anglais).",
     tipServer: "Un robot refusé par votre serveur : c’est votre pare-feu ou votre CDN, pas le robots.txt. Voir <link>GPTBot bloqué par Cloudflare</link> (en anglais).",
-    tipOpen: "Tout est ouvert : reste à savoir si les assistants vous mentionnent. Lancez le <link>test de visibilité IA</link>.",
+    tipOpen: "Tout est ouvert ? Voyez maintenant si les assistants vous mentionnent vraiment : lancez le <link>test de visibilité IA</link>.",
     faq: [
       {
         q: "Comment le test décide-t-il qu’une page est bloquée ?",
@@ -111,7 +113,7 @@ export default defineMessages(en, {
       },
       {
         q: "Pourquoi robots.txt bloquerait-il des pages que je n’ai jamais voulu bloquer ?",
-        a: "Les règles sont des préfixes. Une règle écrite pour une page, comme Disallow: /b, vise aussi /blog et /business. Nous avons fait exactement cette erreur sur itgrows.ai : elle a fermé nos guides à tous les robots pendant dix semaines avant que nous nous en apercevions.",
+        a: "Les règles sont des préfixes. Une règle écrite pour une page, comme Disallow: /b, vise aussi /blog et /business, et les ferme en silence à tous les robots. Ce test confronte les vraies pages de votre sitemap à vos règles, et repère donc ce cas.",
       },
       {
         q: "Mon robots.txt autorise tout. Les robots peuvent-ils quand même être bloqués ?",
@@ -135,14 +137,14 @@ export default defineMessages(en, {
     eyebrow: "Comprobación de rastreadores de IA · sin registro",
     h1: "¿Su sitio bloquea a los rastreadores de IA?",
     lead: "Introduzca su sitio. Leemos su robots.txt como lo hacen los rastreadores, probamos contra él las páginas de su sitemap para GPTBot, OAI-SearchBot, ClaudeBot, PerplexityBot, Googlebot y Bingbot, y consultamos a su servidor identificándonos como cada rastreador de IA.",
-    whyTitle: "Por qué lo creamos",
+    whyTitle: "Una sola regla puede dejar a la IA fuera de sus mejores páginas",
     whyBody:
-      "En itgrows.ai, una regla de robots.txt pensada para ocultar una sola página de redirección, <code>/b</code>, se escribió como prefijo. Del 11 de agosto al 21 de octubre de 2026 cerró también <code>/blog</code>, <code>/business</code> y todas nuestras guías a todos los rastreadores. Las páginas cargaban bien en el navegador, la regla parecía inofensiva y Bing mostró nuestra página de empresas como «descubierta pero no rastreada» todo ese tiempo. Leer las reglas no lo reveló; probar URL reales contra ellas, sí.",
+      "Una sola regla de robots.txt puede dejar fuera de sus mejores páginas a todos los rastreadores de IA mientras el sitio se ve bien en el navegador: una regla pensada para una sola página, <code>/b</code>, cierra también <code>/blog</code> y <code>/business</code>, porque las reglas funcionan por prefijo. Leer las reglas no lo revela. Probar URL reales contra ellas, sí, y eso es lo que hace esta comprobación.",
     whatTitle: "Qué hacer con el resultado",
     tipRules:
       "Reglas que cierran páginas que usted quiere que se lean: reescríbalas para que solo coincidan con lo que pretendía, por ejemplo con un <code>$</code> al final. Vea <link>¿su sitio bloquea a los rastreadores de IA?</link> (en inglés).",
     tipServer: "Un rastreador rechazado por su servidor: es su firewall o su CDN, no el robots.txt. Vea <link>GPTBot bloqueado por Cloudflare</link> (en inglés).",
-    tipOpen: "Todo abierto: la siguiente pregunta es si los asistentes le mencionan. Haga la <link>comprobación de visibilidad en IA</link>.",
+    tipOpen: "¿Todo abierto? Ahora vea si los asistentes le mencionan de verdad: haga la <link>comprobación de visibilidad en IA</link>.",
     faq: [
       {
         q: "¿Cómo decide la comprobación si una página está bloqueada?",
@@ -150,7 +152,7 @@ export default defineMessages(en, {
       },
       {
         q: "¿Por qué bloquearía robots.txt páginas que nunca quise bloquear?",
-        a: "Las reglas son prefijos. Una regla escrita para una página, como Disallow: /b, también coincide con /blog y /business. Cometimos exactamente este error en itgrows.ai y cerró nuestras guías a todos los rastreadores durante diez semanas antes de que nos diéramos cuenta.",
+        a: "Las reglas son prefijos. Una regla escrita para una página, como Disallow: /b, también coincide con /blog y /business, y las cierra sin avisar a todos los rastreadores. Esta comprobación prueba las páginas reales de su sitemap contra sus reglas, así que lo detecta.",
       },
       {
         q: "Mi robots.txt lo permite todo. ¿Pueden estar bloqueados los rastreadores igualmente?",
@@ -174,14 +176,14 @@ export default defineMessages(en, {
     eyebrow: "Проверка ИИ-краулеров · без регистрации",
     h1: "Не закрыт ли ваш сайт для ИИ-краулеров?",
     lead: "Укажите свой сайт. Мы читаем ваш robots.txt так же, как краулеры, сверяем с ним страницы из вашего sitemap для GPTBot, OAI-SearchBot, ClaudeBot, PerplexityBot, Googlebot и Bingbot и обращаемся к вашему серверу от имени каждого ИИ-краулера.",
-    whyTitle: "Зачем мы это сделали",
+    whyTitle: "Одно правило может закрыть для ИИ ваши лучшие страницы",
     whyBody:
-      "На itgrows.ai правило robots.txt, которое должно было скрыть одну страницу-редирект, <code>/b</code>, было записано как префикс. С 11 августа по 21 октября 2026 года оно закрывало для всех краулеров ещё и <code>/blog</code>, <code>/business</code> и все наши руководства. В браузере страницы открывались нормально, правило выглядело безобидно, а Bing всё это время показывал нашу бизнес-страницу как «обнаружена, но не просканирована». Чтение правил этого не выявило; проверка реальных URL по ним — выявляет.",
+      "Одно правило robots.txt может закрыть ваши лучшие страницы для всех ИИ-краулеров, пока в браузере сайт выглядит нормально: правило, написанное для одной страницы, <code>/b</code>, закрывает ещё и <code>/blog</code> и <code>/business</code>, потому что правила работают как префиксы. Чтение правил этого не покажет. Проверка реальных URL по ним — покажет, и именно это делает этот инструмент.",
     whatTitle: "Что делать с результатом",
     tipRules:
       "Если правила закрывают страницы, которые должны быть доступны, перепишите их так, чтобы они совпадали только с тем, что вы имели в виду, например с <code>$</code> на конце. Подробнее: <link>не блокирует ли ваш сайт ИИ-краулеров</link> (на английском).",
     tipServer: "Сервер отказывает краулеру: дело в вашем файрволе или CDN, а не в robots.txt. Подробнее: <link>GPTBot заблокирован Cloudflare</link> (на английском).",
-    tipOpen: "Всё открыто: следующий вопрос — называют ли вас ассистенты. Запустите <link>проверку видимости в ИИ</link>.",
+    tipOpen: "Всё открыто? Теперь проверьте, называют ли вас ассистенты на самом деле: запустите <link>проверку видимости в ИИ</link>.",
     faq: [
       {
         q: "Как проверка решает, закрыта ли страница?",
@@ -189,7 +191,7 @@ export default defineMessages(en, {
       },
       {
         q: "Почему robots.txt может закрывать страницы, которые я не собирался закрывать?",
-        a: "Правила — это префиксы. Правило, написанное для одной страницы, например Disallow: /b, совпадает и с /blog, и с /business. Мы допустили ровно эту ошибку на itgrows.ai, и она десять недель закрывала наши руководства для всех краулеров, прежде чем мы её заметили.",
+        a: "Правила — это префиксы. Правило, написанное для одной страницы, например Disallow: /b, совпадает и с /blog, и с /business и незаметно закрывает их для всех краулеров. Эта проверка сверяет реальные страницы из вашего sitemap с вашими правилами, поэтому такое она находит.",
       },
       {
         q: "Мой robots.txt всё разрешает. Могут ли краулеры всё равно быть заблокированы?",

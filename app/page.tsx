@@ -20,6 +20,7 @@ import { absoluteUrl, localePath } from "@/lib/i18n/paths"
 import { formatNumber } from "@/lib/i18n/format"
 import { rich } from "@/lib/i18n/rich"
 import homeMessages from "@/lib/i18n/messages/home"
+import growthGuarantee from "@/lib/i18n/messages/growthGuarantee"
 
 // The front door says what ItGrows is first: AI visibility for companies. The LinkedIn/X product
 // lives at /personal, one click away from here and from the sign-in menu. Since 22 Oct 2026 this is
@@ -27,6 +28,12 @@ import homeMessages from "@/lib/i18n/messages/home"
 // and its questions live on this page.
 // Every string is in lib/i18n/messages/home.ts, in five languages. No plan price is named here (the
 // price test shows it only in the cabinet, lib/geo-pricing.ts PRICE_TEST).
+// Since 30 Oct 2026 the page's headline promise is the growth guarantee (growthGuarantee.ts,
+// /terms#growth-guarantee). No other guarantee word, no invented numbers or cases, no plan price, no
+// client results (removed by the owner 30 Oct). Order: hero with the guarantee, why (what is being lost),
+// how, versus, pricing, questions, then the contact form with the guarantee as the closing call.
+// The guarantee's line keeps its "*" and nothing under it; its footnote (the condition and the link to
+// /terms#growth-guarantee) is the last line of the page, in SiteFooter.
 
 const BASE = "https://www.itgrows.ai"
 
@@ -40,13 +47,6 @@ export async function generateMetadata(): Promise<Metadata> {
   const share = { title: m.ogTitle, description: m.ogDescription }
   return localizedMetadata(locale, "/", { title: m.metaTitle, description: m.metaDescription, openGraph: share, twitter: share })
 }
-
-// The numbers are formatted per language; "hundreds" is a word (home.hundreds). Kind and line: home.cases.
-const CASES: { site: string; href?: string; n: number | "hundreds" }[] = [
-  { site: "freightsizer.ai", n: 2 },
-  { site: "magiscan.app", n: "hundreds" },
-  { site: "pickaclass.com", href: "https://www.pickaclass.com", n: 1918 },
-]
 
 // The LinkedIn/X product's prices (its own pricing lives on /personal).
 const LI = { personal: "$49", duo: "$99", allIn: "$199" }
@@ -84,6 +84,7 @@ const QUICK_CHECKS = [
 export default async function Home() {
   const locale = await getLocale()
   const m = t(locale, homeMessages)
+  const g = t(locale, growthGuarantee)
   void noteCrawler(localePath(locale, "/"))
   // The main guides in the page's language, always the same six (lib/geo-guides.ts): German on /de,
   // English everywhere else (fr/es/ru say "(in English)" in the heading).
@@ -141,18 +142,18 @@ export default async function Home() {
               <img src="/logo.jpg" className="h-8 w-8 rounded-lg" alt="ItGrows" />
               <span>ItGrows.ai</span>
             </Link>
-            <div className="hidden lg:flex items-center gap-6 text-sm text-slate-600 font-medium">
-              <a href="#geo-how" className="hover:text-[#1b1916]">{m.navHow}</a>
-              <a href="#geo-results" className="hover:text-[#1b1916]">{m.navResults}</a>
-              <a href="#geo-pricing" className="hover:text-[#1b1916]">{m.navPricing}</a>
-              <a href="#geo-tools" className="hover:text-[#1b1916]">{m.navTools}</a>
-              <Link href="/business/blog" className="hover:text-[#1b1916]">{m.navGuides}</Link>
-              <Link href="/personal" className="hover:text-[#1b1916]">{m.navLinkedIn}</Link>
+            <div className="hidden xl:flex items-center gap-4 text-sm text-slate-600 font-medium">
+              <a href="#geo-why" className="whitespace-nowrap hover:text-[#1b1916]">{m.navWhy}</a>
+              <a href="#geo-how" className="whitespace-nowrap hover:text-[#1b1916]">{m.navHow}</a>
+              <a href="#geo-pricing" className="whitespace-nowrap hover:text-[#1b1916]">{m.navPricing}</a>
+              <a href="#geo-tools" className="whitespace-nowrap hover:text-[#1b1916]">{m.navTools}</a>
+              <Link href="/business/blog" className="whitespace-nowrap hover:text-[#1b1916]">{m.navGuides}</Link>
+              <Link href="/personal" className="whitespace-nowrap hover:text-[#1b1916]">{m.navLinkedIn}</Link>
             </div>
             <div className="flex items-center gap-4">
               <LanguageSwitcher />
               <SignIn />
-              <a href="#geo-check" className="hidden sm:inline-block rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-sm font-semibold px-4 py-2.5">
+              <a href="#geo-check" className="hidden sm:inline-block whitespace-nowrap rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-sm font-semibold px-4 py-2.5">
                 {m.checkMySite}
               </a>
             </div>
@@ -167,33 +168,20 @@ export default async function Home() {
                 g: (c) => <span className="bg-gradient-to-r from-violet-600 via-pink-500 to-cyan-500 bg-clip-text text-transparent">{c}</span>,
               })}
             </h1>
+            {/* The growth guarantee, the page's headline promise: its line with the "*" and nothing under
+                it; the footnote (the condition and the link to the Terms) is the last line of the page. */}
+            <div className="max-w-2xl mx-auto mt-6 rounded-2xl border-2 border-violet-300 bg-white/70 px-5 py-4">
+              <p className="text-[11px] uppercase tracking-[0.15em] font-bold text-violet-600">{g.label}</p>
+              <p className="mt-1 text-lg sm:text-2xl font-extrabold leading-snug">{g.line}</p>
+            </div>
             <p className="text-base sm:text-xl text-slate-600 max-w-2xl mx-auto mt-5 mb-8">{m.lead}</p>
             <AuditForm />
           </div>
         </section>
 
-        <section id="geo-results" className="px-4 sm:px-6 py-14 sm:py-20 scroll-mt-20" style={{ backgroundColor: "#1b1916" }}>
-          <div className="max-w-5xl mx-auto">
-            <h2 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-white text-center">{m.casesTitle}</h2>
-            <div className="grid md:grid-cols-3 gap-4 sm:gap-5 mt-10">
-              {CASES.map((c, i) => (
-                <a key={c.site} href={c.href ?? `https://${c.site}`} target="_blank" rel="noopener" className="block rounded-2xl bg-white/[0.06] border border-white/10 hover:bg-white/[0.09] p-6">
-                  <p className="text-[11px] uppercase tracking-wide font-bold text-slate-400">{m.cases[i].kind}</p>
-                  <p className="text-xl font-extrabold text-white mt-1">{c.site} ↗</p>
-                  <div className="mt-5 text-4xl sm:text-5xl font-extrabold tracking-tighter bg-gradient-to-r from-violet-400 to-cyan-300 bg-clip-text text-transparent">
-                    {c.n === "hundreds" ? m.hundreds : formatNumber(locale, c.n)}
-                  </div>
-                  <p className="text-sm text-slate-300 mt-2">{m.cases[i].l}</p>
-                </a>
-              ))}
-            </div>
-            <p className="text-center text-xs text-slate-500 mt-6">{m.casesNote}</p>
-          </div>
-        </section>
+        <WhyThisMatters id="geo-why" checkHref="#geo-check" />
 
         <WorkSystem id="geo-how" />
-
-        <WhyThisMatters id="geo-why" checkHref="#geo-check" />
 
         <VersusArticles id="geo-versus" />
 
@@ -210,17 +198,7 @@ export default async function Home() {
           </p>
         </section>
 
-        {/* The contact form: any question before paying. The id stays "apply": the pricing cards and
-            the crawler result link here. */}
-        <section id="apply" className="px-4 sm:px-6 py-14 sm:py-20 scroll-mt-20" style={{ backgroundColor: "#ebe9e5" }}>
-          <div className="max-w-xl mx-auto">
-            <h2 className="text-2xl sm:text-4xl font-extrabold mb-3 tracking-tight text-center">{m.writeTitle}</h2>
-            <p className="text-slate-600 text-center mb-8 text-sm sm:text-base">{m.writeLead}</p>
-            <ContactForm />
-          </div>
-        </section>
-
-        <section id="geo-faq" className="px-4 sm:px-6 py-14 sm:py-20 scroll-mt-20">
+        <section id="geo-faq" className="px-4 sm:px-6 py-14 sm:py-20 scroll-mt-20" style={{ backgroundColor: "#ebe9e5" }}>
           <div className="max-w-3xl mx-auto">
             <h2 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-center mb-8">{m.faqTitle}</h2>
             <div className="space-y-2.5">
@@ -234,6 +212,19 @@ export default async function Home() {
                 </details>
               ))}
             </div>
+          </div>
+        </section>
+
+        {/* The contact form: any question before paying, under the guarantee, as the page's closing call.
+            The id stays "apply": the pricing cards and the crawler result link here. */}
+        <section id="apply" className="px-4 sm:px-6 py-14 sm:py-20 scroll-mt-20">
+          <div className="max-w-xl mx-auto">
+            <h2 className="text-2xl sm:text-4xl font-extrabold mb-3 tracking-tight text-center">{m.writeTitle}</h2>
+            <p className="text-slate-600 text-center mb-6 text-sm sm:text-base">{m.writeLead}</p>
+            <div className="mb-8 rounded-2xl border border-violet-200 bg-white px-5 py-4 text-center">
+              <p className="font-bold">{g.line}</p>
+            </div>
+            <ContactForm />
           </div>
         </section>
 
