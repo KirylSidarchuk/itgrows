@@ -52,7 +52,6 @@ const en = {
 
   // Hero: <g> is the gradient part. The guarantee under it is growthGuarantee.ts.
   h1: "Get named by <g>ChatGPT, Claude, Gemini and Perplexity.</g> Not your competitors.",
-  lead: "We get you into the answers: we open your site to the assistants, publish the pages they quote on your own domain, get you onto the sites they cite, and re-ask your customers' questions every two weeks, pushing wherever you're still missing.",
 
   // The LinkedIn/X product, one line
   founder: (from: string) =>
@@ -171,7 +170,6 @@ export default defineMessages(en, {
     checkMySite: "Website kostenlos prüfen",
 
     h1: "Lassen Sie sich von <g>ChatGPT, Claude, Gemini und Perplexity</g> nennen. Nicht Ihre Wettbewerber.",
-    lead: "Wir bringen Sie in die Antworten: Wir öffnen Ihre Website für die Assistenten, veröffentlichen auf Ihrer eigenen Domain die Seiten, die sie zitieren, bringen Sie auf die Websites, auf die sie sich stützen, und stellen alle zwei Wochen die Fragen Ihrer Kunden erneut – und legen überall nach, wo Sie noch fehlen.",
 
     founder: (from) =>
       `<b>Gründer oder Experte?</b> ItGrows entwirft auch Ihre LinkedIn- und X-Posts in Ihrer eigenen Stimme — ab ${from}/Monat, 14 Tage zum Testen.`,
@@ -289,7 +287,6 @@ export default defineMessages(en, {
     checkMySite: "Vérifier mon site gratuitement",
 
     h1: "Faites-vous recommander par <g>ChatGPT, Claude, Gemini et Perplexity.</g> Pas vos concurrents.",
-    lead: "Nous vous faisons entrer dans les réponses : nous ouvrons votre site aux assistants, publions sur votre propre domaine les pages qu’ils citent, vous plaçons sur les sites qui leur servent de sources, et reposons les questions de vos clients toutes les deux semaines, en poussant partout où vous manquez encore.",
 
     founder: (from) =>
       `<b>Fondateur ou expert ?</b> ItGrows rédige aussi vos posts LinkedIn et X dans votre style — à partir de ${from}/mois, 14 jours d’essai.`,
@@ -407,7 +404,6 @@ export default defineMessages(en, {
     checkMySite: "Comprobar mi sitio gratis",
 
     h1: "Que <g>ChatGPT, Claude, Gemini y Perplexity</g> le mencionen a usted. No a su competencia.",
-    lead: "Le metemos en las respuestas: abrimos su sitio a los asistentes, publicamos en su propio dominio las páginas que citan, le colocamos en los sitios en los que se basan y volvemos a plantear las preguntas de sus clientes cada dos semanas, empujando allí donde aún no aparece.",
 
     founder: (from) =>
       `<b>¿Fundador o experto?</b> ItGrows también redacta sus publicaciones de LinkedIn y X con su propia voz — desde ${from}/mes, 14 días de prueba.`,
@@ -525,7 +521,6 @@ export default defineMessages(en, {
     checkMySite: "Проверить сайт бесплатно",
 
     h1: "Пусть <g>ChatGPT, Claude, Gemini и Perplexity</g> называют вас. А не ваших конкурентов.",
-    lead: "Мы выводим вас в ответы: открываем ваш сайт для ассистентов, публикуем на вашем собственном домене страницы, которые они цитируют, размещаем вас на сайтах, на которые они ссылаются, и раз в две недели заново задаём вопросы ваших клиентов — и дожимаем везде, где вас ещё нет.",
 
     founder: (from) =>
       `<b>Основатель или эксперт?</b> ItGrows также пишет черновики ваших постов в LinkedIn и X вашим собственным голосом — от ${from}/мес., 14 дней пробного периода.`,

@@ -170,11 +170,10 @@ export default async function Home() {
             </h1>
             {/* The growth guarantee, the page's headline promise: its line with the "*" and nothing under
                 it; the footnote (the condition and the link to the Terms) is the last line of the page. */}
-            <div className="max-w-2xl mx-auto mt-6 rounded-2xl border-2 border-violet-300 bg-white/70 px-5 py-4">
+            <div className="max-w-2xl mx-auto mt-6 mb-8 rounded-2xl border-2 border-violet-300 bg-white/70 px-5 py-4">
               <p className="text-[11px] uppercase tracking-[0.15em] font-bold text-violet-600">{g.label}</p>
               <p className="mt-1 text-lg sm:text-2xl font-extrabold leading-snug">{g.line}</p>
             </div>
-            <p className="text-base sm:text-xl text-slate-600 max-w-2xl mx-auto mt-5 mb-8">{m.lead}</p>
             <AuditForm />
           </div>
         </section>
