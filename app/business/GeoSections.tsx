@@ -21,7 +21,7 @@
 // motion.ts); the ones marked "reveal" fade in as they scroll into view (app/_home/ScrollReveal.tsx,
 // mounted by the page). Owner's request, 30 Oct 2026.
 
-import type { ReactNode } from "react"
+import { useId, type ReactNode } from "react"
 import type { Locale } from "@/lib/i18n/config"
 import { formatNumber } from "@/lib/i18n/format"
 import { t } from "@/lib/i18n/messages"
@@ -29,7 +29,7 @@ import { rich } from "@/lib/i18n/rich"
 import geoSections from "@/lib/i18n/messages/geoSections"
 import growthGuarantee from "@/lib/i18n/messages/growthGuarantee"
 import { getLocale } from "@/lib/i18n/server"
-import { LIFT, LIFT_ACCENT, LIFT_DARK, NUM, SHINE, STEP, STEP_NODE } from "@/components/geo/motion"
+import { LIFT_ACCENT, LIFT_DARK, NUM, SHINE, STEP, STEP_NODE } from "@/components/geo/motion"
 
 // "See the plan" points at the pricing section of the page the block sits on: "/" prefixes its GEO
 // section ids with "geo-" (#geo-pricing); a page without the prefix would use #pricing.
@@ -391,14 +391,16 @@ export async function WhyThisMatters({ id = "geo-why", checkHref = "#geo-check" 
   )
 }
 
-// The ✓ and ✗ of the versus panels, drawn inline so every font shows the same mark.
+// The ✓ and ✗ of the versus panels, drawn inline so every font shows the same mark: ours white on the
+// violet panel, theirs a pale ✗ on the grey one (only the mark is muted; the text beside it is
+// stone-600, 5.8:1 on that grey).
 function VersusMark({ yes }: { yes?: boolean }) {
   return (
     <span
       aria-hidden
-      className={`mt-px w-6 h-6 shrink-0 rounded-full flex items-center justify-center ${yes ? "bg-white text-violet-700" : "bg-rose-100 text-rose-600"}`}
+      className={`mt-0.5 grid size-6 shrink-0 place-items-center rounded-full ${yes ? "bg-white text-violet-700 shadow-md shadow-violet-950/40" : "bg-stone-300/60 text-rose-500/70"}`}
     >
-      <svg viewBox="0 0 24 24" className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={3} strokeLinecap="round" strokeLinejoin="round">
+      <svg viewBox="0 0 24 24" className="size-3.5" fill="none" stroke="currentColor" strokeWidth={3} strokeLinecap="round" strokeLinejoin="round">
         {yes ? <path d="M5 12.5l4.5 4.5L19 7.5" /> : <path d="M7 7l10 10M17 7L7 17" />}
       </svg>
     </span>
@@ -406,10 +408,51 @@ function VersusMark({ yes }: { yes?: boolean }) {
 }
 
 /**
- * Two panels, side by side on desktop with equal heights, stacked on the phone (article-only first):
- * what an article-only service does, muted with a red ✗ per line, and what we do, on violet with a ✓
- * per line. Our last line is the growth guarantee (growthGuarantee.ts, label and line with its "*");
- * nothing under it here, its footnote is the last line of the page.
+ * The seal on the guarantee card's top right corner: the guarantee's label (growthGuarantee.ts) in
+ * capitals round a dark ring, a ✓ in the middle. Decorative, the card says the label in words. The
+ * ring turns once in 28 s, only without "reduce motion". The ring's path needs an id of its own on
+ * the page (useId; React's characters are dropped, so it is a plain fragment for href). A short label
+ * goes round twice, a long one (French, Spanish) once, and the letters shrink until the text fits the
+ * ring at about 0.68 em a capital; textLength then spaces it to close the circle exactly.
+ * It sits above the guarantee line, never beside it: only the label line keeps room for it on its
+ * right, so the line has the card's full width (a padding there left "for free.*" alone on a line).
+ */
+function GuaranteeSeal({ label, locale }: { label: string; locale: Locale }) {
+  const pathId = `seal${useId().replace(/[^\w-]/g, "")}`
+  const word = label.toLocaleUpperCase(locale)
+  const ring = word.length <= 18 ? `${word} • ${word} • ` : `${word} • `
+  const fontSize = Math.round(Math.min(11, 212 / (ring.length * 0.68)) * 100) / 100
+  return (
+    <span aria-hidden className="absolute -top-10 right-3 sm:-top-11 sm:right-5 lg:-top-13 size-20 sm:size-22 lg:size-24 -rotate-12">
+      <span className="absolute inset-0 rounded-full bg-[#1b1916] ring-4 ring-white shadow-lg shadow-violet-950/40" />
+      <svg viewBox="0 0 100 100" className="absolute inset-0 size-full motion-safe:animate-[spin_28s_linear_infinite]">
+        <defs>
+          <path id={pathId} d="M50,50 m-36,0 a36,36 0 1,1 72,0 a36,36 0 1,1 -72,0" />
+        </defs>
+        <text fill="#fff" fontSize={fontSize} fontWeight={800}>
+          <textPath href={`#${pathId}`} textLength={224} lengthAdjust="spacing">
+            {ring}
+          </textPath>
+        </text>
+      </svg>
+      <span className="absolute inset-[29%] grid place-items-center rounded-full bg-gradient-to-br from-violet-500 to-violet-700">
+        <svg viewBox="0 0 24 24" className="size-5 sm:size-6 text-white" fill="none" stroke="currentColor" strokeWidth={3.2} strokeLinecap="round" strokeLinejoin="round">
+          <path d="M5 12.5l4.5 4.5L19 7.5" />
+        </svg>
+      </span>
+    </span>
+  )
+}
+
+/**
+ * A duel (owner's choice of 30 Oct 2026, concept A "VS split"): two panels meeting at a dark "VS"
+ * badge, stacked on the phone (article-only first, ours overlapping it by 28px), side by side from md
+ * (ours 24px over theirs and 96px taller). Theirs is deliberately dull: grey, a dashed border, a pale
+ * ✗ per line, its lines sharing the height. Ours is violet with a glow and a ✓ per line, and lifts on
+ * hover (LIFT_ACCENT). Both fade in on scroll ("reveal"; ours with its badge). Our last line is the
+ * growth guarantee (growthGuarantee.ts, label and line with its "*") as a white card with a seal;
+ * nothing under it here, its footnote is the last line of the page. The heading is in two colours,
+ * so it is two strings (titleA grey, titleB violet). overflow-x-clip: the glows never scroll the page.
  */
 export async function VersusArticles({ id }: { id?: string }) {
   const locale = await getLocale()
@@ -417,47 +460,68 @@ export async function VersusArticles({ id }: { id?: string }) {
   const g = t(locale, growthGuarantee)
   const titleId = id ? `${id}-title` : undefined
   return (
-    <section id={id} aria-labelledby={titleId} className="px-4 sm:px-6 py-14 sm:py-20 scroll-mt-20" style={{ backgroundColor: "#ebe9e5" }}>
+    <section id={id} aria-labelledby={titleId} className="relative overflow-x-clip px-4 sm:px-6 py-14 sm:py-20 scroll-mt-20" style={{ backgroundColor: "#ebe9e5" }}>
       <div className="max-w-5xl mx-auto">
         <h2 id={titleId} className="text-2xl sm:text-4xl font-extrabold tracking-tight text-center text-balance mb-10 sm:mb-14">
-          {m.h2}
+          <span className="text-stone-500">{m.titleA}</span>{" "}
+          <span className="inline-block bg-gradient-to-r from-violet-600 to-violet-800 bg-clip-text text-transparent">{m.titleB}</span>
         </h2>
-        <div className="grid gap-4 md:grid-cols-2 md:gap-6 lg:gap-8">
-          <div className={`reveal rounded-3xl border border-black/10 bg-white/60 p-6 sm:p-8 lg:p-10 ${LIFT}`}>
-            <h3 className="min-h-8 flex items-center pb-5 border-b border-black/10 text-xl sm:text-2xl font-extrabold tracking-tight text-slate-700">
+        <div className="relative grid grid-cols-1 md:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)]">
+          <div className="reveal flex flex-col rounded-3xl border border-dashed border-stone-400/60 bg-[#e3e0db] p-6 pb-14 sm:p-8 sm:pb-16 md:my-12 md:pb-8 md:pr-16 lg:p-10 lg:pr-20">
+            <h3 className="flex items-center gap-3 pb-5 border-b border-stone-400/40 text-xl lg:text-2xl font-extrabold tracking-tight text-stone-600">
+              <span aria-hidden className="grid size-8 shrink-0 place-items-center rounded-lg bg-stone-300/70 text-stone-500">
+                <svg viewBox="0 0 24 24" className="size-4.5" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" />
+                  <path d="M14 3v5h5M9 13h6M9 17h4" />
+                </svg>
+              </span>
               {m.them.title}
             </h3>
-            <ul className="mt-6 space-y-5">
+            <ul className="flex flex-1 flex-col divide-y divide-dashed divide-stone-400/40">
               {m.them.lines.map((line) => (
-                <li key={line} className="flex items-start gap-3 text-base text-slate-600 leading-relaxed">
-                  <VersusMark />
-                  <span>{line}</span>
+                <li key={line} className="flex flex-1 items-center py-4">
+                  <div className="flex items-start gap-3 text-base leading-relaxed text-stone-600">
+                    <VersusMark />
+                    <span className="text-pretty">{line}</span>
+                  </div>
                 </li>
               ))}
             </ul>
           </div>
 
-          <div className={`reveal flex flex-col rounded-3xl border border-violet-700 bg-gradient-to-br from-violet-600 to-violet-700 p-6 sm:p-8 lg:p-10 text-white shadow-xl shadow-violet-600/25 ${LIFT_ACCENT}`}>
-            <h3 className="min-h-8 flex items-center gap-3 pb-5 border-b border-white/20 text-xl sm:text-2xl font-extrabold tracking-tight">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/logo.jpg" className="h-8 w-8 rounded-lg" alt="" />
-              {m.us.title}
-            </h3>
-            <ul className="mt-6 flex flex-1 flex-col gap-5">
-              {m.us.lines.map((line) => (
-                <li key={line} className="flex items-start gap-3 text-base leading-relaxed">
-                  <VersusMark yes />
-                  <span>{line}</span>
+          <div className="reveal relative z-10 -mt-7 md:mt-0 md:-ml-6">
+            <span
+              aria-hidden
+              className="absolute z-20 left-1/2 top-0 -translate-x-1/2 -translate-y-1/2 md:left-0 md:top-1/2 grid size-14 lg:size-16 place-items-center rounded-full bg-[#1b1916] text-base lg:text-lg font-extrabold italic tracking-tight text-white ring-[6px] ring-[#ebe9e5] shadow-xl shadow-black/20"
+            >
+              VS
+            </span>
+            <div
+              className={`relative flex h-full flex-col overflow-hidden rounded-3xl bg-gradient-to-br from-violet-600 via-violet-700 to-violet-900 p-6 pt-11 sm:p-8 sm:pt-12 md:pt-8 md:pl-12 lg:p-10 lg:pl-14 text-white ring-1 ring-inset ring-white/15 shadow-[0_30px_70px_-20px_rgb(76_29_149/0.55),0_0_70px_-10px_rgb(139_92_246/0.45)] ${LIFT_ACCENT}`}
+            >
+              <div aria-hidden className="pointer-events-none absolute -right-24 -top-28 size-80 rounded-full bg-fuchsia-400/25 blur-3xl" />
+              <div aria-hidden className="pointer-events-none absolute -bottom-24 -left-16 size-72 rounded-full bg-cyan-300/15 blur-3xl" />
+              <h3 className="relative flex items-center gap-3 pb-5 border-b border-white/20 text-2xl sm:text-3xl font-extrabold tracking-tight">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/logo.jpg" className="size-9 rounded-lg ring-2 ring-white/30" alt="" />
+                {m.us.title}
+              </h3>
+              <ul className="relative mt-6 flex flex-1 flex-col gap-4">
+                {m.us.lines.map((line) => (
+                  <li key={line} className="flex items-start gap-3 text-base leading-relaxed text-white/95">
+                    <VersusMark yes />
+                    <span className="text-pretty">{line}</span>
+                  </li>
+                ))}
+                <li className="relative mt-auto pt-8 sm:pt-9 lg:pt-11">
+                  <div className="relative rounded-2xl bg-white p-5 sm:p-6 text-[#1b1916] shadow-xl shadow-violet-950/40">
+                    <span className="block pr-20 max-[359px]:pr-0 max-[359px]:pt-7 sm:pr-24 lg:pr-28 text-[11px] uppercase tracking-[0.15em] font-bold text-violet-700">{g.label}</span>
+                    <span className="block mt-3 text-lg max-[359px]:text-[17px] sm:text-xl font-extrabold leading-snug tracking-tight text-balance">{g.line}</span>
+                    <GuaranteeSeal label={g.label} locale={locale} />
+                  </div>
                 </li>
-              ))}
-              <li className="mt-auto flex items-start gap-3 rounded-2xl bg-white/10 ring-1 ring-white/25 p-4 sm:p-5">
-                <VersusMark yes />
-                <span>
-                  <span className="block text-[11px] uppercase tracking-[0.15em] font-bold text-violet-200">{g.label}</span>
-                  <span className="block mt-1 text-base sm:text-lg font-bold leading-snug">{g.line}</span>
-                </span>
-              </li>
-            </ul>
+              </ul>
+            </div>
           </div>
         </div>
       </div>

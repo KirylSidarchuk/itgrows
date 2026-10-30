@@ -97,8 +97,11 @@ const en = {
   // Owner-approved copy, 30 Oct 2026: two panels, what article-only services do (them) and what we
   // do (us). The last line on our side is the growth guarantee, rendered by the component from
   // growthGuarantee.ts (label and line, with its "*"); its footnote stays at the bottom of the page.
+  // The heading is two strings for its two colours (titleA grey, titleB violet), shown with a space
+  // between them; together they are the approved heading word for word.
   versus: {
-    h2: "Others sell articles. We get you named.",
+    titleA: "Others sell articles.",
+    titleB: "We get you named.",
     them: {
       title: "Article-only services",
       lines: [
@@ -219,7 +222,8 @@ export default defineMessages(en, {
       newTab: "(öffnet in neuem Tab)",
     },
     versus: {
-      h2: "Andere verkaufen Artikel. Wir sorgen dafür, dass Sie genannt werden.",
+      titleA: "Andere verkaufen Artikel.",
+      titleB: "Wir sorgen dafür, dass Sie genannt werden.",
       them: {
         title: "Reine Artikeldienste",
         lines: [
@@ -341,7 +345,8 @@ export default defineMessages(en, {
       newTab: "(s’ouvre dans un nouvel onglet)",
     },
     versus: {
-      h2: "Les autres vendent des articles. Nous vous faisons mentionner.",
+      titleA: "Les autres vendent des articles.",
+      titleB: "Nous vous faisons mentionner.",
       them: {
         title: "Services qui ne font que des articles",
         lines: [
@@ -463,7 +468,8 @@ export default defineMessages(en, {
       newTab: "(se abre en una pestaña nueva)",
     },
     versus: {
-      h2: "Otros venden artículos. Nosotros conseguimos que le mencionen.",
+      titleA: "Otros venden artículos.",
+      titleB: "Nosotros conseguimos que le mencionen.",
       them: {
         title: "Servicios solo de artículos",
         lines: [
@@ -583,7 +589,8 @@ export default defineMessages(en, {
       newTab: "(откроется в новой вкладке)",
     },
     versus: {
-      h2: "Другие продают статьи. Мы добиваемся, чтобы вас называли.",
+      titleA: "Другие продают статьи.",
+      titleB: "Мы добиваемся, чтобы вас называли.",
       them: {
         title: "Сервисы «только статьи»",
         lines: [

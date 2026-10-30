@@ -20,8 +20,8 @@ export const LIFT = `${LIFT_MOVE} hover:border-violet-300 hover:shadow-xl hover:
 /** A dark card (the why tiles and columns, the plan card): lifts with a violet glow. */
 export const LIFT_DARK = `${LIFT_MOVE} hover:border-violet-400/60 hover:shadow-[0_18px_50px_-12px_rgba(139,92,246,0.5)] focus-visible:border-violet-400/60 focus-visible:shadow-[0_18px_50px_-12px_rgba(139,92,246,0.5)] has-focus-visible:border-violet-400/60 has-focus-visible:shadow-[0_18px_50px_-12px_rgba(139,92,246,0.5)]`
 
-/** The violet panel that already casts a shadow (the versus block, ours): lifts with a deeper one. */
-export const LIFT_ACCENT = `${LIFT_MOVE} hover:shadow-2xl hover:shadow-violet-600/40 focus-visible:shadow-2xl focus-visible:shadow-violet-600/40 has-focus-visible:shadow-2xl has-focus-visible:shadow-violet-600/40`
+/** The violet panel with its own violet glow (the versus block, ours): lifts and the glow deepens. */
+export const LIFT_ACCENT = `${LIFT_MOVE} hover:shadow-[0_40px_90px_-20px_rgb(76_29_149/0.65),0_0_90px_-6px_rgb(139_92_246/0.6)] focus-visible:shadow-[0_40px_90px_-20px_rgb(76_29_149/0.65),0_0_90px_-6px_rgb(139_92_246/0.6)] has-focus-visible:shadow-[0_40px_90px_-20px_rgb(76_29_149/0.65),0_0_90px_-6px_rgb(139_92_246/0.6)]`
 
 /** A big number inside a card marked "group": grows 5% from its left edge while the card is hovered or holds keyboard focus. */
 export const NUM =
