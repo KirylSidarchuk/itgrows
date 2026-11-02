@@ -79,7 +79,7 @@ ${
     : `<p style="font-size:14px">All of it is open in your account, free: every answer to all ${questions} questions, everyone named instead of you, the sites the assistants quote, and at the end our plan for ${esc(domain)}: what we would do and why.</p>
 ${button("See your report →", href)}
 ${accountSource === "meta_form" || accountSource === "site_email" ? `<p style="font-size:13px;margin-top:-10px;color:#555">You asked for this report ${accountSource === "meta_form" ? "through our form on Facebook or Instagram" : "on our site"}, so we opened an account for this email. Enter this email on the next screen and we'll send you a one-time code.</p>` : ""}
-<p style="font-size:13px;margin-top:-10px;color:#555">Questions about it? Just reply to this email.</p>`
+<p style="font-size:13px;margin-top:-10px;color:#555">Questions about it, or want a 15-minute walkthrough? Reply with a time that suits you.</p>`
 }
 ${weekly ? `<p style="color:#555;font-size:13px">We re-check every two weeks and tell you what changed.</p>` : ""}`)
   return { subject, html }

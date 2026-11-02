@@ -3,7 +3,8 @@ import { db } from "@/lib/db"
 import { sql } from "drizzle-orm"
 import { unsubscribeToken } from "@/lib/geo-check"
 
-// Stop the weekly AI-visibility email for one followed site. GET shows a button (mail scanners open
+// Stop the two-weekly AI-visibility email for one followed site, or with k=monthly the email of the 1st
+// (app/api/geo/monthly/route.ts). GET shows a button (mail scanners open
 // links, and must not unsubscribe anyone by doing so); POST does it — from that button, or from the
 // mail client's one-click unsubscribe (RFC 8058). The report stays in the account either way.
 
@@ -37,11 +38,12 @@ export async function GET(req: NextRequest) {
   if (!valid(f, t)) return page("Link not valid", "<p>This unsubscribe link is not valid.</p>")
   const domain = await domainOf(f)
   if (!domain) return page("Not found", "<p>We couldn't find this subscription.</p>")
+  const monthly = req.nextUrl.searchParams.get("k") === "monthly"
   return page(
     "Unsubscribe",
-    `<h1 style="font-size:20px;margin:0 0 8px">Stop the update emails for ${esc(domain)}?</h1>
-<p style="color:#555;font-size:14px;line-height:1.6">Your report stays in your account; we just stop emailing what changed every two weeks.</p>
-<form method="post" action="/api/geo/unsubscribe?f=${f}&t=${t}"><button style="margin-top:12px;background:#7c3aed;color:#fff;border:0;border-radius:10px;padding:12px 18px;font-size:15px;font-weight:600;cursor:pointer">Unsubscribe</button></form>`
+    `<h1 style="font-size:20px;margin:0 0 8px">Stop the ${monthly ? "monthly report emails" : "update emails"} for ${esc(domain)}?</h1>
+<p style="color:#555;font-size:14px;line-height:1.6">${monthly ? "Your reports stay in your account; we just stop emailing when a new one is in." : "Your report stays in your account; we just stop emailing what changed every two weeks."}</p>
+<form method="post" action="/api/geo/unsubscribe?f=${f}&t=${t}${monthly ? "&k=monthly" : ""}"><button style="margin-top:12px;background:#7c3aed;color:#fff;border:0;border-radius:10px;padding:12px 18px;font-size:15px;font-weight:600;cursor:pointer">Unsubscribe</button></form>`
   )
 }
 
@@ -49,11 +51,16 @@ export async function POST(req: NextRequest) {
   const f = req.nextUrl.searchParams.get("f") ?? ""
   const t = req.nextUrl.searchParams.get("t") ?? ""
   if (!valid(f, t)) return page("Link not valid", "<p>This unsubscribe link is not valid.</p>")
-  await db.execute(sql`UPDATE geo_follows SET email_weekly = false WHERE id = ${f}::uuid`)
+  const monthly = req.nextUrl.searchParams.get("k") === "monthly"
+  await db.execute(
+    monthly
+      ? sql`UPDATE geo_follows SET email_monthly = false WHERE id = ${f}::uuid`
+      : sql`UPDATE geo_follows SET email_weekly = false WHERE id = ${f}::uuid`
+  )
   const domain = (await domainOf(f)) ?? "this site"
   return page(
     "Unsubscribed",
     `<h1 style="font-size:20px;margin:0 0 8px">Done.</h1>
-<p style="color:#555;font-size:14px;line-height:1.6">No more update emails for ${esc(domain)}. Your report is still in your account: <a href="/business/dashboard/visibility" style="color:#7c3aed">open it</a>.</p>`
+<p style="color:#555;font-size:14px;line-height:1.6">No more ${monthly ? "monthly report" : "update"} emails for ${esc(domain)}. Your report is still in your account: <a href="/business/dashboard/visibility" style="color:#7c3aed">open it</a>.</p>`
   )
 }

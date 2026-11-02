@@ -14,6 +14,7 @@ import {
   ReportSections,
   RunView,
   WhereNamed,
+  WorkResults,
   YourPlan,
   card,
   fmtDate,
@@ -37,7 +38,7 @@ import { PendingReward } from "../launch-wheel"
 // would be refused comes with the list (/api/geo/report reportLimit, lib/geo-free-report.ts): the hint
 // under "Add a site" shows only then, and an account without a site that was refused sees the
 // contact-us state again after a reload, not the empty form. The report ends with "Your plan": what we
-// do, never how to do it yourself; "Start the plan" and "Talk to us".
+// do, never how to do it yourself; "Start the plan" and the walkthrough.
 //
 // A new account lands here straight from the sign-up: while the site it came with is being followed, the
 // first screen says "Opening your answers for …" (not an empty address form). If that follow fails, the
@@ -394,6 +395,7 @@ export default function VisibilityPage() {
 
           {site.latest ? (
             <>
+              {site.results && site.results.length > 0 && <WorkResults results={site.results} />}
               {/* The detailed cards come from the fullest report: this week's on the plan, else the
                   day-0 report (a short weekly check is five questions). */}
               {run ? (

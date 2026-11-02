@@ -61,6 +61,26 @@ export interface Report {
   summary: Summary
   rows: Row[]
 }
+/** A row of the block: a count and what it counts, or only what was done on the site (n null). */
+export interface WorkRow {
+  n: string | null
+  label: string | null
+  most?: { text: string; href: string; title: string } | null
+  items?: { href?: string; title?: string; text?: string; subs?: string[] }[]
+  subs?: string[]
+  fixesTitle?: string
+  fixes?: string[]
+}
+
+export interface WorkResult {
+  month: string
+  monthName: string
+  lang: string
+  title: string
+  rows: WorkRow[]
+  note?: string | null
+}
+
 export interface SiteReport {
   domain: string
   business: string | null
@@ -90,6 +110,8 @@ export interface SiteReport {
   teaser: { engines: string[]; summary: Summary; rows: Row[]; finishedAt: string } | null
   /** A client's own site only: where the plan's work stands (lib/geo-report.ts planWork). */
   work?: PlanWork | null
+  /** A client's own site only: what our work delivered, by month, newest first (lib/geo-report.ts workResults). */
+  results?: WorkResult[]
   /** The site profile's questions as the generator wrote them, null for a profile written by hand
    *  (lib/geo-list-question.ts generatedQuestions): the answer key that makes questions 1-8 of the
    *  day-0 report list questions. Without it only their words decide. */
@@ -1465,7 +1487,7 @@ function ArticlesStep({ n, steps, work, client }: { n: number; steps: Step[]; wo
 }
 
 /** The end of the report: what we do for the site, step by step. For an account not on the plan,
- *  "Start the plan" and "Talk to us", with its own prices (/api/geo/report price), right under the
+ *  "Start the plan" and the walkthrough, with its own prices (/api/geo/report price), right under the
  *  plan's summary and before the steps; for a client, where each step stands and what is done. The
  *  public sample names the one price (GEO_PRICES). The article steps for the buyer questions are one card (planItems).
  *  Under "Start the plan", for an account that may have one, the launch-rewards wheel or the reward
@@ -1541,10 +1563,10 @@ export function YourPlan({
               </div>
               {!sample && (
                 <a
-                  href={`${SUPPORT}?site=${encodeURIComponent(site.domain)}`}
+                  href={`${SUPPORT}?site=${encodeURIComponent(site.domain)}&walkthrough=1`}
                   className="mt-3 inline-block text-sm font-semibold text-violet-200 hover:text-white hover:underline"
                 >
-                  Talk to us →
+                  Ask for a 15-minute walkthrough →
                 </a>
               )}
               {!sample && <ReportRewards site={site.domain} prices={p} planHref={planHref} />}
@@ -1672,6 +1694,95 @@ export function ReportSections({
 /** Every finished report of the site, newest first: the count, per assistant, and the change since
  *  day 0 where both were measured the same way. A row opens that report; the latest one is the page
  *  itself. The cabinet only: the public sample has no history to open. */
+/** What our work delivered, above the report, a month at a time. The text comes in the client's language from the
+ *  VM (/root/geo_report.py --cabinet), which counts only what the stored data proves. In a month's first days it
+ *  opens on the month before, the one the email of the 1st announces. */
+export function WorkResults({ results }: { results: WorkResult[] }) {
+  const [picked, setPicked] = useState<string | null>(null)
+  const now = new Date()
+  const thisMonth = now.toISOString().slice(0, 7)
+  const opening = results.find((r) => !(now.getUTCDate() <= 10 && r.month === thisMonth)) ?? results[0]
+  const shown = results.find((r) => r.month === picked) ?? opening
+  if (!shown) return null
+  const link = "font-medium text-violet-700 hover:underline"
+  return (
+    <section className={`${card} border-l-4 border-l-violet-600`} lang={shown.lang}>
+      <h2 className="font-bold text-lg">{shown.title}</h2>
+      {results.length > 1 && (
+        <div className="mt-2 flex flex-wrap gap-1.5">
+          {results.map((r) => (
+            <button
+              key={r.month}
+              type="button"
+              onClick={() => setPicked(r.month)}
+              aria-current={r.month === shown.month ? "true" : undefined}
+              className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                r.month === shown.month ? "bg-violet-600 text-white" : "bg-black/[0.05] text-slate-600 hover:bg-black/[0.09]"
+              }`}
+            >
+              {r.monthName}
+            </button>
+          ))}
+        </div>
+      )}
+      <div className="mt-2 divide-y divide-black/[0.06]">
+        {shown.rows.map((r, i) => (
+          <div key={i} className="flex items-baseline gap-4 py-3">
+            {r.n !== null && <div className="shrink-0 w-[4.75rem] text-3xl font-bold leading-none text-violet-600 tabular-nums">{r.n}</div>}
+            <div className="min-w-0 flex-1 break-words">
+              {r.label && <div className="font-semibold">{r.label}</div>}
+              {r.most && (
+                <div className="mt-0.5 text-sm text-slate-500">
+                  {r.most.text}{" "}
+                  <a href={r.most.href} target="_blank" rel="noopener noreferrer" className={link}>
+                    {r.most.title}
+                  </a>
+                </div>
+              )}
+              {r.items && r.items.length > 0 && (
+                <ul className="mt-1.5 list-disc space-y-1.5 pl-5 text-sm">
+                  {r.items.map((it, j) => (
+                    <li key={j}>
+                      {it.href ? (
+                        <a href={it.href} target="_blank" rel="noopener noreferrer" className={link}>
+                          {it.title}
+                        </a>
+                      ) : (
+                        it.text
+                      )}
+                      {it.subs?.map((s) => (
+                        <div key={s} className="text-slate-500">
+                          {s}
+                        </div>
+                      ))}
+                    </li>
+                  ))}
+                </ul>
+              )}
+              {r.subs?.map((s) => (
+                <div key={s} className="mt-0.5 text-sm text-slate-500">
+                  {s}
+                </div>
+              ))}
+              {r.fixes && r.fixes.length > 0 && (
+                <>
+                  <div className="mt-2 text-sm text-slate-500">{r.fixesTitle}</div>
+                  <ul className="mt-1 list-disc space-y-1 pl-5 text-sm">
+                    {r.fixes.map((f) => (
+                      <li key={f}>{f}</li>
+                    ))}
+                  </ul>
+                </>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+      {shown.note && <p className="mt-1 border-t border-black/[0.06] pt-3 text-sm text-slate-600">{shown.note}</p>}
+    </section>
+  )
+}
+
 export function History({ site, openId, onOpen }: { site: SiteReport; openId: string | null; onOpen: (id: string) => void }) {
   const h = site.history
   const latest = h[h.length - 1]

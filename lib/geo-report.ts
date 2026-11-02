@@ -254,6 +254,15 @@ async function planWork(f: Row, day0: Report, week: Report | null) {
   }
 }
 
+/** What our work delivered, by month, newest first: geo_work_results, written by the VM (geo_report.py --cabinet)
+ *  in the client's language, so the page only draws it. */
+async function workResults(siteId: string) {
+  const got = rows(
+    await db.execute(sql`SELECT month, data FROM geo_work_results WHERE site_id = ${siteId}::uuid ORDER BY month DESC LIMIT 36`)
+  )
+  return got.map((r) => ({ month: r.month as string, ...(r.data as Record<string, unknown>) }))
+}
+
 /** One site's report; `f` is a geo_sites row joined with the follow (or its stand-in for the sample). */
 async function siteReport(f: Row, sample = false) {
   const { client, weekly, teaser } = await viewOf(f, sample)
@@ -317,6 +326,8 @@ async function siteReport(f: Row, sample = false) {
     latest,
     baseline,
     work: client && day0 ? await planWork(f, day0, latest?.kind === "weekly" ? latest : null) : null,
+    // Never holds the report back: without the block the page is the report as it was.
+    results: client && !sample ? await workResults(f.id as string).catch(() => []) : [],
     // Oldest first, counts only. Two runs compare only on the same basis, the same questions asked the
     // same number of times: an answer counts as named in at least 1 of N asks, so 3 asks read higher.
     history: done.map((r) => {

@@ -106,6 +106,6 @@ export function unsubscribeToken(followId: string) {
   return createHmac("sha256", secret).update(`geo-weekly:${followId}`).digest("base64url").slice(0, 32)
 }
 
-export function unsubscribeUrl(followId: string) {
-  return `https://www.itgrows.ai/api/geo/unsubscribe?f=${followId}&t=${unsubscribeToken(followId)}`
+export function unsubscribeUrl(followId: string, monthly = false) {
+  return `https://www.itgrows.ai/api/geo/unsubscribe?f=${followId}&t=${unsubscribeToken(followId)}${monthly ? "&k=monthly" : ""}`
 }

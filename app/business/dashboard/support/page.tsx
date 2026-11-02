@@ -34,9 +34,11 @@ export default function SupportPage() {
     const params = new URLSearchParams(window.location.search)
     const wanted = params.get("site") ?? ""
     const report = (params.get("report") ?? "").trim().slice(0, 200)
+    const walkthrough = params.has("walkthrough")
     // Said once the sites are in, so the box is filled in the same render as the list.
     const prefill = () => {
       if (report) setMessage((m) => m || `Please run the AI visibility report for ${report}.`)
+      else if (walkthrough) setMessage((m) => m || "I'd like a 15-minute walkthrough of my report. Times that suit me: ")
     }
     fetch("/api/geo/report", { cache: "no-store" })
       .then((r) => (r.ok ? r.json() : { sites: [] }))
