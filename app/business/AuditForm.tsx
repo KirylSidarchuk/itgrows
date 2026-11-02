@@ -157,7 +157,7 @@ function checkEntry(raw: string): { send: string } | { hint: Hint } | null {
 
 /** `note`: an optional line under the form before any check (the home page shows none since 27.10:
  *  Kiryl asked for the line to go). */
-export default function AuditForm({ note }: { note?: string } = {}) {
+export default function AuditForm({ note, beforeCheck }: { note?: string; beforeCheck?: React.ReactNode } = {}) {
   const m = useT(ns)
   const locale = useLocale()
   // The field is uncontrolled: what was typed or pasted before the page's script started stays in
@@ -536,6 +536,7 @@ export default function AuditForm({ note }: { note?: string } = {}) {
         {error && <p className="text-sm text-red-600 mt-3">{error}</p>}
       </form>
       {note && !aiOn && !data && <p className="text-xs text-slate-500 mt-3 text-center">{note}</p>}
+      {beforeCheck && !aiOn && !data && beforeCheck}
       {/* A launch reward won on the website's wheel, before a check: what it is, until when, what
           claims it (a signed-out visitor whose browser holds one; components/geo/GuestRewardNote.tsx).
           Once a check runs, its account offer says it instead (AiAnswers). */}

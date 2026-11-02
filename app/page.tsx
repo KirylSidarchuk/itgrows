@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import Link from "next/link"
 import AuditForm from "./business/AuditForm"
+import RealAnswer from "./business/RealAnswer"
 import ContactForm from "./business/ContactForm"
 import HashForward from "./_home/HashForward"
 import ScrollReveal from "./_home/ScrollReveal"
@@ -214,7 +215,7 @@ export default async function Home() {
               <p className="text-[11px] uppercase tracking-[0.15em] font-bold text-violet-600">{g.label}</p>
               <p className="mt-1 text-lg sm:text-2xl font-extrabold leading-snug">{g.line}</p>
             </div>
-            <AuditForm />
+            <AuditForm beforeCheck={locale === "en" ? <RealAnswer /> : undefined} />
           </div>
         </section>
 

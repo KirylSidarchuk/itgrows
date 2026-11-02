@@ -53,7 +53,8 @@ function readyEmail(
   questions: number,
   samples: number,
   s: RunSummary,
-  weekly: boolean
+  weekly: boolean,
+  fromForm = false
 ) {
   const who = esc(business || domain)
   const perEngine = ENGINE_ORDER.filter((e) => s.engines[e])
@@ -77,6 +78,7 @@ ${
     ? button("See every answer →", href)
     : `<p style="font-size:14px">All of it is open in your account, free: every answer to all ${questions} questions, everyone named instead of you, the sites the assistants quote, and at the end our plan for ${esc(domain)}: what we would do and why.</p>
 ${button("See your report →", href)}
+${fromForm ? `<p style="font-size:13px;margin-top:-10px;color:#555">You asked for this report through our form on Facebook or Instagram, so we opened a free account for this email. Enter this email on the next screen and we'll send you a one-time code.</p>` : ""}
 <p style="font-size:13px;margin-top:-10px;color:#555">Questions about it? Just reply to this email.</p>`
 }
 ${weekly ? `<p style="color:#555;font-size:13px">We re-check every two weeks and tell you what changed.</p>` : ""}`)
@@ -129,7 +131,7 @@ export async function POST(req: NextRequest) {
   const people = rows(
     await db.execute(sql`
       SELECT * FROM (
-        SELECT u.id, u.email, u.name, f.id AS follow_id, f.email_weekly,
+        SELECT u.id, u.email, u.name, u.source, f.id AS follow_id, f.email_weekly,
                (f.plan = 'paid' OR ${clientOwnsSql(sql.raw("u.id"), sql`${String(run.domain)}`)}) AS client
         FROM geo_follows f
         JOIN users u ON u.id::text = f.user_id
@@ -155,7 +157,8 @@ export async function POST(req: NextRequest) {
           Number(run.n_questions ?? 20),
           Number(run.samples ?? 3),
           run.summary as RunSummary,
-          p.client === true
+          p.client === true,
+          p.source === "meta_form"
         )
     try {
       await resend.emails.send({
