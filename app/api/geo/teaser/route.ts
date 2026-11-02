@@ -9,27 +9,29 @@ import { visitSource } from "@/lib/visit-source"
 // and Perplexity. POST starts it (or returns a result under a day old at once); GET ?id= follows it,
 // stage by stage, so the page can show the questions as soon as they exist.
 //
-// A stranger gets two answers in full. For the other three only the question leaves the server (with
-// the names of the assistants that answered it), so the blur on the page hides nothing devtools could lift. The full answers, and the other two
-// assistants, are what the account and the detailed report are for.
+// A stranger gets one answer in full and the first of the businesses named instead. For the other four
+// answers only the question leaves the server (with the names of the assistants that answered it), and of the
+// other businesses only how many, so the blur on the page hides nothing devtools could lift. (02.11: of 22
+// outside checks, the 10 with a count of 0 gave no sign-up. The screen had already answered what the ad asks: the
+// count and who is named instead.) The rest, and the other two assistants, are what the report is for.
 
 export const dynamic = "force-dynamic"
 export const maxDuration = 30
 
-const OPEN_ROWS = 2
+const OPEN_ROWS = 1
 const RUN_ID = /^[0-9a-f-]{36}$/i
 
 const anyNamed = (r: ResultRow) => Object.values(r.engines).some((a) => a.named > 0)
 const anyRivals = (r: ResultRow) => Object.values(r.engines).some((a) => a.named_instead.length > 0)
 
-/** Which two answers to show: where the site is named and where it is not, if both happened;
- * otherwise the ones that name somebody, which say more than general advice. */
+/** Which answer to show: one where the site is missing and somebody else is named, if there is one;
+ * otherwise one that names somebody, which says more than general advice. */
 function pickOpen(rows: ResultRow[]): number[] {
   const idx = rows.map((_, i) => i)
   const named = idx.filter((i) => anyNamed(rows[i]))
   const missed = idx.filter((i) => !anyNamed(rows[i]))
   if (named.length && missed.length) {
-    return [named[0], missed.find((i) => anyRivals(rows[i])) ?? missed[0]].sort((a, b) => a - b)
+    return [missed.find((i) => anyRivals(rows[i])) ?? missed[0]]
   }
   const preferred = idx.filter((i) => anyRivals(rows[i]))
   return [...preferred, ...idx.filter((i) => !preferred.includes(i))].slice(0, OPEN_ROWS).sort((a, b) => a - b)
@@ -84,7 +86,8 @@ function view(run: PublicRun) {
       of: run.summary.of,
       linked,
       engines: run.summary.engines,
-      namedInstead: run.summary.named_instead.slice(0, 3),
+      namedInstead: run.summary.named_instead.slice(0, 1),
+      namedInsteadMore: Math.max(0, run.summary.named_instead.length - 1),
     },
     open: open.map((i) => ({ n: i + 1, ...openRow(rows[i]) })),
     locked: rows

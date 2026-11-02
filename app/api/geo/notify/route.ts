@@ -54,7 +54,7 @@ function readyEmail(
   samples: number,
   s: RunSummary,
   weekly: boolean,
-  fromForm = false
+  accountSource: string | null = null
 ) {
   const who = esc(business || domain)
   const perEngine = ENGINE_ORDER.filter((e) => s.engines[e])
@@ -78,7 +78,7 @@ ${
     ? button("See every answer →", href)
     : `<p style="font-size:14px">All of it is open in your account, free: every answer to all ${questions} questions, everyone named instead of you, the sites the assistants quote, and at the end our plan for ${esc(domain)}: what we would do and why.</p>
 ${button("See your report →", href)}
-${fromForm ? `<p style="font-size:13px;margin-top:-10px;color:#555">You asked for this report through our form on Facebook or Instagram, so we opened a free account for this email. Enter this email on the next screen and we'll send you a one-time code.</p>` : ""}
+${accountSource === "meta_form" || accountSource === "site_email" ? `<p style="font-size:13px;margin-top:-10px;color:#555">You asked for this report ${accountSource === "meta_form" ? "through our form on Facebook or Instagram" : "on our site"}, so we opened a free account for this email. Enter this email on the next screen and we'll send you a one-time code.</p>` : ""}
 <p style="font-size:13px;margin-top:-10px;color:#555">Questions about it? Just reply to this email.</p>`
 }
 ${weekly ? `<p style="color:#555;font-size:13px">We re-check every two weeks and tell you what changed.</p>` : ""}`)
@@ -146,7 +146,8 @@ export async function POST(req: NextRequest) {
   const resend = new Resend(process.env.RESEND_API_KEY)
   let sent = 0
   for (const p of people) {
-    const first = String(p.name ?? "").trim().split(/\s+/)[0] || "there"
+    // An account opened from just an email has no name yet: its "name" is the address before the @.
+    const first = (p.source === "site_email" ? "" : String(p.name ?? "").trim().split(/\s+/)[0]) || "there"
     const unsub = unsubscribeUrl(String(p.follow_id))
     const { subject, html } = weekly
       ? weeklyEmail(first, String(run.domain), String(run.business ?? ""), run.summary as WeeklySummary, unsub)
@@ -158,7 +159,7 @@ export async function POST(req: NextRequest) {
           Number(run.samples ?? 3),
           run.summary as RunSummary,
           p.client === true,
-          p.source === "meta_form"
+          (p.source as string | null) ?? null
         )
     try {
       await resend.emails.send({

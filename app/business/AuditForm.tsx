@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useRef, useEffect, useCallback, useId } from "react"
-import AiAnswers, { type TeaserView } from "./AiAnswers"
+import AiAnswers, { goToReportForm, REPORT_FORM_ID, type TeaserView } from "./AiAnswers"
 import OpenAnswersBar from "./OpenAnswersBar"
 import GuestRewardNote from "@/components/geo/GuestRewardNote"
 import LocaleLink from "@/components/i18n/LocaleLink"
@@ -180,6 +180,7 @@ export default function AuditForm({ note }: { note?: string } = {}) {
   // Card A: the instant check of what ChatGPT and Perplexity answer.
   const [ai, setAi] = useState<TeaserView | null>(null)
   const [aiOn, setAiOn] = useState(false)
+  const [leadSent, setLeadSent] = useState(false)
   const [aiDomain, setAiDomain] = useState("")
   const [aiStart, setAiStart] = useState(0)
   const [elapsed, setElapsed] = useState(0)
@@ -242,7 +243,6 @@ export default function AuditForm({ note }: { note?: string } = {}) {
 
   const shownDomain = ai?.domain || aiDomain
   const hasLocked = (ai?.locked?.length ?? 0) > 0
-  const totalAnswers = (ai?.open?.length ?? 0) + (ai?.locked?.length ?? 0)
 
   useEffect(() => {
     if (!aiDone || typeof IntersectionObserver === "undefined") return
@@ -301,6 +301,7 @@ export default function AuditForm({ note }: { note?: string } = {}) {
     const token = ++aiToken.current
     const t0 = Date.now()
     setAi(null)
+    setLeadSent(false)
     setAiOn(true)
     setAiStart(t0)
     setElapsed(0)
@@ -558,6 +559,7 @@ export default function AuditForm({ note }: { note?: string } = {}) {
             elapsed={elapsed}
             signupHref={signupHref}
             onCta={onCta}
+            onLeadSent={() => setLeadSent(true)}
             onRetry={() => void run()}
             onOtherUrl={otherUrl}
             ctaRef={ctaRef}
@@ -758,8 +760,17 @@ export default function AuditForm({ note }: { note?: string } = {}) {
       {/* Phones: once the answers have been on screen, the way in stays at hand while the offer in
           the card is scrolled away. Not with the pill (one thing pinned at a time), not before the page
           has settled after the result, and not under the cookie banner. */}
-      {aiDone && pillDone && barReady && hasLocked && !ctaInView && !cookieBannerUp && (
-        <OpenAnswersBar href={signupHref} label={m.openAllBar(totalAnswers)} onClick={() => onCta("sticky")} onSeen={barSeen} />
+      {aiDone && pillDone && barReady && hasLocked && !ctaInView && !cookieBannerUp && !leadSent && (
+        <OpenAnswersBar
+          href={`#${REPORT_FORM_ID}`}
+          label={m.sendReportBar}
+          onClick={(e) => {
+            e.preventDefault()
+            onCta("sticky")
+            goToReportForm()
+          }}
+          onSeen={barSeen}
+        />
       )}
     </div>
   )

@@ -2,11 +2,12 @@
 
 // Card A of the free check: what ChatGPT and Perplexity answer when this business's buyers ask.
 // While it runs it shows real progress from the VM (stage, the questions as soon as they exist,
-// answers in per assistant). The result shows two answers in full; the other three arrive as their
-// question only — there is no answer data in the page to un-blur. The account offer sits right under
-// who was named instead, before the two answers: an account opens the other answers and, a few
-// minutes later, the whole detailed report (a day-0 run takes about 6 minutes; the copy says
-// "about 10"). Under the two answers comes that report, free once an account is created
+// answers in per assistant). The result shows the count, the first business named instead and one
+// answer in full; the rest arrive as a number and as questions — there is no answer data in the page to
+// un-blur. The offer sits right under who was named instead: an email, and the whole detailed report
+// arrives there (a day-0 run takes a few minutes; the copy says "about 10"), with a free account opened
+// for that email (app/api/geo/report-request/route.ts); Google and LinkedIn stay a link under the field.
+// Under the answer comes that report, free once an account is created
 // (lib/geo-pricing.ts), with a real one a click away. AuditForm owns the refs of the offer, the report card and the locked rows:
 // it watches them for geo_cta_seen and for the phone bar. Each locked row says which assistants
 // answered that question (the API sends their names, never the answers). A launch reward won on the
@@ -14,6 +15,8 @@
 // instead, else the free-report card) and in the failure boxes that offer an account
 // (components/geo/GuestRewardNote.tsx "gate").
 
+import { useState } from "react"
+import Link from "next/link"
 import GuestRewardNote from "@/components/geo/GuestRewardNote"
 import { SAMPLE_PATH } from "@/lib/geo-pricing"
 import { useLocale, useT } from "@/components/i18n/LocaleProvider"
@@ -51,6 +54,8 @@ export interface TeaserView {
     linked: number
     engines: Record<string, { named: number; of: number }>
     namedInstead: { name: string; count: number }[]
+    /** How many more businesses were named; their names stay on the server. */
+    namedInsteadMore?: number
   }
   open?: { n: number; q: string; engines: Record<string, TeaserEngine> }[]
   /** `answered`: the assistants that answered this question; missing from an older API response. */
@@ -229,10 +234,156 @@ function askedAt(m: M, locale: Locale, iso?: string) {
   return m.askedAt(sameDay, time)
 }
 
+/** The id of the offer the other buttons on the card bring the visitor to, and of its email field. */
+export const REPORT_FORM_ID = "geo-report-form"
+export const REPORT_EMAIL_ID = "geo-report-email"
+
+/** Brings the visitor to the email field (or, once sent, to the card that says so). */
+export function goToReportForm() {
+  const field = document.getElementById(REPORT_EMAIL_ID)
+  ;(field ?? document.getElementById(REPORT_FORM_ID))?.scrollIntoView({ behavior: "smooth", block: "center" })
+  field?.focus({ preventScroll: true })
+}
+
+/** The email that gets the report: the account is opened on the server, so nothing else is asked. */
+function ReportEmailForm({
+  domain,
+  signupHref,
+  loginHref,
+  onCta,
+  onSent,
+}: {
+  domain: string
+  signupHref: string
+  loginHref: string
+  onCta: (where: string) => void
+  onSent: (email: string, ready: boolean) => void
+}) {
+  const m = useT(ns)
+  const locale = useLocale()
+  const [email, setEmail] = useState("")
+  const [trap, setTrap] = useState("")
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<"" | "email" | "exists" | "ip" | "send">("")
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault()
+    if (busy) return
+    const address = email.trim()
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]{2,}$/.test(address)) return setError("email")
+    setBusy(true)
+    setError("")
+    onCta("email")
+    try {
+      const res = await fetch("/api/geo/report-request", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: address, site: domain, hp: trap }),
+      })
+      const j = (await res.json().catch(() => ({}))) as { status?: string; id?: string; error?: string }
+      if (j.status === "queued" || j.status === "ready") {
+        try {
+          // The same two sign-up conversions /signup sends (app/signup/page.tsx), once per account.
+          const w = window as unknown as { gtag?: (...args: unknown[]) => void; fbq?: (...args: unknown[]) => void }
+          w.gtag?.("event", "conversion", { send_to: "AW-18160234884/SQ7pCN7Sk8gcEITjvNND", transaction_id: "signup_" + j.id })
+          w.fbq?.("track", "CompleteRegistration", {}, { eventID: "signup_" + j.id })
+        } catch {
+          // Analytics never gets in the way.
+        }
+        return onSent(address, j.status === "ready")
+      }
+      setError(j.error === "exists" ? "exists" : j.error === "report_ip_used" ? "ip" : j.error === "invalid_email" ? "email" : "send")
+    } catch {
+      setError("send")
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <form onSubmit={submit} noValidate className="mt-4">
+      <label htmlFor={REPORT_EMAIL_ID} className="block text-sm font-semibold mb-1.5">
+        {m.emailLabel}
+      </label>
+      <input
+        id={REPORT_EMAIL_ID}
+        type="email"
+        inputMode="email"
+        autoComplete="email"
+        autoCapitalize="none"
+        spellCheck={false}
+        value={email}
+        onChange={(e) => {
+          setEmail(e.target.value)
+          if (error) setError("")
+        }}
+        placeholder={m.emailPlaceholder}
+        className="w-full min-h-12 rounded-xl border border-black/15 bg-white px-4 py-3 text-base text-[#1b1916] placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-400"
+      />
+      {/* For bots only: people never see or reach this field. */}
+      <input
+        type="text"
+        tabIndex={-1}
+        autoComplete="off"
+        aria-hidden
+        value={trap}
+        onChange={(e) => setTrap(e.target.value)}
+        className="absolute -left-[9999px] h-0 w-0 opacity-0"
+      />
+      {error && (
+        <p role="alert" className="text-sm text-red-700 mt-2 leading-relaxed">
+          {error === "email" && m.errEmail}
+          {error === "send" && m.errSend}
+          {error === "exists" && (
+            <>
+              {m.errExists}{" "}
+              <a href={loginHref} className="font-semibold underline">
+                {m.sentLogin}
+              </a>
+            </>
+          )}
+          {error === "ip" && (
+            <>
+              {m.errIpUsed}{" "}
+              <a href={localePath(locale, "/#apply")} className="font-semibold underline">
+                {m.errIpLink}
+              </a>
+            </>
+          )}
+        </p>
+      )}
+      <button type="submit" disabled={busy} className={`${CTA_BUTTON} disabled:opacity-60`}>
+        {busy ? m.sending : m.sendReport}
+      </button>
+      <p className="text-xs text-slate-600 mt-2.5 leading-relaxed">{m.reportPerk}</p>
+      <p className="text-xs text-slate-500 mt-1.5 leading-relaxed">
+        {rich(m.reportAgree, {
+          link: (c) => (
+            <Link href="/terms" className="underline">
+              {c}
+            </Link>
+          ),
+          link2: (c) => (
+            <Link href="/privacy" className="underline">
+              {c}
+            </Link>
+          ),
+        })}
+      </p>
+      <p className="text-xs text-slate-500 mt-1.5">
+        <a href={signupHref} onClick={() => onCta("inline")} className="underline">
+          {m.reportOauth}
+        </a>
+      </p>
+    </form>
+  )
+}
+
 function Result({
   view,
   signupHref,
   onCta,
+  onLeadSent,
   ctaRef,
   reportRef,
   lockedRef,
@@ -240,12 +391,14 @@ function Result({
   view: TeaserView
   signupHref: string
   onCta: (where: string) => void
+  onLeadSent?: () => void
   ctaRef?: React.Ref<HTMLDivElement>
   reportRef?: React.Ref<HTMLDivElement>
   lockedRef?: React.Ref<HTMLDivElement>
 }) {
   const m = useT(ns)
   const locale = useLocale()
+  const [sent, setSent] = useState<{ email: string; ready: boolean } | null>(null)
   const s = view.summary!
   const domain = view.domain ?? ""
   const engines = (view.engines ?? ["chatgpt", "perplexity"]).filter((e) => s.engines[e])
@@ -268,6 +421,15 @@ function Result({
   // A closed question no assistant answered is shown but not counted as a ready answer.
   const ready = locked.filter((r) => answeredBy(r).length > 0).length
   const total = open.length + ready
+  const top = s.namedInstead[0]?.name ?? ""
+  const moreNamed = s.namedInsteadMore ?? 0
+  const loginHref = localePath(locale, `/login?callbackUrl=${encodeURIComponent(`/business/dashboard/visibility?site=${domain}`)}`)
+  const offerTitle = zero ? (top ? m.ctaZeroTitle(top) : m.ctaZeroTitleNoName) : all ? m.ctaTitle(ready) : m.ctaSomeTitle(s.of - s.named)
+  const toForm = (where: string) => (e: React.MouseEvent) => {
+    e.preventDefault()
+    onCta(where)
+    goToReportForm()
+  }
 
   return (
     <div>
@@ -313,19 +475,54 @@ function Result({
                   <span className="text-slate-500">{m.inAnswers(r.count)}</span>
                 </li>
               ))}
+              {moreNamed > 0 && (
+                <>
+                  <li aria-hidden className="flex items-center gap-2 pt-1 blur-[3px] select-none">
+                    <span className="h-3 w-32 rounded bg-slate-300" />
+                    <span className="h-2.5 w-20 rounded bg-slate-200" />
+                  </li>
+                  <li aria-hidden className="flex items-center gap-2 pt-1 blur-[3px] select-none">
+                    <span className="h-3 w-24 rounded bg-slate-300" />
+                    <span className="h-2.5 w-20 rounded bg-slate-200" />
+                  </li>
+                  <li className="pt-1 text-sm font-semibold text-violet-700">
+                    <a href={`#${REPORT_FORM_ID}`} onClick={toForm("more-named")} className="hover:underline">
+                      {m.moreNamed(moreNamed)}
+                    </a>
+                  </li>
+                </>
+              )}
             </ul>
           </div>
         )}
 
         {ready > 0 && (
-          <div ref={ctaRef} className="mt-5 scroll-mt-24 rounded-2xl border border-violet-200 bg-violet-50/70 p-4 sm:p-5">
-            <p className="font-extrabold text-lg leading-snug">{m.ctaTitle(ready)}</p>
-            <p className="text-sm text-slate-700 mt-1.5 leading-relaxed">{m.ctaBody(all, ready)}</p>
-            <a href={signupHref} onClick={() => onCta("inline")} className={CTA_BUTTON}>
-              {m.ctaButton(total)}
-            </a>
-            <p className="text-xs text-slate-500 mt-2.5 text-center leading-relaxed">{m.ctaSignIn}</p>
-            <GuestRewardNote where="gate" onTint className="mt-3" />
+          <div ref={ctaRef} id={REPORT_FORM_ID} className="mt-5 scroll-mt-24 rounded-2xl border border-violet-200 bg-violet-50/70 p-4 sm:p-5">
+            {sent ? (
+              <div role="status">
+                <p className="font-extrabold text-lg leading-snug break-words">{sent.ready ? m.readyTitle : m.sentTitle(sent.email)}</p>
+                <p className="text-sm text-slate-700 mt-1.5 leading-relaxed">{sent.ready ? m.readyBody : m.sentBody}</p>
+                <a href={loginHref} className="mt-2.5 inline-block text-sm font-semibold text-violet-700 hover:underline">
+                  {m.sentLogin}
+                </a>
+              </div>
+            ) : (
+              <>
+                <p className="font-extrabold text-lg leading-snug break-words">{offerTitle}</p>
+                <p className="text-sm text-slate-700 mt-1.5 leading-relaxed">{all ? m.ctaBody(all, ready) : m.reportOffer}</p>
+                <ReportEmailForm
+                  domain={domain}
+                  signupHref={signupHref}
+                  loginHref={loginHref}
+                  onCta={onCta}
+                  onSent={(email, ready) => {
+                    setSent({ email, ready })
+                    onLeadSent?.()
+                  }}
+                />
+                <GuestRewardNote where="gate" onTint className="mt-3" />
+              </>
+            )}
           </div>
         )}
       </div>
@@ -339,14 +536,24 @@ function Result({
           </div>
         )}
 
-        <div ref={reportRef} className="relative z-10 -mt-8 rounded-2xl bg-white border border-black/10 shadow-lg shadow-violet-600/10 p-5">
+        <div ref={reportRef} className={`relative z-10 ${open[1] ? "-mt-8" : "mt-6"} rounded-2xl bg-white border border-black/10 shadow-lg shadow-violet-600/10 p-5`}>
           <p className="font-extrabold text-lg leading-snug break-words">{m.reportTitle(domain)}</p>
           <p className="text-sm text-slate-600 mt-1.5 leading-relaxed">
             {rich(m.reportBody, { b: (c) => <b className="text-[#1b1916]">{c}</b> })}
           </p>
-          <a href={signupHref} onClick={() => onCta("overlay")} className={CTA_BUTTON}>
-            {ready ? m.ctaButton(total) : m.createAccount}
-          </a>
+          {sent ? (
+            <a href={loginHref} className={CTA_BUTTON}>
+              {m.sentLogin}
+            </a>
+          ) : ready ? (
+            <a href={`#${REPORT_FORM_ID}`} onClick={toForm("overlay")} className={CTA_BUTTON}>
+              {m.sendReport}
+            </a>
+          ) : (
+            <a href={signupHref} onClick={() => onCta("overlay")} className={CTA_BUTTON}>
+              {m.createAccount}
+            </a>
+          )}
           <a
             href={localePath(locale, SAMPLE_PATH)}
             target="_blank"
@@ -365,8 +572,8 @@ function Result({
             return (
               <a
                 key={r.n}
-                href={signupHref}
-                onClick={() => onCta("locked-row")}
+                href={sent ? loginHref : `#${REPORT_FORM_ID}`}
+                onClick={sent ? undefined : toForm("locked-row")}
                 className="block group rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400 focus-visible:ring-offset-4"
               >
                 <p className="text-base font-semibold leading-snug group-hover:text-violet-700">
@@ -521,6 +728,7 @@ export default function AiAnswers({
   elapsed,
   signupHref,
   onCta,
+  onLeadSent,
   onRetry,
   onOtherUrl,
   ctaRef,
@@ -532,6 +740,7 @@ export default function AiAnswers({
   elapsed: number
   signupHref: string
   onCta: (where: string) => void
+  onLeadSent?: () => void
   onRetry: () => void
   onOtherUrl: () => void
   /** The account offer under the named-instead list, the free-report card and the locked rows:
@@ -550,7 +759,7 @@ export default function AiAnswers({
       </div>
       {waiting && <Waiting view={view} elapsed={elapsed} />}
       {view?.status === "done" && view.summary && (
-        <Result view={view} signupHref={signupHref} onCta={onCta} ctaRef={ctaRef} reportRef={reportRef} lockedRef={lockedRef} />
+        <Result view={view} signupHref={signupHref} onCta={onCta} onLeadSent={onLeadSent} ctaRef={ctaRef} reportRef={reportRef} lockedRef={lockedRef} />
       )}
       {view?.status === "failed" && (
         <Failed view={view} domain={shown} signupHref={signupHref} onCta={onCta} onRetry={onRetry} onOtherUrl={onOtherUrl} />

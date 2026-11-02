@@ -58,6 +58,7 @@ const en = {
   fixCta: "Get me into the answers — see the plan →",
   readyPill: "Your AI answers are ready ↑",
   openAllBar: (total: number) => `Open all ${total} answers →`,
+  sendReportBar: "Send my free report →",
 }
 
 export default defineMessages(en, {
@@ -109,6 +110,7 @@ export default defineMessages(en, {
     fixCta: "Bringen Sie mich in die Antworten – zum Plan →",
     readyPill: "Ihre KI-Antworten sind da ↑",
     openAllBar: (total) => `Alle ${total} Antworten öffnen →`,
+    sendReportBar: "Kostenlosen Bericht senden →",
   },
   fr: {
     failed: "Le test n’a pas abouti. Réessayez.",
@@ -159,6 +161,7 @@ export default defineMessages(en, {
     fixCta: "Faites-moi entrer dans les réponses — voir l’abonnement →",
     readyPill: "Vos réponses IA sont prêtes ↑",
     openAllBar: (total) => `Ouvrir les ${total} réponses →`,
+    sendReportBar: "Envoyer mon rapport gratuit →",
   },
   es: {
     failed: "La comprobación no se completó. Inténtelo de nuevo.",
@@ -209,6 +212,7 @@ export default defineMessages(en, {
     fixCta: "Quiero estar en las respuestas: ver el plan →",
     readyPill: "Sus respuestas de IA están listas ↑",
     openAllBar: (total) => `Abrir las ${total} respuestas →`,
+    sendReportBar: "Enviar mi informe gratuito →",
   },
   ru: {
     failed: "Проверка не завершилась. Попробуйте ещё раз.",
@@ -259,6 +263,7 @@ export default defineMessages(en, {
     writeToMe: "Напишите мне",
     fixCta: "Хочу в ответы ИИ — смотреть подписку →",
     readyPill: "Ответы ИИ готовы ↑",
+    sendReportBar: "Прислать бесплатный отчёт →",
     openAllBar: (total) =>
       `Открыть все ${plural("ru", total, { one: `${total} ответ`, few: `${total} ответа`, other: `${total} ответов` })} →`,
   },
