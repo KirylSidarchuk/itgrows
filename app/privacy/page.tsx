@@ -14,6 +14,9 @@ export const dynamic = "force-static"
 // detailed report once an account is created (its IP address is kept with it, cleared by the purge
 // after 90 days like the quick check's). Since 29 Oct 2026 the website may offer the launch-rewards
 // wheel before an account (components/geo/ExitWheel.tsx): itg_wheel and itg_exit_wheel below.
+// Since 2 Nov 2026 the plan's price test (lib/geo-pricing.ts): itg_vid and itg_price below, the visitor
+// log (geo_price_exposures, purged after 24 months) and the look at earlier visits on a first visit
+// (lib/geo-price-returning.ts).
 
 export const metadata: Metadata = {
   title: "Privacy Policy & Cookie Policy — ItGrows.ai",
@@ -113,6 +116,18 @@ const COOKIES = [
   { name: "Sign-in cookie", text: "Keeps you signed in. Essential. Lasts until you sign out or it expires." },
   { name: "cookie_consent", text: "Stored in your browser. Remembers what you chose in the cookie banner. Essential." },
   {
+    name: "itg_vid",
+    text: "Set on your first visit to our AI visibility pages, for up to 400 days. A random id, with nothing about you in it, that ties the price you were shown to your visit. Essential for the price below to stay the same.",
+  },
+  {
+    name: "itg_price",
+    text: "Set with itg_vid, for up to 400 days. Remembers the price of the AI visibility plan you were shown, so that it stays the same on your next visit. Essential for that.",
+  },
+  {
+    name: "itg_fresh, itg_had_storage",
+    text: "Set when a visit begins and gone when you close the browser or the tab: itg_fresh is a cookie, and itg_had_storage is stored in your browser. Each holds only a yes or no: whether your browser already held anything from an earlier visit, so that a choice you make in the cookie banner during this visit is not mistaken for one. Essential for the price above to stay the same.",
+  },
+  {
     name: "itg_wheel",
     text: "Set only when you spin the launch-rewards wheel on our website before you have an account. Keeps the reward you won for 7 days, so that it can apply to the account you create. Essential for that. With the reward we keep a one-way code made from your internet address, so that each address gets one reward.",
   },
@@ -181,7 +196,7 @@ export default function PrivacyPage() {
         <p className="text-[11px] uppercase tracking-[0.14em] font-bold text-violet-700">Legal</p>
         <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight mt-2">Privacy Policy &amp; Cookie Policy</h1>
         <p className="text-slate-500 text-sm mt-2">
-          Effective date: 29 October 2026
+          Effective date: 2 November 2026
         </p>
 
         <div className="mt-8 rounded-2xl border border-black/10 bg-white overflow-hidden">
@@ -286,6 +301,12 @@ export default function PrivacyPage() {
                 basis={`${INTEREST} in answering the people who write to us.`}
               />
               <DataBlock
+                title="Testing the plan’s price"
+                what="While we test the price of the AI visibility plan: a random id (the itg_vid cookie), the price you were shown, when you first saw it, the referring site, host only, campaign tags in the link such as utm, the page you arrived on, and whether the price card came into view and a quick check was started. No IP address and no account."
+                why="To learn which price works, and to keep showing you the same one. The price you are shown first is picked from a keyed hash of your IP address and browser, and that hash is not stored. To keep their price, we recognise people who visited before: on a first visit we compare your IP address and browser with our existing visit and quick-check records, and keep only the yes or no."
+                basis={`${INTEREST} in setting our prices and treating returning visitors consistently.`}
+              />
+              <DataBlock
                 title="How the site is used"
                 what="Our own analytics: the pages you view, the buttons and links you click, the referring site, host only and not the full address, campaign tags in the link such as utm, your browser’s user agent, and your account id when you are signed in. Only after you accept cookies: a random id kept in your browser, and the ad click id in the link, gclid or fbclid. For counting unique visitors we keep a hash of your IP address and browser that changes every day, not the IP address itself, and remove it after 90 days. Third-party analytics and advertising tools are listed under Cookies."
                 why="To understand which pages work, fix what does not, and measure our advertising."
@@ -340,7 +361,7 @@ export default function PrivacyPage() {
                 IP addresses saved with quick checks, free reports and free post previews, the code made from your internet address with a launch-rewards wheel spin, and the daily visitor hash: 90 days. The result of a quick check stays
                 with the website, like the AI assistants’ other answers.
               </li>
-              <li>Usage analytics: 24 months.</li>
+              <li>Usage analytics, and the log of the price test: 24 months.</li>
               <li>Messages you send us through our contact forms: 24 months.</li>
               <li>Billing records: as long as tax law requires.</li>
               <li>LinkedIn and X tokens: deleted as soon as you disconnect the account.</li>

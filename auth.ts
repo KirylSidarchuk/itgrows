@@ -10,7 +10,7 @@ import bcrypt from "bcryptjs"
 import { cookies, headers } from "next/headers"
 import { sendOwner } from "@/lib/telegram"
 import { visitSource } from "@/lib/visit-source"
-import { drawPriceVariant } from "@/lib/geo-pricing"
+import { newAccountVariant, salesPriceOnSignIn } from "@/lib/geo-price-test"
 
 // Retry a transient failure (dropped DB connection etc.) once before letting it
 // propagate — an uncaught throw here becomes /login?error=Configuration for the user.
@@ -157,8 +157,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
               name: pinRecord.name ?? email.split("@")[0],
               emailVerified: new Date(),
               plan: "starter",
-              // The AI-visibility plan's price, drawn once for a new account (lib/geo-pricing.ts PRICE_TEST).
-              geoPriceVariant: drawPriceVariant(),
+              // The AI-visibility plan's price: the arm this visitor saw (lib/geo-pricing.ts PRICE_TEST).
+              geoPriceVariant: await newAccountVariant(),
             })
             .returning()
 
@@ -207,7 +207,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 name: (profile?.name as string | undefined) ?? user?.name ?? email.split("@")[0],
                 emailVerified: new Date(),
                 plan: "starter",
-                geoPriceVariant: drawPriceVariant(),
+                geoPriceVariant: await newAccountVariant(),
               })
               .returning()
             let regGclid: string | undefined
@@ -226,6 +226,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         token.id = user.id
         token.plan = (user as { plan?: string }).plan ?? "starter"
       }
+      // A sign-in from a browser that came by a sales link: the account is on the one price too.
+      if (account && token.id) await salesPriceOnSignIn(String(token.id))
       return token
     },
     async session({ session, token }) {

@@ -6,6 +6,7 @@ import { signIn } from "next-auth/react"
 import Link from "next/link"
 import OAuthButtons from "@/components/auth/OAuthButtons"
 import GuestRewardNote from "@/components/geo/GuestRewardNote"
+import { usePlanPrices } from "@/components/geo/PriceProvider"
 import LocaleLink from "@/components/i18n/LocaleLink"
 import { useLocale, useT } from "@/components/i18n/LocaleProvider"
 import { geoPriceLabels } from "@/lib/geo-pricing"
@@ -16,7 +17,7 @@ import signupNs from "@/lib/i18n/messages/signup"
 function SignupForm() {
   const m = useT(signupNs)
   // The plan's prices for the "Start the plan" heading, written the page language's way.
-  const prices = geoPriceLabels(useLocale())
+  const prices = geoPriceLabels(useLocale(), usePlanPrices())
   const router = useRouter()
   const searchParams = useSearchParams()
   const callbackUrl = searchParams.get("callbackUrl") ?? "/cabinet"

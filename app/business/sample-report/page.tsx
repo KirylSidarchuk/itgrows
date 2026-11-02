@@ -37,6 +37,9 @@ async function sample(): Promise<SiteReport | null> {
   }
 }
 
+// A visitor's price (the price test, lib/geo-pricing.ts): never cached, whatever else this page does.
+export const dynamic = "force-dynamic"
+
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale()
   const m = t(locale, sampleReportPageNs)

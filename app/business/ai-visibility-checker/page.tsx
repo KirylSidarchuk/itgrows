@@ -17,6 +17,9 @@ import ns from "@/lib/i18n/messages/visibilityChecker"
 
 const PATH = "/business/ai-visibility-checker"
 
+// A visitor's price (the price test, lib/geo-pricing.ts): never cached, whatever else this page does.
+export const dynamic = "force-dynamic"
+
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale()
   const m = t(locale, ns)

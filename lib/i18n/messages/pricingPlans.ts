@@ -1,9 +1,8 @@
 import { defineMessages } from "../messages"
 
 // app/business/PricingPlans.tsx (client): the pricing block of "/". The plan's prices and the yearly
-// discount come in as arguments (lib/geo-pricing.ts geoPriceLabels: the one price, written the
-// language's way); nothing here is a price. The price test of 28–30 Oct 2026, when the card named no
-// price, is over (owner's decision, 30 Oct 2026). The detailed report is free once an account is
+// discount come in as arguments (lib/geo-pricing.ts geoPriceLabels: the visitor's price, written the
+// language's way); nothing here is a price. The detailed report is free once an account is
 // created (since 27 Oct 2026).
 // Since 30 Oct 2026 (owner's decision) the plan card carries the growth guarantee's line with its "*"
 // (growthGuarantee.ts); its footnote, with the link to /terms#growth-guarantee, is the last line of the

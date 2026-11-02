@@ -1,15 +1,15 @@
 import type { Metadata } from "next"
 import type { ReactNode } from "react"
 import Link from "next/link"
-import { GEO_PRICES, YEAR_DISCOUNT } from "@/lib/geo-pricing"
+import { YEAR_DISCOUNT } from "@/lib/geo-pricing"
 import CompanyLine from "@/components/CompanyLine"
 
 export const dynamic = "force-static"
 
 // Terms of Service for both products: AI visibility (ItGrows for Business) and LinkedIn & X posts.
-// Prices come from lib/geo-pricing.ts (GEO_PRICES, the one price) so this page never disagrees with the
-// checkout. From 28 to 30 Oct 2026 a price test showed each account its own price in the cabinet and this
-// page named none; on 30 Oct 2026 the owner ended it, and the one price is written here again.
+// This page is static and names no price of the AI visibility plan: since 2 Nov 2026 (the price test,
+// lib/geo-pricing.ts) that is the price shown in the account and at checkout; the #plan section says so,
+// and that prices may differ between visitors while we test them.
 // Refunds and taxes
 // are the owner's decisions of 23 Oct 2026. Since 27 Oct 2026 (the effective date) the detailed report
 // is free once an account is created, one per account and per connection; the quick check and the
@@ -28,7 +28,6 @@ export const metadata: Metadata = {
   alternates: { canonical: "https://www.itgrows.ai/terms" },
 }
 
-const P = GEO_PRICES
 const YEAR_OFF = `${Math.round(YEAR_DISCOUNT * 100)}%`
 const CONTACT = "kiryl@itgrows.ai"
 
@@ -99,7 +98,7 @@ export default function TermsPage() {
         <p className="text-[11px] uppercase tracking-[0.14em] font-bold text-violet-700">Legal</p>
         <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight mt-2">Terms of Service</h1>
         <p className="text-slate-500 text-sm mt-2">
-          Effective date: 30 October 2026
+          Effective date: 2 November 2026
         </p>
 
         <div className="mt-8 rounded-2xl border border-black/10 bg-white overflow-hidden">
@@ -109,8 +108,8 @@ export default function TermsPage() {
             <ul className="mt-3 space-y-2 text-sm text-slate-700 leading-relaxed list-disc pl-5">
               <li>ItGrows has two products: AI visibility for businesses, and LinkedIn &amp; X posts for founders and companies.</li>
               <li>
-                AI visibility: a quick check, a detailed report that is free once you create an account, and a plan at {P.month.label} a month plus a
-                one-time {P.setup.label} setup (no setup fee when you pay for 3 months or a year). Cancel any time; the plan runs to the end of
+                AI visibility: a quick check, a detailed report that is free once you create an account, and a plan at the price shown in your
+                account, plus a one-time setup of one month&apos;s price (no setup fee when you pay for 3 months or a year). Cancel any time; the plan runs to the end of
                 the paid period.
               </li>
               <li>You see every article 2 days before it goes live, and can edit or stop it.</li>
@@ -194,15 +193,19 @@ export default function TermsPage() {
             <p>The plan is bought for one site. You choose how to pay:</p>
             <List>
               <li>
-                <strong>Month to month:</strong> {P.month.label} a month, plus a one-time {P.setup.label} setup charged with the first payment.
+                <strong>Month to month:</strong> the plan&apos;s monthly price, plus a one-time setup of one month&apos;s price, charged with the first payment.
               </li>
               <li>
-                <strong>3 months upfront:</strong> {P.quarter.label} every 3 months, no setup fee.
+                <strong>3 months upfront:</strong> three months&apos; price every 3 months, no setup fee.
               </li>
               <li>
-                <strong>A year upfront:</strong> {P.year.label} a year ({P.year.perMonth} a month, {YEAR_OFF} off), no setup fee.
+                <strong>A year upfront:</strong> twelve months at {YEAR_OFF} off, paid once a year, no setup fee.
               </li>
             </List>
+            <p>
+              The prices are the ones shown in your account and at checkout. Prices may differ between visitors while we test them; you pay the
+              price shown at checkout and keep it.
+            </p>
             <p>
               The setup gets your site ready: it is tested the way AI crawlers see it, what blocks them is fixed with you, Bing and Google are set up,
               and you get a launch report on the “Your website” page. What the plan includes after that is listed on our pricing page when you buy it;
@@ -339,7 +342,7 @@ export default function TermsPage() {
           <Section id="refunds">
             <List>
               <li>
-                <strong>The setup ({P.setup.label}):</strong> not refundable once the setup work has started.
+                <strong>The setup:</strong> not refundable once the setup work has started.
               </li>
               <li>
                 <strong>The AI visibility plan:</strong> payments are not refunded for a period that has started. Cancelling takes effect at the end

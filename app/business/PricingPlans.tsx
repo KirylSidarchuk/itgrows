@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react"
 import { SAMPLE_PATH, YEAR_DISCOUNT, geoPriceLabels, type GeoInterval } from "@/lib/geo-pricing"
+import { usePlanPrices, usePriceCardSeen } from "@/components/geo/PriceProvider"
 import LocaleLink from "@/components/i18n/LocaleLink"
 import { useLocale, useT } from "@/components/i18n/LocaleProvider"
 import { splitLocale, type Locale } from "@/lib/i18n/config"
@@ -16,10 +17,11 @@ import { LIFT, LIFT_DARK, NUM, SHINE } from "@/components/geo/motion"
 // sold, said the same way everywhere: the quick check is free (two answers at once, all five with an account); the detailed report is the
 // diagnosis and our plan for the site — computed after the account is created, and the whole of it
 // free (one site per account, since 27 Oct 2026); the plan is us doing that work. The plan card names
-// the one price (owner's decision, 30 Oct 2026, ending the price test): "$499 /month" and the one-time
-// setup by the month, "$399 /month" and "$4,788 a year" by the year, the 3 months and the year on their
-// buttons. Every number comes from lib/geo-pricing.ts (geoPriceLabels, written the page language's
-// way); every string from lib/i18n/messages/pricingPlans.ts.
+// the visitor's price (the price test, lib/geo-pricing.ts; PriceProvider has it from the server): at the
+// one price "$499 /month" and the one-time setup by the month, "$399 /month" and "$4,788 a year" by the
+// year, the 3 months and the year on their buttons. Every number comes from lib/geo-pricing.ts
+// (geoPriceLabels, written the page language's way); every string from lib/i18n/messages/pricingPlans.ts.
+// The price coming into view counts once per visitor for the test (usePriceCardSeen).
 // Since 30 Oct 2026 (owner's decision) the plan card carries the growth guarantee's line with its "*"
 // (growthGuarantee.ts) above its buttons; its footnote with the link to the conditions is the last line
 // of the page (app/_home/SiteFooter.tsx), not here.
@@ -113,6 +115,23 @@ export default function PricingPlans({
   const [checked, setChecked] = useState<CheckedSite | null>(null)
   const lineRef = useRef<HTMLParagraphElement>(null)
   const seen = useRef(false)
+  // The price on the plan's card in view, for the price test.
+  const priceRef = useRef<HTMLParagraphElement>(null)
+  const priceSeen = usePriceCardSeen()
+  useEffect(() => {
+    const el = priceRef.current
+    if (!el || typeof IntersectionObserver === "undefined") return
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) return
+        priceSeen()
+        io.disconnect()
+      },
+      { threshold: 0.9 }
+    )
+    io.observe(el)
+    return () => io.disconnect()
+  }, [priceSeen])
   useEffect(() => {
     const update = () => {
       const c = readChecked()
@@ -159,7 +178,7 @@ export default function PricingPlans({
   void included
   // The plan's prices, written the language's way ("$499" in English, "499 $" in German), and the
   // yearly discount: "20%" in English, "20 %" in German and French.
-  const P = geoPriceLabels(locale)
+  const P = geoPriceLabels(locale, usePlanPrices())
   const yearOff = formatNumber(locale, YEAR_DISCOUNT, { style: "percent", maximumFractionDigits: 0 })
   const start: Record<"month" | "year", { i: GeoInterval; label: string }[]> = {
     month: [
@@ -240,7 +259,7 @@ export default function PricingPlans({
               ))}
             </div>
           </div>
-          <p className="mt-2 flex items-baseline gap-2.5">
+          <p ref={priceRef} className="mt-2 flex items-baseline gap-2.5">
             <span className={`text-4xl font-extrabold tabular-nums ${NUM}`}>{period === "month" ? P.month : P.yearPerMonth}</span>
             <span className="text-white/60 font-semibold">{m.perMonth}</span>
           </p>

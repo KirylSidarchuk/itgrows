@@ -3,9 +3,10 @@ import { formatUsd } from "@/lib/i18n/format"
 
 // AI-visibility pricing, in one place: the site, the cabinet and Stripe Checkout all read it.
 // Decided by Kiryl on 22 Oct 2026; the detailed report is free since 27 Oct 2026. The plan's monthly
-// price was an A/B test from 28 to 30 Oct 2026 (Kiryl, 27 Oct: "цена только внутри кабинета"); Kiryl
-// ended it on 30 Oct 2026 ("цены нет вообще, это так не работает, цены должны быть"): one price for
-// every account, $499 a month, and the public pages name it again.
+// price was an A/B test from 28 to 30 Oct 2026, at account level (Kiryl, 27 Oct: "цена только внутри
+// кабинета"); Kiryl ended it on 30 Oct 2026 ("цены нет вообще, это так не работает, цены должны быть"):
+// one price, $499 a month, on the public pages. Since 2 Nov 2026 it is a test again, of visitors, with the
+// mechanism of pickaclass (PRICE_TEST below).
 //
 // - The quick check on the site (5 questions x ChatGPT + Perplexity): two answers open without an
 //   account, all five once one is created.
@@ -18,34 +19,55 @@ import { formatUsd } from "@/lib/i18n/format"
 // - The plan, for a monthly price M: M a month plus a one-time setup of M (the launch: site and index
 //   setup, delivered as the launch report on "Your website"); 3 months upfront (3 x M) or a year
 //   (12 months at 20% off, the monthly figure rounded to whole dollars) come with the setup free.
-//   The one price, from before the test, is M = $499 (ONE_PRICE_MONTH): $499 + $499 setup, $1,497 for
-//   3 months, $4,788 for a year ($399 a month). Its Stripe prices are found by lookup key (GEO_PRICES);
-//   a test price is charged inline (lib/geo-business.ts geoLineItems), so it needs no Stripe price.
+//   The one price, the default, is M = $499 (ONE_PRICE_MONTH): $499 + $499 setup, $1,497 for 3 months,
+//   $4,788 for a year ($399 a month). Its Stripe prices are found by lookup key (GEO_PRICES); a test
+//   price is charged inline (lib/geo-business.ts geoLineItems), so it needs no Stripe price made for it.
 //
-// The public pages name the one price (GEO_PRICES), each in its language's way (geoPriceLabels):
-// the pricing card and the FAQ of "/" (app/business/PricingPlans.tsx, lib/i18n/messages/home.ts), the
-// home page's JSON-LD offers, /about, /signup, the sample report, llms.txt, the terms and the blog
-// posts' footer; the writer of our own articles has the same figures (VM /root/blog_engine
-// own_geo_facts.json).
-//
-// The price test (PRICE_TEST), off since 30 Oct 2026. While it ran, every account created got one of
-// the variants at random, uniform, in the same insert that creates it (users.geo_price_variant:
-// auth.ts and app/api/register/route.ts, drawPriceVariant), and keeps it. Accounts from before the
-// test (NULL) and clients set up by hand (geo_clients) stayed on the one price; paying clients are
-// never re-priced, Stripe keeps charging what they bought. While it ran only the cabinet showed a
-// price (the plan page, the end of the report, checkout: lib/geo-price-test.ts accountPrices) and the
-// public pages named none. Counted per variant: geo_plan_view, geo_checkout_started, geo_plan_paid
-// (analytics_events, props.variant). With it off, every account (those given a variant while it ran
-// too) sees and is charged ONE_PRICE_MONTH, new accounts get no variant, and the events carry variant
-// null.
+// THE PRICE TEST (PRICE_TEST; Kiryl, 2 Nov 2026). The rules, carried over from pickaclass:
+// - A visitor gets an arm at the proxy (middleware.ts, lib/geo-price-visitor.ts), so that the first page
+//   already renders it, with no jump. Two cookies hold it: itg_vid, a random id, and itg_price, the signed
+//   pin. The arm a visitor saw is his for good: new weights affect only new visitors. An arm with weight 0
+//   releases those who have not paid to the live arms, by sha256(id:experiment).
+// - Whoever paid keeps the price he paid and is out of the test (lib/geo-price-test.ts accountPrices).
+// - NO CLOAKING, a change from pickaclass, because itgrows runs live Google and Meta ads and Google's rules
+//   for site tests say to treat its crawlers like any visitor: Googlebot, AdsBot-Google, Bingbot,
+//   facebookexternalhit and every other search, ad-review or link-preview bot get an arm through the
+//   same code as a new visitor, from a hash of address and user agent, as they keep no cookie. Only AI
+//   training and answer crawlers that are neither (lib/geo-price-visitor.ts AI_CRAWLER) see the one
+//   price. The user agent otherwise only keeps bots out of the statistics.
+// - Everyone who was ever here before stays on the one price, outside the test (Kiryl, 2 Nov: "убедись что
+//   все кто ранее заходил когда-то на сайт увидят 499"): an older cookie at the proxy, a look at the visit
+//   and quick-check logs on the first page (lib/geo-price-returning.ts), what the browser's storage held
+//   when the visit began (lib/geo-price-earlier-visit.ts). Any doubt or error is the one price.
+// - A sales link (?ref=li) pins a visitor and his account to the one price, outside the test; it can
+//   only ever do that.
+// - An account made while the test runs stores the visitor's arm (users.geo_price_variant:
+//   lib/geo-price-test.ts newAccountVariant, called from auth.ts, /api/register and
+//   /api/geo/report-request); a lead with no visitor behind it (the Meta form) draws one
+//   (drawPriceVariant, /api/geo/price/vm). Accounts from before the test (NULL) and clients set up by
+//   hand (geo_clients) who have not paid stay on the one price.
+// - QA: ?price_qa=<arm>.<hmac> forces an arm for that request and records nothing (scripts/price-qa-links.ts).
+// - One server function says the price of a request (lib/geo-price-server.ts visitorPrice), and every
+//   page a person sees names that: the pricing card and the FAQ of "/" and its JSON-LD offers, /about,
+//   /signup, the sample report, the blog posts' footers, and the price sentences in the articles' text
+//   (lib/geo-price-article.ts; the stored text stays). The cabinet and checkout read the account
+//   (lib/geo-price-test.ts). llms.txt and the markdown alternates stay on the one price, as does what
+//   the writer of our articles knows (VM /root/blog_engine own_geo_facts.json).
+// - Counted per arm: visitors, price card seen and quick checks (geo_price_exposures,
+//   lib/db/migrations/add_geo_price_exposures.sql), accounts (users.geo_price_variant), geo_plan_view,
+//   geo_checkout_started, geo_plan_paid (analytics_events, props.variant); weekly to Telegram by the VM's
+//   /root/geo_check/price_test_report.py.
+// - Off, with no other edit: `enabled: false`. Nobody is assigned, all visitors and unpaid accounts
+//   are on the one price, new accounts get no variant, the events carry variant null; a payer keeps what
+//   he paid. Any failure anywhere falls back to the one price: the site never breaks on the test.
+// - CACHING: a response with a visitor's price must never be served to anyone else. Every priced page
+//   says force-dynamic (scripts/i18n-check.ts fails on one that does not, or that says force-static or
+//   revalidate). Nothing with a price goes through a data cache: the
+//   sample report's unstable_cache holds the report only, and the guides' only titles. /terms and /privacy
+//   stay static and name no price of this plan.
 //
 // The launch-rewards wheel (lib/geo-promo.ts PROMO_WHEEL, since 29 Oct 2026) comes on top of these
 // prices: the same four rewards for every account, applied at checkout to the account's prices.
-//
-// To test again: `enabled: true` gives new accounts one of `variants`; `variants: [<cents>]` puts every
-// account of the test on that one price (accounts from before the test stay on ONE_PRICE_MONTH). A
-// variant dropped from a longer list sends its accounts to ONE_PRICE_MONTH. The public pages would then
-// name ONE_PRICE_MONTH while accounts in the test see their own price: change them with it.
 
 /** Sites an account has the free detailed report computed for. Past that /api/geo/follow answers
  *  "report_limit" and the cabinet offers to run another site's report on request ("contact us"). */
@@ -54,14 +76,25 @@ export const REPORT_SITES = 1
 export type GeoInterval = "month" | "quarter" | "year"
 export type GeoPriceKind = "setup" | GeoInterval
 
-/** The one price, a month, in cents: every account outside the test, and everyone with it off. */
+/** The one price, a month, in cents: everyone outside the test, and everyone with it off. */
 export const ONE_PRICE_MONTH = 49900
 
-/** The A/B test of the plan's monthly price, in cents (Kiryl, 27 Oct 2026; ended by him on 30 Oct 2026:
- *  one price for everyone, named on the public pages). See the top of the file. */
-export const PRICE_TEST: { enabled: boolean; variants: readonly number[] } = {
-  enabled: false,
-  variants: [29900, 39900, 49900, 59900],
+/** The A/B test of the plan's monthly price, in cents (Kiryl, 2 Nov 2026). See the top of the file. */
+export const PRICE_TEST: {
+  enabled: boolean
+  /** Names this test in the visitor log, and goes into the bucket hash. */
+  experiment: string
+  /** A pin from another epoch does not count, and its visitor stays on the one price. */
+  epoch: string
+  variants: readonly number[]
+  /** A variant's share; not listed = 1. 0 = no new visitors, and those who have not paid move to live arms. */
+  weights: Readonly<Record<number, number>>
+} = {
+  enabled: true, // false turns the whole test off.
+  experiment: "geo_price_2026_11",
+  epoch: "v1",
+  variants: [19900, 29900, 39900, 49900, 59900],
+  weights: {},
 }
 
 /** A year upfront: twelve months, 20% off. */
@@ -123,7 +156,7 @@ export function geoPrices(monthCents: number): GeoPrices {
 }
 
 /** The one price: $499 a month, a $499 setup, $1,497 for 3 months, $4,788 for a year ($399 a month).
- *  What the public pages name, the Stripe prices by lookup key, and a checkout from before the test. */
+ *  The default of every page, llms.txt, the Stripe prices by lookup key, and a checkout from before the test. */
 export const GEO_PRICES = geoPrices(ONE_PRICE_MONTH)
 
 /** The plan's prices as a page in one language writes them (lib/i18n/format.ts formatUsd). */
@@ -157,22 +190,29 @@ export function firstPaymentCents(p: GeoPrices, i: GeoInterval) {
   return p[i].cents + (setupFree(i) ? 0 : p.setup.cents)
 }
 
-/** A new account's monthly price while the test runs: one of PRICE_TEST.variants at random, uniform.
- *  Null with the test off (since 30 Oct 2026): the account is on the one price. */
-export function drawPriceVariant(): number | null {
-  const v = PRICE_TEST.variants
-  if (!PRICE_TEST.enabled || !v.length) return null
-  return v[Math.floor(Math.random() * v.length)]
+const armWeight = (cents: number) => Math.max(0, PRICE_TEST.weights[cents] ?? 1)
+
+/** An arm that takes visitors: in the test, with a weight above 0. */
+export const isLiveArm = (cents: number) => PRICE_TEST.variants.includes(cents) && armWeight(cents) > 0
+
+/** The live arm at x in [0, 1), by weight; the one price if none is live. */
+export function armAt(x: number): number {
+  const live = PRICE_TEST.variants.filter(isLiveArm)
+  if (!live.length) return ONE_PRICE_MONTH
+  const total = live.reduce((sum, c) => sum + armWeight(c), 0)
+  let acc = 0
+  for (const c of live) {
+    acc += armWeight(c) / total
+    if (x < acc) return c
+  }
+  return live[live.length - 1]
 }
 
-/** The monthly price, in cents, an account sees and is charged for a new plan: from its variant
- *  (users.geo_price_variant). No variant (an account from before the test), a client set up by hand,
- *  or the test off: the one price. With one variant left, everyone in the test is on it. */
-export function accountMonthCents(variant: number | null, client: boolean): number {
-  const v = PRICE_TEST.variants
-  if (variant === null || client || !PRICE_TEST.enabled || !v.length) return ONE_PRICE_MONTH
-  if (v.length === 1) return v[0]
-  return v.includes(variant) ? variant : ONE_PRICE_MONTH
+/** An arm for an account with no visitor behind it, at random by weight. Null with the test off: the
+ *  account is on the one price. */
+export function drawPriceVariant(): number | null {
+  if (!PRICE_TEST.enabled || !PRICE_TEST.variants.some(isLiveArm)) return null
+  return armAt(Math.random())
 }
 
 /** The real, public sample report: what the free report looks like, linked before sign-up. */

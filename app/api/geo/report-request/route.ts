@@ -5,7 +5,7 @@ import { db } from "@/lib/db"
 import { users } from "@/lib/db/schema"
 import { clientIp, geoCheck, type PublicRun } from "@/lib/geo-check"
 import { normaliseDomain } from "@/lib/geo-business"
-import { drawPriceVariant } from "@/lib/geo-pricing"
+import { newAccountVariant } from "@/lib/geo-price-test"
 import { sendOwner } from "@/lib/telegram"
 import { visitSource } from "@/lib/visit-source"
 
@@ -70,7 +70,7 @@ export async function POST(req: NextRequest) {
 
   const [made] = await db
     .insert(users)
-    .values({ email, name: email.split("@")[0], plan: "starter", source: "site_email", geoPriceVariant: drawPriceVariant() })
+    .values({ email, name: email.split("@")[0], plan: "starter", source: "site_email", geoPriceVariant: await newAccountVariant() })
     .onConflictDoNothing({ target: users.email })
     .returning({ id: users.id })
   if (!made) return NextResponse.json({ error: "exists" }, { status: 409 })

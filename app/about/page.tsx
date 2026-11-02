@@ -3,6 +3,8 @@ import Link from "next/link"
 import { noteCrawler } from "@/lib/crawler-log"
 import { ORGANIZATION } from "@/lib/entity"
 import { SAMPLE_PATH, YEAR_DISCOUNT, geoPriceLabels } from "@/lib/geo-pricing"
+import { visitorPrice } from "@/lib/geo-price-server"
+import PriceScope from "@/components/geo/PriceScope"
 import LanguageSwitcher from "@/components/i18n/LanguageSwitcher"
 import LocaleProvider from "@/components/i18n/LocaleProvider"
 import { formatNumber } from "@/lib/i18n/format"
@@ -25,6 +27,9 @@ const LI_FROM = "$49"
 
 const link = "text-violet-700 font-semibold"
 
+// A visitor's price (the price test, lib/geo-pricing.ts): never cached, whatever else this page does.
+export const dynamic = "force-dynamic"
+
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale()
   const m = t(locale, aboutNs)
@@ -35,9 +40,9 @@ export default async function AboutPage() {
   const locale = await getLocale()
   const m = t(locale, aboutNs)
   void noteCrawler(localePath(locale, "/about"))
-  // The plan's prices, written the language's way (lib/geo-pricing.ts geoPriceLabels), and the yearly
-  // discount: "20%" in English, "20 %" in German and French.
-  const prices = geoPriceLabels(locale)
+  // This visitor's prices (the price test, lib/geo-price-server.ts), written the language's way
+  // (lib/geo-pricing.ts geoPriceLabels), and the yearly discount: "20%" in English, "20 %" in German and French.
+  const prices = geoPriceLabels(locale, (await visitorPrice()).prices)
   const yearOff = formatNumber(locale, YEAR_DISCOUNT, { style: "percent", maximumFractionDigits: 0 })
   const schema = {
     "@context": "https://schema.org",
@@ -48,6 +53,7 @@ export default async function AboutPage() {
   }
   return (
     <LocaleProvider locale={locale}>
+      <PriceScope>
       <div className="min-h-screen bg-[#f3f2f1] text-[#1b1916]" style={{ fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" }}>
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />
         <main className="max-w-2xl mx-auto px-4 sm:px-6 py-14">
@@ -96,6 +102,7 @@ export default async function AboutPage() {
           <CompanyLine className="mt-6 text-slate-500" />
         </main>
       </div>
+      </PriceScope>
     </LocaleProvider>
   )
 }

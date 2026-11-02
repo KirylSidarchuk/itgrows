@@ -10,6 +10,7 @@ import ExitWheel from "@/components/geo/ExitWheel"
 import { exitWheelOn } from "@/lib/geo-promo"
 import { getLocale } from "@/lib/i18n/server"
 import "./globals.css";
+import { EARLIER_VISIT_SCRIPT } from "@/lib/geo-price-earlier-visit";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -114,6 +115,8 @@ export default async function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} ${playfair.variable} h-full antialiased`}
     >
       <head>
+        {/* First, before anything can write: what the browser remembered when this visit began (lib/geo-price-earlier-visit.ts). */}
+        <script id="price-earlier-visit" dangerouslySetInnerHTML={{ __html: EARLIER_VISIT_SCRIPT }} />
         <script id="google-tag-consent" dangerouslySetInnerHTML={{ __html: GOOGLE_TAG_INIT }} />
       </head>
       <body className="min-h-full flex flex-col">

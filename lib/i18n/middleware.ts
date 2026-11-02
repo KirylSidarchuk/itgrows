@@ -59,8 +59,8 @@ function isPrefetch(req: NextRequest): boolean {
   return req.headers.has("next-router-prefetch") || /prefetch/i.test(purpose)
 }
 
-function serve(req: NextRequest, locale: Locale, rewriteTo?: URL): NextResponse {
-  const headers = new Headers(req.headers)
+function serve(forwarded: Headers, locale: Locale, rewriteTo?: URL): NextResponse {
+  const headers = new Headers(forwarded)
   headers.set(LOCALE_HEADER, locale)
   const res = rewriteTo
     ? NextResponse.rewrite(rewriteTo, { request: { headers } })
@@ -78,7 +78,8 @@ function redirect(req: NextRequest, href: string, status: 307 | 308): NextRespon
   return res
 }
 
-export function localeMiddleware(req: NextRequest): NextResponse {
+/** `forwarded`: the request headers to pass on, when the caller has added its own (middleware.ts). */
+export function localeMiddleware(req: NextRequest, forwarded: Headers = req.headers): NextResponse {
   const { pathname } = req.nextUrl
   const acceptLanguage = req.headers.get("accept-language")?.trim()
   const machine = isBot(req.headers.get("user-agent")) || !acceptLanguage
@@ -103,7 +104,7 @@ export function localeMiddleware(req: NextRequest): NextResponse {
     if (!isPublicGeoPath(path)) return redirect(req, path, 307)
     const target = req.nextUrl.clone()
     target.pathname = path
-    const res = serve(req, prefix, target)
+    const res = serve(forwarded, prefix, target)
     if (!machine && !isPrefetch(req) && req.cookies.get(LOCALE_COOKIE)?.value !== prefix) {
       res.cookies.set(LOCALE_COOKIE, prefix, COOKIE)
     }
@@ -111,12 +112,12 @@ export function localeMiddleware(req: NextRequest): NextResponse {
   }
 
   if (!isPublicGeoPath(pathname)) return NextResponse.next()
-  if (machine) return serve(req, DEFAULT)
+  if (machine) return serve(forwarded, DEFAULT)
 
   const chosen = req.cookies.get(LOCALE_COOKIE)?.value
-  if (isLocale(chosen)) return serve(req, chosen)
+  if (isLocale(chosen)) return serve(forwarded, chosen)
   // localePath(DEFAULT, …) is the bare English address ("/login/" -> "/login").
-  if (isAdClick(req) || NO_DETECTION.has(localePath(DEFAULT, pathname))) return serve(req, DEFAULT)
+  if (isAdClick(req) || NO_DETECTION.has(localePath(DEFAULT, pathname))) return serve(forwarded, DEFAULT)
 
   const preferred = preferredLocale(acceptLanguage)
   const navigation = (req.method === "GET" || req.method === "HEAD") && !isPrefetch(req)
@@ -125,5 +126,5 @@ export function localeMiddleware(req: NextRequest): NextResponse {
     res.headers.set("Vary", "Accept-Language, Cookie, User-Agent")
     return res
   }
-  return serve(req, DEFAULT)
+  return serve(forwarded, DEFAULT)
 }

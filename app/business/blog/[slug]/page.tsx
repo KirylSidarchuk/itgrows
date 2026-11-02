@@ -10,6 +10,9 @@ import AboutItGrows from "@/components/geo/AboutItGrows"
 import { liveGuides } from "@/components/geo/guide-data"
 import { guideAlternates, keepReadingCandidates } from "@/lib/geo-guides"
 import CompanyLine from "@/components/CompanyLine"
+import { priceArticleText } from "@/lib/geo-price-article"
+import { visitorPrice } from "@/lib/geo-price-server"
+import PriceScope from "@/components/geo/PriceScope"
 
 const SITE_SLUG = "itgrows-business"
 const BASE = "https://www.itgrows.ai"
@@ -96,9 +99,10 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const imageUrl = `${BASE}/api/blog/image/${post.id}`
   // The same guide in the other language (lib/geo-guides.ts), as hreflang; app/sitemap.ts lists it too.
   const languages = guideAlternates(slug)
+  const description = post.metaDescription ? priceArticleText(post.metaDescription, (await visitorPrice()).prices) : post.title
   return {
     title: post.title,
-    description: post.metaDescription || post.title,
+    description,
     keywords: Array.isArray(post.keywords) ? (post.keywords as string[]).join(", ") : undefined,
     alternates: {
       canonical: `${BASE}/business/blog/${slug}`,
@@ -107,7 +111,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     },
     openGraph: {
       title: post.title,
-      description: post.metaDescription || post.title,
+      description,
       url: `${BASE}/business/blog/${slug}`,
       type: "article",
       locale: uiFor(post.lang).ogLocale,
@@ -118,7 +122,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     twitter: {
       card: "summary_large_image",
       title: post.title,
-      description: post.metaDescription || post.title,
+      description,
       images: post.coverImageUrl ? [imageUrl] : [],
     },
   }
@@ -165,11 +169,17 @@ export default async function BusinessBlogPostPage({ params }: { params: Promise
           .limit(8)
   const related = [...picked, ...newest.filter((r) => !picked.some((p) => p.slug === r.slug))].slice(0, 4)
 
+  // This visitor's price (the price test, lib/geo-pricing.ts) in the article's own price sentences, its
+  // FAQ data included; the stored text and the markdown alternate stay as they are (lib/geo-price-article.ts).
+  const { prices } = await visitorPrice()
+  const content = priceArticleText(post.content, prices)
+  const description = post.metaDescription ? priceArticleText(post.metaDescription, prices) : post.title
+
   const articleSchema = {
     "@context": "https://schema.org",
     "@type": "Article",
     headline: post.title,
-    description: post.metaDescription || post.title,
+    description,
     datePublished: post.publishedAt.toISOString(),
     dateModified: (post.updatedAt ?? post.publishedAt).toISOString(),
     inLanguage: post.lang ?? "en",
@@ -185,7 +195,7 @@ export default async function BusinessBlogPostPage({ params }: { params: Promise
     ...(post.coverImageUrl ? { image: `${BASE}/api/blog/image/${post.id}` } : {}),
   }
 
-  const faqItems = extractFaq(post.content)
+  const faqItems = extractFaq(content)
 
   const faqSchema =
     faqItems.length > 0
@@ -200,10 +210,11 @@ export default async function BusinessBlogPostPage({ params }: { params: Promise
         }
       : null
 
-  const wordCount = post.content.replace(/<[^>]+>/g, " ").split(/\s+/).filter(Boolean).length
+  const wordCount = content.replace(/<[^>]+>/g, " ").split(/\s+/).filter(Boolean).length
   const readingTimeMin = Math.max(1, Math.round(wordCount / 200))
 
   return (
+    <PriceScope>
     <div lang={lang} className="min-h-screen bg-[#f3f2f1] text-[#1b1916]">
       {/* app/layout.tsx sets <html lang="de"> only for the German slugs in lib/geo-guides.ts (no database
           in middleware.ts); this tells search engines (Bing reads it) the page's real language in every
@@ -254,7 +265,7 @@ export default async function BusinessBlogPostPage({ params }: { params: Promise
             className="article-content"
             dangerouslySetInnerHTML={{
               // The stored article starts with its own <h1>; the page already renders the title as one.
-              __html: sanitizeHtml(post.content.replace(/^\s*<h1[^>]*>[\s\S]*?<\/h1>/i, ""), {
+              __html: sanitizeHtml(content.replace(/^\s*<h1[^>]*>[\s\S]*?<\/h1>/i, ""), {
                 allowedTags: sanitizeHtml.defaults.allowedTags.concat([
                   "img", "h1", "h2", "h3", "table", "thead", "tbody", "tr", "th", "td",
                 ]),
@@ -319,5 +330,6 @@ export default async function BusinessBlogPostPage({ params }: { params: Promise
         <CompanyLine className="mt-2" />
       </footer>
     </div>
+    </PriceScope>
   )
 }

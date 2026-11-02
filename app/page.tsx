@@ -11,7 +11,9 @@ import { noteCrawler } from "@/lib/crawler-log"
 import { mainGuides } from "@/components/geo/guide-data"
 import { VersusArticles, WhyThisMatters, WorkSystem, geoIncluded } from "./business/GeoSections"
 import PricingPlans from "./business/PricingPlans"
-import { GEO_PRICES, SAMPLE_PATH, YEAR_DISCOUNT, geoPriceLabels } from "@/lib/geo-pricing"
+import { SAMPLE_PATH, YEAR_DISCOUNT, geoPriceLabels } from "@/lib/geo-pricing"
+import { visitorPrice } from "@/lib/geo-price-server"
+import PriceScope from "@/components/geo/PriceScope"
 import LanguageSwitcher from "@/components/i18n/LanguageSwitcher"
 import LocaleProvider from "@/components/i18n/LocaleProvider"
 import { getLocale } from "@/lib/i18n/server"
@@ -28,8 +30,8 @@ import growthGuarantee from "@/lib/i18n/messages/growthGuarantee"
 // lives at /personal, one click away from here and from the sign-in menu. Since 22 Oct 2026 this is
 // also the AI-visibility page: /business redirects here (next.config.ts), so its contact form (#apply)
 // and its questions live on this page.
-// Every string is in lib/i18n/messages/home.ts, in five languages; the plan's prices come from
-// lib/geo-pricing.ts (the one price; the price test of 28–30 Oct 2026, which hid it, is over).
+// Every string is in lib/i18n/messages/home.ts, in five languages; the plan's prices are this visitor's
+// (the price test, lib/geo-pricing.ts: lib/geo-price-server.ts visitorPrice).
 // Since 30 Oct 2026 the page's headline promise is the growth guarantee (growthGuarantee.ts,
 // /terms#growth-guarantee). No other guarantee word, no invented numbers or cases, no client results
 // (removed by the owner 30 Oct). Order: hero with the guarantee, why (what is being lost),
@@ -46,6 +48,9 @@ const BASE = "https://www.itgrows.ai"
 // The page is rendered per request: /de, /fr, /es and /ru are this same page, told apart by the
 // language middleware.ts puts on the request (lib/i18n). What used to be cached for an hour with the
 // page (the guides) is cached on its own (components/geo/guide-data.ts).
+
+// A visitor's price (the price test, lib/geo-pricing.ts): never cached, whatever else this page does.
+export const dynamic = "force-dynamic"
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale()
@@ -84,8 +89,8 @@ const QUICK_CHECKS = [
   },
 ]
 
-// The Service JSON-LD offers the free report and the plan at the one price (lib/geo-pricing.ts
-// GEO_PRICES), in USD: month to month (and its one-time setup, an activation fee), 3 months upfront and
+// The Service JSON-LD offers the free report and the plan at the same price as the page around it
+// (visitorPrice), in USD: month to month (and its one-time setup, an activation fee), 3 months upfront and
 // a year. schema.org wants the amount as a plain number ("499.00"); the period a recurring price pays
 // for is its referenceQuantity (UN/CEFACT MON = month, ANN = year).
 const amount = (cents: number) => (cents / 100).toFixed(2)
@@ -101,7 +106,8 @@ export default async function Home() {
   const latest = await mainGuides(guideLang)
   // The yearly discount: "20%" in English, "20 %" in German and French.
   const yearOff = formatNumber(locale, YEAR_DISCOUNT, { style: "percent", maximumFractionDigits: 0 })
-  const FAQ = m.faq({ sample: localePath(locale, SAMPLE_PATH), ...geoPriceLabels(locale), yearOff })
+  const { prices: P } = await visitorPrice()
+  const FAQ = m.faq({ sample: localePath(locale, SAMPLE_PATH), ...geoPriceLabels(locale, P), yearOff })
   const home = absoluteUrl(locale, "/")
   const pricingUrl = absoluteUrl(locale, "/#geo-pricing")
   const recurring = (name: string, cents: number, value: number, unitCode: "MON" | "ANN") => ({
@@ -142,22 +148,22 @@ export default async function Home() {
         provider: { "@id": ORGANIZATION["@id"] },
         offers: [
           { "@type": "Offer", name: m.offerReport, price: "0", priceCurrency: "USD", url: pricingUrl },
-          recurring(m.offerPlan, GEO_PRICES.month.cents, 1, "MON"),
+          recurring(m.offerPlan, P.month.cents, 1, "MON"),
           {
             "@type": "Offer",
             name: m.offerSetup,
-            price: amount(GEO_PRICES.setup.cents),
+            price: amount(P.setup.cents),
             priceCurrency: "USD",
             url: pricingUrl,
             priceSpecification: {
               "@type": "UnitPriceSpecification",
-              price: amount(GEO_PRICES.setup.cents),
+              price: amount(P.setup.cents),
               priceCurrency: "USD",
               priceComponentType: "https://schema.org/ActivationFee",
             },
           },
-          recurring(m.offerQuarter, GEO_PRICES.quarter.cents, 3, "MON"),
-          recurring(m.offerYear(yearOff), GEO_PRICES.year.cents, 1, "ANN"),
+          recurring(m.offerQuarter, P.quarter.cents, 3, "MON"),
+          recurring(m.offerYear(yearOff), P.year.cents, 1, "ANN"),
         ],
       },
       {
@@ -170,6 +176,7 @@ export default async function Home() {
 
   return (
     <LocaleProvider locale={locale}>
+      <PriceScope>
       <div className="min-h-screen text-[#1b1916] scroll-smooth" style={{ backgroundColor: "#f3f2f1", fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" }}>
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />
         <HashForward />
@@ -328,6 +335,7 @@ export default async function Home() {
 
         <SiteFooter />
       </div>
+      </PriceScope>
     </LocaleProvider>
   )
 }

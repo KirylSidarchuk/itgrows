@@ -3,8 +3,7 @@ import { ENTITY_ABOUT, ENTITY_ONE_LINER } from "@/lib/entity"
 
 // app/page.tsx ("/", and /de, /fr, /es, /ru): metadata, the page's own sections, the FAQ and the
 // human-readable structured data. Paths, the plan's prices and the yearly discount come in as
-// arguments (lib/geo-pricing.ts geoPriceLabels: the one price, written the language's way). The price
-// test of 28–30 Oct 2026, when no price was named here, is over (owner's decision, 30 Oct 2026). The
+// arguments (lib/geo-pricing.ts geoPriceLabels: the visitor's price, written the language's way). The
 // detailed report is free once an account is created (since 27 Oct 2026).
 // Since 30 Oct 2026 the page's headline promise is the growth guarantee (growthGuarantee.ts,
 // /terms#growth-guarantee). No other guarantee word, no invented numbers or cases, no client results

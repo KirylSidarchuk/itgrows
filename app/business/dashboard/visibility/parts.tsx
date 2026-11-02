@@ -18,7 +18,8 @@
 
 import { createContext, useContext, useEffect, useState } from "react"
 import { ENGINE_ICONS } from "../../engine-icons"
-import { GEO_PRICES, YEAR_DISCOUNT, type GeoInterval, type GeoPrices } from "@/lib/geo-pricing"
+import { YEAR_DISCOUNT, type GeoInterval, type GeoPrices } from "@/lib/geo-pricing"
+import { usePlanPrices } from "@/components/geo/PriceProvider"
 import { listQuestions } from "@/lib/geo-list-question"
 import { useT } from "@/components/i18n/LocaleProvider"
 import visibilityOpening from "@/lib/i18n/messages/visibilityOpening"
@@ -1298,7 +1299,7 @@ export function planSteps(site: SiteReport, audit: Audit | "failed" | undefined,
 
 /** Who reads the plan: an account not on it (the offer, "Start the plan", at its own prices), a client
  *  on the plan or set up by hand (where each step stands), or a visitor of the public sample
- *  (read-only, with the one price the public pages name, GEO_PRICES in lib/geo-pricing.ts). */
+ *  (read-only, with the price the public pages show this visitor, usePlanPrices). */
 export type PlanMode = "offer" | "client" | "sample"
 
 const PLAN_HOME = "/#geo-pricing"
@@ -1573,7 +1574,7 @@ function ArticlesStep({ n, steps, work, client }: { n: number; steps: Step[]; wo
 /** The end of the report: what we do for the site, step by step. For an account not on the plan,
  *  "Start the plan" and the walkthrough, with its own prices (/api/geo/report price), right under the
  *  plan's summary and before the steps; for a client, where each step stands and what is done. The
- *  public sample names the one price (GEO_PRICES). The article steps for the buyer questions are one card (planItems).
+ *  public sample names the visitor's price (usePlanPrices). The article steps for the buyer questions are one card (planItems).
  *  Under "Start the plan", for an account that may have one, the launch-rewards wheel or the reward
  *  won (../launch-wheel.tsx; never on the sample, never for a client). Before the report is ready, a
  *  reward won on the website before the account is said to be waiting for it (PendingReward). */
@@ -1595,7 +1596,8 @@ export function YourPlan({
   const done = client && site.work ? doneList(steps, site.work) : []
   const sample = mode === "sample"
   const planHref = sample ? PLAN_HOME : `/business/dashboard/plan?site=${encodeURIComponent(site.domain)}`
-  const p = sample ? GEO_PRICES : (prices ?? null)
+  const visitor = usePlanPrices()
+  const p = sample ? visitor : (prices ?? null)
   const yearOff = `${Math.round(YEAR_DISCOUNT * 100)}% off`
   const items = planItems(steps)
   return (

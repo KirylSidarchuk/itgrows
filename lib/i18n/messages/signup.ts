@@ -6,7 +6,7 @@ import { plural } from "../format"
 // posts handed over from the landing) — plus the code step, the loading shell and the page's
 // metadata (app/signup/layout.tsx). The Google and LinkedIn buttons are
 // components/auth/OAuthButtons.tsx. The plan's prices come in as arguments (lib/geo-pricing.ts
-// geoPriceLabels: the one price, public again since the price test ended on 30 Oct 2026). The detailed
+// geoPriceLabels: the visitor's price). The detailed
 // report is free once the account is created (since 27 Oct 2026);
 // emailInvalid and waitResend are the send-pin errors (400 and 429), shown by status in the visitor's
 // language instead of the server's raw English.

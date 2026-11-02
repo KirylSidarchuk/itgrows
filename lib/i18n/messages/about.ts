@@ -5,7 +5,7 @@ import { ENTITY_ABOUT, ENTITY_ONE_LINER } from "@/lib/entity"
 // description of ItGrows from lib/entity.ts, so /about says what every other page and schema says;
 // the other languages carry their own copy of it (orgDescription and lead match orgDescription in
 // home.ts). The plan's prices and the yearly discount come in as arguments (lib/geo-pricing.ts
-// geoPriceLabels: the one price, public again since the price test ended on 30 Oct 2026). The
+// geoPriceLabels: the visitor's price). The
 // detailed report is free once an account is created (since 27 Oct 2026).
 // Since 30 Oct 2026 (owner's decision) the client results are gone from /about, and the second paragraph
 // is the growth guarantee's line and the link to its conditions (lib/entity.ts ENTITY_ABOUT[1]).

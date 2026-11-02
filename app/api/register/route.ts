@@ -6,7 +6,7 @@ import bcrypt from "bcryptjs"
 import { Resend } from "resend"
 import crypto from "crypto"
 import { sendOwner } from "@/lib/telegram"
-import { drawPriceVariant } from "@/lib/geo-pricing"
+import { newAccountVariant } from "@/lib/geo-price-test"
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
@@ -30,8 +30,8 @@ export async function POST(req: NextRequest) {
       passwordHash,
       plan: "starter",
       source: source || null,
-      // The AI-visibility plan's price, drawn once for a new account (lib/geo-pricing.ts PRICE_TEST).
-      geoPriceVariant: drawPriceVariant(),
+      // The AI-visibility plan's price: the arm this visitor saw (lib/geo-pricing.ts PRICE_TEST).
+      geoPriceVariant: await newAccountVariant(),
     }).returning()
 
     // Create verification token

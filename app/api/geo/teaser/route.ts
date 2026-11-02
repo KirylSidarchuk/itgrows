@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { sql } from "drizzle-orm"
 import { db } from "@/lib/db"
 import { geoCheck, clientIp, type PublicRun, type ResultRow } from "@/lib/geo-check"
+import { noteVisitorCheck } from "@/lib/geo-price-test"
 import { sendOwner } from "@/lib/telegram"
 import { visitSource } from "@/lib/visit-source"
 
@@ -150,6 +151,8 @@ export async function POST(req: NextRequest) {
   try {
     const r = await geoCheck<PublicRun>("/teaser", { url, ip: clientIp(req.headers) }, 25_000)
     void sendOwner(`${teaserAlert(url, r.status, r.data)}\n📍 ${await visitSource(req.headers)}`)
+    // The price test counts a visitor's first check, per arm (never throws).
+    if (r.status === 200 || r.status === 202) await noteVisitorCheck()
     return relay(r.status, r.data)
   } catch {
     void sendOwner(`🔎 Анализатор: ${url} — сервис проверки не ответил\n📍 ${await visitSource(req.headers)}`)

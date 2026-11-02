@@ -1,4 +1,5 @@
 import Link from "next/link"
+import PriceScope from "@/components/geo/PriceScope"
 import LanguageSwitcher from "@/components/i18n/LanguageSwitcher"
 import LocaleProvider from "@/components/i18n/LocaleProvider"
 import { getLocale } from "@/lib/i18n/server"
@@ -13,7 +14,8 @@ import CompanyLine from "@/components/CompanyLine"
 // visitor who lands on a tool can reach the guides and the product in one click.
 // It is also the language provider of the pages it frames (the AI visibility check, the crawler
 // check, the sample report): everything inside, client components included, reads the language
-// that middleware.ts decided for this request (lib/i18n).
+// that middleware.ts decided for this request (lib/i18n). And of this visitor's price (PriceScope): the
+// sample report names it, and a visitor's first page may be either check.
 // `guaranteeFootnote`: a page that shows the growth guarantee's line (the sample report, through
 // YourPlan) gets its footnote as the last line of the footer (growthGuarantee.ts footnote, 30 Oct 2026).
 export default async function ToolShell({ children, guaranteeFootnote = false }: { children: React.ReactNode; guaranteeFootnote?: boolean }) {
@@ -22,6 +24,7 @@ export default async function ToolShell({ children, guaranteeFootnote = false }:
   const g = t(locale, growthGuarantee)
   return (
     <LocaleProvider locale={locale}>
+      <PriceScope>
       <div
         className="min-h-screen text-[#1b1916]"
         style={{ backgroundColor: "#f3f2f1", fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" }}
@@ -59,6 +62,7 @@ export default async function ToolShell({ children, guaranteeFootnote = false }:
           )}
         </footer>
       </div>
+      </PriceScope>
     </LocaleProvider>
   )
 }
