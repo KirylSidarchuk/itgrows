@@ -11,7 +11,8 @@ const connectionString = process.env.DATABASE_URL!
 // One connection per instance plus a short idle timeout keeps the total bounded.
 const client = postgres(connectionString, {
   prepare: false,
-  ssl: false,
+  // Encrypted without verifying the certificate: the server's is self-signed, so `true` would fail.
+  ssl: "require",
   max: 1,
   idle_timeout: 20,
   connect_timeout: 10,
