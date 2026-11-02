@@ -279,7 +279,7 @@ function ReportEmailForm({
     e.preventDefault()
     if (busy) return
     const address = email.trim()
-    if (!/^[^@\s]+@[^@\s]+\.[^@\s]{2,}$/.test(address)) return setError("email")
+    if (!/^[!-?A-~]+@[a-z0-9-]+(\.[a-z0-9-]+)*\.[a-z]{2,}$/i.test(address)) return setError("email")
     setBusy(true)
     setError("")
     try {

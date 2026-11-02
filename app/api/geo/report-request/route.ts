@@ -29,7 +29,8 @@ const MAX_EMAILS_PER_SITE = 5
 
 type Row = Record<string, unknown>
 const rows = (r: unknown): Row[] => (Array.isArray(r) ? (r as Row[]) : ((r as { rows?: Row[] }).rows ?? []))
-const EMAIL = /^[^@\s]+@[^@\s]+\.[^@\s]{2,}$/
+// Latin letters only: a Cyrillic "с" typed on a Russian keyboard looks the same and no mail can ever arrive (02.11).
+const EMAIL = /^[!-?A-~]+@[a-z0-9-]+(\.[a-z0-9-]+)*\.[a-z]{2,}$/i
 
 export async function POST(req: NextRequest) {
   let email = ""
