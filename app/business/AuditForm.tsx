@@ -77,11 +77,13 @@ function track(event: string, props?: Record<string, unknown>) {
   }
 }
 
-// geo_cta_seen: an account offer was really on screen, once per place per page. Its `where` is the
-// name the click on that offer sends (geo_cta_click), so the two can be set against each other:
-// "inline" (the offer under who was named instead), "overlay" (the free-report card under the two
-// answers), "locked-row" (the closed answers), "sticky" (the phone bar). The other clicks ("sample",
-// "failed", "questions-failed", "limit", "busy") have no seen event.
+// geo_cta_seen: the offer was really on screen, once per place per page. "inline" is the email form under
+// who was named instead, "overlay" the free-report card under the answer, "locked-row" the closed answers,
+// "sticky" the phone bar. What the form did is geo_email_result (status: queued, exists, report_ip_used…),
+// one per attempt, so set "inline" seen against that. geo_cta_click with those names counts clicks: the
+// three that only scroll to the form ("overlay", "locked-row", "sticky") and "more-named", and "inline" for
+// the Google or LinkedIn link under the form. The other clicks ("sample", "failed", "questions-failed",
+// "limit", "busy") have no seen event.
 const ctaSeen = new Set<string>()
 
 function seenOnce(where: string, domain: string) {
@@ -295,6 +297,14 @@ export default function AuditForm({ note }: { note?: string } = {}) {
   function onCta(where: string) {
     handOff(shownDomain, ai?.summary?.named ?? null, ai?.summary?.of ?? null)
     track("geo_cta_click", { where, domain: shownDomain, named: ai?.summary?.named, of: ai?.summary?.of })
+  }
+
+  function onTrack(where: string) {
+    track("geo_cta_click", { where, domain: shownDomain, named: ai?.summary?.named, of: ai?.summary?.of })
+  }
+
+  function onEmailResult(status: string) {
+    track("geo_email_result", { status, domain: shownDomain, named: ai?.summary?.named, of: ai?.summary?.of })
   }
 
   async function startTeaser(target: string) {
@@ -559,6 +569,8 @@ export default function AuditForm({ note }: { note?: string } = {}) {
             elapsed={elapsed}
             signupHref={signupHref}
             onCta={onCta}
+            onTrack={onTrack}
+            onEmailResult={onEmailResult}
             onLeadSent={() => setLeadSent(true)}
             onRetry={() => void run()}
             onOtherUrl={otherUrl}
@@ -766,7 +778,7 @@ export default function AuditForm({ note }: { note?: string } = {}) {
           label={m.sendReportBar}
           onClick={(e) => {
             e.preventDefault()
-            onCta("sticky")
+            onTrack("sticky")
             goToReportForm()
           }}
           onSeen={barSeen}

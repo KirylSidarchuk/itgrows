@@ -175,8 +175,8 @@ export default function TermsPage() {
           <Section id="visibility">
             <p>
               <strong>The quick check</strong> runs without an account. It takes about 30 seconds: we read the public pages of the site you enter, work
-              out five questions a buyer of that business would ask, and put them to ChatGPT and Perplexity with live web search. Two of the answers
-              are shown in full right away; the other answers open once you create an account. The number of quick checks per visitor per day is limited.
+              out five questions a buyer of that business would ask, and put them to ChatGPT and Perplexity with live web search. One of the answers
+              is shown right away; the other answers open once you create an account. The number of quick checks per visitor per day is limited.
             </p>
             <p>
               <strong>The detailed report</strong> asks 20 buyer questions to ChatGPT, Claude, Gemini and Perplexity (once each in the free report; on the plan, three times each, every two weeks) and shows

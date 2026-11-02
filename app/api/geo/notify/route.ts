@@ -78,7 +78,7 @@ ${
     ? button("See every answer →", href)
     : `<p style="font-size:14px">All of it is open in your account, free: every answer to all ${questions} questions, everyone named instead of you, the sites the assistants quote, and at the end our plan for ${esc(domain)}: what we would do and why.</p>
 ${button("See your report →", href)}
-${accountSource === "meta_form" || accountSource === "site_email" ? `<p style="font-size:13px;margin-top:-10px;color:#555">You asked for this report ${accountSource === "meta_form" ? "through our form on Facebook or Instagram" : "on our site"}, so we opened a free account for this email. Enter this email on the next screen and we'll send you a one-time code.</p>` : ""}
+${accountSource === "meta_form" || accountSource === "site_email" ? `<p style="font-size:13px;margin-top:-10px;color:#555">You asked for this report ${accountSource === "meta_form" ? "through our form on Facebook or Instagram" : "on our site"}, so we opened an account for this email. Enter this email on the next screen and we'll send you a one-time code.</p>` : ""}
 <p style="font-size:13px;margin-top:-10px;color:#555">Questions about it? Just reply to this email.</p>`
 }
 ${weekly ? `<p style="color:#555;font-size:13px">We re-check every two weeks and tell you what changed.</p>` : ""}`)
@@ -112,8 +112,10 @@ export async function POST(req: NextRequest) {
   if (!vmAuthorized(req.headers.get("authorization"))) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 })
   }
-  const body = (await req.json().catch(() => ({}))) as { run_id?: string }
+  const body = (await req.json().catch(() => ({}))) as { run_id?: string; user_id?: string }
   const runId = String(body.run_id ?? "")
+  // /api/geo/report-request: an account that followed a site whose report already exists gets it, alone.
+  const onlyUser = /^[0-9a-f-]{36}$/i.test(String(body.user_id ?? "")) ? String(body.user_id) : ""
   if (!/^[0-9a-f-]{36}$/i.test(runId)) return NextResponse.json({ error: "bad_run" }, { status: 400 })
 
   const [run] = rows(
@@ -135,16 +137,18 @@ export async function POST(req: NextRequest) {
                (f.plan = 'paid' OR ${clientOwnsSql(sql.raw("u.id"), sql`${String(run.domain)}`)}) AS client
         FROM geo_follows f
         JOIN users u ON u.id::text = f.user_id
-        JOIN geo_runs r ON r.id = ${runId}::uuid AND f.created_at <= r.finished_at
+        JOIN geo_runs r ON r.id = ${runId}::uuid AND (f.created_at <= r.finished_at OR u.id::text = ${onlyUser})
         WHERE f.site_id = ${run.site_id}
       ) u
       WHERE (${!weekly} OR (u.email_weekly AND u.client))
+        AND (${onlyUser} = '' OR u.id::text = ${onlyUser})
         AND NOT EXISTS (SELECT 1 FROM analytics_events e
                         WHERE e.event = 'geo_report_email' AND e.user_id = u.id AND e.props->>'run' = ${runId})`)
   )
 
   const resend = new Resend(process.env.RESEND_API_KEY)
   let sent = 0
+  let failed = 0
   for (const p of people) {
     // An account opened from just an email has no name yet: its "name" is the address before the @.
     const first = (p.source === "site_email" ? "" : String(p.name ?? "").trim().split(/\s+/)[0]) || "there"
@@ -162,7 +166,8 @@ export async function POST(req: NextRequest) {
           (p.source as string | null) ?? null
         )
     try {
-      await resend.emails.send({
+      // Resend answers an error instead of throwing it.
+      const { error } = await resend.emails.send({
         from: "ItGrows.ai <noreply@itgrows.ai>",
         to: String(p.email),
         replyTo: OWNER,
@@ -170,6 +175,7 @@ export async function POST(req: NextRequest) {
         html,
         ...(weekly ? { headers: { "List-Unsubscribe": `<${unsub}>`, "List-Unsubscribe-Post": "List-Unsubscribe=One-Click" } } : {}),
       })
+      if (error) throw new Error(error.message)
       await db.execute(sql`
         INSERT INTO analytics_events (user_id, event, path, props)
         VALUES (${p.id as string}, 'geo_report_email', '/business/dashboard/visibility',
@@ -177,7 +183,11 @@ export async function POST(req: NextRequest) {
       sent++
     } catch (err) {
       console.error("[geo-notify] send failed:", err)
+      failed++
     }
   }
+  // Not 200 when someone is still owed the email: the VM tries again (those already sent are recorded and
+  // skipped) and then tells Kiryl.
+  if (failed) return NextResponse.json({ ok: false, sent, failed }, { status: 502 })
   return NextResponse.json({ ok: true, sent })
 }

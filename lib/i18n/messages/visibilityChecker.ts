@@ -35,7 +35,7 @@ const en = {
   tipPlan: "Or have us do it all: <link>see the plan</link>.",
   faqAccount: {
     q: "Do I need an account for the check?",
-    a: "Not to run it: the check takes about 30 seconds without an account. It asks ChatGPT and Perplexity five questions and shows two answers in full right away; to open all five, you create an account, which costs nothing. With the account we also build the detailed report for your site (20 questions × 4 assistants): the full report is free once you create an account.",
+    a: "Not to run it: the check takes about 30 seconds without an account. It asks ChatGPT and Perplexity five questions and shows one answer right away; to open all five, you create an account, which costs nothing. With the account we also build the detailed report for your site (20 questions × 4 assistants): the full report is free once you create an account.",
   },
   faq: [
     {
@@ -82,7 +82,7 @@ export default defineMessages(en, {
     tipPlan: "Oder lassen Sie uns alles erledigen: <link>zum Plan</link>.",
     faqAccount: {
       q: "Brauche ich für den Check ein Konto?",
-      a: "Zum Starten nicht: Der Check läuft ohne Konto und dauert etwa 30 Sekunden. Er stellt ChatGPT und Perplexity fünf Fragen und zeigt zwei Antworten sofort vollständig; um alle fünf zu öffnen, legen Sie ein Konto an – das kostet nichts. Mit dem Konto erstellen wir außerdem den ausführlichen Bericht für Ihre Website (20 Fragen × 4 Assistenten): Der vollständige Bericht ist kostenlos, sobald Sie ein Konto anlegen.",
+      a: "Zum Starten nicht: Der Check läuft ohne Konto und dauert etwa 30 Sekunden. Er stellt ChatGPT und Perplexity fünf Fragen und zeigt eine Antwort sofort; um alle fünf zu öffnen, legen Sie ein Konto an – das kostet nichts. Mit dem Konto erstellen wir außerdem den ausführlichen Bericht für Ihre Website (20 Fragen × 4 Assistenten): Der vollständige Bericht ist kostenlos, sobald Sie ein Konto anlegen.",
     },
     faq: [
       {
@@ -127,7 +127,7 @@ export default defineMessages(en, {
     tipPlan: "Ou confiez-nous tout : <link>voir l’abonnement</link>.",
     faqAccount: {
       q: "Faut-il un compte pour le test ?",
-      a: "Pas pour le lancer : le test se fait sans compte, en 30 secondes environ. Il pose cinq questions à ChatGPT et Perplexity et affiche tout de suite deux réponses en entier ; pour ouvrir les cinq, vous créez un compte, ce qui ne coûte rien. Avec ce compte, nous établissons aussi le rapport détaillé de votre site (20 questions × 4 assistants) : le rapport complet est gratuit dès que vous créez un compte.",
+      a: "Pas pour le lancer : le test se fait sans compte, en 30 secondes environ. Il pose cinq questions à ChatGPT et Perplexity et affiche tout de suite une réponse ; pour ouvrir les cinq, vous créez un compte, ce qui ne coûte rien. Avec ce compte, nous établissons aussi le rapport détaillé de votre site (20 questions × 4 assistants) : le rapport complet est gratuit dès que vous créez un compte.",
     },
     faq: [
       {
@@ -172,7 +172,7 @@ export default defineMessages(en, {
     tipPlan: "O deje que lo hagamos todo nosotros: <link>vea el plan</link>.",
     faqAccount: {
       q: "¿Necesito una cuenta para la comprobación?",
-      a: "Para hacerla, no: la comprobación funciona sin cuenta, en unos 30 segundos. Hace cinco preguntas a ChatGPT y Perplexity y muestra al momento dos respuestas completas; para abrir las cinco, cree una cuenta, que no cuesta nada. Con esa cuenta elaboramos también el informe detallado de su sitio (20 preguntas × 4 asistentes): el informe completo es gratuito en cuanto cree una cuenta.",
+      a: "Para hacerla, no: la comprobación funciona sin cuenta, en unos 30 segundos. Hace cinco preguntas a ChatGPT y Perplexity y muestra al momento una respuesta; para abrir las cinco, cree una cuenta, que no cuesta nada. Con esa cuenta elaboramos también el informe detallado de su sitio (20 preguntas × 4 asistentes): el informe completo es gratuito en cuanto cree una cuenta.",
     },
     faq: [
       {
@@ -217,7 +217,7 @@ export default defineMessages(en, {
     tipPlan: "Или поручите всё нам: <link>смотреть подписку</link>.",
     faqAccount: {
       q: "Нужен ли аккаунт для проверки?",
-      a: "Чтобы запустить проверку, аккаунт не нужен: она идёт примерно 30 секунд, задаёт ChatGPT и Perplexity пять вопросов и сразу показывает два ответа полностью. Чтобы открыть все пять, вы создаёте аккаунт — это бесплатно. С аккаунтом мы также составим подробный отчёт по вашему сайту (20 вопросов × 4 ассистента): полный отчёт бесплатный — достаточно создать аккаунт.",
+      a: "Чтобы запустить проверку, аккаунт не нужен: она идёт примерно 30 секунд, задаёт ChatGPT и Perplexity пять вопросов и сразу показывает один ответ. Чтобы открыть все пять, вы создаёте аккаунт — это бесплатно. С аккаунтом мы также составим подробный отчёт по вашему сайту (20 вопросов × 4 ассистента): полный отчёт бесплатный — достаточно создать аккаунт.",
     },
     faq: [
       {

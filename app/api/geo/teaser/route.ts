@@ -28,24 +28,29 @@ const anyRivals = (r: ResultRow) => Object.values(r.engines).some((a) => a.named
  * otherwise one that names somebody, which says more than general advice. */
 function pickOpen(rows: ResultRow[]): number[] {
   const idx = rows.map((_, i) => i)
-  const named = idx.filter((i) => anyNamed(rows[i]))
-  const missed = idx.filter((i) => !anyNamed(rows[i]))
-  if (named.length && missed.length) {
-    return [missed.find((i) => anyRivals(rows[i])) ?? missed[0]]
-  }
-  const preferred = idx.filter((i) => anyRivals(rows[i]))
-  return [...preferred, ...idx.filter((i) => !preferred.includes(i))].slice(0, OPEN_ROWS).sort((a, b) => a - b)
+  const answered = (r: ResultRow) => Object.values(r.engines).some((a) => a.samples > 0)
+  const order = [
+    ...idx.filter((i) => !anyNamed(rows[i]) && anyRivals(rows[i])),
+    ...idx.filter((i) => anyRivals(rows[i])),
+    ...idx.filter((i) => answered(rows[i])),
+    ...idx,
+  ]
+  return order.slice(0, OPEN_ROWS)
 }
 
-function openRow(r: ResultRow) {
+function openRow(r: ResultRow, domain: string) {
+  const own = (d: string) => d === domain || d.endsWith("." + domain)
   const engines: Record<string, unknown> = {}
   for (const [e, a] of Object.entries(r.engines)) {
     engines[e] = {
       named: a.named > 0,
       cited: a.cited > 0,
       failed: a.samples === 0,
-      namedInstead: a.named_instead,
-      sources: a.sources,
+      namedInstead: a.named_instead.slice(0, 1),
+      namedInsteadMore: Math.max(0, a.named_instead.length - 1),
+      // Which sites are quoted is in the report; here only whether the site itself is among them.
+      sources: a.sources.filter(own),
+      sourcesMore: a.sources.filter((d) => !own(d)).length,
       snippet: a.snippet.slice(0, 360),
     }
   }
@@ -89,7 +94,7 @@ function view(run: PublicRun) {
       namedInstead: run.summary.named_instead.slice(0, 1),
       namedInsteadMore: Math.max(0, run.summary.named_instead.length - 1),
     },
-    open: open.map((i) => ({ n: i + 1, ...openRow(rows[i]) })),
+    open: open.map((i) => ({ n: i + 1, ...openRow(rows[i], run.domain ?? "") })),
     locked: rows
       .map((r, i) => ({ n: i + 1, q: r.q, answered: Object.keys(r.engines).filter((e) => r.engines[e].samples > 0) }))
       .filter((_, i) => !open.includes(i)),

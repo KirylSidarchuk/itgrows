@@ -41,7 +41,7 @@ const en = {
     `<link>The plan</link>: we do the work that gets you named, on your own website and on the sites the assistants quote, and re-ask all four assistants every two weeks. ${month} a month plus a one-time ${setup} setup; the setup is free when you pay ${quarter} for 3 months or ${year} for a year (${yearPerMonth} a month, ${yearOff} off).`,
   report: "The detailed report, free for your site once you create an account: 20 buyer questions put to ChatGPT, Claude, Gemini and Perplexity, who is named instead of you, which sites they cite, and our plan to get you in. <sample>See a real report</sample>.",
   checks:
-    "<check>The quick check</check>: free, about 30 seconds; two answers right away, all five once you create an account. The <crawler>AI crawler check</crawler> shows which AI crawlers can read your site.",
+    "<check>The quick check</check>: free, about 30 seconds; one answer right away, all five once you create an account. The <crawler>AI crawler check</crawler> shows which AI crawlers can read your site.",
   guides: "<guides>Guides</guides>: how AI assistants choose which businesses to name, and what a business can do about it.",
 
   contactTitle: "Contact",
@@ -70,7 +70,7 @@ export default defineMessages(en, {
       `<link>Der Plan</link>: Wir erledigen die Arbeit, die Sie in die Antworten bringt, auf Ihrer eigenen Website und auf den Websites, die die Assistenten zitieren, und fragen alle zwei Wochen alle vier Assistenten erneut. ${month} pro Monat plus einmalig ${setup} für die Einrichtung; die Einrichtung entfällt, wenn Sie ${quarter} für 3 Monate oder ${year} für ein Jahr zahlen (${yearPerMonth} pro Monat, ${yearOff} Rabatt).`,
     report: "Der ausführliche Bericht, kostenlos für Ihre Website, sobald Sie ein Konto anlegen: 20 Kundenfragen an ChatGPT, Claude, Gemini und Perplexity, wer statt Ihnen genannt wird, welche Websites zitiert werden, und unser Maßnahmenplan, mit dem wir Sie in die Antworten bringen. <sample>Einen echten Bericht ansehen</sample>.",
     checks:
-      "<check>Der Schnellcheck</check>: kostenlos, etwa 30 Sekunden; zwei Antworten sofort, alle fünf, sobald Sie ein Konto anlegen. Der <crawler>KI-Crawler-Check</crawler> zeigt, welche KI-Crawler Ihre Website lesen können.",
+      "<check>Der Schnellcheck</check>: kostenlos, etwa 30 Sekunden; eine Antwort sofort, alle fünf, sobald Sie ein Konto anlegen. Der <crawler>KI-Crawler-Check</crawler> zeigt, welche KI-Crawler Ihre Website lesen können.",
     guides: "<guides>Ratgeber</guides>: wie KI-Assistenten entscheiden, welche Unternehmen sie nennen, und was ein Unternehmen dafür tun kann.",
 
     contactTitle: "Kontakt",
@@ -98,7 +98,7 @@ export default defineMessages(en, {
       `<link>L’abonnement</link> : nous faisons le travail qui vous fait mentionner, sur votre propre site et sur les sites que citent les assistants, et réinterrogeons les quatre assistants toutes les deux semaines. ${month} par mois plus une mise en place de ${setup}, une seule fois ; la mise en place n’est pas facturée si vous payez ${quarter} pour 3 mois ou ${year} pour un an (${yearPerMonth} par mois, ${yearOff} de remise).`,
     report: "Le rapport détaillé, gratuit pour votre site dès que vous créez un compte : 20 questions de clients posées à ChatGPT, Claude, Gemini et Perplexity, qui est mentionné à votre place, quels sites sont cités, et notre plan d’action pour vous faire entrer dans les réponses. <sample>Voir un vrai rapport</sample>.",
     checks:
-      "<check>La vérification rapide</check> : gratuite, environ 30 secondes ; deux réponses tout de suite, les cinq dès que vous créez un compte. Le <crawler>test des robots d’IA</crawler> montre quels robots d’IA peuvent lire votre site.",
+      "<check>La vérification rapide</check> : gratuite, environ 30 secondes ; une réponse tout de suite, les cinq dès que vous créez un compte. Le <crawler>test des robots d’IA</crawler> montre quels robots d’IA peuvent lire votre site.",
     guides: "<guides>Guides</guides> : comment les assistants IA choisissent les entreprises qu’ils mentionnent, et ce qu’une entreprise peut faire.",
 
     contactTitle: "Contact",
@@ -126,7 +126,7 @@ export default defineMessages(en, {
       `<link>El plan</link>: hacemos el trabajo que consigue que le mencionen, en su propio sitio web y en los sitios que citan los asistentes, y volvemos a preguntar a los cuatro asistentes cada dos semanas. ${month} al mes más una configuración inicial de ${setup}, pago único; la configuración no se cobra si paga ${quarter} por 3 meses o ${year} por un año (${yearPerMonth} al mes, ${yearOff} de descuento).`,
     report: "El informe detallado, gratuito para su sitio en cuanto cree una cuenta: 20 preguntas de clientes planteadas a ChatGPT, Claude, Gemini y Perplexity, a quién mencionan en su lugar, qué sitios citan y nuestro plan de acción para que le mencionen. <sample>Ver un informe real</sample>.",
     checks:
-      "<check>La comprobación rápida</check>: gratis, unos 30 segundos; dos respuestas al momento y las cinco en cuanto cree una cuenta. El <crawler>comprobador de rastreadores de IA</crawler> muestra qué rastreadores de IA pueden leer su sitio.",
+      "<check>La comprobación rápida</check>: gratis, unos 30 segundos; una respuesta al momento y las cinco en cuanto cree una cuenta. El <crawler>comprobador de rastreadores de IA</crawler> muestra qué rastreadores de IA pueden leer su sitio.",
     guides: "<guides>Guías</guides>: cómo eligen los asistentes de IA a qué empresas mencionar y qué puede hacer una empresa al respecto.",
 
     contactTitle: "Contacto",
@@ -154,7 +154,7 @@ export default defineMessages(en, {
       `<link>Подписка</link>: мы делаем работу, благодаря которой вас называют, — на вашем собственном сайте и на сайтах, которые цитируют ассистенты, — и раз в две недели заново опрашиваем все четыре ассистента. ${month} в месяц плюс разовая настройка за ${setup}; настройка не взимается, если вы платите ${quarter} за 3 месяца или ${year} за год (${yearPerMonth} в месяц, скидка ${yearOff}).`,
     report: "Подробный отчёт — бесплатно для вашего сайта, достаточно создать аккаунт: 20 вопросов клиентов к ChatGPT, Claude, Gemini и Perplexity, кого называют вместо вас, какие сайты цитируют, и наш план действий, чтобы называли вас. <sample>Посмотреть настоящий отчёт</sample>.",
     checks:
-      "<check>Быстрая проверка</check>: бесплатно, около 30 секунд; два ответа сразу, все пять — после создания аккаунта. <crawler>Проверка ИИ-краулеров</crawler> показывает, какие ИИ-краулеры могут читать ваш сайт.",
+      "<check>Быстрая проверка</check>: бесплатно, около 30 секунд; один ответ сразу, все пять — после создания аккаунта. <crawler>Проверка ИИ-краулеров</crawler> показывает, какие ИИ-краулеры могут читать ваш сайт.",
     guides: "<guides>Руководства</guides>: как ИИ-ассистенты выбирают, какие компании назвать, и что компания может для этого сделать.",
 
     contactTitle: "Контакты",

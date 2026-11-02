@@ -19,6 +19,7 @@ import { useState } from "react"
 import Link from "next/link"
 import GuestRewardNote from "@/components/geo/GuestRewardNote"
 import { SAMPLE_PATH } from "@/lib/geo-pricing"
+import { PROMO_WHEEL } from "@/lib/geo-promo"
 import { useLocale, useT } from "@/components/i18n/LocaleProvider"
 import { INTL_LOCALE, type Locale } from "@/lib/i18n/config"
 import { localePath } from "@/lib/i18n/paths"
@@ -31,8 +32,12 @@ export interface TeaserEngine {
   named: boolean
   cited: boolean
   failed: boolean
+  /** The first business named, and how many more; the other names stay on the server. */
   namedInstead: string[]
+  namedInsteadMore?: number
+  /** The site's own pages among the sources, and how many other sites were quoted. */
   sources: string[]
+  sourcesMore?: number
   snippet: string
 }
 
@@ -167,6 +172,8 @@ function EnginePanel({ engine, a, domain }: { engine: string; a: TeaserEngine; d
   const m = useT(ns)
   const names = a.namedInstead
   const src = a.sources
+  const moreNames = (a.namedInsteadMore ?? 0) + Math.max(0, names.length - 4)
+  const moreSrc = (a.sourcesMore ?? 0) + Math.max(0, src.length - 4)
   const own = (d: string) => d === domain || d.endsWith("." + domain)
   return (
     <div className="bg-[#f8f7f6] rounded-xl p-3.5 mt-2">
@@ -182,14 +189,14 @@ function EnginePanel({ engine, a, domain }: { engine: string; a: TeaserEngine; d
               <>
                 <span className="text-slate-500">{a.named ? m.alsoNamed : m.namedInsteadLabel}</span>
                 {names.slice(0, 4).join(", ")}
-                {names.length > 4 && <span className="text-slate-500">{m.more(names.length - 4)}</span>}
+                {moreNames > 0 && <span className="text-slate-500">{m.more(moreNames)}</span>}
               </>
             ) : (
               <span className="text-slate-500">{m.noBusinessNamed}</span>
             )}
           </p>
           <p className="text-xs text-slate-500 mt-1.5 break-words">
-            {src.length ? (
+            {src.length || moreSrc ? (
               <>
                 {m.sources}{" "}
                 {src.slice(0, 4).map((d, i) => (
@@ -198,7 +205,7 @@ function EnginePanel({ engine, a, domain }: { engine: string; a: TeaserEngine; d
                     <span className={own(d) ? "text-violet-700 font-bold" : ""}>{d}</span>
                   </span>
                 ))}
-                {src.length > 4 && ` +${src.length - 4}`}
+                {moreSrc > 0 && `${src.length ? " " : ""}+${moreSrc}`}
               </>
             ) : (
               m.noSources
@@ -251,13 +258,15 @@ function ReportEmailForm({
   signupHref,
   loginHref,
   onCta,
+  onEmailResult,
   onSent,
 }: {
   domain: string
   signupHref: string
   loginHref: string
   onCta: (where: string) => void
-  onSent: (email: string, ready: boolean) => void
+  onEmailResult?: (status: string) => void
+  onSent: (email: string) => void
 }) {
   const m = useT(ns)
   const locale = useLocale()
@@ -273,7 +282,6 @@ function ReportEmailForm({
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]{2,}$/.test(address)) return setError("email")
     setBusy(true)
     setError("")
-    onCta("email")
     try {
       const res = await fetch("/api/geo/report-request", {
         method: "POST",
@@ -281,7 +289,8 @@ function ReportEmailForm({
         body: JSON.stringify({ email: address, site: domain, hp: trap }),
       })
       const j = (await res.json().catch(() => ({}))) as { status?: string; id?: string; error?: string }
-      if (j.status === "queued" || j.status === "ready") {
+      onEmailResult?.(j.status ?? j.error ?? "failed")
+      if (j.status === "queued") {
         try {
           // The same two sign-up conversions /signup sends (app/signup/page.tsx), once per account.
           const w = window as unknown as { gtag?: (...args: unknown[]) => void; fbq?: (...args: unknown[]) => void }
@@ -290,7 +299,7 @@ function ReportEmailForm({
         } catch {
           // Analytics never gets in the way.
         }
-        return onSent(address, j.status === "ready")
+        return onSent(address)
       }
       setError(j.error === "exists" ? "exists" : j.error === "report_ip_used" ? "ip" : j.error === "invalid_email" ? "email" : "send")
     } catch {
@@ -355,7 +364,10 @@ function ReportEmailForm({
       <button type="submit" disabled={busy} className={`${CTA_BUTTON} disabled:opacity-60`}>
         {busy ? m.sending : m.sendReport}
       </button>
-      <p className="text-xs text-slate-600 mt-2.5 leading-relaxed">{m.reportPerk}</p>
+      <p className="text-xs text-slate-600 mt-2.5 leading-relaxed">
+        {m.reportPerk}
+        {PROMO_WHEEL.enabled && ` ${m.reportWheel}`}
+      </p>
       <p className="text-xs text-slate-500 mt-1.5 leading-relaxed">
         {rich(m.reportAgree, {
           link: (c) => (
@@ -383,6 +395,8 @@ function Result({
   view,
   signupHref,
   onCta,
+  onTrack,
+  onEmailResult,
   onLeadSent,
   ctaRef,
   reportRef,
@@ -390,7 +404,11 @@ function Result({
 }: {
   view: TeaserView
   signupHref: string
+  /** A real way to /signup: counts the click and leaves the site for the cabinet to follow. */
   onCta: (where: string) => void
+  /** A click that only brings the visitor to the form: counted, nothing handed over. */
+  onTrack?: (where: string) => void
+  onEmailResult?: (status: string) => void
   onLeadSent?: () => void
   ctaRef?: React.Ref<HTMLDivElement>
   reportRef?: React.Ref<HTMLDivElement>
@@ -398,7 +416,7 @@ function Result({
 }) {
   const m = useT(ns)
   const locale = useLocale()
-  const [sent, setSent] = useState<{ email: string; ready: boolean } | null>(null)
+  const [sent, setSent] = useState<string | null>(null)
   const s = view.summary!
   const domain = view.domain ?? ""
   const engines = (view.engines ?? ["chatgpt", "perplexity"]).filter((e) => s.engines[e])
@@ -427,9 +445,11 @@ function Result({
   const offerTitle = zero ? (top ? m.ctaZeroTitle(top) : m.ctaZeroTitleNoName) : all ? m.ctaTitle(ready) : m.ctaSomeTitle(s.of - s.named)
   const toForm = (where: string) => (e: React.MouseEvent) => {
     e.preventDefault()
-    onCta(where)
+    onTrack?.(where)
     goToReportForm()
   }
+  // With no answers ready there is no form on the card: these links go to sign-up, as the report card does.
+  const toOffer = (where: string) => (ready > 0 ? { href: sent ? loginHref : `#${REPORT_FORM_ID}`, onClick: sent ? undefined : toForm(where) } : { href: signupHref, onClick: () => onCta(where) })
 
   return (
     <div>
@@ -477,17 +497,15 @@ function Result({
               ))}
               {moreNamed > 0 && (
                 <>
-                  <li aria-hidden className="flex items-center gap-2 pt-1 blur-[3px] select-none">
-                    <span className="h-3 w-32 rounded bg-slate-300" />
-                    <span className="h-2.5 w-20 rounded bg-slate-200" />
-                  </li>
-                  <li aria-hidden className="flex items-center gap-2 pt-1 blur-[3px] select-none">
-                    <span className="h-3 w-24 rounded bg-slate-300" />
-                    <span className="h-2.5 w-20 rounded bg-slate-200" />
-                  </li>
+                  {[32, 24].slice(0, moreNamed).map((w) => (
+                    <li key={w} aria-hidden className="flex items-center gap-2 pt-1 blur-[3px] select-none">
+                      <span className={`h-3 rounded bg-slate-300 ${w === 32 ? "w-32" : "w-24"}`} />
+                      <span className="h-2.5 w-20 rounded bg-slate-200" />
+                    </li>
+                  ))}
                   <li className="pt-1 text-sm font-semibold text-violet-700">
-                    <a href={`#${REPORT_FORM_ID}`} onClick={toForm("more-named")} className="hover:underline">
-                      {m.moreNamed(moreNamed)}
+                    <a {...toOffer("more-named")} className="hover:underline">
+                      {m.moreNamed(moreNamed, all)}
                     </a>
                   </li>
                 </>
@@ -500,8 +518,8 @@ function Result({
           <div ref={ctaRef} id={REPORT_FORM_ID} className="mt-5 scroll-mt-24 rounded-2xl border border-violet-200 bg-violet-50/70 p-4 sm:p-5">
             {sent ? (
               <div role="status">
-                <p className="font-extrabold text-lg leading-snug break-words">{sent.ready ? m.readyTitle : m.sentTitle(sent.email)}</p>
-                <p className="text-sm text-slate-700 mt-1.5 leading-relaxed">{sent.ready ? m.readyBody : m.sentBody}</p>
+                <p className="font-extrabold text-lg leading-snug break-words">{m.sentTitle(sent)}</p>
+                <p className="text-sm text-slate-700 mt-1.5 leading-relaxed">{m.sentBody}</p>
                 <a href={loginHref} className="mt-2.5 inline-block text-sm font-semibold text-violet-700 hover:underline">
                   {m.sentLogin}
                 </a>
@@ -515,8 +533,9 @@ function Result({
                   signupHref={signupHref}
                   loginHref={loginHref}
                   onCta={onCta}
-                  onSent={(email, ready) => {
-                    setSent({ email, ready })
+                  onEmailResult={onEmailResult}
+                  onSent={(email) => {
+                    setSent(email)
                     onLeadSent?.()
                   }}
                 />
@@ -572,8 +591,7 @@ function Result({
             return (
               <a
                 key={r.n}
-                href={sent ? loginHref : `#${REPORT_FORM_ID}`}
-                onClick={sent ? undefined : toForm("locked-row")}
+                {...toOffer("locked-row")}
                 className="block group rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400 focus-visible:ring-offset-4"
               >
                 <p className="text-base font-semibold leading-snug group-hover:text-violet-700">
@@ -728,6 +746,8 @@ export default function AiAnswers({
   elapsed,
   signupHref,
   onCta,
+  onTrack,
+  onEmailResult,
   onLeadSent,
   onRetry,
   onOtherUrl,
@@ -740,6 +760,8 @@ export default function AiAnswers({
   elapsed: number
   signupHref: string
   onCta: (where: string) => void
+  onTrack?: (where: string) => void
+  onEmailResult?: (status: string) => void
   onLeadSent?: () => void
   onRetry: () => void
   onOtherUrl: () => void
@@ -759,7 +781,7 @@ export default function AiAnswers({
       </div>
       {waiting && <Waiting view={view} elapsed={elapsed} />}
       {view?.status === "done" && view.summary && (
-        <Result view={view} signupHref={signupHref} onCta={onCta} onLeadSent={onLeadSent} ctaRef={ctaRef} reportRef={reportRef} lockedRef={lockedRef} />
+        <Result view={view} signupHref={signupHref} onCta={onCta} onTrack={onTrack} onEmailResult={onEmailResult} onLeadSent={onLeadSent} ctaRef={ctaRef} reportRef={reportRef} lockedRef={lockedRef} />
       )}
       {view?.status === "failed" && (
         <Failed view={view} domain={shown} signupHref={signupHref} onCta={onCta} onRetry={onRetry} onOtherUrl={onOtherUrl} />
