@@ -51,7 +51,8 @@ export async function POST(req: NextRequest) {
       name: name ? String(name).trim().slice(0, 100) : null,
     })
 
-    await resend.emails.send({
+    // Resend answers an error instead of throwing it; a code that was not sent must not be asked for.
+    const { error: sendError } = await resend.emails.send({
       from: "ItGrows.ai <noreply@itgrows.ai>",
       to: email,
       subject: `Your ItGrows.ai sign-in code: ${pin}`,
@@ -69,6 +70,8 @@ export async function POST(req: NextRequest) {
         </div>
       `,
     })
+
+    if (sendError) throw new Error(sendError.message)
 
     return NextResponse.json({ success: true })
   } catch (err) {

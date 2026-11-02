@@ -12,7 +12,7 @@ import { plural } from "../format"
 
 const en = {
   // <PriceLine>, in the closing block (once: it used to repeat under the header)
-  priceLine: "The quick check is free and takes about 30 seconds: two answers show in full right away, all five once you create an account. With the account we also build this report for your site, all of it: the full report is free once you create an account.",
+  priceLine: "The quick check is free and takes about 30 seconds: one answer shows right away, all five once you create an account. With the account we also build this report for your site, all of it: the full report is free once you create an account.",
 
   badge: "Sample report",
   h1: (domain: string) => `A real report: ${domain}`,
@@ -31,7 +31,7 @@ const en = {
 
 export default defineMessages(en, {
   de: {
-    priceLine: "Der Schnellcheck ist kostenlos und dauert etwa 30 Sekunden: Zwei Antworten sehen Sie sofort vollständig, alle fünf, sobald Sie ein Konto anlegen. Mit dem Konto erstellen wir außerdem diesen Bericht für Ihre Website, vollständig: Der vollständige Bericht ist kostenlos, sobald Sie ein Konto anlegen.",
+    priceLine: "Der Schnellcheck ist kostenlos und dauert etwa 30 Sekunden: Eine Antwort sehen Sie sofort, alle fünf, sobald Sie ein Konto anlegen. Mit dem Konto erstellen wir außerdem diesen Bericht für Ihre Website, vollständig: Der vollständige Bericht ist kostenlos, sobald Sie ein Konto anlegen.",
 
     badge: "Beispielbericht",
     h1: (domain) => `Ein echter Bericht: ${domain}`,
@@ -49,7 +49,7 @@ export default defineMessages(en, {
   },
 
   fr: {
-    priceLine: "La vérification rapide est gratuite et prend environ 30 secondes : deux réponses s’affichent en entier tout de suite, les cinq dès que vous créez un compte. Avec ce compte, nous établissons aussi ce rapport pour votre site, en entier : le rapport complet est gratuit dès que vous créez un compte.",
+    priceLine: "La vérification rapide est gratuite et prend environ 30 secondes : une réponse s’affiche tout de suite, les cinq dès que vous créez un compte. Avec ce compte, nous établissons aussi ce rapport pour votre site, en entier : le rapport complet est gratuit dès que vous créez un compte.",
 
     badge: "Exemple de rapport",
     h1: (domain) => `Un vrai rapport : ${domain}`,
@@ -67,7 +67,7 @@ export default defineMessages(en, {
   },
 
   es: {
-    priceLine: "La comprobación rápida es gratuita y tarda unos 30 segundos: dos respuestas se ven completas al momento y las cinco, en cuanto cree una cuenta. Con esa cuenta elaboramos también este informe para su sitio, completo: el informe completo es gratuito en cuanto cree una cuenta.",
+    priceLine: "La comprobación rápida es gratuita y tarda unos 30 segundos: una respuesta se ve al momento y las cinco, en cuanto cree una cuenta. Con esa cuenta elaboramos también este informe para su sitio, completo: el informe completo es gratuito en cuanto cree una cuenta.",
 
     badge: "Informe de ejemplo",
     h1: (domain) => `Un informe real: ${domain}`,
@@ -85,7 +85,7 @@ export default defineMessages(en, {
   },
 
   ru: {
-    priceLine: "Быстрая проверка бесплатна и занимает около 30 секунд: два ответа видны целиком сразу, все пять — после создания аккаунта. С аккаунтом мы также составим такой отчёт по вашему сайту целиком: полный отчёт бесплатный — достаточно создать аккаунт.",
+    priceLine: "Быстрая проверка бесплатна и занимает около 30 секунд: один ответ виден сразу, все пять — после создания аккаунта. С аккаунтом мы также составим такой отчёт по вашему сайту целиком: полный отчёт бесплатный — достаточно создать аккаунт.",
 
     badge: "Пример отчёта",
     h1: (domain) => `Настоящий отчёт: ${domain}`,

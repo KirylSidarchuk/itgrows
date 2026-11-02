@@ -40,7 +40,7 @@ const en = {
   orgDescription: ENTITY_ONE_LINER,
   appName: "ItGrows AI visibility check",
   appDescription:
-    "A 30-second check of whether ChatGPT and Perplexity name a business when its buyers ask: five buyer questions generated from the site, answered live with web search, with the businesses named instead and the sites cited. Free: two answers show in full right away, all five once you create an account.",
+    "A 30-second check of whether ChatGPT and Perplexity name a business when its buyers ask: five buyer questions generated from the site, answered live with web search, with the businesses named instead and the sites cited. Free: one answer shows right away, all five once you create an account.",
   serviceName: "ItGrows — AI visibility (GEO)",
   serviceType: "Generative engine optimisation and content publishing",
   serviceDescription:
@@ -116,7 +116,7 @@ const en = {
     },
     {
       q: "What does the detailed report cost?",
-      a: `Nothing: the full report is free once you create an account, for one site per account. The quick check on this page is free too and takes about 30 seconds: 5 questions to ChatGPT and Perplexity, with two answers shown in full right away and all five once you create an account. With the account we also build the detailed report for your site — 20 questions to ChatGPT, Claude, Gemini and Perplexity — and all of it is open: every answer, everyone named instead of you, the sites the assistants quote, and our plan to get you in. A real one: itgrows.ai${sample}.`,
+      a: `Nothing: the full report is free once you create an account, for one site per account. The quick check on this page is free too and takes about 30 seconds: 5 questions to ChatGPT and Perplexity, with one answer shown right away and all five once you create an account. With the account we also build the detailed report for your site — 20 questions to ChatGPT, Claude, Gemini and Perplexity — and all of it is open: every answer, everyone named instead of you, the sites the assistants quote, and our plan to get you in. A real one: itgrows.ai${sample}.`,
     },
     {
       q: "What does the plan cost?",
@@ -164,7 +164,7 @@ export default defineMessages(en, {
       "ItGrows ist ein Dienst für KI-Sichtbarkeit (Generative Engine Optimization, GEO), der dafür sorgt, dass Unternehmen genannt werden, wenn ihre Kunden ChatGPT, Claude, Gemini und Perplexity fragen: Er veröffentlicht Antwortseiten auf der eigenen Website des Unternehmens, macht die Website für KI-Crawler und Suchindizes lesbar und stellt die Fragen der Kunden alle zwei Wochen erneut allen vier Assistenten.",
     appName: "ItGrows KI-Sichtbarkeitscheck",
     appDescription:
-      "Ein 30-Sekunden-Check, ob ChatGPT und Perplexity ein Unternehmen nennen, wenn seine Kunden fragen: fünf Kundenfragen, aus der Website abgeleitet und live mit Websuche beantwortet, dazu die stattdessen genannten Unternehmen und die zitierten Websites. Kostenlos: zwei Antworten sofort vollständig, alle fünf, sobald Sie ein Konto anlegen.",
+      "Ein 30-Sekunden-Check, ob ChatGPT und Perplexity ein Unternehmen nennen, wenn seine Kunden fragen: fünf Kundenfragen, aus der Website abgeleitet und live mit Websuche beantwortet, dazu die stattdessen genannten Unternehmen und die zitierten Websites. Kostenlos: eine Antwort sofort, alle fünf, sobald Sie ein Konto anlegen.",
     serviceName: "ItGrows — KI-Sichtbarkeit (GEO)",
     serviceType: "Generative Engine Optimization und Veröffentlichung von Inhalten",
     serviceDescription:
@@ -237,7 +237,7 @@ export default defineMessages(en, {
       },
       {
         q: "Was kostet der ausführliche Bericht?",
-        a: `Nichts: Der vollständige Bericht ist kostenlos, sobald Sie ein Konto anlegen, für eine Website pro Konto. Der Schnellcheck auf dieser Seite ist ebenfalls kostenlos und dauert etwa 30 Sekunden: 5 Fragen an ChatGPT und Perplexity; zwei Antworten sehen Sie sofort vollständig, alle fünf, sobald Sie ein Konto anlegen. Mit dem Konto erstellen wir außerdem den ausführlichen Bericht für Ihre Website — 20 Fragen an ChatGPT, Claude, Gemini und Perplexity —, und alles darin ist offen: jede Antwort, alle, die statt Ihnen genannt werden, die Websites, die die Assistenten zitieren, und unser Maßnahmenplan, mit dem wir Sie in die Antworten bringen. Ein echtes Beispiel (auf Englisch): itgrows.ai${sample}.`,
+        a: `Nichts: Der vollständige Bericht ist kostenlos, sobald Sie ein Konto anlegen, für eine Website pro Konto. Der Schnellcheck auf dieser Seite ist ebenfalls kostenlos und dauert etwa 30 Sekunden: 5 Fragen an ChatGPT und Perplexity; eine Antwort sehen Sie sofort, alle fünf, sobald Sie ein Konto anlegen. Mit dem Konto erstellen wir außerdem den ausführlichen Bericht für Ihre Website — 20 Fragen an ChatGPT, Claude, Gemini und Perplexity —, und alles darin ist offen: jede Antwort, alle, die statt Ihnen genannt werden, die Websites, die die Assistenten zitieren, und unser Maßnahmenplan, mit dem wir Sie in die Antworten bringen. Ein echtes Beispiel (auf Englisch): itgrows.ai${sample}.`,
       },
       {
         q: "Was kostet der Plan?",
@@ -285,7 +285,7 @@ export default defineMessages(en, {
       "ItGrows est un service de visibilité dans l’IA (generative engine optimization, GEO) qui fait mentionner les entreprises quand leurs clients interrogent ChatGPT, Claude, Gemini et Perplexity : il publie des pages de réponse sur le propre site de l’entreprise, rend le site lisible pour les robots d’IA et les index de recherche, et repose les questions des clients aux quatre assistants toutes les deux semaines.",
     appName: "Test de visibilité IA ItGrows",
     appDescription:
-      "Une vérification en 30 secondes : ChatGPT et Perplexity mentionnent-ils une entreprise quand ses clients posent la question ? Cinq questions de clients générées à partir du site, posées en direct avec la recherche web, avec les entreprises mentionnées à sa place et les sites cités. Gratuit : deux réponses complètes tout de suite, les cinq dès que vous créez un compte.",
+      "Une vérification en 30 secondes : ChatGPT et Perplexity mentionnent-ils une entreprise quand ses clients posent la question ? Cinq questions de clients générées à partir du site, posées en direct avec la recherche web, avec les entreprises mentionnées à sa place et les sites cités. Gratuit : une réponse tout de suite, les cinq dès que vous créez un compte.",
     serviceName: "ItGrows — visibilité dans l’IA (GEO)",
     serviceType: "Optimisation pour les moteurs génératifs et publication de contenus",
     serviceDescription:
@@ -358,7 +358,7 @@ export default defineMessages(en, {
       },
       {
         q: "Combien coûte le rapport détaillé ?",
-        a: `Rien : le rapport complet est gratuit dès que vous créez un compte, pour un site par compte. La vérification rapide de cette page est gratuite elle aussi et prend environ 30 secondes : 5 questions à ChatGPT et Perplexity ; deux réponses s’affichent en entier tout de suite, les cinq dès que vous créez un compte. Avec ce compte, nous établissons aussi le rapport détaillé de votre site — 20 questions à ChatGPT, Claude, Gemini et Perplexity —, et tout y est consultable : chaque réponse, tous ceux qui sont mentionnés à votre place, les sites que citent les assistants et notre plan d’action pour vous faire entrer dans les réponses. Un vrai rapport (en anglais) : itgrows.ai${sample}.`,
+        a: `Rien : le rapport complet est gratuit dès que vous créez un compte, pour un site par compte. La vérification rapide de cette page est gratuite elle aussi et prend environ 30 secondes : 5 questions à ChatGPT et Perplexity ; une réponse s’affiche tout de suite, les cinq dès que vous créez un compte. Avec ce compte, nous établissons aussi le rapport détaillé de votre site — 20 questions à ChatGPT, Claude, Gemini et Perplexity —, et tout y est consultable : chaque réponse, tous ceux qui sont mentionnés à votre place, les sites que citent les assistants et notre plan d’action pour vous faire entrer dans les réponses. Un vrai rapport (en anglais) : itgrows.ai${sample}.`,
       },
       {
         q: "Combien coûte l’abonnement ?",
@@ -406,7 +406,7 @@ export default defineMessages(en, {
       "ItGrows es un servicio de visibilidad en IA (generative engine optimization, GEO) que consigue que mencionen a las empresas cuando sus clientes preguntan a ChatGPT, Claude, Gemini y Perplexity: publica páginas de respuesta en el propio sitio web de la empresa, hace que el sitio sea legible para los rastreadores de IA y los índices de búsqueda, y vuelve a plantear las preguntas de los clientes a los cuatro asistentes cada dos semanas.",
     appName: "Comprobación de visibilidad en IA de ItGrows",
     appDescription:
-      "Una comprobación de 30 segundos de si ChatGPT y Perplexity mencionan a una empresa cuando sus clientes preguntan: cinco preguntas de clientes generadas a partir del sitio, respondidas en directo con búsqueda web, con las empresas mencionadas en su lugar y los sitios citados. Gratis: dos respuestas completas al momento y las cinco en cuanto cree una cuenta.",
+      "Una comprobación de 30 segundos de si ChatGPT y Perplexity mencionan a una empresa cuando sus clientes preguntan: cinco preguntas de clientes generadas a partir del sitio, respondidas en directo con búsqueda web, con las empresas mencionadas en su lugar y los sitios citados. Gratis: una respuesta al momento y las cinco en cuanto cree una cuenta.",
     serviceName: "ItGrows — visibilidad en IA (GEO)",
     serviceType: "Optimización para motores generativos y publicación de contenidos",
     serviceDescription:
@@ -479,7 +479,7 @@ export default defineMessages(en, {
       },
       {
         q: "¿Cuánto cuesta el informe detallado?",
-        a: `Nada: el informe completo es gratuito en cuanto cree una cuenta, para un sitio por cuenta. La comprobación rápida de esta página también es gratuita y tarda unos 30 segundos: 5 preguntas a ChatGPT y Perplexity; dos respuestas se ven completas al momento y las cinco, en cuanto cree una cuenta. Con esa cuenta elaboramos también el informe detallado de su sitio — 20 preguntas a ChatGPT, Claude, Gemini y Perplexity —, y todo queda a la vista: cada respuesta, todas las empresas mencionadas en su lugar, los sitios que citan los asistentes y nuestro plan de acción para que le mencionen. Un ejemplo real (en inglés): itgrows.ai${sample}.`,
+        a: `Nada: el informe completo es gratuito en cuanto cree una cuenta, para un sitio por cuenta. La comprobación rápida de esta página también es gratuita y tarda unos 30 segundos: 5 preguntas a ChatGPT y Perplexity; una respuesta se ve al momento y las cinco, en cuanto cree una cuenta. Con esa cuenta elaboramos también el informe detallado de su sitio — 20 preguntas a ChatGPT, Claude, Gemini y Perplexity —, y todo queda a la vista: cada respuesta, todas las empresas mencionadas en su lugar, los sitios que citan los asistentes y nuestro plan de acción para que le mencionen. Un ejemplo real (en inglés): itgrows.ai${sample}.`,
       },
       {
         q: "¿Cuánto cuesta el plan?",
@@ -527,7 +527,7 @@ export default defineMessages(en, {
       "ItGrows — сервис видимости в ИИ (generative engine optimization, GEO), который добивается, чтобы бизнес называли, когда его клиенты спрашивают ChatGPT, Claude, Gemini и Perplexity: публикует страницы-ответы на собственном сайте компании, делает сайт доступным для ИИ-краулеров и поисковых индексов и раз в две недели заново задаёт вопросы клиентов всем четырём ассистентам.",
     appName: "Проверка видимости в ИИ от ItGrows",
     appDescription:
-      "30-секундная проверка того, называют ли ChatGPT и Perplexity компанию, когда спрашивают её клиенты: пять клиентских вопросов, составленных по сайту, с ответами в реальном времени через веб-поиск, с компаниями, которых называют вместо неё, и процитированными сайтами. Бесплатно: два ответа целиком сразу, все пять — после создания аккаунта.",
+      "30-секундная проверка того, называют ли ChatGPT и Perplexity компанию, когда спрашивают её клиенты: пять клиентских вопросов, составленных по сайту, с ответами в реальном времени через веб-поиск, с компаниями, которых называют вместо неё, и процитированными сайтами. Бесплатно: один ответ сразу, все пять — после создания аккаунта.",
     serviceName: "ItGrows — видимость в ИИ (GEO)",
     serviceType: "Оптимизация под генеративные системы и публикация контента",
     serviceDescription:
@@ -600,7 +600,7 @@ export default defineMessages(en, {
       },
       {
         q: "Сколько стоит подробный отчёт?",
-        a: `Ничего: полный отчёт бесплатный — достаточно создать аккаунт, один сайт на аккаунт. Быстрая проверка на этой странице тоже бесплатна и занимает около 30 секунд: 5 вопросов к ChatGPT и Perplexity; два ответа вы видите целиком сразу, все пять — когда создадите аккаунт. С аккаунтом мы также составим подробный отчёт по вашему сайту — 20 вопросов к ChatGPT, Claude, Gemini и Perplexity — и в нём открыто всё: каждый ответ, все, кого называют вместо вас, сайты, которые цитируют ассистенты, и наш план действий, чтобы называли вас. Настоящий отчёт (на английском): itgrows.ai${sample}.`,
+        a: `Ничего: полный отчёт бесплатный — достаточно создать аккаунт, один сайт на аккаунт. Быстрая проверка на этой странице тоже бесплатна и занимает около 30 секунд: 5 вопросов к ChatGPT и Perplexity; один ответ вы видите сразу, все пять — когда создадите аккаунт. С аккаунтом мы также составим подробный отчёт по вашему сайту — 20 вопросов к ChatGPT, Claude, Gemini и Perplexity — и в нём открыто всё: каждый ответ, все, кого называют вместо вас, сайты, которые цитируют ассистенты, и наш план действий, чтобы называли вас. Настоящий отчёт (на английском): itgrows.ai${sample}.`,
       },
       {
         q: "Сколько стоит подписка?",

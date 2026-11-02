@@ -2,8 +2,8 @@
 
 import { useEffect, useRef } from "react"
 
-// The phone bar of the quick check: a link to sign-up pinned to the bottom of the screen while the
-// account offer inside the answers card is scrolled away (AuditForm decides when it is mounted).
+// The phone bar of the quick check: a link to the email offer pinned to the bottom of the screen while
+// that offer inside the answers card is scrolled away (AuditForm decides when it is mounted).
 // Phones only (sm:hidden). `onSeen` fires once at least half of it is on screen — on a wider screen
 // it is never displayed, so it never fires there. AuditForm does not mount it while the cookie banner
 // is up (the banner would cover it, z-50 over z-40, and the observer cannot tell), nor before the page
@@ -17,7 +17,7 @@ export default function OpenAnswersBar({
 }: {
   href: string
   label: string
-  onClick: () => void
+  onClick: (e: React.MouseEvent) => void
   onSeen: () => void
 }) {
   const ref = useRef<HTMLDivElement>(null)
