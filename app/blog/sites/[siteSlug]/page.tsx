@@ -112,7 +112,7 @@ export default function SiteBlogPage() {
                     <div className="h-full bg-white border border-black/10 rounded-2xl overflow-hidden hover:border-violet-600/30 hover:shadow-sm transition-all">
                       {post.coverImageUrl && (
                         <div className="w-full h-48 overflow-hidden">
-                          <img src={`/api/blog/image/${post.id}`} alt={post.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                          <img src={post.coverImageUrl} loading="lazy" alt={post.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                         </div>
                       )}
                       <div className="p-6">

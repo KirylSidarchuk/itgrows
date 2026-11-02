@@ -109,7 +109,8 @@ export default async function BlogPage() {
                     {post.coverImageUrl && (
                       <div className="w-full h-48 overflow-hidden">
                         <img
-                          src={`/api/blog/image/${post.id}`}
+                          src={post.coverImageUrl}
+                          loading="lazy"
                           alt={post.title}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         />
