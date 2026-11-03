@@ -40,7 +40,8 @@ import { LaunchRewards, liveReward, useMinuteNow, usePromo } from "../launch-whe
 // plan, the places with where each stands (what we set by hand, else "Planned"), Cancel plan
 // (/api/geo/cancel: stops at the end of the paid period, with undo) and Card and invoices (/api/geo/portal,
 // which cannot cancel or switch plans). Those two and the price only for a plan paid through Stripe: a plan
-// billed by invoice (site.invoiced) reads like a client we set up by hand.
+// billed by invoice (site.invoiced) reads like a client we set up by hand. Such an account never gets the
+// offer here, whatever site is asked for (/api/geo/report noOffer): it sees only the sites we work on.
 //
 // Since 30 Oct 2026 (owner's decision) the page sells the outcome and carries the growth guarantee's line,
 // with its "*", next to the ways to pay; its footnote with the link to /terms#growth-guarantee is the last
@@ -409,19 +410,28 @@ function LaunchNeeds({ domain }: { domain: string }) {
 /** The site's one-time setup is paid already, by our records (/api/geo/report setupPaid). */
 const reportSetupPaid = (s: SiteReport) => (s as SiteReport & { setupPaid?: boolean }).setupPaid === true
 
-type Loaded = { sites: SiteReport[]; prices: { now: GeoPrices; paid: GeoPrices } | null }
+type Loaded = { sites: SiteReport[]; prices: { now: GeoPrices; paid: GeoPrices } | null; noOffer: boolean; failed: boolean }
 
 /** The signed-in account's sites, each cut to what it has paid for (lib/geo-report.ts), and its plan
  *  prices: what a new plan costs it, and what a plan it has was bought at. */
 async function loadSites(): Promise<Loaded> {
   const r = await fetch("/api/geo/report", { cache: "no-store" })
-  const j = (r.ok ? await r.json() : { sites: [] }) as { sites?: SiteReport[]; price?: GeoPrices | null; paidPrice?: GeoPrices | null }
-  return { sites: j.sites ?? [], prices: j.price && j.paidPrice ? { now: j.price, paid: j.paidPrice } : null }
+  const j = (r.ok ? await r.json() : { sites: [] }) as { sites?: SiteReport[]; price?: GeoPrices | null; paidPrice?: GeoPrices | null; noOffer?: boolean }
+  const noOffer = j.noOffer === true
+  return {
+    sites: (j.sites ?? []).filter((s) => !noOffer || onPlan(s)),
+    prices: j.price && j.paidPrice ? { now: j.price, paid: j.paidPrice } : null,
+    noOffer,
+    failed: !r.ok,
+  }
 }
 
 export default function PlanPage() {
   const [sites, setSites] = useState<SiteReport[] | null>(null)
   const [prices, setPrices] = useState<Loaded["prices"]>(null)
+  // Not known to be an account that may buy (noOffer, or the list did not load): no offer on this page.
+  const [noOffer, setNoOffer] = useState(false)
+  const [loadFailed, setLoadFailed] = useState(false)
   const [domain, setDomain] = useState("")
   const [justPaid, setJustPaid] = useState(false)
   const [busy, setBusy] = useState<{ interval: Interval; stage: "follow" | "checkout" } | null>(null)
@@ -441,7 +451,9 @@ export default function PlanPage() {
     const p = new URLSearchParams(window.location.search)
     const chosen = chosenInterval(p)
     loadSites()
-      .then(({ sites: list, prices: loaded }) => {
+      .then(({ sites: list, prices: loaded, noOffer: none, failed }) => {
+        setNoOffer(none)
+        setLoadFailed(failed)
         if (chosen) setPicked(chosen)
         setJustPaid(p.get("paid") === "1")
         setPrices(loaded)
@@ -452,7 +464,10 @@ export default function PlanPage() {
         if (asked && !known && p.get("paid") === "1") setPaidFor(asked)
         else if (!list.length && asked) setNewSite(asked)
       })
-      .catch(() => setSites([]))
+      .catch(() => {
+        setLoadFailed(true)
+        setSites([])
+      })
   }, [])
 
   // The webhook follows a site bought unfollowed within seconds: ask for the list until it is in it.
@@ -553,6 +568,18 @@ export default function PlanPage() {
   }
 
   if (sites === null) return <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10"><div className="h-48 rounded-2xl bg-white/60 animate-pulse" /></div>
+
+  if (loadFailed || (noOffer && !sites.length))
+    return (
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-10">
+        <section className={card}>
+          <p className="text-sm text-slate-700">
+            {loadFailed ? "We couldn't load this page just now. Reload it in a minute, or " : "Your plan is arranged with us directly. For anything about it, "}
+            <Link href="/business/dashboard/support" className="font-semibold text-violet-700 hover:underline">write to us</Link>.
+          </p>
+        </section>
+      </div>
+    )
 
   const site = sites.find((s) => s.domain === domain) ?? null
   const working = site ? onPlan(site) : false

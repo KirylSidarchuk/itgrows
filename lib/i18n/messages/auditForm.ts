@@ -31,6 +31,7 @@ const en = {
   crawlersEyebrow: "Can AI crawlers read your site?",
   turningAway: (bots: string) => `You are turning away ${bots}`,
   nothingToQuote: "They can read you, but there's nothing here to quote. That's the gap we fill.",
+  sitemapNotRead: "They can read you, but your sitemap didn't answer this check, so we can't count your pages yet.",
   canBeQuoted: (answers: number, total: number) => `${answers} of your ${formatNumber("en", total)} pages can be quoted`,
   pagesReach: (sampled: boolean) => `pages an assistant can reach${sampled ? " (sampled)" : ""}`,
   answerAQuestion: "of them answer a question",
@@ -82,6 +83,7 @@ export default defineMessages(en, {
     crawlersEyebrow: "Können KI-Crawler Ihre Website lesen?",
     turningAway: (bots) => `Sie weisen ${bots} ab`,
     nothingToQuote: "Die Crawler können Sie lesen, aber hier gibt es nichts zu zitieren. Genau diese Lücke schließen wir.",
+    sitemapNotRead: "Die Crawler können Sie lesen, aber Ihre Sitemap hat bei dieser Prüfung nicht geantwortet. Ihre Seiten konnten wir deshalb noch nicht zählen.",
     canBeQuoted: (answers, total) => `${answers} Ihrer ${formatNumber("de", total)} Seiten ${answers === 1 ? "ist" : "sind"} zitierfähig`,
     pagesReach: (sampled) => `Seiten, die ein Assistent erreichen kann${sampled ? " (Stichprobe)" : ""}`,
     answerAQuestion: "davon beantworten eine Frage",
@@ -132,6 +134,7 @@ export default defineMessages(en, {
     crawlersEyebrow: "Les robots d’IA peuvent-ils lire votre site ?",
     turningAway: (bots) => `Vous refoulez ${bots}`,
     nothingToQuote: "Ils peuvent vous lire, mais il n’y a rien ici à citer. C’est ce manque que nous comblons.",
+    sitemapNotRead: "Ils peuvent vous lire, mais votre sitemap n’a pas répondu à cette vérification : nous ne pouvons pas encore compter vos pages.",
     canBeQuoted: (answers, total) =>
       `${answers} de vos ${formatNumber("fr", total)} pages ${answers > 1 ? "peuvent être citées" : "peut être citée"}`,
     pagesReach: (sampled) => `pages accessibles à un assistant${sampled ? " (échantillon)" : ""}`,
@@ -183,6 +186,7 @@ export default defineMessages(en, {
     crawlersEyebrow: "¿Pueden los rastreadores de IA leer su sitio?",
     turningAway: (bots) => `Está rechazando a ${bots}`,
     nothingToQuote: "Pueden leer su sitio, pero aquí no hay nada que citar. Ese es el hueco que llenamos.",
+    sitemapNotRead: "Pueden leer su sitio, pero su sitemap no respondió a esta comprobación, así que aún no podemos contar sus páginas.",
     canBeQuoted: (answers, total) =>
       `${answers} de sus ${formatNumber("es", total)} páginas ${answers === 1 ? "se puede" : "se pueden"} citar`,
     pagesReach: (sampled) => `páginas a las que llega un asistente${sampled ? " (muestra)" : ""}`,
@@ -234,6 +238,7 @@ export default defineMessages(en, {
     crawlersEyebrow: "Могут ли ИИ-краулеры прочитать ваш сайт?",
     turningAway: (bots) => `Вы не пускаете ${bots}`,
     nothingToQuote: "Прочитать вас они могут, но цитировать здесь нечего. Этот пробел мы и закрываем.",
+    sitemapNotRead: "Прочитать вас они могут, но карта сайта не ответила на эту проверку, поэтому страницы мы пока не посчитали.",
     canBeQuoted: (answers, total) =>
       `${answers} из ${plural("ru", total, { one: `${formatNumber("ru", total)} вашей страницы`, other: `${formatNumber("ru", total)} ваших страниц` })} можно цитировать`,
     pagesReach: (sampled) => `страницы, доступные ассистенту${sampled ? " (выборка)" : ""}`,

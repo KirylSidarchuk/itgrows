@@ -116,25 +116,41 @@ function receivedUrl(u: unknown, siteUrl: string): string | null {
  *  note. The account's name goes in the greeting only when it is a person's: an account named after the
  *  site reads "Guten Tag Firma Ausland" otherwise. */
 async function sendDraftNotice(post: ScheduledPost, site: Site, language: string | undefined, title: string, editUrl: string): Promise<void> {
-  const [owner] = await db.select({ email: users.email, name: users.name })
-    .from(users).where(eq(users.id, post.userId)).limit(1)
-  if (!owner?.email) return
-  const name = owner.name?.trim() ?? ""
-  const sent = await sendEmail({
-    to: owner.email,
-    subject: (language ?? "").toLowerCase().startsWith("de")
-      ? `Entwurf zur Freigabe: ${title}`
-      : `Draft ready for your approval: ${title}`,
-    html: draftReadyEmail(name.toLowerCase() === site.name.trim().toLowerCase() ? null : name || null, title, editUrl, language),
-  })
-  if (sent.ok) return
-  console.error(`[SEO Autopilot] draft notice not sent for post ${post.id}: ${sent.error}`)
-  await db.update(scheduledPosts)
-    .set({ publishError: `draft notice not sent: ${sent.error ?? "unknown"}`.slice(0, 500) })
-    .where(eq(scheduledPosts.id, post.id))
+  // The draft is in WordPress by now. Nothing here may fail the row: the cron would send it a second time.
+  let error: unknown
+  let to = "адрес не прочитан"
+  try {
+    const [owner] = await db.select({ email: users.email, name: users.name })
+      .from(users).where(eq(users.id, post.userId)).limit(1)
+    if (!owner?.email) return
+    to = owner.email
+    const name = owner.name?.trim() ?? ""
+    const sent = await sendEmail({
+      to: owner.email,
+      subject: (language ?? "").toLowerCase().startsWith("de")
+        ? `Entwurf zur Freigabe: ${title}`
+        : `Draft ready for your approval: ${title}`,
+      html: draftReadyEmail(name.toLowerCase() === site.name.trim().toLowerCase() ? null : name || null, title, editUrl, language),
+    })
+    if (sent.ok) return
+    error = sent.error ?? "unknown"
+    await db.update(scheduledPosts)
+      .set({ publishError: `draft notice not sent: ${error}`.slice(0, 500) })
+      .where(eq(scheduledPosts.id, post.id))
+  } catch (err) {
+    error ??= (err instanceof Error ? err.message : String(err)).split("\n")[0]
+  }
+  console.error(`[SEO Autopilot] draft notice not sent for post ${post.id}: ${error}`)
   await sendOwner(
-    `⚠️ Письмо «черновик готов» не ушло: ${owner.email}, «${title}».\n${sent.error ?? ""}\nЧерновик в WordPress лежит: ${editUrl}`,
+    `⚠️ Письмо «черновик готов» не ушло: ${to}, «${title}».\n${error}\nЧерновик в WordPress лежит: ${editUrl}`,
   )
+}
+
+/** The "Last check" on "Your website": the receiver just took the article. That is out now, so a failed
+ *  write of this line is a warning, never a failed row: the cron would publish it a second time. */
+async function saveLastCheck(siteId: string): Promise<void> {
+  await db.update(connectedSites).set({ lastCheckedAt: new Date(), lastCheckOk: true }).where(eq(connectedSites.id, siteId))
+    .catch((e) => console.warn("[SEO Autopilot] last check not saved:", e))
 }
 
 /** Publishes one scheduled post to the user's site. Never throws: a failure is saved on the row. */
@@ -386,7 +402,7 @@ export async function publishScheduledPost(duePost: ScheduledPost, ctx: PublishC
             await sendDraftNotice(post, site, siteProfile?.language, article.title, `${normalUrl}/wp-admin/post.php?post=${wp.postId}&action=edit`)
           }
           // WordPress just took our login: the "Last check" on "Your website" says so.
-          await db.update(connectedSites).set({ lastCheckedAt: new Date(), lastCheckOk: true }).where(eq(connectedSites.id, site.id))
+          await saveLastCheck(site.id)
         } else {
           await db.update(scheduledPosts)
             .set({ status: "failed", publishError: (wp.error ?? "").slice(0, 500), publishAttempts: attempts })
@@ -586,7 +602,7 @@ export async function publishScheduledPost(duePost: ScheduledPost, ctx: PublishC
       }
       // Their server took the article: the "Last check" on "Your website" says so. A webhook site's
       // missing list card is the note below, not a broken connection.
-      await db.update(connectedSites).set({ lastCheckedAt: new Date(), lastCheckOk: true }).where(eq(connectedSites.id, site.id))
+      await saveLastCheck(site.id)
     }
 
     // Save articleData and mark as published

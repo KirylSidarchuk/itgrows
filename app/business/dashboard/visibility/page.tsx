@@ -7,6 +7,7 @@ import {
   Crawlers,
   FirstLook,
   GuaranteeFootnote,
+  NoPlanTalk,
   History,
   NamedInstead,
   OpeningSite,
@@ -38,7 +39,8 @@ import { PendingReward } from "../launch-wheel"
 // would be refused comes with the list (/api/geo/report reportLimit, lib/geo-free-report.ts): the hint
 // under "Add a site" shows only then, and an account without a site that was refused sees the
 // contact-us state again after a reload, not the empty form. The report ends with "Your plan": what we
-// do, never how to do it yourself; "Start the plan" and the walkthrough.
+// do, never how to do it yourself; "Start the plan" and the walkthrough. An account on terms we arranged
+// by hand (/api/geo/report noOffer) has neither "Add a site" nor, on another site it opens, "Your plan".
 //
 // A new account lands here straight from the sign-up: while the site it came with is being followed, the
 // first screen says "Opening your answers for …" (not an empty address form). If that follow fails, the
@@ -97,6 +99,8 @@ export default function VisibilityPage() {
   const [reportLimit, setReportLimit] = useState<string | null>(null)
   // The account's plan prices, for the end of the report (lib/geo-price-test.ts); null: no price named.
   const [price, setPrice] = useState<GeoPrices | null>(null)
+  // An account on terms we arranged by hand: no price and no offer, on any site (/api/geo/report noOffer).
+  const [noOffer, setNoOffer] = useState(false)
   // The site the visitor came with (?site= or the quick check's handoff), until it is followed.
   const [opening, setOpening] = useState<string | null>(null)
   const [audits, setAudits] = useState<Record<string, Audit | "failed">>({})
@@ -115,10 +119,11 @@ export default function VisibilityPage() {
     try {
       const r = await fetch("/api/geo/report", { cache: "no-store" })
       if (!r.ok) throw new Error(String(r.status))
-      const j = (await r.json()) as { sites: SiteReport[]; reportLimit?: string | null; price?: GeoPrices | null }
+      const j = (await r.json()) as { sites: SiteReport[]; reportLimit?: string | null; price?: GeoPrices | null; noOffer?: boolean }
       setSites(j.sites)
       setReportLimit(j.reportLimit ?? null)
       setPrice(j.price ?? null)
+      setNoOffer(j.noOffer === true)
       setLoadFailed(false)
       listOk.current = true
       if (awaiting.current) {
@@ -348,7 +353,7 @@ export default function VisibilityPage() {
                   {s.domain}
                 </button>
               ))}
-            {sites.length < 3 && (
+            {sites.length < 3 && !noOffer && (
               <button
                 type="button"
                 onClick={() => (opening && !adding ? checkOther() : setShowAdd((v) => !v))}
@@ -387,10 +392,10 @@ export default function VisibilityPage() {
           />
         )
       )}
-      {!site && !opening && <PendingReward />}
+      {!site && !opening && !noOffer && <PendingReward />}
 
       {site && (
-        <>
+        <NoPlanTalk.Provider value={noOffer && !client}>
           {site.pending && <Banner pending={site.pending} />}
 
           {site.latest ? (
@@ -405,7 +410,7 @@ export default function VisibilityPage() {
               )}
               <History site={site} openId={opened} onOpen={showRun} />
               <Crawlers audit={audit} />
-              <YourPlan site={site} steps={planSteps(site, audit, client)} ready mode={client ? "client" : "offer"} prices={price} />
+              {(client || !noOffer) && <YourPlan site={site} steps={planSteps(site, audit, client)} ready mode={client ? "client" : "offer"} prices={price} />}
             </>
           ) : (
             <>
@@ -436,15 +441,15 @@ export default function VisibilityPage() {
               )}
               <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
                 <Crawlers audit={audit} />
-                <YourPlan site={site} steps={[]} ready={false} mode={client ? "client" : "offer"} prices={price} />
+                {(client || !noOffer) && <YourPlan site={site} steps={[]} ready={false} mode={client ? "client" : "offer"} prices={price} />}
               </div>
               <Pending title="Sites the assistants rely on" />
             </>
           )}
-        </>
+        </NoPlanTalk.Provider>
       )}
       {/* The growth guarantee's footnote, the last line of the page, wherever YourPlan above shows its line. */}
-      {site?.latest && !client && <GuaranteeFootnote />}
+      {site?.latest && !client && !noOffer && <GuaranteeFootnote />}
     </div>
   )
 }

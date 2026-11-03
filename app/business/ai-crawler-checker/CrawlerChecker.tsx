@@ -19,7 +19,7 @@ interface Result {
   unreachable?: boolean
   robots: { found: boolean; bots: { bot: string; verdict: string }[] }
   liveFetch: { bot: string; status: number; blocked: boolean }[]
-  surface: { urlCount: number; sitemapKind: "none" | "urlset" | "index"; isFloor: boolean }
+  surface: { urlCount: number; sitemapKind: "none" | "urlset" | "index"; isFloor: boolean; read?: boolean }
   llmsTxt: boolean
   pageRead?: boolean
   serverRenderedWords: number
@@ -148,7 +148,7 @@ export default function CrawlerChecker() {
             <dt className="text-slate-500">robots.txt</dt>
             <dd className="text-right font-semibold">{r.robots.found ? m.found : m.none}</dd>
             <dt className="text-slate-500">{m.sitemapPages}</dt>
-            <dd className="text-right font-semibold">{r.surface.sitemapKind === "none" ? m.noSitemap : `${r.surface.isFloor ? "≥" : ""}${formatNumber(locale, r.surface.urlCount)}`}</dd>
+            <dd className="text-right font-semibold">{r.surface.read === false ? "—" : r.surface.sitemapKind === "none" ? m.noSitemap : `${r.surface.isFloor ? "≥" : ""}${formatNumber(locale, r.surface.urlCount)}`}</dd>
             <dt className="text-slate-500">{m.words}</dt>
             <dd className="text-right font-semibold">{r.pageRead === false ? "—" : formatNumber(locale, r.serverRenderedWords)}</dd>
             <dt className="text-slate-500">llms.txt</dt>

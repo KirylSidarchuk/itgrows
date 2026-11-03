@@ -22,7 +22,7 @@ interface Audit {
   robots: { found: boolean; bots: { bot: string; verdict: Verdict }[] }
   liveFetch: { bot: string; status: number; blocked: boolean }[]
   humanStatus: number
-  surface: { urlCount: number; sitemapKind: "none" | "urlset" | "index"; isFloor: boolean; answerPages: number; partial: boolean }
+  surface: { urlCount: number; sitemapKind: "none" | "urlset" | "index"; isFloor: boolean; answerPages: number; partial: boolean; read?: boolean }
   llmsTxt: boolean
   structuredData: { count: number; types: string[] }
   serverRenderedWords: number
@@ -479,6 +479,8 @@ export default function AuditForm({ note }: { note?: string } = {}) {
         ]
       : []
   const answers = data && !data.unreachable ? (data.surface?.answerPages ?? 0) : 0
+  // A sitemap that did not answer: the counts say nothing, so none is claimed.
+  const mapsRead = !data || data.unreachable || data.surface?.read !== false
   const showEmailCapture = aiFailed
 
   return (
@@ -614,9 +616,11 @@ export default function AuditForm({ note }: { note?: string } = {}) {
             <div className="font-extrabold text-base sm:text-lg leading-snug">
               {blocked.length
                 ? m.turningAway(blocked.join(", "))
-                : answers === 0
-                  ? m.nothingToQuote
-                  : m.canBeQuoted(answers, data.surface.urlCount)}
+                : !mapsRead
+                  ? m.sitemapNotRead
+                  : answers === 0
+                    ? m.nothingToQuote
+                    : m.canBeQuoted(answers, data.surface.urlCount)}
             </div>
             <div className="text-xs text-slate-500 mt-1">{data.site}</div>
           </div>
@@ -625,14 +629,13 @@ export default function AuditForm({ note }: { note?: string } = {}) {
           <div className="grid grid-cols-2 gap-2.5 p-4">
             <div className="bg-[#f8f7f6] rounded-xl p-4 text-center">
               <div className="text-3xl sm:text-4xl font-extrabold tracking-tight text-[#1b1916]">
-                {data.surface.isFloor ? "≥" : ""}
-                {formatNumber(locale, data.surface.urlCount)}
+                {!mapsRead ? "—" : `${data.surface.isFloor ? "≥" : ""}${formatNumber(locale, data.surface.urlCount)}`}
               </div>
               <div className="text-[10px] sm:text-xs text-slate-600 mt-1 leading-tight">{m.pagesReach(data.surface.partial)}</div>
             </div>
-            <div className={`rounded-xl p-4 text-center ${answers === 0 ? "bg-red-50" : "bg-amber-50"}`}>
-              <div className={`text-3xl sm:text-4xl font-extrabold tracking-tight ${answers === 0 ? "text-red-600" : "text-amber-600"}`}>
-                {formatNumber(locale, answers)}
+            <div className={`rounded-xl p-4 text-center ${!mapsRead ? "bg-[#f8f7f6]" : answers === 0 ? "bg-red-50" : "bg-amber-50"}`}>
+              <div className={`text-3xl sm:text-4xl font-extrabold tracking-tight ${!mapsRead ? "text-[#1b1916]" : answers === 0 ? "text-red-600" : "text-amber-600"}`}>
+                {mapsRead ? formatNumber(locale, answers) : "—"}
               </div>
               <div className="text-[10px] sm:text-xs text-slate-600 mt-1 leading-tight">{m.answerAQuestion}</div>
             </div>
@@ -679,7 +682,7 @@ export default function AuditForm({ note }: { note?: string } = {}) {
           {bOpen && (
             <>
               <div className="px-5 pb-4">
-                <p className="text-sm text-slate-700 leading-relaxed">{m.answerPagesExplain(answers)}</p>
+                {mapsRead && <p className="text-sm text-slate-700 leading-relaxed">{m.answerPagesExplain(answers)}</p>}
               </div>
 
               {/* Per-bot access */}

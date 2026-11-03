@@ -287,6 +287,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ site: target.hostname, unreachable: true })
   }
 
+  // A sitemap that answered with anything but its content (a host's 429, a 500, a timeout) was not read,
+  // and that is not the same as having none, or as being empty. 404 and 410 do say there is none.
+  const notRead = (status: number) => status !== 200 && status !== 404 && status !== 410
+  const readMap = async (url: string) => {
+    const r = await grabFile(url, 8000, SITEMAP_BYTES)
+    return { text: r.status === 200 ? r.text : "", notRead: notRead(r.status) }
+  }
+  let mapsNotRead = notRead(sitemapRes.status)
+
   // Count URLs. A sitemap index points at more sitemaps, so follow one level to avoid reporting
   // "3 pages" for a site that has thirty thousand.
   let urlCount = (sitemapRes.text.match(/<loc>/g) ?? []).length
@@ -300,43 +309,56 @@ export async function POST(req: NextRequest) {
     if (sitemapKind === "index") {
       openedMaps.push(...locs)
       const children = pickChildren(locs, 6)
-      partial = children.length < locs.length
-      const bodies = await Promise.all(children.map(async (c) => (await grabFile(c, 8000, SITEMAP_BYTES)).text))
+      const bodies = await Promise.all(children.map(readMap))
+      partial = children.length < locs.length || bodies.some((b) => !b.text)
       // Only the sitemaps we opened are counted, so this is a floor, never an estimate. The UI
       // renders it with a "≥" for exactly that reason.
-      urlCount = bodies.reduce((a, b) => a + (b.match(/<loc>/g) ?? []).length, 0)
-      locs = bodies.flatMap(locsIn)
+      urlCount = bodies.reduce((a, b) => a + (b.text.match(/<loc>/g) ?? []).length, 0)
+      locs = bodies.flatMap((b) => locsIn(b.text))
+      // An index that names maps with no address in any of them: those maps were not read.
+      if (!locs.length) mapsNotRead = true
     }
   }
 
   // Sitemaps declared in robots.txt besides /sitemap.xml. WordPress plugins name them page-sitemap.xml,
   // post-sitemap.xml and so on, and many sites keep their articles in a second one (magiscan.app: the
   // site in /sitemap.xml, the blog in /blog-sitemap.xml). Read them as well, not only when /sitemap.xml
-  // is missing, or the articles never count and the site reads as having nothing to quote.
-  if (robotsRes.status === 200) {
-    const key = (u: string) => u.trim().replace(/^https?:\/\/(www\.)?/i, "").replace(/\/+$/, "").toLowerCase()
-    const opened = new Set(openedMaps.map(key))
-    const declared = sitemapsIn(robotsRes.text).filter((u) => !opened.has(key(u))).slice(0, 6)
-    if (declared.length) {
-      const bodies = await Promise.all(declared.map(async (u) => (await grabFile(u, 8000, SITEMAP_BYTES)).text))
-      const firstLevel = bodies.flatMap(locsIn)
-      const nested = firstLevel.filter((u) => /\.xml($|\?)/i.test(u) && !opened.has(key(u)))
-      let found = firstLevel.filter((u) => !/\.xml($|\?)/i.test(u))
-      if (nested.length) {
-        const picked = pickChildren(nested, 6)
-        if (picked.length < nested.length) partial = true
-        const more = await Promise.all(picked.map(async (c) => (await grabFile(c, 8000, SITEMAP_BYTES)).text))
-        found = [...found, ...more.flatMap(locsIn)]
-      }
-      if (found.length) {
-        // One address listed in two sitemaps is still one page.
-        const before = new Set(locs.filter((u) => !/\.xml($|\?)/i.test(u)))
-        const merged = [...new Set([...before, ...found])]
-        // A partly opened index stays a floor and gains only the new pages; otherwise the merged list is the count.
-        urlCount = partial ? urlCount + (merged.length - before.size) : merged.length
-        locs = merged
-        if (sitemapKind === "none") sitemapKind = nested.length ? "index" : "urlset"
-      }
+  // is missing, or the articles never count and the site reads as having nothing to quote. The usual
+  // WordPress addresses are read as well: /sitemap.xml and robots.txt can name an old static map while the
+  // plugin's index holds the articles (ortho-gronau.de: 7 pages named, the articles in Rank Math's index).
+  const key = (u: string) => u.trim().replace(/^https?:\/\/(www\.)?/i, "").replace(/\/+$/, "").toLowerCase()
+  const opened = new Set(openedMaps.map(key))
+  const isNew = (u: string) => {
+    const k = key(u)
+    if (opened.has(k)) return false
+    opened.add(k)
+    return true
+  }
+  const declared = (robotsRes.status === 200 ? sitemapsIn(robotsRes.text) : []).filter(isNew).slice(0, 6)
+  const usual = [`${origin}/sitemap_index.xml`, `${origin}/wp-sitemap.xml`].filter(isNew)
+  if (declared.length || usual.length) {
+    const bodies = await Promise.all([...declared, ...usual].map(readMap))
+    // A map the site names did not answer. Only a guess of ours, the usual two, says nothing by failing.
+    if (bodies.slice(0, declared.length).some((b) => b.notRead)) mapsNotRead = true
+    const firstLevel = bodies.flatMap((b) => locsIn(b.text))
+    const nested = firstLevel.filter((u) => /\.xml($|\?)/i.test(u) && isNew(u))
+    let found = firstLevel.filter((u) => !/\.xml($|\?)/i.test(u))
+    if (nested.length) {
+      const picked = pickChildren(nested, 6)
+      const more = await Promise.all(picked.map(readMap))
+      if (picked.length < nested.length || more.some((b) => !b.text)) partial = true
+      const inMore = more.flatMap((b) => locsIn(b.text))
+      if (!inMore.length) mapsNotRead = true
+      found = [...found, ...inMore]
+    }
+    if (found.length) {
+      // One address listed in two sitemaps is still one page.
+      const before = new Set(locs.filter((u) => !/\.xml($|\?)/i.test(u)))
+      const merged = [...new Set([...before, ...found])]
+      // A partly opened index stays a floor and gains only the new pages; otherwise the merged list is the count.
+      urlCount = partial ? urlCount + (merged.length - before.size) : merged.length
+      locs = merged
+      if (sitemapKind === "none") sitemapKind = nested.length ? "index" : "urlset"
     }
   }
 
@@ -411,7 +433,8 @@ export async function POST(req: NextRequest) {
       ...(a.hostFilter ? { hostFilter: true } : {}),
     })),
     humanStatus: homeHuman.status,
-    surface: { urlCount, sitemapKind, isFloor: partial, answerPages, partial },
+    // read false: a sitemap did not answer and no page was found another way, so the counts say nothing.
+    surface: { urlCount, sitemapKind, isFloor: partial, answerPages, partial, read: !mapsNotRead || locs.some((u) => !/\.xml($|\?)/i.test(u)) },
     rival,
     llmsTxt: llmsStatus === 200,
     pathBlocks,

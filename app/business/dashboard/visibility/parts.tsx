@@ -16,7 +16,7 @@
 // stands (site.work): the article's state, the launch items behind a fix, or what we set by hand;
 // "Planned" until there is something to say. Never why, never our notes, never a forecast.
 
-import { useEffect, useState } from "react"
+import { createContext, useContext, useEffect, useState } from "react"
 import { ENGINE_ICONS } from "../../engine-icons"
 import { GEO_PRICES, YEAR_DISCOUNT, type GeoInterval, type GeoPrices } from "@/lib/geo-pricing"
 import { listQuestions } from "@/lib/geo-list-question"
@@ -168,13 +168,18 @@ export interface Audit {
   /** hostFilter: the answer came from the host's own filter (app/api/business/audit/route.ts): it says
    *  nothing about the crawler, so it is not `blocked`. */
   liveFetch: { bot: string; status: number; blocked: boolean; hostFilter?: boolean }[]
-  surface: { urlCount: number; sitemapKind: "none" | "urlset" | "index"; isFloor: boolean; answerPages: number; partial: boolean }
+  /** read false: a sitemap did not answer and no page was found another way, so the counts say nothing. */
+  surface: { urlCount: number; sitemapKind: "none" | "urlset" | "index"; isFloor: boolean; answerPages: number; partial: boolean; read?: boolean }
   llmsTxt: boolean
   /** False when the check got no page to read: the words and the structured data below say nothing then. */
   pageRead?: boolean
   structuredData: { count: number; types: string[] }
   serverRenderedWords: number
 }
+
+/** True on a site that is not theirs for an account on terms we arranged by hand (/api/geo/report noOffer):
+ *  the report says nothing about what comes with the plan. */
+export const NoPlanTalk = createContext(false)
 
 export const ENGINES = ["chatgpt", "claude", "gemini", "perplexity"]
 export const LABEL: Record<string, string> = { chatgpt: "ChatGPT", claude: "Claude", gemini: "Gemini", perplexity: "Perplexity" }
@@ -314,6 +319,7 @@ function Tile({ engine, named, of, linked, asking }: { engine: string; named?: n
 }
 
 export function Hero({ report }: { report: Report }) {
+  const noPlanTalk = useContext(NoPlanTalk)
   const l = report
   const s = l.summary
   const engines = ENGINES.filter((e) => s.engines[e])
@@ -351,7 +357,7 @@ export function Hero({ report }: { report: Report }) {
           </figcaption>
         </figure>
       )}
-      {l.kind !== "weekly" && (
+      {l.kind !== "weekly" && !noPlanTalk && (
         <p className="text-xs text-slate-500 mt-3">On the plan, every check (once every two weeks) is compared with this starting point.</p>
       )}
     </section>
@@ -924,13 +930,24 @@ export function Crawlers({ audit }: { audit: Audit | "failed" | undefined }) {
             )}
           </ul>
           <dl className="grid grid-cols-2 gap-x-4 gap-y-2.5 text-sm">
-            <dt className="text-slate-500">Pages in your sitemap</dt>
-            <dd className="font-semibold text-right tabular-nums">
-              {audit.surface.sitemapKind === "none" ? "No sitemap" : `${audit.surface.isFloor ? "≥" : ""}${audit.surface.urlCount.toLocaleString()}`}
-            </dd>
-            <dt className="text-slate-500">Pages that answer a question</dt>
-            {/* Recognised from the address alone, so none recognised is not none there. */}
-            <dd className="font-semibold text-right tabular-nums">{audit.surface.answerPages ? audit.surface.answerPages.toLocaleString() : "None by their address"}</dd>
+            {audit.surface.read === false ? (
+              <>
+                <dt className="text-slate-500">Pages in your sitemap</dt>
+                <dd className="font-semibold text-right text-slate-500">Not read in this check</dd>
+                <dt className="text-slate-500">Pages that answer a question</dt>
+                <dd className="font-semibold text-right text-slate-500">Not read in this check</dd>
+              </>
+            ) : (
+              <>
+                <dt className="text-slate-500">Pages in your sitemap</dt>
+                <dd className="font-semibold text-right tabular-nums">
+                  {audit.surface.sitemapKind === "none" ? "No sitemap" : `${audit.surface.isFloor ? "≥" : ""}${audit.surface.urlCount.toLocaleString()}`}
+                </dd>
+                <dt className="text-slate-500">Pages that answer a question</dt>
+                {/* Recognised from the address alone, so none recognised is not none there. */}
+                <dd className="font-semibold text-right tabular-nums">{audit.surface.answerPages ? audit.surface.answerPages.toLocaleString() : "None by their address"}</dd>
+              </>
+            )}
             {audit.pageRead === false ? (
               <>
                 <dt className="text-slate-500">Words readable without JavaScript</dt>
@@ -1089,7 +1106,7 @@ export function planSteps(site: SiteReport, audit: Audit | "failed" | undefined,
         you: accessOpen ? "A word to your developer, or access to your site builder." : DEVELOPER_YOU,
       }
 
-    if (ok.surface.sitemapKind === "none")
+    if (ok.surface.sitemapKind === "none" && ok.surface.read !== false)
       tech.sitemap = {
         id: "sitemap",
         kind: "fix",
@@ -1851,6 +1868,7 @@ export function WorkResults({ results }: { results: WorkResult[] }) {
 }
 
 export function History({ site, openId, onOpen }: { site: SiteReport; openId: string | null; onOpen: (id: string) => void }) {
+  const noPlanTalk = useContext(NoPlanTalk)
   const h = site.history
   const latest = h[h.length - 1]
   if (!latest) return null
@@ -1937,7 +1955,7 @@ export function History({ site, openId, onOpen }: { site: SiteReport; openId: st
           )
         })}
       </ul>
-      {h.length === 1 && latest.kind === "baseline" && (
+      {h.length === 1 && latest.kind === "baseline" && !noPlanTalk && (
         <p className="text-xs text-slate-500 mt-3">
           {onPlan(site) ? "The first regular check comes about two weeks after day 0." : "A check every two weeks comes with the plan."}
         </p>

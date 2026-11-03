@@ -25,7 +25,7 @@ interface Audit {
   unreachable?: boolean
   robots?: { bots: { bot: string; verdict: string }[] }
   liveFetch?: { bot: string; blocked: boolean }[]
-  surface?: { urlCount: number; isFloor: boolean }
+  surface?: { urlCount: number; isFloor: boolean; read?: boolean }
   llmsTxt?: boolean
   pageRead?: boolean
   structuredData?: { count: number }
@@ -123,7 +123,7 @@ function findings(a: Audit): string[] {
   const n = a.surface?.urlCount ?? 0
   if (n > 0) {
     out.push(`You have ${a.surface?.isFloor ? "at least " : ""}<strong>${n.toLocaleString()}</strong> pages an engine can find from your sitemap.`)
-  } else {
+  } else if (a.surface?.read !== false) {
     out.push(`We could not find a sitemap, so the engines have to discover your pages by following links.`)
   }
 
