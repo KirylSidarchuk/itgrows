@@ -821,7 +821,8 @@ export default function ArticlesPage() {
         <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#1b1916]">Your articles</h1>
         <p className="text-sm text-slate-600 mt-1">
           {single ? `What we have planned for ${bare(single.url)} and what is already out.` : "What we have planned for your site and what is already out."}
-          {client && !allDraft && " You see every article 2 days before it goes live, and can edit or stop it."}
+          {/* With no article yet the list does not know how the site takes them, so it promises nothing. */}
+          {client && groups.length > 0 && !allDraft && " You see every article 2 days before it goes live, and can edit or stop it."}
         </p>
       </header>
 
