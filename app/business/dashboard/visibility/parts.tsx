@@ -91,6 +91,8 @@ export interface SiteReport {
   followedAt: string
   /** A client we set up by hand (geo_clients) who owns this domain: read like a site on the plan. */
   client?: boolean
+  /** The plan is billed by invoice: no Stripe subscription or card behind it (lib/geo-report.ts). */
+  invoiced?: boolean
   planInterval?: GeoInterval | null
   pending: {
     kind: string
@@ -121,6 +123,8 @@ export interface SiteReport {
 export interface PlanWork {
   articles: Record<string, PlanArticle>
   launch: Record<string, LaunchState>
+  /** The site's articles reach its owner's WordPress as drafts: they go live when the owner publishes them. */
+  draft?: boolean
   /** The latest weekly check, per question: named by how many of the assistants it could check. */
   week: { finishedAt: string; samples: number; named: Record<string, { named: number; of: number }> } | null
   day0: { samples: number; named: Record<string, { named: number; of: number }> }
@@ -161,9 +165,13 @@ export interface Audit {
   site: string
   unreachable?: boolean
   robots: { found: boolean; bots: { bot: string; verdict: "blocked" | "allowed" | "wildcard" | "none" }[] }
-  liveFetch: { bot: string; status: number; blocked: boolean }[]
+  /** hostFilter: the answer came from the host's own filter (app/api/business/audit/route.ts): it says
+   *  nothing about the crawler, so it is not `blocked`. */
+  liveFetch: { bot: string; status: number; blocked: boolean; hostFilter?: boolean }[]
   surface: { urlCount: number; sitemapKind: "none" | "urlset" | "index"; isFloor: boolean; answerPages: number; partial: boolean }
   llmsTxt: boolean
+  /** False when the check got no page to read: the words and the structured data below say nothing then. */
+  pageRead?: boolean
   structuredData: { count: number; types: string[] }
   serverRenderedWords: number
 }
@@ -907,6 +915,13 @@ export function Crawlers({ audit }: { audit: Audit | "failed" | undefined }) {
                 </li>
               )
             })}
+            {audit.liveFetch.some((l) => l.hostFilter) && (
+              <li className="px-1 text-xs text-slate-500 leading-relaxed">
+                Your host&apos;s filter answered our test visits under these crawlers&apos; names with HTTP{" "}
+                {audit.liveFetch.find((l) => l.hostFilter)?.status}. That shows how it treats our test, not what the real crawlers get, so it
+                isn&apos;t counted as a block.
+              </li>
+            )}
           </ul>
           <dl className="grid grid-cols-2 gap-x-4 gap-y-2.5 text-sm">
             <dt className="text-slate-500">Pages in your sitemap</dt>
@@ -914,13 +929,25 @@ export function Crawlers({ audit }: { audit: Audit | "failed" | undefined }) {
               {audit.surface.sitemapKind === "none" ? "No sitemap" : `${audit.surface.isFloor ? "≥" : ""}${audit.surface.urlCount.toLocaleString()}`}
             </dd>
             <dt className="text-slate-500">Pages that answer a question</dt>
-            <dd className="font-semibold text-right tabular-nums">{audit.surface.answerPages.toLocaleString()}</dd>
-            <dt className="text-slate-500">Words readable without JavaScript</dt>
-            <dd className={`font-semibold text-right tabular-nums ${audit.serverRenderedWords < 200 ? "text-red-600" : ""}`}>
-              {audit.serverRenderedWords.toLocaleString()}
-            </dd>
-            <dt className="text-slate-500">Structured data</dt>
-            <dd className="font-semibold text-right">{audit.structuredData.count ? audit.structuredData.types.slice(0, 2).join(", ") || "Yes" : "None"}</dd>
+            {/* Recognised from the address alone, so none recognised is not none there. */}
+            <dd className="font-semibold text-right tabular-nums">{audit.surface.answerPages ? audit.surface.answerPages.toLocaleString() : "None by their address"}</dd>
+            {audit.pageRead === false ? (
+              <>
+                <dt className="text-slate-500">Words readable without JavaScript</dt>
+                <dd className="font-semibold text-right text-slate-500">Not read in this check</dd>
+                <dt className="text-slate-500">Structured data</dt>
+                <dd className="font-semibold text-right text-slate-500">Not read in this check</dd>
+              </>
+            ) : (
+              <>
+                <dt className="text-slate-500">Words readable without JavaScript</dt>
+                <dd className={`font-semibold text-right tabular-nums ${audit.serverRenderedWords < 200 ? "text-red-600" : ""}`}>
+                  {audit.serverRenderedWords.toLocaleString()}
+                </dd>
+                <dt className="text-slate-500">Structured data</dt>
+                <dd className="font-semibold text-right">{audit.structuredData.count ? audit.structuredData.types.slice(0, 2).join(", ") || "Yes" : "None"}</dd>
+              </>
+            )}
             <dt className="text-slate-500">llms.txt (optional)</dt>
             <dd className="font-semibold text-right">{audit.llmsTxt ? "Yes" : "No"}</dd>
           </dl>
@@ -970,8 +997,22 @@ function citing(rows: Row[], domain: string) {
 }
 
 const ARTICLE_YOU = "Nothing to do. You see every article 2 days before it goes live, and can edit or stop it."
+/** A WordPress site that takes drafts (site.work.draft): nothing goes live without its owner. */
+const DRAFT_ARTICLE_YOU = "Each article reaches your WordPress as a draft on its date. It goes live when you publish it."
 const HOSTING_YOU = "Access to your hosting or CDN settings, or a word to your developer."
 const ADMIN_YOU = "Access to your site's admin, or a word to your developer."
+const DEVELOPER_YOU = "A word to your developer."
+
+/** "We research and write ... and publish ...", as a site's articles really reach it. */
+const articleWe = (site: SiteReport) =>
+  site.work?.draft ? "We research and write the article and send it to your WordPress as a draft." : "We research and write the article, and publish it on your site."
+
+// The app stores: nothing there is "claimed". A listing is the app owner's own; a business without an app
+// has none, so for it the store is no place at all (its next directory or marketplace is).
+const STORE_HOST = new Set(["apps.apple.com", "itunes.apple.com", "play.google.com", "apps.microsoft.com", "chromewebstore.google.com"])
+export const isStoreHost = (domain: string) => STORE_HOST.has(domain)
+export const STORE_YOU = "Nothing to claim, the listing is yours: you put our text in from your own store account when it suits you."
+export const hasApp = (site: SiteReport) => /\b(apps?|iphone|ipad|android|ios)\b/i.test(site.offering ?? "")
 
 /** A place step's evidence: where the assistants cited a site, and whether they named you there. A
  *  client's step stays from day 0 on, so it says when that was seen, in the past tense, as the Article
@@ -991,6 +1032,16 @@ export function planSteps(site: SiteReport, audit: Audit | "failed" | undefined,
   const ok = audit && audit !== "failed" ? audit : null
   const crawlers: Step[] = []
   const tech: { ssr?: Step; sitemap?: Step; schema?: Step; llms?: Step } = {}
+  // A client gives us access once, through the list on "Your website" (launch item "access"). A step asks
+  // for it only while that list does: with access in order nothing is needed from them, and where it was
+  // never asked for or was decided against (a hosted blog, a practice that works through its webmaster)
+  // the most we ever need is their developer.
+  const work = client ? site.work : null
+  const access = work?.launch.access?.status
+  const accessOpen = !work || (access !== undefined && access !== "ok" && access !== "fixed")
+  const accessDone = access === "ok" || access === "fixed"
+  const hostingYou = accessOpen ? HOSTING_YOU : DEVELOPER_YOU
+  const adminYou = accessOpen ? ADMIN_YOU : accessDone ? undefined : DEVELOPER_YOU
 
   if (ok?.unreachable) {
     crawlers.push({
@@ -1001,7 +1052,7 @@ export function planSteps(site: SiteReport, audit: Audit | "failed" | undefined,
       we: "We find what turns the crawlers away and fix it, with you or your developer.",
       why: "Your site gave our check no answer at all, neither as a browser nor as GPTBot, ClaudeBot or PerplexityBot. That is usually bot protection (or the site was down at that moment), and bot protection stops AI crawlers the same way.",
       change: "The assistants' crawlers can read your pages again; the crawler check on this page shows it.",
-      you: HOSTING_YOU,
+      you: hostingYou,
     })
   } else if (ok) {
     const inRobots = ok.robots.bots.filter((b) => b.verdict === "blocked").map((b) => b.bot)
@@ -1021,11 +1072,12 @@ export function planSteps(site: SiteReport, audit: Audit | "failed" | undefined,
         we: "We find the rule that turns them away and fix it, with you or your developer.",
         why: `${why.join("; ")}. While they are turned away, these assistants can't read your pages to quote them.`,
         change: `The crawler check on this page shows ${andList(blocked)} as allowed, so these assistants can read your pages.`,
-        you: HOSTING_YOU,
+        you: hostingYou,
       })
     }
 
-    if (ok.serverRenderedWords < 200)
+    // A page the check could not read says nothing about the words on the site, or its markup.
+    if (ok.pageRead !== false && ok.serverRenderedWords < 200)
       tech.ssr = {
         id: "ssr",
         kind: "fix",
@@ -1034,7 +1086,7 @@ export function planSteps(site: SiteReport, audit: Audit | "failed" | undefined,
         we: "We work out with your developer how to serve the text in the page's HTML itself.",
         why: `Only ${ok.serverRenderedWords} words of the page we sampled reach crawlers in the raw HTML. The rest needs JavaScript, which AI crawlers often don't run.`,
         change: "Crawlers that don't run JavaScript get your text. The crawler check on this page should count well over 200 words.",
-        you: "A word to your developer, or access to your site builder.",
+        you: accessOpen ? "A word to your developer, or access to your site builder." : DEVELOPER_YOU,
       }
 
     if (ok.surface.sitemapKind === "none")
@@ -1046,10 +1098,10 @@ export function planSteps(site: SiteReport, audit: Audit | "failed" | undefined,
         we: "We set up the sitemap and submit it to Google and Bing.",
         why: "It is one of the main ways crawlers find your pages, and we found none at /sitemap.xml or in your robots.txt.",
         change: "Crawlers and the search indexes the assistants use find all your pages; the crawler check on this page counts them.",
-        you: "Access to your site's admin, and to Google Search Console and Bing Webmaster Tools.",
+        you: accessOpen ? "Access to your site's admin, and to Google Search Console and Bing Webmaster Tools." : adminYou,
       }
 
-    if (ok.structuredData.count === 0)
+    if (ok.pageRead !== false && ok.structuredData.count === 0)
       tech.schema = {
         id: "schema",
         kind: "fix",
@@ -1058,7 +1110,7 @@ export function planSteps(site: SiteReport, audit: Audit | "failed" | undefined,
         we: "We write the markup and add it to your pages.",
         why: "We found no structured data (JSON-LD) on the page we sampled. It helps at the margins: it states who you are, where, and what you offer in a form machines read without guessing.",
         change: "Machines read who you are and what you offer without guessing; the crawler check on this page lists the markup it finds.",
-        you: ADMIN_YOU,
+        you: adminYou,
       }
 
     if (!ok.llmsTxt)
@@ -1070,7 +1122,7 @@ export function planSteps(site: SiteReport, audit: Audit | "failed" | undefined,
         we: "We write the file and put it on your site.",
         why: "We found none at /llms.txt. It is a proposed convention, not a standard, and there is little evidence the assistants rely on it yet. Cheap to add, so it comes last.",
         change: "The crawler check on this page shows llms.txt as Yes.",
-        you: ADMIN_YOU,
+        you: adminYou,
         optional: true,
       }
   }
@@ -1087,7 +1139,8 @@ export function planSteps(site: SiteReport, audit: Audit | "failed" | undefined,
       const checked = ENGINES.filter((e) => (eng[e]?.samples ?? 0) > 0)
       if (!checked.length || checked.some((e) => eng[e].named > 0)) return null
       const others = checked.filter((e) => (eng[e].named_instead ?? []).length > 0)
-      if (!others.length) return null
+      // No one named for it: no gap, unless its article is already on its way, which the step tracks.
+      if (!others.length && !work?.articles[r.q]) return null
       const tally = new Map<string, { name: string; n: number }>()
       for (const e of others)
         for (const name of new Set(eng[e].named_instead)) {
@@ -1111,11 +1164,11 @@ export function planSteps(site: SiteReport, audit: Audit | "failed" | undefined,
       kind: "write",
       tag: "Article",
       title: `A page that answers “${g.q}”`,
-      we: "We research and write the article, and publish it on your site.",
+      we: articleWe(site),
       // A client's step stays from day 0 on, so its evidence says when it was seen.
-      why: `${client ? `On day 0, ${notYou}` : notYou[0].toUpperCase() + notYou.slice(1)} for it. ${andList(g.others.map((e) => LABEL[e]))} named ${andList(g.names.length > 3 ? [...top, "others"] : top)} instead.`,
+      why: `${client ? `On day 0, ${notYou}` : notYou[0].toUpperCase() + notYou.slice(1)} for it.${g.others.length ? ` ${andList(g.others.map((e) => LABEL[e]))} named ${andList(g.names.length > 3 ? [...top, "others"] : top)} instead.` : ""}`,
       change: "The assistants get a page of yours that answers this question directly. The check every two weeks shows whether their answers start naming you.",
-      you: ARTICLE_YOU,
+      you: site.work?.draft ? DRAFT_ARTICLE_YOU : ARTICLE_YOU,
     }
   })
 
@@ -1127,10 +1180,11 @@ export function planSteps(site: SiteReport, audit: Audit | "failed" | undefined,
   const rivals: Step[] = []
   const media: Step[] = []
   if (s?.sources?.length) {
-    const dir = s.sources.find((x) => x.type === "directory" || x.type === "marketplace")
+    const dir = s.sources.find((x) => (x.type === "directory" || x.type === "marketplace") && (!isStoreHost(x.domain) || hasApp(site)))
     if (dir) {
       const c = citing(l.rows, dir.domain)
       const market = dir.type === "marketplace"
+      const store = isStoreHost(dir.domain)
       const what = market ? "listing" : "profile"
       listings.push({
         id: `dir:${dir.domain}`,
@@ -1145,7 +1199,7 @@ export function planSteps(site: SiteReport, audit: Audit | "failed" | undefined,
           c.n ? (c.named ? `${c.named} of those ${c.n}` : "none of them") : null,
         ),
         change: `The answers that quote ${dir.domain} find a complete, current ${what} of yours there.`,
-        you: `Signing in to ${dir.domain} to claim the ${what} (it has to be your own login), and approving the text.`,
+        you: store ? STORE_YOU : `Signing in to ${dir.domain} to claim the ${what} (it has to be your own login), and approving the text.`,
       })
     }
     const rival = s.sources.find((x) => x.type === "competitor")
@@ -1163,12 +1217,12 @@ export function planSteps(site: SiteReport, audit: Audit | "failed" | undefined,
           kind: "write",
           tag: "Article",
           title: `A fuller answer than ${rival.domain} to “${best.q}”`,
-          we: "We research and write the article, and publish it on your site.",
+          we: articleWe(site),
           why: client
             ? `On day 0, ${rival.domain}, a competitor's site, was cited for it in ${answers(best.n)}; you were named in ${best.named ? `${best.named} of them` : "none of them"}.`
             : `${rival.domain}, a competitor's site, is cited for it in ${answers(best.n)}; you're named in ${best.named ? `${best.named} of them` : "none of them"}.`,
           change: "The assistants get a fuller answer of yours to quote for this question. The check every two weeks shows whether they start citing your site or naming you.",
-          you: ARTICLE_YOU,
+          you: site.work?.draft ? DRAFT_ARTICLE_YOU : ARTICLE_YOU,
         })
     }
     const m = s.sources.find((x) => x.type === "roundup")
@@ -1263,7 +1317,7 @@ const STATUS_TONE: Record<StepStatus["tone"], string> = {
   done: "text-green-800 bg-green-50 border border-green-200",
 }
 
-const PLANNED: StepStatus = { text: "Planned", tone: "planned" }
+export const PLANNED: StepStatus = { text: "Planned", tone: "planned" }
 const ON_IT: StepStatus = { text: "We're on it", tone: "work" }
 const CHECKING: StepStatus = { text: "We are checking", tone: "wait" }
 
@@ -1274,6 +1328,8 @@ const fmtUtcDay = (d: string | null) =>
 /** A launch item, or a step we set by hand, in the words "Your website" uses for it. */
 function launchStatus(i: LaunchState, toYourWebsite: boolean): StepStatus {
   if (i.status === "ok" || i.status === "fixed") return { text: `Done ${fmtDate(i.updatedAt)}`.trim(), tone: "done" }
+  // "Worth adding": optional, and nobody has started on it until we say so.
+  if (i.status === "tip") return PLANNED
   if (i.status === "check") return CHECKING
   if (i.status === "you" || (i.who === "you" && ["issue", "handed", "todo"].includes(i.status)))
     return { text: "Needs you", tone: "you", link: toYourWebsite ? { href: YOUR_WEBSITE, text: "Your website →" } : undefined }
@@ -1333,6 +1389,15 @@ export function stepStatus(step: Step, work: PlanWork | null | undefined): StepS
   return r && r.status !== "tip" ? launchStatus(r, false) : PLANNED
 }
 
+/** Where a place on the plan page stands: what we set by hand for its step (launch.py set <domain>
+ *  step:<dir|media|news>:<domain>, the ids planSteps gives them), "Planned" until there is something to say.
+ *  Never "We're on it" for a place nobody has started on. */
+export function placeStatus(domain: string, type: string, work: PlanWork | null | undefined): StepStatus {
+  const kind = type === "roundup" ? "media" : type === "news" ? "news" : "dir"
+  const r = work?.launch[`step:${kind}:${domain}`]
+  return r && r.status !== "tip" ? launchStatus(r, false) : PLANNED
+}
+
 /** Under a client's plan, newest first: launch items the check saw fixed or we set in order by hand,
  *  steps we marked done, and the plan's articles that are out. */
 function doneList(steps: Step[], work: PlanWork) {
@@ -1353,7 +1418,7 @@ const CHIP = "text-[10px] font-bold uppercase tracking-wide rounded-full px-2 py
 const STEP_N = "shrink-0 mt-px w-6 h-6 rounded-full grid place-items-center text-xs font-bold bg-violet-50 text-violet-700"
 
 /** Where a step stands, for a client: the chip and its link. */
-function StatusChip({ status }: { status: StepStatus }) {
+export function StatusChip({ status }: { status: StepStatus }) {
   return (
     <>
       <span className={`${CHIP} ${STATUS_TONE[status.tone]}`}>{status.text}</span>
@@ -1441,11 +1506,13 @@ function ArticlesStep({ n, steps, work, client }: { n: number; steps: Step[]; wo
           <p className="mt-1.5 text-sm font-semibold leading-snug">Articles for {steps.length} of your buyer questions</p>
           <p className={`${LINE} mt-1.5`}>
             <span className={LEAD}>We do: </span>
-            We research and write an article for each question, and publish it on your site.
+            {work?.draft
+              ? "We research and write an article for each question and send it to your WordPress as a draft."
+              : "We research and write an article for each question, and publish it on your site."}
           </p>
           <p className={LINE}>
             <span className={LEAD}>Why: </span>
-            {client ? "On day 0 the assistants" : "The assistants"} named others for these questions, not you.
+            {client ? "On day 0 the assistants did not name you for these questions." : "The assistants named others for these questions, not you."}
           </p>
           <ol className="mt-2 space-y-2">
             {shown.map((st) => {

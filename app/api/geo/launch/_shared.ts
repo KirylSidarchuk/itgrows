@@ -66,6 +66,13 @@ export async function follows(userId: string, domain: string) {
   return r.length > 0
 }
 
+/** The language a client's asks read in: German for a German site or a .de domain, else English; the rule
+ *  of the email with the same asks (./_mail.ts recipient). */
+export async function askLanguage(domain: string): Promise<"de" | "en"> {
+  const [s] = rows(await db.execute(sql`SELECT profile->>'language' AS language FROM geo_sites WHERE domain = ${domain} LIMIT 1`))
+  return String(s?.language ?? "").toLowerCase().startsWith("de") || domain.endsWith(".de") ? "de" : "en"
+}
+
 /** The stored items (no check is run: the VM answers from its table at once). */
 export async function readItems(domain: string): Promise<LaunchItem[] | null> {
   const r = await geoCheck<{ items: LaunchItem[] }>("/launch-items", { domain }, 20_000)

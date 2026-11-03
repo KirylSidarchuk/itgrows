@@ -249,6 +249,9 @@ async function planWork(f: Row, day0: Report, week: Report | null) {
   return {
     articles,
     launch,
+    // Articles of this site go to its owner's WordPress as drafts and go live when the owner publishes
+    // them: the steps say so instead of promising the review window.
+    draft: publishSite?.draft === true,
     week: week && { finishedAt: iso(week.finishedAt), samples: Number(week.samples), named: namedByQuestion(week, toDay0) },
     day0: { samples: Number(day0.samples), named: namedByQuestion(day0, toDay0) },
   }
@@ -260,7 +263,13 @@ async function workResults(siteId: string) {
   const got = rows(
     await db.execute(sql`SELECT month, data FROM geo_work_results WHERE site_id = ${siteId}::uuid ORDER BY month DESC LIMIT 36`)
   )
-  return got.map((r) => ({ month: r.month as string, ...(r.data as Record<string, unknown>) }))
+  const today = new Date().toISOString().slice(0, 10)
+  return got.map((r) => {
+    const { noteUntil, ...data } = r.data as Record<string, unknown>
+    // "The first comparison comes on <date>" is over on that date, and a closed month is not written again.
+    if (typeof noteUntil === "string" && noteUntil <= today) data.note = null
+    return { month: r.month as string, ...data }
+  })
 }
 
 /** One site's report; `f` is a geo_sites row joined with the follow (or its stand-in for the sample). */
@@ -305,6 +314,9 @@ async function siteReport(f: Row, sample = false) {
     plan,
     followedAt: f.followed_at,
     client,
+    // Billed by invoice (geo_follows.research_session = 'invoice', /root/geo_check/activate_client.py): no
+    // Stripe subscription, no card and no public price behind this plan.
+    invoiced: f.research_session === "invoice",
     // Whatever the plan was bought for: month, quarter or year (geo_follows.plan_interval).
     planInterval: isGeoInterval(f.plan_interval) ? f.plan_interval : null,
     // The site had a paid plan before, by anyone (lib/geo-business.ts geoPlanBeforeSql), so its one-time
@@ -366,7 +378,7 @@ async function followsOf(userId: string, siteId?: string) {
     await db.execute(sql`
       SELECT s.id, s.domain, s.profile->>'business_name' AS business, s.profile->>'language' AS language,
              nullif(s.profile->>'local_city', '') AS city, s.profile->>'offering' AS offering,
-             f.user_id, f.plan, f.created_at AS followed_at, f.plan_interval,
+             f.user_id, f.plan, f.created_at AS followed_at, f.plan_interval, f.research_session,
              (f.plan = 'paid' OR ${clientOwnsSql(sql.raw("f.user_id"), sql.raw("s.domain"))}) AS client,
              ${geoPlanBeforeSql(sql.raw("s.domain"))} AS setup_paid
       FROM geo_follows f JOIN geo_sites s ON s.id = f.site_id

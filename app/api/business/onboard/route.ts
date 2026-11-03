@@ -27,6 +27,7 @@ interface Audit {
   liveFetch?: { bot: string; blocked: boolean }[]
   surface?: { urlCount: number; isFloor: boolean }
   llmsTxt?: boolean
+  pageRead?: boolean
   structuredData?: { count: number }
   serverRenderedWords?: number
 }
@@ -133,7 +134,7 @@ function findings(a: Audit): string[] {
     out.push(`About ${words.toLocaleString()} words arrive without JavaScript, which is what the crawlers need.`)
   }
 
-  if (!a.structuredData?.count) {
+  if (a.pageRead !== false && !a.structuredData?.count) {
     out.push(`<strong>No structured data.</strong> An assistant reading a page has to guess what is the article, what is the author and what is navigation.`)
   }
   if (!a.llmsTxt) {

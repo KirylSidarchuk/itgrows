@@ -21,6 +21,7 @@ interface Result {
   liveFetch: { bot: string; status: number; blocked: boolean }[]
   surface: { urlCount: number; sitemapKind: "none" | "urlset" | "index"; isFloor: boolean }
   llmsTxt: boolean
+  pageRead?: boolean
   serverRenderedWords: number
   pathBlocks?: PathBlock[]
   error?: string
@@ -149,7 +150,7 @@ export default function CrawlerChecker() {
             <dt className="text-slate-500">{m.sitemapPages}</dt>
             <dd className="text-right font-semibold">{r.surface.sitemapKind === "none" ? m.noSitemap : `${r.surface.isFloor ? "≥" : ""}${formatNumber(locale, r.surface.urlCount)}`}</dd>
             <dt className="text-slate-500">{m.words}</dt>
-            <dd className="text-right font-semibold">{formatNumber(locale, r.serverRenderedWords)}</dd>
+            <dd className="text-right font-semibold">{r.pageRead === false ? "—" : formatNumber(locale, r.serverRenderedWords)}</dd>
             <dt className="text-slate-500">llms.txt</dt>
             <dd className="text-right font-semibold">{r.llmsTxt ? m.yes : m.no}</dd>
           </dl>

@@ -787,6 +787,8 @@ interface LaunchItem {
   note: string | null
   updated_at: string | null
   steps?: string[]
+  /** The ask in German. */
+  de?: { title: string; steps: string[] } | null
 }
 
 const LAUNCH_PILL: Record<LaunchStatus, [string, string]> = {
@@ -816,9 +818,13 @@ function fmtDay(iso: string | null) {
 }
 
 const isYou = (i: LaunchItem) => i.who === "you"
+/** Something the check found on an item of ours is ours to fix (launch.py tells Kiryl): for the client it
+ *  reads as what it is, never as a red mark on their page. */
+const pillOf = (i: LaunchItem) => (i.status === "issue" && !isYou(i) ? LAUNCH_PILL.todo : LAUNCH_PILL[i.status])
 const OPEN_YOU = new Set<LaunchStatus>(["you", "issue", "handed", "todo"])
 
-function YouItem({ item, onDone }: { item: LaunchItem; onDone: (key: string) => Promise<boolean> }) {
+function YouItem({ item, german, onDone }: { item: LaunchItem; german: boolean; onDone: (key: string) => Promise<boolean> }) {
+  const ask = german && item.de ? item.de : { title: item.title, steps: item.steps ?? [] }
   const [busy, setBusy] = useState(false)
   const [failed, setFailed] = useState(false)
   const open = OPEN_YOU.has(item.status)
@@ -833,13 +839,13 @@ function YouItem({ item, onDone }: { item: LaunchItem; onDone: (key: string) => 
   return (
     <li className="rounded-xl bg-[#f8f7f6] px-3.5 py-3">
       <div className="flex items-start justify-between gap-3">
-        <span className="min-w-0 text-sm font-semibold text-[#1b1916]">{item.title}</span>
+        <span className="min-w-0 text-sm font-semibold text-[#1b1916]" {...(german && item.de ? { lang: "de" } : {})}>{ask.title}</span>
         <span className={`shrink-0 text-[11px] font-bold px-2.5 py-1 rounded-full border ${pillCls}`}>{pillText}</span>
       </div>
       {open && (
         <>
-          {(item.steps ?? []).map((s) => (
-            <p key={s} className="mt-1.5 text-sm text-slate-700 break-words">
+          {ask.steps.map((s) => (
+            <p key={s} className="mt-1.5 text-sm text-slate-700 break-words" {...(german && item.de ? { lang: "de" } : {})}>
               {s}
             </p>
           ))}
@@ -862,6 +868,7 @@ function YouItem({ item, onDone }: { item: LaunchItem; onDone: (key: string) => 
 function LaunchReport({ domain }: { domain: string }) {
   // null while loading
   const [items, setItems] = useState<LaunchItem[] | "failed" | null>(null)
+  const [german, setGerman] = useState(false)
   const [hidden, setHidden] = useState(false)
   const [checking, setChecking] = useState(false)
   const [checked, setChecked] = useState<{ text: string; bad?: boolean } | null>(null)
@@ -876,8 +883,11 @@ function LaunchReport({ domain }: { domain: string }) {
           return
         }
         if (!r.ok) throw new Error(String(r.status))
-        const data = (await r.json()) as { items?: LaunchItem[] }
-        if (live) setItems(known(data.items))
+        const data = (await r.json()) as { items?: LaunchItem[]; language?: string }
+        if (live) {
+          setGerman(data.language === "de")
+          setItems(known(data.items))
+        }
       })
       .catch(() => {
         if (live) setItems("failed")
@@ -949,7 +959,7 @@ function LaunchReport({ domain }: { domain: string }) {
           <h2 className="mt-1 font-extrabold text-lg text-[#1b1916]">What we need from you</h2>
           <ul className="mt-4 space-y-2">
             {youList.map((i) => (
-              <YouItem key={i.key} item={i} onDone={markDone} />
+              <YouItem key={i.key} item={i} german={german} onDone={markDone} />
             ))}
           </ul>
         </section>
@@ -961,7 +971,7 @@ function LaunchReport({ domain }: { domain: string }) {
           <h2 className="mt-1 font-extrabold text-lg text-[#1b1916]">What we&apos;re doing</h2>
           <ul className="mt-4 space-y-2">
             {usList.map((i) => {
-              const [text, cls] = LAUNCH_PILL[i.status]
+              const [text, cls] = pillOf(i)
               return (
                 <li key={i.key} className="rounded-xl bg-[#f8f7f6] px-3.5 py-2.5">
                   <div className="flex items-start justify-between gap-3">
@@ -1013,7 +1023,7 @@ function LaunchReport({ domain }: { domain: string }) {
         ) : (
           <ul className="mt-4 space-y-2">
             {rest.map((i) => {
-              const [text, cls] = LAUNCH_PILL[i.status]
+              const [text, cls] = pillOf(i)
               return (
                 <li key={i.key} className="rounded-xl bg-[#f8f7f6] px-3.5 py-2.5">
                   <div className="flex items-start justify-between gap-3">

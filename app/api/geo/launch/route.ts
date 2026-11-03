@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/auth"
-import { RECHECK_MINUTES, domainOf, forClient, lastAutoCheck, owns, readItems, runCheck } from "./_shared"
+import { RECHECK_MINUTES, askLanguage, domainOf, forClient, lastAutoCheck, owns, readItems, runCheck } from "./_shared"
 
 // The launch report on "Your website": what the launch checked, fixed and registered for a site.
 // The items live on the VM (/root/geo_check/launch.py): automatic ones re-run daily and on "Check
@@ -26,7 +26,7 @@ export async function GET(req: NextRequest) {
   if (!(await owns(userId, domain))) return NextResponse.json({ error: "not_found" }, { status: 404 })
   const items = await readItems(domain).catch(() => null)
   if (!items) return NextResponse.json({ error: "unavailable" }, { status: 502 })
-  return NextResponse.json({ domain, items: forClient(items) })
+  return NextResponse.json({ domain, language: await askLanguage(domain).catch(() => "en"), items: forClient(items) })
 }
 
 export async function POST(req: NextRequest) {

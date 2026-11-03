@@ -5,7 +5,7 @@ import { blogPosts, connectedSites, scheduledPosts } from "@/lib/db/schema"
 import { geoRole } from "@/lib/geo-role"
 import { pickPublishSite } from "@/lib/publish-post"
 import { and, asc, desc, eq, gte, isNull, sql } from "drizzle-orm"
-import { reviewState, utcToday } from "./_shared"
+import { articleHost, draftEditUrl, reviewState, utcToday } from "./_shared"
 
 // The articles we plan and publish for the signed-in client, newest first, with the site each one
 // goes to. Only what the "Your articles" list shows: never the article text, tokens or passwords.
@@ -17,6 +17,8 @@ interface ArticleSite {
   key: string
   name: string
   url: string
+  /** Where its articles can be read: its own address, or the blog we host for it. */
+  articleHost: string
   platform: string
   /** A WordPress site whose owner approves each article: we create drafts, not live posts. */
   draft: boolean
@@ -35,6 +37,9 @@ interface ArticleItem {
   note: "duplicate" | "stopped" | null
   /** Sent as a WordPress draft and not live yet, as far as we can tell. */
   awaitingApproval: boolean
+  /** While it waits: the link into the owner's WordPress. publishedUrl is empty then, as its "?p=" address
+   *  answers 404 until the post is published. */
+  editUrl: string | null
   /** Written and waiting for its date: the client can open, edit, publish now or stop it. */
   review: boolean
   /** The day it goes live if nothing is done. */
@@ -86,6 +91,8 @@ export async function GET() {
         id: connectedSites.id,
         name: connectedSites.name,
         url: connectedSites.url,
+        blogDomain: connectedSites.blogDomain,
+        blogPublicUrl: connectedSites.blogPublicUrl,
         platform: connectedSites.platform,
         isDefault: connectedSites.isDefault,
         createdAt: connectedSites.createdAt,
@@ -102,6 +109,7 @@ export async function GET() {
           key: s.id,
           name: s.name,
           url: s.url,
+          articleHost: articleHost(s),
           platform: s.platform,
           // The publisher makes drafts on both WordPress paths (application password and plugin).
           draft: s.platform === "wordpress" && s.publishStatus === "draft",
@@ -153,6 +161,7 @@ export async function GET() {
         note: p.skippedAsDuplicate ? "duplicate" : state.stopped ? "stopped" : null,
         // A draft site's article is waiting until it has a live address of its own.
         awaitingApproval: p.status === "published" && Boolean(site?.draft) && (!publishedUrl || draftPostId(publishedUrl) !== null),
+        editUrl: null,
         review: state.review,
         liveDate: state.liveDate,
         canUndo: state.canUndo,
@@ -178,6 +187,13 @@ export async function GET() {
           .catch((e) => console.warn("[geo/articles] saving live link failed:", e instanceof Error ? e.message : e))
       })
     )
+
+    // What still waits gets the link that works for its owner instead of the "?p=" address that does not.
+    for (const a of articles) {
+      if (!a.awaitingApproval || !a.site) continue
+      a.editUrl = draftEditUrl(a.publishedUrl, a.site.url)
+      a.publishedUrl = null
+    }
 
     // Articles a writer put on the user's blog without the queue. Since 15 Oct 2026 our own blogs are
     // written that way (own_geo_writer straight into blog_posts), so they never had a queue row and the
@@ -211,6 +227,7 @@ export async function GET() {
         language: "en",
         note: null,
         awaitingApproval: false,
+        editUrl: null,
         review: false,
         liveDate: day,
         canUndo: false,

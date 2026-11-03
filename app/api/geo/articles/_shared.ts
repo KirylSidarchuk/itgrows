@@ -49,6 +49,30 @@ export function isDraftSite(site: Pick<PublishSite, "platform" | "siteProfile"> 
   return site?.platform === "wordpress" && profile?.publishStatus === "draft"
 }
 
+/** Where a site's articles can be read: the blog we host for it when we do, else the site itself. A hosted
+ *  blog on a subdomain is not the client's main site, and the cabinet says the one they will find it on. */
+export function articleHost(site: Pick<PublishSite, "platform" | "url" | "blogDomain" | "blogPublicUrl">): string {
+  const hosted = site.platform === "itgrows_blog" || (site.platform === "custom" && Boolean(site.blogDomain))
+  return (hosted && (site.blogPublicUrl?.trim() || site.blogDomain?.trim())) || site.url
+}
+
+const DRAFT_ID = /[?&]p=(\d+)(?:&|#|$)/
+
+/** Sent to this draft site's WordPress and not published by its owner yet: until then WordPress answers the
+ *  post's plain "?p=<id>" address with 404 to everyone else, so the only link that works is the editor's,
+ *  on the host that address names (the owner's login cookie is set there). Null for anything else. */
+export function draftEditUrl(publishedUrl: string | null, siteUrl: string): string | null {
+  let base = siteUrl.trim().replace(/\/+$/, "")
+  if (!/^https?:\/\//i.test(base)) base = "https://" + base
+  if (!publishedUrl) return `${base}/wp-admin/edit.php?post_status=draft&post_type=post`
+  const id = DRAFT_ID.exec(publishedUrl)?.[1]
+  if (!id) return null
+  try {
+    base = new URL(publishedUrl).origin
+  } catch {}
+  return `${base}/wp-admin/post.php?post=${id}&action=edit`
+}
+
 type RowForState = Pick<typeof scheduledPosts.$inferSelect, "status" | "scheduledDate" | "publishError">
 
 export interface ReviewState {

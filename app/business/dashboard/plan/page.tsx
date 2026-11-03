@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react"
 import Link from "next/link"
-import { GuaranteeFootnote, card, fmtDate, fullReport, onPlan, planSteps, type SiteReport } from "../visibility/parts"
+import { GuaranteeFootnote, PLANNED, STORE_YOU, StatusChip, card, fmtDate, fullReport, hasApp, isStoreHost, onPlan, placeStatus, planSteps, type SiteReport } from "../visibility/parts"
 import { SAMPLE_PATH, YEAR_DISCOUNT, firstPaymentCents, setupFree, usd, type GeoPrices } from "@/lib/geo-pricing"
 import { REWARD_INTERVAL, monthsLater, rewardTerms } from "@/lib/geo-promo"
 import { LaunchRewards, liveReward, useMinuteNow, usePromo } from "../launch-wheel"
@@ -37,8 +37,10 @@ import { LaunchRewards, liveReward, useMinuteNow, usePromo } from "../launch-whe
 // what /api/geo/checkout then charges (it applies the reward itself, from the server's record).
 //
 // A site on the plan, or of a client we set up by hand (site.client), shows "Plan & billing": the
-// plan, the places with "We're on it", Cancel plan (/api/geo/cancel: stops at the end of the paid
-// period, with undo) and Card and invoices (/api/geo/portal, which cannot cancel or switch plans).
+// plan, the places with where each stands (what we set by hand, else "Planned"), Cancel plan
+// (/api/geo/cancel: stops at the end of the paid period, with undo) and Card and invoices (/api/geo/portal,
+// which cannot cancel or switch plans). Those two and the price only for a plan paid through Stripe: a plan
+// billed by invoice (site.invoiced) reads like a client we set up by hand.
 //
 // Since 30 Oct 2026 (owner's decision) the page sells the outcome and carries the growth guarantee's line,
 // with its "*", next to the ways to pay; its footnote with the link to /terms#growth-guarantee is the last
@@ -56,6 +58,8 @@ const WE_DO = [
 ]
 
 const ARTICLES_YOU = "You see every article 2 days before it goes live, and can edit or stop it."
+/** A site that takes drafts (site.work.draft): the same promise would be false there. */
+const DRAFT_ARTICLES_YOU = "Each article reaches your WordPress as a draft on its date and goes live when you publish it."
 
 const YOU_DO = [
   ARTICLES_YOU,
@@ -143,19 +147,20 @@ function plan(site: SiteReport) {
   // The questions of the first Article steps of "Your plan" as the offer shows it: never a list question.
   const questions = planSteps(site, undefined).flatMap((st) => (st.q !== undefined ? [st.q] : [])).slice(0, 5)
   const own = (d: string) => d === site.domain || d.endsWith(`.${site.domain}`)
+  // An app store is a place only for a business with an app (planSteps says the same).
   const places = (full.summary.sources ?? [])
-    .filter((s) => s.type !== "competitor" && PLACE[s.type] && !own(s.domain))
+    .filter((s) => s.type !== "competitor" && PLACE[s.type] && !own(s.domain) && (hasApp(site) || !isStoreHost(s.domain)))
     .slice(0, MAX_PLACES)
   return { questions, places }
 }
 
 function Places({
   places,
-  working,
+  site,
 }: {
   places: { domain: string; count: number; type: string }[]
-  /** On the plan: every place reads "We're on it". */
-  working: boolean
+  /** On the plan: the site, so each place says where it stands. Not on the plan: none. */
+  site: SiteReport | null
 }) {
   if (!places.length) return null
   const lead = "font-semibold text-[#1b1916]"
@@ -176,7 +181,7 @@ function Places({
                   {p.domain}
                 </a>
                 <span className={`${chip} text-slate-600 bg-[#f8f7f6]`}>{t.tag}</span>
-                {working && <span className={`${chip} text-green-800 bg-green-50 border border-green-200`}>We&apos;re on it</span>}
+                {site && <StatusChip status={site.work ? placeStatus(p.domain, p.type, site.work) : PLANNED} />}
               </div>
               <p className="text-xs text-slate-500 mt-1">
                 {`${t.what} Cited in ${p.count} answer${p.count === 1 ? "" : "s"} to your buyers' questions.`}
@@ -187,7 +192,7 @@ function Places({
               </p>
               <p className="text-sm text-slate-600 leading-relaxed mt-1">
                 <span className={lead}>From you: </span>
-                {t.you}
+                {isStoreHost(p.domain) ? STORE_YOU : t.you}
               </p>
             </li>
           )
@@ -551,7 +556,8 @@ export default function PlanPage() {
 
   const site = sites.find((s) => s.domain === domain) ?? null
   const working = site ? onPlan(site) : false
-  const paid = site?.plan === "paid"
+  // Paid through Stripe. A plan billed by invoice has no subscription, card or public price behind it.
+  const paid = site?.plan === "paid" && !site.invoiced
   const { questions, places } = site ? plan(site) : { questions: [], places: [] }
   const named = site?.latest?.summary.named
   const of = site?.latest?.summary.of
@@ -631,12 +637,17 @@ export default function PlanPage() {
             <h2 className="font-extrabold text-lg text-green-900">{justPaid && !working ? "Payment received — setting things up" : "Your plan is active"}</h2>
             {site.client && !paid ? (
               <p className="mt-2 text-sm text-green-900">
-                We&apos;re on it for {site.domain}: the articles, the fixes and the places below. {ARTICLES_YOU}
+                We&apos;re on it for {site.domain}: the articles{places.length ? ", the fixes and the places below" : " and the fixes"}.{" "}
+                {site.work?.draft ? DRAFT_ARTICLES_YOU : ARTICLES_YOU}
               </p>
             ) : (
               <ol className="mt-3 space-y-2 text-sm text-green-900 list-decimal pl-5">
                 <li>Within one business day we email you to connect publishing to {site.domain}: a blog we host at blog.{site.domain} or {site.domain}/blog, or your WordPress.</li>
-                <li>{ARTICLES_YOU} Each one is ready 2 days before its date and we email you; untouched, it goes live on the date.</li>
+                <li>
+                  {site.work?.draft
+                    ? DRAFT_ARTICLES_YOU
+                    : `${ARTICLES_YOU} Each one is ready 2 days before its date and we email you; untouched, it goes live on the date.`}
+                </li>
                 <li>Every two weeks we run the full check: 20 questions, 4 assistants, 3 asks.</li>
               </ol>
             )}
@@ -670,7 +681,7 @@ export default function PlanPage() {
             )}
           </section>
 
-          <Places places={places} working />
+          <Places places={places} site={site} />
         </>
       ) : (
         <>
@@ -708,7 +719,7 @@ export default function PlanPage() {
             </section>
           )}
 
-          {site && <Places places={places} working={false} />}
+          {site && <Places places={places} site={null} />}
 
           <section className="rounded-2xl bg-[#1b1916] text-white p-6 sm:p-7">
             <div className="grid sm:grid-cols-2 gap-6">

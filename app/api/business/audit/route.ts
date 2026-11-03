@@ -42,7 +42,11 @@ function normalise(raw: string): URL | null {
   return u
 }
 
-async function grab(url: string, ua: string, ms = 9000) {
+// A sitemap can run to megabytes (firma-ausland.de: 570 kB), and every address in it counts.
+const SITEMAP_BYTES = 5_000_000
+const PAGE_BYTES = 400_000
+
+async function grab(url: string, ua: string, ms = 9000, bytes = PAGE_BYTES) {
   const ctrl = new AbortController()
   const timer = setTimeout(() => ctrl.abort(), ms)
   try {
@@ -52,7 +56,7 @@ async function grab(url: string, ua: string, ms = 9000) {
       headers: { "User-Agent": ua, Accept: "*/*" },
     })
     // Cap the body: some sitemaps are enormous and we only need to count and sniff.
-    const text = (await res.text()).slice(0, 400_000)
+    const text = (await res.text()).slice(0, bytes)
     return { status: res.status, text }
   } catch {
     return { status: 0, text: "" }
@@ -65,9 +69,32 @@ async function grab(url: string, ua: string, ms = 9000) {
 // (SiteGround) drop a browser user agent coming from a data centre but let an honest named one through.
 // If the site refuses that, the browser one is tried, so a site that only serves browsers still counts.
 const SITE_UA = "ItGrowsCheck/1.0 (+https://www.itgrows.ai/business)"
-async function grabFile(url: string, ms = 9000) {
-  const first = await grab(url, SITE_UA, ms)
-  return first.status === 200 ? first : await grab(url, HUMAN_UA, ms)
+async function grabFile(url: string, ms = 9000, bytes = PAGE_BYTES) {
+  const first = await grab(url, SITE_UA, ms, bytes)
+  return first.status === 200 ? first : await grab(url, HUMAN_UA, ms, bytes)
+}
+
+// The addresses in a sitemap. WordPress SEO plugins (All in One SEO) wrap each in CDATA.
+function locsIn(xml: string): string[] {
+  return [...xml.matchAll(/<loc>\s*(?:<!\[CDATA\[)?\s*([^<\]]+?)\s*(?:\]\]>)?\s*<\/loc>/g)].map((m) => m[1])
+}
+
+// A host whose own filter answers for the site, whatever the site's owner wants: WordPress.com (its CDN
+// signs "a8c-cdn") gives 403 to a crawler's name from our address and the page to any other name. That
+// is an answer to our test, not to the crawler, so it never reads as the site blocking the crawler.
+const HOST_FILTER = (status: number, headers: Headers) => status === 403 && /\ba8c-cdn\b/i.test(headers.get("server-timing") ?? "")
+
+async function botAnswer(url: string, ua: string, ms = 9000) {
+  const ctrl = new AbortController()
+  const timer = setTimeout(() => ctrl.abort(), ms)
+  try {
+    const res = await fetch(url, { redirect: "follow", signal: ctrl.signal, headers: { "User-Agent": ua } })
+    return { status: res.status, hostFilter: HOST_FILTER(res.status, res.headers) }
+  } catch {
+    return { status: 0, hostFilter: false }
+  } finally {
+    clearTimeout(timer)
+  }
 }
 
 async function statusOnly(url: string, ua: string, ms = 9000) {
@@ -133,10 +160,10 @@ function pickChildren(children: string[], limit: number): string[] {
 }
 
 // A page that answers a question is the unit an assistant quotes. Recognised from the slug: a
-// leading question word, a comparison, or an explicit guide. Opaque URLs will not match, so this
-// floors rather than estimates — the same rule the page count follows.
+// leading question word, a comparison, or an explicit guide, in the languages our clients write in.
+// Opaque URLs will not match, so this floors rather than estimates — the same rule the page count follows.
 const ANSWER_SLUG =
-  /(^|\/)((how|what|why|when|where|which|who|can|does|do|is|are|should)[-_]|.*[-_]vs[-_]|.*[-_](guide|checklist|faq|explained|examples?)(\/|$|\.))/i
+  /(^|\/)((how|what|why|when|where|which|who|can|does|do|is|are|should|wie|was|warum|wann|wo|welche[rsmn]?|wer|kann|darf|muss|soll|lohnt|comment|pourquoi|quand|quel(?:le)?s?|combien|como|por-que|cuando|cual|cuanto|donde)[-_]|.*[-_](vs|oder|ou|o)[-_]|.*[-_](vergleich|leitfaden|ratgeber|checkliste)([-_/.]|$)|.*[-_](guide|checklist|faq|explained|examples?)(\/|$|\.))/i
 
 function countAnswers(locs: string[]): number {
   return locs.filter((u) => {
@@ -173,20 +200,20 @@ async function rivalSurface(raw: string) {
   if (!target) return null
   const origin = `${target.protocol}//${target.hostname}`
 
-  const first = await grabFile(`${origin}/sitemap.xml`, 10000)
+  const first = await grabFile(`${origin}/sitemap.xml`, 10000, SITEMAP_BYTES)
   if (first.status !== 200 || !/<loc>/.test(first.text)) return null
 
   let xml = first.text
-  let locs = [...xml.matchAll(/<loc>\s*([^<]+?)\s*<\/loc>/g)].map((m) => m[1])
+  let locs = locsIn(xml)
   let urlCount = locs.length
 
   let partial = false
   if (/<sitemapindex/i.test(xml)) {
     const children = pickChildren(locs, 6)
     partial = children.length < locs.length
-    const bodies = await Promise.all(children.map(async (c) => (await grabFile(c, 8000)).text))
+    const bodies = await Promise.all(children.map(async (c) => (await grabFile(c, 8000, SITEMAP_BYTES)).text))
     xml = bodies.join("\n")
-    locs = bodies.flatMap((b) => [...b.matchAll(/<loc>\s*([^<]+?)\s*<\/loc>/g)].map((m) => m[1]))
+    locs = bodies.flatMap(locsIn)
     urlCount = locs.length
   }
 
@@ -228,15 +255,17 @@ export async function POST(req: NextRequest) {
 
   const [robotsRes, homeHuman, sitemapRes, llmsStatus, ...botStatusValues] = await Promise.all([
     grabFile(`${origin}/robots.txt`, 7000),
-    grab(origin, HUMAN_UA, 9000),
-    grabFile(`${origin}/sitemap.xml`, 12000),
+    // The homepage like every other file we read: some hosts answer a data centre's browser with an
+    // error page (firma-ausland.de: 502 to one Chrome version), and that page is not the site.
+    grabFile(origin, 9000),
+    grabFile(`${origin}/sitemap.xml`, 12000, SITEMAP_BYTES),
     statusOnly(`${origin}/llms.txt`, SITE_UA, 6000).then((st) => (st === 200 ? st : statusOnly(`${origin}/llms.txt`, HUMAN_UA, 6000))),
     // What the server actually does when the caller says it is a crawler. robots.txt is only a
     // request; a 403 here is a refusal, and plenty of sites refuse without their owner knowing.
-    ...Object.values(BOT_UAS).map((ua) => statusOnly(origin, ua, 9000)),
+    ...Object.values(BOT_UAS).map((ua) => botAnswer(origin, ua, 9000)),
   ])
 
-  const botStatuses = Object.keys(BOT_UAS).map((name, i) => [name, botStatusValues[i] as number] as const)
+  const botStatuses = Object.keys(BOT_UAS).map((name, i) => [name, botStatusValues[i] as Awaited<ReturnType<typeof botAnswer>>] as const)
 
   // A site that answers nothing at all is not a typo — it is usually bot protection refusing
   // anything that is not a residential browser. Telling the owner to "check the address" when the
@@ -246,7 +275,7 @@ export async function POST(req: NextRequest) {
     homeHuman.status === 0 &&
     robotsRes.status === 0 &&
     sitemapRes.status === 0 &&
-    botStatuses.every(([, s]) => s === 0)
+    botStatuses.every(([, s]) => s.status === 0)
 
   if (nothingAnswered) {
     await db
@@ -263,7 +292,7 @@ export async function POST(req: NextRequest) {
   let urlCount = (sitemapRes.text.match(/<loc>/g) ?? []).length
   let sitemapKind: "none" | "urlset" | "index" = "none"
   let partial = false
-  let locs = [...sitemapRes.text.matchAll(/<loc>\s*([^<]+?)\s*<\/loc>/g)].map((m) => m[1])
+  let locs = locsIn(sitemapRes.text)
   // Every sitemap already accounted for, so one named again in robots.txt is not read twice.
   const openedMaps = [`${origin}/sitemap.xml`]
   if (sitemapRes.status === 200 && urlCount > 0) {
@@ -272,11 +301,11 @@ export async function POST(req: NextRequest) {
       openedMaps.push(...locs)
       const children = pickChildren(locs, 6)
       partial = children.length < locs.length
-      const bodies = await Promise.all(children.map(async (c) => (await grabFile(c, 8000)).text))
+      const bodies = await Promise.all(children.map(async (c) => (await grabFile(c, 8000, SITEMAP_BYTES)).text))
       // Only the sitemaps we opened are counted, so this is a floor, never an estimate. The UI
       // renders it with a "≥" for exactly that reason.
       urlCount = bodies.reduce((a, b) => a + (b.match(/<loc>/g) ?? []).length, 0)
-      locs = bodies.flatMap((b) => [...b.matchAll(/<loc>\s*([^<]+?)\s*<\/loc>/g)].map((m) => m[1]))
+      locs = bodies.flatMap(locsIn)
     }
   }
 
@@ -289,15 +318,15 @@ export async function POST(req: NextRequest) {
     const opened = new Set(openedMaps.map(key))
     const declared = sitemapsIn(robotsRes.text).filter((u) => !opened.has(key(u))).slice(0, 6)
     if (declared.length) {
-      const bodies = await Promise.all(declared.map(async (u) => (await grabFile(u, 8000)).text))
-      const firstLevel = bodies.flatMap((b) => [...b.matchAll(/<loc>\s*([^<]+?)\s*<\/loc>/g)].map((m) => m[1]))
+      const bodies = await Promise.all(declared.map(async (u) => (await grabFile(u, 8000, SITEMAP_BYTES)).text))
+      const firstLevel = bodies.flatMap(locsIn)
       const nested = firstLevel.filter((u) => /\.xml($|\?)/i.test(u) && !opened.has(key(u)))
       let found = firstLevel.filter((u) => !/\.xml($|\?)/i.test(u))
       if (nested.length) {
         const picked = pickChildren(nested, 6)
         if (picked.length < nested.length) partial = true
-        const more = await Promise.all(picked.map(async (c) => (await grabFile(c, 8000)).text))
-        found = [...found, ...more.flatMap((b) => [...b.matchAll(/<loc>\s*([^<]+?)\s*<\/loc>/g)].map((m) => m[1]))]
+        const more = await Promise.all(picked.map(async (c) => (await grabFile(c, 8000, SITEMAP_BYTES)).text))
+        found = [...found, ...more.flatMap(locsIn)]
       }
       if (found.length) {
         // One address listed in two sitemaps is still one page.
@@ -342,44 +371,53 @@ export async function POST(req: NextRequest) {
   })
 
   // JSON-LD on the homepage is a weak signal — marketing homepages often have none while every
-  // article has plenty. Sample a real content URL from the sitemap too.
-  const contentUrl = [...sitemapRes.text.matchAll(/<loc>\s*([^<]+?)\s*<\/loc>/g)]
-    .map((m) => m[1])
-    .find((u) => !/\.xml($|\?)/i.test(u) && u.replace(origin, "").split("/").filter(Boolean).length >= 1)
+  // article has plenty — and the first address in a sitemap may be a contact page with neither. So both
+  // are read, the homepage and a real content URL from the sitemap, and the better of the two counts.
+  const contentUrl = locs.find((u) => !/\.xml($|\?)/i.test(u) && u.replace(origin, "").split("/").filter(Boolean).length >= 1)
 
   const contentPage = contentUrl ? await grabFile(contentUrl, 9000) : null
-  const sample = contentPage?.text || homeHuman.text
+  // Only a page the site really served is read: an error page's few words and no markup say nothing
+  // about the site, and pageRead tells the reader of this result when there was nothing to read.
+  const pagesRead = [contentPage, homeHuman].filter((p) => p?.status === 200 && p.text).map((p) => p!.text)
 
-  const jsonLdTypes = [...sample.matchAll(/"@type"\s*:\s*"([A-Za-z]+)"/g)].map((m) => m[1])
+  const jsonLdTypes = pagesRead.flatMap((page) => [...page.matchAll(/"@type"\s*:\s*"([A-Za-z]+)"/g)].map((m) => m[1]))
   const uniqueTypes = [...new Set(jsonLdTypes)].slice(0, 8)
 
   // How much of the page survives without JavaScript. Crawlers are poor at running it, so a page
   // whose body arrives nearly empty is one they cannot read whatever else it does right.
-  const textOnly = sample
-    .replace(/<script[\s\S]*?<\/script>/gi, "")
-    .replace(/<style[\s\S]*?<\/style>/gi, "")
-    .replace(/<[^>]+>/g, " ")
-    .replace(/\s+/g, " ")
-    .trim()
+  const textOnly = (page: string) =>
+    page
+      .replace(/<script[\s\S]*?<\/script>/gi, "")
+      .replace(/<style[\s\S]*?<\/style>/gi, "")
+      .replace(/<[^>]+>/g, " ")
+      .replace(/\s+/g, " ")
+      .trim()
+  const serverRenderedWords = Math.max(0, ...pagesRead.map((page) => textOnly(page).split(" ").filter(Boolean).length))
 
   const rival = await rivalPromise
 
   const result = {
     site: target.hostname,
     unreachable: false,
-    checkedUrl: contentUrl ?? origin,
+    checkedUrl: contentPage?.status === 200 && contentUrl ? contentUrl : origin,
     robots: {
       found: robotsRes.status === 200,
       bots: Object.keys(BOT_UAS).map((b) => ({ bot: b, verdict: robotsVerdict(robotsRes.text, b) })),
     },
-    liveFetch: botStatuses.map(([bot, status]) => ({ bot, status, blocked: status === 403 || status === 401 })),
+    liveFetch: botStatuses.map(([bot, a]) => ({
+      bot,
+      status: a.status,
+      blocked: !a.hostFilter && (a.status === 403 || a.status === 401),
+      ...(a.hostFilter ? { hostFilter: true } : {}),
+    })),
     humanStatus: homeHuman.status,
     surface: { urlCount, sitemapKind, isFloor: partial, answerPages, partial },
     rival,
     llmsTxt: llmsStatus === 200,
     pathBlocks,
+    pageRead: pagesRead.length > 0,
     structuredData: { count: jsonLdTypes.length, types: uniqueTypes },
-    serverRenderedWords: textOnly.split(" ").filter(Boolean).length,
+    serverRenderedWords,
   }
 
   await db

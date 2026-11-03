@@ -16,6 +16,7 @@ interface Site {
   key: string
   name: string
   url: string
+  articleHost: string
   platform: string
   draft: boolean
 }
@@ -31,6 +32,8 @@ interface Article {
   note: "duplicate" | "stopped" | null
   /** Sent to a WordPress site as a draft and not live yet. */
   awaitingApproval: boolean
+  /** While it waits: the link into the owner's WordPress. */
+  editUrl: string | null
   /** Written and waiting for its date: open, edit, publish now or stop. */
   review: boolean
   liveDate: string
@@ -50,8 +53,10 @@ interface ArticleDetail {
   language: string
   publishedAt: string | null
   publishedUrl: string | null
+  /** Sent as a draft and not published by its owner yet: the link into their WordPress. */
+  editUrl: string | null
   edited: boolean
-  site: { name: string; url: string; draft: boolean } | null
+  site: { name: string; url: string; articleHost: string; draft: boolean } | null
   review: boolean
   stopped: boolean
   canUndo: boolean
@@ -247,6 +252,11 @@ function Rows({ items, onOpen, onUndo, undoing }: { items: Article[]; onOpen: (i
                 Open
               </a>
             )}
+            {a.editUrl && (
+              <a href={a.editUrl} target="_blank" rel="noopener noreferrer" className="text-sm font-semibold text-violet-700 hover:underline">
+                Open in WordPress
+              </a>
+            )}
           </div>
         </li>
       ))}
@@ -261,13 +271,25 @@ function SiteArticles({ items, today, onOpen, onUndo, undoing }: { items: Articl
   // Newest out first, by the day it went out, which is the date the row shows.
   const outOn = (a: Article) => a.publishedAt ?? a.scheduledDate
   const published = items
-    .filter((a) => a.status === "published")
+    .filter((a) => a.status === "published" && !a.awaitingApproval)
     .sort((x, y) => (outOn(x) < outOn(y) ? 1 : outOn(x) > outOn(y) ? -1 : 0))
+  // In the owner's WordPress: not out yet, and nothing goes out until they publish it.
+  const waiting = items.filter((a) => a.awaitingApproval).sort((x, y) => (outOn(x) < outOn(y) ? -1 : outOn(x) > outOn(y) ? 1 : 0))
   const notPublished = items.filter((a) => !isNext(a) && a.status !== "published")
   const rowProps = { onOpen, onUndo, undoing }
 
   return (
     <>
+      {waiting.length > 0 && (
+        <section className={card}>
+          <h2 className="font-bold text-lg text-[#1b1916]">Waiting for you in WordPress</h2>
+          <p className="text-sm text-slate-600 mt-1">These go live when you publish them there.</p>
+          <div className="mt-2">
+            <Rows items={waiting} {...rowProps} />
+          </div>
+        </section>
+      )}
+
       <section className={card}>
         <h2 className="font-bold text-lg text-[#1b1916]">Coming next</h2>
         {next.length > 0 ? (
@@ -527,7 +549,7 @@ function ArticleView({ id, onBack }: { id: string; onBack: () => void }) {
     )
   }
 
-  const siteName = a.site ? bare(a.site.url) : "your site"
+  const siteName = a.site ? bare(a.site.articleHost) : "your site"
 
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-10 space-y-5">
@@ -602,12 +624,18 @@ function ArticleView({ id, onBack }: { id: string; onBack: () => void }) {
       ) : a.status === "published" ? (
         <section className="rounded-2xl bg-emerald-50 border border-emerald-200 p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center gap-3">
           <p className="text-sm font-semibold text-emerald-800 flex-1">
-            Published{a.publishedAt ? ` on ${fmtWhen(a.publishedAt)}` : ""}
-            {a.site?.draft ? " as a draft in your WordPress" : ""}.
+            {a.editUrl
+              ? `Sent to your WordPress as a draft${a.publishedAt ? ` on ${fmtWhen(a.publishedAt)}` : ""}. It goes live when you publish it there.`
+              : `Published${a.publishedAt ? ` on ${fmtWhen(a.publishedAt)}` : ""}.`}
           </p>
           {a.publishedUrl && (
             <a href={a.publishedUrl} target="_blank" rel="noopener noreferrer" className={primaryBtn}>
               Open on your site
+            </a>
+          )}
+          {a.editUrl && (
+            <a href={a.editUrl} target="_blank" rel="noopener noreferrer" className={primaryBtn}>
+              Open in WordPress
             </a>
           )}
         </section>

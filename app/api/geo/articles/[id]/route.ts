@@ -4,9 +4,11 @@ import { scheduledPosts } from "@/lib/db/schema"
 import { sendOwner } from "@/lib/telegram"
 import { and, eq, sql } from "drizzle-orm"
 import {
+  articleHost,
   bodyOf,
   cleanArticleHtml,
   cleanLine,
+  draftEditUrl,
   isDraftSite,
   ownArticle,
   preparedData,
@@ -38,6 +40,9 @@ function articleView(row: Row, site: PublishSite | null) {
   const prepared = preparedData(row.articleData) !== null
   const state = reviewState(row, prepared, draftSite)
   const content = typeof data.content === "string" ? data.content : ""
+  const publishedUrl = webUrl(row.publishedUrl)
+  // Sent to a draft site and not published by its owner yet: its address answers 404 until then.
+  const editUrl = draftSite && site && row.status === "published" ? draftEditUrl(publishedUrl, site.url) : null
   return {
     id: row.id,
     title: (typeof data.title === "string" && data.title.trim()) || row.keyword,
@@ -49,9 +54,10 @@ function articleView(row: Row, site: PublishSite | null) {
     status: row.status,
     language: row.language,
     publishedAt: row.publishedAt ? row.publishedAt.toISOString() : null,
-    publishedUrl: webUrl(row.publishedUrl),
+    publishedUrl: editUrl ? null : publishedUrl,
+    editUrl,
     edited: typeof data.editedAt === "string",
-    site: site ? { name: site.name, url: site.url, draft: draftSite } : null,
+    site: site ? { name: site.name, url: site.url, articleHost: articleHost(site), draft: draftSite } : null,
     ...state,
   }
 }
