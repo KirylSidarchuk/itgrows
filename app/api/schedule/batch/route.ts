@@ -4,6 +4,7 @@ import { db } from "@/lib/db"
 import { scheduledPosts, connectedSites } from "@/lib/db/schema"
 import { eq, and, count } from "drizzle-orm"
 import { callLLM } from "@/lib/llm-client"
+import { isGeoQueueClient } from "@/lib/publish-post"
 
 export const runtime = "nodejs"
 
@@ -64,6 +65,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
     userId = session.user.id
+  }
+
+  // A client of the AI-visibility service: their topics come from the plan or from us, and a paid model
+  // inventing fifteen of them would put those in the client's "Your articles". Nothing is scheduled, from
+  // the publisher's refill or from anywhere else. When we can't tell, nothing is scheduled either.
+  const geoClient = await isGeoQueueClient(userId).catch(() => true)
+  if (geoClient) {
+    return NextResponse.json({ success: false, message: "Topics for this account come from its plan" }, { status: 200 })
   }
 
   let siteUrl = body.siteUrl

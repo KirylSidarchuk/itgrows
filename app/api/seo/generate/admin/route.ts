@@ -88,12 +88,9 @@ export async function POST(req: NextRequest) {
       `${site.url.replace(/\/$/, "")}/wp-admin/post.php?post=11149&action=edit`,
       (site.siteProfile as { language?: string } | null)?.language,
     )
-    try {
-      await sendEmail({ to: body.testEmailTo, subject: "[Test] Entwurf zur Freigabe", html })
-      return NextResponse.json({ mode: "testEmail", sent: true, to: body.testEmailTo })
-    } catch (e) {
-      return NextResponse.json({ mode: "testEmail", sent: false, error: String(e) }, { status: 502 })
-    }
+    const sent = await sendEmail({ to: body.testEmailTo, subject: "[Test] Entwurf zur Freigabe", html })
+    if (sent.ok) return NextResponse.json({ mode: "testEmail", sent: true, to: body.testEmailTo })
+    return NextResponse.json({ mode: "testEmail", sent: false, error: sent.error }, { status: 502 })
   }
 
   // A queue is only refilled for someone who has just had something published, so an account

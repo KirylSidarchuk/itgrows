@@ -51,6 +51,7 @@ export async function GET(req: NextRequest) {
   for (const r of ready) byUser.set(r.userId, [...(byUser.get(r.userId) ?? []), r])
 
   const sent: string[] = []
+  const failed: string[] = []
   for (const [userId, rows] of byUser) {
     try {
       const site = await publishSiteFor(userId)
@@ -91,7 +92,18 @@ export async function GET(req: NextRequest) {
         claimed.length > 1
           ? de ? `${claimed.length} Artikel zur Durchsicht bereit` : `${claimed.length} articles ready for your review`
           : de ? `Zur Durchsicht bereit: ${claimed[0].title}` : `Ready for your review: ${claimed[0].title}`
-      await sendEmail({ to: owner.email, subject, html: articlesReadyEmail(owner.name, site.name, items, language) })
+      const mail = await sendEmail({ to: owner.email, subject, html: articlesReadyEmail(owner.name, site.name, items, language) })
+      if (!mail.ok) {
+        // Not sent: not announced. The claim is taken back, so the next run tries these articles again.
+        for (const r of claimed) {
+          await db
+            .update(scheduledPosts)
+            .set({ articleData: sql`${scheduledPosts.articleData} - 'reviewNoticeAt'` })
+            .where(and(eq(scheduledPosts.id, r.id), eq(scheduledPosts.status, "scheduled")))
+        }
+        failed.push(`${site.name} (${owner.email}): ${mail.error ?? "unknown"}`)
+        continue
+      }
       sent.push(`${site.name}: ${claimed.map((r) => `«${r.title.slice(0, 60)}» (${r.scheduledDate})`).join(", ")}`)
     } catch (e) {
       console.error("[geo/articles/review-notice]", userId, e instanceof Error ? e.message : e)
@@ -99,5 +111,6 @@ export async function GET(req: NextRequest) {
   }
 
   if (sent.length) await sendOwner(`📬 Клиентам ушло письмо «статья готова, можно править до выхода»:\n${sent.join("\n")}`.slice(0, 3500))
-  return NextResponse.json({ date: today, emails: sent.length, sent })
+  if (failed.length) await sendOwner(`⚠️ Письмо «статья готова» не ушло, следующий запуск попробует снова:\n${failed.join("\n")}`)
+  return NextResponse.json({ date: today, emails: sent.length, sent, failed: failed.length })
 }

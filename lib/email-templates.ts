@@ -96,14 +96,14 @@ export function linkedinTokenExpiringEmail(name: string, days: number): string {
   `
 }
 
-export function draftReadyEmail(name: string, title: string, editUrl: string, language?: string): string {
+export function draftReadyEmail(name: string | null, title: string, editUrl: string, language?: string): string {
   // The recipient reads this in the language their site is written in; a review request they
   // have to translate is a review that does not happen.
   const de = (language ?? "").toLowerCase().startsWith("de")
   const t = de
     ? {
         head: "Ein neuer Artikel wartet auf Ihre Freigabe",
-        hi: `Guten Tag ${name},`,
+        hi: name ? `Guten Tag ${name},` : "Guten Tag,",
         body: "wir haben einen neuen Artikel als Entwurf in Ihrem WordPress abgelegt. Er ist auf Ihrer Website noch nicht sichtbar.",
         how: "Bitte lesen Sie ihn durch, ändern Sie, was Sie ändern möchten, und klicken Sie oben rechts auf <strong>Veröffentlichen</strong>. Erst dann geht er online.",
         cta: "Entwurf öffnen →",
@@ -111,7 +111,7 @@ export function draftReadyEmail(name: string, title: string, editUrl: string, la
       }
     : {
         head: "A new article is waiting for your approval",
-        hi: `Hi ${name},`,
+        hi: `Hi ${name ?? "there"},`,
         body: "We have placed a new article in your WordPress as a draft. It is not visible on your site yet.",
         how: "Read it through, change anything you want changed, and click <strong>Publish</strong> at the top right. Only then does it go live.",
         cta: "Open the draft →",

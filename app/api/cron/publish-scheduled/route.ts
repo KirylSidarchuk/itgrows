@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db"
 import { scheduledPosts } from "@/lib/db/schema"
 import { eq, lte, and } from "drizzle-orm"
-import { publishContext, publishScheduledPost, scheduleNextBatchIfEmpty, type ProcessedPost } from "@/lib/publish-post"
+import { isGeoQueueClient, publishContext, publishSiteFor, publishScheduledPost, scheduleNextBatchIfEmpty, warnGeoQueueEmpty, type ProcessedPost } from "@/lib/publish-post"
 import { sendOwner } from "@/lib/telegram"
 
 export const runtime = "nodejs"
@@ -54,6 +54,9 @@ export async function GET(req: NextRequest) {
 
   // Track which users had posts published this run (to check if we need to re-schedule)
   const userPublishedCounts: Record<string, number> = {}
+  // Published through a WordPress application password, a path that never counted for the refill: its
+  // GEO clients still have to be heard of when their queue ends.
+  const uncountedPublished = new Set<string>()
 
   // Site data is cached per userId inside the context, for the whole run.
   const ctx = publishContext(cronSecret)
@@ -66,11 +69,17 @@ export async function GET(req: NextRequest) {
     processed.push(r.processed)
     // Track published count per user
     if (r.counted) userPublishedCounts[post.userId] = (userPublishedCounts[post.userId] ?? 0) + 1
+    else if (r.processed.status === "published") uncountedPublished.add(post.userId)
   }
 
   // After processing, check if any user has no remaining scheduled posts → reschedule next batch
   for (const userId of Object.keys(userPublishedCounts)) {
     await scheduleNextBatchIfEmpty(userId, ctx)
+  }
+  for (const userId of uncountedPublished) {
+    if (userId in userPublishedCounts) continue
+    const client = await isGeoQueueClient(userId).catch(() => false)
+    if (client) await warnGeoQueueEmpty(userId, (await publishSiteFor(userId))?.name ?? null).catch(() => false)
   }
 
   if (errors.length > 0) {

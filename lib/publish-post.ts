@@ -3,12 +3,10 @@ import { scheduledPosts, connectedSites, blogPosts, users } from "@/lib/db/schem
 import { sendEmail } from "@/lib/email"
 import { draftReadyEmail } from "@/lib/email-templates"
 import { eq, and, sql } from "drizzle-orm"
-import { clientOwnsSql } from "@/lib/geo-role"
 import { publishToWordPress, canUseAppPassword } from "@/lib/wordpress-publish"
 import { slugBase } from "@/lib/slug"
 import { storeAndRecordImage } from "@/lib/image-store"
 import { extractFaq, faqJsonLd } from "@/lib/faq-schema"
-import { generatedQuestions, listQuestions } from "@/lib/geo-list-question"
 import { sendOwner } from "@/lib/telegram"
 
 // Publishing one scheduled article: the body of the nightly cron (app/api/cron/publish-scheduled),
@@ -19,7 +17,7 @@ import { sendOwner } from "@/lib/telegram"
 
 export type ScheduledPost = typeof scheduledPosts.$inferSelect
 type Site = typeof connectedSites.$inferSelect
-type SiteProfile = { niche?: string; targetAudience?: string; productName?: string; brandMentions?: string; publishStatus?: "publish" | "draft"; language?: string }
+type SiteProfile = { niche?: string; targetAudience?: string; productName?: string; brandMentions?: string; publishStatus?: "publish" | "draft"; language?: string; titleInContent?: boolean }
 
 export interface PublishContext {
   baseUrl: string
@@ -52,7 +50,7 @@ export type PublishOutcome =
   | {
       claimed: true
       processed: ProcessedPost
-      /** The failures the cron reports in Telegram (a WordPress application-password failure never was). */
+      /** The failures the cron reports in Telegram. */
       error: { id: string; keyword: string; error: string } | null
       /** Counts toward "schedule the next batch when none is left", as the cron always counted. */
       counted: boolean
@@ -111,6 +109,32 @@ function receivedUrl(u: unknown, siteUrl: string): string | null {
   } catch {
     return null
   }
+}
+
+/** "Draft ready" to the one person who has to approve it. When the email does not go out the draft sits
+ *  in WordPress with nobody told, so Kiryl hears it once, with the link he can pass on, and the row keeps a
+ *  note. The account's name goes in the greeting only when it is a person's: an account named after the
+ *  site reads "Guten Tag Firma Ausland" otherwise. */
+async function sendDraftNotice(post: ScheduledPost, site: Site, language: string | undefined, title: string, editUrl: string): Promise<void> {
+  const [owner] = await db.select({ email: users.email, name: users.name })
+    .from(users).where(eq(users.id, post.userId)).limit(1)
+  if (!owner?.email) return
+  const name = owner.name?.trim() ?? ""
+  const sent = await sendEmail({
+    to: owner.email,
+    subject: (language ?? "").toLowerCase().startsWith("de")
+      ? `Entwurf zur Freigabe: ${title}`
+      : `Draft ready for your approval: ${title}`,
+    html: draftReadyEmail(name.toLowerCase() === site.name.trim().toLowerCase() ? null : name || null, title, editUrl, language),
+  })
+  if (sent.ok) return
+  console.error(`[SEO Autopilot] draft notice not sent for post ${post.id}: ${sent.error}`)
+  await db.update(scheduledPosts)
+    .set({ publishError: `draft notice not sent: ${sent.error ?? "unknown"}`.slice(0, 500) })
+    .where(eq(scheduledPosts.id, post.id))
+  await sendOwner(
+    `⚠️ Письмо «черновик готов» не ушло: ${owner.email}, «${title}».\n${sent.error ?? ""}\nЧерновик в WordPress лежит: ${editUrl}`,
+  )
 }
 
 /** Publishes one scheduled post to the user's site. Never throws: a failure is saved on the row. */
@@ -196,7 +220,7 @@ export async function publishScheduledPost(duePost: ScheduledPost, ctx: PublishC
     // Older MagiScan pages have a different name on their side than our slug, hence two slugs.
     // A rewrite that can't be done that way fails here, before anything is generated or sent:
     // published as a new article it would be a second copy of the page there and a second row here.
-    let rewrite: { rowSlug: string; pageSlug: string } | null = null
+    let rewrite: { rowSlug: string; pageSlug: string; pageUrl: string | null } | null = null
     if (prepared?.rewriteOf) {
       const rowSlug = prepared.rewriteOf
       const pageSlug = prepared.targetSlug ?? ""
@@ -217,7 +241,9 @@ export async function publishScheduledPost(duePost: ScheduledPost, ctx: PublishC
         .then((r) => (r.ok ? r.text() : ""))
         .catch(() => "")
       if (!listed.includes(`/${pageSlug}.html</loc>`)) throw fail(`${pageSlug} is not in ${siteBase}/blog-sitemap.xml`)
-      rewrite = { rowSlug, pageSlug }
+      // Its address as their sitemap gives it: what the row keeps even if the receiver names none below.
+      const pageUrl = new RegExp(`<loc>\\s*(https?://[^<\\s]*/${pageSlug}\\.html)</loc>`).exec(listed)?.[1] ?? null
+      rewrite = { rowSlug, pageSlug, pageUrl }
     }
     let article: Article
     if (prepared?.preparedBy === "vm-writer" && prepared.title && prepared.content) {
@@ -292,6 +318,10 @@ export async function publishScheduledPost(duePost: ScheduledPost, ctx: PublishC
 
     // The live address of this article, saved with the row below. Null when a branch can't know it.
     let liveUrl: string | null = null
+    // A draft on our plugin's path: where its "draft ready" email links to, sent once the row is written.
+    let draftNotice: string | null = null
+    // A publish that reached the site with something still to put right: the note the row keeps.
+    let publishNote: string | null = null
 
     if (site && isBlogPostsPlatform) {
       // Save directly to blog_posts so blog-service can serve it via CNAME
@@ -331,26 +361,14 @@ export async function publishScheduledPost(duePost: ScheduledPost, ctx: PublishC
           coverImageUrl: article.coverImageUrl ?? null,
           status: wantsDraft ? "draft" : "publish",
           language: post.language ?? undefined,
+          titleInContent: siteProfile?.titleInContent === true,
         })
         if (wp.success) {
           console.log(`[SEO Autopilot] ${wantsDraft ? "Drafted" : "Published"} to WordPress via app password: ${wp.url} (cover ${wp.cover})`)
           // A draft nobody is told about is the same as nothing published, so the one person
           // who has to approve it gets a link straight into their editor. Only for draft
           // sites, so no other customer's inbox changes.
-          if (wantsDraft && wp.postId) {
-            const [owner] = await db.select({ email: users.email, name: users.name })
-              .from(users).where(eq(users.id, post.userId)).limit(1)
-            if (owner?.email) {
-              const editUrl = `${normalUrl}/wp-admin/post.php?post=${wp.postId}&action=edit`
-              await sendEmail({
-                to: owner.email,
-                subject: (siteProfile?.language ?? "").toLowerCase().startsWith("de")
-                  ? `Entwurf zur Freigabe: ${article.title}`
-                  : `Draft ready for your approval: ${article.title}`,
-                html: draftReadyEmail(owner.name ?? "there", article.title, editUrl, siteProfile?.language),
-              }).catch((e) => console.warn("[SEO Autopilot] draft notice failed:", e))
-            }
-          }
+          // The row is written first: the notice leaves its note on it, if it has to.
         } else {
           console.error(`[SEO Autopilot] WordPress app-password publish failed: ${wp.error}`)
         }
@@ -358,22 +376,31 @@ export async function publishScheduledPost(duePost: ScheduledPost, ctx: PublishC
         // assignable to drizzle's set(). The link WordPress gave the post (for a draft site, its
         // preview address) goes to published_url. publishToWordPress falls back to the site's
         // root when WordPress returns no link; that is not the article, so it is not stored.
+        const attempts = (post.publishAttempts ?? 0) + 1
         if (wp.success) {
           const wpLink = wp.url && wp.url !== normalUrl ? receivedUrl(wp.url, normalUrl) : null
           await db.update(scheduledPosts)
-            .set({ status: "published", publishedAt: new Date(), publishError: null, publishedUrl: wpLink })
+            .set({ status: "published", publishedAt: new Date(), publishError: null, publishedUrl: wpLink, publishAttempts: attempts })
             .where(eq(scheduledPosts.id, post.id))
+          if (wantsDraft && wp.postId) {
+            await sendDraftNotice(post, site, siteProfile?.language, article.title, `${normalUrl}/wp-admin/post.php?post=${wp.postId}&action=edit`)
+          }
+          // WordPress just took our login: the "Last check" on "Your website" says so.
+          await db.update(connectedSites).set({ lastCheckedAt: new Date(), lastCheckOk: true }).where(eq(connectedSites.id, site.id))
         } else {
           await db.update(scheduledPosts)
-            .set({ status: "failed", publishError: (wp.error ?? "").slice(0, 500) })
+            .set({ status: "failed", publishError: (wp.error ?? "").slice(0, 500), publishAttempts: attempts })
             .where(eq(scheduledPosts.id, post.id))
         }
+        // The cron retries a failed row while it has attempts left (publish-scheduled/route.ts) and
+        // reports each failure, with this count, in Telegram. A row out of attempts waits for us.
+        const failure = wp.success ? null : `попытка ${attempts} из 3${attempts >= 3 ? ", больше не повторяем" : ""}: ${wp.error ?? "WordPress publish failed"}`
         return {
           claimed: true,
-          error: null,
+          error: failure ? { id: post.id, keyword: post.keyword, error: failure } : null,
           processed: { id: post.id, keyword: post.keyword,
                        status: wp.success ? "published" : "failed",
-                       ...(wp.success ? {} : { error: wp.error }) },
+                       ...(failure ? { error: failure } : {}) },
           counted: false,
         }
       }
@@ -421,13 +448,22 @@ export async function publishScheduledPost(duePost: ScheduledPost, ctx: PublishC
       }
 
       if (externalPublishError) {
-        // Special case: article was written to the server but the blog index (blog.html) update failed
-        // due to a file permission issue. The article IS published and accessible via its direct URL.
-        // Treat this as a partial success — mark as published so we don't keep regenerating.
+        // Special case: article was written to the server but the blog index (blog.html) update failed.
+        // The article IS published and accessible via its direct URL, so it counts as published: a
+        // retry would write a second page under a new random slug. But the receiver stops there, before
+        // the sitemap, and only a card already in the list is replaced later, so a new article stays off
+        // both for good. Kiryl hears it once, with the slug, and the row keeps the note (never shown to
+        // a client) until the card and the sitemap are put right by hand.
         const isPartialSuccess = externalPublishError.includes("Article written but blog.html update failed")
         if (isPartialSuccess) {
-          console.warn(`[SEO Autopilot] Partial success for post ${post.id}: article written, blog.html permission denied`)
-          // Fall through to the published update below (externalPublishError is cleared)
+          console.warn(`[SEO Autopilot] Partial success for post ${post.id}: article written, blog.html not updated`)
+          publishNote = `blog.html not updated, card and sitemap to fix: ${sharedSlug}: ${externalPublishError}`.slice(0, 500)
+          await sendOwner(
+            `⚠️ ${site.name}: статья вышла, но blog.html не обновился, поэтому ${rewrite ? "карточка и карта сайта могли остаться старыми" : "её нет ни в списке, ни в карте сайта"}.\n` +
+              `«${article.title}»\nslug: ${sharedSlug}\nЗапись: scheduled_posts ${post.id}. Повторять нельзя${rewrite ? "" : ": новая статья получит новый адрес"}; поправить карточку и карту сайта.\n` +
+              externalPublishError.slice(0, 200),
+          )
+          // Fall through to the published update below
         } else {
           // A prepared article keeps its preparedBy mark (and the client's edits): the retry then
           // publishes this same article instead of the old generator writing a new one.
@@ -505,6 +541,7 @@ export async function publishScheduledPost(duePost: ScheduledPost, ctx: PublishC
       // exists. The other receivers pick their own slug, so their address can't be built.
       const isWebhookSite = site.platform === "octobercms" || site.platform === "php"
       liveUrl = receivedUrl(publishedUrl, normalUrl)
+        ?? rewrite?.pageUrl
         ?? (isWebhookSite && mirrored ? blogArticleUrl(site, sharedSlug) : null)
 
       // Our WordPress plugin on a site whose owner approves every article: the owner gets the same
@@ -528,37 +565,28 @@ export async function publishScheduledPost(duePost: ScheduledPost, ctx: PublishC
         const wentLive = reported ? reported === "publish" : !draftAddress(liveUrl)
         if (wentLive) {
           const why = reported ? `the plugin reports post_status "${reported}"` : "the plugin returned a live address"
-          const note = `Draft requested, but the post went live (${why}): ${liveUrl ?? publishedUrl ?? "no address"}. Plugin older than 2.1?`
-          await db.update(scheduledPosts).set({ publishError: note.slice(0, 500) }).where(eq(scheduledPosts.id, post.id))
+          publishNote = `Draft requested, but the post went live (${why}): ${liveUrl ?? publishedUrl ?? "no address"}. Plugin older than 2.1?`.slice(0, 500)
           await sendOwner(
             `⚠️ ${normalUrl}: просили черновик, а статья сразу вышла в открытый доступ ` +
               `(${reported ? `плагин ответил post_status "${reported}"` : "плагин вернул живой адрес"}): ` +
               `${liveUrl ?? publishedUrl ?? "адреса нет"}\n«${article.title}»\nСкорее всего, плагин у клиента старше 2.1. Снимать с публикации сами не стали.`,
           )
         } else {
-          const [owner] = await db.select({ email: users.email, name: users.name })
-            .from(users).where(eq(users.id, post.userId)).limit(1)
-          if (owner?.email) {
-            const postId = Number(pluginAnswer.post_id)
-            // On the host WordPress itself calls home (the plugin's permalink is built on it): its login
-            // cookie is set there only, so an editor link on the other host (www or not) ends at a login.
-            let wpBase = normalUrl
-            try {
-              if (liveUrl) wpBase = new URL(liveUrl).origin
-            } catch {}
-            const editUrl = Number.isInteger(postId) && postId > 0
-              ? `${wpBase}/wp-admin/post.php?post=${postId}&action=edit`
-              : `${wpBase}/wp-admin/edit.php?post_status=draft&post_type=post`
-            await sendEmail({
-              to: owner.email,
-              subject: (siteProfile?.language ?? "").toLowerCase().startsWith("de")
-                ? `Entwurf zur Freigabe: ${article.title}`
-                : `Draft ready for your approval: ${article.title}`,
-              html: draftReadyEmail(owner.name ?? "there", article.title, editUrl, siteProfile?.language),
-            }).catch((e) => console.warn("[SEO Autopilot] draft notice failed:", e))
-          }
+          const postId = Number(pluginAnswer.post_id)
+          // On the host WordPress itself calls home (the plugin's permalink is built on it): its login
+          // cookie is set there only, so an editor link on the other host (www or not) ends at a login.
+          let wpBase = normalUrl
+          try {
+            if (liveUrl) wpBase = new URL(liveUrl).origin
+          } catch {}
+          draftNotice = Number.isInteger(postId) && postId > 0
+            ? `${wpBase}/wp-admin/post.php?post=${postId}&action=edit`
+            : `${wpBase}/wp-admin/edit.php?post_status=draft&post_type=post`
         }
       }
+      // Their server took the article: the "Last check" on "Your website" says so. A webhook site's
+      // missing list card is the note below, not a broken connection.
+      await db.update(connectedSites).set({ lastCheckedAt: new Date(), lastCheckOk: true }).where(eq(connectedSites.id, site.id))
     }
 
     // Save articleData and mark as published
@@ -570,9 +598,12 @@ export async function publishScheduledPost(duePost: ScheduledPost, ctx: PublishC
         publishedAt: new Date(),
         publishedUrl: liveUrl,
         publishAttempts: (post.publishAttempts ?? 0) + 1,
+        ...(publishNote ? { publishError: publishNote } : {}),
         ...(article.coverImageUrl ? { coverImageUrl: article.coverImageUrl } : {}),
       })
       .where(eq(scheduledPosts.id, post.id))
+
+    if (draftNotice && site) await sendDraftNotice(post, site, siteProfile?.language, article.title, draftNotice)
 
     return {
       claimed: true,
@@ -597,120 +628,60 @@ export async function publishScheduledPost(duePost: ScheduledPost, ctx: PublishC
   }
 }
 
-// What the AI-visibility plan's queue (/root/blog_engine/client_writer.py seed-geo) works with, the
-// same as there: our own sites, whose plan articles own_geo_writer.py writes; the four assistants.
-const OWN_SITES = ["itgrows", "itgrows-business"]
-const PLAN_ENGINES = ["chatgpt", "claude", "gemini", "perplexity"]
-
 const dbRows = (r: unknown): Record<string, unknown>[] =>
   Array.isArray(r) ? (r as Record<string, unknown>[]) : ((r as { rows?: Record<string, unknown>[] }).rows ?? [])
 
-/** A question as the plan matches it: case, extra spaces and the closing "?" aside (lib/geo-report.ts
- *  questionKey, client_writer.py question_key). */
-const planQuestionKey = (q: unknown) =>
-  String(q ?? "").trim().toLowerCase().replace(/\s+/g, " ").replace(/[?.!]+$/, "")
-
-/** A connected site's url or blog_domain as a bare host; either may come without a scheme
- *  (client_writer.py site_host). */
-function siteHost(u: string | null | undefined): string {
-  const s = (u ?? "").trim()
-  if (!s) return ""
-  try {
-    return new URL(s.includes("://") ? s : `https://${s}`).host.toLowerCase().replace(/^www\./, "")
-  } catch {
-    return ""
-  }
+/** A client of the AI-visibility service: set up by hand (geo_clients) or paying for a followed site. Their
+ *  topics come from the plan or from us, never from the batch scheduler (app/api/schedule/batch, which
+ *  asks this too). Throws when it can't tell: the callers then leave the queue alone. */
+export async function isGeoQueueClient(userId: string): Promise<boolean> {
+  const [r] = dbRows(
+    await db.execute(sql`
+      SELECT (EXISTS (SELECT 1 FROM geo_clients gc WHERE gc.user_id = ${userId})
+              OR EXISTS (SELECT 1 FROM geo_follows f WHERE f.user_id = ${userId} AND f.plan = 'paid')) AS client`)
+  )
+  return Boolean(r?.client)
 }
 
-type PlanAnswer = { samples?: number; named?: number; named_instead?: unknown[] }
-
-/** The day-0 questions that are Article steps of the plan (parts.tsx planSteps, client_writer.py
- *  article_questions): no assistant that could be checked named the site, one named others, and it is
- *  not a list question (lib/geo-list-question.ts listQuestions, with the site profile's answer key
- *  `generated`), which the plan wins through the places quoted. */
-function planArticleQuestions(results: unknown, generated: unknown): string[] {
-  if (!Array.isArray(results)) return []
-  const rows = results as { q?: unknown; engines?: Record<string, PlanAnswer | undefined> }[]
-  const listed = listQuestions(rows.map((r) => r?.q), generated)
-  return rows.flatMap((r, i) => {
-    if (listed[i]) return []
-    const eng = r?.engines ?? {}
-    const checked = PLAN_ENGINES.filter((e) => (eng[e]?.samples ?? 0) > 0)
-    if (!checked.length || checked.some((e) => (eng[e]?.named ?? 0) > 0)) return []
-    return checked.some((e) => (eng[e]?.named_instead ?? []).length > 0) ? [String(r.q ?? "")] : []
-  })
+/** A GEO client's last scheduled post has gone out: one line to Kiryl and nothing else. Reached only after
+ *  a publish, and the cron gets here once all the run's rows are done, so it is said once per queue.
+ *  Returns false when the queue still holds something. */
+export async function warnGeoQueueEmpty(userId: string, siteName: string | null): Promise<boolean> {
+  const left = await db
+    .select({ id: scheduledPosts.id })
+    .from(scheduledPosts)
+    // A failed row the cron will retry is still in the queue: said now, it would be said again when it goes out.
+    .where(and(eq(scheduledPosts.userId, userId), sql`(${scheduledPosts.status} IN ('scheduled', 'generating')
+      OR (${scheduledPosts.status} = 'failed' AND coalesce(${scheduledPosts.publishAttempts}, 0) < 3))`))
+    .limit(1)
+  if (left.length) return false
+  await sendOwner(`📭 Очередь статей кончилась: ${siteName ?? userId}. Новых тем система сама не ставит; выбрать и поставить следующие в сессии.`)
+  return true
 }
 
-/** Whether seed-geo (/root/blog_engine/client_writer.py) has a plan question to queue for this user,
- *  the one case where the plan fills their queue and the batch refill must not. It has to hold only
- *  when seed-geo would really queue something: if it held for anyone else, their blog would stop with
- *  nothing in place of the refill. So it asks what seed-geo asks:
- *  - `site`, where their articles are published (pickPublishSite), is not one of our own sites;
- *  - its host is the domain of a site of their plan that has a day-0 report (a paid follow, or a
- *    site of theirs in geo_client_sites), or a subdomain of it: one site's plan never goes on another;
- *  - one of that day-0 report's Article questions has no article of theirs yet, in any state. Once
- *    every one has, the plan has nothing left to queue and the refill takes over again.
- *  When the check fails it answers false: the refill as before, so the blog does not stop. */
-async function hasGeoPlanQuestions(userId: string, site: Site | null): Promise<boolean> {
-  try {
-    if (!site || OWN_SITES.includes(site.siteSlug ?? "")) return false
-    const hosts = [siteHost(site.url), siteHost(site.blogDomain)].filter(Boolean)
-    const plans = dbRows(
-      await db.execute(sql`
-        SELECT DISTINCT ON (s.domain) s.domain, r.results, s.profile
-        FROM geo_sites s
-        JOIN geo_runs r ON r.site_id = s.id AND r.kind = 'baseline' AND r.status = 'done'
-        WHERE EXISTS (SELECT 1 FROM geo_follows f
-                      WHERE f.site_id = s.id AND f.user_id = ${userId}
-                        AND (f.plan = 'paid' OR ${clientOwnsSql(sql.raw("f.user_id"), sql.raw("s.domain"))}))
-           OR EXISTS (SELECT 1 FROM geo_client_sites g WHERE g.user_id = ${userId} AND g.domain = s.domain)
-        ORDER BY s.domain, r.created_at DESC`)
-    )
-    for (const p of plans) {
-      const domain = String(p.domain)
-      const base = domain.split("#")[0]
-      if (!hosts.some((h) => h === base || h.endsWith(`.${base}`))) continue
-      const have = new Set(
-        dbRows(
-          await db.execute(sql`
-            SELECT geo_question FROM scheduled_posts WHERE user_id::text = ${userId} AND geo_domain = ${domain}
-            UNION ALL
-            SELECT geo_question FROM blog_posts WHERE user_id::text = ${userId} AND geo_domain = ${domain}`)
-        ).map((r) => planQuestionKey(r.geo_question))
-      )
-      if (planArticleQuestions(p.results, generatedQuestions(p.profile)).some((q) => !have.has(planQuestionKey(q)))) return true
-    }
-    return false
-  } catch {
-    return false
-  }
-}
-
-/** When a user has no scheduled post left after a publish, asks the batch scheduler for the next
- *  batch (it has its own guard against scheduling twice). Never throws. */
+/** After a publish. A GEO client's queue is never refilled here: Kiryl hears that it ended (warnGeoQueueEmpty).
+ *  Anyone else with no scheduled post left gets the next batch from the batch scheduler (it has its own
+ *  guard against scheduling twice), as before. Never throws. */
 export async function scheduleNextBatchIfEmpty(userId: string, ctx: PublishContext): Promise<void> {
   try {
+    const defaultSite = await publishSiteFor(userId)
+    if (await isGeoQueueClient(userId)) {
+      await warnGeoQueueEmpty(userId, defaultSite?.name ?? null)
+      return
+    }
     const remainingScheduled = await db
       .select({ id: scheduledPosts.id })
       .from(scheduledPosts)
       .where(and(eq(scheduledPosts.userId, userId), eq(scheduledPosts.status, "scheduled")))
 
     // If no scheduled posts remain → auto-schedule next batch
-    if (remainingScheduled.length === 0) {
-      // The site the user's articles are published to
-      const defaultSite = await publishSiteFor(userId)
-      // Not while the AI-visibility plan has questions to queue for it: the batch scheduler invents SEO
-      // topics, which would take the place of the plan's questions in the queue, and the plan's
-      // Article steps would never get their article. seed-geo queues those (hasGeoPlanQuestions).
-      if (await hasGeoPlanQuestions(userId, defaultSite)) return
-      if (defaultSite) {
-        // Call batch scheduling endpoint (it has its own guard against duplicate scheduling)
-        await fetch(`${ctx.baseUrl}/api/schedule/batch`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json", "x-cron-secret": ctx.cronSecret },
-          body: JSON.stringify({ siteUrl: defaultSite.url }),
-        })
-      }
+    if (remainingScheduled.length === 0 && defaultSite) {
+      // Call batch scheduling endpoint (it has its own guard against duplicate scheduling)
+      await fetch(`${ctx.baseUrl}/api/schedule/batch`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-cron-secret": ctx.cronSecret },
+        body: JSON.stringify({ siteUrl: defaultSite.url }),
+      })
     }
   } catch {
     // Non-fatal: don't block the response if auto-reschedule fails

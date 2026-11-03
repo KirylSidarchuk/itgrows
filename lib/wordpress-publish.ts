@@ -18,6 +18,9 @@ export interface WpArticle {
   metaDescription?: string | null
   slug: string
   coverImageUrl?: string | null
+  /** This site's theme prints no post title (site_profile.titleInContent), so the title has to be in the
+   *  text or the page has none. Absent, as on every other site: the theme prints it. */
+  titleInContent?: boolean
 }
 
 export interface WpResult {
@@ -27,6 +30,8 @@ export interface WpResult {
   cover: "attached" | "skipped"
   error?: string
 }
+
+const escapeHeading = (t: string) => t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
 
 export function canUseAppPassword(site: {
   platform?: string | null
@@ -88,8 +93,10 @@ export async function publishToWordPress(
 
   // WordPress prints the post title above the content, and the article carries its own H1, so
   // every page showed the heading twice. The hosted blog needs that H1 and keeps it; only the
-  // copy going to WordPress loses it.
+  // copy going to WordPress loses it. A theme that prints no title (firma-ausland.de) is the other
+  // way round: the one H1 the page will have is at the top of the text.
   let content = article.content.replace(/^\s*<h1\b[^>]*>[\s\S]*?<\/h1>\s*/i, "")
+  if (article.titleInContent) content = `<h1>${escapeHeading(article.title)}</h1>\n${content}`
 
   // The FAQ schema used to come from our own blog page, which never renders for a customer's
   // WordPress. Carried inside the HTML, it arrives wherever the article is published.
