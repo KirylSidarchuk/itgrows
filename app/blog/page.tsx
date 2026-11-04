@@ -6,6 +6,7 @@ import { blogPosts } from "@/lib/db/schema"
 import { desc, eq } from "drizzle-orm"
 import AiVisibilityGuides from "@/components/geo/AiVisibilityGuides"
 import { OG_GEO } from "@/lib/entity"
+import CompanyLine from "@/components/CompanyLine"
 
 export const revalidate = 0 // always fetch fresh from DB
 
@@ -139,6 +140,7 @@ export default async function BlogPage() {
       {/* Footer */}
       <footer className="border-t border-black/10 px-6 py-8 text-center text-slate-500 text-sm bg-[#ebe9e5]">
         <p>© 2026 ItGrows.ai. All rights reserved.</p>
+        <CompanyLine className="mt-2" />
       </footer>
     </div>
   )

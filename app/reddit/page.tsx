@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import Link from "next/link"
 import RequestForm from "./RequestForm"
+import CompanyLine from "@/components/CompanyLine"
 
 // Server-rendered and static: the substance has to be in the HTML for search engines and
 // assistants. Every claim here is something the engine does today, checked on its first run
@@ -222,6 +223,7 @@ export default function RedditLanding() {
             <Link href="/terms" className="hover:text-[#1b1916]">Terms</Link>
           </div>
         </div>
+        <CompanyLine className="max-w-6xl mx-auto mt-2" />
       </footer>
     </div>
   )

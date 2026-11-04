@@ -4,6 +4,7 @@ import { noteCrawler } from "@/lib/crawler-log"
 import { db } from "@/lib/db"
 import { blogPosts } from "@/lib/db/schema"
 import { desc, eq, and, isNull } from "drizzle-orm"
+import CompanyLine from "@/components/CompanyLine"
 
 // revalidate 0 rather than a static build: a prerendered page never executes on request, so the
 // crawler telemetry below would record nothing — which is how the first attempt at measuring this
@@ -146,6 +147,7 @@ export default async function BusinessBlogPage() {
           <Link href="/" className="hover:text-[#1b1916] transition-colors">ItGrows for Business</Link>{" · "}
           <Link href="/privacy" className="hover:text-[#1b1916] transition-colors">Privacy</Link>
         </div>
+        <CompanyLine className="mt-2" />
       </footer>
     </div>
   )

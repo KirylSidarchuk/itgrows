@@ -9,6 +9,7 @@ import type { Metadata } from "next"
 import AboutItGrows from "@/components/geo/AboutItGrows"
 import { liveGuides } from "@/components/geo/guide-data"
 import { guideAlternates, keepReadingCandidates } from "@/lib/geo-guides"
+import CompanyLine from "@/components/CompanyLine"
 
 const SITE_SLUG = "itgrows-business"
 const BASE = "https://www.itgrows.ai"
@@ -315,6 +316,7 @@ export default async function BusinessBlogPostPage({ params }: { params: Promise
           <Link href={ui.links.home} className="hover:text-[#1b1916] transition-colors">{ui.home}</Link>{" · "}
           <Link href={ui.links.all} className="hover:text-[#1b1916] transition-colors">{ui.allArticles}</Link>
         </div>
+        <CompanyLine className="mt-2" />
       </footer>
     </div>
   )

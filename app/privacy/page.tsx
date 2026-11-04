@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import type { ReactNode } from "react"
 import Link from "next/link"
+import CompanyLine from "@/components/CompanyLine"
 
 export const dynamic = "force-static"
 
@@ -407,7 +408,7 @@ export default function PrivacyPage() {
           <Link href="/privacy" className="hover:text-[#1b1916]">Privacy Policy</Link> ·{" "}
           <Link href="/terms" className="hover:text-[#1b1916]">Terms of Service</Link>
         </p>
-        <p className="mt-2 text-xs text-slate-400">Magiscan Inc. · 919 North Market Street, Wilmington, DE 19801, USA</p>
+        <CompanyLine className="mt-2" />
       </footer>
     </div>
   )

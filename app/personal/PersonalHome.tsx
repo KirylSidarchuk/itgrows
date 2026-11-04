@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { track } from "@vercel/analytics"
+import CompanyLine from "@/components/CompanyLine"
 
 // Landing funnel events used to go to Vercel Analytics ONLY. That is a separate stream with no join
 // key to our own tables, so the biggest drop-off in the business -- people who generate posts, see
@@ -1175,6 +1176,7 @@ export default function PersonalHome() {
           {" "}·{" "}
           <Link href="/terms" className="hover:text-[#1b1916] transition-colors">Terms of Service</Link>
         </p>
+        <CompanyLine className="mt-2" />
       </footer>
 
       {/* Sticky mobile CTA — once the visitor has their posts, let them start the trial without

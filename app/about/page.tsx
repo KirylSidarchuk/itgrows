@@ -12,6 +12,7 @@ import { absoluteUrl, localePath } from "@/lib/i18n/paths"
 import { rich } from "@/lib/i18n/rich"
 import { getLocale } from "@/lib/i18n/server"
 import aboutNs from "@/lib/i18n/messages/about"
+import CompanyLine from "@/components/CompanyLine"
 
 // What ItGrows is, for people and for the machines that read it: AI visibility (GEO) only, as the
 // Organization in lib/entity.ts says (owner's decision, 26 Oct 2026). The LinkedIn/X product is one
@@ -92,6 +93,7 @@ export default async function AboutPage() {
               link: (c) => <Link href="/personal" className="text-violet-700">{c}</Link>,
             })}
           </p>
+          <CompanyLine className="mt-6 text-slate-500" />
         </main>
       </div>
     </LocaleProvider>

@@ -5,6 +5,7 @@ import siteFooter from "@/lib/i18n/messages/siteFooter"
 import { localePath } from "@/lib/i18n/paths"
 import { rich } from "@/lib/i18n/rich"
 import { getLocale } from "@/lib/i18n/server"
+import CompanyLine from "@/components/CompanyLine"
 
 // The footer of the public pages ("/"; /business redirects there). Short on purpose: what ItGrows is
 // in one line, then the way around the site. The long description lives on /about.
@@ -85,6 +86,7 @@ export default async function SiteFooter() {
         </div>
         <div className="mt-12 pt-6 border-t border-white/10 text-xs text-slate-500">
           <p>© 2026 ItGrows.ai</p>
+          <CompanyLine className="mt-1.5" linkClassName="hover:text-white" />
           {/* The growth guarantee's footnote, the last line of the page: the "*" of its line above (hero,
               plan card, FAQ, #apply) points here. */}
           <p className="mt-3 text-[11px] leading-relaxed text-slate-400">

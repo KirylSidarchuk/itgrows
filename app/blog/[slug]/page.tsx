@@ -12,6 +12,7 @@ import AiVisibilityGuides from "@/components/geo/AiVisibilityGuides"
 const ITGROWS_OWNER_USER_ID = "7cd0011c-fadd-4ff5-bd1e-6445fea70b22"
 import sanitizeHtml from "sanitize-html"
 import type { Metadata } from "next"
+import CompanyLine from "@/components/CompanyLine"
 
 function formatDate(date: Date): string {
   return date.toLocaleDateString("en-US", {
@@ -330,6 +331,7 @@ export default async function BlogPostPage({
       {/* Footer */}
       <footer className="border-t border-black/10 px-6 py-8 text-center text-slate-500 text-sm bg-[#ebe9e5]">
         <p>© 2026 ItGrows.ai. All rights reserved.</p>
+        <CompanyLine className="mt-2" />
       </footer>
     </div>
   )

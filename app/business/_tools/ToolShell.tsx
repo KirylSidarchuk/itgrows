@@ -7,6 +7,7 @@ import { localePath } from "@/lib/i18n/paths"
 import { rich } from "@/lib/i18n/rich"
 import growthGuarantee from "@/lib/i18n/messages/growthGuarantee"
 import toolShellNs from "@/lib/i18n/messages/toolShell"
+import CompanyLine from "@/components/CompanyLine"
 
 // Shared frame for the tools under /business: the same header and footer as the guides, so a
 // visitor who lands on a tool can reach the guides and the product in one click.
@@ -44,6 +45,7 @@ export default async function ToolShell({ children, guaranteeFootnote = false }:
         <footer className="border-t border-black/10 px-6 py-8 text-center text-slate-500 text-sm bg-[#ebe9e5] mt-16">
           © 2026 ItGrows.ai · <Link href={localePath(locale, "/")} className="hover:text-[#1b1916]">{m.footerHome}</Link> ·{" "}
           <Link href="/business/blog" className="hover:text-[#1b1916]">{m.guides}</Link>
+          <CompanyLine className="mt-2" />
           {guaranteeFootnote && (
             <p className="mt-3 text-xs text-slate-600">
               {rich(g.footnote, {
