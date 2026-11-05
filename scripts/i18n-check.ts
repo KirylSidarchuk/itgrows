@@ -464,7 +464,7 @@ async function main() {
   // The settings pv reads: under some Node versions a dynamic import of ../lib/geo-pricing is another instance.
   const { PRICE_TEST } = pv
   const ONE_PRICE_MONTH = 49900
-  const IP = { "x-forwarded-for": "203.0.113.7", "x-vercel-ip-country": "US" }
+  const IP = { "x-forwarded-for": "203.0.113.7" }
   const decide = async (pathAndQuery: string, o: Opts = {}) => {
     const headers: Record<string, string> = { "user-agent": o.ua ?? BROWSER, "accept-language": "en-US,en;q=0.9", ...IP, ...o.headers }
     if (o.cookie) headers.cookie = o.cookie
@@ -507,25 +507,22 @@ async function main() {
     assert.equal(pin?.flag, "n")
     assert.equal((await decide("/")).pin?.cents, pin?.cents)
   })
-  await check("the EEA, the UK, Switzerland and an unknown country: no pin, no cookie, the same with one held", async () => {
+  await check("the country decides nothing: the EEA, the UK, Switzerland, an unknown one or none, each as anyone", async () => {
     const held = await decide("/")
-    for (const country of ["DE", "fr", "IE", "NO", "GB", "CH", "RE", "JE", "", "XX", "nonsense"]) {
+    assert.equal(held.pin?.flag, "n")
+    for (const country of ["DE", "fr", "IE", "NO", "GB", "CH", "RE", "JE", "US", "", "XX", "nonsense"]) {
       const headers = { "x-vercel-ip-country": country }
-      for (const r of [await decide("/", { headers }), await decide("/?ref=li", { headers }), await decide("/about", { headers, cookie: jar(held.id as string, held.raw as string) }), await decide("/", { headers, ua: GOOGLEBOT })]) {
-        assert.equal(r.raw, null, country)
-        assert.equal(r.id, null, country)
-        assert.ok(!r.setsPin && !r.setsVid, country)
-      }
-      assert.equal(pv.inTestRegion(new Headers(headers)), false, country)
+      const first = await decide("/", { headers })
+      assert.equal(first.pin?.flag, "n", country)
+      assert.equal(first.pin?.cents, held.pin?.cents, country)
+      assert.ok(first.setsVid && first.setsPin, country)
+      const again = await decide("/about", { headers, cookie: jar(held.id as string, held.raw as string) })
+      assert.equal(again.raw, held.raw, country)
+      assert.equal((await decide("/?ref=li", { headers })).pin?.flag, "l", country)
+      const crawler = await decide("/", { headers, ua: "ClaudeBot/1.0" })
+      assert.equal(crawler.raw, null, country)
+      assert.ok(!crawler.setsPin && !crawler.setsVid, country)
     }
-    const none = new Headers({ "x-forwarded-for": "203.0.113.7" })
-    assert.equal(pv.inTestRegion(none), false)
-    for (const country of ["US", "ca", "AU", "NZ", "BY", "TR"]) assert.equal(pv.inTestRegion(new Headers({ "x-vercel-ip-country": country })), true, country)
-    // A QA link still shows its arm there, with nothing stored.
-    const value = await pv.qaLinkValue(19900)
-    const qa = await decide(`/?price_qa=${value}`, { headers: { "x-vercel-ip-country": "DE" } })
-    assert.equal(qa.qa, value)
-    assert.ok(!qa.setsPin && !qa.setsVid)
   })
   await check("every arm is reachable, about evenly, by address", async () => {
     const seen: Record<number, number> = {}
