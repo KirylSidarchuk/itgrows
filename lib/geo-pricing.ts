@@ -32,7 +32,7 @@ import { formatUsd } from "@/lib/i18n/format"
 // - NO CLOAKING, a change from pickaclass, because itgrows runs live Google and Meta ads and Google's rules
 //   for site tests say to treat its crawlers like any visitor: Googlebot, AdsBot-Google, Bingbot,
 //   facebookexternalhit and every other search, ad-review or link-preview bot get an arm through the
-//   same code as a new visitor, from a hash of address and user agent, as they keep no cookie. Only AI
+//   same code as a new visitor, from a hash of the address, as they keep no cookie. Only AI
 //   training and answer crawlers that are neither (lib/geo-price-visitor.ts AI_CRAWLER) see the one
 //   price. The user agent otherwise only keeps bots out of the statistics.
 // - IN EVERY COUNTRY, an unknown one included (Kiryl, 5 Nov 2026: a test of one day, to collect data). The price

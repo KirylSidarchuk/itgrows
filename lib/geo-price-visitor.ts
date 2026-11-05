@@ -26,8 +26,8 @@ export { PRICE_TEST }
 //   a pin of this epoch  it holds; ?ref=li turns it into l; an arm with weight 0 moves to a live arm;
 //   our own cookies that do not verify, or an older cookie of ours (OLDER_COOKIE), or no address  r;
 //   ?ref=li  l;
-//   anyone else, search engines, ad reviewers and link previews included  an arm, from a hash of address
-//   and user agent. A bot keeps no cookie and still sees the same arm next time, through this same path.
+//   anyone else, search engines, ad reviewers and link previews included  an arm, from a hash of the
+//   address. A bot keeps no cookie and still sees the same arm next time, through this same path.
 //
 // A request reaches the render with the signed pin and the id in request headers, whatever the client
 // sent is dropped (middleware.ts): the render trusts them only after verifying the signature.
@@ -215,9 +215,10 @@ export async function decidePrice(req: NextRequest): Promise<PriceDecision | nul
     const address = visitorAddress(req.headers)
     const fresh = !heldId && !heldPin && !hasOlderCookie(req.cookies.getAll().map((c) => c.name))
     if (!sales && fresh && address) {
-      // The arm from the address and the agent, not from the new id: the first page of a visitor, a bot
-      // that never keeps the cookie, and a visitor who cleared his cookies all get the same answer.
-      next = { epoch: PRICE_TEST.epoch, cents: await bucketArm(await priceHmac(`price-seed|${address}|${ua}`)), flag: "n" }
+      // The arm from the address alone, not from the new id or the agent: the first page of a visitor, a bot
+      // that never keeps the cookie, a visitor who cleared his cookies, and one person going from Instagram's
+      // in-app browser to Safari on the same connection all get the same answer.
+      next = { epoch: PRICE_TEST.epoch, cents: await bucketArm(await priceHmac(`price-seed|${address}`)), flag: "n" }
     }
     const value = await signPin(id, next)
     if (!opening) return { headers: { [PRICE_HEADER]: value, [VISITOR_HEADER]: id, [PRICE_CARRY_HEADER]: "1" }, cookies: {} }

@@ -448,7 +448,7 @@ async function main() {
   await check("English-only and system paths are not matched", () => {
     const extra = [
       "/personal", "/company", "/reddit", "/blog", "/blog/x/y", "/business/x", "/business/blog", "/business/blog/x/y",
-      "/api/geo/teaser", "/_next/static/chunks/a.js", "/og/geo", "/privacy", "/terms", "/sitemap.xml", "/robots.txt",
+      "/api/geo/teaser", "/_next/static/chunks/a.js", "/og/geo", "/privacy", "/sitemap.xml", "/robots.txt",
       "/deutsch", "/rus", "/english", "/enterprise",
     ].filter(matched)
     assert.deepEqual(extra, [])
@@ -532,6 +532,34 @@ async function main() {
     }
     assert.deepEqual(Object.keys(seen).map(Number).sort((a, b) => a - b), [...PRICE_TEST.variants])
     for (const n of Object.values(seen)) assert.ok(n > 60 && n < 150, `arm count ${n}`)
+  })
+  await check("the arm is the address's: another browser on the same connection gets the same one", async () => {
+    const first = await decide("/", { ua: "Mozilla/5.0 (iPhone; CPU iPhone OS 18_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/22H352 Instagram 453.0.0.39.58" })
+    assert.equal(first.pin?.flag, "n")
+    for (const ua of [BROWSER, "Mozilla/5.0 (iPhone; CPU iPhone OS 18_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.6 Mobile/15E148 Safari/604.1", GOOGLEBOT]) {
+      assert.equal((await decide("/", { ua })).pin?.cents, first.pin?.cents, ua)
+    }
+  })
+  await check("our own browser checks count as a bot, so they write no exposure row", () => {
+    assert.ok(cfg.isBot("Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 ItGrows-research"))
+  })
+  await check("a sales link through a letter's two pages: /terms pins, and the GEO cabinet's sign-in redirect keeps the mark", async () => {
+    assert.ok(matched("/terms"))
+    // /terms is not a page of the language layer: the pin goes out in the cookies alone.
+    const terms = await decide("/terms?ref=li")
+    assert.ok(terms.setsPin && terms.setsVid)
+    const termsId = new RegExp(`${pv.VISITOR_COOKIE}=([^;]*)`).exec(terms.setCookie)?.[1]
+    const termsPin = await pv.readPin(termsId, new RegExp(`${pv.PRICE_COOKIE}=([^;]*)`).exec(terms.setCookie)?.[1])
+    assert.equal(termsPin?.flag, "l")
+    assert.equal(terms.res.headers.get("location"), null)
+    const plain = await decide("/terms")
+    assert.equal(plain.raw, null)
+    assert.ok(!plain.setsPin && !plain.setsVid)
+    const plan = (await decide("/business/dashboard/plan?ref=li")).res.headers.get("location") ?? ""
+    assert.match(plan, /\/login\?callbackUrl=%2Fbusiness%2Fdashboard%2Fplan&ref=li$/)
+    assert.equal((await decide(new URL(plan).pathname + new URL(plan).search)).pin?.flag, "l")
+    assert.doesNotMatch((await decide("/business/dashboard/plan")).res.headers.get("location") ?? "", /ref=li/)
+    assert.doesNotMatch((await decide("/cabinet?ref=li")).res.headers.get("location") ?? "", /ref=li/)
   })
   await check("no cloaking: search, ad-review and preview bots get an arm by the same code, stable by address", async () => {
     for (const ua of [

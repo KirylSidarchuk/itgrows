@@ -26,7 +26,9 @@ const requireLogin = auth((req) => {
   const isCabinet = nextUrl.pathname.startsWith("/cabinet")
 
   if ((isDashboard || isBusinessDashboard || isCabinet) && !isLoggedIn) {
-    return NextResponse.redirect(new URL(`/login?callbackUrl=${encodeURIComponent(nextUrl.pathname)}`, nextUrl))
+    // A sales link into the GEO cabinet keeps its mark: the sign-in page pins the one price (lib/geo-price-visitor.ts).
+    const sales = isBusinessDashboard && nextUrl.searchParams.get("ref") === "li" ? "&ref=li" : ""
+    return NextResponse.redirect(new URL(`/login?callbackUrl=${encodeURIComponent(nextUrl.pathname)}${sales}`, nextUrl))
   }
 
   return NextResponse.next()
@@ -85,7 +87,9 @@ export default async function middleware(req: NextRequest, event: NextFetchEvent
     res.headers.set("Cache-Control", "private, no-store")
     return res
   }
-  const price = isPricedPath(pathname) ? await decidePrice(req) : null
+  // /terms shows no price and stays cached, but letters link it and it links "/": only a sales link is decided there.
+  const termsSales = pathname === "/terms" && req.nextUrl.searchParams.get("ref") === "li"
+  const price = isPricedPath(pathname) || termsSales ? await decidePrice(req) : null
   const res = respond(req, priceRequestHeaders(req, price))
   if (price) {
     const options = priceCookieOptions(req.nextUrl.protocol === "https:")
@@ -121,5 +125,7 @@ export const config = {
     "/business/blog/:slug",
     // The blog's articles have a price too.
     "/blog/:slug",
+    // No price, but a letter's link with ?ref=li pins the one price here.
+    "/terms",
   ],
 }

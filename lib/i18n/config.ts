@@ -138,6 +138,8 @@ const BOT_UA = new RegExp(
     "apis-google", "duckassist", "diffbot", "vercel", "screenshot", "puppeteer", "playwright",
     "phantomjs", "selenium", "embedly", "outbrain", "bitly", "httrack", "cloudflare", "datadog",
     "newrelic", "statuscake", "site24x7",
+    // Our own browser checks of the site: no exposure row in the price test (/api/geo/price).
+    "itgrows-research",
   ].join("|"),
   "i",
 )

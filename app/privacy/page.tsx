@@ -303,7 +303,7 @@ export default function PrivacyPage() {
               <DataBlock
                 title="Testing the plan’s price"
                 what="While we test the price of the AI visibility plan: a random id (the itg_vid cookie), the price you were shown, when you first saw it, the referring site, host only, campaign tags in the link such as utm, the page you arrived on, and whether the price card came into view and a quick check was started. No IP address and no account."
-                why="To learn which price works, and to keep showing you the same one. The price you are shown first is picked from a keyed hash of your IP address and browser, and that hash is not stored. To keep their price, we recognise people who visited before: on a first visit we compare your IP address and browser with our existing visit and quick-check records, and keep only the yes or no."
+                why="To learn which price works, and to keep showing you the same one. The price you are shown first is picked from a keyed hash of your IP address, and that hash is not stored. To keep their price, we recognise people who visited before: on a first visit we compare your IP address and browser with our existing visit and quick-check records, and keep only the yes or no."
                 basis={`${INTEREST} in setting our prices and treating returning visitors consistently.`}
               />
               <DataBlock
