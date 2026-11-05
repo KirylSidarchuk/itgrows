@@ -41,13 +41,19 @@ const en = {
   askedTodayNoTime: "Asked today",
   askedAt: (today: boolean, time: string) => `Asked ${today ? "today" : "yesterday"} at ${time}`,
   joinAnd: (names: string[]) => names.join(" and "),
-  subZero: (several: boolean, who: string, domain: string) =>
-    `We asked ${who} 5 questions your buyers ask. ${several ? `Neither named ${domain}` : `It didn't name ${domain}`}. A buyer asking this today doesn't hear your name.`,
+  // The count is over the answers that name some business (withNames of all `of`); general advice names nobody.
+  subZero: (several: boolean, who: string, domain: string, withNames: number, of: number) =>
+    `We asked ${who} 5 questions your buyers ask. ${several ? "They" : "It"} named businesses in ${withNames} of ${of} answers, but never ${domain}. A buyer asking this today doesn't hear your name.`,
+  subNoNames: (several: boolean, who: string) =>
+    `We asked ${who} 5 questions your buyers ask. ${several ? "They" : "It"} gave general advice and named no business at all: a buyer asking this today doesn't hear your name.`,
   subAll: (several: boolean, who: string, domain: string) =>
-    `${several ? "Both assistants" : who} named ${domain} in every answer. This check asks 2 of the 4 assistants: your free report shows whether Claude and Gemini name you too.`,
+    `${several ? "Both assistants" : who} named ${domain} in every answer that names a business. This check asks 2 of the 4 assistants: your free report shows whether Claude and Gemini name you too.`,
   subSome: (several: boolean, named: number, rest: number, who: string) =>
-    `You came up in ${named} answer${named === 1 ? "" : "s"}. In the other ${rest}, ${who} answered without you. That's where we start.`,
+    `You came up in ${named} answer${named === 1 ? "" : "s"}. In the other ${rest === 1 ? "answer that names a business" : `${rest} that name businesses`}, ${who} named someone else. That's where we start.`,
   ofAnswersNamed: (named: number, of: number) => `of ${of} answers named you`,
+  ofNamingAnswers: (named: number, of: number) => `of ${of} ${of === 1 ? "answer" : "answers"} naming businesses ${named === 1 ? "mentions" : "mention"} you`,
+  engineNoNames: "No names",
+  quoteAsked: (engine: string, q: string) => `Asked “${q}”, ${engine} answered:`,
   silentNote: (several: boolean, names: string) => `${names} didn't respond and ${several ? "are" : "is"} left out of the count.`,
   engineOf: (of: number) => `of ${of}`,
   noAnswer: "No answer",
@@ -149,13 +155,18 @@ export default defineMessages(en, {
     askedTodayNoTime: "Heute gefragt",
     askedAt: (today, time) => `${today ? "Heute" : "Gestern"} um ${time} gefragt`,
     joinAnd: (names) => names.join(" und "),
-    subZero: (several, who, domain) =>
-      `Wir haben ${who} 5 Fragen gestellt, wie Ihre Kunden sie stellen. ${several ? `Keiner der beiden hat ${domain} genannt.` : `${domain} wurde nicht genannt.`} Ein Kunde, der das heute fragt, hört Ihren Namen nicht.`,
+    subZero: (several, who, domain, withNames, of) =>
+      `Wir haben ${who} 5 Fragen gestellt, wie Ihre Kunden sie stellen. In ${withNames} von ${of} Antworten wurden Unternehmen genannt, aber nie ${domain}. Ein Kunde, der das heute fragt, hört Ihren Namen nicht.`,
+    subNoNames: (several, who) =>
+      `Wir haben ${who} 5 Fragen gestellt, wie Ihre Kunden sie stellen. Die Antworten geben allgemeine Ratschläge und nennen kein einziges Unternehmen: Ein Kunde, der das heute fragt, hört Ihren Namen nicht.`,
     subAll: (several, who, domain) =>
-      `${several ? "Beide Assistenten haben" : `${who} hat`} ${domain} in jeder Antwort genannt. Dieser Check fragt 2 der 4 Assistenten: Ihr kostenloser Bericht zeigt, ob auch Claude und Gemini Sie nennen.`,
+      `${several ? "Beide Assistenten haben" : `${who} hat`} ${domain} in jeder Antwort genannt, die Unternehmen nennt. Dieser Check fragt 2 der 4 Assistenten: Ihr kostenloser Bericht zeigt, ob auch Claude und Gemini Sie nennen.`,
     subSome: (several, named, rest, who) =>
-      `Sie wurden in ${named} ${named === 1 ? "Antwort" : "Antworten"} genannt. In ${rest === 1 ? "der anderen" : `den anderen ${rest}`} ${several ? "haben" : "hat"} ${who} ohne Sie geantwortet. Genau dort setzen wir an.`,
+      `Sie wurden in ${named} ${named === 1 ? "Antwort" : "Antworten"} genannt. In ${rest === 1 ? "der anderen Antwort, die Unternehmen nennt," : `den anderen ${rest}, die Unternehmen nennen,`} ${several ? "haben" : "hat"} ${who} jemand anderen genannt. Genau dort setzen wir an.`,
     ofAnswersNamed: (named, of) => `von ${of} Antworten ${named === 1 ? "nennt" : "nennen"} Sie`,
+    ofNamingAnswers: (named, of) => `von ${of} ${of === 1 ? "Antwort" : "Antworten"} mit Unternehmensnamen ${named === 1 ? "nennt" : "nennen"} Sie`,
+    engineNoNames: "Keine Namen",
+    quoteAsked: (engine, q) => `Auf die Frage „${q}“ antwortete ${engine}:`,
     silentNote: (several, names) =>
       `${names} ${several ? "haben" : "hat"} nicht geantwortet und ${several ? "werden" : "wird"} nicht mitgezählt.`,
     engineOf: (of) => `von ${of}`,
@@ -257,13 +268,19 @@ export default defineMessages(en, {
     askedTodayNoTime: "Posées aujourd’hui",
     askedAt: (today, time) => `Posées ${today ? "aujourd’hui" : "hier"} à ${time}`,
     joinAnd: (names) => names.join(" et "),
-    subZero: (several, who, domain) =>
-      `Nous avons posé à ${who} 5 questions que posent vos clients. ${several ? "Aucun des deux n’a mentionné" : "Il n’a pas mentionné"} ${domain}. Un client qui pose la question aujourd’hui n’entend pas votre nom.`,
+    subZero: (several, who, domain, withNames, of) =>
+      `Nous avons posé à ${who} 5 questions que posent vos clients. ${withNames} ${withNames > 1 ? "réponses" : "réponse"} sur ${of} ${withNames > 1 ? "mentionnent" : "mentionne"} des entreprises, mais jamais ${domain}. Un client qui pose la question aujourd’hui n’entend pas votre nom.`,
+    subNoNames: (several, who) =>
+      `Nous avons posé à ${who} 5 questions que posent vos clients. Les réponses donnent des conseils généraux et ne mentionnent aucune entreprise : un client qui pose la question aujourd’hui n’entend pas votre nom.`,
     subAll: (several, who, domain) =>
-      `${several ? "Les deux assistants ont" : `${who} a`} mentionné ${domain} dans chaque réponse. Ce test interroge 2 des 4 assistants : votre rapport gratuit montre si Claude et Gemini vous mentionnent aussi.`,
+      `${several ? "Les deux assistants ont" : `${who} a`} mentionné ${domain} dans chaque réponse qui mentionne des entreprises. Ce test interroge 2 des 4 assistants : votre rapport gratuit montre si Claude et Gemini vous mentionnent aussi.`,
     subSome: (several, named, rest, who) =>
-      `Vous apparaissez dans ${named} ${named > 1 ? "réponses" : "réponse"}. Dans ${rest > 1 ? `les ${rest} autres` : "l’autre"}, ${who} ${several ? "ont" : "a"} répondu sans vous. C’est là que nous commençons.`,
+      `Vous apparaissez dans ${named} ${named > 1 ? "réponses" : "réponse"}. Dans ${rest > 1 ? `les ${rest} autres qui mentionnent des entreprises` : "l’autre réponse qui mentionne des entreprises"}, ${who} ${several ? "ont" : "a"} mentionné quelqu’un d’autre. C’est là que nous commençons.`,
     ofAnswersNamed: (named, of) => `${named > 1 ? "réponses" : "réponse"} sur ${of} vous ${named > 1 ? "mentionnent" : "mentionne"}`,
+    ofNamingAnswers: (named, of) =>
+      `${named > 1 ? "réponses" : "réponse"} sur ${of} citant des entreprises vous ${named > 1 ? "mentionnent" : "mentionne"}`,
+    engineNoNames: "Aucun nom",
+    quoteAsked: (engine, q) => `À la question « ${q} », ${engine} a répondu :`,
     silentNote: (several, names) =>
       `${names} n’${several ? "ont" : "a"} pas répondu et ${several ? "sont exclus" : "est exclu"} du décompte.`,
     engineOf: (of) => `sur ${of}`,
@@ -366,13 +383,18 @@ export default defineMessages(en, {
     askedTodayNoTime: "Preguntado hoy",
     askedAt: (today, time) => `Preguntado ${today ? "hoy" : "ayer"} a las ${time}`,
     joinAnd: (names) => names.join(" y "),
-    subZero: (several, who, domain) =>
-      `Hicimos a ${who} 5 preguntas que hacen sus clientes. ${several ? "Ninguno de los dos mencionó" : "No mencionó"} ${domain}. Un cliente que pregunta esto hoy no oye su nombre.`,
+    subZero: (several, who, domain, withNames, of) =>
+      `Hicimos a ${who} 5 preguntas que hacen sus clientes. En ${withNames} de ${of} respuestas ${several ? "mencionaron" : "mencionó"} empresas, pero nunca ${domain}. Un cliente que pregunta esto hoy no oye su nombre.`,
+    subNoNames: (several, who) =>
+      `Hicimos a ${who} 5 preguntas que hacen sus clientes. Las respuestas dieron consejos generales y no mencionaron ninguna empresa: un cliente que pregunta esto hoy no oye su nombre.`,
     subAll: (several, who, domain) =>
-      `${several ? "Ambos asistentes mencionaron" : `${who} mencionó`} ${domain} en todas las respuestas. Esta comprobación pregunta a 2 de los 4 asistentes: su informe gratuito muestra si Claude y Gemini también le mencionan.`,
+      `${several ? "Ambos asistentes mencionaron" : `${who} mencionó`} ${domain} en todas las respuestas que mencionan empresas. Esta comprobación pregunta a 2 de los 4 asistentes: su informe gratuito muestra si Claude y Gemini también le mencionan.`,
     subSome: (several, named, rest, who) =>
-      `Usted apareció en ${named} ${named === 1 ? "respuesta" : "respuestas"}. En ${rest === 1 ? "la otra" : `las otras ${rest}`}, ${who} ${several ? "respondieron" : "respondió"} sin usted. Ahí es donde empezamos.`,
+      `Usted apareció en ${named} ${named === 1 ? "respuesta" : "respuestas"}. En ${rest === 1 ? "la otra respuesta que menciona empresas" : `las otras ${rest} que mencionan empresas`}, ${who} ${several ? "mencionaron" : "mencionó"} a otros. Ahí es donde empezamos.`,
     ofAnswersNamed: (named, of) => `de ${of} respuestas ${named === 1 ? "le menciona" : "le mencionan"}`,
+    ofNamingAnswers: (named, of) => `de ${of} ${of === 1 ? "respuesta que nombra" : "respuestas que nombran"} empresas ${named === 1 ? "le menciona" : "le mencionan"}`,
+    engineNoNames: "Sin nombres",
+    quoteAsked: (engine, q) => `A la pregunta «${q}», ${engine} respondió:`,
     silentNote: (several, names) => `${names} no ${several ? "respondieron y quedan" : "respondió y queda"} fuera del recuento.`,
     engineOf: (of) => `de ${of}`,
     noAnswer: "Sin respuesta",
@@ -475,14 +497,20 @@ export default defineMessages(en, {
     askedTodayNoTime: "Спросили сегодня",
     askedAt: (today, time) => `Спросили ${today ? "сегодня" : "вчера"} в ${time}`,
     joinAnd: (names) => names.join(" и "),
-    subZero: (several, who, domain) =>
-      `Мы задали ${who} 5 вопросов, которые задают ваши клиенты. ${several ? "Ни один из них не назвал" : "Ассистент не назвал"} ${domain}. Клиент, который спрашивает об этом сегодня, вашего имени не слышит.`,
+    subZero: (several, who, domain, withNames, of) =>
+      `Мы задали ${who} 5 вопросов, которые задают ваши клиенты. В ${withNames} из ${of} ${plural("ru", of, { one: "ответа", other: "ответов" })} названы компании, и ни в одном из них нет ${domain}. Клиент, который спрашивает об этом сегодня, вашего имени не слышит.`,
+    subNoNames: (several, who) =>
+      `Мы задали ${who} 5 вопросов, которые задают ваши клиенты. Ответы дают общие советы и не называют ни одной компании: клиент, который спрашивает об этом сегодня, вашего имени не слышит.`,
     subAll: (several, who, domain) =>
-      `${several ? "Оба ассистента назвали" : `${who} назвал`} ${domain} в каждом ответе. Эта проверка опрашивает 2 из 4 ассистентов: бесплатный отчёт покажет, называют ли вас Claude и Gemini.`,
+      `${several ? "Оба ассистента назвали" : `${who} назвал`} ${domain} в каждом ответе, где названы компании. Эта проверка опрашивает 2 из 4 ассистентов: бесплатный отчёт покажет, называют ли вас Claude и Gemini.`,
     subSome: (several, named, rest, who) =>
-      `Вас назвали в ${plural("ru", named, { one: `${named} ответе`, other: `${named} ответах` })}. ${rest === 1 ? "В оставшемся ответе" : `В остальных ${plural("ru", rest, { one: `${rest} ответе`, other: `${rest} ответах` })}`} ${who} ${several ? "обошлись" : "обошёлся"} без вас. С этого мы и начинаем.`,
+      `Вас назвали в ${plural("ru", named, { one: `${named} ответе`, other: `${named} ответах` })}. ${rest === 1 ? "В оставшемся ответе, где названы компании," : `В остальных ${plural("ru", rest, { one: `${rest} ответе`, other: `${rest} ответах` })}, где названы компании,`} ${who} ${several ? "назвали" : "назвал"} других. С этого мы и начинаем.`,
     ofAnswersNamed: (named, of) =>
       `из ${of} ${plural("ru", of, { one: "ответа", other: "ответов" })} ${plural("ru", named, { one: "назвал", other: "назвали" })} вас`,
+    ofNamingAnswers: (named, of) =>
+      `из ${of} ${plural("ru", of, { one: "ответа", other: "ответов" })} с названиями компаний ${plural("ru", named, { one: "назвал", other: "назвали" })} вас`,
+    engineNoNames: "Без названий",
+    quoteAsked: (engine, q) => `На вопрос «${q}» ${engine} ответил:`,
     silentNote: (several, names) =>
       `${names} не ${several ? "ответили и не учитываются" : "ответил и не учитывается"} в подсчёте.`,
     engineOf: (of) => `из ${of}`,

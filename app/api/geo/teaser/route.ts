@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server"
 import { sql } from "drizzle-orm"
 import { db } from "@/lib/db"
-import { geoCheck, clientIp, type PublicRun, type ResultRow } from "@/lib/geo-check"
+import { geoCheck, clientIp, type EngineAnswer, type PublicRun, type ResultRow } from "@/lib/geo-check"
 import { noteVisitorCheck } from "@/lib/geo-price-test"
 import { sendOwner } from "@/lib/telegram"
 import { visitSource } from "@/lib/visit-source"
+import { findName, readsAsBusiness } from "@/lib/geo-names"
 
 // The instant check on /business: five questions a buyer of this business would ask, put to ChatGPT
 // and Perplexity. POST starts it (or returns a result under a day old at once); GET ?id= follows it,
@@ -21,6 +22,13 @@ export const maxDuration = 30
 
 const OPEN_ROWS = 1
 const RUN_ID = /^[0-9a-f-]{36}$/i
+
+// An answer that names some business: this one or any other. General advice (what it costs, how it works) names
+// nobody; on 2-5 Nov 2026 4 answers in 10 were such, and counting them as "not named" turned 0 of 6 into 0 of 10.
+// The screen counts over these (AiAnswers.tsx), the stored summary keeps all of them. Any name counts, a register too:
+// the card lists every name as "named instead" (filtering only the count, 6 Nov, said "named no business" above a
+// list showing "Gas Safe Register"; and the filter also takes "Smile Society" or "24Marine" for no business).
+const namesSomeone = (a: EngineAnswer) => a.samples > 0 && (a.named > 0 || a.named_instead.length > 0)
 
 const anyNamed = (r: ResultRow) => Object.values(r.engines).some((a) => a.named > 0)
 const anyRivals = (r: ResultRow) => Object.values(r.engines).some((a) => a.named_instead.length > 0)
@@ -43,6 +51,7 @@ function openRow(r: ResultRow, domain: string) {
   const own = (d: string) => d === domain || d.endsWith("." + domain)
   const engines: Record<string, unknown> = {}
   for (const [e, a] of Object.entries(r.engines)) {
+    const quote = (a.quote ?? "").slice(0, 300)
     engines[e] = {
       named: a.named > 0,
       cited: a.cited > 0,
@@ -53,6 +62,13 @@ function openRow(r: ResultRow, domain: string) {
       sources: a.sources.filter(own),
       sourcesMore: a.sources.filter((d) => !own(d)).length,
       snippet: a.snippet.slice(0, 360),
+      quote,
+      // The name the quote is about: the VM quotes the first of the names it can (core.quote_naming), not always the
+      // first one (6 Nov: "Chalet Dental Care" where the first name was "Saint City Dental"). A business before a
+      // register when the sentence has both; "" when none is found (the card then goes by the first name).
+      quoteName: quote
+        ? (a.named_instead.find((n) => readsAsBusiness(n) && findName(quote, n)) ?? a.named_instead.find((n) => findName(quote, n)) ?? "")
+        : "",
     }
   }
   return { q: r.q, engines }
@@ -82,6 +98,8 @@ function view(run: PublicRun) {
   const rows = run.results ?? []
   const open = pickOpen(rows)
   const linked = rows.reduce((n, r) => n + Object.values(r.engines).filter((a) => a.cited > 0).length, 0)
+  const withNames: Record<string, number> = {}
+  for (const r of rows) for (const [e, a] of Object.entries(r.engines)) if (namesSomeone(a)) withNames[e] = (withNames[e] ?? 0) + 1
   return {
     ...base,
     status: "done",
@@ -91,7 +109,8 @@ function view(run: PublicRun) {
       named: run.summary.named,
       of: run.summary.of,
       linked,
-      engines: run.summary.engines,
+      withNames: Object.values(withNames).reduce((n, v) => n + v, 0),
+      engines: Object.fromEntries(Object.entries(run.summary.engines).map(([e, t]) => [e, { ...t, withNames: withNames[e] ?? 0 }])),
       namedInstead: run.summary.named_instead.slice(0, 1),
       namedInsteadMore: Math.max(0, run.summary.named_instead.length - 1),
     },

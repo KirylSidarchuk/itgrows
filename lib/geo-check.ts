@@ -25,6 +25,9 @@ export interface EngineAnswer {
   snippet: string
   sources: string[]
   named_instead: string[]
+  /** The instant check only, for an answer that does not name the client: the assistant's own sentence about the
+   *  first business it names instead (geo_check core.quote_naming). Missing from checks before 5 Nov 2026. */
+  quote?: string
 }
 
 export interface ResultRow {

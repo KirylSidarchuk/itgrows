@@ -364,7 +364,7 @@ export default function AuditForm({ note }: { note?: string } = {}) {
       // For the pricing block further down, which reads it when it comes into view. Not the sign-up
       // hand-over: the cabinet follows that one (lib/geo-handoff.ts).
       rememberChecked(v.domain || bareDomain(target), v.summary?.named ?? null, v.summary?.of ?? null)
-      track("geo_teaser_done", { domain: v.domain, named: v.summary?.named, of: v.summary?.of, with_names: (v.summary as { withNames?: number } | undefined)?.withNames, ms: Date.now() - t0 })
+      track("geo_teaser_done", { domain: v.domain, named: v.summary?.named, of: v.summary?.of, with_names: v.summary?.withNames, ms: Date.now() - t0 })
       countCheck(v.domain)
     } else {
       track("geo_teaser_failed", { domain: v.domain ?? bareDomain(target), error: v.error, ms: Date.now() - t0 })

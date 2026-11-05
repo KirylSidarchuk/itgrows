@@ -26,7 +26,7 @@ import { localePath } from "@/lib/i18n/paths"
 import { rich } from "@/lib/i18n/rich"
 import ns from "@/lib/i18n/messages/aiAnswers"
 // "Why X and not you?": X reads as a business like theirs (lib/geo-names.ts).
-import { headlineName } from "@/lib/geo-names"
+import { findName, headlineName, readsAsBusiness } from "@/lib/geo-names"
 
 type M = (typeof ns)["en"]
 
@@ -41,6 +41,10 @@ export interface TeaserEngine {
   sources: string[]
   sourcesMore?: number
   snippet: string
+  /** An answer that does not name this business: the assistant's own sentence about whom it names instead. */
+  quote?: string
+  /** The business that sentence is about, as the name is stored; "" when the route could not find one in it. */
+  quoteName?: string
 }
 
 export interface TeaserView {
@@ -59,7 +63,9 @@ export interface TeaserView {
     named: number
     of: number
     linked: number
-    engines: Record<string, { named: number; of: number }>
+    /** The answers that name some business, this one or another; `of` counts every answer. */
+    withNames?: number
+    engines: Record<string, { named: number; of: number; withNames?: number }>
     namedInstead: { name: string; count: number }[]
     /** How many more businesses were named; their names stay on the server. */
     namedInsteadMore?: number
@@ -170,8 +176,10 @@ function Chip({ a }: { a: TeaserEngine }) {
   return <span className="shrink-0 text-[11px] font-bold px-2.5 py-1 rounded-full border text-red-700 bg-red-50 border-red-200">{m.chipNotNamed}</span>
 }
 
-function EnginePanel({ engine, a, domain }: { engine: string; a: TeaserEngine; domain: string }) {
+function EnginePanel({ engine, a, domain, quoted }: { engine: string; a: TeaserEngine; domain: string; quoted?: boolean }) {
   const m = useT(ns)
+  // Its words already lead the card (`quoted`): here only who it named and what it cited.
+  const said = quoted ? "" : a.snippet || (a.named ? "" : (a.quote ?? ""))
   const names = a.namedInstead
   const src = a.sources
   const moreNames = (a.namedInsteadMore ?? 0) + Math.max(0, names.length - 4)
@@ -185,7 +193,7 @@ function EnginePanel({ engine, a, domain }: { engine: string; a: TeaserEngine; d
       </div>
       {!a.failed && (
         <>
-          {a.snippet && <p className="text-sm text-slate-700 mt-2 leading-relaxed">{m.quote(plain(a.snippet))}</p>}
+          {said && <p className="text-sm text-slate-700 mt-2 leading-relaxed">{m.quote(plain(said))}</p>}
           <p className="text-[13px] text-slate-700 mt-2 leading-relaxed">
             {names.length ? (
               <>
@@ -219,7 +227,7 @@ function EnginePanel({ engine, a, domain }: { engine: string; a: TeaserEngine; d
   )
 }
 
-function OpenRow({ row, domain, engines }: { row: NonNullable<TeaserView["open"]>[number]; domain: string; engines: string[] }) {
+function OpenRow({ row, domain, engines, quoted }: { row: NonNullable<TeaserView["open"]>[number]; domain: string; engines: string[]; quoted?: string }) {
   return (
     <div data-attention="result-answer">
       <p className="text-base font-semibold leading-snug">
@@ -227,9 +235,55 @@ function OpenRow({ row, domain, engines }: { row: NonNullable<TeaserView["open"]
         {row.q}
       </p>
       {engines.filter((e) => row.engines[e]).map((e) => (
-        <EnginePanel key={e} engine={e} a={row.engines[e]} domain={domain} />
+        <EnginePanel key={e} engine={e} a={row.engines[e]} domain={domain} quoted={quoted === e} />
       ))}
     </div>
+  )
+}
+
+type OpenRows = NonNullable<TeaserView["open"]>
+
+/** The assistant's own words that lead the result (5 Nov 2026: on 12 of 12 results with no mention there were none
+ *  above the form, and a count alone cannot be checked): an answer that names someone else, else one naming you. */
+function leadQuote(open: OpenRows, engines: string[]) {
+  for (const row of open)
+    for (const e of engines) {
+      const a = row.engines[e]
+      // The one the sentence is about (the route finds it), else the first name, unbolded if the quote spells it
+      // otherwise; not a register or a product model: the card bolds it as the business named instead.
+      const name = a?.quoteName || a?.namedInstead[0] || ""
+      if (a && !a.failed && !a.named && a.quote && name && readsAsBusiness(name)) return { n: row.n, engine: e, q: row.q, text: a.quote, name }
+    }
+  for (const row of open)
+    for (const e of engines) {
+      const a = row.engines[e]
+      const text = a && !a.failed && a.named ? leadSnippet(plain(a.snippet)) : ""
+      if (text) return { n: row.n, engine: e, q: row.q, text, name: "" }
+    }
+  return null
+}
+
+/** A snippet fit to lead the card, or "": one that starts at a sentence, not mid-word (28 Oct 2026: "…sting also
+ *  notes…"), with a link cut short at its end cut off (ChatGPT's "([site](https://…"), and no other pieces of links,
+ *  tables or source marks left in it (4 Nov: "…oo.com/kb/SLN37235.html?utm_source=openai))"). */
+function leadSnippet(text: string) {
+  if (/^(…|\.\.\.)/.test(text)) return ""
+  const cut = text.search(/\s*(\(\[|\u3010|\[[^\]]*$)/)
+  const t = cut >= 0 ? text.slice(0, cut).replace(/[\s,;:\u2013\u2014-]+$/, "") + "…" : text
+  return t.length < 45 || /https?:|www\.|\]\(|\butm_|\)\)|\.[a-z]{2,6}\/\S|\|/i.test(t) ? "" : t
+}
+
+/** `text` with the first `name` in it in bold, in the text's own spelling. */
+function Marked({ text, name }: { text: string; name: string }) {
+  const hit = name ? findName(text, name) : null
+  if (!hit) return <>{text}</>
+  const [a, b] = hit
+  return (
+    <>
+      {text.slice(0, a)}
+      <b className="font-bold text-[#1b1916]">{text.slice(a, b)}</b>
+      {text.slice(b)}
+    </>
   )
 }
 
@@ -425,15 +479,27 @@ function Result({
   const answered = engines.filter((e) => s.engines[e].of > 0)
   const silent = engines.filter((e) => s.engines[e].of === 0)
   const zero = s.named === 0
-  const all = s.of > 0 && s.named === s.of
+  // The count is over the answers that name some business (app/api/geo/teaser/route.ts); when none does, over all.
+  const withNames = s.withNames ?? s.of
+  const noNames = withNames === 0
+  const all = withNames > 0 && s.named === withNames
+  const tileOf = (e: string) => (noNames ? s.engines[e].of : (s.engines[e].withNames ?? s.engines[e].of))
   const who = m.joinAnd(answered.map((e) => LABEL[e]))
   const several = answered.length > 1
-  const sub = zero
-    ? m.subZero(several, who, domain)
-    : all
-      ? m.subAll(several, who, domain)
-      : m.subSome(several, s.named, s.of - s.named, who)
+  // "Both named you in every answer": only the assistants that named some business; "named someone else": only
+  // those with an answer that names a business and not this one.
+  const namers = answered.filter((e) => (s.engines[e].withNames ?? s.engines[e].of) > 0)
+  const others = answered.filter((e) => (s.engines[e].withNames ?? s.engines[e].of) > s.engines[e].named)
+  const names = (list: string[]) => m.joinAnd(list.map((e) => LABEL[e]))
+  const sub = noNames
+    ? m.subNoNames(several, who)
+    : zero
+      ? m.subZero(several, who, domain, withNames, s.of)
+      : all
+        ? m.subAll(namers.length > 1, names(namers), domain)
+        : m.subSome(others.length > 1, s.named, withNames - s.named, names(others))
   const open = view.open ?? []
+  const lead = leadQuote(open, engines)
   const locked = view.locked ?? []
   // Who answered a closed question, in the card's order; without the per-question list, every
   // assistant that answered at all.
@@ -444,7 +510,7 @@ function Result({
   const top = headlineName(s.namedInstead)
   const moreNamed = s.namedInsteadMore ?? 0
   const loginHref = localePath(locale, `/login?callbackUrl=${encodeURIComponent(`/business/dashboard/visibility?site=${domain}`)}`)
-  const offerTitle = zero ? (top ? m.ctaZeroTitle(top) : m.ctaZeroTitleNoName) : all ? m.ctaTitle(ready) : m.ctaSomeTitle(s.of - s.named)
+  const offerTitle = zero ? (top ? m.ctaZeroTitle(top) : m.ctaZeroTitleNoName) : all ? m.ctaTitle(ready) : m.ctaSomeTitle(withNames - s.named)
   const toForm = (where: string) => (e: React.MouseEvent) => {
     e.preventDefault()
     onTrack?.(where)
@@ -458,7 +524,7 @@ function Result({
       <div className="px-5 sm:px-6 pt-5 pb-4">
         <h3 data-attention="result-count" className="flex items-baseline gap-2 flex-wrap">
           <span className="text-[40px] leading-none font-extrabold tracking-tight tabular-nums">{s.named}</span>
-          <span className="text-xl font-bold text-slate-500">{m.ofAnswersNamed(s.named, s.of)}</span>
+          <span className="text-xl font-bold text-slate-500">{noNames ? m.ofAnswersNamed(s.named, s.of) : m.ofNamingAnswers(s.named, withNames)}</span>
         </h3>
         {silent.length > 0 && (
           <p className="text-xs text-slate-500 mt-1">
@@ -467,14 +533,25 @@ function Result({
         )}
         <p className="text-sm text-slate-600 mt-2 leading-relaxed">{sub}</p>
 
+        {lead && (
+          <figure data-attention="result-quote" className="mt-4 rounded-xl bg-[#f8f7f6] border-l-4 border-l-violet-600 px-4 py-3">
+            <figcaption className="text-xs text-slate-500 leading-relaxed">{m.quoteAsked(LABEL[lead.engine] ?? lead.engine, lead.q)}</figcaption>
+            <blockquote lang={view.language ?? undefined} className="text-[15px] text-slate-800 leading-relaxed mt-1.5 break-words">
+              <Marked text={m.quote(lead.text)} name={lead.name} />
+            </blockquote>
+          </figure>
+        )}
+
         <div className="grid grid-cols-2 gap-2.5 mt-4">
           {engines.map((e) => (
             <div key={e} className="bg-[#f8f7f6] rounded-xl px-3.5 py-3">
               <div className="text-[11px] font-bold uppercase tracking-wide text-slate-500">{LABEL[e]}</div>
               <div className="text-lg font-extrabold tabular-nums mt-0.5">
-                {s.engines[e].of > 0 ? (
+                {s.engines[e].of > 0 && tileOf(e) === 0 ? (
+                  <span className="text-slate-400 text-sm font-bold">{m.engineNoNames}</span>
+                ) : s.engines[e].of > 0 ? (
                   <>
-                    {s.engines[e].named} <span className="text-slate-400 text-sm font-bold">{m.engineOf(s.engines[e].of)}</span>
+                    {s.engines[e].named} <span className="text-slate-400 text-sm font-bold">{m.engineOf(tileOf(e))}</span>
                   </>
                 ) : (
                   <span className="text-slate-400 text-sm font-bold">{m.noAnswer}</span>
@@ -549,10 +626,10 @@ function Result({
       </div>
 
       <div className="px-5 sm:px-6 border-t border-black/[0.07] pt-5">
-        {open[0] && <OpenRow row={open[0]} domain={domain} engines={engines} />}
+        {open[0] && <OpenRow row={open[0]} domain={domain} engines={engines} quoted={lead?.n === open[0].n ? lead.engine : undefined} />}
         {open[1] && (
           <div className="relative mt-6 max-h-[300px] overflow-hidden">
-            <OpenRow row={open[1]} domain={domain} engines={engines} />
+            <OpenRow row={open[1]} domain={domain} engines={engines} quoted={lead?.n === open[1].n ? lead.engine : undefined} />
             <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-b from-white/0 to-white backdrop-blur-[2px]" />
           </div>
         )}
