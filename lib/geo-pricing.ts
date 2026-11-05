@@ -93,7 +93,7 @@ export const PRICE_TEST: {
   /** A variant's share; not listed = 1. 0 = no new visitors, and those who have not paid move to live arms. */
   weights: Readonly<Record<number, number>>
 } = {
-  enabled: true, // false turns the whole test off.
+  enabled: false, // false turns the whole test off.
   experiment: "geo_price_2026_11",
   epoch: "v1",
   variants: [19900, 29900, 39900, 49900, 59900],
