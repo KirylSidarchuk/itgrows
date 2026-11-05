@@ -117,7 +117,7 @@ const COOKIES = [
   { name: "cookie_consent", text: "Stored in your browser. Remembers what you chose in the cookie banner. Essential." },
   {
     name: "itg_vid",
-    text: "Set the first time you open one of our AI visibility pages, a blog article, or the sign-up or sign-in page, whatever you choose in the cookie banner. Lasts up to 400 days. A random id, with nothing about you in it. It ties the price you were shown to your visit, and it lets us count what visitors did at each price (see Testing the plan’s price above).",
+    text: "Set the first time you open one of our AI visibility pages, a blog article, or the sign-up or sign-in page, or our Terms through a link we sent you, whatever you choose in the cookie banner. Lasts up to 400 days. A random id, with nothing about you in it. It ties the price you were shown to your visit, and it lets us count what visitors did at each price (see Testing the plan’s price above).",
   },
   {
     name: "itg_price",
@@ -207,7 +207,7 @@ export default function PrivacyPage() {
               <li>We keep what we need to run your account, check your site, write your articles and posts, and bill you.</li>
               <li>Stripe handles payments. We never see your card number.</li>
               <li>
-                Analytics tools and advertising cookies load only after you accept them in the cookie banner; before that, the Google Ads tag sends only signals without cookies. You can change your choice at any time in{" "}
+                Third-party analytics tools and advertising cookies load only after you accept them in the cookie banner; before that, the Google Ads tag sends only signals without cookies; the price test’s cookies are set either way. You can change your choice at any time in{" "}
                 <CookieSettings />.
               </li>
               <li>We do not sell your personal data.</li>
@@ -326,7 +326,7 @@ export default function PrivacyPage() {
             <p>These are the cookies and browser storage items our site uses:</p>
             <Rows rows={COOKIES} />
             <p>
-              On your first visit a banner lets you accept or decline cookies, and remembers your choice. Contentsquare, Microsoft Clarity,
+              On your first visit a banner lets you accept or decline optional cookies, and remembers your choice. Contentsquare, Microsoft Clarity,
               Vercel Analytics and the Meta Pixel load only after you accept; if you decline, they do not run. The Google Ads tag is on every page, but until you
               accept, and if you decline, it works without cookies: Google receives only measurement signals without cookies and without the ad
               click id, used to count conversions from our ads in aggregate.

@@ -29,7 +29,14 @@ import ns from "@/lib/i18n/messages/cookieBanner"
 // home, /business and everything under it, the GEO cabinet and guides included, the blog, /about and
 // the legal pages) gets the compact phone banner at the top and the GEO type. Every other page keeps
 // the production banner exactly as it was: first of all the LinkedIn/X product (/personal, /company,
-// /cabinet, /dashboard, /reddit…), and /login and /signup, which that product shares.
+// /cabinet, /dashboard, /reddit…), and /login and /signup, which that product shares; those two have the
+// GEO type and BANNER_TEXT, because they set the price test's cookies.
+
+// The price test's cookies are set whatever the visitor chooses (app/privacy/page.tsx), and only on GEO
+// pages, /login and /signup (middleware.ts): the LinkedIn/X pages set none.
+const BANNER_TEXT =
+  "We use third-party analytics and advertising cookies only if you accept. Cookies for sign-in and for keeping the price you were shown are always on."
+const ESSENTIAL_TEXT = "Sign-in, security, your cookie choice and the price you were shown."
 
 // Keeps a record of each choice in our own analytics (no id unless the visitor accepted).
 function recordChoice(choice: ConsentChoice) {
@@ -66,7 +73,9 @@ export default function CookieBanner() {
   const [details, setDetails] = useState(false)
   const [analyticsOn, setAnalyticsOn] = useState<boolean | null>(null)
   const c = t(usePageLocale(), ns)
-  const geo = isGeoPage(usePathname())
+  const pathname = usePathname()
+  const geo = isGeoPage(pathname)
+  const authPage = /^\/(?:(?:de|fr|es|ru)\/)?(?:login|signup)\/?$/.test(pathname ?? "")
 
   useEffect(() => {
     window.openCookieSettings = openCookieSettings
@@ -199,7 +208,7 @@ export default function CookieBanner() {
           {!showSettings ? (
             <div className="max-w-6xl mx-auto hidden sm:flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <p className="text-sm text-slate-200 leading-relaxed">
-                We use analytics and advertising cookies only if you accept. Essential cookies for sign-in are always on.{" "}
+                {BANNER_TEXT}{" "}
                 {policyLink}
               </p>
               <div className="flex flex-wrap items-center gap-3 shrink-0">
@@ -243,7 +252,7 @@ export default function CookieBanner() {
               <div className="flex items-start justify-between gap-4 border-t border-slate-700 pt-3">
                 <div className="text-sm">
                   <p className="font-medium text-slate-100">Essential</p>
-                  <p className="text-slate-400">Sign-in, security and your cookie choice.</p>
+                  <p className="text-slate-400">{ESSENTIAL_TEXT}</p>
                 </div>
                 <span className="shrink-0 text-xs text-slate-400 pt-0.5">Always on</span>
               </div>
@@ -291,19 +300,21 @@ export default function CookieBanner() {
     )
   }
 
-  // Every other page (the LinkedIn/X product, /cabinet and the rest): the production banner,
-  // unchanged.
+  // Every other page: the production banner. On the LinkedIn/X product (/personal, /company, /cabinet,
+  // /dashboard, /reddit…) byte for byte as it was: its type is the page's, and its words are still true
+  // there, because those pages set no price cookie. /login and /signup, which set them, name them, and
+  // have the GEO type.
   return (
     <div
       role="dialog"
       aria-label="Cookie settings"
-      style={{ fontFamily: GEO_SANS }}
+      style={authPage ? { fontFamily: GEO_SANS } : undefined}
       className="fixed bottom-0 left-0 right-0 z-50 bg-slate-900 text-white px-4 sm:px-6 pt-4 pb-[max(1rem,env(safe-area-inset-bottom))] shadow-lg"
     >
       {!showSettings ? (
         <div className="max-w-6xl mx-auto flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-sm text-slate-200 leading-relaxed">
-            We use analytics and advertising cookies only if you accept. Essential cookies for sign-in are always on.{" "}
+            {authPage ? BANNER_TEXT : "We use analytics and advertising cookies only if you accept. Essential cookies for sign-in are always on."}{" "}
             {policyLink}
           </p>
           <div className="flex flex-wrap items-center gap-3 shrink-0">
@@ -347,7 +358,7 @@ export default function CookieBanner() {
           <div className="flex items-start justify-between gap-4 border-t border-slate-700 pt-3">
             <div className="text-sm">
               <p className="font-medium text-slate-100">Essential</p>
-              <p className="text-slate-400">Sign-in, security and your cookie choice.</p>
+              <p className="text-slate-400">{authPage ? ESSENTIAL_TEXT : "Sign-in, security and your cookie choice."}</p>
             </div>
             <span className="shrink-0 text-xs text-slate-400 pt-0.5">Always on</span>
           </div>

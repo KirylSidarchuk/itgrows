@@ -8,7 +8,7 @@ import { defineMessages } from "../messages"
 // on the desktop banner; Settings opens the same cookie settings.
 
 const en = {
-  short: "Analytics and ad <link>cookies</link> only if you accept.",
+  short: "Third-party analytics and ad <link>cookies</link> only if you accept.",
   accept: "Accept",
   decline: "Decline",
   settings: "Settings",
@@ -16,25 +16,25 @@ const en = {
 
 export default defineMessages(en, {
   de: {
-    short: "Analyse- und Werbe-<link>Cookies</link> nur mit Ihrer Zustimmung.",
+    short: "Analyse- und Werbe-<link>Cookies</link> von Drittanbietern nur mit Ihrer Zustimmung.",
     accept: "Akzeptieren",
     decline: "Ablehnen",
     settings: "Einstellungen",
   },
   fr: {
-    short: "<link>Cookies</link> d’analyse et de publicité seulement avec votre accord.",
+    short: "<link>Cookies</link> tiers d’analyse et de publicité seulement avec votre accord.",
     accept: "Accepter",
     decline: "Refuser",
     settings: "Paramètres",
   },
   es: {
-    short: "<link>Cookies</link> de análisis y publicidad solo si acepta.",
+    short: "<link>Cookies</link> de análisis y publicidad de terceros solo si acepta.",
     accept: "Aceptar",
     decline: "Rechazar",
     settings: "Ajustes",
   },
   ru: {
-    short: "<link>Cookie</link> аналитики и рекламы — только с вашего согласия.",
+    short: "<link>Cookie</link> сторонней аналитики и рекламы — только с вашего согласия.",
     accept: "Принять",
     decline: "Отклонить",
     settings: "Настройки",

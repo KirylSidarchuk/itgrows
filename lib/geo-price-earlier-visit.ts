@@ -12,6 +12,11 @@
 //                                   it, a cookie of VISIT_COOKIE comes from this visit (lib/geo-price-visitor.ts
 //                                   hasOlderCookie). Another tab of the same browser session is the same visit.
 // Neither holds an id or anything about the visitor, only yes or no.
+//
+// Not on /cabinet and /dashboard: they are the LinkedIn/X product, not part of the test. The check loses nothing:
+// without a sign-in the proxy sends those addresses to /login (middleware.ts), where this runs; with one, the
+// session cookie alone makes the browser an earlier visitor (lib/geo-price-visitor.ts hasOlderCookie). What the
+// cabinet writes to the storage can only count as an earlier visit later, which means the one price.
 
 /** Browser storage that proves an earlier visit. */
 export const EARLIER_VISIT_KEYS = [
@@ -37,6 +42,7 @@ export const VISIT_COOKIE = /^(?:itg_wheel|itg_exit_wheel|itg_gclid|NEXT_LOCALE|
 export const EARLIER_VISIT_SCRIPT = `
 (function () {
   try {
+    if (/^\\/(cabinet|dashboard)(\\/|$)/.test(location.pathname)) return;
     var stamp = ${JSON.stringify(EARLIER_VISIT_STAMP)}, fresh = ${JSON.stringify(FRESH_VISIT_COOKIE)};
     if (sessionStorage.getItem(stamp) !== null) return;
     var names = document.cookie.split(/;\\s*/).map(function (c) { return c.split('=')[0]; });
