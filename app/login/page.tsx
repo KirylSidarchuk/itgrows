@@ -7,7 +7,6 @@ import OAuthButtons from "@/components/auth/OAuthButtons"
 import GuestRewardNote from "@/components/geo/GuestRewardNote"
 import LocaleLink from "@/components/i18n/LocaleLink"
 import { useT } from "@/components/i18n/LocaleProvider"
-import { GEO_SANS } from "@/lib/geo-pages"
 import loginNs from "@/lib/i18n/messages/login"
 
 function LoginForm() {
@@ -200,7 +199,7 @@ function LoginHeading() {
 
 export default function LoginPage() {
   return (
-    <div style={{ fontFamily: GEO_SANS }} className="min-h-screen bg-[#f3f2f1] flex items-center justify-center px-4">
+    <div className="min-h-screen bg-[#f3f2f1] flex items-center justify-center px-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <LocaleLink href="/">

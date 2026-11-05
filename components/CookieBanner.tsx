@@ -297,6 +297,7 @@ export default function CookieBanner() {
     <div
       role="dialog"
       aria-label="Cookie settings"
+      style={{ fontFamily: GEO_SANS }}
       className="fixed bottom-0 left-0 right-0 z-50 bg-slate-900 text-white px-4 sm:px-6 pt-4 pb-[max(1rem,env(safe-area-inset-bottom))] shadow-lg"
     >
       {!showSettings ? (

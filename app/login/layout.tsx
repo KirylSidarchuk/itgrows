@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import type { ReactNode } from "react"
 import LanguageSwitcher from "@/components/i18n/LanguageSwitcher"
+import { GEO_SANS } from "@/lib/geo-pages"
 import LocaleProvider from "@/components/i18n/LocaleProvider"
 import { OG_PERSONAL } from "@/lib/entity"
 import { t } from "@/lib/i18n/messages"
@@ -28,8 +29,11 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function LoginLayout({ children }: { children: ReactNode }) {
   return (
     <LocaleProvider locale={await getLocale()}>
-      {children}
-      <LanguageSwitcher className="absolute right-4 top-4 z-20 sm:right-6 sm:top-5" />
+      {/* Sign-in sits outside the GEO pages' own wrapper: without this it came out in the browser's serif. */}
+      <div style={{ fontFamily: GEO_SANS }}>
+        {children}
+        <LanguageSwitcher className="absolute right-4 top-4 z-20 sm:right-6 sm:top-5" />
+      </div>
     </LocaleProvider>
   )
 }
