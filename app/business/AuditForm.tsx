@@ -103,9 +103,10 @@ function bareDomain(raw: string) {
     .split(/[/?#]/)[0]
 }
 
-/** Someone checking our own site gets a wink instead of a check: no API is called for it. */
+/** Someone checking one of our own sites gets a wink instead of a check: no API is called for it. */
+const OUR_SITES = new Set(["itgrows.ai", "magiscan.app"])
 function isOurSite(raw: string) {
-  return bareDomain(raw).replace(/:\d+$/, "").replace(/\.$/, "") === "itgrows.ai"
+  return OUR_SITES.has(bareDomain(raw).replace(/:\d+$/, "").replace(/\.$/, ""))
 }
 
 // What goes to the check (27.10). Visitors typed their business name, asked a question or pasted a
