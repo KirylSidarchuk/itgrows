@@ -23,7 +23,7 @@ import { usePlanPrices } from "@/components/geo/PriceProvider"
 import { listQuestions } from "@/lib/geo-list-question"
 import { useT } from "@/components/i18n/LocaleProvider"
 import visibilityOpening from "@/lib/i18n/messages/visibilityOpening"
-import { PendingReward, ReportRewards } from "../launch-wheel"
+import { PendingReward, ReportRewards, liveReward, usePromo } from "../launch-wheel"
 
 export interface EngineAnswer {
   named: number
@@ -1600,6 +1600,9 @@ export function YourPlan({
   const p = sample ? visitor : (prices ?? null)
   const yearOff = `${Math.round(YEAR_DISCOUNT * 100)}% off`
   const items = planItems(steps)
+  // Free setup won or given for this site: the line above the reward's panel must not still charge for it.
+  const [promo] = usePromo(mode === "offer")
+  const setupWon = liveReward(promo, site.domain) === "setup_free"
   return (
     <section id="your-plan" className={`${card} scroll-mt-24`}>
       <h2 className="font-bold text-lg">Your plan</h2>
@@ -1629,7 +1632,12 @@ export function YourPlan({
                   (GuaranteeFootnote) is the last line of the page. */}
               <p className="text-sm sm:text-base font-bold text-white mt-3">In 90 days, AI assistants will name you more often than on launch day — or we work for free.*</p>
               <div className="mt-4 flex flex-col sm:flex-row sm:items-center gap-3">
-                {p ? (
+                {p && setupWon ? (
+                  <p className="flex-1 text-sm text-white/80">
+                    <b className="text-white tabular-nums">{p.month.label}</b> a month. Your launch reward makes the one-time {p.setup.label} setup free. 3 months upfront
+                    (<b className="text-white tabular-nums">{p.quarter.label}</b>) or a year (<b className="text-white tabular-nums">{p.year.label}</b>, {yearOff}) come without setup too.
+                  </p>
+                ) : p ? (
                   <p className="flex-1 text-sm text-white/80">
                     <b className="text-white tabular-nums">{p.month.label}</b> a month plus a one-time {p.setup.label} setup. The setup is free with
                     3 months upfront (<b className="text-white tabular-nums">{p.quarter.label}</b>) or a year (<b className="text-white tabular-nums">{p.year.label}</b>, {yearOff}).

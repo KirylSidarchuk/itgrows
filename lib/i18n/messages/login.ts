@@ -11,6 +11,9 @@ const en = {
   metaDescription: "AI visibility for companies, and LinkedIn and X posts for founders.",
 
   welcomeBack: "Welcome back",
+  openReport: "Open your report",
+  signInGeo: "Sign in",
+  codeNoPassword: "Enter your email and we'll send a one-time code. No password needed.",
   signInToAccount: "Sign in to your account",
   authError:
     "Something went wrong on our side while signing you in — sorry about that. Please sign in again below; your work is saved.",
@@ -30,9 +33,9 @@ const en = {
   tryAgain: "Try again",
 
   // Errors
-  failedToSend: "Failed to send PIN",
+  failedToSend: "Failed to send the code",
   somethingWrong: "Something went wrong",
-  invalidPin: "Invalid or expired PIN. Please try again.",
+  invalidPin: "Invalid or expired code. Please try again.",
   emailInvalid: "Valid email required",
   waitResend: "Wait a minute, then ask for a new code.",
 }
@@ -42,6 +45,9 @@ export default defineMessages(en, {
     metaDescription: "KI-Sichtbarkeit für Unternehmen sowie LinkedIn- und X-Posts für Gründer.",
 
     welcomeBack: "Willkommen zurück",
+    openReport: "Ihren Bericht öffnen",
+    signInGeo: "Anmelden",
+    codeNoPassword: "Geben Sie Ihre E-Mail ein, wir senden Ihnen einen Einmalcode. Kein Passwort nötig.",
     signInToAccount: "Melden Sie sich bei Ihrem Konto an",
     authError:
       "Bei der Anmeldung ist auf unserer Seite etwas schiefgelaufen — das tut uns leid. Bitte melden Sie sich unten erneut an; Ihre Arbeit ist gespeichert.",
@@ -70,6 +76,9 @@ export default defineMessages(en, {
     metaDescription: "La visibilité dans l’IA pour les entreprises, et des posts LinkedIn et X pour les fondateurs.",
 
     welcomeBack: "Bon retour parmi nous",
+    openReport: "Ouvrir votre rapport",
+    signInGeo: "Se connecter",
+    codeNoPassword: "Saisissez votre e-mail et nous vous enverrons un code à usage unique. Aucun mot de passe.",
     signInToAccount: "Connectez-vous à votre compte",
     authError:
       "Un problème est survenu de notre côté pendant votre connexion — nous en sommes désolés. Veuillez vous reconnecter ci-dessous ; votre travail est enregistré.",
@@ -98,6 +107,9 @@ export default defineMessages(en, {
     metaDescription: "Visibilidad en IA para empresas y publicaciones de LinkedIn y X para fundadores.",
 
     welcomeBack: "Hola de nuevo",
+    openReport: "Abra su informe",
+    signInGeo: "Iniciar sesión",
+    codeNoPassword: "Introduzca su correo y le enviaremos un código de un solo uso. Sin contraseña.",
     signInToAccount: "Inicie sesión en su cuenta",
     authError:
       "Algo ha fallado por nuestra parte al iniciar su sesión — lo sentimos. Vuelva a iniciar sesión aquí abajo; su trabajo está guardado.",
@@ -126,6 +138,9 @@ export default defineMessages(en, {
     metaDescription: "Видимость в ИИ для компаний, а также посты в LinkedIn и X для основателей.",
 
     welcomeBack: "С возвращением",
+    openReport: "Откройте отчёт",
+    signInGeo: "Вход",
+    codeNoPassword: "Введите почту, и мы пришлём одноразовый код. Пароль не нужен.",
     signInToAccount: "Войдите в свой аккаунт",
     authError:
       "При входе что-то пошло не так на нашей стороне — извините. Пожалуйста, войдите ещё раз ниже; ваша работа сохранена.",

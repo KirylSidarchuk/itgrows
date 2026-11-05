@@ -7,6 +7,7 @@ import OAuthButtons from "@/components/auth/OAuthButtons"
 import GuestRewardNote from "@/components/geo/GuestRewardNote"
 import LocaleLink from "@/components/i18n/LocaleLink"
 import { useT } from "@/components/i18n/LocaleProvider"
+import { GEO_SANS } from "@/lib/geo-pages"
 import loginNs from "@/lib/i18n/messages/login"
 
 function LoginForm() {
@@ -182,10 +183,24 @@ function LoginForm() {
   )
 }
 
-export default function LoginPage() {
+// Headed for the AI-visibility cabinet: most of these people have just had a report by email and have no
+// password, so "Welcome back" says the wrong thing. The LinkedIn/X product keeps its heading.
+function LoginHeading() {
   const m = useT(loginNs)
+  const callbackUrl = useSearchParams().get("callbackUrl") ?? ""
+  const toGeo = callbackUrl.startsWith("/business")
+  const toReport = callbackUrl.startsWith("/business/dashboard/visibility")
   return (
-    <div className="min-h-screen bg-[#f3f2f1] flex items-center justify-center px-4">
+    <>
+      <h1 className="text-2xl font-bold text-[#1b1916] mt-4">{toReport ? m.openReport : toGeo ? m.signInGeo : m.welcomeBack}</h1>
+      <p className="text-slate-500 text-sm mt-1">{toGeo ? m.codeNoPassword : m.signInToAccount}</p>
+    </>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <div style={{ fontFamily: GEO_SANS }} className="min-h-screen bg-[#f3f2f1] flex items-center justify-center px-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <LocaleLink href="/">
@@ -193,8 +208,9 @@ export default function LoginPage() {
               ItGrows.ai
             </span>
           </LocaleLink>
-          <h1 className="text-2xl font-bold text-[#1b1916] mt-4">{m.welcomeBack}</h1>
-          <p className="text-slate-500 text-sm mt-1">{m.signInToAccount}</p>
+          <Suspense fallback={<div className="h-[60px] mt-4" />}>
+            <LoginHeading />
+          </Suspense>
         </div>
         <Suspense fallback={<div className="bg-white border border-black/10 rounded-2xl p-8 animate-pulse h-64" />}>
           <LoginForm />

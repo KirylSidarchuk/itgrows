@@ -169,6 +169,8 @@ export default function CookieBanner() {
                 })}
               </p>
               <div className="flex items-center justify-end gap-2">
+                {/* On a phone the banner covers the header, so this keeps the company's name on the first screen. */}
+                <span className="mr-auto min-w-0 truncate text-xs font-bold text-white">ItGrows.ai</span>
                 <button
                   type="button"
                   onClick={() => setDetails(true)}

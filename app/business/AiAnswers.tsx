@@ -26,6 +26,13 @@ import { localePath } from "@/lib/i18n/paths"
 import { rich } from "@/lib/i18n/rich"
 import ns from "@/lib/i18n/messages/aiAnswers"
 
+// The name in "Why X and not you?" has to read as a business like theirs. On real checks (2-4 Nov 2026) the
+// first name was "Gas Safe Register", "Forestry Commission" or "Anbernic RG34XX SP": a regulator, a public
+// body or a product model. So those are passed over for the next name, or the headline goes without one.
+const PUBLIC_BODY = /\b(register|commission|council|association|society|authority|institute|federation|foundation|ministry|department|government|nhs|regulator|charity)\b/i
+const MODEL_NUMBER = /\b(?=[a-z0-9]*[a-z])(?=[a-z0-9]*\d[a-z0-9]*\d)[a-z0-9]{3,}\b/i
+const headlineName = (names: { name: string }[]) => names.find((n) => !PUBLIC_BODY.test(n.name) && !MODEL_NUMBER.test(n.name))?.name ?? ""
+
 type M = (typeof ns)["en"]
 
 export interface TeaserEngine {
@@ -439,7 +446,7 @@ function Result({
   // A closed question no assistant answered is shown but not counted as a ready answer.
   const ready = locked.filter((r) => answeredBy(r).length > 0).length
   const total = open.length + ready
-  const top = s.namedInstead[0]?.name ?? ""
+  const top = headlineName(s.namedInstead)
   const moreNamed = s.namedInsteadMore ?? 0
   const loginHref = localePath(locale, `/login?callbackUrl=${encodeURIComponent(`/business/dashboard/visibility?site=${domain}`)}`)
   const offerTitle = zero ? (top ? m.ctaZeroTitle(top) : m.ctaZeroTitleNoName) : all ? m.ctaTitle(ready) : m.ctaSomeTitle(s.of - s.named)
