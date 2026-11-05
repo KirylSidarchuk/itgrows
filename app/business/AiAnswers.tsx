@@ -226,7 +226,7 @@ function EnginePanel({ engine, a, domain }: { engine: string; a: TeaserEngine; d
 
 function OpenRow({ row, domain, engines }: { row: NonNullable<TeaserView["open"]>[number]; domain: string; engines: string[] }) {
   return (
-    <div>
+    <div data-attention="result-answer">
       <p className="text-base font-semibold leading-snug">
         <span className="text-slate-400 mr-1.5 tabular-nums">{row.n}.</span>
         {row.q}
@@ -461,7 +461,7 @@ function Result({
   return (
     <div>
       <div className="px-5 sm:px-6 pt-5 pb-4">
-        <h3 className="flex items-baseline gap-2 flex-wrap">
+        <h3 data-attention="result-count" className="flex items-baseline gap-2 flex-wrap">
           <span className="text-[40px] leading-none font-extrabold tracking-tight tabular-nums">{s.named}</span>
           <span className="text-xl font-bold text-slate-500">{m.ofAnswersNamed(s.named, s.of)}</span>
         </h3>
@@ -491,7 +491,7 @@ function Result({
         {s.linked > 0 && <p className="text-xs text-slate-600 mt-2.5">{m.linkedAsSource(s.linked, s.of)}</p>}
 
         {s.namedInstead.length > 0 && (
-          <div className="mt-4">
+          <div data-attention="result-names" className="mt-4">
             <p className="text-[11px] font-bold uppercase tracking-wide text-slate-500 mb-1.5">
               {zero ? m.namedInsteadTitle : m.othersNamed}
             </p>
@@ -522,7 +522,7 @@ function Result({
         )}
 
         {ready > 0 && (
-          <div ref={ctaRef} id={REPORT_FORM_ID} className="mt-5 scroll-mt-24 rounded-2xl border border-violet-200 bg-violet-50/70 p-4 sm:p-5">
+          <div ref={ctaRef} id={REPORT_FORM_ID} data-attention="result-form" className="mt-5 scroll-mt-24 rounded-2xl border border-violet-200 bg-violet-50/70 p-4 sm:p-5">
             {sent ? (
               <div role="status">
                 <p className="font-extrabold text-lg leading-snug break-words">{m.sentTitle(sent)}</p>
@@ -562,7 +562,7 @@ function Result({
           </div>
         )}
 
-        <div ref={reportRef} className={`relative z-10 ${open[1] ? "-mt-8" : "mt-6"} rounded-2xl bg-white border border-black/10 shadow-lg shadow-violet-600/10 p-5`}>
+        <div ref={reportRef} data-attention="result-report-card" className={`relative z-10 ${open[1] ? "-mt-8" : "mt-6"} rounded-2xl bg-white border border-black/10 shadow-lg shadow-violet-600/10 p-5`}>
           <p className="font-extrabold text-lg leading-snug break-words">{m.reportTitle(domain)}</p>
           <p className="text-sm text-slate-600 mt-1.5 leading-relaxed">
             {rich(m.reportBody, { b: (c) => <b className="text-[#1b1916]">{c}</b> })}
@@ -592,7 +592,7 @@ function Result({
           {!ready && <GuestRewardNote where="gate" className="mt-3" />}
         </div>
 
-        <div ref={lockedRef} className="mt-5 space-y-4 pb-5">
+        <div ref={lockedRef} data-attention="result-locked" className="mt-5 space-y-4 pb-5">
           {locked.map((r) => {
             const by = answeredBy(r)
             return (

@@ -329,7 +329,7 @@ export function Hero({ report }: { report: Report }) {
   const snip = firstSnippet(l.rows, engines)
   const nq = l.rows.length
   return (
-    <section className={card}>
+    <section data-attention="report-count" className={card}>
       <div className="flex items-start justify-between gap-3 flex-wrap">
         <p className={label}>Do AI assistants name you?</p>
         <span className="text-[11px] font-semibold text-slate-600 bg-[#f8f7f6] rounded-full px-2.5 py-1">
@@ -457,7 +457,7 @@ export function WeeklyHero({
   // This week's check asks fewer questions than day 0: say how short. The day-0 report opens from here.
   const short = !readOnly && fullReport(site) !== l
   return (
-    <section className={card}>
+    <section data-attention="report-latest" className={card}>
       <div className="flex items-start justify-between gap-3 flex-wrap">
         <p className={label}>Latest check</p>
         <span className="text-[11px] font-semibold text-slate-600 bg-[#f8f7f6] rounded-full px-2.5 py-1">Regular check · {fmtDate(l.finishedAt)}</span>
@@ -535,7 +535,7 @@ export function WeeklyHero({
 export function WhatChanged({ changes, title = "What changed since the last check" }: { changes: Change[]; title?: string }) {
   const list = changes.slice(0, 5)
   return (
-    <section className={card}>
+    <section data-attention="report-changes" className={card}>
       <h2 className="font-bold text-lg">{title}</h2>
       {list.length === 0 ? (
         <p className="text-sm text-slate-600 mt-3">No changes since the last check.</p>
@@ -579,7 +579,7 @@ export function NamedInstead({ summary, you, firstLook }: { summary: Summary; yo
   const top = summary.named_instead.slice(0, 8)
   const max = Math.max(summary.named, ...top.map((r) => r.count), 1)
   return (
-    <section className={`${card} min-w-0`}>
+    <section data-attention="report-named" className={`${card} min-w-0`}>
       <h2 className="font-bold text-lg">Named instead of you{firstLook ? " (first look)" : ""}</h2>
       <p className="text-xs text-slate-500 mt-1 leading-relaxed">
         Businesses the assistants named for your questions, counted like you: answers out of {summary.of}.
@@ -633,7 +633,7 @@ export function Sources({ summary }: { summary: Summary }) {
   const list = (summary.sources ?? []).slice(0, 10)
   const own = summary.own_cited ?? 0
   return (
-    <section className={`${card} min-w-0`}>
+    <section data-attention="report-sources" className={`${card} min-w-0`}>
       <h2 className="font-bold text-lg">Sites the assistants rely on</h2>
       <p className="text-xs text-slate-500 mt-1">Cited as sources for your questions: what the assistants read before they answer.</p>
       <div className={`mt-4 rounded-xl px-4 py-3 text-sm font-semibold ${own ? "bg-violet-50 text-violet-800" : "bg-[#f8f7f6] text-slate-700"}`}>
@@ -787,7 +787,7 @@ export function WhereNamed({
   const cols = ENGINES.filter((e) => engines.includes(e))
 
   return (
-    <section className={card}>
+    <section data-attention="report-questions" className={card}>
       <h2 className="font-bold text-lg">{title}</h2>
       <p className="text-xs text-slate-500 mt-1 leading-relaxed">
         {samples > 1 ? `Darker dot = named in more of the ${samples} asks.` : "Filled dot = named."} Link mark = linked your site. Tap a
@@ -876,7 +876,7 @@ const BOT_OWNER: Record<string, string> = { GPTBot: "OpenAI's crawler", ClaudeBo
 
 export function Crawlers({ audit }: { audit: Audit | "failed" | undefined }) {
   return (
-    <section className={card}>
+    <section data-attention="report-crawlers" className={card}>
       <h2 className="font-bold text-lg">Can AI crawlers read your site?</h2>
       {audit === undefined ? (
         <div className="mt-4 space-y-2">
@@ -1604,7 +1604,7 @@ export function YourPlan({
   const [promo] = usePromo(mode === "offer")
   const setupWon = liveReward(promo, site.domain) === "setup_free"
   return (
-    <section id="your-plan" className={`${card} scroll-mt-24`}>
+    <section id="your-plan" data-attention="report-plan" className={`${card} scroll-mt-24`}>
       <h2 className="font-bold text-lg">Your plan</h2>
       {!ready ? (
         <>
@@ -1631,7 +1631,7 @@ export function YourPlan({
               {/* The growth guarantee (owner's decision, 30 Oct 2026): the line with its "*"; its footnote
                   (GuaranteeFootnote) is the last line of the page. */}
               <p className="text-sm sm:text-base font-bold text-white mt-3">In 90 days, AI assistants will name you more often than on launch day — or we work for free.*</p>
-              <div className="mt-4 flex flex-col sm:flex-row sm:items-center gap-3">
+              <div data-attention="report-price" className="mt-4 flex flex-col sm:flex-row sm:items-center gap-3">
                 {p && setupWon ? (
                   <p className="flex-1 text-sm text-white/80">
                     <b className="text-white tabular-nums">{p.month.label}</b> a month. Your launch reward makes the one-time {p.setup.label} setup free. 3 months upfront
@@ -1885,7 +1885,7 @@ export function History({ site, openId, onOpen }: { site: SiteReport; openId: st
   const day0 = dayZero(h, latest.basis)
   const onScreen = openId ?? latest.id
   return (
-    <section className={card}>
+    <section data-attention="report-history" className={card}>
       <h2 className="font-bold text-lg">History</h2>
       <p className="text-xs text-slate-500 mt-1 leading-relaxed">
         Every report for {site.domain}, newest first. Change is against day 0, same questions.

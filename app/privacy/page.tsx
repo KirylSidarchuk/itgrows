@@ -308,7 +308,7 @@ export default function PrivacyPage() {
               />
               <DataBlock
                 title="How the site is used"
-                what="Our own analytics: the pages you view, the buttons and links you click, the referring site, host only and not the full address, campaign tags in the link such as utm, your browser’s user agent, and your account id when you are signed in. Only after you accept cookies: a random id kept in your browser, and the ad click id in the link, gclid or fbclid. For counting unique visitors we keep a hash of your IP address and browser that changes every day, not the IP address itself, and remove it after 90 days. Third-party analytics and advertising tools are listed under Cookies."
+                what="Our own analytics: the pages you view, how long a page stays on your screen and which of its parts come into view, the buttons and links you click, the referring site, host only and not the full address, campaign tags in the link such as utm, your browser’s user agent, and your account id when you are signed in. Only after you accept cookies: a random id kept in your browser, and the ad click id in the link, gclid or fbclid. For counting unique visitors we keep a hash of your IP address and browser that changes every day, not the IP address itself, and remove it after 90 days. Third-party analytics and advertising tools are listed under Cookies."
                 why="To understand which pages work, fix what does not, and measure our advertising."
                 basis={
                   <>

@@ -12,6 +12,7 @@ import { formatNumber } from "@/lib/i18n/format"
 import { localePath } from "@/lib/i18n/paths"
 import ns from "@/lib/i18n/messages/auditForm"
 import { SHINE_BUTTON } from "@/components/geo/motion"
+import { useAttention } from "@/components/geo/useAttention"
 
 type Verdict = "blocked" | "allowed" | "wildcard" | "none"
 
@@ -245,6 +246,14 @@ export default function AuditForm({ note }: { note?: string } = {}) {
   }, [aiFailed])
 
   const shownDomain = ai?.domain || aiDomain
+  // How long the page and then the result were on screen, and how far down they were read (no cookie, no id). The
+  // result's time starts once its card is on screen: a visitor who scrolled away during the wait has not seen it.
+  const [resultOn, setResultOn] = useState(false)
+  useEffect(() => {
+    if (!aiDone) setResultOn(false)
+    else if (aiInView) setResultOn(true)
+  }, [aiDone, aiInView])
+  useAttention(resultOn ? "result" : aiOn ? null : "landing", resultOn ? shownDomain : undefined)
   const hasLocked = (ai?.locked?.length ?? 0) > 0
 
   useEffect(() => {
@@ -355,7 +364,7 @@ export default function AuditForm({ note }: { note?: string } = {}) {
       // For the pricing block further down, which reads it when it comes into view. Not the sign-up
       // hand-over: the cabinet follows that one (lib/geo-handoff.ts).
       rememberChecked(v.domain || bareDomain(target), v.summary?.named ?? null, v.summary?.of ?? null)
-      track("geo_teaser_done", { domain: v.domain, named: v.summary?.named, of: v.summary?.of, ms: Date.now() - t0 })
+      track("geo_teaser_done", { domain: v.domain, named: v.summary?.named, of: v.summary?.of, with_names: (v.summary as { withNames?: number } | undefined)?.withNames, ms: Date.now() - t0 })
       countCheck(v.domain)
     } else {
       track("geo_teaser_failed", { domain: v.domain ?? bareDomain(target), error: v.error, ms: Date.now() - t0 })

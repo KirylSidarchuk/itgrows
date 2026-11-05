@@ -28,6 +28,7 @@ import {
 } from "./parts"
 import type { GeoPrices } from "@/lib/geo-pricing"
 import { PendingReward } from "../launch-wheel"
+import { useAttention } from "@/components/geo/useAttention"
 
 // The AI-visibility report: where a new account lands after the quick check on the site, and where
 // a client sees the weekly count. Arriving with ?site= (or the check's handoff) follows that site,
@@ -246,6 +247,8 @@ export default function VisibilityPage() {
 
   const site = sites?.find((s) => s.domain === active) ?? sites?.[sites.length - 1]
   const anyPending = Boolean(sites?.some((s) => s.pending))
+  // How long the report was on screen and how far down it was read (components/geo/useAttention.ts).
+  useAttention(site?.latest ? "report" : null, site?.domain)
 
   useEffect(() => {
     if (!anyPending) return
