@@ -35,6 +35,9 @@ import { formatUsd } from "@/lib/i18n/format"
 //   same code as a new visitor, from a hash of address and user agent, as they keep no cookie. Only AI
 //   training and answer crawlers that are neither (lib/geo-price-visitor.ts AI_CRAWLER) see the one
 //   price. The user agent otherwise only keeps bots out of the statistics.
+// - NOT IN THE EEA, THE UK OR SWITZERLAND (5 Nov 2026), and not where the country is unknown: the test is off
+//   for those requests (lib/geo-price-visitor.ts inTestRegion). No cookie, the one price, no row, no arm on
+//   an account made there: its cookies are set without consent, and calling them essential is doubtful there.
 // - Everyone who was ever here before stays on the one price, outside the test (Kiryl, 2 Nov: "убедись что
 //   все кто ранее заходил когда-то на сайт увидят 499"): an older cookie at the proxy, a look at the visit
 //   and quick-check logs on the first page (lib/geo-price-returning.ts), what the browser's storage held

@@ -98,7 +98,7 @@ export default function TermsPage() {
         <p className="text-[11px] uppercase tracking-[0.14em] font-bold text-violet-700">Legal</p>
         <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight mt-2">Terms of Service</h1>
         <p className="text-slate-500 text-sm mt-2">
-          Effective date: 2 November 2026
+          Effective date: 5 November 2026
         </p>
 
         <div className="mt-8 rounded-2xl border border-black/10 bg-white overflow-hidden">

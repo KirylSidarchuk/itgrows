@@ -117,7 +117,7 @@ const COOKIES = [
   { name: "cookie_consent", text: "Stored in your browser. Remembers what you chose in the cookie banner. Essential." },
   {
     name: "itg_vid",
-    text: "Set on your first visit to our AI visibility pages, for up to 400 days. A random id, with nothing about you in it, that ties the price you were shown to your visit. Essential for the price below to stay the same.",
+    text: "Set on your first visit to our AI visibility pages, for up to 400 days, unless you are in the EEA, the UK or Switzerland, where we do not run the price test. A random id, with nothing about you in it, that ties the price you were shown to your visit. Essential for the price below to stay the same.",
   },
   {
     name: "itg_price",
@@ -125,7 +125,7 @@ const COOKIES = [
   },
   {
     name: "itg_fresh, itg_had_storage",
-    text: "Set when a visit begins and gone when you close the browser or the tab: itg_fresh is a cookie, and itg_had_storage is stored in your browser. Each holds only a yes or no: whether your browser already held anything from an earlier visit, so that a choice you make in the cookie banner during this visit is not mistaken for one. Essential for the price above to stay the same.",
+    text: "Set when a visit begins, where we run the price test (not in the EEA, the UK or Switzerland), and gone when you close the browser or the tab: itg_fresh is a cookie, and itg_had_storage is stored in your browser. Each holds only a yes or no: whether your browser already held anything from an earlier visit, so that a choice you make in the cookie banner during this visit is not mistaken for one. Essential for the price above to stay the same.",
   },
   {
     name: "itg_wheel",
@@ -196,7 +196,7 @@ export default function PrivacyPage() {
         <p className="text-[11px] uppercase tracking-[0.14em] font-bold text-violet-700">Legal</p>
         <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight mt-2">Privacy Policy &amp; Cookie Policy</h1>
         <p className="text-slate-500 text-sm mt-2">
-          Effective date: 2 November 2026
+          Effective date: 5 November 2026
         </p>
 
         <div className="mt-8 rounded-2xl border border-black/10 bg-white overflow-hidden">
@@ -303,7 +303,7 @@ export default function PrivacyPage() {
               <DataBlock
                 title="Testing the plan’s price"
                 what="While we test the price of the AI visibility plan: a random id (the itg_vid cookie), the price you were shown, when you first saw it, the referring site, host only, campaign tags in the link such as utm, the page you arrived on, and whether the price card came into view and a quick check was started. No IP address and no account."
-                why="To learn which price works, and to keep showing you the same one. The price you are shown first is picked from a keyed hash of your IP address and browser, and that hash is not stored. To keep their price, we recognise people who visited before: on a first visit we compare your IP address and browser with our existing visit and quick-check records, and keep only the yes or no."
+                why="To learn which price works, and to keep showing you the same one. The price you are shown first is picked from a keyed hash of your IP address and browser, and that hash is not stored. To keep their price, we recognise people who visited before: on a first visit we compare your IP address and browser with our existing visit and quick-check records, and keep only the yes or no. We do not run this test for visitors in the EEA, the UK or Switzerland: for them none of this is collected."
                 basis={`${INTEREST} in setting our prices and treating returning visitors consistently.`}
               />
               <DataBlock

@@ -3,7 +3,7 @@ import { sql } from "drizzle-orm"
 import { cookies, headers } from "next/headers"
 import { GEO_PRICES, ONE_PRICE_MONTH, PRICE_TEST, drawPriceVariant, geoPrices, isLiveArm, type GeoPrices } from "@/lib/geo-pricing"
 import { returningVisitor } from "@/lib/geo-price-returning"
-import { PRICE_COOKIE, VISITOR_COOKIE, bucketArm, hasOlderCookie, readPin, visitorAddress } from "@/lib/geo-price-visitor"
+import { PRICE_COOKIE, VISITOR_COOKIE, bucketArm, hasOlderCookie, inTestRegion, readPin, visitorAddress } from "@/lib/geo-price-visitor"
 
 // The plan's price for one account, on the server (the test and its rules: lib/geo-pricing.ts). An
 // account created while the test runs stores the arm its visitor saw (users.geo_price_variant,
@@ -53,11 +53,14 @@ export async function accountPrices(userId: string): Promise<AccountPrices> {
 
 /** The variant to store on an account being created now, from this request's cookies (auth.ts,
  *  app/api/register, app/api/geo/report-request): the arm the visitor saw; null, the one price and
- *  outside the test, for someone who visited before, a sales link, or any doubt. A request without our
- *  cookie or an older one (a server calling, a browser refusing cookies) draws an arm. Never throws. */
+ *  outside the test, for someone who visited before, a sales link, a request from outside the test's region
+ *  (lib/geo-price-visitor.ts inTestRegion), or any doubt. A request without our cookie or an older one (a
+ *  server calling, a browser refusing cookies) draws an arm. Never throws. */
 export async function newAccountVariant(): Promise<number | null> {
   try {
     if (!PRICE_TEST.enabled) return null
+    const h = await headers()
+    if (!inTestRegion(h)) return null
     const store = await cookies()
     const id = store.get(VISITOR_COOKIE)?.value
     const raw = store.get(PRICE_COOKIE)?.value
@@ -66,7 +69,6 @@ export async function newAccountVariant(): Promise<number | null> {
     if (!id || !pin || pin.epoch !== PRICE_TEST.epoch || pin.flag === "r" || pin.flag === "l") return null
     if (pin.flag === "n") {
       // Not settled by the page yet (a sign-up within moments of the first page): the same check.
-      const h = await headers()
       if ((await returningVisitor(visitorAddress(h), h.get("user-agent") ?? "")) !== "new") return null
     }
     return isLiveArm(pin.cents) ? pin.cents : await bucketArm(id)

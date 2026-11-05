@@ -11,6 +11,8 @@ import { exitWheelOn } from "@/lib/geo-promo"
 import { getLocale } from "@/lib/i18n/server"
 import "./globals.css";
 import { EARLIER_VISIT_SCRIPT } from "@/lib/geo-price-earlier-visit";
+import { headers } from "next/headers";
+import { inTestRegion } from "@/lib/geo-price-visitor";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -109,6 +111,9 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const lang = await getLocale()
+  // A prerendered page has no country, so no script: on those pages a later priced page falls back to what the
+  // browser holds then, and any doubt is the one price (components/geo/PriceProvider.tsx browserRemembers).
+  const priceTest = inTestRegion(await headers())
   return (
     <html
       lang={lang}
@@ -116,7 +121,7 @@ export default async function RootLayout({
     >
       <head>
         {/* First, before anything can write: what the browser remembered when this visit began (lib/geo-price-earlier-visit.ts). */}
-        <script id="price-earlier-visit" dangerouslySetInnerHTML={{ __html: EARLIER_VISIT_SCRIPT }} />
+        {priceTest && <script id="price-earlier-visit" dangerouslySetInnerHTML={{ __html: EARLIER_VISIT_SCRIPT }} />}
         <script id="google-tag-consent" dangerouslySetInnerHTML={{ __html: GOOGLE_TAG_INIT }} />
       </head>
       <body className="min-h-full flex flex-col">

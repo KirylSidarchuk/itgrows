@@ -464,7 +464,7 @@ async function main() {
   // The settings pv reads: under some Node versions a dynamic import of ../lib/geo-pricing is another instance.
   const { PRICE_TEST } = pv
   const ONE_PRICE_MONTH = 49900
-  const IP = { "x-forwarded-for": "203.0.113.7" }
+  const IP = { "x-forwarded-for": "203.0.113.7", "x-vercel-ip-country": "US" }
   const decide = async (pathAndQuery: string, o: Opts = {}) => {
     const headers: Record<string, string> = { "user-agent": o.ua ?? BROWSER, "accept-language": "en-US,en;q=0.9", ...IP, ...o.headers }
     if (o.cookie) headers.cookie = o.cookie
@@ -507,6 +507,26 @@ async function main() {
     assert.equal(pin?.flag, "n")
     assert.equal((await decide("/")).pin?.cents, pin?.cents)
   })
+  await check("the EEA, the UK, Switzerland and an unknown country: no pin, no cookie, the same with one held", async () => {
+    const held = await decide("/")
+    for (const country of ["DE", "fr", "IE", "NO", "GB", "CH", "RE", "JE", "", "XX", "nonsense"]) {
+      const headers = { "x-vercel-ip-country": country }
+      for (const r of [await decide("/", { headers }), await decide("/?ref=li", { headers }), await decide("/about", { headers, cookie: jar(held.id as string, held.raw as string) }), await decide("/", { headers, ua: GOOGLEBOT })]) {
+        assert.equal(r.raw, null, country)
+        assert.equal(r.id, null, country)
+        assert.ok(!r.setsPin && !r.setsVid, country)
+      }
+      assert.equal(pv.inTestRegion(new Headers(headers)), false, country)
+    }
+    const none = new Headers({ "x-forwarded-for": "203.0.113.7" })
+    assert.equal(pv.inTestRegion(none), false)
+    for (const country of ["US", "ca", "AU", "NZ", "BY", "TR"]) assert.equal(pv.inTestRegion(new Headers({ "x-vercel-ip-country": country })), true, country)
+    // A QA link still shows its arm there, with nothing stored.
+    const value = await pv.qaLinkValue(19900)
+    const qa = await decide(`/?price_qa=${value}`, { headers: { "x-vercel-ip-country": "DE" } })
+    assert.equal(qa.qa, value)
+    assert.ok(!qa.setsPin && !qa.setsVid)
+  })
   await check("every arm is reachable, about evenly, by address", async () => {
     const seen: Record<number, number> = {}
     for (let i = 0; i < 500; i++) {
@@ -525,6 +545,7 @@ async function main() {
       "facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)",
       "LinkedInBot/1.0 (compatible; Mozilla/5.0)",
       "Slackbot-LinkExpanding 1.0 (+https://api.slack.com/robots)",
+      "meta-externalfetcher/1.1 (+https://developers.facebook.com/docs/sharing/webmasters/crawler)",
     ]) {
       const a = await decide("/", { ua })
       assert.equal(a.pin?.flag, "n", ua)
@@ -533,7 +554,7 @@ async function main() {
     }
   })
   await check("AI crawlers: no arm, no cookie, the one price by default", async () => {
-    for (const ua of ["Mozilla/5.0 (compatible; GPTBot/1.2; +https://openai.com/gptbot)", "OAI-SearchBot/1.0", "ClaudeBot/1.0", "Claude-SearchBot/1.0", "PerplexityBot/1.0"]) {
+    for (const ua of ["Mozilla/5.0 (compatible; GPTBot/1.2; +https://openai.com/gptbot)", "OAI-SearchBot/1.0", "ClaudeBot/1.0", "Claude-SearchBot/1.0", "PerplexityBot/1.0", "meta-externalagent/1.1 (+https://developers.facebook.com/docs/sharing/webmasters/crawler)"]) {
       const r = await decide("/", { ua })
       assert.equal(r.raw, null, ua)
       assert.ok(!r.setsPin && !r.setsVid, ua)
@@ -733,6 +754,12 @@ async function main() {
     assert.equal(olderAgents(edge)[2], edge.replace("Chrome/131", "Chrome/129").replace("Edg/131", "Edg/129"))
     assert.equal(olderAgents("Mozilla/5.0 (X11; rv:128.0) Gecko/20100101 Firefox/128.0")[1], "Mozilla/5.0 (X11; rv:127.0) Gecko/20100101 Firefox/127.0")
     assert.deepEqual(olderAgents("curl/8.5.0"), ["curl/8.5.0"])
+    const safari = (v: string) => `Mozilla/5.0 (iPhone; CPU iPhone OS 18_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/${v} Mobile/15E148 Safari/604.1`
+    assert.deepEqual(olderAgents(safari("27.1")), ["27.1", "27.0", "26.7", "26.6", "26.5", "26.4", "26.3"].map(safari))
+    assert.deepEqual(olderAgents(safari("26.0.1")).slice(0, 3), ["26.0.1", "26.0", "25.7"].map(safari))
+    const webview = "Mozilla/5.0 (Linux; Android 14; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/131.0.0.0 Mobile Safari/537.36"
+    assert.equal(olderAgents(webview)[1], webview.replace("Chrome/131", "Chrome/130"))
+    assert.equal(olderAgents(webview).length, 7)
   })
 
   console.log("the price sentences in the articles (lib/geo-price-article.ts)")

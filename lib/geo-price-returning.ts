@@ -47,6 +47,22 @@ const enc = new TextEncoder()
 
 const BROWSER_VERSION = /\b(Chrome|Chromium|CriOS|Edg|EdgA|EdgiOS|OPR|Firefox|FxiOS)\/(\d{2,3})\b|\brv:(\d{2,3})\b/g
 
+// Safari writes "Version/26.1" and moves mostly on the second number, so its releases back are those of this
+// major, then the last ones of the major before. Two digits at least: Android's WebView writes a fixed "Version/4.0".
+const SAFARI_VERSION = /\bVersion\/(\d{2,3})\.(\d{1,2})(\.\d{1,2})?(?![\d.])/
+const SAFARI_LAST_MINOR = 7
+
+function olderSafari(ua: string): string[] {
+  const m = SAFARI_VERSION.exec(ua)
+  if (!m) return []
+  const major = Number(m[1])
+  const minor = Number(m[2])
+  const versions: string[] = m[3] ? [`${major}.${minor}`] : []
+  for (let y = minor - 1; y >= 0; y--) versions.push(`${major}.${y}`)
+  for (let y = SAFARI_LAST_MINOR; y >= 0; y--) versions.push(`${major - 1}.${y}`)
+  return versions.slice(0, RELEASES_BACK).map((v) => ua.replace(SAFARI_VERSION, `Version/${v}`))
+}
+
 /** This user agent, and the same browser's a few releases back ("Chrome/131" -> "Chrome/130" ...). Anyone
  *  else this might match is on the same internet address, and the mistake then is only the one price. */
 export function olderAgents(ua: string): string[] {
@@ -56,6 +72,7 @@ export function olderAgents(ua: string): string[] {
       agents.push(ua.replace(BROWSER_VERSION, (_m, name?: string, major?: string, rv?: string) => (name ? `${name}/${Number(major) - back}` : `rv:${Number(rv) - back}`)))
     }
   }
+  agents.push(...olderSafari(ua))
   return agents
 }
 

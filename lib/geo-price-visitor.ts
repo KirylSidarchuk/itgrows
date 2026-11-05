@@ -23,6 +23,8 @@ export { PRICE_TEST }
 // What decides, in order, with no decision on the user agent except the AI crawlers' line:
 //   ?price_qa=<arm>.<hmac>  that arm for this request, nothing stored (a bad hmac is ignored);
 //   an AI training or answer crawler (AI_CRAWLER)  the one price, no cookie;
+//   a request from the EEA, the UK or Switzerland, or from a country not known (inTestRegion)  the one price,
+//   no cookie, no row: the test does not run there;
 //   a pin of this epoch  it holds; ?ref=li turns it into l; an arm with weight 0 moves to a live arm;
 //   our own cookies that do not verify, or an older cookie of ours (OLDER_COOKIE), or no address  r;
 //   ?ref=li  l;
@@ -68,9 +70,30 @@ export interface Pin {
  *  reviewer or a link preview (Googlebot, AdsBot-Google, Bingbot, facebookexternalhit, Applebot ...
  *  are treated like any new visitor; Google's rules for site tests ask for that). */
 const AI_CRAWLER =
-  /GPTBot|OAI-SearchBot|ChatGPT-User|ClaudeBot|Claude-SearchBot|Claude-User|Claude-Web|anthropic-ai|PerplexityBot|Perplexity-User|CCBot|cohere-ai|Bytespider|MistralAI-User|DuckAssistBot|YouBot|Amazonbot|Meta-ExternalAgent|Meta-ExternalFetcher|Diffbot|Timpibot/i
+  /GPTBot|OAI-SearchBot|ChatGPT-User|ClaudeBot|Claude-SearchBot|Claude-User|Claude-Web|anthropic-ai|PerplexityBot|Perplexity-User|CCBot|cohere-ai|Bytespider|MistralAI-User|DuckAssistBot|YouBot|Amazonbot|Meta-ExternalAgent|Diffbot|Timpibot/i
 
 export const isAiCrawler = (ua: string) => AI_CRAWLER.test(ua)
+
+// Where the test does not run (5 Nov 2026): the EEA, the UK and Switzerland. Its cookies are set without consent,
+// and calling them essential is doubtful there. So no cookie, no row and the one price, for anyone the platform
+// places there; the same for a country it does not know. The list: the EU, Iceland, Liechtenstein and Norway; the
+// UK; Switzerland; and the places with a country code of their own under those laws or modelled on them.
+const NO_TEST_COUNTRIES: ReadonlySet<string> = new Set(
+  (
+    "AT BE BG HR CY CZ DK EE FI FR DE GR HU IE IT LV LT LU MT NL PL PT RO SK SI ES SE IS LI NO " +
+    "GB CH " +
+    "AX GF GP MQ RE YT MF GI GG JE IM"
+  ).split(" ")
+)
+
+/** The visitor's country, set by the platform on every request; a client cannot set it. */
+export const COUNTRY_HEADER = "x-vercel-ip-country"
+
+/** May this request be in the test: a known country outside NO_TEST_COUNTRIES. */
+export function inTestRegion(headers: Headers): boolean {
+  const country = headers.get(COUNTRY_HEADER)?.trim().toUpperCase() ?? ""
+  return /^[A-Z]{2}$/.test(country) && country !== "XX" && !NO_TEST_COUNTRIES.has(country)
+}
 
 /** The sign-in. Of its cookies only the session itself: authjs.csrf-token and authjs.callback-url come from
  *  the first page of any visit (SessionProvider asks /api/auth/session), a page outside the test included. */
@@ -171,7 +194,8 @@ export interface PriceDecision {
 const newId = () => hex(crypto.getRandomValues(new Uint8Array(16)).buffer)
 
 /** The decision for one request; null: nothing to say, so the render shows the one price (the test is
- *  off, an AI crawler, a form post from someone not assigned, or anything failed). Never throws. */
+ *  off, an AI crawler, outside the test's region, a form post from someone not assigned, or anything
+ *  failed). Never throws. */
 export async function decidePrice(req: NextRequest): Promise<PriceDecision | null> {
   try {
     if (!PRICE_TEST.enabled) return null
@@ -180,6 +204,7 @@ export async function decidePrice(req: NextRequest): Promise<PriceDecision | nul
     if (qa && (await readQaLink(qa)) !== null) return { headers: { [PRICE_QA_HEADER]: qa }, cookies: {} }
     const ua = req.headers.get("user-agent") ?? ""
     if (isAiCrawler(ua)) return null
+    if (!inTestRegion(req.headers)) return null
 
     const read = req.method === "GET" || req.method === "HEAD"
     const dest = req.headers.get("sec-fetch-dest")
