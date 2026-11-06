@@ -25,13 +25,8 @@ import { INTL_LOCALE, type Locale } from "@/lib/i18n/config"
 import { localePath } from "@/lib/i18n/paths"
 import { rich } from "@/lib/i18n/rich"
 import ns from "@/lib/i18n/messages/aiAnswers"
-
-// The name in "Why X and not you?" has to read as a business like theirs. On real checks (2-4 Nov 2026) the
-// first name was "Gas Safe Register", "Forestry Commission" or "Anbernic RG34XX SP": a regulator, a public
-// body or a product model. So those are passed over for the next name, or the headline goes without one.
-const PUBLIC_BODY = /\b(register|commission|council|association|society|authority|institute|federation|foundation|ministry|department|government|nhs|regulator|charity)\b/i
-const MODEL_NUMBER = /\b(?=[a-z0-9]*[a-z])(?=[a-z0-9]*\d[a-z0-9]*\d)[a-z0-9]{3,}\b/i
-const headlineName = (names: { name: string }[]) => names.find((n) => !PUBLIC_BODY.test(n.name) && !MODEL_NUMBER.test(n.name))?.name ?? ""
+// "Why X and not you?": X reads as a business like theirs (lib/geo-names.ts).
+import { headlineName } from "@/lib/geo-names"
 
 type M = (typeof ns)["en"]
 

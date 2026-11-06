@@ -19,6 +19,7 @@ import {
   YourPlan,
   card,
   fmtDate,
+  fullReport,
   onPlan,
   planSteps,
   REPORT_USED,
@@ -28,6 +29,7 @@ import {
 } from "./parts"
 import type { GeoPrices } from "@/lib/geo-pricing"
 import { PendingReward } from "../launch-wheel"
+import { Forecast } from "./charts"
 import { useAttention } from "@/components/geo/useAttention"
 
 // The AI-visibility report: where a new account lands after the quick check on the site, and where
@@ -313,6 +315,8 @@ export default function VisibilityPage() {
   // On the plan, or a client we set up by hand: no offer; the plan is the day-0 report's, each step
   // with where it stands.
   const client = site ? onPlan(site) : false
+  // The forecast's starting point: the site's fullest report, the day-0 one for an account without the plan.
+  const day0Summary = site ? fullReport(site)?.summary : undefined
   // The server's answer for a new site, before anyone types (/api/geo/report reportLimit): with a site
   // on screen a hint under "Add a site"; without one, the contact-us state in place of the empty form.
   const limited = reportLimit !== null && REPORT_USED.has(reportLimit) ? { domain: "", error: reportLimit } : null
@@ -409,7 +413,20 @@ export default function VisibilityPage() {
               {run ? (
                 <RunView key={opened} site={site} run={run} onBack={() => setOpenRun(null)} onRetry={retryRun} />
               ) : (
-                <ReportSections site={site} onToggleBase={showDay0} onOpenRun={showRun} />
+                <ReportSections
+                  site={site}
+                  onToggleBase={showDay0}
+                  onOpenRun={showRun}
+                  forecast={!client && !noOffer && day0Summary && (
+                    <Forecast
+                      named={day0Summary.named}
+                      of={day0Summary.of}
+                      namedInstead={day0Summary.named_instead ?? []}
+                      planHref={`/business/dashboard/plan?site=${encodeURIComponent(site.domain)}`}
+                      onStart={() => track("geo_forecast_plan_click", { domain: site.domain })}
+                    />
+                  )}
+                />
               )}
               <History site={site} openId={opened} onOpen={showRun} />
               <Crawlers audit={audit} />

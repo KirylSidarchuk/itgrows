@@ -2,7 +2,8 @@
 
 // The pieces of the AI-visibility page. Rules that hold on every card: counts, never percentages or
 // scores; "you" is violet, everyone else slate; an assistant that could not be checked is shown as
-// such and left out of the totals — it never counts as "not named"; nothing is projected.
+// such and left out of the totals — it never counts as "not named"; nothing is projected, except the
+// forecast an account without the plan sees under its day-0 report (charts.tsx Forecast, 6 Nov 2026).
 //
 // The detailed report is free once an account is created (since 27 Oct 2026) and always arrives
 // whole: every question with its answers, everyone named instead, every cited source. An account gets
@@ -24,6 +25,7 @@ import { listQuestions } from "@/lib/geo-list-question"
 import { useT } from "@/components/i18n/LocaleProvider"
 import visibilityOpening from "@/lib/i18n/messages/visibilityOpening"
 import { PendingReward, ReportRewards, liveReward, usePromo } from "../launch-wheel"
+import { GrowthChart, type GrowthPoint } from "./charts"
 
 export interface EngineAnswer {
   named: number
@@ -219,11 +221,6 @@ export function fmtDate(iso?: string | null) {
   return new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })
 }
 
-/** "28 Oct", under a bar of the trend. */
-function fmtDay(iso: string) {
-  return new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short" })
-}
-
 function citedByEngine(rows: Row[]) {
   const out: Record<string, number> = {}
   for (const r of rows) for (const [e, a] of Object.entries(r.engines ?? {})) if (a.cited > 0) out[e] = (out[e] ?? 0) + 1
@@ -417,10 +414,14 @@ function sameBasis(site: SiteReport) {
 function dayZero(history: HistoryRun[], basis: string | undefined) {
   const days0 = history.filter((h) => h.kind === "baseline")
   const same = days0.filter((h) => h.basis === basis).pop()
-  if (same) return { id: same.id as string | undefined, named: same.named, of: same.of, partial: unchecked(same).length > 0 }
+  if (same)
+    return { id: same.id as string | undefined, at: same.finishedAt, named: same.named, of: same.of, engines: same.engines, partial: unchecked(same).length > 0 }
   const first = history.find((h) => h.kind === "weekly" && h.basis === basis && h.previous?.kind === "baseline")
   if (!first?.previous) return null
-  return { id: days0[days0.length - 1]?.id, named: first.previous.named, of: first.previous.of, partial: false }
+  const day0 = days0[days0.length - 1]
+  const at = first.previous.finishedAt ?? day0?.finishedAt
+  if (!at) return null
+  return { id: day0?.id, at, named: first.previous.named, of: first.previous.of, engines: undefined, partial: false }
 }
 
 export function WeeklyHero({
@@ -444,15 +445,13 @@ export function WeeklyHero({
   const avgPrev = prev8.length === 4 ? prev8.reduce((n, w) => n + w.named, 0) / 4 : null
   const avgTone = avg !== null && avgPrev !== null && weeks.length >= 8 ? (avg > avgPrev ? "bg-green-50 text-green-800" : avg < avgPrev ? "bg-amber-50 text-amber-800" : "") : ""
   const prev = s.previous
-  // The trend: day 0 measured the same way first, when there is one, then the weeks; 12 bars, 8 on a
-  // phone, where day 0 stays and the oldest weeks drop.
+  // The trend: day 0 measured the same way first, when there is one, then every check of that basis, as
+  // a line up to day 90 (charts.tsx GrowthChart). A point opens its report, as a row of the history does.
   const day0 = dayZero(site.history, latestBasis(site))
-  const lead = day0 ? 1 : 0
-  const bars = [
-    ...(day0 ? [{ ...day0, label: "Day 0" }] : []),
-    ...weeks.slice(lead - 12).map((w) => ({ id: w.id as string | undefined, named: w.named, of: w.of, label: fmtDay(w.finishedAt), partial: unchecked(w).length > 0 })),
+  const points: GrowthPoint[] = [
+    ...(day0 ? [{ id: day0.id, at: day0.at, label: "Day 0", named: day0.named, of: day0.of, engines: day0.engines, partial: day0.partial }] : []),
+    ...weeks.map((w) => ({ id: w.id as string | undefined, at: w.finishedAt, named: w.named, of: w.of, engines: w.engines, partial: unchecked(w).length > 0 })),
   ]
-  const max = Math.max(1, ...bars.map((b) => b.of))
   const engines = ENGINES.filter((e) => s.engines[e])
   // This week's check asks fewer questions than day 0: say how short. The day-0 report opens from here.
   const short = !readOnly && fullReport(site) !== l
@@ -478,37 +477,15 @@ export function WeeklyHero({
           </span>
         )}
       </div>
-      {bars.length > 1 && (
-        <div className="mt-5 flex items-end gap-1.5" aria-label="Answers that named you, check by check">
-          {bars.map((b, i) => {
-            const cls = `flex-1 min-w-0 flex-col items-center ${i >= lead && i < bars.length - 8 + lead ? "hidden sm:flex" : "flex"}`
-            const title = `${b.label}: named in ${b.named} of ${b.of}${b.partial ? " (partial)" : ""}`
-            const body = (
-              <>
-                <span className="h-24 w-full flex flex-col items-center justify-end">
-                  <span className="text-[10px] text-slate-500 tabular-nums mb-0.5">{b.named}</span>
-                  <span
-                    className={`block w-full rounded-t ${b.partial ? "bg-violet-300" : "bg-violet-500/80"}`}
-                    style={{ height: `${Math.max(3, (b.named / max) * 100)}%` }}
-                  />
-                </span>
-                <span className="mt-1 text-[10px] text-slate-500 whitespace-nowrap">{b.label}</span>
-              </>
-            )
-            const id = b.id
-            const open = onOpenRun
-            return open && id ? (
-              <button key={i} type="button" onClick={() => open(id)} title={title} className={`${cls} rounded hover:bg-[#f8f7f6]`}>
-                {body}
-              </button>
-            ) : (
-              <div key={i} title={title} className={cls}>
-                {body}
-              </div>
-            )
-          })}
-        </div>
-      )}
+      <GrowthChart
+        points={points}
+        engines={engines}
+        labels={LABEL}
+        dayZero={Boolean(day0)}
+        upcoming={!readOnly}
+        guarantee={readOnly || site.plan === "paid"}
+        onOpen={onOpenRun}
+      />
       <p className="text-xs text-slate-500 mt-3 leading-relaxed">
         One check is noise: answers vary between asks. The 4-check average is the signal.
         {weeks.length < 4 && ` Trend appears after 4 checks (${weeks.length} of 4).`}
@@ -1739,13 +1716,16 @@ export function ReportSections({
   onToggleBase,
   onOpenRun,
   readOnly,
+  forecast,
 }: {
   site: SiteReport
   showBase?: boolean
   onToggleBase?: () => void
-  /** The cabinet: a bar of the trend opens its report, as the history does. */
+  /** The cabinet: a point of the trend opens its report, as the history does. */
   onOpenRun?: (id: string) => void
   readOnly?: boolean
+  /** Under the headline card: the forecast an account without the plan sees (page.tsx). */
+  forecast?: React.ReactNode
 }) {
   const latest = site.latest
   const full = fullReport(site)
@@ -1765,6 +1745,7 @@ export function ReportSections({
       ) : (
         <Hero report={latest} />
       )}
+      {forecast}
       {fromDay0 && (
         <p className="text-xs font-semibold text-slate-600 px-1">
           From {readOnly ? "the" : "your"} day-0 report · {fmtDate(full.finishedAt)} · {full.rows.length} questions × {full.engines.length} assistants,{" "}
