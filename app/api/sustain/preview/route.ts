@@ -166,7 +166,7 @@ function facts(html: string): Facts {
 }
 
 // Badges and partner marks that carry "logo" in their names but are not the business's own logo.
-const NOT_OWN_LOGO = /amazon|google-?play|app-?store|apple|badge|partner|payment|paypal|visa|mastercard|klarna|trustpilot|trusted|award|siegel|certif|zertifi|facebook|instagram|linkedin|twitter|youtube|whatsapp|tiktok/
+const NOT_OWN_LOGO = /amazon|aws|microsoft|nvidia|google|meta-|stripe|shopify|google-?play|app-?store|apple|badge|partner|payment|paypal|visa|mastercard|klarna|trustpilot|trusted|award|siegel|certif|zertifi|facebook|instagram|linkedin|twitter|youtube|whatsapp|tiktok/
 
 // The business's own logo: an image in the header first (a link to the home page, or one named "logo").
 function headerLogo(html: string, base: string): string {
@@ -180,7 +180,10 @@ function headerLogo(html: string, base: string): string {
   return (named ?? own[0])?.src ?? ""
 }
 
+// Outside the header an image counts as the logo only when its name or text carries the site's own name
+// (magiscan.app: the header logo is drawn in code, and the first "logo" image further down is AWS's).
 function pictures(html: string, base: string): { logo: string; images: string[] } {
+  const label = new URL(base).hostname.replace(/^www\./, "").split(".")[0].toLowerCase().replace(/[^a-z0-9]/g, "")
   let logo = headerLogo(html, base)
   const images: string[] = []
   const og = absolute(meta(html, "og:image"), base)
@@ -189,7 +192,7 @@ function pictures(html: string, base: string): { logo: string; images: string[] 
     if (!src) continue
     const hint = `${src} ${attr(tag, "alt")} ${attr(tag, "class")} ${attr(tag, "id")}`.toLowerCase()
     if (/logo/.test(hint)) {
-      if (!logo && !NOT_OWN_LOGO.test(hint)) logo = src
+      if (!logo && !NOT_OWN_LOGO.test(hint) && label.length > 2 && hint.replace(/[^a-z0-9]/g, "").includes(label)) logo = src
       continue
     }
     if (/\.svg(\?|$)|icon|sprite|pixel|tracking|spacer|avatar|emoji|flag|badge|placeholder|lazy\.gif/.test(hint)) continue
