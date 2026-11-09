@@ -662,6 +662,19 @@
 
     .ai__steps { margin: 12px 0 0; padding-left: 18px; color: var(--muted); font-size: 14px; }
 
+    .offer { margin-top: 36px; }
+
+    .offer__title { font-size: clamp(24px, 2.6vw, 34px); font-weight: 600; }
+
+    .offer__grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-top: 20px;
+    }
+
+    .offer .pack ul { margin: 18px 0 22px; }
+
     .cta-bar {
       display: flex;
       flex-wrap: wrap;
@@ -953,6 +966,7 @@
       .hero, .result__grid, .ai__grid, .split, .about { grid-template-columns: 1fr; }
       .hero__photo { max-width: 420px; aspect-ratio: 1; }
       .packages, .works { grid-template-columns: 1fr 1fr; }
+      .offer__grid { grid-template-columns: 1fr; }
       .steps { grid-template-columns: 1fr 1fr; }
       .stats { grid-template-columns: 1fr 1fr; }
     }
@@ -1035,8 +1049,14 @@
       </div>
 
       <div class="panel ai">
-        <p class="panel__label">Empfiehlt ChatGPT Sie? <small>Fünf Fragen, wie Ihre Kunden sie stellen</small></p>
-        <div id="ai"><div class="wait" style="min-height:120px"><div class="spinner"></div>Wir stellen ChatGPT gerade die Fragen Ihrer Kunden.</div></div>
+        <p class="panel__label">Empfehlen ChatGPT und Perplexity Sie? <small>Fünf Fragen, wie Ihre Kunden sie stellen</small></p>
+        <div id="ai"><div class="wait" style="min-height:120px"><div class="spinner"></div>Wir stellen ChatGPT und Perplexity gerade die Fragen Ihrer Kunden.</div></div>
+      </div>
+
+      <div class="offer">
+        <h3 class="offer__title" id="offer-title">Ihr Weg zur neuen Website</h3>
+        <div class="offer__grid" id="offer"></div>
+        <p class="footnote">Preise netto zzgl. MwSt. Das Werbebudget für Google und Meta zahlen Sie direkt an die Plattformen.</p>
       </div>
 
       <div class="cta-bar">
@@ -1258,7 +1278,9 @@
       $("today").innerHTML = '<div class="wait"><div class="spinner"></div>Google misst Ihre Website.<br>Das dauert bis zu 40 Sekunden.</div>';
       $("mock-view").style.height = "";
       $("mock-view").innerHTML = '<div class="wait"><div class="spinner"></div>Wir lesen Ihre Seite und schreiben die neuen Texte.</div>';
-      $("ai").innerHTML = '<div class="wait" style="min-height:120px"><div class="spinner"></div>Wir stellen ChatGPT gerade die Fragen Ihrer Kunden.</div>';
+      $("ai").innerHTML = '<div class="wait" style="min-height:120px"><div class="spinner"></div>Wir stellen ChatGPT und Perplexity gerade die Fragen Ihrer Kunden.</div>';
+      S = { host, name: "", perf: null, seo: null, lcp: "", named: null, of: null, rival: "" };
+      renderOffer();
       $("c-site").value = host;
       $("ergebnis").scrollIntoView({ behavior: "smooth", block: "start" });
       today(url, run);
@@ -1275,6 +1297,10 @@
         const d = await res.json();
         const shot = d.screenshot;
         const lcp = d.lcp;
+        S.perf = d.performance;
+        S.seo = d.seo;
+        S.lcp = lcp || "";
+        renderOffer();
         const ring = (label, v) => {
           const n = v ?? 0;
           const c = n >= 90 ? "var(--good)" : n >= 50 ? "var(--mid)" : "var(--bad)";
@@ -1320,6 +1346,8 @@
         liveSite = { url: data.url, frameable: !!data.frameable };
         showLive();
         if (data.name) $("r-title").textContent = `So könnte die neue Website von ${data.name} aussehen`;
+        S.name = data.name || "";
+        renderOffer();
       } catch (e) {
         if (run !== runId) return;
         const msg = String(e.message) === "unreachable"
@@ -1421,7 +1449,7 @@
     function showAsking(d) {
       const qs = (d.questions || []).slice(0, 5);
       if (!qs.length) return;
-      $("ai").innerHTML = `<div class="ai__grid"><div class="wait" style="min-height:90px"><div class="spinner"></div>ChatGPT antwortet …</div>
+      $("ai").innerHTML = `<div class="ai__grid"><div class="wait" style="min-height:90px"><div class="spinner"></div>Die Assistenten antworten …</div>
         <div><p class="ai__q">Diese Fragen stellen wir:</p><ol class="ai__steps">${qs.map((q) => `<li>${esc(q)}</li>`).join("")}</ol></div></div>`;
     }
 
@@ -1433,16 +1461,77 @@
       const more = s.namedInsteadMore || 0;
       const named = s.named ?? 0;
       const of = s.of ?? 0;
+      const who = esc(d.business || d.domain);
       const verdict = named === 0
-        ? `ChatGPT nennt ${esc(d.business || d.domain)} in keiner Antwort.`
-        : `ChatGPT nennt ${esc(d.business || d.domain)} in ${named} von ${of} Antworten.`;
+        ? `ChatGPT und Perplexity nennen ${who} in keiner Antwort.`
+        : `ChatGPT und Perplexity nennen ${who} in ${named} von ${of} Antworten.`;
+      S.named = named;
+      S.of = of;
+      S.rival = rival ? (rival.name || rival) : "";
+      renderOffer();
       $("ai").innerHTML = `<div class="ai__grid">
         <div>
           <div class="ai__big">${named}<small> von ${of} Antworten</small></div>
-          <p class="panel__fact">${verdict}${rival ? ` Stattdessen genannt: <b>${esc(rival)}</b>${more ? ` und ${more} weitere` : ""}.` : ""}</p>
+          <p class="panel__fact">${verdict}${rival ? ` Stattdessen genannt: <b>${esc(rival.name || rival)}</b>${more ? ` und ${more} weitere` : ""}.` : ""}</p>
         </div>
         <div>${open ? `<p class="ai__q">„${esc(open.q)}“</p>${eng && (eng.quote || eng.snippet) ? `<p class="ai__a">${esc(eng.quote || eng.snippet)}</p>` : ""}` : ""}</div>
       </div>`;
+    }
+
+    // The three packages, told with this visitor's own numbers as they arrive. The one suggested depends on
+    // what was found: nobody naming them in the assistants points to "Sichtbarkeit".
+    let S = {};
+    const PACKS = [
+      { id: "web", name: "Website", price: "14.900 €", weeks: "Live in 4 Wochen" },
+      { id: "vis", name: "Website + Sichtbarkeit", price: "29.900 €", weeks: "Live in 6 Wochen" },
+      { id: "grow", name: "Website + Wachstum", price: "49.900 €", weeks: "Live in 8 Wochen" }
+    ];
+
+    function offerLines(id) {
+      const who = S.name || S.host;
+      const lines = [];
+      if (id === "web") {
+        lines.push("Der Entwurf oben als fertige Website, Texte und Bilder inklusive");
+        if (S.perf != null) lines.push(`Geschwindigkeit heute <b>${S.perf}</b> von 100, unser Ziel: <b>90+</b>`);
+        if (S.seo != null && S.seo < 100) lines.push(`Google-Suche heute <b>${S.seo}</b> von 100, unser Ziel: <b>100</b>`);
+        if (S.perf == null) lines.push("Schnell auf dem Handy, technisch sauber für Google");
+        lines.push("Impressum, Datenschutz, Cookie-Einwilligung");
+      } else if (id === "vis") {
+        lines.push("Alles aus „Website“");
+        if (S.named != null) {
+          lines.push(S.named === 0
+            ? `Heute nennen ChatGPT und Perplexity ${esc(who)} in <b>keiner</b> von ${S.of} Antworten`
+            : `Heute wird ${esc(who)} in <b>${S.named} von ${S.of}</b> Antworten genannt`);
+          if (S.rival) lines.push(`Stattdessen genannt: <b>${esc(S.rival)}</b>. Unser Ziel: Sie werden bei diesen Fragen genannt`);
+        } else {
+          lines.push("Sichtbarkeit in ChatGPT und anderen KI-Assistenten, 3 Monate");
+        }
+        lines.push("Inhalte für die Google-Suche und Google-Unternehmensprofil");
+        lines.push("Google Ads: Einrichtung und erste Kampagne");
+      } else {
+        lines.push("Alles aus „Website + Sichtbarkeit“");
+        lines.push(`Neuer Markenauftritt für ${esc(who)}: Logo, Farben, Schriften`);
+        lines.push("Neue Kunden über Instagram und Facebook, 3 Monate");
+        lines.push("Landingpages für Kampagnen und eine zweite Sprache");
+      }
+      return lines;
+    }
+
+    function renderOffer() {
+      if (!S.host) return;
+      const suggest = S.named === 0 || S.named == null ? "vis" : (S.perf != null && S.perf < 50 ? "web" : "vis");
+      $("offer-title").textContent = `Ihr Weg zur neuen Website${S.name ? ` für ${S.name}` : ""}`;
+      $("offer").innerHTML = PACKS.map((p) => `
+        <article class="pack${p.id === suggest ? " pack--hot" : ""}">
+          <span class="pack__tag">${p.id === suggest ? "Empfohlen für Sie · " : ""}${p.weeks}</span>
+          <h3>${p.name}</h3>
+          <p class="pack__price">${p.price}</p>
+          <ul>${offerLines(p.id).map((l) => `<li><span>${l}</span></li>`).join("")}</ul>
+          <a class="btn${p.id === suggest ? "" : " btn--ghost"}" href="#kontakt" data-offer="${p.name} (${p.price})">Paket für ${esc(S.host)} anfragen</a>
+        </article>`).join("");
+      $("offer").querySelectorAll("[data-offer]").forEach((a) => a.addEventListener("click", () => {
+        $("c-message").value = `Hallo, ich interessiere mich für das Paket „${a.dataset.offer}“ für ${S.host}. Ich möchte ein Erstgespräch vereinbaren.`;
+      }));
     }
 
     // "Diesen Entwurf umsetzen" and the package buttons fill in the message.
