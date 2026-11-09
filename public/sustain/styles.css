@@ -540,6 +540,73 @@ h3 {
   border-color: #c8c8c2;
 }
 
+/* A narrow slice of the project's cover fills the spine; the text sits on top of it. */
+.item__spine {
+  position: relative;
+  background: var(--dark);
+  color: #fff;
+}
+
+.item__art {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.item__art img {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: auto;
+  max-width: none;
+  height: 100%;
+  transform: translateX(var(--focus, -50%));
+  transition: transform 0.4s ease;
+}
+
+/* Wide covers carry their title at the top: the image is lifted so the title is above the spine. */
+.item:not(.item--portrait) .item__art img {
+  top: -19%;
+  height: 119%;
+}
+
+/* Portrait covers carry a caption at the bottom: shown larger, from the top, so it stays out. */
+.item--portrait .item__art img {
+  height: 122%;
+}
+
+.item__art::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(20, 20, 20, 0.94) 0, rgba(20, 20, 20, 0.86) 19%, rgba(20, 20, 20, 0.36) 40%, rgba(20, 20, 20, 0.3) 62%, rgba(20, 20, 20, 0.86) 100%);
+}
+
+/* Where on each cover the slice is cut: the product itself, not the title baked into the image. */
+.item[data-cover="magiscan"] { --focus: -79%; }
+.item[data-cover="ava"] { --focus: -36%; }
+.item[data-cover="freightsizer"] { --focus: -34%; }
+.item[data-cover="orthio"] { --focus: -73%; }
+.item[data-cover="arize"] { --focus: -27%; }
+.item[data-cover="monixa"] { --focus: -30%; }
+.item[data-cover="itgrows"] { --focus: -30%; }
+.item[data-cover="oyper"] { --focus: -38%; }
+.item[data-cover="pickaclass"] { --focus: -78%; }
+.item[data-cover="luni"] { --focus: -45%; }
+
+.item__index,
+.item__title,
+.item__label {
+  position: relative;
+  color: #fff;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.45);
+}
+
+.item__index,
+.item__label {
+  color: rgba(255, 255, 255, 0.82);
+}
+
 .item.is-active .item__spine {
   border-right-color: transparent;
   border-radius: var(--radius) 0 0 var(--radius);

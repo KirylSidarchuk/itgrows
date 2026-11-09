@@ -303,6 +303,7 @@ function renderShelf() {
     return `
       <button class="item${PORTRAIT_COVERS.has(project.id) ? " item--portrait" : ""}" type="button" data-cover="${esc(project.id)}" aria-haspopup="dialog" aria-label="${esc(project.name)}">
         <span class="item__spine">
+          ${image ? `<span class="item__art" aria-hidden="true">${imageTag(image[0], "")}</span>` : ""}
           <span class="item__index" aria-hidden="true">${String(index + 1).padStart(2, "0")}</span>
           <span class="item__title">${esc(project.name)}</span>
           <span class="item__label">${esc(project.tag)}</span>
