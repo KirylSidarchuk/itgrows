@@ -772,6 +772,75 @@
 
     .styles button[aria-pressed="true"] { border-color: var(--dark); background: var(--dark); color: #fff; }
 
+    .styles__gap { flex: 0 0 10px; }
+
+    .styles__label { align-self: center; color: var(--muted); font-size: 13px; font-weight: 600; }
+
+    .styles__set { display: inline-flex; gap: 8px; }
+
+    /* The logo: the site's own, or a drawn one that follows the style. */
+    .mock__mark,
+    .mock__newword { display: none; }
+
+    .mock--newlogo .mock__logo img,
+    .mock--newlogo .mock__word { display: none; }
+
+    .mock--newlogo .mock__mark {
+      display: grid;
+      place-items: center;
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      background: var(--brand);
+      color: var(--on-brand);
+      font-family: var(--hfont);
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+
+    .mock--newlogo .mock__newword {
+      display: inline;
+      font-family: var(--hfont);
+      font-size: 22px;
+      font-weight: 750;
+      letter-spacing: -0.03em;
+    }
+
+    .mock--dark.mock--newlogo .mock__mark {
+      border: 1.5px solid var(--brand);
+      border-radius: 50%;
+      background: transparent;
+      color: #fff;
+      box-shadow: 0 0 18px color-mix(in srgb, var(--brand) 60%, transparent);
+      font-weight: 500;
+    }
+
+    .mock--dark.mock--newlogo .mock__newword { font-size: 17px; font-weight: 500; letter-spacing: 0.22em; text-transform: uppercase; }
+
+    .mock--editorial.mock--newlogo .mock__mark {
+      border: 1px solid var(--ink);
+      border-radius: 50%;
+      background: transparent;
+      color: var(--ink);
+      font-style: italic;
+      font-weight: 400;
+    }
+
+    .mock--editorial.mock--newlogo .mock__newword { font-size: 26px; font-style: italic; font-weight: 400; letter-spacing: 0; }
+
+    .mock--bold.mock--newlogo .mock__mark { border-radius: 0; font-weight: 900; }
+
+    .mock--bold.mock--newlogo .mock__newword { font-size: 24px; font-weight: 900; letter-spacing: -0.04em; text-transform: uppercase; }
+
+    .mock--warm.mock--newlogo .mock__mark {
+      border-radius: 50%;
+      background: color-mix(in srgb, var(--brand) 18%, #fff);
+      color: var(--brand);
+    }
+
+    .mock--warm.mock--newlogo .mock__newword { font-weight: 650; letter-spacing: -0.02em; }
+
     .disclaimer {
       margin: 14px 0 0;
       color: var(--muted);
@@ -1228,6 +1297,12 @@
             <button type="button" data-style="editorial" aria-pressed="false">Classic</button>
             <button type="button" data-style="bold" aria-pressed="false">Bold</button>
             <button type="button" data-style="warm" aria-pressed="false">Warm</button>
+            <span class="styles__gap" aria-hidden="true"></span>
+            <span class="styles__label" id="logo-label">Logo:</span>
+            <span class="styles__set" id="logos" role="group" aria-labelledby="logo-label">
+              <button type="button" data-logo="own" aria-pressed="true">Your logo</button>
+              <button type="button" data-logo="new" aria-pressed="false">New logo</button>
+            </span>
           </div>
           <div class="browser">
             <div class="browser__bar"><i></i><i></i><i></i><span id="mock-url"></span></div>
@@ -1463,6 +1538,8 @@
       current = url;
       todayFailed = false;
       liveSite = null;
+      logoChosen = false;
+      setLogo("own");
       const host = new URL(url).hostname.replace(/^www\./, "");
       $("ergebnis").hidden = false;
       $("r-host").textContent = host;
@@ -1554,6 +1631,18 @@
       }
     }
 
+    // The drawn logo: initials in a mark and the name set in the style's type. Long names keep their last two words.
+    function shortName(name) {
+      const words = String(name || "").split(/\s+/).filter(Boolean);
+      return words.length > 3 ? words.slice(-2).join(" ") : words.join(" ");
+    }
+
+    function initials(name) {
+      const words = shortName(name).split(/\s+/).filter((w) => /^[\p{L}\p{N}]/u.test(w));
+      const two = words.length > 1 ? words[0][0] + words[1][0] : (words[0] || "?").slice(0, 2);
+      return two.toUpperCase();
+    }
+
     function onColour(hex) {
       const n = parseInt(hex.slice(1), 16);
       const lum = (0.299 * ((n >> 16) & 255) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) / 255;
@@ -1570,12 +1659,14 @@
         ? `<img src="${esc(d.logo)}" alt="" referrerpolicy="no-referrer" onerror="this.remove()">`
         : "";
       const mock = document.createElement("div");
-      mock.className = `mock mock--${style}`;
+      // A site without a logo of its own gets the new one at once.
+      if (!d.logo && !logoChosen) setLogo("new");
+      mock.className = mockClass();
       mock.style.setProperty("--brand", brand);
       mock.style.setProperty("--on-brand", onColour(brand));
       mock.innerHTML = `
         <div class="mock__nav">
-          <div class="mock__logo">${logo}<span>${esc(d.name)}</span></div>
+          <div class="mock__logo">${logo}<span class="mock__mark" aria-hidden="true">${esc(initials(d.name))}</span><span class="mock__word">${esc(d.name)}</span><span class="mock__newword">${esc(shortName(d.name))}</span></div>
           <div class="mock__links">${services.map((s) => `<span>${esc(s.title)}</span>`).join("")}<span>Contact</span></div>
           <span class="mock__btn">${esc(c.cta || "Get in touch")}</span>
         </div>
@@ -1612,14 +1703,29 @@
 
     // The five looks: switching only changes the class, so the content stays and the frame refits.
     let style = "clean";
+    let logoMode = "own";
+    let logoChosen = false;
+    const mockClass = () => `mock mock--${style}${logoMode === "new" ? " mock--newlogo" : ""}`;
+    function refreshMock() {
+      const mock = $("mock-view").querySelector(".mock");
+      if (mock) {
+        mock.className = mockClass();
+        fitMock();
+      }
+    }
+    function setLogo(mode) {
+      logoMode = mode;
+      document.querySelectorAll("#logos [data-logo]").forEach((x) => x.setAttribute("aria-pressed", String(x.dataset.logo === mode)));
+    }
     document.querySelectorAll("#styles [data-style]").forEach((b) => b.addEventListener("click", () => {
       style = b.dataset.style;
       document.querySelectorAll("#styles [data-style]").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
-      const mock = $("mock-view").querySelector(".mock");
-      if (mock) {
-        mock.className = `mock mock--${style}`;
-        fitMock();
-      }
+      refreshMock();
+    }));
+    document.querySelectorAll("#logos [data-logo]").forEach((b) => b.addEventListener("click", () => {
+      logoChosen = true;
+      setLogo(b.dataset.logo);
+      refreshMock();
     }));
 
     addEventListener("resize", fitMock);
