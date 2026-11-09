@@ -1872,6 +1872,13 @@
       location.href = `mailto:${STUDIO_EMAIL}?subject=${encodeURIComponent("Anfrage über die Website")}&body=${encodeURIComponent(body)}`;
       $("c-status").textContent = "Ihr E-Mail-Programm öffnet sich. Von dieser Seite wurde nichts gesendet.";
     });
+
+    // A link from another page can bring the address with it: /sustain/de?url=ihre-firma.de#check
+    const preset = new URLSearchParams(location.search).get("url");
+    if (preset) {
+      $("url").value = preset;
+      $("check").requestSubmit();
+    }
   </script>
 </body>
 </html>

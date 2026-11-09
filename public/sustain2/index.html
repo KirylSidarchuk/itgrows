@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="de" data-l="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Websites, die genannt werden</title>
+  <meta name="description" content="Schöne Websites für den Mittelstand, die Google, ChatGPT, Perplexity und Gemini nennen.">
+  <meta name="theme-color" content="#FAFAF7">
+  <link rel="icon" href="/sustain/assets/favicon.svg" type="image/svg+xml">
+  <style>
+    @font-face { font-family: "Inter"; src: url("/sustain/assets/fonts/inter-latin.woff2") format("woff2"); font-weight: 100 900; font-display: swap; }
+
+    :root {
+      --bg: #FAFAF7;
+      --surface: #FFFFFF;
+      --ink: #0E0E12;
+      --muted: #67676F;
+      --line: #E7E6E1;
+      --a1: #4338CA;
+      --a2: #0EA5E9;
+      --a3: #A855F7;
+      --grad: linear-gradient(100deg, var(--a1), var(--a3) 50%, var(--a2));
+      --max: 1240px;
+      --pad: 40px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; overflow-x: hidden; }
+    section[id] { scroll-margin-top: 64px; }
+    body { margin: 0; background: var(--bg); color: var(--ink); font-family: "Inter", system-ui, sans-serif; font-size: 16px; line-height: 1.55; -webkit-font-smoothing: antialiased; }
+    a { color: inherit; }
+    img { max-width: 100%; display: block; }
+    button { font: inherit; color: inherit; }
+    [data-l="de"] .en, [data-l="en"] .de { display: none !important; }
+    .wrap { width: min(100%, calc(var(--max) + var(--pad) * 2)); margin: 0 auto; padding: 0 var(--pad); }
+    .grad-text { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+
+    .top { position: sticky; top: 0; z-index: 30; background: color-mix(in srgb, var(--bg) 82%, transparent); backdrop-filter: blur(14px); border-bottom: 1px solid transparent; transition: border-color 0.2s; }
+    .top.scrolled { border-bottom-color: var(--line); }
+    .top .wrap { display: flex; align-items: center; gap: 28px; height: 70px; }
+    .brand { font-weight: 800; letter-spacing: 0.14em; font-size: 14px; text-decoration: none; display: flex; align-items: center; gap: 10px; }
+    .brand i { width: 22px; height: 22px; border-radius: 7px; background: var(--grad); }
+    .nav { display: flex; gap: 26px; margin-left: auto; font-size: 14px; color: var(--muted); }
+    .nav a { text-decoration: none; }
+    .nav a:hover { color: var(--ink); }
+    .langs { display: flex; border: 1px solid var(--line); border-radius: 999px; overflow: hidden; background: var(--surface); }
+    .langs button { background: none; border: 0; padding: 5px 10px; font-size: 12px; font-weight: 700; cursor: pointer; color: var(--muted); }
+    .langs button[aria-pressed="true"] { background: var(--ink); color: #fff; }
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 0; border-radius: 999px; padding: 13px 22px; font-weight: 650; font-size: 15px; text-decoration: none; cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; }
+    .btn:hover { transform: translateY(-1px); }
+    .btn--ink { background: var(--ink); color: #fff; box-shadow: 0 8px 24px rgba(14,14,18,0.18); }
+    .btn--grad { background: var(--grad); color: #fff; box-shadow: 0 10px 30px rgba(99, 70, 230, 0.35); }
+    .btn--line { background: var(--surface); box-shadow: inset 0 0 0 1px var(--line); }
+    .btn--sm { padding: 9px 16px; font-size: 14px; }
+
+    /* Hero */
+    .hero { position: relative; overflow: hidden; padding: 72px 0 96px; }
+    .aurora { position: absolute; inset: -20% -10% auto; height: 900px; pointer-events: none; filter: blur(70px); opacity: 0.55; }
+    .aurora span { position: absolute; border-radius: 50%; }
+    .aurora span:nth-child(1) { width: 520px; height: 520px; left: 52%; top: 8%; background: #c7b8ff; animation: drift 18s ease-in-out infinite alternate; }
+    .aurora span:nth-child(2) { width: 460px; height: 460px; left: 72%; top: 26%; background: #a5e4ff; animation: drift 22s ease-in-out infinite alternate-reverse; }
+    .aurora span:nth-child(3) { width: 380px; height: 380px; left: 8%; top: 40%; background: #ffd6f0; opacity: 0.7; animation: drift 26s ease-in-out infinite alternate; }
+    @keyframes drift { to { transform: translate(-60px, 40px) scale(1.08); } }
+    .hero .wrap { position: relative; display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 56px; align-items: center; }
+    .pill { display: inline-flex; align-items: center; gap: 10px; padding: 7px 14px 7px 8px; border-radius: 999px; background: var(--surface); border: 1px solid var(--line); font-size: 13.5px; font-weight: 600; box-shadow: 0 4px 14px rgba(0,0,0,0.04); }
+    .pill b { background: var(--grad); color: #fff; border-radius: 999px; padding: 3px 9px; font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; }
+    h1 { font-size: clamp(42px, 5.6vw, 78px); line-height: 0.98; letter-spacing: -0.045em; margin: 22px 0 22px; font-weight: 800; }
+    .hero__sub { font-size: clamp(17px, 1.6vw, 20px); color: var(--muted); max-width: 560px; margin: 0 0 30px; }
+    .hero__cta { display: flex; gap: 12px; flex-wrap: wrap; }
+    .engines { display: flex; gap: 10px 22px; flex-wrap: wrap; margin-top: 34px; font-size: 13.5px; color: var(--muted); align-items: center; }
+    .engines b { color: var(--ink); font-weight: 650; }
+
+    .stage { position: relative; height: 540px; }
+    .site-card { position: absolute; right: 0; top: 0; width: 88%; border-radius: 18px; overflow: hidden; background: var(--surface); box-shadow: 0 40px 90px rgba(40, 30, 90, 0.18), 0 0 0 1px rgba(0,0,0,0.04); transform: rotate(2deg); }
+    .site-card .bar { height: 30px; background: #f1f0ec; display: flex; align-items: center; gap: 6px; padding: 0 12px; }
+    .site-card .bar i { width: 9px; height: 9px; border-radius: 50%; background: #d9d6cf; }
+    .site-card .bar span { margin-left: 8px; height: 16px; flex: 1; max-width: 220px; border-radius: 8px; background: #fff; font-size: 10px; color: #888; line-height: 16px; padding-left: 8px; }
+    .site-card img { width: 100%; aspect-ratio: 3 / 2; object-fit: cover; object-position: top; }
+    .answer { position: absolute; left: 0; bottom: 0; width: 76%; background: rgba(255,255,255,0.92); backdrop-filter: blur(16px); border-radius: 22px; padding: 20px 22px 18px; box-shadow: 0 30px 80px rgba(40, 30, 90, 0.22), 0 0 0 1px rgba(0,0,0,0.05); }
+    .answer__q { display: flex; gap: 10px; align-items: flex-start; font-size: 15px; font-weight: 600; margin-bottom: 14px; }
+    .answer__q::before { content: ""; flex: 0 0 26px; height: 26px; border-radius: 50%; background: #ececec url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23777' stroke-width='2'%3E%3Ccircle cx='12' cy='8' r='4'/%3E%3Cpath d='M4 21c1-4 4-6 8-6s7 2 8 6'/%3E%3C/svg%3E") center / 15px no-repeat; }
+    .answer__a { display: flex; gap: 10px; font-size: 15px; color: #2b2b31; min-height: 92px; }
+    .answer__a::before { content: ""; flex: 0 0 26px; height: 26px; border-radius: 8px; background: var(--grad); }
+    .answer__a mark { background: linear-gradient(transparent 58%, rgba(168, 85, 247, 0.28) 58%); color: var(--ink); font-weight: 700; }
+    .caret { display: inline-block; width: 2px; height: 1em; background: var(--a1); vertical-align: -2px; margin-left: 1px; animation: blink 1s steps(1) infinite; }
+    @keyframes blink { 50% { opacity: 0; } }
+    .answer__foot { display: flex; justify-content: space-between; gap: 10px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); font-size: 12px; color: var(--muted); }
+    .dots { display: flex; gap: 6px; }
+    .dots i { width: 6px; height: 6px; border-radius: 50%; background: #d4d2cc; transition: background 0.3s, width 0.3s; }
+    .dots i.on { width: 18px; border-radius: 3px; background: var(--a1); }
+    .chip-float { position: absolute; z-index: 2; left: 2%; top: 14%; background: var(--ink); color: #fff; border-radius: 14px; padding: 12px 16px; font-size: 13px; box-shadow: 0 20px 40px rgba(0,0,0,0.25); }
+    .chip-float b { display: block; font-size: 15px; }
+
+    /* Sections */
+    section.s { padding: 112px 0; }
+    .eyebrow { display: inline-block; font-size: 13px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; margin: 0 0 16px; }
+    h2.h { font-size: clamp(32px, 4.2vw, 56px); line-height: 1.02; letter-spacing: -0.04em; margin: 0 0 18px; font-weight: 800; max-width: 860px; }
+    .lead { font-size: 19px; color: var(--muted); max-width: 660px; margin: 0; }
+    .center { text-align: center; }
+    .center h2.h, .center .lead { margin-left: auto; margin-right: auto; }
+
+    .shift { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 52px; }
+    .shift article { position: relative; background: var(--surface); border: 1px solid var(--line); border-radius: 22px; padding: 30px 28px; min-height: 260px; display: flex; flex-direction: column; }
+    .shift .n { font-size: 13px; font-weight: 700; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; }
+    .shift h3 { font-size: 24px; letter-spacing: -0.02em; margin: 14px 0 10px; line-height: 1.15; }
+    .shift p { margin: 0; color: var(--muted); }
+    .shift .vis { margin-top: auto; padding-top: 22px; display: grid; gap: 7px; }
+    .shift .vis i { display: block; height: 8px; border-radius: 4px; background: #ecebe6; }
+    .shift .vis i.blue { background: #c9d4fb; width: 70%; }
+    .shift .vis .bubble { background: #f3f1fb; border-radius: 12px; padding: 10px 12px; font-size: 13px; color: #3c3a52; }
+    .shift .vis .bubble mark { background: none; font-weight: 700; color: var(--a1); }
+    .shift article.hl { background: var(--ink); color: #fff; border-color: var(--ink); }
+    .shift article.hl p, .shift article.hl .n { color: rgba(255,255,255,0.65); }
+
+    .svc { display: grid; grid-template-columns: 1.15fr 1fr; gap: 18px; margin-top: 52px; }
+    .svc__big { grid-row: span 2; border-radius: 26px; padding: 36px; color: #fff; background: radial-gradient(120% 90% at 100% 0%, #6d5cf6 0%, transparent 55%), radial-gradient(80% 80% at 0% 100%, #0ea5e9 0%, transparent 60%), #17142e; display: flex; flex-direction: column; min-height: 520px; overflow: hidden; position: relative; }
+    .svc__big h3 { font-size: 34px; letter-spacing: -0.03em; line-height: 1.05; margin: 10px 0 14px; max-width: 420px; }
+    .svc__big p { color: rgba(255,255,255,0.78); max-width: 440px; margin: 0; font-size: 17px; }
+    .svc__big .by { display: inline-block; margin-top: 18px; font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #c9c2ff; }
+    .meter { margin-top: auto; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.14); border-radius: 18px; padding: 18px 20px; display: grid; gap: 12px; }
+    .meter div { display: grid; grid-template-columns: 110px 1fr; gap: 14px; align-items: center; font-size: 14px; }
+    .meter em { font-style: normal; color: rgba(255,255,255,0.7); font-size: 13px; display: flex; align-items: center; gap: 8px; }
+    .meter em::before { content: "✓"; display: grid; place-items: center; width: 18px; height: 18px; border-radius: 50%; background: linear-gradient(90deg, #a5b4fc, #67e8f9); color: #17142e; font-size: 10px; font-weight: 800; }
+    .meter u { text-decoration: none; height: 8px; border-radius: 4px; background: rgba(255,255,255,0.12); position: relative; overflow: hidden; }
+    .meter u::after { content: ""; position: absolute; inset: 0 auto 0 0; width: var(--v); border-radius: 4px; background: linear-gradient(90deg, #a5b4fc, #67e8f9); transform-origin: left; animation: grow 1.6s cubic-bezier(.2,.8,.2,1) both; }
+    @keyframes grow { from { transform: scaleX(0); } }
+    .meter small { display: block; color: rgba(255,255,255,0.55); font-size: 12px; }
+    .svc__card { background: var(--surface); border: 1px solid var(--line); border-radius: 26px; padding: 30px; display: flex; flex-direction: column; gap: 10px; }
+    .svc__card h3 { font-size: 22px; letter-spacing: -0.02em; margin: 0; }
+    .svc__card p { margin: 0; color: var(--muted); }
+    .svc__card .by { margin-top: auto; font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--a1); }
+    .svc__row { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+
+    .method { display: grid; grid-template-columns: 0.9fr 1.1fr; gap: 64px; align-items: start; }
+    .method__list { display: grid; gap: 14px; }
+    .mstep { display: grid; grid-template-columns: 52px 1fr; gap: 18px; background: var(--surface); border: 1px solid var(--line); border-radius: 20px; padding: 22px 24px; transition: border-color 0.2s, box-shadow 0.2s; }
+    .mstep:hover { border-color: #cfc8f7; box-shadow: 0 14px 40px rgba(67, 56, 202, 0.08); }
+    .mstep b { width: 52px; height: 52px; border-radius: 14px; display: grid; place-items: center; background: #f1effd; color: var(--a1); font-size: 17px; font-weight: 800; }
+    .mstep h3 { margin: 2px 0 4px; font-size: 19px; letter-spacing: -0.01em; }
+    .mstep p { margin: 0; color: var(--muted); font-size: 15px; }
+    .sticky { position: sticky; top: 110px; }
+
+    .check { position: relative; overflow: hidden; border-radius: 30px; padding: 64px; background: var(--ink); color: #fff; display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 40px; align-items: center; }
+    .check::before { content: ""; position: absolute; width: 600px; height: 600px; right: -160px; top: -260px; border-radius: 50%; background: radial-gradient(circle, rgba(124, 92, 255, 0.55), transparent 65%); }
+    .check h2.h { color: #fff; position: relative; }
+    .check .lead { color: rgba(255,255,255,0.7); position: relative; }
+    .check form { position: relative; display: flex; gap: 10px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.16); border-radius: 999px; padding: 6px; }
+    .check input { flex: 1; min-width: 0; background: transparent; border: 0; color: #fff; font: inherit; font-size: 16px; padding: 0 16px; outline: none; }
+    .check input::placeholder { color: rgba(255,255,255,0.5); }
+    .check small { position: relative; display: block; margin-top: 12px; color: rgba(255,255,255,0.55); font-size: 13px; }
+
+    .bento { display: grid; grid-template-columns: repeat(12, 1fr); grid-auto-rows: 236px; gap: 16px; margin-top: 52px; }
+    .tile { position: relative; border-radius: 22px; overflow: hidden; background: #e9e7e1; text-decoration: none; color: #fff; isolation: isolate; }
+    .tile img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center top; transition: transform 0.7s cubic-bezier(.2,.8,.2,1); z-index: -2; }
+    .tile::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 40%, rgba(8,8,14,0.82)); z-index: -1; transition: opacity 0.3s; }
+    .tile:hover img { transform: scale(1.05); }
+    .tile__body { position: absolute; left: 0; right: 0; bottom: 0; padding: 20px 22px; }
+    .tile__tag { font-size: 11.5px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.8; }
+    .tile__name { display: flex; align-items: center; gap: 8px; font-size: 22px; font-weight: 800; letter-spacing: -0.02em; margin-top: 2px; }
+    .tile__line { font-size: 14px; opacity: 0; max-height: 0; overflow: hidden; transition: opacity 0.3s, max-height 0.3s; margin: 0; }
+    .tile:hover .tile__line, .tile:focus-visible .tile__line { opacity: 0.9; max-height: 60px; margin-top: 6px; }
+    .tile__proof { display: inline-block; margin-top: 8px; background: rgba(255,255,255,0.16); backdrop-filter: blur(8px); border-radius: 999px; padding: 4px 10px; font-size: 12.5px; font-weight: 650; }
+    .t-xl { grid-column: span 6; grid-row: span 2; }
+    .t-l { grid-column: span 6; }
+    .t-m { grid-column: span 4; }
+    .t-s { grid-column: span 3; }
+
+    .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+    .stat { background: var(--surface); border: 1px solid var(--line); border-radius: 22px; padding: 28px 24px; }
+    .stat b { display: block; font-size: 56px; line-height: 1; letter-spacing: -0.05em; font-weight: 800; }
+    .stat span { display: block; margin-top: 12px; color: var(--muted); font-size: 15px; }
+
+    .packs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 52px; }
+    .pack { background: var(--surface); border: 1px solid var(--line); border-radius: 26px; padding: 34px 30px; display: flex; flex-direction: column; position: relative; }
+    .pack--hot { border: 0; box-shadow: 0 30px 70px rgba(67, 56, 202, 0.18); }
+    .pack--hot::before { content: ""; position: absolute; inset: 0; border-radius: 26px; padding: 2px; background: var(--grad); -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude; pointer-events: none; }
+    .pack__badge { font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+    .pack--hot .pack__badge { color: var(--a1); }
+    .pack h3 { font-size: 22px; margin: 12px 0 8px; letter-spacing: -0.02em; }
+    .pack__price { font-size: 46px; font-weight: 800; letter-spacing: -0.04em; line-height: 1.05; }
+    .pack__net { font-size: 13px; color: var(--muted); margin-bottom: 22px; }
+    .pack ul { list-style: none; padding: 0; margin: 0 0 28px; display: grid; gap: 11px; font-size: 15px; }
+    .pack li { display: flex; gap: 10px; }
+    .pack li::before { content: "✓"; flex: 0 0 20px; height: 20px; border-radius: 50%; background: #efedfc; color: var(--a1); font-size: 11px; font-weight: 800; display: grid; place-items: center; margin-top: 1px; }
+    .pack .btn { margin-top: auto; }
+    .bigger { margin-top: 18px; display: flex; gap: 24px; align-items: center; justify-content: space-between; border-radius: 26px; padding: 28px 30px; background: linear-gradient(100deg, #f1effd, #e9f7fd); flex-wrap: wrap; }
+    .bigger h3 { margin: 0 0 4px; font-size: 20px; }
+    .bigger p { margin: 0; color: var(--muted); }
+    .note { margin-top: 16px; font-size: 14px; color: var(--muted); }
+
+    .about { display: grid; grid-template-columns: 0.85fr 1.15fr; gap: 64px; align-items: center; }
+    .portrait { position: relative; }
+    .portrait::before { content: ""; position: absolute; inset: 24px -24px -24px 24px; border-radius: 30px; background: var(--grad); opacity: 0.85; }
+    .portrait img { position: relative; border-radius: 30px; width: 100%; aspect-ratio: 4 / 5; object-fit: cover; object-position: center 30%; box-shadow: 0 30px 70px rgba(20,20,40,0.2); }
+    .about p { font-size: 18px; color: #3a3a42; }
+    .creds { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px 28px; margin-top: 28px; padding-top: 24px; border-top: 1px solid var(--line); }
+    .creds span { display: block; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+    .creds b { display: block; font-size: 15px; margin-top: 4px; }
+
+    .steps { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; margin-top: 52px; position: relative; }
+    .step { background: var(--surface); border: 1px solid var(--line); border-radius: 20px; padding: 24px 22px; }
+    .step b { display: inline-grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; background: var(--ink); color: #fff; font-size: 14px; }
+    .step h3 { font-size: 18px; margin: 14px 0 6px; }
+    .step p { margin: 0; color: var(--muted); font-size: 14.5px; }
+
+    .faq { margin: 44px auto 0; max-width: 860px; display: grid; gap: 12px; text-align: left; }
+    .faq details { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 20px 24px; }
+    .faq summary { cursor: pointer; font-size: 18px; font-weight: 650; list-style: none; display: flex; justify-content: space-between; gap: 20px; }
+    .faq summary::-webkit-details-marker { display: none; }
+    .faq summary::after { content: "+"; font-size: 22px; line-height: 1; color: var(--muted); transition: transform 0.2s; }
+    .faq details[open] summary::after { transform: rotate(45deg); }
+    .faq p { margin: 12px 0 0; color: var(--muted); }
+
+    .contact { display: grid; grid-template-columns: 1fr 1fr; gap: 56px; background: var(--surface); border: 1px solid var(--line); border-radius: 30px; padding: 60px; }
+    form.cf { display: grid; gap: 14px; }
+    .cf label { font-size: 13px; font-weight: 650; color: var(--muted); display: grid; gap: 6px; }
+    .cf input, .cf textarea { font: inherit; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 14px; padding: 13px 14px; }
+    .cf textarea { min-height: 120px; resize: vertical; }
+    .cf input:focus, .cf textarea:focus { outline: 2px solid var(--a1); border-color: transparent; }
+    #c-status { min-height: 22px; font-size: 14px; color: var(--a1); margin: 0; }
+    footer { padding: 44px 0 64px; color: var(--muted); font-size: 14px; }
+    footer .wrap { display: flex; gap: 24px; align-items: center; }
+    footer .brand { color: var(--ink); margin-right: auto; }
+
+    .reveal { opacity: 0; transform: translateY(18px); transition: opacity 0.7s, transform 0.7s cubic-bezier(.2,.8,.2,1); }
+    .reveal.in { opacity: 1; transform: none; }
+
+    @media (max-width: 1100px) {
+      .nav { display: none; }
+      .langs { margin-left: auto; }
+      .hero .wrap, .method, .check, .about { grid-template-columns: 1fr; }
+      .stage { height: 500px; max-width: 620px; }
+      .sticky { position: static; }
+      .steps { grid-template-columns: repeat(3, 1fr); }
+      .bento { grid-auto-rows: 180px; }
+      .t-s { grid-column: span 4; }
+    }
+    @media (max-width: 760px) {
+      :root { --pad: 16px; }
+      .top .btn { display: none; }
+      .hero { padding: 40px 0 64px; }
+      .stage { height: 420px; }
+      .answer { width: 92%; }
+      .site-card { width: 94%; }
+      .chip-float { display: none; }
+      section.s { padding: 72px 0; }
+      .shift, .svc, .svc__row, .packs, .stats, .contact { grid-template-columns: 1fr; }
+      .svc__big { min-height: 0; }
+      .stats { grid-template-columns: 1fr 1fr; }
+      .stat b { font-size: 42px; }
+      .steps { grid-template-columns: 1fr 1fr; }
+      .bento { grid-template-columns: repeat(2, 1fr); grid-auto-rows: 200px; }
+      .t-xl, .t-l { grid-column: span 2; }
+      .t-xl { grid-row: span 1; }
+      .t-m, .t-s { grid-column: span 1; }
+      .tile__line { display: none; }
+      .check { padding: 36px 22px; border-radius: 24px; }
+      .check form { flex-direction: column; border-radius: 18px; }
+      .check input { padding: 12px; }
+      .contact { padding: 30px 20px; gap: 28px; border-radius: 22px; }
+      .about { gap: 40px; }
+      .portrait { max-width: 340px; }
+      .creds { grid-template-columns: 1fr; }
+    }
+    @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } .reveal { opacity: 1; transform: none; } html { scroll-behavior: auto; } }
+  </style>
+</head>
+<body>
+  <header class="top" id="top">
+    <div class="wrap">
+      <a class="brand" href="#"><i></i>PRODUCT STUDIO</a>
+      <nav class="nav">
+        <a href="#aeo"><span class="de">KI-Sichtbarkeit</span><span class="en">AI visibility</span></a>
+        <a href="#leistungen"><span class="de">Leistungen</span><span class="en">Services</span></a>
+        <a href="#projekte"><span class="de">Projekte</span><span class="en">Work</span></a>
+        <a href="#pakete"><span class="de">Pakete</span><span class="en">Packages</span></a>
+        <a href="#ueber"><span class="de">Über uns</span><span class="en">About</span></a>
+      </nav>
+      <div class="langs" role="group" aria-label="Sprache / Language">
+        <button type="button" data-lang="de" aria-pressed="true">DE</button>
+        <button type="button" data-lang="en" aria-pressed="false">EN</button>
+      </div>
+      <a class="btn btn--ink btn--sm" href="#kontakt"><span class="de">Erstgespräch</span><span class="en">Book a call</span></a>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="aurora" aria-hidden="true"><span></span><span></span><span></span></div>
+    <div class="wrap">
+      <div>
+        <span class="pill"><b>AEO</b><span class="de">Website und KI-Sichtbarkeit aus einer Hand</span><span class="en">Website and AI visibility from one team</span></span>
+        <h1><span class="de">Schöne Websites, die <span class="grad-text">genannt werden.</span></span><span class="en">Beautiful websites that <span class="grad-text">get named.</span></span></h1>
+        <p class="hero__sub"><span class="de">Wir gestalten und bauen Ihre Website und sorgen dafür, dass Google, ChatGPT, Perplexity und Gemini Sie empfehlen, wenn Kunden nach Ihrer Leistung fragen.</span><span class="en">We design and build your website and make sure Google, ChatGPT, Perplexity and Gemini recommend you when customers ask for what you do.</span></p>
+        <div class="hero__cta">
+          <a class="btn btn--grad" href="#kontakt"><span class="de">Projekt besprechen</span><span class="en">Discuss your project</span></a>
+          <a class="btn btn--line" href="#check"><span class="de">Nennt ChatGPT mich schon?</span><span class="en">Does ChatGPT name me yet?</span></a>
+        </div>
+        <div class="engines"><span class="de">Gefunden werden in</span><span class="en">Get found in</span> <b>Google</b> <b>ChatGPT</b> <b>Perplexity</b> <b>Gemini</b> <b>Copilot</b></div>
+      </div>
+      <div class="stage" aria-hidden="true">
+        <div class="site-card"><div class="bar"><i></i><i></i><i></i><span>luni.care</span></div><img src="/sustain/assets/thumbs/luni-home.webp" alt=""></div>
+        <div class="chip-float"><span class="de">Live in</span><span class="en">Live in</span><b><span class="de">4 bis 8 Wochen</span><span class="en">4 to 8 weeks</span></b></div>
+        <div class="answer">
+          <div class="answer__q" id="ans-q"></div>
+          <div class="answer__a"><div id="ans-a"></div></div>
+          <div class="answer__foot"><span><span class="de">Beispiel: so sieht unser Ziel aus</span><span class="en">Example: this is what we aim for</span></span><span class="dots" id="ans-dots"><i></i><i></i><i></i></span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="s" id="aeo" style="padding-top:60px">
+    <div class="wrap center reveal">
+      <p class="eyebrow grad-text"><span class="de">Die Suche hat sich verändert</span><span class="en">Search has changed</span></p>
+      <h2 class="h"><span class="de">Ihre Kunden fragen nicht mehr nur Google. Sie fragen eine KI.</span><span class="en">Your customers don’t only ask Google any more. They ask an AI.</span></h2>
+      <p class="lead"><span class="de">Und die KI antwortet mit wenigen Namen statt zehn Links. Wer dort nicht steht, wird nicht gefragt.</span><span class="en">And the AI answers with a few names instead of ten links. If you aren’t among them, nobody calls.</span></p>
+    </div>
+    <div class="wrap">
+      <div class="shift reveal">
+        <article>
+          <span class="n"><span class="de">Früher</span><span class="en">Before</span></span>
+          <h3><span class="de">Zehn blaue Links</span><span class="en">Ten blue links</span></h3>
+          <p><span class="de">Kunden klicken sich durch Ergebnisse und vergleichen selbst.</span><span class="en">Customers click through results and compare on their own.</span></p>
+          <div class="vis"><i class="blue"></i><i></i><i class="blue" style="width:55%"></i><i></i><i class="blue" style="width:62%"></i><i style="width:80%"></i></div>
+        </article>
+        <article>
+          <span class="n"><span class="de">Heute</span><span class="en">Today</span></span>
+          <h3><span class="de">Eine Antwort</span><span class="en">One answer</span></h3>
+          <p><span class="de">ChatGPT und Co. lesen das Netz und empfehlen direkt zwei oder drei Anbieter.</span><span class="en">ChatGPT and others read the web and recommend two or three providers directly.</span></p>
+          <div class="vis"><div class="bubble"><span class="de">Empfehlenswert sind <mark>A</mark>, <mark>B</mark> und <mark>C</mark>.</span><span class="en">Good options are <mark>A</mark>, <mark>B</mark> and <mark>C</mark>.</span></div></div>
+        </article>
+        <article class="hl">
+          <span class="n"><span class="de">Mit uns</span><span class="en">With us</span></span>
+          <h3><span class="de">Ihr Name in der Antwort</span><span class="en">Your name in the answer</span></h3>
+          <p><span class="de">Wir bauen Ihre Website so, dass KI-Assistenten sie verstehen, ihr vertrauen und Sie nennen.</span><span class="en">We build your website so that AI assistants understand it, trust it and name you.</span></p>
+          <div class="vis"><div class="bubble" style="background:rgba(255,255,255,0.1);color:#fff"><span class="de">Empfehlenswert ist <mark style="color:#c4b5fd">Ihr Unternehmen</mark> …</span><span class="en">A good option is <mark style="color:#c4b5fd">your business</mark> …</span></div></div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="s" id="leistungen" style="padding-top:20px">
+    <div class="wrap">
+      <div class="reveal">
+        <p class="eyebrow grad-text"><span class="de">Leistungen</span><span class="en">Services</span></p>
+        <h2 class="h"><span class="de">Eine Website, die verkauft. Und gefunden wird.</span><span class="en">A website that sells. And gets found.</span></h2>
+      </div>
+      <div class="svc reveal" id="svc"></div>
+    </div>
+  </section>
+
+  <section class="s" style="padding-top:20px">
+    <div class="wrap method">
+      <div class="sticky reveal">
+        <p class="eyebrow grad-text"><span class="de">So arbeiten wir</span><span class="en">How we work</span></p>
+        <h2 class="h"><span class="de">So wird Ihre Website zur Antwort.</span><span class="en">How your website becomes the answer.</span></h2>
+        <p class="lead"><span class="de">Schönes Design allein reicht nicht. Jede Seite, die wir bauen, ist von Anfang an für Suchmaschinen und KI-Assistenten gemacht.</span><span class="en">Beautiful design alone isn’t enough. Every page we build is made for search engines and AI assistants from day one.</span></p>
+      </div>
+      <div class="method__list reveal" id="method"></div>
+    </div>
+  </section>
+
+  <section class="s" id="check" style="padding-top:20px">
+    <div class="wrap">
+      <div class="check reveal">
+        <div>
+          <p class="eyebrow" style="color:#c4b5fd"><span class="de">Kostenlose Prüfung</span><span class="en">Free check</span></p>
+          <h2 class="h"><span class="de">Nennt ChatGPT Sie schon?</span><span class="en">Does ChatGPT name you yet?</span></h2>
+          <p class="lead"><span class="de">Geben Sie Ihre Adresse ein. In etwa einer Minute sehen Sie, ob ChatGPT und Perplexity Sie empfehlen, und dazu einen Entwurf Ihrer neuen Website.</span><span class="en">Enter your address. In about a minute you see whether ChatGPT and Perplexity recommend you, plus a draft of your new website.</span></p>
+        </div>
+        <div>
+          <form id="checkform">
+            <input id="check-url" name="url" type="text" inputmode="url" autocomplete="url" placeholder="ihre-firma.de" aria-label="Website">
+            <button class="btn btn--grad" type="submit"><span class="de">Prüfen</span><span class="en">Check</span></button>
+          </form>
+          <small><span class="de">Kostenlos und ohne Anmeldung. Wir lesen nur Ihre öffentliche Startseite.</span><span class="en">Free, no sign-up. We only read your public home page.</span></small>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="s" id="projekte" style="padding-top:20px">
+    <div class="wrap">
+      <div class="reveal">
+        <p class="eyebrow grad-text"><span class="de">Projekte</span><span class="en">Work</span></p>
+        <h2 class="h"><span class="de">Gebaut, gestartet, genutzt.</span><span class="en">Built, launched, used.</span></h2>
+        <p class="lead"><span class="de">Websites, Plattformen und Apps aus Medizin, Handel, Logistik, Bildung und Finanzen.</span><span class="en">Websites, platforms and apps in medicine, retail, logistics, education and finance.</span></p>
+      </div>
+      <div class="bento reveal" id="bento"></div>
+    </div>
+  </section>
+
+  <section class="s" style="padding-top:0">
+    <div class="wrap"><div class="stats reveal" id="stats"></div></div>
+  </section>
+
+  <section class="s" id="pakete" style="padding-top:20px">
+    <div class="wrap">
+      <div class="center reveal">
+        <p class="eyebrow grad-text"><span class="de">Pakete</span><span class="en">Packages</span></p>
+        <h2 class="h"><span class="de">Feste Preise. Klare Termine.</span><span class="en">Fixed prices. Clear dates.</span></h2>
+        <p class="lead"><span class="de">Sie wissen vorher, was Sie bekommen und wann Ihre Website online ist.</span><span class="en">You know up front what you get and when your website goes live.</span></p>
+      </div>
+      <div class="packs reveal" id="packs"></div>
+      <div class="bigger reveal">
+        <div>
+          <h3><span class="de">Größeres Vorhaben?</span><span class="en">A bigger project?</span></h3>
+          <p><span class="de">Apps, KI-Produkte, Plattformen und App-Store-Optimierung: von der Idee bis zum internationalen Start.</span><span class="en">Apps, AI products, platforms and app store optimisation: from idea to international launch.</span></p>
+        </div>
+        <a class="btn btn--ink" href="#kontakt"><span class="de">Individuelles Angebot</span><span class="en">Custom quote</span></a>
+      </div>
+      <p class="note"><span class="de">Das Werbebudget für Google und Meta zahlen Sie direkt an die Plattformen, es ist nicht im Paketpreis enthalten.</span><span class="en">You pay the Google and Meta ad budget directly to the platforms. It is not included in the package price.</span></p>
+    </div>
+  </section>
+
+  <section class="s" id="ueber" style="padding-top:20px">
+    <div class="wrap about">
+      <div class="portrait reveal"><img src="/sustain/assets/fabian-wilk.jpg" alt="Fabian Wilk" loading="lazy"></div>
+      <div class="reveal">
+        <p class="eyebrow grad-text"><span class="de">Über uns</span><span class="en">About us</span></p>
+        <h2 class="h" id="hello"></h2>
+        <div id="about-text"></div>
+        <div class="creds" id="creds"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="s" id="ablauf" style="padding-top:20px">
+    <div class="wrap">
+      <div class="reveal">
+        <p class="eyebrow grad-text"><span class="de">Ablauf</span><span class="en">Process</span></p>
+        <h2 class="h"><span class="de">Vom Erstgespräch bis zur Empfehlung.</span><span class="en">From first call to first recommendation.</span></h2>
+      </div>
+      <div class="steps reveal" id="steps"></div>
+    </div>
+  </section>
+
+  <section class="s" id="fragen" style="padding-top:20px">
+    <div class="wrap center">
+      <p class="eyebrow grad-text"><span class="de">Fragen</span><span class="en">Questions</span></p>
+      <h2 class="h"><span class="de">Häufige Fragen</span><span class="en">Frequently asked</span></h2>
+      <div class="faq" id="faq"></div>
+    </div>
+  </section>
+
+  <section class="s" id="kontakt" style="padding-top:20px">
+    <div class="wrap">
+      <div class="contact reveal">
+        <div>
+          <p class="eyebrow grad-text"><span class="de">Kontakt</span><span class="en">Contact</span></p>
+          <h2 class="h"><span class="de">Lassen Sie uns Ihre Website bauen.</span><span class="en">Let’s build your website.</span></h2>
+          <p class="lead"><span class="de">Erzählen Sie uns von Ihrem Unternehmen. Wir melden uns innerhalb eines Werktages mit einem Termin für das Erstgespräch.</span><span class="en">Tell us about your business. We get back to you within one working day with a time for the first call.</span></p>
+        </div>
+        <form class="cf" id="contact" novalidate>
+          <label><span class="de">Name</span><span class="en">Name</span><input name="name" required autocomplete="name"></label>
+          <label><span class="de">E-Mail</span><span class="en">Email</span><input name="email" type="email" required autocomplete="email"></label>
+          <label><span class="de">Website, falls vorhanden</span><span class="en">Website, if you have one</span><input name="site" autocomplete="url"></label>
+          <label><span class="de">Nachricht</span><span class="en">Message</span><textarea name="message"></textarea></label>
+          <button class="btn btn--ink" type="submit" style="justify-self:start"><span class="de">E-Mail vorbereiten →</span><span class="en">Prepare email →</span></button>
+          <p id="c-status" role="status"></p>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="wrap">
+      <span class="brand"><i></i>PRODUCT STUDIO</span>
+      <span>Impressum</span>
+      <span><span class="de">Datenschutz</span><span class="en">Privacy</span></span>
+    </div>
+  </footer>
+
+  <script src="/sustain/assets/studio-data.js"></script>
+  <script>
+    const S = window.STUDIO;
+    const $ = (id) => document.getElementById(id);
+    const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+    let lang = "de";
+    try { lang = new URLSearchParams(location.search).get("lang") || localStorage.getItem("studio-lang") || "de"; } catch (e) {}
+    if (lang !== "en") lang = "de";
+    const L = (o) => (o && typeof o === "object" && !Array.isArray(o) ? o[lang] : o);
+    const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    // Example answers in the hero. The businesses are invented and the card says it is an example.
+    const ANSWERS = [
+      { de: ["Welcher Orthopäde in Bonn hat schnell Termine?", "Eine gute Wahl ist ", "Praxis Dr. Lehmann", ": Orthopädie und Sportmedizin, Termine lassen sich direkt online buchen."],
+        en: ["Which orthopaedist in Bonn has appointments soon?", "A good choice is ", "Praxis Dr. Lehmann", ": orthopaedics and sports medicine, with online booking."] },
+      { de: ["Wer baut Einbauschränke nach Maß in Köln?", "Empfehlenswert ist die ", "Schreinerei Krüger", ": Möbel aus eigener Werkstatt, Anfrage mit Fotos über die Website."],
+        en: ["Who builds custom wardrobes in Cologne?", "A good option is ", "Schreinerei Krüger", ": furniture from its own workshop, with enquiries and photos online."] },
+      { de: ["Welches Hotel in Münster liegt nah am Bahnhof?", "Gut gelegen ist das ", "Hotel am Markt", ": mitten in der Altstadt, zwei Minuten zum Bahnhof, direkt buchbar."],
+        en: ["Which hotel in Münster is close to the station?", "Well placed is ", "Hotel am Markt", ": in the old town, two minutes to the station, bookable directly."] }
+    ];
+    let ansIdx = 0, ansTimer = 0, ansRun = 0;
+    function playAnswer() {
+      const run = ++ansRun;
+      clearTimeout(ansTimer);
+      const a = ANSWERS[ansIdx][lang];
+      $("ans-q").textContent = a[0];
+      document.querySelectorAll("#ans-dots i").forEach((d, k) => d.classList.toggle("on", k === ansIdx));
+      const parts = [[a[1], false], [a[2], true], [a[3], false]];
+      const total = parts.reduce((n, p) => n + p[0].length, 0);
+      let shown = 0;
+      const draw = (done) => {
+        let left = shown, html = "";
+        for (const [t, hi] of parts) {
+          const take = t.slice(0, Math.max(0, left)); left -= t.length;
+          if (take) html += hi ? `<mark>${esc(take)}</mark>` : esc(take);
+        }
+        $("ans-a").innerHTML = html + (done ? "" : '<span class="caret"></span>');
+      };
+      if (still) { shown = total; draw(true); return; }
+      const tick = () => {
+        if (run !== ansRun) return;
+        shown = Math.min(total, shown + 2);
+        draw(shown >= total);
+        if (shown < total) ansTimer = setTimeout(tick, 28);
+        else ansTimer = setTimeout(() => { ansIdx = (ansIdx + 1) % ANSWERS.length; playAnswer(); }, 3600);
+      };
+      ansTimer = setTimeout(tick, 500);
+    }
+
+    const METHOD = [
+      { de: ["Lesbar für KI", "Schnelle Seiten, saubere Technik und offene Türen für die Crawler von ChatGPT, Perplexity und Google."], en: ["Readable by AI", "Fast pages, clean engineering and open doors for the crawlers of ChatGPT, Perplexity and Google."] },
+      { de: ["Klar beschrieben", "Strukturierte Daten sagen Maschinen eindeutig, wer Sie sind, was Sie anbieten und wo."], en: ["Clearly described", "Structured data tells machines exactly who you are, what you offer and where."] },
+      { de: ["Antworten statt Werbetext", "Inhalte, die die echten Fragen Ihrer Kunden beantworten, so wie Kunden sie einer KI stellen."], en: ["Answers, not ad copy", "Content that answers your customers’ real questions, the way they ask an AI."] },
+      { de: ["Vertrauen von außen", "Einträge und Erwähnungen auf Seiten, denen KI-Assistenten vertrauen."], en: ["Trust from outside", "Listings and mentions on sites that AI assistants trust."] },
+      { de: ["Gemessen, nicht vermutet", "Wir prüfen regelmäßig, ob ChatGPT, Perplexity und Gemini Sie nennen, und berichten jeden Monat."], en: ["Measured, not guessed", "We regularly check whether ChatGPT, Perplexity and Gemini name you, and report every month."] }
+    ];
+
+    const LAYOUT = ["t-xl", "t-s", "t-s", "t-s", "t-s", "t-s", "t-s", "t-s", "t-s", "t-m", "t-m", "t-m"];
+
+    function render() {
+      document.documentElement.lang = lang;
+      document.documentElement.dataset.l = lang;
+      document.querySelectorAll("[data-lang]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.lang === lang)));
+      $("check-url").placeholder = lang === "de" ? "ihre-firma.de" : "your-company.com";
+      const sv = S.services;
+      const aeo = sv.find((x) => x.k === "aeo"), rest = sv.filter((x) => x.k !== "aeo");
+      $("svc").innerHTML = `
+        <div class="svc__big">
+          <span class="eyebrow" style="color:#c9c2ff;margin:0">AEO · Answer Engine Optimisation</span>
+          <h3>${esc(aeo[lang][0])}</h3><p>${esc(aeo[lang][1])}</p><span class="by">${lang === "de" ? "mit" : "by"} ${aeo.by}</span>
+          <div class="meter">
+            ${["ChatGPT", "Perplexity", "Gemini", "Google"].map((n) => `<div><span>${n}</span><em>${lang === "de" ? "Wird monatlich geprüft" : "Checked every month"}</em></div>`).join("")}
+            <small>${lang === "de" ? "Jeden Monat ein Bericht: wo Sie genannt werden und was wir als Nächstes verbessern." : "A report every month: where you are named and what we improve next."}</small>
+          </div>
+        </div>
+        <div class="svc__card"><h3>${esc(rest[0][lang][0])}</h3><p>${esc(rest[0][lang][1])}</p></div>
+        <div class="svc__row">${rest.slice(1).map((x) => `<div class="svc__card"><h3>${esc(x[lang][0])}</h3><p>${esc(x[lang][1])}</p>${x.by ? `<span class="by">${lang === "de" ? "mit" : "by"} ${x.by}</span>` : ""}</div>`).join("")}</div>`;
+      $("method").innerHTML = METHOD.map((m, i) => `<div class="mstep"><b>0${i + 1}</b><div><h3>${esc(m[lang][0])}</h3><p>${esc(m[lang][1])}</p></div></div>`).join("");
+      $("bento").innerHTML = S.projects.map((p, i) => {
+        const tag = p.url ? "a" : "div";
+        return `<${tag} class="tile ${LAYOUT[i] || "t-s"}"${p.url ? ` href="${p.url}" target="_blank" rel="noopener"` : ""}>
+          <img src="/sustain/assets/thumbs/${p.id}-cover.webp" alt="${esc(p.name)}" loading="lazy">
+          <div class="tile__body"><span class="tile__tag">${esc(L(p.tag))}</span><span class="tile__name">${esc(p.name)}${p.url ? " ↗" : ""}</span><p class="tile__line">${esc(L(p.line))}</p>${p.proof ? `<span class="tile__proof">${esc(L(p.proof))}</span>` : ""}</div>
+        </${tag}>`;
+      }).join("");
+      $("stats").innerHTML = S.stats.map((s) => `<div class="stat"><b class="grad-text">${s.n}</b><span>${esc(s[lang])}</span></div>`).join("");
+      $("packs").innerHTML = S.packs.map((p) => `<div class="pack${p.hot ? " pack--hot" : ""}">
+        <span class="pack__badge">${p.hot ? (lang === "de" ? "Beliebt · " : "Popular · ") : ""}${lang === "de" ? `Live in ${p.weeks} Wochen` : `Live in ${p.weeks} weeks`}</span>
+        <h3>${esc(L(p.name))}</h3><div class="pack__price">${L(p.price)}</div><div class="pack__net">${lang === "de" ? "netto, zzgl. MwSt." : "excl. VAT"}</div>
+        <ul>${L(p.items).map((x) => `<li>${esc(x)}</li>`).join("")}</ul>
+        <a class="btn ${p.hot ? "btn--grad" : "btn--line"}" href="#kontakt">${lang === "de" ? "Paket anfragen" : "Ask about this package"}</a></div>`).join("");
+      const F = S.founder;
+      $("hello").textContent = L(F.hello);
+      $("about-text").innerHTML = L(F.text).map((t) => `<p>${esc(t)}</p>`).join("");
+      $("creds").innerHTML = `<div><span>${esc(L(F.role))}</span><b>${F.name}</b></div>` + F.creds.map((c) => `<div><span>${esc(c[lang][0])}</span><b>${esc(c[lang][1])}</b></div>`).join("");
+      $("steps").innerHTML = S.steps.map((s, i) => `<div class="step"><b>${i + 1}</b><h3>${esc(s[lang][0])}</h3><p>${esc(s[lang][1])}</p></div>`).join("");
+      $("faq").innerHTML = S.faq.map((q) => `<details><summary>${esc(q[lang][0])}</summary><p>${esc(q[lang][1])}</p></details>`).join("");
+      playAnswer();
+      observe();
+    }
+
+    let io;
+    function observe() {
+      if (still || !("IntersectionObserver" in window)) { document.querySelectorAll(".reveal").forEach((e) => e.classList.add("in")); return; }
+      io = io || new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } }), { rootMargin: "0px 0px -8% 0px" });
+      document.querySelectorAll(".reveal:not(.in)").forEach((e) => io.observe(e));
+    }
+
+    document.querySelectorAll("[data-lang]").forEach((b) => b.addEventListener("click", () => {
+      lang = b.dataset.lang;
+      try { localStorage.setItem("studio-lang", lang); } catch (e) {}
+      render();
+    }));
+    addEventListener("scroll", () => $("top").classList.toggle("scrolled", scrollY > 8), { passive: true });
+
+    // The free check runs on the address page, which already does the whole analysis.
+    $("checkform").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const u = $("check-url").value.trim();
+      location.href = `/sustain/${lang}${u ? `?url=${encodeURIComponent(u)}` : ""}#check`;
+    });
+
+    $("contact").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const f = e.target;
+      if (!f.name.value.trim() || !f.email.value || !f.email.checkValidity()) {
+        $("c-status").textContent = lang === "de" ? "Bitte Name und E-Mail angeben." : "Please enter your name and email.";
+        return;
+      }
+      if (S.email === "YOUR_STUDIO_EMAIL") {
+        $("c-status").textContent = lang === "de" ? "Es wurde nichts gesendet: die E-Mail-Adresse des Studios fehlt noch auf dieser Seite." : "Nothing was sent: the studio’s email address is not on this page yet.";
+        return;
+      }
+      const body = `Name: ${f.name.value}\nE-Mail: ${f.email.value}\nWebsite: ${f.site.value}\n\n${f.message.value}`;
+      location.href = `mailto:${S.email}?subject=${encodeURIComponent(lang === "de" ? "Anfrage über die Website" : "Enquiry from the website")}&body=${encodeURIComponent(body)}`;
+      $("c-status").textContent = lang === "de" ? "Ihr E-Mail-Programm öffnet sich. Von dieser Seite wurde nichts gesendet." : "Your email app is opening. Nothing was sent from this page.";
+    });
+
+    render();
+  </script>
+</body>
+</html>

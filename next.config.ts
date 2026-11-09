@@ -42,7 +42,8 @@ const nextConfig: NextConfig = {
   },
   // Shared by link only: search engines are told to keep the page and its images out of results.
   async headers() {
-    return [{ source: "/sustain/:path*", headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }] }]
+    const noindex = [{ key: "X-Robots-Tag", value: "noindex, nofollow" }]
+    return ["/sustain/:path*", "/sustain1/:path*", "/sustain2/:path*"].map((source) => ({ source, headers: noindex }))
   },
   async rewrites() {
     return {
@@ -54,6 +55,9 @@ const nextConfig: NextConfig = {
         { source: "/sustain", destination: "/sustain/index.html" },
         { source: "/sustain/de", destination: "/sustain/de/index.html" },
         { source: "/sustain/en", destination: "/sustain/en/index.html" },
+        // Two more takes on the studio site: a street of shop windows, and a web-design page about AI visibility.
+        { source: "/sustain1", destination: "/sustain1/index.html" },
+        { source: "/sustain2", destination: "/sustain2/index.html" },
       ],
       afterFiles: [
         // Serve a clean markdown alternate for each article at /blog/{slug}.md without giving up
