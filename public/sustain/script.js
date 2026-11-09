@@ -8,7 +8,7 @@
  * - YOUR_KIRYL_LINKEDIN, YOUR_NVIDIA_FEATURE, YOUR_FORBES_PROFILE
  * - Drop screenshots into /assets using the paths below
  *
- * The selected-work shelf is a horizontal row of overlapping covers.
+ * The portfolio is a row of book spines (BOOKS below); the one under the pointer opens into its card.
  */
 
 const PROJECTS = [
@@ -294,32 +294,42 @@ function watchImages(root) {
   });
 }
 
-const SHELF_LABEL = {
-  magiscan: "AI · 3D · Mobile",
-  ava: "MedTech · AI · 3D",
-  freightsizer: "Logistics · Spatial AI",
-  orthio: "3D · Orthotics · Mobile",
-  arize: "AR · E-commerce",
-  monixa: "FinTech · AI · Web",
-  itgrows: "AI · SaaS",
-  oyper: "Computer Vision",
-  pickaclass: "EdTech",
-  luni: "E-commerce"
+// How each project stands on the shelf. w is the spine's thickness in px, h its height as a share of
+// the shelf. portrait covers have a caption baked into their lower part, so only their top is shown.
+const BOOKS = {
+  magiscan: { w: 64, h: 0.82, leather: "#9a683c", look: "ribs" },
+  ava: { w: 62, h: 0.98, leather: "#1b2e29", look: "gilt", portrait: true },
+  freightsizer: { w: 60, h: 0.74, leather: "#6e2430", look: "lines" },
+  orthio: { w: 66, h: 1, leather: "#a47a46", look: "ribs" },
+  arize: { w: 46, h: 0.76, leather: "#4b1e2b", look: "lines" },
+  monixa: { w: 40, h: 0.7, leather: "#7c2a2d", look: "lines", portrait: true },
+  itgrows: { w: 44, h: 0.84, leather: "#35202b", look: "gilt", portrait: true },
+  oyper: { w: 50, h: 0.68, leather: "#8a2f2c", look: "ribs", portrait: true },
+  pickaclass: { w: 56, h: 0.72, leather: "#7a3c2a", look: "gilt" },
+  luni: { w: 74, h: 0.96, leather: "#15191a", look: "lines", portrait: true }
 };
 
 function renderShelf() {
+  const ornament = `<span class="book__orn" aria-hidden="true"><span class="book__dia"></span></span>`;
   shelfTrack.innerHTML = showcase.map((project) => {
+    const book = BOOKS[project.id];
     const image = project.images?.[0];
-    const label = SHELF_LABEL[project.id] || project.tag;
     return `
-      <button class="cover" type="button" data-cover="${esc(project.id)}" aria-haspopup="dialog">
-        <span class="cover__view">
-          ${plate(project, false)}
-          ${image ? imageTag(image[0], "") : ""}
+      <button class="book book--${book.look}${book.portrait ? " book--portrait" : ""}" type="button" data-cover="${esc(project.id)}" aria-haspopup="dialog" aria-label="${esc(project.name)}" style="--leather:${book.leather}">
+        <span class="book__spine">
+          ${ornament}
+          <span class="book__title">${esc(project.name)}</span>
+          ${ornament}
         </span>
-        <span class="cover__meta">
-          <span class="cover__tag">${esc(label)}</span>
-          <span class="cover__name">${esc(project.name)}</span>
+        <span class="book__card">
+          <span class="book__cover">${image ? imageTag(image[0], "") : ""}</span>
+          <span class="book__info">
+            <span class="book__tag">${esc(project.category)}</span>
+            <span class="book__name">${esc(project.name)}</span>
+            <span class="book__headline">${esc(project.headline)}</span>
+            <span class="book__text">${esc(project.overview)}</span>
+            <span class="book__go">View project <span class="arr" aria-hidden="true">→</span></span>
+          </span>
         </span>
       </button>
     `;
@@ -328,321 +338,162 @@ function renderShelf() {
 
 function bindShelf() {
   const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const mobileQuery = window.matchMedia("(max-width: 700px)");
+  const scrollMode = window.matchMedia("(max-width: 859px)");
+  const canHover = window.matchMedia("(hover: hover) and (pointer: fine)");
   const prevBtn = document.getElementById("shelf-prev");
   const nextBtn = document.getElementById("shelf-next");
   const countEl = document.getElementById("shelf-count");
+  const books = [...shelfTrack.querySelectorAll(".book")];
+  const HOVER_DELAY = reduce ? 0 : 90;
+  const MOVE_TIME = reduce ? 0 : 340;
+  const GAP = 1;
+  let active = 1;
+  let spines = [];
   let cards = [];
-  let positions = [];
-  let trackWidth = 0;
-  let active = 0;
-  let offset = 0;
-  let dragging = false;
-  let locked = false;
-  let suppressClick = false;
-  let pointerId = null;
-  let startX = 0;
-  let startY = 0;
-  let startOffset = 0;
-  let lastX = 0;
-  let lastT = 0;
-  let velocity = 0;
-  let quietScroll = false;
-  let dragFrame = 0;
-  let settleTimer = 0;
-  let tracking = true;
-  let widths = [];
+  let lastWidth = 0;
+  let timer = 0;
+  let settleUntil = 0;
+  let pointerX = -1;
+  let pointerY = -1;
+  let pointerInside = false;
 
-  const isMobile = () => mobileQuery.matches;
-
-  const metrics = () => {
-    const view = shelfViewport.clientWidth;
-    if (view >= 1480) return { baseW: 300, baseH: 470, activeW: 380, activeH: 528, cover: 0.045, tuck: 18, peek: 12, after: 18 };
-    if (view >= 1280) return { baseW: 268, baseH: 430, activeW: 340, activeH: 488, cover: 0.045, tuck: 16, peek: 10, after: 16 };
-    if (view >= 1024) return { baseW: 236, baseH: 390, activeW: 300, activeH: 448, cover: 0.04, tuck: 14, peek: 8, after: 14 };
-    return { baseW: 210, baseH: 356, activeW: 264, activeH: 408, cover: 0.04, tuck: 12, peek: 8, after: 12 };
+  const place = () => {
+    if (scrollMode.matches) {
+      books.forEach((book) => { book.style.transform = ""; });
+      return;
+    }
+    let x = 0;
+    books.forEach((book, index) => {
+      book.style.transform = `translate3d(${x}px,0,0)`;
+      x += spines[index] + GAP + (index === active ? cards[index] : 0);
+    });
   };
-
-  const limits = () => ({
-    min: Math.min(0, shelfViewport.clientWidth - trackWidth),
-    max: 0
-  });
-
-  const targetFor = (index) => {
-    const { peek } = metrics();
-    const anchor = index === 0 ? 0 : positions[index - 1] + peek;
-    const raw = -anchor;
-    const { min, max } = limits();
-    return Math.max(min, Math.min(max, raw));
-  };
-
-  const pad = (value) => String(value).padStart(2, "0");
 
   const mark = () => {
-    cards.forEach((card, index) => {
+    books.forEach((book, index) => {
       const on = index === active;
-      card.classList.toggle("is-active", on);
-      card.classList.toggle("is-prev", index === active - 1);
-      card.classList.toggle("is-next", index === active + 1);
-      card.style.setProperty("--pad-in", "16px");
-      if (on) card.setAttribute("aria-current", "true");
-      else card.removeAttribute("aria-current");
-      if (!isMobile()) {
-        card.style.zIndex = on ? "40" : String(index < active ? index + 1 : 12 + index);
-      } else {
-        card.style.zIndex = "";
-      }
+      book.classList.toggle("is-active", on);
+      if (on) book.setAttribute("aria-current", "true");
+      else book.removeAttribute("aria-current");
     });
-    if (countEl) countEl.textContent = `${pad(active + 1)} / ${pad(cards.length)}`;
+    if (countEl) countEl.textContent = `${String(active + 1).padStart(2, "0")} / ${String(books.length).padStart(2, "0")}`;
     if (prevBtn) prevBtn.disabled = active === 0;
-    if (nextBtn) nextBtn.disabled = active === cards.length - 1;
+    if (nextBtn) nextBtn.disabled = active === books.length - 1;
   };
 
-  const apply = (animated) => {
-    if (isMobile()) return;
-    tracking = !(animated && !reduce);
-    shelfTrack.style.transition = animated && !reduce
-      ? "transform 0.32s cubic-bezier(.16,.84,.28,1)"
-      : "none";
-    shelfTrack.style.transform = `translate3d(${Math.round(offset)}px,0,0)`;
+  // Sizes are worked out here only, on load and when the window's width changes: never during a hover.
+  const measure = () => {
+    const view = shelfTrack.parentElement.clientWidth - 28;
+    const small = scrollMode.matches;
+    const tier = small
+      ? { scale: 0.85, height: 400 }
+      : view >= 1200
+        ? { scale: 1, height: 420 }
+        : view >= 1000
+          ? { scale: 0.84, height: 390 }
+          : { scale: 0.7, height: 350 };
+    spines = books.map((book) => Math.round(BOOKS[book.dataset.cover].w * tier.scale));
+    const taken = spines.reduce((sum, width) => sum + width + GAP, 0);
+    const cardWidth = small ? Math.min(Math.round(window.innerWidth * 0.74), 300) : Math.min(view - taken, 760);
+    shelfTrack.style.setProperty("--shelf-h", `${tier.height}px`);
+    cards = books.map((book, index) => {
+      const data = BOOKS[book.dataset.cover];
+      const cover = Math.round(tier.height * (data.portrait ? 0.8 : 1152 / 1023));
+      // Too little room beside the cover for the text: the card is the cover alone.
+      const noInfo = !small && cardWidth - cover < 170;
+      book.style.zIndex = String(index + 1);
+      book.style.setProperty("--spine-w", `${spines[index]}px`);
+      book.style.setProperty("--spine-h", `${Math.round(tier.height * data.h)}px`);
+      book.style.setProperty("--cover-w", `${Math.min(cover, cardWidth)}px`);
+      book.style.setProperty("--card-w", `${noInfo ? Math.min(cover, cardWidth) : cardWidth}px`);
+      book.classList.toggle("book--no-info", noInfo);
+      return noInfo ? Math.min(cover, cardWidth) : cardWidth;
+    });
+    place();
   };
 
-  const layout = () => {
-    cards = [...shelfTrack.querySelectorAll(".cover")];
-    if (isMobile()) {
-      positions = cards.map((card) => card.offsetLeft);
-      cards.forEach((card) => {
-        card.style.left = "";
-        card.style.top = "";
-        card.style.width = "";
-        card.style.height = "";
-        card.style.removeProperty("--pad-in");
-      });
-      shelfTrack.style.width = "";
-      shelfTrack.style.height = "";
-      shelfTrack.style.transform = "none";
-      trackWidth = shelfTrack.scrollWidth;
+  const setActive = (index, reveal = true) => {
+    const next = Math.max(0, Math.min(books.length - 1, index));
+    if (next !== active) {
+      active = next;
+      settleUntil = performance.now() + MOVE_TIME;
       mark();
-      return;
+      place();
     }
-
-    const size = metrics();
-    positions = [];
-    widths = [];
-    let x = 0;
-    cards.forEach((card, index) => {
-      const on = index === active;
-      const width = on ? size.activeW : size.baseW;
-      const height = on ? size.activeH : size.baseH;
-      card.style.width = `${width}px`;
-      card.style.height = `${height}px`;
-      card.style.top = `${size.activeH - height}px`;
-      positions.push(x);
-      widths.push(width);
-      card.style.left = `${x}px`;
-      if (index < cards.length - 1) {
-        const overlap = index === active ? size.tuck : index === active + 1 ? size.after : Math.round(width * size.cover);
-        x += width - overlap;
-      } else {
-        x += width;
-      }
-    });
-    trackWidth = x;
-    shelfTrack.style.width = `${x}px`;
-    shelfTrack.style.height = `${size.activeH + 18}px`;
-    mark();
-  };
-
-  const nearest = (value) => {
-    let best = 0;
-    let dist = Infinity;
-    positions.forEach((_, index) => {
-      const gap = Math.abs(targetFor(index) - value);
-      if (gap < dist) {
-        dist = gap;
-        best = index;
-      }
-    });
-    return best;
-  };
-
-  const setActive = (index, animated = true) => {
-    const next = Math.max(0, Math.min(cards.length - 1, index));
-    const changed = next !== active || !positions.length;
-    active = next;
-    if (changed) layout();
-    if (isMobile()) {
-      const card = cards[active];
-      if (!card) return;
-      quietScroll = true;
-      shelfViewport.scrollTo({
-        left: card.offsetLeft,
-        behavior: animated && !reduce ? "smooth" : "auto"
-      });
-      window.setTimeout(() => {
-        quietScroll = false;
-      }, animated && !reduce ? 480 : 0);
-      return;
+    if (reveal && scrollMode.matches) {
+      shelfViewport.scrollTo({ left: Math.max(0, books[active].offsetLeft - 8), behavior: reduce ? "auto" : "smooth" });
     }
-    const dest = targetFor(active);
-    if (!changed && Math.abs(dest - offset) < 1) return;
-    offset = dest;
-    apply(animated);
   };
 
-  const paint = () => {
-    dragFrame = 0;
-    if (isMobile()) return;
-    tracking = true;
-    shelfTrack.style.transition = "none";
-    shelfTrack.style.transform = `translate3d(${Math.round(offset)}px,0,0)`;
+  const bookUnderPointer = () => {
+    if (!pointerInside) return -1;
+    const book = document.elementFromPoint(pointerX, pointerY)?.closest?.(".book");
+    return book ? books.indexOf(book) : -1;
   };
 
-  const queuePaint = () => {
-    if (!dragFrame) dragFrame = requestAnimationFrame(paint);
+  // Opens what the pointer rests on, once the books have stopped moving. Books left of an open one keep
+  // their place and the ones right of it move away, so the pointer stays on the same book and nothing flickers.
+  const follow = () => {
+    window.clearTimeout(timer);
+    const wait = Math.max(HOVER_DELAY, settleUntil - performance.now());
+    timer = window.setTimeout(() => {
+      const index = bookUnderPointer();
+      if (index < 0 || index === active) return;
+      setActive(index);
+      follow();
+    }, wait);
   };
-
-  const readOffset = () => {
-    const raw = getComputedStyle(shelfTrack).transform;
-    if (!raw || raw === "none") return offset;
-    return new DOMMatrixReadOnly(raw).m41;
-  };
-
-  const clampOffset = (value, slack = 0) => {
-    const { min, max } = limits();
-    return Math.max(min - slack, Math.min(max + slack, value));
-  };
-
-  const takeOver = () => {
-    if (tracking) return;
-    offset = readOffset();
-    tracking = true;
-    if (dragFrame) cancelAnimationFrame(dragFrame);
-    dragFrame = 0;
-    shelfTrack.style.transition = "none";
-  };
-
-  const settle = () => {
-    settleTimer = 0;
-    if (dragging || isMobile()) return;
-    setActive(nearest(offset), true);
-  };
-
-  const queueSettle = () => {
-    window.clearTimeout(settleTimer);
-    settleTimer = window.setTimeout(settle, reduce ? 0 : 280);
-  };
-
-  shelfViewport.addEventListener("pointerdown", (event) => {
-    if (isMobile() || (event.button !== undefined && event.button !== 0)) return;
-    window.clearTimeout(settleTimer);
-    takeOver();
-    dragging = true;
-    locked = false;
-    pointerId = event.pointerId;
-    startX = lastX = event.clientX;
-    startY = event.clientY;
-    startOffset = offset;
-    lastT = performance.now();
-    velocity = 0;
-  });
 
   shelfViewport.addEventListener("pointermove", (event) => {
-    if (!dragging || event.pointerId !== pointerId) return;
-    const dx = event.clientX - startX;
-    const dy = event.clientY - startY;
-    if (!locked) {
-      if (Math.abs(dx) < 4 && Math.abs(dy) < 4) return;
-      if (Math.abs(dy) > Math.abs(dx)) {
-        dragging = false;
-        return;
-      }
-      locked = true;
-      shelfViewport.classList.add("is-dragging");
-      try { shelfViewport.setPointerCapture(event.pointerId); } catch (err) { /* pointer already gone */ }
-    }
-    event.preventDefault();
-    const now = performance.now();
-    const dt = Math.max(16, now - lastT);
-    velocity = Math.max(-2.2, Math.min(2.2, (event.clientX - lastX) / dt));
-    lastX = event.clientX;
-    lastT = now;
-    offset = clampOffset(startOffset + dx, 24);
-    queuePaint();
-  }, { passive: false });
+    if (event.pointerType === "touch" || scrollMode.matches || !canHover.matches) return;
+    pointerX = event.clientX;
+    pointerY = event.clientY;
+    pointerInside = true;
+    follow();
+  }, { passive: true });
 
-  const endDrag = (event) => {
-    if (!dragging || event.pointerId !== pointerId) return;
-    const dx = event.clientX - startX;
-    dragging = false;
-    shelfViewport.classList.remove("is-dragging");
-    if (Math.abs(dx) > 6) suppressClick = true;
-    if (!locked) return;
-    const flick = Math.max(-160, Math.min(160, velocity * 70));
-    offset = clampOffset(offset + flick);
-    setActive(nearest(offset), true);
-  };
-
-  shelfViewport.addEventListener("pointerup", endDrag);
-  shelfViewport.addEventListener("pointercancel", endDrag);
+  shelfViewport.addEventListener("pointerleave", () => {
+    pointerInside = false;
+    window.clearTimeout(timer);
+  });
 
   shelfViewport.addEventListener("click", (event) => {
-    if (suppressClick) {
-      suppressClick = false;
-      event.preventDefault();
+    const book = event.target.closest("[data-cover]");
+    if (!book) return;
+    const index = books.indexOf(book);
+    // Without a hover the first tap takes the book down, the second opens the project.
+    if (index !== active && (scrollMode.matches || !canHover.matches)) {
+      setActive(index);
       return;
     }
-    const card = event.target.closest("[data-cover]");
-    if (!card) return;
-    const index = cards.indexOf(card);
-    if (index !== active) setActive(index);
-    else openProject(card.dataset.cover, card);
+    setActive(index);
+    openProject(book.dataset.cover, book);
+  });
+
+  shelfViewport.addEventListener("focusin", (event) => {
+    const book = event.target.closest?.(".book");
+    if (book?.matches(":focus-visible")) setActive(books.indexOf(book));
   });
 
   shelfViewport.addEventListener("keydown", (event) => {
     if (event.key !== "ArrowRight" && event.key !== "ArrowLeft") return;
     event.preventDefault();
     setActive(active + (event.key === "ArrowRight" ? 1 : -1));
-    cards[active]?.focus();
+    books[active]?.focus();
   });
-
-  shelfViewport.addEventListener("wheel", (event) => {
-    if (isMobile()) return;
-    const horizontal = Math.abs(event.deltaX) > Math.abs(event.deltaY);
-    const delta = horizontal ? event.deltaX : event.deltaY;
-    if (!horizontal && Math.abs(event.deltaX) < 2) return;
-    if (Math.abs(delta) < 1) return;
-    event.preventDefault();
-    takeOver();
-    offset = clampOffset(offset - delta);
-    queuePaint();
-    queueSettle();
-  }, { passive: false });
-
-  shelfViewport.addEventListener("scroll", () => {
-    if (!isMobile() || quietScroll) return;
-    const left = shelfViewport.scrollLeft;
-    let best = 0;
-    let dist = Infinity;
-    cards.forEach((card, index) => {
-      const gap = Math.abs(card.offsetLeft - left);
-      if (gap < dist) {
-        dist = gap;
-        best = index;
-      }
-    });
-    if (best === active) return;
-    active = best;
-    mark();
-  }, { passive: true });
 
   prevBtn?.addEventListener("click", () => setActive(active - 1));
   nextBtn?.addEventListener("click", () => setActive(active + 1));
 
-  window.addEventListener("resize", () => setActive(active, false));
+  window.addEventListener("resize", () => {
+    if (window.innerWidth === lastWidth) return;
+    lastWidth = window.innerWidth;
+    measure();
+  });
 
-  layout();
-  setActive(1, false);
+  lastWidth = window.innerWidth;
+  mark();
+  measure();
 }
 
 function renderIndex() {
