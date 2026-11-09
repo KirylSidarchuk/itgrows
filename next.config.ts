@@ -40,11 +40,19 @@ const nextConfig: NextConfig = {
       { source: `${D}/linkedin`, destination: "/cabinet", permanent: false },
     ]
   },
+  // Shared by link only: search engines are told to keep the page and its images out of results.
+  async headers() {
+    return [{ source: "/sustain/:path*", headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }] }]
+  },
   async rewrites() {
     return {
       // /business reaches here only as an ad click (every other visit is redirected to "/" above):
       // it gets the AI-visibility page of "/" at its own address, with the ad's query kept.
-      beforeFiles: [{ source: "/business", destination: "/" }],
+      beforeFiles: [
+        { source: "/business", destination: "/" },
+        // The studio portfolio (public/sustain) is a plain HTML page shared by link.
+        { source: "/sustain", destination: "/sustain/index.html" },
+      ],
       afterFiles: [
         // Serve a clean markdown alternate for each article at /blog/{slug}.md without giving up
         // the pretty URL. The dot cannot be part of a path segment in the app directory, so the
