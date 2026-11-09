@@ -1,0 +1,1769 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Websites That Get Found</title>
+  <meta name="description" content="New websites for small and mid-sized businesses, with visibility in Google and ChatGPT and ads on Google and Meta, from one team.">
+  <meta name="theme-color" content="#F6F4F0">
+  <link rel="icon" href="/sustain/assets/favicon.svg" type="image/svg+xml">
+  <link rel="alternate" hreflang="de" href="/sustain/de">
+  <link rel="alternate" hreflang="en" href="/sustain/en">
+  <style>
+    @font-face {
+      font-family: "Inter";
+      src: url("/sustain/assets/fonts/inter-latin.woff2") format("woff2");
+      font-weight: 100 900;
+      font-display: swap;
+    }
+
+    :root {
+      --bg: #F6F4F0;
+      --surface: #FFFFFF;
+      --text: #141414;
+      --muted: #6B6B68;
+      --soft: #A8A49C;
+      --line: #E2E2DE;
+      --accent: #315CE8;
+      --dark: #141414;
+      --good: #1E8E5A;
+      --mid: #C98A12;
+      --bad: #C8402F;
+      --max: 1280px;
+      --pad: 40px;
+      --radius: 14px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; overflow-x: hidden; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Inter", system-ui, sans-serif;
+      font-size: 16px;
+      line-height: 1.55;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a { color: inherit; }
+
+    img { max-width: 100%; }
+
+    .wrap {
+      width: min(100%, calc(var(--max) + var(--pad) * 2));
+      margin: 0 auto;
+      padding: 0 var(--pad);
+    }
+
+    .eyebrow {
+      margin: 0 0 14px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+
+    h1, h2, h3 { margin: 0; letter-spacing: -0.03em; }
+
+    h2 {
+      font-size: clamp(32px, 4vw, 52px);
+      font-weight: 600;
+      line-height: 1.05;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      height: 50px;
+      padding: 0 24px;
+      border: 1px solid var(--dark);
+      border-radius: 999px;
+      background: var(--dark);
+      color: #fff;
+      font: inherit;
+      font-size: 15px;
+      font-weight: 600;
+      text-decoration: none;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+
+    .btn--ghost {
+      background: transparent;
+      color: var(--text);
+    }
+
+    .btn:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    /* Header */
+    .head {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      padding: 14px 0;
+      background: rgba(246, 244, 240, 0.86);
+      backdrop-filter: blur(10px);
+    }
+
+    .head__in {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+    }
+
+    .logo {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-decoration: none;
+    }
+
+    .nav {
+      display: flex;
+      gap: 26px;
+      margin-left: auto;
+      font-size: 15px;
+      font-weight: 500;
+    }
+
+    .nav a { text-decoration: none; }
+
+    .head .btn { height: 42px; padding: 0 18px; font-size: 14px; }
+
+    .langs {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 650;
+      letter-spacing: 0.08em;
+      text-decoration: none;
+    }
+
+    .langs:hover { color: var(--text); }
+
+    /* Hero */
+    .hero {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 48px;
+      align-items: center;
+      padding-top: 40px;
+      padding-bottom: 56px;
+    }
+
+    .hero h1 {
+      font-size: clamp(44px, 6vw, 84px);
+      font-weight: 650;
+      line-height: 0.98;
+      letter-spacing: -0.045em;
+    }
+
+    .hero h1 span { color: var(--soft); }
+
+    .hero__lede {
+      max-width: 34em;
+      margin: 22px 0 0;
+      color: var(--muted);
+      font-size: 18px;
+    }
+
+    .check {
+      display: flex;
+      gap: 8px;
+      max-width: 620px;
+      margin-top: 30px;
+      padding: 6px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: var(--surface);
+      box-shadow: 0 10px 30px rgba(20, 20, 20, 0.06);
+    }
+
+    .check input {
+      flex: 1;
+      min-width: 0;
+      padding: 0 18px;
+      border: 0;
+      background: transparent;
+      color: var(--text);
+      font: inherit;
+      font-size: 17px;
+    }
+
+    .check input:focus { outline: none; }
+
+    .check__note {
+      margin: 12px 0 0 18px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .check__error {
+      margin: 10px 0 0 18px;
+      color: var(--bad);
+      font-size: 14px;
+    }
+
+    .trust {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 22px;
+      margin-top: 34px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .trust b { color: var(--text); font-weight: 650; }
+
+    .hero__photo {
+      position: relative;
+      aspect-ratio: 4 / 5;
+      overflow: hidden;
+      border-radius: 22px;
+      background: #d9d7d2;
+    }
+
+    .hero__photo img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center 18%;
+    }
+
+    .hero__photo figcaption {
+      position: absolute;
+      left: 16px;
+      bottom: 16px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.92);
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    /* Result */
+    .result {
+      padding: 56px 0 72px;
+      border-top: 1px solid var(--line);
+      scroll-margin-top: 70px;
+    }
+
+    .result[hidden] { display: none; }
+
+    .result__head {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: end;
+      justify-content: space-between;
+      gap: 20px;
+      margin-bottom: 28px;
+    }
+
+    .result__head h2 { font-size: clamp(28px, 3.2vw, 42px); }
+
+    .result__grid {
+      display: grid;
+      grid-template-columns: 0.62fr 1.38fr;
+      gap: 20px;
+    }
+
+    .panel {
+      position: relative;
+      padding: 22px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--surface);
+    }
+
+    .panel__label {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin: 0 0 16px;
+      font-size: 13px;
+      font-weight: 650;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .panel__label small {
+      color: var(--muted);
+      font-weight: 500;
+      letter-spacing: 0;
+      text-transform: none;
+    }
+
+    .phone {
+      width: min(100%, 250px);
+      margin: 0 auto;
+      padding: 10px;
+      border-radius: 30px;
+      background: #1b1b1b;
+    }
+
+    .phone__screen {
+      aspect-ratio: 9 / 19;
+      overflow: hidden;
+      border-radius: 22px;
+      background: #2a2a2a;
+    }
+
+    .phone__screen.live { position: relative; }
+
+    .phone__screen iframe {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 390px;
+      height: 823px;
+      border: 0;
+      background: #fff;
+      transform-origin: 0 0;
+      transform: scale(var(--k, 0.588));
+    }
+
+    .phone__screen img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: top;
+    }
+
+    .scores {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .score {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      line-height: 1.25;
+    }
+
+    .ring {
+      --v: 0;
+      --c: var(--soft);
+      display: grid;
+      flex: none;
+      place-items: center;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: conic-gradient(var(--c) calc(var(--v) * 1%), #ecebe7 0);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .ring span {
+      display: grid;
+      place-items: center;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: var(--surface);
+    }
+
+    .panel__fact {
+      margin: 14px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .wait {
+      display: grid;
+      place-items: center;
+      gap: 10px;
+      min-height: 280px;
+      color: var(--muted);
+      font-size: 14px;
+      text-align: center;
+    }
+
+    .spinner {
+      width: 26px;
+      height: 26px;
+      border: 2px solid var(--line);
+      border-top-color: var(--text);
+      border-radius: 50%;
+      animation: spin 0.9s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .browser {
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fff;
+    }
+
+    .browser__bar {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      height: 34px;
+      padding: 0 12px;
+      border-bottom: 1px solid var(--line);
+      background: #f3f2ef;
+    }
+
+    .browser__bar i {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #d5d3ce;
+    }
+
+    .browser__bar span {
+      margin-left: 10px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .browser__view {
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* The proposed site, drawn at 1200 px and scaled to the frame. Five looks share one layout:
+       each style only changes the variables and a few rules (mock--clean is the default). */
+    .mock {
+      --brand: #1f3a5f;
+      --on-brand: #fff;
+      --bg: #fff;
+      --ink: #16181d;
+      --sub: #555;
+      --card: #f6f6f4;
+      --line: #ececec;
+      --round: 18px;
+      --pic-round: 24px;
+      --btn-round: 999px;
+      --hfont: "Inter", system-ui, sans-serif;
+      --hweight: 700;
+      --hsize: 54px;
+      --hspace: -0.035em;
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 1200px;
+      transform-origin: 0 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-size: 16px;
+      line-height: 1.5;
+    }
+
+    .mock__nav {
+      display: flex;
+      align-items: center;
+      gap: 34px;
+      height: 76px;
+      padding: 0 56px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .mock__logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-family: var(--hfont);
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .mock__logo img { max-height: 40px; max-width: 170px; object-fit: contain; }
+
+    .mock__links {
+      display: flex;
+      gap: 28px;
+      margin-left: auto;
+      color: var(--sub);
+      font-size: 15px;
+    }
+
+    .mock__btn {
+      display: inline-flex;
+      align-items: center;
+      height: 46px;
+      padding: 0 22px;
+      border-radius: var(--btn-round);
+      background: var(--brand);
+      color: var(--on-brand);
+      font-size: 15px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .mock__hero {
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: 48px;
+      align-items: center;
+      padding: 64px 56px;
+    }
+
+    .mock__kicker {
+      color: var(--brand);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    .mock__h1 {
+      margin: 14px 0 0;
+      font-family: var(--hfont);
+      font-size: var(--hsize);
+      font-weight: var(--hweight);
+      line-height: 1.04;
+      letter-spacing: var(--hspace);
+    }
+
+    .mock__sub {
+      margin: 18px 0 0;
+      color: var(--sub);
+      font-size: 19px;
+    }
+
+    .mock__actions {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      margin-top: 30px;
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .mock__proof {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 28px;
+    }
+
+    .mock__proof span {
+      padding: 7px 14px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: var(--sub);
+      font-size: 13px;
+    }
+
+    .mock__pic {
+      height: 400px;
+      overflow: hidden;
+      border-radius: var(--pic-round);
+      background: linear-gradient(135deg, var(--brand), #0d0f14);
+    }
+
+    .mock__pic img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .mock__services {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      padding: 0 56px 56px;
+    }
+
+    .mock__card {
+      padding: 26px;
+      border-radius: var(--round);
+      background: var(--card);
+    }
+
+    .mock__card b {
+      display: block;
+      font-family: var(--hfont);
+      font-size: 20px;
+      letter-spacing: -0.02em;
+    }
+
+    .mock__card i {
+      display: block;
+      width: 34px;
+      height: 4px;
+      margin-bottom: 18px;
+      border-radius: 4px;
+      background: var(--brand);
+    }
+
+    .mock__card p { margin: 10px 0 0; color: var(--sub); font-size: 15px; }
+
+    .mock__band {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 40px;
+      margin: 0 56px 56px;
+      padding: 40px;
+      border-radius: var(--pic-round);
+      background: var(--brand);
+      color: var(--on-brand);
+    }
+
+    .mock__band h3 { font-family: var(--hfont); font-size: 30px; letter-spacing: -0.02em; }
+
+    .mock__band ul { margin: 0; padding: 0; list-style: none; }
+
+    .mock__band li {
+      padding: 12px 0;
+      border-bottom: 1px solid currentColor;
+      border-bottom-color: color-mix(in srgb, currentColor 25%, transparent);
+      font-size: 17px;
+      font-weight: 500;
+    }
+
+    .mock__about {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 40px;
+      padding: 0 56px 64px;
+      color: var(--sub);
+      font-size: 17px;
+    }
+
+    .mock__contact {
+      padding: 24px;
+      border: 1px solid var(--line);
+      border-radius: var(--round);
+      font-size: 15px;
+    }
+
+    .mock__contact b { display: block; margin-bottom: 8px; color: var(--ink); }
+
+    /* 2. Premium, dark: night background, the brand colour as light. */
+    .mock--dark {
+      --bg: #0d0e11;
+      --ink: #f2f2ef;
+      --sub: #a3a6ab;
+      --card: #16181c;
+      --line: #25272c;
+    }
+
+    .mock--dark .mock__hero {
+      background: radial-gradient(60% 80% at 80% 40%, color-mix(in srgb, var(--brand) 35%, transparent), transparent 70%);
+    }
+
+    .mock--dark .mock__pic { box-shadow: 0 30px 80px color-mix(in srgb, var(--brand) 40%, transparent); }
+
+    .mock--dark .mock__band { background: linear-gradient(135deg, var(--brand), #0d0e11 90%); color: #fff; }
+
+    .mock--dark .mock__card { border: 1px solid var(--line); }
+
+    /* 3. Classic: a serif, thin rules, square corners, an editorial calm. */
+    .mock--editorial {
+      --bg: #fbfaf7;
+      --ink: #1c1b19;
+      --sub: #5c5a55;
+      --card: transparent;
+      --line: #dcd8cf;
+      --round: 0;
+      --pic-round: 0;
+      --btn-round: 2px;
+      --hfont: Georgia, "Times New Roman", serif;
+      --hweight: 400;
+      --hsize: 60px;
+      --hspace: -0.01em;
+    }
+
+    .mock--editorial .mock__kicker { font-family: Georgia, serif; font-style: italic; font-weight: 400; letter-spacing: 0; text-transform: none; font-size: 17px; }
+
+    .mock--editorial .mock__card { padding: 22px 0 0; border-top: 1px solid var(--ink); }
+
+    .mock--editorial .mock__card i { display: none; }
+
+    .mock--editorial .mock__band { background: #efebe2; color: var(--ink); }
+
+    .mock--editorial .mock__btn { background: var(--ink); color: #fff; }
+
+    /* 4. Bold: the whole first screen in the brand colour, very large type. */
+    .mock--bold {
+      --hweight: 800;
+      --hsize: 70px;
+      --hspace: -0.045em;
+      --pic-round: 0;
+    }
+
+    .mock--bold .mock__hero { background: var(--brand); color: var(--on-brand); }
+
+    .mock--bold .mock__hero .mock__kicker,
+    .mock--bold .mock__hero .mock__sub { color: var(--on-brand); opacity: 0.85; }
+
+    .mock--bold .mock__hero .mock__btn { background: var(--on-brand); color: var(--brand); }
+
+    .mock--bold .mock__hero .mock__proof span { border-color: color-mix(in srgb, var(--on-brand) 40%, transparent); color: var(--on-brand); }
+
+    .mock--bold .mock__services { padding-top: 56px; }
+
+    .mock--bold .mock__card { background: transparent; border-top: 6px solid var(--brand); border-radius: 0; padding: 22px 0 0; }
+
+    .mock--bold .mock__card i { display: none; }
+
+    .mock--bold .mock__band { background: #111; color: #fff; border-radius: 0; }
+
+    /* 5. Warm and local: cream, soft corners, an arched picture, friendly and close. */
+    .mock--warm {
+      --bg: #fbf6ef;
+      --ink: #2b241d;
+      --sub: #6f6458;
+      --card: #fff;
+      --line: #eadfce;
+      --round: 26px;
+      --pic-round: 28px;
+      --hweight: 650;
+      --hsize: 52px;
+      --hspace: -0.025em;
+    }
+
+    .mock--warm .mock__pic { border-radius: 220px 220px 28px 28px; }
+
+    .mock--warm .mock__kicker {
+      display: inline-block;
+      padding: 7px 14px;
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--brand) 14%, transparent);
+      letter-spacing: 0.06em;
+    }
+
+    .mock--warm .mock__card { box-shadow: 0 10px 30px rgba(80, 60, 30, 0.08); }
+
+    .mock--warm .mock__band { background: color-mix(in srgb, var(--brand) 16%, #fff); color: var(--ink); }
+
+    /* The style picker above the draft. */
+    .styles {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 0 0 14px;
+    }
+
+    .styles button {
+      height: 36px;
+      padding: 0 14px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: var(--surface);
+      color: var(--text);
+      font: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .styles button[aria-pressed="true"] { border-color: var(--dark); background: var(--dark); color: #fff; }
+
+    .disclaimer {
+      margin: 14px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    /* Visibility in assistants */
+    .ai {
+      margin-top: 20px;
+    }
+
+    .ai__grid {
+      display: grid;
+      grid-template-columns: 0.8fr 1.2fr;
+      gap: 28px;
+      align-items: start;
+    }
+
+    .ai__big {
+      font-size: 54px;
+      font-weight: 700;
+      letter-spacing: -0.04em;
+      line-height: 1;
+    }
+
+    .ai__big small {
+      color: var(--muted);
+      font-size: 22px;
+      font-weight: 500;
+      letter-spacing: -0.01em;
+    }
+
+    .ai__q {
+      margin: 0 0 8px;
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .ai__a {
+      margin: 0;
+      padding: 14px 16px;
+      border-left: 3px solid var(--line);
+      background: #faf9f7;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .ai__steps { margin: 12px 0 0; padding-left: 18px; color: var(--muted); font-size: 14px; }
+
+    .offer { margin-top: 36px; }
+
+    .offer__title { font-size: clamp(24px, 2.6vw, 34px); font-weight: 600; }
+
+    .offer__grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-top: 20px;
+    }
+
+    .offer .pack ul { margin: 18px 0 22px; }
+
+    .cta-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      margin-top: 20px;
+      padding: 26px 28px;
+      border-radius: var(--radius);
+      background: var(--dark);
+      color: #fff;
+    }
+
+    .cta-bar p { margin: 0; font-size: 20px; font-weight: 600; letter-spacing: -0.01em; }
+
+    .cta-bar .btn { border-color: #fff; background: #fff; color: var(--dark); }
+
+    /* Sections */
+    section.block {
+      padding: 88px 0;
+      border-top: 1px solid var(--line);
+      scroll-margin-top: 60px;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 24px;
+      margin-top: 44px;
+    }
+
+    .stat b {
+      display: block;
+      font-size: clamp(36px, 4vw, 56px);
+      font-weight: 650;
+      letter-spacing: -0.04em;
+      line-height: 1;
+    }
+
+    .stat span { display: block; margin-top: 10px; color: var(--muted); font-size: 14px; }
+
+    .split {
+      display: grid;
+      grid-template-columns: 0.8fr 1.2fr;
+      gap: 48px;
+      align-items: start;
+    }
+
+    .split p.lead { margin: 18px 0 0; color: var(--muted); font-size: 17px; }
+
+    .works {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+
+    .work {
+      position: relative;
+      aspect-ratio: 4 / 3;
+      overflow: hidden;
+      border-radius: var(--radius);
+      background: #ddd;
+      text-decoration: none;
+    }
+
+    .work img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center top;
+      transition: transform 0.4s ease;
+    }
+
+    .work:hover img { transform: scale(1.03); }
+
+    .work span {
+      position: absolute;
+      left: 12px;
+      bottom: 12px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.94);
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .packages {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-top: 44px;
+    }
+
+    .pack {
+      display: flex;
+      flex-direction: column;
+      padding: 30px 28px;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: var(--surface);
+    }
+
+    .pack--hot { border-color: var(--dark); box-shadow: 0 18px 40px rgba(20, 20, 20, 0.08); }
+
+    .pack__tag {
+      align-self: flex-start;
+      margin-bottom: 18px;
+      padding: 5px 12px;
+      border-radius: 999px;
+      background: #efede8;
+      font-size: 12px;
+      font-weight: 650;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .pack--hot .pack__tag { background: var(--dark); color: #fff; }
+
+    .pack h3 { font-size: 24px; }
+
+    .pack__price {
+      margin: 16px 0 4px;
+      font-size: 44px;
+      font-weight: 700;
+      letter-spacing: -0.04em;
+      line-height: 1;
+    }
+
+    .pack__net { color: var(--muted); font-size: 13px; }
+
+    .pack ul {
+      flex: 1;
+      margin: 22px 0 26px;
+      padding: 0;
+      list-style: none;
+    }
+
+    .pack li {
+      display: flex;
+      gap: 10px;
+      padding: 9px 0;
+      border-top: 1px solid var(--line);
+      font-size: 15px;
+    }
+
+    .pack li::before { content: "✓"; color: var(--good); font-weight: 700; }
+
+    .pack .btn { width: 100%; }
+
+    .bigger {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-top: 16px;
+      padding: 22px 28px;
+      border: 1px dashed #cfccc5;
+      border-radius: 20px;
+    }
+
+    .bigger p { margin: 0; }
+
+    .footnote { margin: 16px 0 0; color: var(--muted); font-size: 13px; }
+
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 14px;
+      margin: 44px 0 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .steps li {
+      padding: 22px;
+      border-radius: var(--radius);
+      background: var(--surface);
+    }
+
+    .steps b { display: block; margin: 12px 0 6px; font-size: 17px; }
+
+    .steps span { color: var(--soft); font-size: 13px; font-weight: 650; }
+
+    .steps p { margin: 0; color: var(--muted); font-size: 14px; }
+
+    .about {
+      display: grid;
+      grid-template-columns: 0.8fr 1.2fr;
+      gap: 56px;
+      align-items: center;
+    }
+
+    .about__photo {
+      position: relative;
+      aspect-ratio: 1;
+      overflow: hidden;
+      border-radius: 22px;
+      background: #d9d7d2;
+    }
+
+    .about__photo img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center 20%;
+    }
+
+    /* Until the photo is in /sustain/assets/fabian-wilk.jpg the frame shows the initials. */
+    .initials {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      color: #a9a59d;
+      font-size: clamp(64px, 9vw, 120px);
+      font-weight: 650;
+      letter-spacing: -0.04em;
+    }
+
+    .about p { margin: 18px 0 0; color: #3d3d3a; font-size: 17px; }
+
+    .creds {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px 28px;
+      margin-top: 28px;
+      padding-top: 24px;
+      border-top: 1px solid var(--line);
+      font-size: 14px;
+    }
+
+    .creds span { display: block; color: var(--muted); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; }
+
+    .faq { max-width: 860px; margin-top: 36px; }
+
+    .faq details { border-top: 1px solid var(--line); }
+
+    .faq details:last-child { border-bottom: 1px solid var(--line); }
+
+    .faq summary {
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 20px 0;
+      font-size: 18px;
+      font-weight: 600;
+      list-style: none;
+      cursor: pointer;
+    }
+
+    .faq summary::-webkit-details-marker { display: none; }
+
+    .faq summary::after { content: "+"; color: var(--muted); font-weight: 400; }
+
+    .faq details[open] summary::after { content: "–"; }
+
+    .faq p { margin: 0 0 22px; color: var(--muted); }
+
+    .final {
+      padding: 96px 0;
+      background: var(--dark);
+      color: #fff;
+      scroll-margin-top: 60px;
+    }
+
+    .final .split p.lead { color: #b9b6af; }
+
+    .form {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .form label { display: grid; gap: 6px; color: #b9b6af; font-size: 13px; }
+
+    .form .full { grid-column: 1 / -1; }
+
+    .form input, .form textarea {
+      width: 100%;
+      padding: 14px;
+      border: 1px solid #3a3a38;
+      border-radius: 10px;
+      background: #1e1e1d;
+      color: #fff;
+      font: inherit;
+    }
+
+    .form textarea { min-height: 120px; resize: vertical; }
+
+    .form .btn { border-color: #fff; background: #fff; color: var(--dark); justify-self: start; }
+
+    .form__status { grid-column: 1 / -1; margin: 0; color: #e8e4dc; font-size: 14px; }
+
+    .foot {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px 26px;
+      padding: 26px 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .foot a { text-decoration: none; }
+
+    @media (max-width: 1000px) {
+      .hero, .result__grid, .ai__grid, .split, .about { grid-template-columns: 1fr; }
+      .hero__photo { max-width: 420px; aspect-ratio: 1; }
+      .packages, .works { grid-template-columns: 1fr 1fr; }
+      .offer__grid { grid-template-columns: 1fr; }
+      .steps { grid-template-columns: 1fr 1fr; }
+      .stats { grid-template-columns: 1fr 1fr; }
+    }
+
+    @media (max-width: 700px) {
+      :root { --pad: 18px; }
+      .nav { display: none; }
+      .langs { margin-left: auto; }
+      .check { flex-direction: column; border-radius: 22px; }
+      .check input { height: 50px; }
+      .packages, .works, .steps, .form { grid-template-columns: 1fr; }
+      section.block { padding: 64px 0; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      .spinner { animation-duration: 3s; }
+    }
+  </style>
+</head>
+<body>
+  <header class="head">
+    <div class="wrap head__in">
+      <a class="logo" href="#top">PRODUCT STUDIO</a>
+      <nav class="nav" aria-label="Main menu">
+        <a href="#arbeiten">Work</a>
+        <a href="#pakete">Packages</a>
+        <a href="#ablauf">Process</a>
+        <a href="#ueber">About</a>
+      </nav>
+      <a class="langs" href="/sustain/de" hreflang="de" lang="de">DE</a>
+      <a class="btn" href="#kontakt">Book a call</a>
+    </div>
+  </header>
+
+  <main id="top">
+    <section class="wrap hero">
+      <div>
+        <p class="eyebrow">Websites and growth for small and mid-sized businesses</p>
+        <h1>Your website. <span>Reimagined.</span> And found.</h1>
+        <p class="hero__lede">Enter the address of your website. In about a minute you see what your new website could look like, how your current one scores and whether ChatGPT recommends you.</p>
+        <form class="check" id="check" novalidate>
+          <input id="url" name="url" type="text" inputmode="url" autocomplete="url" placeholder="yourcompany.com" aria-label="Your website address" required>
+          <button class="btn" type="submit">Show my new website <span aria-hidden="true">→</span></button>
+        </form>
+        <p class="check__note">Free, no sign-up. We only read your public home page.</p>
+        <p class="check__error" id="check-error" role="alert" hidden></p>
+        <div class="trust">
+          <span><b>13</b> products of our own built</span>
+          <span><b>4M+</b> MagiScan installs</span>
+          <span><b>Website, Google, ChatGPT, ads</b> from one team</span>
+        </div>
+      </div>
+      <figure class="hero__photo">
+        <span class="initials" aria-hidden="true">FW</span>
+        <img src="/sustain/assets/fabian-wilk.jpg" alt="Fabian Wilk" onerror="this.remove()">
+        <figcaption>Fabian Wilk, founder and CEO</figcaption>
+      </figure>
+    </section>
+
+    <section class="wrap result" id="ergebnis" hidden aria-live="polite">
+      <div class="result__head">
+        <div>
+          <p class="eyebrow" id="r-host">Your website</p>
+          <h2 id="r-title">This is what your new website could look like</h2>
+        </div>
+        <a class="btn btn--ghost" href="#pakete">See packages</a>
+      </div>
+
+      <div class="result__grid">
+        <div class="panel">
+          <p class="panel__label">Today <small>Google measurement, phone</small></p>
+          <div id="today"><div class="wait"><div class="spinner"></div>Google is measuring your website.<br>This takes up to 40 seconds.</div></div>
+        </div>
+        <div class="panel">
+          <p class="panel__label">With us <small>A draft from your own content</small></p>
+          <div class="styles" id="styles" role="group" aria-label="Style of the draft">
+            <button type="button" data-style="clean" aria-pressed="true">Clean</button>
+            <button type="button" data-style="dark" aria-pressed="false">Premium dark</button>
+            <button type="button" data-style="editorial" aria-pressed="false">Classic</button>
+            <button type="button" data-style="bold" aria-pressed="false">Bold</button>
+            <button type="button" data-style="warm" aria-pressed="false">Warm</button>
+          </div>
+          <div class="browser">
+            <div class="browser__bar"><i></i><i></i><i></i><span id="mock-url"></span></div>
+            <div class="browser__view" id="mock-view"><div class="wait"><div class="spinner"></div>We are reading your site and writing the new copy.</div></div>
+          </div>
+          <p class="disclaimer">This is an example of our work and speed. We will discuss and agree on the final look of your website together with you.</p>
+        </div>
+      </div>
+
+      <div class="panel ai">
+        <p class="panel__label">Do ChatGPT and Perplexity recommend you? <small>Five questions, asked the way your customers ask</small></p>
+        <div id="ai"><div class="wait" style="min-height:120px"><div class="spinner"></div>We are asking ChatGPT and Perplexity your customers' questions.</div></div>
+      </div>
+
+      <div class="offer">
+        <h3 class="offer__title" id="offer-title">Your way to a new website</h3>
+        <div class="offer__grid" id="offer"></div>
+        <p class="footnote">Prices excl. VAT. You pay the ad budget for Google and Meta directly to the platforms.</p>
+      </div>
+
+      <div class="cta-bar">
+        <p>Like the draft? We turn it into your real website.</p>
+        <a class="btn" href="#kontakt" id="take">Build this draft <span aria-hidden="true">→</span></a>
+      </div>
+    </section>
+
+    <section class="block">
+      <div class="wrap">
+        <p class="eyebrow">Seen, found, booked</p>
+        <h2>A beautiful website is not enough.<br>It has to be found.</h2>
+        <div class="stats">
+          <div class="stat"><b>13</b><span>products built and launched ourselves</span></div>
+          <div class="stat"><b>4M+</b><span>installs of our app MagiScan</span></div>
+          <div class="stat"><b>16M+</b><span>3D models created with MagiScan</span></div>
+          <div class="stat"><b>1</b><span>team for website, Google, ChatGPT and ads</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="block" id="arbeiten">
+      <div class="wrap split">
+        <div>
+          <p class="eyebrow">Work</p>
+          <h2>Selected projects</h2>
+          <p class="lead">Websites, platforms and apps in medicine, logistics, retail, education and finance.</p>
+          <p><a class="btn btn--ghost" href="/sustain" style="margin-top:22px">All projects</a></p>
+        </div>
+        <div class="works">
+          <a class="work" href="https://magiscan.app/" target="_blank" rel="noopener noreferrer"><img src="/sustain/assets/magiscan-cover.png?v=2" alt="" loading="lazy"><span>MagiScan</span></a>
+          <div class="work"><img src="/sustain/assets/ava-cover.png?v=2" alt="" loading="lazy"><span>AVA · Medicine</span></div>
+          <div class="work"><img src="/sustain/assets/freightsizer-cover.png?v=2" alt="" loading="lazy"><span>FreightSizer · Logistics</span></div>
+          <a class="work" href="https://orthio.app/" target="_blank" rel="noopener noreferrer"><img src="/sustain/assets/orthio-cover.png?v=2" alt="" loading="lazy"><span>ORTHIO · Orthopedics</span></a>
+          <a class="work" href="https://www.luni.care/" target="_blank" rel="noopener noreferrer"><img src="/sustain/assets/luni-cover.png?v=2" alt="" loading="lazy"><span>LUNI · Online shop</span></a>
+          <a class="work" href="https://pickaclass.com/" target="_blank" rel="noopener noreferrer"><img src="/sustain/assets/pickaclass-cover.png?v=2" alt="" loading="lazy"><span>PickAClass · Platform</span></a>
+        </div>
+      </div>
+    </section>
+
+    <section class="block" id="pakete">
+      <div class="wrap">
+        <p class="eyebrow">Packages</p>
+        <h2>One price. Everything included.<br>No surprises.</h2>
+        <div class="packages">
+          <article class="pack">
+            <span class="pack__tag">Live in 4 weeks</span>
+            <h3>Website</h3>
+            <p class="pack__price">€14,900</p>
+            <span class="pack__net">excl. VAT</span>
+            <ul>
+              <li>New website, up to 10 pages</li>
+              <li>Design that fits your brand</li>
+              <li>Copywriting and image selection</li>
+              <li>Fast on phone and computer</li>
+              <li>Technical optimisation for Google</li>
+              <li>Legal pages, privacy policy, cookie consent</li>
+              <li>30 days of support after launch</li>
+            </ul>
+            <a class="btn btn--ghost" href="#kontakt" data-pack="Website (€14,900)">Request this package</a>
+          </article>
+          <article class="pack pack--hot">
+            <span class="pack__tag">Popular · Live in 6 weeks</span>
+            <h3>Website + Visibility</h3>
+            <p class="pack__price">€29,900</p>
+            <span class="pack__net">excl. VAT</span>
+            <ul>
+              <li>Everything in “Website”, up to 20 pages</li>
+              <li>Content for Google search</li>
+              <li>Visibility in ChatGPT and other AI assistants, 3 months</li>
+              <li>Google Business Profile</li>
+              <li>Google Ads: setup and first campaign</li>
+              <li>Monthly report</li>
+            </ul>
+            <a class="btn" href="#kontakt" data-pack="Website + Visibility (€29,900)">Request this package</a>
+          </article>
+          <article class="pack">
+            <span class="pack__tag">Live in 8 weeks</span>
+            <h3>Website + Growth</h3>
+            <p class="pack__price">€49,900</p>
+            <span class="pack__net">excl. VAT</span>
+            <ul>
+              <li>Everything in “Website + Visibility”</li>
+              <li>Brand identity: logo, colours, fonts</li>
+              <li>Ads on Instagram and Facebook, 3 months</li>
+              <li>Landing pages for your campaigns</li>
+              <li>A second language for international customers</li>
+              <li>A personal point of contact</li>
+            </ul>
+            <a class="btn btn--ghost" href="#kontakt" data-pack="Website + Growth (€49,900)">Request this package</a>
+          </article>
+        </div>
+        <div class="bigger">
+          <p><b>A bigger project?</b> Apps, AI products, platforms and app store optimisation: from the idea to an international launch.</p>
+          <a class="btn btn--ghost" href="#kontakt" data-pack="Custom project">Custom quote</a>
+        </div>
+        <p class="footnote">You pay the ad budget for Google and Meta directly to the platforms; it is not part of the package price.</p>
+      </div>
+    </section>
+
+    <section class="block" id="ablauf">
+      <div class="wrap">
+        <p class="eyebrow">Process</p>
+        <h2>How it works</h2>
+        <ol class="steps">
+          <li><span>01</span><b>Intro call</b><p>30 minutes on goals, customers and timeline.</p></li>
+          <li><span>02</span><b>Draft</b><p>You see your new home page before the work begins.</p></li>
+          <li><span>03</span><b>Build</b><p>Design, copy and engineering from one team.</p></li>
+          <li><span>04</span><b>Launch</b><p>Moving over without downtime, redirects, analytics.</p></li>
+          <li><span>05</span><b>Visibility</b><p>Google, ChatGPT and ads bring the customers.</p></li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="block" id="ueber">
+      <div class="wrap about">
+        <div class="about__photo">
+          <span class="initials" aria-hidden="true">FW</span>
+          <img src="/sustain/assets/fabian-wilk.jpg" alt="Fabian Wilk" loading="lazy" onerror="this.remove()">
+        </div>
+        <div>
+          <p class="eyebrow">About</p>
+          <h2>Hi, I'm Fabian.</h2>
+          <p>Since 2013 I have been helping companies with formation, structure and growth as a partner at W-V Law Firm in London. I know what business owners care about: clear commitments, fixed prices and results you can see.</p>
+          <p>With us, that experience meets a team that builds digital products and markets them internationally, among them the app MagiScan with more than four million installs. We build your website to sell, and we make sure your customers find it.</p>
+          <div class="creds">
+            <div><span>Founder and CEO</span>Fabian Wilk</div>
+            <div><span>Partner since 2013</span>W-V Law Firm LLP, London</div>
+            <div><span>Education</span>London School of Economics</div>
+            <div><span>Product and technology</span>Kiryl Sidarchuk, co-founder of MagiScan</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="block" id="fragen">
+      <div class="wrap">
+        <p class="eyebrow">Questions</p>
+        <h2>Frequently asked questions</h2>
+        <div class="faq">
+          <details><summary>How much does a website cost?</summary><p>Our packages start at €14,900 excl. VAT. For apps, platforms and bigger projects we make a custom quote.</p></details>
+          <details><summary>How soon is my website live?</summary><p>In 4 to 8 weeks from the intro call, depending on the package.</p></details>
+          <details><summary>Who owns the website?</summary><p>You do. The domain, the content and all logins stay with you.</p></details>
+          <details><summary>Is the website GDPR compliant?</summary><p>Yes. Legal pages, a privacy policy and cookie consent come with every package. On request we host in the EU.</p></details>
+          <details><summary>What does visibility in ChatGPT mean?</summary><p>More and more customers ask AI assistants instead of a search engine. We make sure these assistants can read your website and find enough about your business to name it.</p></details>
+          <details><summary>Is the ad budget included?</summary><p>No. You pay the budget for Google and Meta directly to the platforms. Setting up and running the campaigns is part of the package.</p></details>
+          <details><summary>Do you only work in Germany?</summary><p>We work with clients in Germany and internationally. Your website can be multilingual.</p></details>
+        </div>
+      </div>
+    </section>
+
+    <section class="final" id="kontakt">
+      <div class="wrap split">
+        <div>
+          <p class="eyebrow" style="color:#8f8b84">Contact</p>
+          <h2>Ready when you are.</h2>
+          <p class="lead">Tell us about your business. We get back to you within one working day with a time for the intro call.</p>
+        </div>
+        <form class="form" id="contact" novalidate>
+          <label>Name<input name="name" autocomplete="name" required></label>
+          <label>Email<input name="email" type="email" autocomplete="email" required></label>
+          <label class="full">Website<input name="site" id="c-site" inputmode="url" placeholder="yourcompany.com"></label>
+          <label class="full">Message<textarea name="message" id="c-message" required></textarea></label>
+          <button class="btn" type="submit">Prepare email <span aria-hidden="true">→</span></button>
+          <p class="form__status" id="c-status" role="status"></p>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <footer class="wrap foot">
+    <span>PRODUCT STUDIO</span>
+    <a href="#" data-todo>Legal notice</a>
+    <a href="#" data-todo>Privacy</a>
+  </footer>
+
+  <script>
+    // Placeholders, left as they are until the owner gives the real ones.
+    const STUDIO_EMAIL = "YOUR_STUDIO_EMAIL";
+    const LANG = "en";
+
+    const $ = (id) => document.getElementById(id);
+    const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+    const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+    let current = "";
+    let runId = 0;
+
+    function cleanUrl(raw) {
+      let s = (raw || "").trim();
+      if (!s) return "";
+      if (!/^https?:\/\//i.test(s)) s = "https://" + s;
+      try {
+        const u = new URL(s);
+        return u.hostname.includes(".") ? u.origin + u.pathname : "";
+      } catch {
+        return "";
+      }
+    }
+
+    $("check").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const url = cleanUrl($("url").value);
+      const err = $("check-error");
+      if (!url) {
+        err.textContent = "Please enter a valid address, for example yourcompany.com.";
+        err.hidden = false;
+        return;
+      }
+      err.hidden = true;
+      start(url);
+    });
+
+    function start(url) {
+      const run = ++runId;
+      current = url;
+      todayFailed = false;
+      liveSite = null;
+      const host = new URL(url).hostname.replace(/^www\./, "");
+      $("ergebnis").hidden = false;
+      $("r-host").textContent = host;
+      $("r-title").textContent = "This is what your new website could look like";
+      $("mock-url").textContent = host;
+      $("today").innerHTML = '<div class="wait"><div class="spinner"></div>Google is measuring your website.<br>This takes up to 40 seconds.</div>';
+      $("mock-view").style.height = "";
+      $("mock-view").innerHTML = '<div class="wait"><div class="spinner"></div>We are reading your site and writing the new copy.</div>';
+      $("ai").innerHTML = '<div class="wait" style="min-height:120px"><div class="spinner"></div>We are asking ChatGPT and Perplexity your customers' questions.</div>';
+      S = { host, name: "", perf: null, seo: null, lcp: "", named: null, of: null, rival: "" };
+      renderOffer();
+      $("c-site").value = host;
+      $("ergebnis").scrollIntoView({ behavior: "smooth", block: "start" });
+      today(url, run);
+      proposal(url, run);
+      visibility(host, run);
+    }
+
+    // The site as it is today: Google's own measurement, with its screenshot.
+    async function today(url, run) {
+      try {
+        const res = await fetch("/api/sustain/pagespeed?" + new URLSearchParams({ url, lang: LANG }));
+        if (run !== runId) return;
+        if (!res.ok) throw new Error(String(res.status));
+        const d = await res.json();
+        const shot = d.screenshot;
+        const lcp = d.lcp;
+        S.perf = d.performance;
+        S.seo = d.seo;
+        S.lcp = lcp || "";
+        renderOffer();
+        const ring = (label, v) => {
+          const n = v ?? 0;
+          const c = n >= 90 ? "var(--good)" : n >= 50 ? "var(--mid)" : "var(--bad)";
+          return `<div class="score"><div class="ring" style="--v:${n};--c:${c}"><span>${n}</span></div>${label}</div>`;
+        };
+        $("today").innerHTML = `
+          <div class="phone"><div class="phone__screen">${shot ? `<img src="${shot}" alt="Your website today on a phone">` : ""}</div></div>
+          <div class="scores">
+            ${ring("Speed", d.performance)}
+            ${ring("Google search", d.seo)}
+            ${ring("Accessibility", d.accessibility)}
+            ${ring("Best practices", d.bestPractices)}
+          </div>
+          ${lcp ? `<p class="panel__fact">Main content visible after <b>${esc(lcp)}</b> on a phone. Beyond 2.5 s you lose visitors.</p>` : ""}`;
+      } catch {
+        if (run !== runId) return;
+        todayFailed = true;
+        showLive();
+      }
+    }
+
+    // Without Google's measurement the panel shows the site itself, live, when the site allows a frame.
+    let todayFailed = false;
+    let liveSite = null;
+    function showLive() {
+      if (!todayFailed) return;
+      if (liveSite && liveSite.frameable) {
+        $("today").innerHTML = `<div class="phone"><div class="phone__screen live"><iframe src="${esc(liveSite.url)}" title="Your website today" loading="lazy" referrerpolicy="no-referrer" sandbox="allow-scripts allow-same-origin"></iframe></div></div>
+          <p class="panel__fact">Your website today, live on a phone.</p>`;
+      } else if (liveSite) {
+        $("today").innerHTML = '<div class="wait">Google could not measure your website just now.<br>We show you the measurement on the intro call.</div>';
+      }
+    }
+
+    // The proposed site: our layout, filled with their name, logo, colour, pictures and new texts.
+    async function proposal(url, run) {
+      try {
+        const res = await fetch("/api/sustain/preview", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url, lang: LANG }) });
+        const data = await res.json().catch(() => ({}));
+        if (run !== runId) return;
+        if (!res.ok) throw new Error(data.error || String(res.status));
+        drawMock(data);
+        liveSite = { url: data.url, frameable: !!data.frameable };
+        showLive();
+        if (data.name) $("r-title").textContent = `This is what the new website of ${data.name} could look like`;
+        S.name = data.name || "";
+        renderOffer();
+      } catch (e) {
+        if (run !== runId) return;
+        const msg = String(e.message) === "unreachable"
+          ? "Your website did not answer us. Check the address or try again later."
+          : String(e.message) === "limit"
+            ? "You have already made several drafts. Please try again in an hour."
+            : "The draft did not work out this time. Please try again.";
+        $("mock-view").innerHTML = `<div class="wait">${msg}</div>`;
+        liveSite = { url: "", frameable: false };
+        showLive();
+      }
+    }
+
+    function onColour(hex) {
+      const n = parseInt(hex.slice(1), 16);
+      const lum = (0.299 * ((n >> 16) & 255) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) / 255;
+      return lum > 0.62 ? "#16181d" : "#ffffff";
+    }
+
+    function drawMock(d) {
+      const c = d.copy || {};
+      const brand = /^#[0-9a-f]{6}$/i.test(d.colour || "") ? d.colour : "#1f3a5f";
+      const pic = (d.images || [])[0];
+      const services = (c.services || []).slice(0, 3);
+      const contact = d.contact || {};
+      const logo = d.logo
+        ? `<img src="${esc(d.logo)}" alt="" referrerpolicy="no-referrer" onerror="this.remove()">`
+        : "";
+      const mock = document.createElement("div");
+      mock.className = `mock mock--${style}`;
+      mock.style.setProperty("--brand", brand);
+      mock.style.setProperty("--on-brand", onColour(brand));
+      mock.innerHTML = `
+        <div class="mock__nav">
+          <div class="mock__logo">${logo}<span>${esc(d.name)}</span></div>
+          <div class="mock__links">${services.map((s) => `<span>${esc(s.title)}</span>`).join("")}<span>Contact</span></div>
+          <span class="mock__btn">${esc(c.cta || "Get in touch")}</span>
+        </div>
+        <div class="mock__hero">
+          <div>
+            <div class="mock__kicker">${esc([c.sector, c.city].filter(Boolean).join(" · "))}</div>
+            <div class="mock__h1">${esc(c.headline)}</div>
+            <p class="mock__sub">${esc(c.subline)}</p>
+            <div class="mock__actions"><span class="mock__btn">${esc(c.cta || "Get in touch")}</span>${contact.phone ? `<span>${esc(contact.phone)}</span>` : ""}</div>
+            ${(c.proof || []).length ? `<div class="mock__proof">${c.proof.map((p) => `<span>${esc(p)}</span>`).join("")}</div>` : ""}
+          </div>
+          <div class="mock__pic">${pic ? `<img src="${esc(pic)}" alt="" referrerpolicy="no-referrer" onerror="this.remove()">` : ""}</div>
+        </div>
+        <div class="mock__services">${services.map((s) => `<div class="mock__card"><i></i><b>${esc(s.title)}</b><p>${esc(s.text)}</p></div>`).join("")}</div>
+        ${(c.reasons || []).length ? `<div class="mock__band"><h3>Why customers choose ${esc(d.name)}</h3><ul>${c.reasons.map((r) => `<li>${esc(r)}</li>`).join("")}</ul></div>` : ""}
+        <div class="mock__about">
+          <p>${esc(c.about)}</p>
+          <div class="mock__contact"><b>Contact</b>${[contact.phone, contact.email, contact.address].filter(Boolean).map(esc).join("<br>") || esc(d.host)}</div>
+        </div>`;
+      const view = $("mock-view");
+      view.innerHTML = "";
+      view.appendChild(mock);
+      fitMock();
+    }
+
+    function fitMock() {
+      const view = $("mock-view");
+      const mock = view.querySelector(".mock");
+      if (!mock) return;
+      const k = view.clientWidth / 1200;
+      mock.style.transform = `scale(${k})`;
+      view.style.height = `${mock.offsetHeight * k}px`;
+    }
+
+    // The five looks: switching only changes the class, so the content stays and the frame refits.
+    let style = "clean";
+    document.querySelectorAll("#styles [data-style]").forEach((b) => b.addEventListener("click", () => {
+      style = b.dataset.style;
+      document.querySelectorAll("#styles [data-style]").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+      const mock = $("mock-view").querySelector(".mock");
+      if (mock) {
+        mock.className = `mock mock--${style}`;
+        fitMock();
+      }
+    }));
+
+    addEventListener("resize", fitMock);
+    $("mock-view").addEventListener("load", fitMock, true);
+
+    // Visibility in ChatGPT: the same instant check as itgrows.ai/business, questions in the site's language.
+    async function visibility(host, run) {
+      try {
+        let res = await fetch("/api/geo/teaser", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: host }) });
+        let data = await res.json().catch(() => ({}));
+        const id = data.id;
+        const until = Date.now() + 180000;
+        while (data.status === "running" && id && Date.now() < until) {
+          if (run !== runId) return;
+          showAsking(data);
+          await sleep(3000);
+          res = await fetch(`/api/geo/teaser?id=${encodeURIComponent(id)}`);
+          data = await res.json().catch(() => ({}));
+        }
+        if (run !== runId) return;
+        if (data.status !== "done") throw new Error(data.error || "failed");
+        showAnswer(data);
+      } catch (e) {
+        if (run !== runId) return;
+        const msg = String(e.message) === "limit_ip"
+          ? "Several websites have already been checked from your connection today. Try again tomorrow."
+          : "This check is not available just now. We show you the result on the intro call.";
+        $("ai").innerHTML = `<div class="wait" style="min-height:90px">${msg}</div>`;
+      }
+    }
+
+    function showAsking(d) {
+      const qs = (d.questions || []).slice(0, 5);
+      if (!qs.length) return;
+      $("ai").innerHTML = `<div class="ai__grid"><div class="wait" style="min-height:90px"><div class="spinner"></div>The assistants are answering …</div>
+        <div><p class="ai__q">The questions we ask:</p><ol class="ai__steps">${qs.map((q) => `<li>${esc(q)}</li>`).join("")}</ol></div></div>`;
+    }
+
+    function showAnswer(d) {
+      const s = d.summary || {};
+      const open = (d.open || [])[0];
+      const eng = open ? (open.engines.chatgpt || Object.values(open.engines)[0]) : null;
+      const rival = (s.namedInstead || [])[0];
+      const more = s.namedInsteadMore || 0;
+      const named = s.named ?? 0;
+      const of = s.of ?? 0;
+      const who = esc(d.business || d.domain);
+      const verdict = named === 0
+        ? `ChatGPT and Perplexity name ${who} in none of their answers.`
+        : `ChatGPT and Perplexity name ${who} in ${named} of ${of} answers.`;
+      S.named = named;
+      S.of = of;
+      S.rival = rival ? (rival.name || rival) : "";
+      renderOffer();
+      $("ai").innerHTML = `<div class="ai__grid">
+        <div>
+          <div class="ai__big">${named}<small> of ${of} answers</small></div>
+          <p class="panel__fact">${verdict}${rival ? ` Named instead: <b>${esc(rival.name || rival)}</b>${more ? ` and ${more} more` : ""}.` : ""}</p>
+        </div>
+        <div>${open ? `<p class="ai__q">“${esc(open.q)}”</p>${eng && (eng.quote || eng.snippet) ? `<p class="ai__a">${esc(eng.quote || eng.snippet)}</p>` : ""}` : ""}</div>
+      </div>`;
+    }
+
+    // The three packages, told with this visitor's own numbers as they arrive. The one suggested depends on
+    // what was found: nobody naming them in the assistants points to "Sichtbarkeit".
+    let S = {};
+    const PACKS = [
+      { id: "web", name: "Website", price: "€14,900", weeks: "Live in 4 weeks" },
+      { id: "vis", name: "Website + Visibility", price: "€29,900", weeks: "Live in 6 weeks" },
+      { id: "grow", name: "Website + Growth", price: "€49,900", weeks: "Live in 8 weeks" }
+    ];
+
+    function offerLines(id) {
+      const who = S.name || S.host;
+      const lines = [];
+      if (id === "web") {
+        lines.push("The draft above as a finished website, copy and images included");
+        if (S.perf != null) lines.push(`Speed today <b>${S.perf}</b> of 100, our goal: <b>90+</b>`);
+        if (S.seo != null && S.seo < 100) lines.push(`Google search today <b>${S.seo}</b> of 100, our goal: <b>100</b>`);
+        if (S.perf == null) lines.push("Fast on phones, technically clean for Google");
+        lines.push("Legal pages, privacy policy, cookie consent");
+      } else if (id === "vis") {
+        lines.push("Everything in “Website”");
+        if (S.named != null) {
+          lines.push(S.named === 0
+            ? `Today ChatGPT and Perplexity name ${esc(who)} in <b>none</b> of ${S.of} answers`
+            : `Today ${esc(who)} is named in <b>${S.named} of ${S.of}</b> answers`);
+          if (S.rival) lines.push(`Named instead: <b>${esc(S.rival)}</b>. Our goal: you are the one named for these questions`);
+        } else {
+          lines.push("Visibility in ChatGPT and other AI assistants, 3 months");
+        }
+        lines.push("Content for Google search and a Google Business Profile");
+        lines.push("Google Ads: setup and first campaign");
+      } else {
+        lines.push("Everything in “Website + Visibility”");
+        lines.push(`New brand identity for ${esc(who)}: logo, colours, fonts`);
+        lines.push("New customers from Instagram and Facebook, 3 months");
+        lines.push("Landing pages for campaigns and a second language");
+      }
+      return lines;
+    }
+
+    function renderOffer() {
+      if (!S.host) return;
+      const suggest = S.named === 0 || S.named == null ? "vis" : (S.perf != null && S.perf < 50 ? "web" : "vis");
+      $("offer-title").textContent = `Your way to a new website${S.name ? ` for ${S.name}` : ""}`;
+      $("offer").innerHTML = PACKS.map((p) => `
+        <article class="pack${p.id === suggest ? " pack--hot" : ""}">
+          <span class="pack__tag">${p.id === suggest ? "Recommended for you · " : ""}${p.weeks}</span>
+          <h3>${p.name}</h3>
+          <p class="pack__price">${p.price}</p>
+          <ul>${offerLines(p.id).map((l) => `<li><span>${l}</span></li>`).join("")}</ul>
+          <a class="btn${p.id === suggest ? "" : " btn--ghost"}" href="#kontakt" data-offer="${p.name} (${p.price})">Request for ${esc(S.host)}</a>
+        </article>`).join("");
+      $("offer").querySelectorAll("[data-offer]").forEach((a) => a.addEventListener("click", () => {
+        $("c-message").value = `Hello, I am interested in the “${a.dataset.offer}” package for ${S.host}. I would like to book an intro call.`;
+      }));
+    }
+
+    // "Build this draft" and the package buttons fill in the message.
+    $("take").addEventListener("click", () => {
+      $("c-message").value = `Hello, I like the draft for ${current ? new URL(current).hostname : "my website"}. I would like to book an intro call.`;
+    });
+    document.querySelectorAll("[data-pack]").forEach((a) => a.addEventListener("click", () => {
+      $("c-message").value = `Hello, I am interested in the “${a.dataset.pack}” package. I would like to book an intro call.`;
+    }));
+    document.querySelectorAll("[data-todo]").forEach((a) => a.addEventListener("click", (e) => e.preventDefault()));
+
+    // The form sends nothing from the page: it prepares an e-mail.
+    $("contact").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const f = e.target;
+      if (!f.checkValidity()) {
+        $("c-status").textContent = "Please fill in name, email and message.";
+        return;
+      }
+      if (STUDIO_EMAIL === "YOUR_STUDIO_EMAIL") {
+        $("c-status").textContent = "Nothing was sent: the studio's email address is still missing on this page.";
+        return;
+      }
+      const body = `Name: ${f.name.value}\nEmail: ${f.email.value}\nWebsite: ${f.site.value}\n\n${f.message.value}`;
+      location.href = `mailto:${STUDIO_EMAIL}?subject=${encodeURIComponent("Enquiry from the website")}&body=${encodeURIComponent(body)}`;
+      $("c-status").textContent = "Your email app is opening. Nothing was sent from this page.";
+    });
+  </script>
+</body>
+</html>

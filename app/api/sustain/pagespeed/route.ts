@@ -34,7 +34,7 @@ export async function GET(req: NextRequest) {
   const params = new URLSearchParams([
     ["url", target.href],
     ["strategy", "mobile"],
-    ["locale", "de"],
+    ["locale", req.nextUrl.searchParams.get("lang") === "en" ? "en" : "de"],
     ["category", "PERFORMANCE"],
     ["category", "SEO"],
     ["category", "ACCESSIBILITY"],

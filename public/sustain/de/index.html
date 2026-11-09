@@ -8,6 +8,8 @@
   <meta name="description" content="Neue Websites für den Mittelstand, mit Sichtbarkeit in Google und ChatGPT und Werbung in Google und Meta, aus einer Hand.">
   <meta name="theme-color" content="#F6F4F0">
   <link rel="icon" href="/sustain/assets/favicon.svg" type="image/svg+xml">
+  <link rel="alternate" hreflang="de" href="/sustain/de">
+  <link rel="alternate" hreflang="en" href="/sustain/en">
   <style>
     @font-face {
       font-family: "Inter";
@@ -138,6 +140,16 @@
 
     .head .btn { height: 42px; padding: 0 18px; font-size: 14px; }
 
+    .langs {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 650;
+      letter-spacing: 0.08em;
+      text-decoration: none;
+    }
+
+    .langs:hover { color: var(--text); }
+
     /* Hero */
     .hero {
       display: grid;
@@ -221,6 +233,8 @@
     }
 
     .hero__photo img {
+      position: absolute;
+      inset: 0;
       width: 100%;
       height: 100%;
       object-fit: cover;
@@ -427,17 +441,30 @@
       overflow: hidden;
     }
 
-    /* The proposed site, drawn at 1200 px and scaled to the frame. */
+    /* The proposed site, drawn at 1200 px and scaled to the frame. Five looks share one layout:
+       each style only changes the variables and a few rules (mock--clean is the default). */
     .mock {
       --brand: #1f3a5f;
       --on-brand: #fff;
+      --bg: #fff;
+      --ink: #16181d;
+      --sub: #555;
+      --card: #f6f6f4;
+      --line: #ececec;
+      --round: 18px;
+      --pic-round: 24px;
+      --btn-round: 999px;
+      --hfont: "Inter", system-ui, sans-serif;
+      --hweight: 700;
+      --hsize: 54px;
+      --hspace: -0.035em;
       position: absolute;
       left: 0;
       top: 0;
       width: 1200px;
       transform-origin: 0 0;
-      background: #fff;
-      color: #16181d;
+      background: var(--bg);
+      color: var(--ink);
       font-size: 16px;
       line-height: 1.5;
     }
@@ -448,13 +475,14 @@
       gap: 34px;
       height: 76px;
       padding: 0 56px;
-      border-bottom: 1px solid #eee;
+      border-bottom: 1px solid var(--line);
     }
 
     .mock__logo {
       display: flex;
       align-items: center;
       gap: 12px;
+      font-family: var(--hfont);
       font-size: 20px;
       font-weight: 700;
       letter-spacing: -0.02em;
@@ -466,7 +494,7 @@
       display: flex;
       gap: 28px;
       margin-left: auto;
-      color: #555;
+      color: var(--sub);
       font-size: 15px;
     }
 
@@ -475,11 +503,12 @@
       align-items: center;
       height: 46px;
       padding: 0 22px;
-      border-radius: 999px;
+      border-radius: var(--btn-round);
       background: var(--brand);
       color: var(--on-brand);
       font-size: 15px;
       font-weight: 600;
+      white-space: nowrap;
     }
 
     .mock__hero {
@@ -500,15 +529,16 @@
 
     .mock__h1 {
       margin: 14px 0 0;
-      font-size: 54px;
-      font-weight: 700;
+      font-family: var(--hfont);
+      font-size: var(--hsize);
+      font-weight: var(--hweight);
       line-height: 1.04;
-      letter-spacing: -0.035em;
+      letter-spacing: var(--hspace);
     }
 
     .mock__sub {
       margin: 18px 0 0;
-      color: #555;
+      color: var(--sub);
       font-size: 19px;
     }
 
@@ -530,16 +560,16 @@
 
     .mock__proof span {
       padding: 7px 14px;
-      border: 1px solid #e5e5e5;
+      border: 1px solid var(--line);
       border-radius: 999px;
-      color: #444;
+      color: var(--sub);
       font-size: 13px;
     }
 
     .mock__pic {
       height: 400px;
       overflow: hidden;
-      border-radius: 24px;
+      border-radius: var(--pic-round);
       background: linear-gradient(135deg, var(--brand), #0d0f14);
     }
 
@@ -558,12 +588,13 @@
 
     .mock__card {
       padding: 26px;
-      border-radius: 18px;
-      background: #f6f6f4;
+      border-radius: var(--round);
+      background: var(--card);
     }
 
     .mock__card b {
       display: block;
+      font-family: var(--hfont);
       font-size: 20px;
       letter-spacing: -0.02em;
     }
@@ -577,7 +608,7 @@
       background: var(--brand);
     }
 
-    .mock__card p { margin: 10px 0 0; color: #555; font-size: 15px; }
+    .mock__card p { margin: 10px 0 0; color: var(--sub); font-size: 15px; }
 
     .mock__band {
       display: grid;
@@ -585,18 +616,19 @@
       gap: 40px;
       margin: 0 56px 56px;
       padding: 40px;
-      border-radius: 24px;
+      border-radius: var(--pic-round);
       background: var(--brand);
       color: var(--on-brand);
     }
 
-    .mock__band h3 { font-size: 30px; letter-spacing: -0.02em; }
+    .mock__band h3 { font-family: var(--hfont); font-size: 30px; letter-spacing: -0.02em; }
 
     .mock__band ul { margin: 0; padding: 0; list-style: none; }
 
     .mock__band li {
       padding: 12px 0;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.25);
+      border-bottom: 1px solid currentColor;
+      border-bottom-color: color-mix(in srgb, currentColor 25%, transparent);
       font-size: 17px;
       font-weight: 500;
     }
@@ -606,18 +638,145 @@
       grid-template-columns: 1.2fr 0.8fr;
       gap: 40px;
       padding: 0 56px 64px;
-      color: #444;
+      color: var(--sub);
       font-size: 17px;
     }
 
     .mock__contact {
       padding: 24px;
-      border: 1px solid #eee;
-      border-radius: 18px;
+      border: 1px solid var(--line);
+      border-radius: var(--round);
       font-size: 15px;
     }
 
-    .mock__contact b { display: block; margin-bottom: 8px; color: #16181d; }
+    .mock__contact b { display: block; margin-bottom: 8px; color: var(--ink); }
+
+    /* 2. Premium, dark: night background, the brand colour as light. */
+    .mock--dark {
+      --bg: #0d0e11;
+      --ink: #f2f2ef;
+      --sub: #a3a6ab;
+      --card: #16181c;
+      --line: #25272c;
+    }
+
+    .mock--dark .mock__hero {
+      background: radial-gradient(60% 80% at 80% 40%, color-mix(in srgb, var(--brand) 35%, transparent), transparent 70%);
+    }
+
+    .mock--dark .mock__pic { box-shadow: 0 30px 80px color-mix(in srgb, var(--brand) 40%, transparent); }
+
+    .mock--dark .mock__band { background: linear-gradient(135deg, var(--brand), #0d0e11 90%); color: #fff; }
+
+    .mock--dark .mock__card { border: 1px solid var(--line); }
+
+    /* 3. Classic: a serif, thin rules, square corners, an editorial calm. */
+    .mock--editorial {
+      --bg: #fbfaf7;
+      --ink: #1c1b19;
+      --sub: #5c5a55;
+      --card: transparent;
+      --line: #dcd8cf;
+      --round: 0;
+      --pic-round: 0;
+      --btn-round: 2px;
+      --hfont: Georgia, "Times New Roman", serif;
+      --hweight: 400;
+      --hsize: 60px;
+      --hspace: -0.01em;
+    }
+
+    .mock--editorial .mock__kicker { font-family: Georgia, serif; font-style: italic; font-weight: 400; letter-spacing: 0; text-transform: none; font-size: 17px; }
+
+    .mock--editorial .mock__card { padding: 22px 0 0; border-top: 1px solid var(--ink); }
+
+    .mock--editorial .mock__card i { display: none; }
+
+    .mock--editorial .mock__band { background: #efebe2; color: var(--ink); }
+
+    .mock--editorial .mock__btn { background: var(--ink); color: #fff; }
+
+    /* 4. Bold: the whole first screen in the brand colour, very large type. */
+    .mock--bold {
+      --hweight: 800;
+      --hsize: 70px;
+      --hspace: -0.045em;
+      --pic-round: 0;
+    }
+
+    .mock--bold .mock__hero { background: var(--brand); color: var(--on-brand); }
+
+    .mock--bold .mock__hero .mock__kicker,
+    .mock--bold .mock__hero .mock__sub { color: var(--on-brand); opacity: 0.85; }
+
+    .mock--bold .mock__hero .mock__btn { background: var(--on-brand); color: var(--brand); }
+
+    .mock--bold .mock__hero .mock__proof span { border-color: color-mix(in srgb, var(--on-brand) 40%, transparent); color: var(--on-brand); }
+
+    .mock--bold .mock__services { padding-top: 56px; }
+
+    .mock--bold .mock__card { background: transparent; border-top: 6px solid var(--brand); border-radius: 0; padding: 22px 0 0; }
+
+    .mock--bold .mock__card i { display: none; }
+
+    .mock--bold .mock__band { background: #111; color: #fff; border-radius: 0; }
+
+    /* 5. Warm and local: cream, soft corners, an arched picture, friendly and close. */
+    .mock--warm {
+      --bg: #fbf6ef;
+      --ink: #2b241d;
+      --sub: #6f6458;
+      --card: #fff;
+      --line: #eadfce;
+      --round: 26px;
+      --pic-round: 28px;
+      --hweight: 650;
+      --hsize: 52px;
+      --hspace: -0.025em;
+    }
+
+    .mock--warm .mock__pic { border-radius: 220px 220px 28px 28px; }
+
+    .mock--warm .mock__kicker {
+      display: inline-block;
+      padding: 7px 14px;
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--brand) 14%, transparent);
+      letter-spacing: 0.06em;
+    }
+
+    .mock--warm .mock__card { box-shadow: 0 10px 30px rgba(80, 60, 30, 0.08); }
+
+    .mock--warm .mock__band { background: color-mix(in srgb, var(--brand) 16%, #fff); color: var(--ink); }
+
+    /* The style picker above the draft. */
+    .styles {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 0 0 14px;
+    }
+
+    .styles button {
+      height: 36px;
+      padding: 0 14px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: var(--surface);
+      color: var(--text);
+      font: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .styles button[aria-pressed="true"] { border-color: var(--dark); background: var(--dark); color: #fff; }
+
+    .disclaimer {
+      margin: 14px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
 
     /* Visibility in assistants */
     .ai {
@@ -868,13 +1027,33 @@
       align-items: center;
     }
 
-    .about img {
-      width: 100%;
+    .about__photo {
+      position: relative;
       aspect-ratio: 1;
+      overflow: hidden;
       border-radius: 22px;
+      background: #d9d7d2;
+    }
+
+    .about__photo img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
       object-fit: cover;
       object-position: center 20%;
-      background: #d9d7d2;
+    }
+
+    /* Until the photo is in /sustain/assets/fabian-wilk.jpg the frame shows the initials. */
+    .initials {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      color: #a9a59d;
+      font-size: clamp(64px, 9vw, 120px);
+      font-weight: 650;
+      letter-spacing: -0.04em;
     }
 
     .about p { margin: 18px 0 0; color: #3d3d3a; font-size: 17px; }
@@ -974,7 +1153,7 @@
     @media (max-width: 700px) {
       :root { --pad: 18px; }
       .nav { display: none; }
-      .head .btn { margin-left: auto; }
+      .langs { margin-left: auto; }
       .check { flex-direction: column; border-radius: 22px; }
       .check input { height: 50px; }
       .packages, .works, .steps, .form { grid-template-columns: 1fr; }
@@ -997,6 +1176,7 @@
         <a href="#ablauf">Ablauf</a>
         <a href="#ueber">Über uns</a>
       </nav>
+      <a class="langs" href="/sustain/en" hreflang="en" lang="en">EN</a>
       <a class="btn" href="#kontakt">Erstgespräch</a>
     </div>
   </header>
@@ -1020,8 +1200,9 @@
         </div>
       </div>
       <figure class="hero__photo">
-        <img src="/sustain/assets/kiryl.jpg" alt="Kiryl Sidarchuk">
-        <figcaption>Kiryl Sidarchuk, Gründer</figcaption>
+        <span class="initials" aria-hidden="true">FW</span>
+        <img src="/sustain/assets/fabian-wilk.jpg" alt="Fabian Wilk" onerror="this.remove()">
+        <figcaption>Fabian Wilk, Gründer und CEO</figcaption>
       </figure>
     </section>
 
@@ -1041,10 +1222,18 @@
         </div>
         <div class="panel">
           <p class="panel__label">Mit uns <small>Entwurf aus Ihren eigenen Inhalten</small></p>
+          <div class="styles" id="styles" role="group" aria-label="Stil des Entwurfs">
+            <button type="button" data-style="clean" aria-pressed="true">Klar</button>
+            <button type="button" data-style="dark" aria-pressed="false">Premium dunkel</button>
+            <button type="button" data-style="editorial" aria-pressed="false">Klassisch</button>
+            <button type="button" data-style="bold" aria-pressed="false">Mutig</button>
+            <button type="button" data-style="warm" aria-pressed="false">Warm</button>
+          </div>
           <div class="browser">
             <div class="browser__bar"><i></i><i></i><i></i><span id="mock-url"></span></div>
             <div class="browser__view" id="mock-view"><div class="wait"><div class="spinner"></div>Wir lesen Ihre Seite und schreiben die neuen Texte.</div></div>
           </div>
+          <p class="disclaimer">Dies ist ein Beispiel unserer Arbeit und Geschwindigkeit. Das endgültige Aussehen Ihrer Website besprechen und stimmen wir gemeinsam mit Ihnen ab.</p>
         </div>
       </div>
 
@@ -1173,17 +1362,20 @@
 
     <section class="block" id="ueber">
       <div class="wrap about">
-        <img src="/sustain/assets/kiryl.jpg" alt="Kiryl Sidarchuk" loading="lazy">
+        <div class="about__photo">
+          <span class="initials" aria-hidden="true">FW</span>
+          <img src="/sustain/assets/fabian-wilk.jpg" alt="Fabian Wilk" loading="lazy" onerror="this.remove()">
+        </div>
         <div>
           <p class="eyebrow">Über uns</p>
-          <h2>Hallo, ich bin Kiryl.</h2>
-          <p>Ich baue seit Jahren digitale Produkte und bringe sie selbst auf den Markt: von 3D-Technologie mit KI über Lernplattformen bis zu Onlineshops. Unsere App MagiScan wurde weltweit über vier Millionen Mal installiert.</p>
-          <p>Bei uns bekommen Sie deshalb nicht nur Design und Entwicklung, sondern ein Team, das selbst mit Google, Meta und den App Stores wächst. Wir bauen Ihre Website so, dass sie verkauft, und sorgen dafür, dass Ihre Kunden sie finden.</p>
+          <h2>Hallo, ich bin Fabian.</h2>
+          <p>Seit 2013 begleite ich als Partner der Kanzlei W-V Law Firm in London Unternehmen bei Gründung, Struktur und Wachstum. Ich weiß, worauf es Unternehmern ankommt: klare Zusagen, feste Preise und Ergebnisse, die man sieht.</p>
+          <p>Bei uns trifft diese Erfahrung auf ein Team, das selbst digitale Produkte baut und international vermarktet, darunter die App MagiScan mit über vier Millionen Installationen. Wir bauen Ihre Website so, dass sie verkauft, und sorgen dafür, dass Ihre Kunden sie finden.</p>
           <div class="creds">
-            <div><span>Mitgründer und CEO</span>AR Generation / MagiScan</div>
-            <div><span>CEO</span>LearnFlat</div>
-            <div><span>Vorgestellt von</span>NVIDIA</div>
-            <div><span>Ehemaliges Mitglied</span>Forbes Business Council</div>
+            <div><span>Gründer und CEO</span>Fabian Wilk</div>
+            <div><span>Partner seit 2013</span>W-V Law Firm LLP, London</div>
+            <div><span>Ausbildung</span>London School of Economics</div>
+            <div><span>Produkt und Technologie</span>Kiryl Sidarchuk, Mitgründer von MagiScan</div>
           </div>
         </div>
       </div>
@@ -1233,6 +1425,7 @@
   <script>
     // Placeholders, left as they are until the owner gives the real ones.
     const STUDIO_EMAIL = "YOUR_STUDIO_EMAIL";
+    const LANG = "de";
 
     const $ = (id) => document.getElementById(id);
     const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -1291,7 +1484,7 @@
     // The site as it is today: Google's own measurement, with its screenshot.
     async function today(url, run) {
       try {
-        const res = await fetch("/api/sustain/pagespeed?" + new URLSearchParams({ url }));
+        const res = await fetch("/api/sustain/pagespeed?" + new URLSearchParams({ url, lang: LANG }));
         if (run !== runId) return;
         if (!res.ok) throw new Error(String(res.status));
         const d = await res.json();
@@ -1338,7 +1531,7 @@
     // The proposed site: our layout, filled with their name, logo, colour, pictures and new texts.
     async function proposal(url, run) {
       try {
-        const res = await fetch("/api/sustain/preview", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url }) });
+        const res = await fetch("/api/sustain/preview", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url, lang: LANG }) });
         const data = await res.json().catch(() => ({}));
         if (run !== runId) return;
         if (!res.ok) throw new Error(data.error || String(res.status));
@@ -1377,21 +1570,21 @@
         ? `<img src="${esc(d.logo)}" alt="" referrerpolicy="no-referrer" onerror="this.remove()">`
         : "";
       const mock = document.createElement("div");
-      mock.className = "mock";
+      mock.className = `mock mock--${style}`;
       mock.style.setProperty("--brand", brand);
       mock.style.setProperty("--on-brand", onColour(brand));
       mock.innerHTML = `
         <div class="mock__nav">
           <div class="mock__logo">${logo}<span>${esc(d.name)}</span></div>
           <div class="mock__links">${services.map((s) => `<span>${esc(s.title)}</span>`).join("")}<span>Kontakt</span></div>
-          <span class="mock__btn">${esc(c.cta)}</span>
+          <span class="mock__btn">${esc(c.cta || "Kontakt aufnehmen")}</span>
         </div>
         <div class="mock__hero">
           <div>
             <div class="mock__kicker">${esc([c.sector, c.city].filter(Boolean).join(" · "))}</div>
             <div class="mock__h1">${esc(c.headline)}</div>
             <p class="mock__sub">${esc(c.subline)}</p>
-            <div class="mock__actions"><span class="mock__btn">${esc(c.cta)}</span>${contact.phone ? `<span>${esc(contact.phone)}</span>` : ""}</div>
+            <div class="mock__actions"><span class="mock__btn">${esc(c.cta || "Kontakt aufnehmen")}</span>${contact.phone ? `<span>${esc(contact.phone)}</span>` : ""}</div>
             ${(c.proof || []).length ? `<div class="mock__proof">${c.proof.map((p) => `<span>${esc(p)}</span>`).join("")}</div>` : ""}
           </div>
           <div class="mock__pic">${pic ? `<img src="${esc(pic)}" alt="" referrerpolicy="no-referrer" onerror="this.remove()">` : ""}</div>
@@ -1416,6 +1609,18 @@
       mock.style.transform = `scale(${k})`;
       view.style.height = `${mock.offsetHeight * k}px`;
     }
+
+    // The five looks: switching only changes the class, so the content stays and the frame refits.
+    let style = "clean";
+    document.querySelectorAll("#styles [data-style]").forEach((b) => b.addEventListener("click", () => {
+      style = b.dataset.style;
+      document.querySelectorAll("#styles [data-style]").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+      const mock = $("mock-view").querySelector(".mock");
+      if (mock) {
+        mock.className = `mock mock--${style}`;
+        fitMock();
+      }
+    }));
 
     addEventListener("resize", fitMock);
     $("mock-view").addEventListener("load", fitMock, true);

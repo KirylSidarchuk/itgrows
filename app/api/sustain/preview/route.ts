@@ -3,9 +3,10 @@ import { callLLM } from "@/lib/llm-client"
 import { sendOwner } from "@/lib/telegram"
 import { clientIp } from "@/lib/geo-check"
 
-// "Ihre Website, neu gedacht" on /sustain/de: a visitor gives the address of their site and gets back what
-// a new version of it would say, built from their own site only. This route reads the page (name, logo,
-// colours, pictures, contact details, what they offer) and has the model write the new texts in German.
+// "Your website, reimagined" on /sustain/de and /sustain/en: a visitor gives the address of their site and gets
+// back what a new version of it would say, built from their own site only. This route reads the page (name, logo,
+// colours, pictures, contact details, what they offer) and has the model write the new texts in the page's
+// language (lang: "de" or "en").
 // The page draws the new site from this; the old one is shown through Google PageSpeed, the visibility in
 // ChatGPT through /api/geo/teaser.
 export const dynamic = "force-dynamic"
@@ -164,16 +165,31 @@ function facts(html: string): Facts {
   return out
 }
 
+// Badges and partner marks that carry "logo" in their names but are not the business's own logo.
+const NOT_OWN_LOGO = /amazon|google-?play|app-?store|apple|badge|partner|payment|paypal|visa|mastercard|klarna|trustpilot|trusted|award|siegel|certif|zertifi|facebook|instagram|linkedin|twitter|youtube|whatsapp|tiktok/
+
+// The business's own logo: an image in the header first (a link to the home page, or one named "logo").
+function headerLogo(html: string, base: string): string {
+  const head = (html.match(/<header\b[\s\S]*?<\/header>/i) ?? html.match(/<nav\b[\s\S]*?<\/nav>/i) ?? [""])[0]
+  const imgs = (head.match(/<img\b[^>]*>/gi) ?? []).map((tag) => ({
+    tag,
+    src: absolute(attr(tag, "src") || attr(tag, "data-src") || (attr(tag, "srcset").split(/\s+/)[0] ?? ""), base),
+  }))
+  const own = imgs.filter((i) => i.src && !NOT_OWN_LOGO.test(`${i.src} ${attr(i.tag, "alt")} ${attr(i.tag, "class")}`.toLowerCase()))
+  const named = own.find((i) => /logo/i.test(`${i.src} ${attr(i.tag, "alt")} ${attr(i.tag, "class")} ${attr(i.tag, "id")}`))
+  return (named ?? own[0])?.src ?? ""
+}
+
 function pictures(html: string, base: string): { logo: string; images: string[] } {
-  let logo = ""
+  let logo = headerLogo(html, base)
   const images: string[] = []
   const og = absolute(meta(html, "og:image"), base)
   for (const tag of html.match(/<img\b[^>]*>/gi) ?? []) {
     const src = absolute(attr(tag, "src") || attr(tag, "data-src") || (attr(tag, "srcset").split(/\s+/)[0] ?? ""), base)
     if (!src) continue
     const hint = `${src} ${attr(tag, "alt")} ${attr(tag, "class")} ${attr(tag, "id")}`.toLowerCase()
-    if (!logo && /logo/.test(hint)) {
-      logo = src
+    if (/logo/.test(hint)) {
+      if (!logo && !NOT_OWN_LOGO.test(hint)) logo = src
       continue
     }
     if (/\.svg(\?|$)|icon|sprite|pixel|tracking|spacer|avatar|emoji|flag|badge|placeholder|lazy\.gif/.test(hint)) continue
@@ -216,9 +232,25 @@ interface Copy {
   proof: string[]
 }
 
+const PROMPT_EN = `You are the copywriter of a web agency. From the content of an existing website you write the texts for its new home page, in English, in a clear, modern tone.
+
+Rules:
+- Everything in English, even if the website is in another language: you translate what the content says.
+- Facts from the content only. No invented numbers, years, awards, ratings or services.
+- proof: only claims the text supports (e.g. "Since 1998", "Family business"); otherwise an empty list.
+- headline: at most 8 words, says what the customer gets. subline: at most 24 words.
+- cta: the obvious action for this kind of business, 2 to 3 words (e.g. "Book an appointment", "Request a quote").
+- services: exactly 3, each with title (at most 4 words) and text (at most 18 words).
+- reasons: exactly 3 short reasons (at most 6 words) why customers choose this business, drawn from the content.
+- about: 2 sentences.
+- city: the town if the content names it, else "".
+
+Answer with JSON only: {"business":"","sector":"","city":"","headline":"","subline":"","cta":"","services":[{"title":"","text":""}],"reasons":[""],"about":"","proof":[""]}`
+
 const PROMPT = `Du bist Texter einer Webagentur. Aus dem Inhalt einer bestehenden Website schreibst du die Texte für ihre neue Startseite, auf Deutsch, in klarem, modernem Ton.
 
 Regeln:
+- Alles auf Deutsch, auch wenn die Website eine andere Sprache hat: Angaben aus dem Inhalt übersetzt du.
 - Nur Fakten aus dem Inhalt. Keine erfundenen Zahlen, Jahre, Auszeichnungen, Bewertungen oder Leistungen.
 - proof: nur belegbare Angaben aus dem Text (z. B. "Seit 1998", "Meisterbetrieb"); sonst eine leere Liste.
 - headline: höchstens 8 Wörter, sagt, was der Kunde davon hat. subline: höchstens 24 Wörter.
@@ -246,7 +278,7 @@ function parseCopy(raw: string): Copy | null {
       city: s(c.city, 60),
       headline: s(c.headline, 120),
       subline: s(c.subline, 260),
-      cta: s(c.cta, 40) || "Kontakt aufnehmen",
+      cta: s(c.cta, 40),
       services,
       reasons: (Array.isArray(c.reasons) ? c.reasons : []).map((r) => s(r, 70)).filter(Boolean).slice(0, 3),
       about: s(c.about, 400),
@@ -259,8 +291,11 @@ function parseCopy(raw: string): Copy | null {
 
 export async function POST(req: NextRequest) {
   let raw = ""
+  let english = false
   try {
-    raw = String(((await req.json()) as { url?: unknown }).url ?? "")
+    const body = (await req.json()) as { url?: unknown; lang?: unknown }
+    raw = String(body.url ?? "")
+    english = body.lang === "en"
   } catch {}
   const target = normalise(raw.slice(0, 300))
   if (!target) return NextResponse.json({ error: "invalid_url" }, { status: 400 })
@@ -308,7 +343,7 @@ export async function POST(req: NextRequest) {
   try {
     const answer = await callLLM(
       [
-        { role: "system", content: PROMPT },
+        { role: "system", content: english ? PROMPT_EN : PROMPT },
         { role: "user", content: source },
       ],
       { caller: "sustain-preview", temperature: 0.4, max_tokens: 1100 },

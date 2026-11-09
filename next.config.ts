@@ -53,6 +53,7 @@ const nextConfig: NextConfig = {
         // The studio portfolio (public/sustain) is a plain HTML page shared by link.
         { source: "/sustain", destination: "/sustain/index.html" },
         { source: "/sustain/de", destination: "/sustain/de/index.html" },
+        { source: "/sustain/en", destination: "/sustain/en/index.html" },
       ],
       afterFiles: [
         // Serve a clean markdown alternate for each article at /blog/{slug}.md without giving up
