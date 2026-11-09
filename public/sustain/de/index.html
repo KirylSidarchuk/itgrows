@@ -1,0 +1,1448 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Websites, die gefunden werden</title>
+  <meta name="description" content="Neue Websites für den Mittelstand, mit Sichtbarkeit in Google und ChatGPT und Werbung in Google und Meta, aus einer Hand.">
+  <meta name="theme-color" content="#F6F4F0">
+  <link rel="icon" href="/sustain/assets/favicon.svg" type="image/svg+xml">
+  <style>
+    @font-face {
+      font-family: "Inter";
+      src: url("/sustain/assets/fonts/inter-latin.woff2") format("woff2");
+      font-weight: 100 900;
+      font-display: swap;
+    }
+
+    :root {
+      --bg: #F6F4F0;
+      --surface: #FFFFFF;
+      --text: #141414;
+      --muted: #6B6B68;
+      --soft: #A8A49C;
+      --line: #E2E2DE;
+      --accent: #315CE8;
+      --dark: #141414;
+      --good: #1E8E5A;
+      --mid: #C98A12;
+      --bad: #C8402F;
+      --max: 1280px;
+      --pad: 40px;
+      --radius: 14px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; overflow-x: hidden; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Inter", system-ui, sans-serif;
+      font-size: 16px;
+      line-height: 1.55;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a { color: inherit; }
+
+    img { max-width: 100%; }
+
+    .wrap {
+      width: min(100%, calc(var(--max) + var(--pad) * 2));
+      margin: 0 auto;
+      padding: 0 var(--pad);
+    }
+
+    .eyebrow {
+      margin: 0 0 14px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+
+    h1, h2, h3 { margin: 0; letter-spacing: -0.03em; }
+
+    h2 {
+      font-size: clamp(32px, 4vw, 52px);
+      font-weight: 600;
+      line-height: 1.05;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      height: 50px;
+      padding: 0 24px;
+      border: 1px solid var(--dark);
+      border-radius: 999px;
+      background: var(--dark);
+      color: #fff;
+      font: inherit;
+      font-size: 15px;
+      font-weight: 600;
+      text-decoration: none;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+
+    .btn--ghost {
+      background: transparent;
+      color: var(--text);
+    }
+
+    .btn:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    /* Header */
+    .head {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      padding: 14px 0;
+      background: rgba(246, 244, 240, 0.86);
+      backdrop-filter: blur(10px);
+    }
+
+    .head__in {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+    }
+
+    .logo {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-decoration: none;
+    }
+
+    .nav {
+      display: flex;
+      gap: 26px;
+      margin-left: auto;
+      font-size: 15px;
+      font-weight: 500;
+    }
+
+    .nav a { text-decoration: none; }
+
+    .head .btn { height: 42px; padding: 0 18px; font-size: 14px; }
+
+    /* Hero */
+    .hero {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 48px;
+      align-items: center;
+      padding-top: 40px;
+      padding-bottom: 56px;
+    }
+
+    .hero h1 {
+      font-size: clamp(44px, 6vw, 84px);
+      font-weight: 650;
+      line-height: 0.98;
+      letter-spacing: -0.045em;
+    }
+
+    .hero h1 span { color: var(--soft); }
+
+    .hero__lede {
+      max-width: 34em;
+      margin: 22px 0 0;
+      color: var(--muted);
+      font-size: 18px;
+    }
+
+    .check {
+      display: flex;
+      gap: 8px;
+      max-width: 620px;
+      margin-top: 30px;
+      padding: 6px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: var(--surface);
+      box-shadow: 0 10px 30px rgba(20, 20, 20, 0.06);
+    }
+
+    .check input {
+      flex: 1;
+      min-width: 0;
+      padding: 0 18px;
+      border: 0;
+      background: transparent;
+      color: var(--text);
+      font: inherit;
+      font-size: 17px;
+    }
+
+    .check input:focus { outline: none; }
+
+    .check__note {
+      margin: 12px 0 0 18px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .check__error {
+      margin: 10px 0 0 18px;
+      color: var(--bad);
+      font-size: 14px;
+    }
+
+    .trust {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 22px;
+      margin-top: 34px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .trust b { color: var(--text); font-weight: 650; }
+
+    .hero__photo {
+      position: relative;
+      aspect-ratio: 4 / 5;
+      overflow: hidden;
+      border-radius: 22px;
+      background: #d9d7d2;
+    }
+
+    .hero__photo img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center 18%;
+    }
+
+    .hero__photo figcaption {
+      position: absolute;
+      left: 16px;
+      bottom: 16px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.92);
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    /* Result */
+    .result {
+      padding: 56px 0 72px;
+      border-top: 1px solid var(--line);
+      scroll-margin-top: 70px;
+    }
+
+    .result[hidden] { display: none; }
+
+    .result__head {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: end;
+      justify-content: space-between;
+      gap: 20px;
+      margin-bottom: 28px;
+    }
+
+    .result__head h2 { font-size: clamp(28px, 3.2vw, 42px); }
+
+    .result__grid {
+      display: grid;
+      grid-template-columns: 0.62fr 1.38fr;
+      gap: 20px;
+    }
+
+    .panel {
+      position: relative;
+      padding: 22px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--surface);
+    }
+
+    .panel__label {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin: 0 0 16px;
+      font-size: 13px;
+      font-weight: 650;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .panel__label small {
+      color: var(--muted);
+      font-weight: 500;
+      letter-spacing: 0;
+      text-transform: none;
+    }
+
+    .phone {
+      width: min(100%, 250px);
+      margin: 0 auto;
+      padding: 10px;
+      border-radius: 30px;
+      background: #1b1b1b;
+    }
+
+    .phone__screen {
+      aspect-ratio: 9 / 19;
+      overflow: hidden;
+      border-radius: 22px;
+      background: #2a2a2a;
+    }
+
+    .phone__screen img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: top;
+    }
+
+    .scores {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .score {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      line-height: 1.25;
+    }
+
+    .ring {
+      --v: 0;
+      --c: var(--soft);
+      display: grid;
+      flex: none;
+      place-items: center;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: conic-gradient(var(--c) calc(var(--v) * 1%), #ecebe7 0);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .ring span {
+      display: grid;
+      place-items: center;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: var(--surface);
+    }
+
+    .panel__fact {
+      margin: 14px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .wait {
+      display: grid;
+      place-items: center;
+      gap: 10px;
+      min-height: 280px;
+      color: var(--muted);
+      font-size: 14px;
+      text-align: center;
+    }
+
+    .spinner {
+      width: 26px;
+      height: 26px;
+      border: 2px solid var(--line);
+      border-top-color: var(--text);
+      border-radius: 50%;
+      animation: spin 0.9s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .browser {
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fff;
+    }
+
+    .browser__bar {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      height: 34px;
+      padding: 0 12px;
+      border-bottom: 1px solid var(--line);
+      background: #f3f2ef;
+    }
+
+    .browser__bar i {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #d5d3ce;
+    }
+
+    .browser__bar span {
+      margin-left: 10px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .browser__view {
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* The proposed site, drawn at 1200 px and scaled to the frame. */
+    .mock {
+      --brand: #1f3a5f;
+      --on-brand: #fff;
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 1200px;
+      transform-origin: 0 0;
+      background: #fff;
+      color: #16181d;
+      font-size: 16px;
+      line-height: 1.5;
+    }
+
+    .mock__nav {
+      display: flex;
+      align-items: center;
+      gap: 34px;
+      height: 76px;
+      padding: 0 56px;
+      border-bottom: 1px solid #eee;
+    }
+
+    .mock__logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .mock__logo img { max-height: 40px; max-width: 170px; object-fit: contain; }
+
+    .mock__links {
+      display: flex;
+      gap: 28px;
+      margin-left: auto;
+      color: #555;
+      font-size: 15px;
+    }
+
+    .mock__btn {
+      display: inline-flex;
+      align-items: center;
+      height: 46px;
+      padding: 0 22px;
+      border-radius: 999px;
+      background: var(--brand);
+      color: var(--on-brand);
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .mock__hero {
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: 48px;
+      align-items: center;
+      padding: 64px 56px;
+    }
+
+    .mock__kicker {
+      color: var(--brand);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    .mock__h1 {
+      margin: 14px 0 0;
+      font-size: 54px;
+      font-weight: 700;
+      line-height: 1.04;
+      letter-spacing: -0.035em;
+    }
+
+    .mock__sub {
+      margin: 18px 0 0;
+      color: #555;
+      font-size: 19px;
+    }
+
+    .mock__actions {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      margin-top: 30px;
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .mock__proof {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 28px;
+    }
+
+    .mock__proof span {
+      padding: 7px 14px;
+      border: 1px solid #e5e5e5;
+      border-radius: 999px;
+      color: #444;
+      font-size: 13px;
+    }
+
+    .mock__pic {
+      height: 400px;
+      overflow: hidden;
+      border-radius: 24px;
+      background: linear-gradient(135deg, var(--brand), #0d0f14);
+    }
+
+    .mock__pic img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .mock__services {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      padding: 0 56px 56px;
+    }
+
+    .mock__card {
+      padding: 26px;
+      border-radius: 18px;
+      background: #f6f6f4;
+    }
+
+    .mock__card b {
+      display: block;
+      font-size: 20px;
+      letter-spacing: -0.02em;
+    }
+
+    .mock__card i {
+      display: block;
+      width: 34px;
+      height: 4px;
+      margin-bottom: 18px;
+      border-radius: 4px;
+      background: var(--brand);
+    }
+
+    .mock__card p { margin: 10px 0 0; color: #555; font-size: 15px; }
+
+    .mock__band {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 40px;
+      margin: 0 56px 56px;
+      padding: 40px;
+      border-radius: 24px;
+      background: var(--brand);
+      color: var(--on-brand);
+    }
+
+    .mock__band h3 { font-size: 30px; letter-spacing: -0.02em; }
+
+    .mock__band ul { margin: 0; padding: 0; list-style: none; }
+
+    .mock__band li {
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.25);
+      font-size: 17px;
+      font-weight: 500;
+    }
+
+    .mock__about {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 40px;
+      padding: 0 56px 64px;
+      color: #444;
+      font-size: 17px;
+    }
+
+    .mock__contact {
+      padding: 24px;
+      border: 1px solid #eee;
+      border-radius: 18px;
+      font-size: 15px;
+    }
+
+    .mock__contact b { display: block; margin-bottom: 8px; color: #16181d; }
+
+    /* Visibility in assistants */
+    .ai {
+      margin-top: 20px;
+    }
+
+    .ai__grid {
+      display: grid;
+      grid-template-columns: 0.8fr 1.2fr;
+      gap: 28px;
+      align-items: start;
+    }
+
+    .ai__big {
+      font-size: 54px;
+      font-weight: 700;
+      letter-spacing: -0.04em;
+      line-height: 1;
+    }
+
+    .ai__big small {
+      color: var(--muted);
+      font-size: 22px;
+      font-weight: 500;
+      letter-spacing: -0.01em;
+    }
+
+    .ai__q {
+      margin: 0 0 8px;
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .ai__a {
+      margin: 0;
+      padding: 14px 16px;
+      border-left: 3px solid var(--line);
+      background: #faf9f7;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .ai__steps { margin: 12px 0 0; padding-left: 18px; color: var(--muted); font-size: 14px; }
+
+    .cta-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      margin-top: 20px;
+      padding: 26px 28px;
+      border-radius: var(--radius);
+      background: var(--dark);
+      color: #fff;
+    }
+
+    .cta-bar p { margin: 0; font-size: 20px; font-weight: 600; letter-spacing: -0.01em; }
+
+    .cta-bar .btn { border-color: #fff; background: #fff; color: var(--dark); }
+
+    /* Sections */
+    section.block {
+      padding: 88px 0;
+      border-top: 1px solid var(--line);
+      scroll-margin-top: 60px;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 24px;
+      margin-top: 44px;
+    }
+
+    .stat b {
+      display: block;
+      font-size: clamp(36px, 4vw, 56px);
+      font-weight: 650;
+      letter-spacing: -0.04em;
+      line-height: 1;
+    }
+
+    .stat span { display: block; margin-top: 10px; color: var(--muted); font-size: 14px; }
+
+    .split {
+      display: grid;
+      grid-template-columns: 0.8fr 1.2fr;
+      gap: 48px;
+      align-items: start;
+    }
+
+    .split p.lead { margin: 18px 0 0; color: var(--muted); font-size: 17px; }
+
+    .works {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+
+    .work {
+      position: relative;
+      aspect-ratio: 4 / 3;
+      overflow: hidden;
+      border-radius: var(--radius);
+      background: #ddd;
+      text-decoration: none;
+    }
+
+    .work img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center top;
+      transition: transform 0.4s ease;
+    }
+
+    .work:hover img { transform: scale(1.03); }
+
+    .work span {
+      position: absolute;
+      left: 12px;
+      bottom: 12px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.94);
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .packages {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-top: 44px;
+    }
+
+    .pack {
+      display: flex;
+      flex-direction: column;
+      padding: 30px 28px;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: var(--surface);
+    }
+
+    .pack--hot { border-color: var(--dark); box-shadow: 0 18px 40px rgba(20, 20, 20, 0.08); }
+
+    .pack__tag {
+      align-self: flex-start;
+      margin-bottom: 18px;
+      padding: 5px 12px;
+      border-radius: 999px;
+      background: #efede8;
+      font-size: 12px;
+      font-weight: 650;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .pack--hot .pack__tag { background: var(--dark); color: #fff; }
+
+    .pack h3 { font-size: 24px; }
+
+    .pack__price {
+      margin: 16px 0 4px;
+      font-size: 44px;
+      font-weight: 700;
+      letter-spacing: -0.04em;
+      line-height: 1;
+    }
+
+    .pack__net { color: var(--muted); font-size: 13px; }
+
+    .pack ul {
+      flex: 1;
+      margin: 22px 0 26px;
+      padding: 0;
+      list-style: none;
+    }
+
+    .pack li {
+      display: flex;
+      gap: 10px;
+      padding: 9px 0;
+      border-top: 1px solid var(--line);
+      font-size: 15px;
+    }
+
+    .pack li::before { content: "✓"; color: var(--good); font-weight: 700; }
+
+    .pack .btn { width: 100%; }
+
+    .bigger {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-top: 16px;
+      padding: 22px 28px;
+      border: 1px dashed #cfccc5;
+      border-radius: 20px;
+    }
+
+    .bigger p { margin: 0; }
+
+    .footnote { margin: 16px 0 0; color: var(--muted); font-size: 13px; }
+
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 14px;
+      margin: 44px 0 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .steps li {
+      padding: 22px;
+      border-radius: var(--radius);
+      background: var(--surface);
+    }
+
+    .steps b { display: block; margin: 12px 0 6px; font-size: 17px; }
+
+    .steps span { color: var(--soft); font-size: 13px; font-weight: 650; }
+
+    .steps p { margin: 0; color: var(--muted); font-size: 14px; }
+
+    .about {
+      display: grid;
+      grid-template-columns: 0.8fr 1.2fr;
+      gap: 56px;
+      align-items: center;
+    }
+
+    .about img {
+      width: 100%;
+      aspect-ratio: 1;
+      border-radius: 22px;
+      object-fit: cover;
+      object-position: center 20%;
+      background: #d9d7d2;
+    }
+
+    .about p { margin: 18px 0 0; color: #3d3d3a; font-size: 17px; }
+
+    .creds {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px 28px;
+      margin-top: 28px;
+      padding-top: 24px;
+      border-top: 1px solid var(--line);
+      font-size: 14px;
+    }
+
+    .creds span { display: block; color: var(--muted); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; }
+
+    .faq { max-width: 860px; margin-top: 36px; }
+
+    .faq details { border-top: 1px solid var(--line); }
+
+    .faq details:last-child { border-bottom: 1px solid var(--line); }
+
+    .faq summary {
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 20px 0;
+      font-size: 18px;
+      font-weight: 600;
+      list-style: none;
+      cursor: pointer;
+    }
+
+    .faq summary::-webkit-details-marker { display: none; }
+
+    .faq summary::after { content: "+"; color: var(--muted); font-weight: 400; }
+
+    .faq details[open] summary::after { content: "–"; }
+
+    .faq p { margin: 0 0 22px; color: var(--muted); }
+
+    .final {
+      padding: 96px 0;
+      background: var(--dark);
+      color: #fff;
+      scroll-margin-top: 60px;
+    }
+
+    .final .split p.lead { color: #b9b6af; }
+
+    .form {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .form label { display: grid; gap: 6px; color: #b9b6af; font-size: 13px; }
+
+    .form .full { grid-column: 1 / -1; }
+
+    .form input, .form textarea {
+      width: 100%;
+      padding: 14px;
+      border: 1px solid #3a3a38;
+      border-radius: 10px;
+      background: #1e1e1d;
+      color: #fff;
+      font: inherit;
+    }
+
+    .form textarea { min-height: 120px; resize: vertical; }
+
+    .form .btn { border-color: #fff; background: #fff; color: var(--dark); justify-self: start; }
+
+    .form__status { grid-column: 1 / -1; margin: 0; color: #e8e4dc; font-size: 14px; }
+
+    .foot {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px 26px;
+      padding: 26px 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .foot a { text-decoration: none; }
+
+    @media (max-width: 1000px) {
+      .hero, .result__grid, .ai__grid, .split, .about { grid-template-columns: 1fr; }
+      .hero__photo { max-width: 420px; aspect-ratio: 1; }
+      .packages, .works { grid-template-columns: 1fr 1fr; }
+      .steps { grid-template-columns: 1fr 1fr; }
+      .stats { grid-template-columns: 1fr 1fr; }
+    }
+
+    @media (max-width: 700px) {
+      :root { --pad: 18px; }
+      .nav { display: none; }
+      .head .btn { margin-left: auto; }
+      .check { flex-direction: column; border-radius: 22px; }
+      .check input { height: 50px; }
+      .packages, .works, .steps, .form { grid-template-columns: 1fr; }
+      section.block { padding: 64px 0; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      .spinner { animation-duration: 3s; }
+    }
+  </style>
+</head>
+<body>
+  <header class="head">
+    <div class="wrap head__in">
+      <a class="logo" href="#top">PRODUCT STUDIO</a>
+      <nav class="nav" aria-label="Hauptmenü">
+        <a href="#arbeiten">Arbeiten</a>
+        <a href="#pakete">Pakete</a>
+        <a href="#ablauf">Ablauf</a>
+        <a href="#ueber">Über uns</a>
+      </nav>
+      <a class="btn" href="#kontakt">Erstgespräch</a>
+    </div>
+  </header>
+
+  <main id="top">
+    <section class="wrap hero">
+      <div>
+        <p class="eyebrow">Websites und Wachstum für den Mittelstand</p>
+        <h1>Ihre Website. <span>Neu gedacht.</span> Und gefunden.</h1>
+        <p class="hero__lede">Geben Sie die Adresse Ihrer Website ein. In etwa einer Minute sehen Sie, wie Ihre neue Website aussehen kann, wie gut Ihre heutige abschneidet und ob ChatGPT Sie empfiehlt.</p>
+        <form class="check" id="check" novalidate>
+          <input id="url" name="url" type="text" inputmode="url" autocomplete="url" placeholder="ihre-firma.de" aria-label="Adresse Ihrer Website" required>
+          <button class="btn" type="submit">Neue Website zeigen <span aria-hidden="true">→</span></button>
+        </form>
+        <p class="check__note">Kostenlos und ohne Anmeldung. Wir lesen nur die öffentliche Startseite.</p>
+        <p class="check__error" id="check-error" role="alert" hidden></p>
+        <div class="trust">
+          <span><b>13</b> eigene Produkte gebaut</span>
+          <span><b>4M+</b> Installationen mit MagiScan</span>
+          <span><b>Website, Google, ChatGPT, Werbung</b> aus einer Hand</span>
+        </div>
+      </div>
+      <figure class="hero__photo">
+        <img src="/sustain/assets/kiryl.jpg" alt="Kiryl Sidarchuk">
+        <figcaption>Kiryl Sidarchuk, Gründer</figcaption>
+      </figure>
+    </section>
+
+    <section class="wrap result" id="ergebnis" hidden aria-live="polite">
+      <div class="result__head">
+        <div>
+          <p class="eyebrow" id="r-host">Ihre Website</p>
+          <h2 id="r-title">So könnte Ihre neue Website aussehen</h2>
+        </div>
+        <a class="btn btn--ghost" href="#pakete">Pakete ansehen</a>
+      </div>
+
+      <div class="result__grid">
+        <div class="panel">
+          <p class="panel__label">Heute <small>Google-Messung, Handy</small></p>
+          <div id="today"><div class="wait"><div class="spinner"></div>Google misst Ihre Website.<br>Das dauert bis zu 40 Sekunden.</div></div>
+        </div>
+        <div class="panel">
+          <p class="panel__label">Mit uns <small>Entwurf aus Ihren eigenen Inhalten</small></p>
+          <div class="browser">
+            <div class="browser__bar"><i></i><i></i><i></i><span id="mock-url"></span></div>
+            <div class="browser__view" id="mock-view"><div class="wait"><div class="spinner"></div>Wir lesen Ihre Seite und schreiben die neuen Texte.</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel ai">
+        <p class="panel__label">Empfiehlt ChatGPT Sie? <small>Fünf Fragen, wie Ihre Kunden sie stellen</small></p>
+        <div id="ai"><div class="wait" style="min-height:120px"><div class="spinner"></div>Wir stellen ChatGPT gerade die Fragen Ihrer Kunden.</div></div>
+      </div>
+
+      <div class="cta-bar">
+        <p>Gefällt Ihnen der Entwurf? Wir machen daraus Ihre echte Website.</p>
+        <a class="btn" href="#kontakt" id="take">Diesen Entwurf umsetzen <span aria-hidden="true">→</span></a>
+      </div>
+    </section>
+
+    <section class="block">
+      <div class="wrap">
+        <p class="eyebrow">Gesehen, gefunden, gebucht</p>
+        <h2>Eine schöne Website reicht nicht.<br>Sie muss gefunden werden.</h2>
+        <div class="stats">
+          <div class="stat"><b>13</b><span>Produkte selbst gebaut und gestartet</span></div>
+          <div class="stat"><b>4M+</b><span>Installationen unserer App MagiScan</span></div>
+          <div class="stat"><b>16M+</b><span>3D-Modelle, erstellt mit MagiScan</span></div>
+          <div class="stat"><b>1</b><span>Team für Website, Google, ChatGPT und Werbung</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="block" id="arbeiten">
+      <div class="wrap split">
+        <div>
+          <p class="eyebrow">Arbeiten</p>
+          <h2>Ausgewählte Projekte</h2>
+          <p class="lead">Websites, Plattformen und Apps aus Medizin, Logistik, Handel, Bildung und Finanzen.</p>
+          <p><a class="btn btn--ghost" href="/sustain" style="margin-top:22px">Alle Projekte</a></p>
+        </div>
+        <div class="works">
+          <a class="work" href="https://magiscan.app/" target="_blank" rel="noopener noreferrer"><img src="/sustain/assets/magiscan-cover.png?v=2" alt="" loading="lazy"><span>MagiScan</span></a>
+          <div class="work"><img src="/sustain/assets/ava-cover.png?v=2" alt="" loading="lazy"><span>AVA · Medizin</span></div>
+          <div class="work"><img src="/sustain/assets/freightsizer-cover.png?v=2" alt="" loading="lazy"><span>FreightSizer · Logistik</span></div>
+          <a class="work" href="https://orthio.app/" target="_blank" rel="noopener noreferrer"><img src="/sustain/assets/orthio-cover.png?v=2" alt="" loading="lazy"><span>ORTHIO · Orthopädie</span></a>
+          <a class="work" href="https://www.luni.care/" target="_blank" rel="noopener noreferrer"><img src="/sustain/assets/luni-cover.png?v=2" alt="" loading="lazy"><span>LUNI · Onlineshop</span></a>
+          <a class="work" href="https://pickaclass.com/" target="_blank" rel="noopener noreferrer"><img src="/sustain/assets/pickaclass-cover.png?v=2" alt="" loading="lazy"><span>PickAClass · Plattform</span></a>
+        </div>
+      </div>
+    </section>
+
+    <section class="block" id="pakete">
+      <div class="wrap">
+        <p class="eyebrow">Pakete</p>
+        <h2>Ein Preis. Alles drin.<br>Keine Überraschungen.</h2>
+        <div class="packages">
+          <article class="pack">
+            <span class="pack__tag">Live in 4 Wochen</span>
+            <h3>Website</h3>
+            <p class="pack__price">14.900 €</p>
+            <span class="pack__net">netto, zzgl. MwSt.</span>
+            <ul>
+              <li>Neue Website bis 10 Seiten</li>
+              <li>Design passend zu Ihrer Marke</li>
+              <li>Texte und Bildauswahl</li>
+              <li>Schnell auf Handy und Computer</li>
+              <li>Technische Optimierung für Google</li>
+              <li>Impressum, Datenschutz, Cookie-Einwilligung</li>
+              <li>30 Tage Betreuung nach dem Start</li>
+            </ul>
+            <a class="btn btn--ghost" href="#kontakt" data-pack="Website (14.900 €)">Paket anfragen</a>
+          </article>
+          <article class="pack pack--hot">
+            <span class="pack__tag">Beliebt · Live in 6 Wochen</span>
+            <h3>Website + Sichtbarkeit</h3>
+            <p class="pack__price">29.900 €</p>
+            <span class="pack__net">netto, zzgl. MwSt.</span>
+            <ul>
+              <li>Alles aus „Website“, bis 20 Seiten</li>
+              <li>Inhalte für die Google-Suche</li>
+              <li>Sichtbarkeit in ChatGPT und anderen KI-Assistenten, 3 Monate</li>
+              <li>Google-Unternehmensprofil</li>
+              <li>Google Ads: Einrichtung und erste Kampagne</li>
+              <li>Monatlicher Bericht</li>
+            </ul>
+            <a class="btn" href="#kontakt" data-pack="Website + Sichtbarkeit (29.900 €)">Paket anfragen</a>
+          </article>
+          <article class="pack">
+            <span class="pack__tag">Live in 8 Wochen</span>
+            <h3>Website + Wachstum</h3>
+            <p class="pack__price">49.900 €</p>
+            <span class="pack__net">netto, zzgl. MwSt.</span>
+            <ul>
+              <li>Alles aus „Website + Sichtbarkeit“</li>
+              <li>Markenauftritt: Logo, Farben, Schriften</li>
+              <li>Werbung auf Instagram und Facebook, 3 Monate</li>
+              <li>Landingpages für Ihre Kampagnen</li>
+              <li>Zweite Sprache für internationale Kunden</li>
+              <li>Persönlicher Ansprechpartner</li>
+            </ul>
+            <a class="btn btn--ghost" href="#kontakt" data-pack="Website + Wachstum (49.900 €)">Paket anfragen</a>
+          </article>
+        </div>
+        <div class="bigger">
+          <p><b>Größeres Vorhaben?</b> Apps, KI-Produkte, Plattformen und App-Store-Optimierung: von der Idee bis zum internationalen Start.</p>
+          <a class="btn btn--ghost" href="#kontakt" data-pack="Individuelles Projekt">Individuelles Angebot</a>
+        </div>
+        <p class="footnote">Das Werbebudget für Google und Meta zahlen Sie direkt an die Plattformen, es ist nicht im Paketpreis enthalten.</p>
+      </div>
+    </section>
+
+    <section class="block" id="ablauf">
+      <div class="wrap">
+        <p class="eyebrow">Ablauf</p>
+        <h2>So einfach geht es</h2>
+        <ol class="steps">
+          <li><span>01</span><b>Erstgespräch</b><p>30 Minuten zu Zielen, Kunden und Zeitplan.</p></li>
+          <li><span>02</span><b>Entwurf</b><p>Sie sehen Ihre neue Startseite, bevor die Arbeit beginnt.</p></li>
+          <li><span>03</span><b>Umsetzung</b><p>Design, Texte und Technik aus einer Hand.</p></li>
+          <li><span>04</span><b>Start</b><p>Umzug ohne Ausfall, Weiterleitungen, Messung.</p></li>
+          <li><span>05</span><b>Sichtbarkeit</b><p>Google, ChatGPT und Werbung bringen die Kunden.</p></li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="block" id="ueber">
+      <div class="wrap about">
+        <img src="/sustain/assets/kiryl.jpg" alt="Kiryl Sidarchuk" loading="lazy">
+        <div>
+          <p class="eyebrow">Über uns</p>
+          <h2>Hallo, ich bin Kiryl.</h2>
+          <p>Ich baue seit Jahren digitale Produkte und bringe sie selbst auf den Markt: von 3D-Technologie mit KI über Lernplattformen bis zu Onlineshops. Unsere App MagiScan wurde weltweit über vier Millionen Mal installiert.</p>
+          <p>Bei uns bekommen Sie deshalb nicht nur Design und Entwicklung, sondern ein Team, das selbst mit Google, Meta und den App Stores wächst. Wir bauen Ihre Website so, dass sie verkauft, und sorgen dafür, dass Ihre Kunden sie finden.</p>
+          <div class="creds">
+            <div><span>Mitgründer und CEO</span>AR Generation / MagiScan</div>
+            <div><span>CEO</span>LearnFlat</div>
+            <div><span>Vorgestellt von</span>NVIDIA</div>
+            <div><span>Ehemaliges Mitglied</span>Forbes Business Council</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="block" id="fragen">
+      <div class="wrap">
+        <p class="eyebrow">Fragen</p>
+        <h2>Häufige Fragen</h2>
+        <div class="faq">
+          <details><summary>Was kostet eine Website bei Ihnen?</summary><p>Unsere Pakete beginnen bei 14.900 € netto. Für Apps, Plattformen und größere Vorhaben erstellen wir ein individuelles Angebot.</p></details>
+          <details><summary>Wie schnell ist meine Website online?</summary><p>Je nach Paket in 4 bis 8 Wochen ab dem Erstgespräch.</p></details>
+          <details><summary>Wem gehört die Website?</summary><p>Ihnen. Domain, Inhalte und alle Zugänge liegen bei Ihnen.</p></details>
+          <details><summary>Ist die Website DSGVO-konform?</summary><p>Ja. Impressum, Datenschutzerklärung und Cookie-Einwilligung gehören zu jedem Paket. Auf Wunsch hosten wir in der EU.</p></details>
+          <details><summary>Was bedeutet Sichtbarkeit in ChatGPT?</summary><p>Immer mehr Kunden fragen KI-Assistenten statt einer Suchmaschine. Wir sorgen dafür, dass diese Assistenten Ihre Website lesen können und genug über Ihr Unternehmen finden, um es zu nennen.</p></details>
+          <details><summary>Ist das Werbebudget im Preis enthalten?</summary><p>Nein. Das Budget für Google und Meta zahlen Sie direkt an die Plattformen. Einrichtung und Betreuung der Kampagnen sind im Paket enthalten.</p></details>
+          <details><summary>Arbeiten Sie nur in Deutschland?</summary><p>Wir arbeiten mit Kunden in Deutschland und international. Ihre Website kann mehrsprachig sein.</p></details>
+        </div>
+      </div>
+    </section>
+
+    <section class="final" id="kontakt">
+      <div class="wrap split">
+        <div>
+          <p class="eyebrow" style="color:#8f8b84">Kontakt</p>
+          <h2>Bereit, wenn Sie es sind.</h2>
+          <p class="lead">Erzählen Sie uns von Ihrem Unternehmen. Wir melden uns innerhalb eines Werktages mit einem Termin für das Erstgespräch.</p>
+        </div>
+        <form class="form" id="contact" novalidate>
+          <label>Name<input name="name" autocomplete="name" required></label>
+          <label>E-Mail<input name="email" type="email" autocomplete="email" required></label>
+          <label class="full">Website<input name="site" id="c-site" inputmode="url" placeholder="ihre-firma.de"></label>
+          <label class="full">Nachricht<textarea name="message" id="c-message" required></textarea></label>
+          <button class="btn" type="submit">E-Mail vorbereiten <span aria-hidden="true">→</span></button>
+          <p class="form__status" id="c-status" role="status"></p>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <footer class="wrap foot">
+    <span>PRODUCT STUDIO</span>
+    <a href="#" data-todo>Impressum</a>
+    <a href="#" data-todo>Datenschutz</a>
+  </footer>
+
+  <script>
+    // Placeholders, left as they are until the owner gives the real ones.
+    const STUDIO_EMAIL = "YOUR_STUDIO_EMAIL";
+
+    const $ = (id) => document.getElementById(id);
+    const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+    const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+    let current = "";
+    let runId = 0;
+
+    function cleanUrl(raw) {
+      let s = (raw || "").trim();
+      if (!s) return "";
+      if (!/^https?:\/\//i.test(s)) s = "https://" + s;
+      try {
+        const u = new URL(s);
+        return u.hostname.includes(".") ? u.origin + u.pathname : "";
+      } catch {
+        return "";
+      }
+    }
+
+    $("check").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const url = cleanUrl($("url").value);
+      const err = $("check-error");
+      if (!url) {
+        err.textContent = "Bitte geben Sie eine gültige Adresse ein, zum Beispiel ihre-firma.de.";
+        err.hidden = false;
+        return;
+      }
+      err.hidden = true;
+      start(url);
+    });
+
+    function start(url) {
+      const run = ++runId;
+      current = url;
+      const host = new URL(url).hostname.replace(/^www\./, "");
+      $("ergebnis").hidden = false;
+      $("r-host").textContent = host;
+      $("r-title").textContent = "So könnte Ihre neue Website aussehen";
+      $("mock-url").textContent = host;
+      $("today").innerHTML = '<div class="wait"><div class="spinner"></div>Google misst Ihre Website.<br>Das dauert bis zu 40 Sekunden.</div>';
+      $("mock-view").style.height = "";
+      $("mock-view").innerHTML = '<div class="wait"><div class="spinner"></div>Wir lesen Ihre Seite und schreiben die neuen Texte.</div>';
+      $("ai").innerHTML = '<div class="wait" style="min-height:120px"><div class="spinner"></div>Wir stellen ChatGPT gerade die Fragen Ihrer Kunden.</div>';
+      $("c-site").value = host;
+      $("ergebnis").scrollIntoView({ behavior: "smooth", block: "start" });
+      today(url, run);
+      proposal(url, run);
+      visibility(host, run);
+    }
+
+    // The site as it is today: Google's own measurement, with its screenshot.
+    async function today(url, run) {
+      const api = "https://www.googleapis.com/pagespeedonline/v5/runPagespeed?" + new URLSearchParams([
+        ["url", url], ["strategy", "mobile"], ["locale", "de"],
+        ["category", "PERFORMANCE"], ["category", "SEO"], ["category", "ACCESSIBILITY"], ["category", "BEST_PRACTICES"]
+      ]);
+      try {
+        const res = await fetch(api);
+        if (run !== runId) return;
+        if (!res.ok) throw new Error(String(res.status));
+        const data = await res.json();
+        const lh = data.lighthouseResult;
+        const cat = lh.categories;
+        const shot = lh.audits?.["final-screenshot"]?.details?.data;
+        const lcp = lh.audits?.["largest-contentful-paint"]?.displayValue;
+        const ring = (label, v) => {
+          const n = Math.round((v ?? 0) * 100);
+          const c = n >= 90 ? "var(--good)" : n >= 50 ? "var(--mid)" : "var(--bad)";
+          return `<div class="score"><div class="ring" style="--v:${n};--c:${c}"><span>${n}</span></div>${label}</div>`;
+        };
+        $("today").innerHTML = `
+          <div class="phone"><div class="phone__screen">${shot ? `<img src="${shot}" alt="Ihre Website heute auf dem Handy">` : ""}</div></div>
+          <div class="scores">
+            ${ring("Geschwindigkeit", cat.performance?.score)}
+            ${ring("Google-Suche", cat.seo?.score)}
+            ${ring("Barrierefreiheit", cat.accessibility?.score)}
+            ${ring("Technik", cat["best-practices"]?.score)}
+          </div>
+          ${lcp ? `<p class="panel__fact">Hauptinhalt sichtbar nach <b>${esc(lcp)}</b> auf dem Handy. Ab 2,5 s verlieren Sie Besucher.</p>` : ""}`;
+      } catch {
+        if (run !== runId) return;
+        $("today").innerHTML = '<div class="wait">Google konnte Ihre Website gerade nicht messen.<br>Das klappt meist beim zweiten Versuch.</div>';
+      }
+    }
+
+    // The proposed site: our layout, filled with their name, logo, colour, pictures and new texts.
+    async function proposal(url, run) {
+      try {
+        const res = await fetch("/api/sustain/preview", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url }) });
+        const data = await res.json().catch(() => ({}));
+        if (run !== runId) return;
+        if (!res.ok) throw new Error(data.error || String(res.status));
+        drawMock(data);
+        if (data.name) $("r-title").textContent = `So könnte die neue Website von ${data.name} aussehen`;
+      } catch (e) {
+        if (run !== runId) return;
+        const msg = String(e.message) === "unreachable"
+          ? "Ihre Website hat uns nicht geantwortet. Prüfen Sie die Adresse oder versuchen Sie es später noch einmal."
+          : String(e.message) === "limit"
+            ? "Sie haben schon mehrere Entwürfe erstellt. Bitte versuchen Sie es in einer Stunde wieder."
+            : "Der Entwurf ist diesmal nicht gelungen. Bitte versuchen Sie es noch einmal.";
+        $("mock-view").innerHTML = `<div class="wait">${msg}</div>`;
+      }
+    }
+
+    function onColour(hex) {
+      const n = parseInt(hex.slice(1), 16);
+      const lum = (0.299 * ((n >> 16) & 255) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) / 255;
+      return lum > 0.62 ? "#16181d" : "#ffffff";
+    }
+
+    function drawMock(d) {
+      const c = d.copy || {};
+      const brand = /^#[0-9a-f]{6}$/i.test(d.colour || "") ? d.colour : "#1f3a5f";
+      const pic = (d.images || [])[0];
+      const services = (c.services || []).slice(0, 3);
+      const contact = d.contact || {};
+      const logo = d.logo
+        ? `<img src="${esc(d.logo)}" alt="" referrerpolicy="no-referrer" onerror="this.remove()">`
+        : "";
+      const mock = document.createElement("div");
+      mock.className = "mock";
+      mock.style.setProperty("--brand", brand);
+      mock.style.setProperty("--on-brand", onColour(brand));
+      mock.innerHTML = `
+        <div class="mock__nav">
+          <div class="mock__logo">${logo}<span>${esc(d.name)}</span></div>
+          <div class="mock__links">${services.map((s) => `<span>${esc(s.title)}</span>`).join("")}<span>Kontakt</span></div>
+          <span class="mock__btn">${esc(c.cta)}</span>
+        </div>
+        <div class="mock__hero">
+          <div>
+            <div class="mock__kicker">${esc([c.sector, c.city].filter(Boolean).join(" · "))}</div>
+            <div class="mock__h1">${esc(c.headline)}</div>
+            <p class="mock__sub">${esc(c.subline)}</p>
+            <div class="mock__actions"><span class="mock__btn">${esc(c.cta)}</span>${contact.phone ? `<span>${esc(contact.phone)}</span>` : ""}</div>
+            ${(c.proof || []).length ? `<div class="mock__proof">${c.proof.map((p) => `<span>${esc(p)}</span>`).join("")}</div>` : ""}
+          </div>
+          <div class="mock__pic">${pic ? `<img src="${esc(pic)}" alt="" referrerpolicy="no-referrer" onerror="this.remove()">` : ""}</div>
+        </div>
+        <div class="mock__services">${services.map((s) => `<div class="mock__card"><i></i><b>${esc(s.title)}</b><p>${esc(s.text)}</p></div>`).join("")}</div>
+        ${(c.reasons || []).length ? `<div class="mock__band"><h3>Warum Kunden ${esc(d.name)} wählen</h3><ul>${c.reasons.map((r) => `<li>${esc(r)}</li>`).join("")}</ul></div>` : ""}
+        <div class="mock__about">
+          <p>${esc(c.about)}</p>
+          <div class="mock__contact"><b>Kontakt</b>${[contact.phone, contact.email, contact.address].filter(Boolean).map(esc).join("<br>") || esc(d.host)}</div>
+        </div>`;
+      const view = $("mock-view");
+      view.innerHTML = "";
+      view.appendChild(mock);
+      fitMock();
+    }
+
+    function fitMock() {
+      const view = $("mock-view");
+      const mock = view.querySelector(".mock");
+      if (!mock) return;
+      const k = view.clientWidth / 1200;
+      mock.style.transform = `scale(${k})`;
+      view.style.height = `${Math.min(mock.offsetHeight * k, 1400 * k)}px`;
+      view.style.overflowY = "auto";
+    }
+
+    addEventListener("resize", fitMock);
+    $("mock-view").addEventListener("load", fitMock, true);
+
+    // Visibility in ChatGPT: the same instant check as itgrows.ai/business, questions in the site's language.
+    async function visibility(host, run) {
+      try {
+        let res = await fetch("/api/geo/teaser", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: host }) });
+        let data = await res.json().catch(() => ({}));
+        const id = data.id;
+        const until = Date.now() + 180000;
+        while (data.status === "running" && id && Date.now() < until) {
+          if (run !== runId) return;
+          showAsking(data);
+          await sleep(3000);
+          res = await fetch(`/api/geo/teaser?id=${encodeURIComponent(id)}`);
+          data = await res.json().catch(() => ({}));
+        }
+        if (run !== runId) return;
+        if (data.status !== "done") throw new Error(data.error || "failed");
+        showAnswer(data);
+      } catch (e) {
+        if (run !== runId) return;
+        const msg = String(e.message) === "limit_ip"
+          ? "Von Ihrem Anschluss wurden heute schon mehrere Websites geprüft. Morgen geht es wieder."
+          : "Diese Prüfung ist gerade nicht möglich. Im Erstgespräch zeigen wir Ihnen das Ergebnis.";
+        $("ai").innerHTML = `<div class="wait" style="min-height:90px">${msg}</div>`;
+      }
+    }
+
+    function showAsking(d) {
+      const qs = (d.questions || []).slice(0, 5);
+      if (!qs.length) return;
+      $("ai").innerHTML = `<div class="ai__grid"><div class="wait" style="min-height:90px"><div class="spinner"></div>ChatGPT antwortet …</div>
+        <div><p class="ai__q">Diese Fragen stellen wir:</p><ol class="ai__steps">${qs.map((q) => `<li>${esc(q)}</li>`).join("")}</ol></div></div>`;
+    }
+
+    function showAnswer(d) {
+      const s = d.summary || {};
+      const open = (d.open || [])[0];
+      const eng = open ? (open.engines.chatgpt || Object.values(open.engines)[0]) : null;
+      const rival = (s.namedInstead || [])[0];
+      const more = s.namedInsteadMore || 0;
+      const named = s.named ?? 0;
+      const of = s.of ?? 0;
+      const verdict = named === 0
+        ? `ChatGPT nennt ${esc(d.business || d.domain)} in keiner Antwort.`
+        : `ChatGPT nennt ${esc(d.business || d.domain)} in ${named} von ${of} Antworten.`;
+      $("ai").innerHTML = `<div class="ai__grid">
+        <div>
+          <div class="ai__big">${named}<small> von ${of} Antworten</small></div>
+          <p class="panel__fact">${verdict}${rival ? ` Stattdessen genannt: <b>${esc(rival)}</b>${more ? ` und ${more} weitere` : ""}.` : ""}</p>
+        </div>
+        <div>${open ? `<p class="ai__q">„${esc(open.q)}“</p>${eng && (eng.quote || eng.snippet) ? `<p class="ai__a">${esc(eng.quote || eng.snippet)}</p>` : ""}` : ""}</div>
+      </div>`;
+    }
+
+    // "Diesen Entwurf umsetzen" and the package buttons fill in the message.
+    $("take").addEventListener("click", () => {
+      $("c-message").value = `Hallo, mir gefällt der Entwurf für ${current ? new URL(current).hostname : "meine Website"}. Ich möchte ein Erstgespräch vereinbaren.`;
+    });
+    document.querySelectorAll("[data-pack]").forEach((a) => a.addEventListener("click", () => {
+      $("c-message").value = `Hallo, ich interessiere mich für das Paket „${a.dataset.pack}“. Ich möchte ein Erstgespräch vereinbaren.`;
+    }));
+    document.querySelectorAll("[data-todo]").forEach((a) => a.addEventListener("click", (e) => e.preventDefault()));
+
+    // The form sends nothing from the page: it prepares an e-mail.
+    $("contact").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const f = e.target;
+      if (!f.checkValidity()) {
+        $("c-status").textContent = "Bitte füllen Sie Name, E-Mail und Nachricht aus.";
+        return;
+      }
+      if (STUDIO_EMAIL === "YOUR_STUDIO_EMAIL") {
+        $("c-status").textContent = "Es wurde nichts gesendet: die E-Mail-Adresse des Studios fehlt noch auf dieser Seite.";
+        return;
+      }
+      const body = `Name: ${f.name.value}\nE-Mail: ${f.email.value}\nWebsite: ${f.site.value}\n\n${f.message.value}`;
+      location.href = `mailto:${STUDIO_EMAIL}?subject=${encodeURIComponent("Anfrage über die Website")}&body=${encodeURIComponent(body)}`;
+      $("c-status").textContent = "Ihr E-Mail-Programm öffnet sich. Von dieser Seite wurde nichts gesendet.";
+    });
+  </script>
+</body>
+</html>
