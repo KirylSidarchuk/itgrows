@@ -8,7 +8,7 @@
  * - YOUR_KIRYL_LINKEDIN, YOUR_NVIDIA_FEATURE, YOUR_FORBES_PROFILE
  * - Drop screenshots into /assets using the paths below
  *
- * The portfolio is a row of book spines (BOOKS below); the one under the pointer opens into its card.
+ * The portfolio is a row of narrow spines; the one under the pointer opens into its card.
  */
 
 const PROJECTS = [
@@ -294,41 +294,27 @@ function watchImages(root) {
   });
 }
 
-// How each project stands on the shelf. w is the spine's thickness in px, h its height as a share of
-// the shelf. portrait covers have a caption baked into their lower part, so only their top is shown.
-const BOOKS = {
-  magiscan: { w: 64, h: 0.82, leather: "#9a683c", look: "ribs" },
-  ava: { w: 62, h: 0.98, leather: "#1b2e29", look: "gilt", portrait: true },
-  freightsizer: { w: 60, h: 0.74, leather: "#6e2430", look: "lines" },
-  orthio: { w: 66, h: 1, leather: "#a47a46", look: "ribs" },
-  arize: { w: 46, h: 0.76, leather: "#4b1e2b", look: "lines" },
-  monixa: { w: 40, h: 0.7, leather: "#7c2a2d", look: "lines", portrait: true },
-  itgrows: { w: 44, h: 0.84, leather: "#35202b", look: "gilt", portrait: true },
-  oyper: { w: 50, h: 0.68, leather: "#8a2f2c", look: "ribs", portrait: true },
-  pickaclass: { w: 56, h: 0.72, leather: "#7a3c2a", look: "gilt" },
-  luni: { w: 74, h: 0.96, leather: "#15191a", look: "lines", portrait: true }
-};
+// These covers have a caption baked into their lower part, so only their top is shown.
+const PORTRAIT_COVERS = new Set(["ava", "monixa", "itgrows", "oyper", "luni"]);
 
 function renderShelf() {
-  const ornament = `<span class="book__orn" aria-hidden="true"><span class="book__dia"></span></span>`;
-  shelfTrack.innerHTML = showcase.map((project) => {
-    const book = BOOKS[project.id];
+  shelfTrack.innerHTML = showcase.map((project, index) => {
     const image = project.images?.[0];
     return `
-      <button class="book book--${book.look}${book.portrait ? " book--portrait" : ""}" type="button" data-cover="${esc(project.id)}" aria-haspopup="dialog" aria-label="${esc(project.name)}" style="--leather:${book.leather}">
-        <span class="book__spine">
-          ${ornament}
-          <span class="book__title">${esc(project.name)}</span>
-          ${ornament}
+      <button class="item${PORTRAIT_COVERS.has(project.id) ? " item--portrait" : ""}" type="button" data-cover="${esc(project.id)}" aria-haspopup="dialog" aria-label="${esc(project.name)}">
+        <span class="item__spine">
+          <span class="item__index" aria-hidden="true">${String(index + 1).padStart(2, "0")}</span>
+          <span class="item__title">${esc(project.name)}</span>
+          <span class="item__label">${esc(project.tag)}</span>
         </span>
-        <span class="book__card">
-          <span class="book__cover">${image ? imageTag(image[0], "") : ""}</span>
-          <span class="book__info">
-            <span class="book__tag">${esc(project.category)}</span>
-            <span class="book__name">${esc(project.name)}</span>
-            <span class="book__headline">${esc(project.headline)}</span>
-            <span class="book__text">${esc(project.overview)}</span>
-            <span class="book__go">View project <span class="arr" aria-hidden="true">→</span></span>
+        <span class="item__card">
+          <span class="item__cover">${image ? imageTag(image[0], "") : ""}</span>
+          <span class="item__info">
+            <span class="item__tag">${esc(project.category)}</span>
+            <span class="item__name">${esc(project.name)}</span>
+            <span class="item__headline">${esc(project.headline)}</span>
+            <span class="item__text">${esc(project.overview)}</span>
+            <span class="item__go">View project <span class="arr" aria-hidden="true">→</span></span>
           </span>
         </span>
       </button>
@@ -343,12 +329,12 @@ function bindShelf() {
   const prevBtn = document.getElementById("shelf-prev");
   const nextBtn = document.getElementById("shelf-next");
   const countEl = document.getElementById("shelf-count");
-  const books = [...shelfTrack.querySelectorAll(".book")];
+  const items = [...shelfTrack.querySelectorAll(".item")];
   const HOVER_DELAY = reduce ? 0 : 90;
   const MOVE_TIME = reduce ? 0 : 340;
-  const GAP = 1;
+  const GAP = 4;
   let active = 1;
-  let spines = [];
+  let spine = 0;
   let cards = [];
   let lastWidth = 0;
   let timer = 0;
@@ -359,61 +345,61 @@ function bindShelf() {
 
   const place = () => {
     if (scrollMode.matches) {
-      books.forEach((book) => { book.style.transform = ""; });
+      items.forEach((item) => { item.style.transform = ""; });
       return;
     }
     let x = 0;
-    books.forEach((book, index) => {
-      book.style.transform = `translate3d(${x}px,0,0)`;
-      x += spines[index] + GAP + (index === active ? cards[index] : 0);
+    items.forEach((item, index) => {
+      item.style.transform = `translate3d(${x}px,0,0)`;
+      x += spine + GAP + (index === active ? cards[index] : 0);
     });
   };
 
   const mark = () => {
-    books.forEach((book, index) => {
+    items.forEach((item, index) => {
       const on = index === active;
-      book.classList.toggle("is-active", on);
-      if (on) book.setAttribute("aria-current", "true");
-      else book.removeAttribute("aria-current");
+      item.classList.toggle("is-active", on);
+      if (on) item.setAttribute("aria-current", "true");
+      else item.removeAttribute("aria-current");
     });
-    if (countEl) countEl.textContent = `${String(active + 1).padStart(2, "0")} / ${String(books.length).padStart(2, "0")}`;
+    if (countEl) countEl.textContent = `${String(active + 1).padStart(2, "0")} / ${String(items.length).padStart(2, "0")}`;
     if (prevBtn) prevBtn.disabled = active === 0;
-    if (nextBtn) nextBtn.disabled = active === books.length - 1;
+    if (nextBtn) nextBtn.disabled = active === items.length - 1;
   };
 
   // Sizes are worked out here only, on load and when the window's width changes: never during a hover.
   const measure = () => {
-    const view = shelfTrack.parentElement.clientWidth - 28;
+    const view = shelfViewport.clientWidth;
     const small = scrollMode.matches;
     const tier = small
-      ? { scale: 0.85, height: 400 }
+      ? { spine: 52, height: 400 }
       : view >= 1200
-        ? { scale: 1, height: 420 }
+        ? { spine: 64, height: 420 }
         : view >= 1000
-          ? { scale: 0.84, height: 390 }
-          : { scale: 0.7, height: 350 };
-    spines = books.map((book) => Math.round(BOOKS[book.dataset.cover].w * tier.scale));
-    const taken = spines.reduce((sum, width) => sum + width + GAP, 0);
+          ? { spine: 54, height: 390 }
+          : { spine: 44, height: 350 };
+    spine = tier.spine;
+    const taken = items.length * (spine + GAP);
     const cardWidth = small ? Math.min(Math.round(window.innerWidth * 0.74), 300) : Math.min(view - taken, 760);
     shelfTrack.style.setProperty("--shelf-h", `${tier.height}px`);
-    cards = books.map((book, index) => {
-      const data = BOOKS[book.dataset.cover];
-      const cover = Math.round(tier.height * (data.portrait ? 0.8 : 1152 / 1023));
+    shelfTrack.style.setProperty("--spine-w", `${spine}px`);
+    cards = items.map((item, index) => {
+      const portrait = item.classList.contains("item--portrait");
+      const cover = Math.min(Math.round(tier.height * (portrait ? 0.8 : 1152 / 1023)), cardWidth);
       // Too little room beside the cover for the text: the card is the cover alone.
       const noInfo = !small && cardWidth - cover < 170;
-      book.style.zIndex = String(index + 1);
-      book.style.setProperty("--spine-w", `${spines[index]}px`);
-      book.style.setProperty("--spine-h", `${Math.round(tier.height * data.h)}px`);
-      book.style.setProperty("--cover-w", `${Math.min(cover, cardWidth)}px`);
-      book.style.setProperty("--card-w", `${noInfo ? Math.min(cover, cardWidth) : cardWidth}px`);
-      book.classList.toggle("book--no-info", noInfo);
-      return noInfo ? Math.min(cover, cardWidth) : cardWidth;
+      const width = noInfo ? cover : cardWidth;
+      item.style.zIndex = String(index + 1);
+      item.style.setProperty("--cover-w", `${cover}px`);
+      item.style.setProperty("--card-w", `${width}px`);
+      item.classList.toggle("item--no-info", noInfo);
+      return width;
     });
     place();
   };
 
   const setActive = (index, reveal = true) => {
-    const next = Math.max(0, Math.min(books.length - 1, index));
+    const next = Math.max(0, Math.min(items.length - 1, index));
     if (next !== active) {
       active = next;
       settleUntil = performance.now() + MOVE_TIME;
@@ -421,23 +407,23 @@ function bindShelf() {
       place();
     }
     if (reveal && scrollMode.matches) {
-      shelfViewport.scrollTo({ left: Math.max(0, books[active].offsetLeft - 8), behavior: reduce ? "auto" : "smooth" });
+      shelfViewport.scrollTo({ left: Math.max(0, items[active].offsetLeft - 8), behavior: reduce ? "auto" : "smooth" });
     }
   };
 
-  const bookUnderPointer = () => {
+  const itemUnderPointer = () => {
     if (!pointerInside) return -1;
-    const book = document.elementFromPoint(pointerX, pointerY)?.closest?.(".book");
-    return book ? books.indexOf(book) : -1;
+    const item = document.elementFromPoint(pointerX, pointerY)?.closest?.(".item");
+    return item ? items.indexOf(item) : -1;
   };
 
-  // Opens what the pointer rests on, once the books have stopped moving. Books left of an open one keep
-  // their place and the ones right of it move away, so the pointer stays on the same book and nothing flickers.
+  // Opens what the pointer rests on, once the row has stopped moving. Spines left of an open card keep
+  // their place and the ones right of it move away, so the pointer stays on the same project and nothing flickers.
   const follow = () => {
     window.clearTimeout(timer);
     const wait = Math.max(HOVER_DELAY, settleUntil - performance.now());
     timer = window.setTimeout(() => {
-      const index = bookUnderPointer();
+      const index = itemUnderPointer();
       if (index < 0 || index === active) return;
       setActive(index);
       follow();
@@ -458,28 +444,28 @@ function bindShelf() {
   });
 
   shelfViewport.addEventListener("click", (event) => {
-    const book = event.target.closest("[data-cover]");
-    if (!book) return;
-    const index = books.indexOf(book);
-    // Without a hover the first tap takes the book down, the second opens the project.
+    const item = event.target.closest("[data-cover]");
+    if (!item) return;
+    const index = items.indexOf(item);
+    // Without a hover the first tap opens the card, the second the project.
     if (index !== active && (scrollMode.matches || !canHover.matches)) {
       setActive(index);
       return;
     }
     setActive(index);
-    openProject(book.dataset.cover, book);
+    openProject(item.dataset.cover, item);
   });
 
   shelfViewport.addEventListener("focusin", (event) => {
-    const book = event.target.closest?.(".book");
-    if (book?.matches(":focus-visible")) setActive(books.indexOf(book));
+    const item = event.target.closest?.(".item");
+    if (item?.matches(":focus-visible")) setActive(items.indexOf(item));
   });
 
   shelfViewport.addEventListener("keydown", (event) => {
     if (event.key !== "ArrowRight" && event.key !== "ArrowLeft") return;
     event.preventDefault();
     setActive(active + (event.key === "ArrowRight" ? 1 : -1));
-    books[active]?.focus();
+    items[active]?.focus();
   });
 
   prevBtn?.addEventListener("click", () => setActive(active - 1));
