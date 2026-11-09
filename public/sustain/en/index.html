@@ -1639,7 +1639,9 @@
 
     function initials(name) {
       const words = shortName(name).split(/\s+/).filter((w) => /^[\p{L}\p{N}]/u.test(w));
-      const two = words.length > 1 ? words[0][0] + words[1][0] : (words[0] || "?").slice(0, 2);
+      // One word: its first letter and the next capital inside it (MagiScan: MS), else the first letter alone.
+      const one = words[0] || "?";
+      const two = words.length > 1 ? words[0][0] + words[1][0] : one[0] + ((one.slice(1).match(/\p{Lu}/u) || [""])[0]);
       return two.toUpperCase();
     }
 
