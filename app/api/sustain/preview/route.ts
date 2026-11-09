@@ -50,13 +50,21 @@ async function grab(url: string, bytes: number, ms = 9000) {
       signal: ctrl.signal,
       headers: { "User-Agent": HUMAN_UA, Accept: "text/html,text/css,*/*", "Accept-Language": "de,en;q=0.8" },
     })
-    if (res.url && PRIVATE_HOST.test(new URL(res.url).hostname)) return { status: 0, text: "", url }
-    return { status: res.status, text: (await res.text()).slice(0, bytes), url: res.url || url }
+    if (res.url && PRIVATE_HOST.test(new URL(res.url).hostname)) return { status: 0, text: "", url, frameable: false }
+    return { status: res.status, text: (await res.text()).slice(0, bytes), url: res.url || url, frameable: frameable(res.headers) }
   } catch {
-    return { status: 0, text: "", url }
+    return { status: 0, text: "", url, frameable: false }
   } finally {
     clearTimeout(timer)
   }
+}
+
+// Whether the site lets another page show it in a frame: the page falls back to showing it live when
+// Google's measurement is not available.
+function frameable(h: Headers): boolean {
+  if (h.get("x-frame-options")) return false
+  const fa = (h.get("content-security-policy") ?? "").match(/frame-ancestors([^;]*)/i)
+  return !fa || /\*/.test(fa[1])
 }
 
 const decode = (s: string) =>
@@ -317,6 +325,7 @@ export async function POST(req: NextRequest) {
   void sendOwner(`🪄 Макет по адресу: ${target.hostname} — готов (${copy.business || title.slice(0, 40)})`)
   return NextResponse.json({
     url: base,
+    frameable: page.frameable,
     host: new URL(base).hostname.replace(/^www\./, ""),
     lang,
     name: copy.business || siteName || contact.name || title.split(/[|–—-]/)[0].trim(),

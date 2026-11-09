@@ -305,6 +305,20 @@
       background: #2a2a2a;
     }
 
+    .phone__screen.live { position: relative; }
+
+    .phone__screen iframe {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 390px;
+      height: 823px;
+      border: 0;
+      background: #fff;
+      transform-origin: 0 0;
+      transform: scale(var(--k, 0.588));
+    }
+
     .phone__screen img {
       display: block;
       width: 100%;
@@ -1234,6 +1248,8 @@
     function start(url) {
       const run = ++runId;
       current = url;
+      todayFailed = false;
+      liveSite = null;
       const host = new URL(url).hostname.replace(/^www\./, "");
       $("ergebnis").hidden = false;
       $("r-host").textContent = host;
@@ -1252,36 +1268,44 @@
 
     // The site as it is today: Google's own measurement, with its screenshot.
     async function today(url, run) {
-      const api = "https://www.googleapis.com/pagespeedonline/v5/runPagespeed?" + new URLSearchParams([
-        ["url", url], ["strategy", "mobile"], ["locale", "de"],
-        ["category", "PERFORMANCE"], ["category", "SEO"], ["category", "ACCESSIBILITY"], ["category", "BEST_PRACTICES"]
-      ]);
       try {
-        const res = await fetch(api);
+        const res = await fetch("/api/sustain/pagespeed?" + new URLSearchParams({ url }));
         if (run !== runId) return;
         if (!res.ok) throw new Error(String(res.status));
-        const data = await res.json();
-        const lh = data.lighthouseResult;
-        const cat = lh.categories;
-        const shot = lh.audits?.["final-screenshot"]?.details?.data;
-        const lcp = lh.audits?.["largest-contentful-paint"]?.displayValue;
+        const d = await res.json();
+        const shot = d.screenshot;
+        const lcp = d.lcp;
         const ring = (label, v) => {
-          const n = Math.round((v ?? 0) * 100);
+          const n = v ?? 0;
           const c = n >= 90 ? "var(--good)" : n >= 50 ? "var(--mid)" : "var(--bad)";
           return `<div class="score"><div class="ring" style="--v:${n};--c:${c}"><span>${n}</span></div>${label}</div>`;
         };
         $("today").innerHTML = `
           <div class="phone"><div class="phone__screen">${shot ? `<img src="${shot}" alt="Ihre Website heute auf dem Handy">` : ""}</div></div>
           <div class="scores">
-            ${ring("Geschwindigkeit", cat.performance?.score)}
-            ${ring("Google-Suche", cat.seo?.score)}
-            ${ring("Barrierefreiheit", cat.accessibility?.score)}
-            ${ring("Technik", cat["best-practices"]?.score)}
+            ${ring("Geschwindigkeit", d.performance)}
+            ${ring("Google-Suche", d.seo)}
+            ${ring("Barrierefreiheit", d.accessibility)}
+            ${ring("Technik", d.bestPractices)}
           </div>
           ${lcp ? `<p class="panel__fact">Hauptinhalt sichtbar nach <b>${esc(lcp)}</b> auf dem Handy. Ab 2,5 s verlieren Sie Besucher.</p>` : ""}`;
       } catch {
         if (run !== runId) return;
-        $("today").innerHTML = '<div class="wait">Google konnte Ihre Website gerade nicht messen.<br>Das klappt meist beim zweiten Versuch.</div>';
+        todayFailed = true;
+        showLive();
+      }
+    }
+
+    // Without Google's measurement the panel shows the site itself, live, when the site allows a frame.
+    let todayFailed = false;
+    let liveSite = null;
+    function showLive() {
+      if (!todayFailed) return;
+      if (liveSite && liveSite.frameable) {
+        $("today").innerHTML = `<div class="phone"><div class="phone__screen live"><iframe src="${esc(liveSite.url)}" title="Ihre Website heute" loading="lazy" referrerpolicy="no-referrer" sandbox="allow-scripts allow-same-origin"></iframe></div></div>
+          <p class="panel__fact">Ihre Website heute, live auf dem Handy.</p>`;
+      } else if (liveSite) {
+        $("today").innerHTML = '<div class="wait">Google konnte Ihre Website gerade nicht messen.<br>Im Erstgespräch zeigen wir Ihnen die Messung.</div>';
       }
     }
 
@@ -1293,6 +1317,8 @@
         if (run !== runId) return;
         if (!res.ok) throw new Error(data.error || String(res.status));
         drawMock(data);
+        liveSite = { url: data.url, frameable: !!data.frameable };
+        showLive();
         if (data.name) $("r-title").textContent = `So könnte die neue Website von ${data.name} aussehen`;
       } catch (e) {
         if (run !== runId) return;
@@ -1302,6 +1328,8 @@
             ? "Sie haben schon mehrere Entwürfe erstellt. Bitte versuchen Sie es in einer Stunde wieder."
             : "Der Entwurf ist diesmal nicht gelungen. Bitte versuchen Sie es noch einmal.";
         $("mock-view").innerHTML = `<div class="wait">${msg}</div>`;
+        liveSite = { url: "", frameable: false };
+        showLive();
       }
     }
 
@@ -1358,8 +1386,7 @@
       if (!mock) return;
       const k = view.clientWidth / 1200;
       mock.style.transform = `scale(${k})`;
-      view.style.height = `${Math.min(mock.offsetHeight * k, 1400 * k)}px`;
-      view.style.overflowY = "auto";
+      view.style.height = `${mock.offsetHeight * k}px`;
     }
 
     addEventListener("resize", fitMock);
