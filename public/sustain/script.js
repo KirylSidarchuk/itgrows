@@ -302,11 +302,14 @@ function renderShelf() {
     const image = project.images?.[0];
     return `
       <button class="item${PORTRAIT_COVERS.has(project.id) ? " item--portrait" : ""}" type="button" data-cover="${esc(project.id)}" aria-haspopup="dialog" aria-label="${esc(project.name)}">
+        <span class="item__book">
         <span class="item__spine">
           ${image ? `<span class="item__art" aria-hidden="true">${imageTag(image[0], "")}</span>` : ""}
           <span class="item__index" aria-hidden="true">${String(index + 1).padStart(2, "0")}</span>
           <span class="item__title">${esc(project.name)}</span>
           <span class="item__label">${esc(project.tag)}</span>
+        </span>
+        <span class="item__side" aria-hidden="true">${image ? imageTag(image[0], "") : ""}</span>
         </span>
         <span class="item__card">
           <span class="item__cover">${image ? imageTag(image[0], "") : ""}</span>
@@ -333,7 +336,8 @@ function bindShelf() {
   const items = [...shelfTrack.querySelectorAll(".item")];
   const HOVER_DELAY = reduce ? 0 : 90;
   const MOVE_TIME = reduce ? 0 : 340;
-  const GAP = 4;
+  // Room for the side of each turned spine (styles.css, .item__book).
+  const GAP = 18;
   let active = 1;
   let spine = 0;
   let cards = [];
@@ -375,10 +379,10 @@ function bindShelf() {
     const tier = small
       ? { spine: 52, height: 400 }
       : view >= 1200
-        ? { spine: 64, height: 420 }
+        ? { spine: 56, height: 420 }
         : view >= 1000
-          ? { spine: 54, height: 390 }
-          : { spine: 44, height: 350 };
+          ? { spine: 48, height: 390 }
+          : { spine: 40, height: 350 };
     spine = tier.spine;
     const taken = items.length * (spine + GAP);
     const cardWidth = small ? Math.min(Math.round(window.innerWidth * 0.74), 300) : Math.min(view - taken, 760);
@@ -386,7 +390,10 @@ function bindShelf() {
     shelfTrack.style.setProperty("--spine-w", `${spine}px`);
     cards = items.map((item, index) => {
       const portrait = item.classList.contains("item--portrait");
-      const cover = Math.min(Math.round(tier.height * (portrait ? 0.8 : 1152 / 1023)), cardWidth);
+      // A wide cover gives up a little of its right side so the text still fits beside it.
+      const natural = Math.round(tier.height * (portrait ? 0.8 : 1152 / 1023));
+      const fitted = portrait ? natural : Math.max(Math.round(tier.height * 0.8), Math.min(natural, cardWidth - 190));
+      const cover = Math.min(fitted, cardWidth);
       // Too little room beside the cover for the text: the card is the cover alone.
       const noInfo = !small && cardWidth - cover < 170;
       const width = noInfo ? cover : cardWidth;

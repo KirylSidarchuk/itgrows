@@ -540,6 +540,66 @@ h3 {
   border-color: #c8c8c2;
 }
 
+/* Each spine is turned a little, like a book standing at an angle, so its right side shows.
+   Only this picture turns: the row's layout and movement stay flat. The open one faces front. */
+.item__book {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  transform: perspective(900px) rotateY(-26deg);
+  transform-origin: left center;
+  transform-style: preserve-3d;
+  transition: transform 0.34s cubic-bezier(0.22, 0.8, 0.24, 1);
+}
+
+.item:hover .item__book {
+  transform: perspective(900px) rotateY(-14deg);
+}
+
+.item.is-active .item__book {
+  transform: none;
+}
+
+.item__side {
+  position: absolute;
+  top: 0;
+  left: 100%;
+  width: 34px;
+  height: 100%;
+  overflow: hidden;
+  border-radius: 0 3px 3px 0;
+  background: var(--dark);
+  transform: rotateY(90deg);
+  transform-origin: left center;
+}
+
+.item__side img {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: auto;
+  max-width: none;
+  height: 100%;
+  transform: translateX(-50%);
+}
+
+.item:not(.item--portrait) .item__side img {
+  top: -19%;
+  height: 119%;
+}
+
+.item--portrait .item__side img {
+  height: 122%;
+}
+
+.item__side::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(20, 20, 20, 0.62), rgba(20, 20, 20, 0.3));
+}
+
 /* A narrow slice of the project's cover fills the spine; the text sits on top of it. */
 .item__spine {
   position: relative;
@@ -697,6 +757,10 @@ h3 {
   object-position: center 16%;
 }
 
+.item:not(.item--portrait) .item__cover img {
+  object-position: left top;
+}
+
 .item--no-info .item__cover {
   flex-basis: 100%;
 }
@@ -775,7 +839,7 @@ h3 {
 
   .shelf__track {
     display: flex;
-    gap: 4px;
+    gap: 18px;
     width: max-content;
   }
 
@@ -788,7 +852,7 @@ h3 {
     will-change: auto;
   }
 
-  .item__spine {
+  .item__book {
     flex: none;
     width: var(--spine-w);
   }
