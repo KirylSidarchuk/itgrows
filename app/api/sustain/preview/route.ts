@@ -168,23 +168,26 @@ function facts(html: string): Facts {
 // Badges and partner marks that carry "logo" in their names but are not the business's own logo.
 const NOT_OWN_LOGO = /amazon|aws|microsoft|nvidia|google|meta-|stripe|shopify|google-?play|app-?store|apple|badge|partner|payment|paypal|visa|mastercard|klarna|trustpilot|trusted|award|siegel|certif|zertifi|facebook|instagram|linkedin|twitter|youtube|whatsapp|tiktok/
 
-// The business's own logo: an image in the header first (a link to the home page, or one named "logo").
-function headerLogo(html: string, base: string): string {
+// The business's own logo: an image in the header whose name or text says "logo" or carries the site's name.
+// Not just the first image there: a header can hold partner marks (magiscan.app: Bambu Lab).
+function headerLogo(html: string, base: string, label: string): string {
   const head = (html.match(/<header\b[\s\S]*?<\/header>/i) ?? html.match(/<nav\b[\s\S]*?<\/nav>/i) ?? [""])[0]
   const imgs = (head.match(/<img\b[^>]*>/gi) ?? []).map((tag) => ({
     tag,
     src: absolute(attr(tag, "src") || attr(tag, "data-src") || (attr(tag, "srcset").split(/\s+/)[0] ?? ""), base),
   }))
   const own = imgs.filter((i) => i.src && !NOT_OWN_LOGO.test(`${i.src} ${attr(i.tag, "alt")} ${attr(i.tag, "class")}`.toLowerCase()))
-  const named = own.find((i) => /logo/i.test(`${i.src} ${attr(i.tag, "alt")} ${attr(i.tag, "class")} ${attr(i.tag, "id")}`))
-  return (named ?? own[0])?.src ?? ""
+  const hint = (i: { tag: string; src: string }) => `${i.src} ${attr(i.tag, "alt")} ${attr(i.tag, "class")} ${attr(i.tag, "id")}`.toLowerCase()
+  const byName = own.find((i) => label.length > 2 && hint(i).replace(/[^a-z0-9]/g, "").includes(label))
+  const byWord = own.find((i) => /logo/.test(hint(i)))
+  return (byName ?? byWord)?.src ?? ""
 }
 
 // Outside the header an image counts as the logo only when its name or text carries the site's own name
 // (magiscan.app: the header logo is drawn in code, and the first "logo" image further down is AWS's).
 function pictures(html: string, base: string): { logo: string; images: string[] } {
   const label = new URL(base).hostname.replace(/^www\./, "").split(".")[0].toLowerCase().replace(/[^a-z0-9]/g, "")
-  let logo = headerLogo(html, base)
+  let logo = headerLogo(html, base, label)
   const images: string[] = []
   const og = absolute(meta(html, "og:image"), base)
   for (const tag of html.match(/<img\b[^>]*>/gi) ?? []) {
