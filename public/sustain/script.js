@@ -107,6 +107,7 @@ const PROJECTS = [
     capabilities: ["FinTech", "AI", "Web", "Mobile", "Product Design"],
     url: "https://monixa.ai/",
     images: [
+      ["/sustain/assets/monixa-cover.png", "Monixa app screens: portfolio, AI analysis, analytics"],
       ["/sustain/assets/monixa-01.jpg", "Monixa portfolio interface"],
       ["/sustain/assets/monixa-02.png", "Monixa product page"]
     ]
@@ -295,7 +296,7 @@ function watchImages(root) {
 }
 
 // These covers have a caption baked into their lower part, so only their top is shown.
-const PORTRAIT_COVERS = new Set(["ava", "monixa", "itgrows", "oyper", "luni"]);
+const PORTRAIT_COVERS = new Set(["ava", "itgrows", "oyper", "luni"]);
 
 function renderShelf() {
   shelfTrack.innerHTML = showcase.map((project, index) => {
