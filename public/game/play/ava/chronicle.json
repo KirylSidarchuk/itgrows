@@ -44,8 +44,8 @@
             "Ava"
           ],
           "look": {
-            "hair": "#6e3e28",
-            "hairStyle": "tails",
+            "hair": "#dfae5e",
+            "hairStyle": "ponytail",
             "skin": "#ffdbbe",
             "outfit": "#ff69a0",
             "outfitStyle": "dress",
@@ -62,8 +62,8 @@
             "Cookie (Pickle)"
           ],
           "look": {
-            "fur": "#faf0dc",
-            "furDark": "#e2d2ba"
+            "fur": "#cf8e55",
+            "furDark": "#ad6c38"
           }
         },
         {
