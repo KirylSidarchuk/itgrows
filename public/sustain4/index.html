@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="de" data-l="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Websites, einfach erklärt</title>
+  <meta name="description" content="Websites, die verkaufen. Sichtbar bei Google und in der KI. Feste Preise, klar erklärt.">
+  <meta name="theme-color" content="#FFFFFF">
+  <link rel="icon" href="/sustain/assets/favicon.svg" type="image/svg+xml">
+  <style>
+    @font-face { font-family: "Inter"; src: url("/sustain/assets/fonts/inter-latin.woff2") format("woff2"); font-weight: 100 900; font-display: swap; }
+    :root {
+      --red: #E0242B;
+      --red-soft: #FDECEC;
+      --ink: #111111;
+      --grey: #6E6E73;
+      --line: #E6E6E8;
+      --bg: #FFFFFF;
+      --soft: #F5F5F6;
+      --max: 1220px;
+      --pad: 40px;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; overflow-x: hidden; }
+    section[id] { scroll-margin-top: 120px; }
+    body { margin: 0; background: var(--bg); color: var(--ink); font-family: "Inter", system-ui, sans-serif; font-size: 16px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+    a { color: inherit; }
+    img { max-width: 100%; display: block; }
+    button { font: inherit; color: inherit; }
+    [data-l="de"] .en, [data-l="en"] .de { display: none !important; }
+    .wrap { width: min(100%, calc(var(--max) + var(--pad) * 2)); margin: 0 auto; padding: 0 var(--pad); }
+    .r { color: var(--red); }
+    .g { color: var(--grey); }
+
+    .top { position: sticky; top: 0; z-index: 40; background: #fff; }
+    .top__bar { border-bottom: 1px solid var(--line); }
+    .top__bar .wrap { display: flex; align-items: center; gap: 28px; height: 70px; }
+    .brand { display: flex; align-items: center; gap: 10px; font-weight: 900; font-size: 15px; letter-spacing: 0.06em; text-decoration: none; }
+    .brand i { width: 34px; height: 34px; background: var(--ink); clip-path: polygon(50% 0, 100% 30%, 82% 100%, 18% 100%, 0 30%); display: grid; place-items: center; color: #fff; font-style: normal; font-size: 12px; }
+    .nav { display: flex; gap: 24px; margin-left: auto; font-size: 14.5px; font-weight: 500; }
+    .nav a { text-decoration: none; }
+    .nav a:hover { color: var(--red); }
+    .langs { display: flex; border: 1px solid var(--line); border-radius: 999px; overflow: hidden; }
+    .langs button { background: none; border: 0; padding: 5px 10px; font-size: 12px; font-weight: 700; cursor: pointer; color: var(--grey); }
+    .langs button[aria-pressed="true"] { background: var(--ink); color: #fff; }
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; border: 0; border-radius: 999px; padding: 13px 22px; font-weight: 700; font-size: 15px; text-decoration: none; cursor: pointer; transition: transform 0.15s; }
+    .btn:hover { transform: translateY(-1px); }
+    .btn--ink { background: var(--ink); color: #fff; }
+    .btn--ink i { width: 22px; height: 22px; border-radius: 50%; background: var(--red); display: grid; place-items: center; font-style: normal; font-size: 12px; }
+    .btn--red { background: var(--red); color: #fff; }
+    .btn--line { background: #fff; box-shadow: inset 0 0 0 1.5px var(--ink); }
+    .btn--sm { padding: 9px 16px; font-size: 14px; }
+    .pills { border-bottom: 1px solid var(--line); background: #fff; }
+    .pills .wrap { display: flex; gap: 8px; align-items: center; height: 50px; overflow-x: auto; scrollbar-width: none; }
+    .pills .wrap::-webkit-scrollbar { display: none; }
+    .pills b { font-size: 13px; display: flex; align-items: center; gap: 8px; margin-right: 6px; white-space: nowrap; }
+    .pills b::before { content: "☰"; color: var(--red); }
+    .pills a { white-space: nowrap; font-size: 13px; text-decoration: none; padding: 5px 12px; border: 1px solid var(--line); border-radius: 999px; }
+    .pills a.on, .pills a:hover { border-color: var(--ink); background: var(--ink); color: #fff; }
+
+    .hero { padding: 64px 0 80px; background: radial-gradient(60% 80% at 100% 0%, #f4f4f5, transparent 60%); }
+    .hero .wrap { display: grid; grid-template-columns: 1.08fr 0.92fr; gap: 56px; align-items: start; }
+    h1 { font-size: clamp(38px, 4.8vw, 64px); line-height: 1.04; letter-spacing: -0.04em; font-weight: 800; margin: 8px 0 22px; }
+    .hero p { font-size: 17px; color: #3d3d42; max-width: 560px; margin: 0 0 22px; }
+    .checks { list-style: none; padding: 0; margin: 0 0 30px; display: grid; gap: 10px; }
+    .checks li { display: flex; gap: 12px; font-size: 15.5px; }
+    .checks li::before { content: "✓"; color: var(--red); font-weight: 900; }
+    .checks b { font-weight: 700; }
+    .trust { display: flex; gap: 22px; flex-wrap: wrap; padding-top: 22px; border-top: 1px solid var(--line); }
+    .trust span { font-size: 13px; color: var(--grey); line-height: 1.3; }
+    .trust b { display: block; font-size: 24px; color: var(--ink); letter-spacing: -0.03em; }
+    .formcard { background: #fff; border-radius: 22px; padding: 28px; box-shadow: 0 30px 70px rgba(0,0,0,0.1), 0 0 0 1px var(--line); position: relative; }
+    .formcard h2 { font-size: 24px; letter-spacing: -0.02em; line-height: 1.15; margin: 0 0 18px; padding-right: 84px; }
+    .formcard .stamp { position: absolute; top: -26px; right: 22px; width: 92px; height: 92px; border-radius: 50%; background: var(--red); color: #fff; display: grid; place-items: center; text-align: center; font-size: 11px; font-weight: 800; line-height: 1.15; transform: rotate(10deg); box-shadow: 0 10px 24px rgba(224,36,43,0.35); }
+    .formcard .stamp b { display: block; font-size: 22px; }
+    form { display: grid; gap: 12px; }
+    .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    label { font-size: 12.5px; font-weight: 700; display: grid; gap: 5px; }
+    input, textarea, select { font: inherit; font-size: 15px; color: var(--ink); background: var(--soft); border: 1px solid var(--line); border-radius: 10px; padding: 11px 12px; font-weight: 400; }
+    textarea { min-height: 84px; resize: vertical; }
+    input:focus, textarea:focus, select:focus { outline: 2px solid var(--ink); background: #fff; }
+    #c-status, #c2-status { min-height: 20px; font-size: 13.5px; color: var(--red); margin: 0; }
+    .formcard small { display: block; color: var(--grey); font-size: 12.5px; margin-top: 4px; }
+
+    section.s { padding: 100px 0; }
+    .kick { display: inline-flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--red); margin: 0 0 14px; }
+    .kick::before { content: ""; width: 18px; height: 2px; background: var(--red); }
+    h2.h { font-size: clamp(32px, 4vw, 54px); line-height: 1.06; letter-spacing: -0.04em; font-weight: 800; margin: 0 0 18px; max-width: 900px; }
+    .lead { font-size: 18px; color: #4a4a50; max-width: 720px; margin: 0; }
+
+    .explain { display: grid; grid-template-columns: 0.9fr 1.1fr; gap: 56px; align-items: center; }
+    .explain__card { background: var(--ink); color: #fff; border-radius: 24px; padding: 34px; position: relative; overflow: hidden; }
+    .explain__card::after { content: ""; position: absolute; right: -60px; bottom: -60px; width: 220px; height: 220px; border-radius: 50%; border: 30px solid var(--red); opacity: 0.9; }
+    .explain__tag { font-size: 12px; font-weight: 800; letter-spacing: 0.1em; color: #ff8a8e; }
+    .explain__card h3 { font-size: 30px; letter-spacing: -0.03em; line-height: 1.1; margin: 10px 0 14px; position: relative; z-index: 1; }
+    .explain__card p { color: rgba(255,255,255,0.75); margin: 0; position: relative; z-index: 1; max-width: 360px; }
+    .three { display: grid; gap: 14px; margin: 22px 0; }
+    .three > div { display: grid; grid-template-columns: 44px 1fr; gap: 14px; align-items: start; }
+    .three b { width: 44px; height: 44px; border-radius: 12px; background: var(--red-soft); color: var(--red); display: grid; place-items: center; font-weight: 800; }
+    .three h4 { margin: 2px 0 2px; font-size: 17px; }
+    .three p { margin: 0; color: var(--grey); font-size: 15px; }
+
+    .disc { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 46px; }
+    .dc { background: #fff; border: 1px solid var(--line); border-radius: 16px; overflow: hidden; display: flex; flex-direction: column; transition: box-shadow 0.2s, transform 0.2s; position: relative; }
+    .dc:hover { box-shadow: 0 18px 40px rgba(0,0,0,0.08); transform: translateY(-2px); }
+    .dc__ic { background: var(--soft); height: 128px; display: grid; place-items: center; }
+    .dc__ic svg { width: 64px; height: 64px; color: #9a9aa0; }
+    .dc__ic svg .a { color: var(--red); stroke: var(--red); }
+    .dc:hover .dc__ic svg { color: var(--ink); }
+    .dc__body { padding: 18px 20px 22px; }
+    .dc__n { font-size: 12px; font-weight: 800; color: var(--red); display: flex; gap: 8px; align-items: center; }
+    .dc__n::before { content: ""; width: 14px; height: 2px; background: var(--red); }
+    .dc h3 { font-size: 18px; margin: 8px 0 6px; letter-spacing: -0.01em; }
+    .dc p { margin: 0; font-size: 14px; color: var(--grey); }
+    .dc .by { position: absolute; top: 12px; right: 12px; font-size: 10.5px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; background: #fff; border: 1px solid var(--line); border-radius: 999px; padding: 3px 8px; }
+
+    .reasons { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; margin-top: 46px; border-top: 2px solid var(--ink); }
+    .reason { padding: 26px 24px 0 0; }
+    .reason + .reason { padding-left: 24px; border-left: 1px solid var(--line); }
+    .reason b { font-size: 54px; line-height: 1; font-weight: 800; letter-spacing: -0.05em; color: var(--red); }
+    .reason h3 { font-size: 19px; margin: 14px 0 6px; }
+    .reason p { margin: 0; color: var(--grey); font-size: 15px; }
+
+    .works { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 46px; }
+    .work { border: 1px solid var(--line); border-radius: 16px; overflow: hidden; text-decoration: none; display: flex; flex-direction: column; background: #fff; transition: box-shadow 0.2s; }
+    a.work:hover { box-shadow: 0 18px 40px rgba(0,0,0,0.08); }
+    .work img { aspect-ratio: 4 / 3; object-fit: cover; object-position: top; width: 100%; }
+    .work__body { padding: 16px 18px 20px; display: flex; flex-direction: column; gap: 6px; flex: 1; }
+    .work__who { font-size: 11.5px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--grey); }
+    .work h3 { margin: 0; font-size: 17px; line-height: 1.3; letter-spacing: -0.01em; }
+    .work__tag { margin-top: auto; padding-top: 8px; font-size: 13px; color: var(--red); font-weight: 600; }
+
+    .steps { display: grid; grid-template-columns: repeat(5, 1fr); gap: 24px; margin-top: 46px; border-top: 1px solid var(--ink); }
+    .step { padding-top: 20px; }
+    .step b { font-size: 13px; font-weight: 800; color: var(--red); display: flex; gap: 8px; align-items: center; }
+    .step b::before { content: ""; width: 14px; height: 2px; background: var(--red); }
+    .step h3 { font-size: 18px; margin: 10px 0 6px; }
+    .step p { margin: 0; color: var(--grey); font-size: 14.5px; }
+
+    .prices { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 46px; align-items: stretch; }
+    .price { border: 1px solid var(--line); border-radius: 20px; padding: 30px 26px; display: flex; flex-direction: column; position: relative; background: #fff; }
+    .price--hot { border: 2px solid var(--red); }
+    .price__rec { position: absolute; top: -13px; left: 50%; transform: translateX(-50%); background: var(--red); color: #fff; font-size: 11px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; padding: 5px 12px; border-radius: 999px; white-space: nowrap; }
+    .price__name { font-size: 12.5px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--grey); }
+    .price__amount { font-size: 40px; font-weight: 800; letter-spacing: -0.04em; margin: 8px 0 0; line-height: 1.1; }
+    .price__sub { font-size: 13px; color: var(--grey); margin-bottom: 16px; }
+    .price__for { background: var(--soft); border-radius: 12px; padding: 12px 14px; font-size: 14px; margin-bottom: 18px; }
+    .price--hot .price__for { background: var(--red-soft); }
+    .price:last-child .price__for { background: var(--ink); color: #fff; }
+    .price ul { list-style: none; padding: 0; margin: 0 0 22px; display: grid; gap: 9px; font-size: 14.5px; }
+    .price li { display: flex; gap: 10px; }
+    .price li::before { content: "✓"; color: var(--red); font-weight: 900; }
+    .price .btn { margin-top: auto; }
+    .price__foot { font-size: 13px; color: var(--grey); margin: 0 0 16px; }
+
+    .analysis { background: var(--ink); color: #fff; border-radius: 28px; padding: 56px; display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 40px; align-items: center; }
+    .analysis h2.h { color: #fff; }
+    .analysis .lead { color: rgba(255,255,255,0.72); }
+    .analysis form { display: flex; gap: 10px; background: #fff; border-radius: 999px; padding: 6px; }
+    .analysis input { flex: 1; min-width: 0; border: 0; background: transparent; padding: 0 16px; }
+    .analysis input:focus { outline: none; }
+    .analysis small { display: block; margin-top: 12px; color: rgba(255,255,255,0.55); font-size: 13px; }
+
+    .about { display: grid; grid-template-columns: 0.75fr 1.25fr; gap: 56px; align-items: center; }
+    .about img { border-radius: 22px; aspect-ratio: 4 / 5; object-fit: cover; object-position: center 30%; width: 100%; }
+    .about p { font-size: 17px; color: #3d3d42; }
+    .creds { display: grid; grid-template-columns: 1fr 1fr; gap: 16px 26px; margin-top: 22px; padding-top: 20px; border-top: 1px solid var(--line); }
+    .creds span { display: block; font-size: 11.5px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--grey); }
+    .creds b { display: block; font-size: 15px; margin-top: 3px; }
+
+    .faq { margin-top: 36px; display: grid; gap: 10px; max-width: 900px; }
+    .faq details { border: 1px solid var(--line); border-radius: 14px; padding: 18px 22px; }
+    .faq details[open] { border-color: var(--ink); }
+    .faq summary { cursor: pointer; font-size: 17px; font-weight: 700; list-style: none; display: flex; justify-content: space-between; gap: 16px; }
+    .faq summary::-webkit-details-marker { display: none; }
+    .faq summary::after { content: "+"; width: 26px; height: 26px; flex: 0 0 26px; border-radius: 50%; background: var(--red); color: #fff; display: grid; place-items: center; font-size: 18px; line-height: 1; }
+    .faq details[open] summary::after { content: "–"; }
+    .faq p { margin: 12px 0 0; color: var(--grey); }
+
+    .final { text-align: center; padding: 100px 0 110px; }
+    .final h2.h { margin-left: auto; margin-right: auto; }
+    .final .lead { margin: 0 auto 30px; }
+    footer { border-top: 1px solid var(--line); padding: 34px 0 54px; font-size: 14px; color: var(--grey); }
+    footer .wrap { display: flex; gap: 24px; align-items: center; }
+    footer .brand { color: var(--ink); margin-right: auto; }
+    .side { position: fixed; right: 0; top: 50%; transform: translateY(-50%); z-index: 50; writing-mode: vertical-rl; background: var(--red); color: #fff; padding: 18px 10px; border-radius: 14px 0 0 14px; font-size: 13px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; text-decoration: none; box-shadow: 0 10px 24px rgba(224,36,43,0.35); }
+
+    @media (max-width: 1100px) {
+      .nav { display: none; }
+      .langs { margin-left: auto; }
+      .hero .wrap, .explain, .analysis, .about { grid-template-columns: 1fr; }
+      .disc, .works { grid-template-columns: repeat(2, 1fr); }
+      .reasons { grid-template-columns: repeat(2, 1fr); }
+      .reason:nth-child(3) { padding-left: 0; border-left: 0; }
+      .steps { grid-template-columns: repeat(3, 1fr); }
+      .prices { grid-template-columns: 1fr; max-width: 560px; }
+    }
+    @media (max-width: 760px) {
+      :root { --pad: 16px; }
+      .top__bar .btn { display: none; }
+      .hero { padding: 36px 0 56px; }
+      .row2 { grid-template-columns: 1fr; }
+      .formcard .stamp { width: 74px; height: 74px; top: -20px; font-size: 9.5px; }
+      .formcard .stamp b { font-size: 17px; }
+      section.s { padding: 70px 0; }
+      .disc { grid-template-columns: 1fr 1fr; gap: 10px; }
+      .dc__ic { height: 92px; }
+      .dc__ic svg { width: 46px; height: 46px; }
+      .works { grid-template-columns: 1fr; }
+      .reasons { grid-template-columns: 1fr; }
+      .reason, .reason + .reason { padding: 22px 0 0; border-left: 0; }
+      .steps { grid-template-columns: 1fr 1fr; }
+      .analysis { padding: 32px 20px; border-radius: 22px; }
+      .analysis form { flex-direction: column; border-radius: 16px; }
+      .analysis input { padding: 12px; }
+      .about img { max-width: 320px; }
+      .creds { grid-template-columns: 1fr; }
+      .side { display: none; }
+    }
+    @media (prefers-reduced-motion: reduce) { * { transition: none !important; } html { scroll-behavior: auto; } }
+  </style>
+</head>
+<body>
+  <header class="top">
+    <div class="top__bar">
+      <div class="wrap">
+        <a class="brand" href="#"><i>PS</i>PRODUCT STUDIO</a>
+        <nav class="nav">
+          <a href="#leistungen"><span class="de">Leistungen</span><span class="en">Services</span></a>
+          <a href="#projekte"><span class="de">Projekte</span><span class="en">Work</span></a>
+          <a href="#kosten"><span class="de">Kosten</span><span class="en">Pricing</span></a>
+          <a href="#team"><span class="de">Über uns</span><span class="en">About</span></a>
+          <a href="#faq">FAQ</a>
+        </nav>
+        <div class="langs" role="group" aria-label="Sprache / Language">
+          <button type="button" data-lang="de" aria-pressed="true">DE</button>
+          <button type="button" data-lang="en" aria-pressed="false">EN</button>
+        </div>
+        <a class="btn btn--ink btn--sm" href="#anfrage"><span class="de">Kontakt</span><span class="en">Contact</span> <i>→</i></a>
+      </div>
+    </div>
+    <nav class="pills" aria-label="Inhalt">
+      <div class="wrap">
+        <b><span class="de">Inhalt</span><span class="en">Contents</span></b>
+        <a href="#erklaert"><span class="de">Einfach erklärt</span><span class="en">Explained</span></a>
+        <a href="#leistungen"><span class="de">Leistungen</span><span class="en">Services</span></a>
+        <a href="#warum"><span class="de">Warum wir</span><span class="en">Why us</span></a>
+        <a href="#projekte"><span class="de">Projekte</span><span class="en">Work</span></a>
+        <a href="#ablauf"><span class="de">Ablauf</span><span class="en">Process</span></a>
+        <a href="#kosten"><span class="de">Kosten</span><span class="en">Pricing</span></a>
+        <a href="#team">Team</a>
+        <a href="#faq">FAQ</a>
+      </div>
+    </nav>
+  </header>
+
+  <section class="hero" id="anfrage">
+    <div class="wrap">
+      <div>
+        <h1><span class="de"><span class="r">Websites, die verkaufen.</span> <span class="g">Sichtbar bei Google – und in der KI.</span></span><span class="en"><span class="r">Websites that sell.</span> <span class="g">Visible on Google – and in AI.</span></span></h1>
+        <p><span class="de">Eine schöne Website allein bringt keine Kunden. Ihre Kunden suchen bei Google und fragen immer öfter ChatGPT, Gemini oder Perplexity. Wir bauen Ihre Website so, dass sie dort gefunden wird, und kümmern uns um alles Weitere.</span><span class="en">A beautiful website alone brings no customers. Your customers search Google and, more and more, ask ChatGPT, Gemini or Perplexity. We build your website so that it gets found there, and take care of everything else.</span></p>
+        <ul class="checks">
+          <li><span class="de"><b>Neue Website zum Festpreis</b> – in 4 bis 8 Wochen online</span><span class="en"><b>A new website at a fixed price</b> – live in 4 to 8 weeks</span></li>
+          <li><span class="de"><b>Sichtbar in Google und KI-Antworten</b> – mit monatlicher Prüfung</span><span class="en"><b>Visible in Google and AI answers</b> – checked every month</span></li>
+          <li><span class="de"><b>Mehr Anfragen</b> – mit Google Ads und Meta-Werbung auf Wunsch</span><span class="en"><b>More enquiries</b> – with Google Ads and Meta ads if you want</span></li>
+        </ul>
+        <div class="trust" id="trust"></div>
+      </div>
+      <div class="formcard">
+        <div class="stamp"><span><span class="de">Erstgespräch</span><span class="en">First call</span><b><span class="de">gratis</span><span class="en">free</span></b></span></div>
+        <h2><span class="de">Jetzt kostenlos & <span class="r">unverbindlich</span> anfragen.</span><span class="en">Ask now, free & <span class="r">without obligation</span>.</span></h2>
+        <form id="contact" novalidate>
+          <label><span class="de">Leistung</span><span class="en">Service</span><select name="topic" id="topic"></select></label>
+          <div class="row2">
+            <label><span class="de">Name*</span><span class="en">Name*</span><input name="name" required autocomplete="name"></label>
+            <label><span class="de">E-Mail*</span><span class="en">Email*</span><input name="email" type="email" required autocomplete="email"></label>
+          </div>
+          <label><span class="de">Website</span><span class="en">Website</span><input name="site" autocomplete="url" id="site-in"></label>
+          <label><span class="de">Ihre Nachricht</span><span class="en">Your message</span><textarea name="message" id="msg-in"></textarea></label>
+          <button class="btn btn--red" type="submit"><span class="de">Anfrage vorbereiten</span><span class="en">Prepare enquiry</span> →</button>
+          <p id="c-status" role="status"></p>
+        </form>
+        <small><span class="de">Antwort innerhalb eines Werktages.</span><span class="en">Reply within one working day.</span></small>
+      </div>
+    </div>
+  </section>
+
+  <section class="s" id="erklaert" style="background:var(--soft)">
+    <div class="wrap explain">
+      <div class="explain__card">
+        <span class="explain__tag">01 · AEO</span>
+        <h3><span class="de">KI-Sichtbarkeit, einfach erklärt</span><span class="en">AI visibility, simply explained</span></h3>
+        <p><span class="de">AEO heißt Answer Engine Optimisation: Ihre Website wird so gebaut, dass KI-Assistenten Sie als Antwort nennen.</span><span class="en">AEO stands for Answer Engine Optimisation: your website is built so that AI assistants name you as the answer.</span></p>
+      </div>
+      <div>
+        <p class="kick"><span class="de">Einfach erklärt</span><span class="en">Simply explained</span></p>
+        <h2 class="h"><span class="de">Was ist <span class="r">KI-Sichtbarkeit</span>?</span><span class="en">What is <span class="r">AI visibility</span>?</span></h2>
+        <p class="lead"><span class="de">Wenn jemand ChatGPT fragt „Welcher Zahnarzt in Köln ist gut?“, nennt die KI zwei oder drei Namen. KI-Sichtbarkeit bedeutet, dass Ihrer dabei ist. Dafür greifen drei Dinge ineinander:</span><span class="en">When someone asks ChatGPT “Which dentist in Cologne is good?”, the AI names two or three businesses. AI visibility means yours is one of them. Three things work together:</span></p>
+        <div class="three">
+          <div><b>1</b><div><h4><span class="de">Technik</span><span class="en">Engineering</span></h4><p><span class="de">Die KI kann Ihre Seiten lesen: schnell, sauber, offen für ihre Crawler.</span><span class="en">The AI can read your pages: fast, clean and open to its crawlers.</span></p></div></div>
+          <div><b>2</b><div><h4><span class="de">Inhalte</span><span class="en">Content</span></h4><p><span class="de">Ihre Website beantwortet die Fragen, die Kunden wirklich stellen.</span><span class="en">Your website answers the questions customers really ask.</span></p></div></div>
+          <div><b>3</b><div><h4><span class="de">Vertrauen</span><span class="en">Trust</span></h4><p><span class="de">Andere Seiten erwähnen Sie, damit die KI Ihnen glaubt.</span><span class="en">Other sites mention you, so the AI believes you.</span></p></div></div>
+        </div>
+        <p class="lead" style="font-size:16px"><span class="de"><b>Das Ergebnis:</b> Sie werden genannt, wenn Kunden fragen. Bei Google und in der KI.</span><span class="en"><b>The result:</b> you get named when customers ask. On Google and in AI.</span></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="s" id="leistungen">
+    <div class="wrap">
+      <p class="kick"><span class="de">Leistungen</span><span class="en">Services</span></p>
+      <h2 class="h"><span class="de">Acht Leistungen aus einer Hand. <span class="g">Damit aus Besuchern Kunden werden.</span></span><span class="en">Eight services from one team. <span class="g">So visitors become customers.</span></span></h2>
+      <div class="disc" id="disc"></div>
+    </div>
+  </section>
+
+  <section class="s" id="warum" style="padding-top:20px">
+    <div class="wrap">
+      <p class="kick"><span class="de">Warum wir</span><span class="en">Why us</span></p>
+      <h2 class="h"><span class="de">Vier Gründe. <span class="r">Eine Entscheidung.</span></span><span class="en">Four reasons. <span class="r">One decision.</span></span></h2>
+      <div class="reasons" id="reasons"></div>
+    </div>
+  </section>
+
+  <section class="s" id="projekte" style="background:var(--soft)">
+    <div class="wrap">
+      <p class="kick"><span class="de">Projekte</span><span class="en">Work</span></p>
+      <h2 class="h"><span class="de">Ergebnisse, die <span class="r">für sich sprechen.</span></span><span class="en">Results that <span class="r">speak for themselves.</span></span></h2>
+      <div class="works" id="works"></div>
+    </div>
+  </section>
+
+  <section class="s" id="ablauf">
+    <div class="wrap">
+      <p class="kick"><span class="de">Ablauf</span><span class="en">Process</span></p>
+      <h2 class="h"><span class="de">So läuft die <span class="r">Zusammenarbeit</span> in fünf Schritten.</span><span class="en">How we <span class="r">work together</span> in five steps.</span></h2>
+      <div class="steps" id="steps"></div>
+    </div>
+  </section>
+
+  <section class="s" id="kosten" style="padding-top:20px">
+    <div class="wrap">
+      <p class="kick"><span class="de">Kosten</span><span class="en">Pricing</span></p>
+      <h2 class="h"><span class="de">Was kostet eine Website <span class="r">wirklich?</span></span><span class="en">What does a website <span class="r">really</span> cost?</span></h2>
+      <p class="lead"><span class="de">Bei uns steht der Preis vorher fest. Welches Paket passt, hängt davon ab, ob Sie nur eine neue Website brauchen oder auch Kunden über Google, KI und Werbung gewinnen wollen.</span><span class="en">With us the price is fixed up front. Which package fits depends on whether you just need a new website or also want customers from Google, AI and ads.</span></p>
+      <div class="prices" id="prices"></div>
+      <p class="price__foot" style="margin-top:18px"><span class="de">Alle Preise netto, zzgl. MwSt. Werbebudget für Google und Meta zahlen Sie direkt an die Plattformen. Apps und Plattformen bieten wir individuell an.</span><span class="en">All prices excl. VAT. You pay the Google and Meta ad budget directly to the platforms. Apps and platforms are quoted individually.</span></p>
+    </div>
+  </section>
+
+  <section class="s" style="padding-top:0">
+    <div class="wrap">
+      <div class="analysis">
+        <div>
+          <p class="kick" style="color:#ff8a8e"><span class="de">Kostenlose Analyse</span><span class="en">Free analysis</span></p>
+          <h2 class="h"><span class="de">Lassen Sie Ihre Website kostenlos analysieren.</span><span class="en">Get your website analysed for free.</span></h2>
+          <p class="lead"><span class="de">In etwa einer Minute sehen Sie, ob ChatGPT und Perplexity Sie nennen, und einen Entwurf Ihrer neuen Website.</span><span class="en">In about a minute you see whether ChatGPT and Perplexity name you, plus a draft of your new website.</span></p>
+        </div>
+        <div>
+          <form id="checkform">
+            <input id="check-url" type="text" inputmode="url" autocomplete="url" aria-label="Website" placeholder="ihre-firma.de">
+            <button class="btn btn--red" type="submit"><span class="de">Analysieren</span><span class="en">Analyse</span></button>
+          </form>
+          <small><span class="de">Kostenlos und ohne Anmeldung. Wir lesen nur Ihre öffentliche Startseite.</span><span class="en">Free, no sign-up. We only read your public home page.</span></small>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="s" id="team" style="padding-top:20px">
+    <div class="wrap about">
+      <img src="/sustain/assets/fabian-wilk.jpg" alt="Fabian Wilk" loading="lazy">
+      <div>
+        <p class="kick"><span class="de">Team</span><span class="en">Team</span></p>
+        <h2 class="h" id="hello"></h2>
+        <div id="about-text"></div>
+        <div class="creds" id="creds"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="s" id="faq" style="background:var(--soft)">
+    <div class="wrap">
+      <p class="kick">FAQ</p>
+      <h2 class="h"><span class="de">Sie haben noch <span class="r">Fragen?</span></span><span class="en">Still have <span class="r">questions?</span></span></h2>
+      <div class="faq" id="faqs"></div>
+    </div>
+  </section>
+
+  <section class="final">
+    <div class="wrap">
+      <h2 class="h"><span class="de">Starten Sie Ihre <span class="r">digitale Erfolgsgeschichte.</span></span><span class="en">Start your <span class="r">digital success story.</span></span></h2>
+      <p class="lead"><span class="de">Ein Gespräch, ein fester Preis, ein fester Termin.</span><span class="en">One call, one fixed price, one fixed date.</span></p>
+      <a class="btn btn--ink" href="#anfrage"><span class="de">Jetzt anfragen</span><span class="en">Ask now</span> <i>→</i></a>
+    </div>
+  </section>
+
+  <footer>
+    <div class="wrap">
+      <span class="brand"><i>PS</i>PRODUCT STUDIO</span>
+      <span>Impressum</span>
+      <span><span class="de">Datenschutz</span><span class="en">Privacy</span></span>
+    </div>
+  </footer>
+  <a class="side" href="#anfrage"><span class="de">Kontakt & Anfrage</span><span class="en">Contact</span></a>
+
+  <script src="/sustain/assets/studio-data.js"></script>
+  <script>
+    const S = window.STUDIO;
+    const $ = (id) => document.getElementById(id);
+    const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+    let lang = "de";
+    try { lang = new URLSearchParams(location.search).get("lang") || localStorage.getItem("studio-lang") || "de"; } catch (e) {}
+    if (lang !== "en") lang = "de";
+    const L = (o) => (o && typeof o === "object" && !Array.isArray(o) ? o[lang] : o);
+    const ic = (p) => `<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
+
+    const DISC = [
+      { i: '<rect x="8" y="12" width="48" height="36" rx="3"/><path d="M8 20h48"/><path class="a" d="M18 30h16M18 37h10"/>', de: ["Webdesign", "Gestaltung passend zu Ihrer Marke, klar und vertrauenswürdig."], en: ["Web design", "Design that fits your brand, clear and trustworthy."] },
+      { i: '<path d="M22 22l-10 10 10 10M42 22l10 10-10 10"/><path class="a" d="M36 16l-8 32"/>', de: ["Webentwicklung", "Schnell, sicher, DSGVO-konform und einfach zu pflegen."], en: ["Web development", "Fast, secure, GDPR-ready and easy to update."] },
+      { i: '<path d="M12 16h6l6 26h24l6-18H22"/><circle cx="28" cy="50" r="3"/><circle class="a" cx="46" cy="50" r="3"/>', de: ["Onlineshop", "Produkte, Bezahlung und Versand an einem Ort."], en: ["Online shop", "Products, payment and shipping in one place."] },
+      { i: '<circle cx="28" cy="28" r="14"/><path d="M38 38l14 14"/><path class="a" d="M22 28h12"/>', de: ["SEO", "Technik und Inhalte, damit Google Sie weit oben zeigt."], en: ["SEO", "Engineering and content so Google shows you near the top."] },
+      { i: '<rect x="10" y="14" width="34" height="24" rx="5"/><path d="M18 38l-4 8 10-8"/><rect class="a" x="28" y="28" width="26" height="18" rx="4"/>', by: "ItGrows", de: ["KI-Sichtbarkeit", "Genannt werden in ChatGPT, Perplexity und Gemini."], en: ["AI visibility", "Get named in ChatGPT, Perplexity and Gemini."] },
+      { i: '<path d="M32 8a16 16 0 0 0-16 16c0 12 16 30 16 30s16-18 16-30A16 16 0 0 0 32 8z"/><circle class="a" cx="32" cy="24" r="5"/>', de: ["Google Ads & Maps", "Anzeigen in Suche und Maps, optimiert auf Anfragen."], en: ["Google Ads & Maps", "Ads in search and Maps, built for enquiries."] },
+      { i: '<rect x="10" y="10" width="44" height="44" rx="12"/><circle cx="32" cy="32" r="10"/><circle class="a" cx="45" cy="19" r="2"/>', de: ["Meta-Werbung", "Kampagnen auf Instagram und Facebook mit Bericht."], en: ["Meta ads", "Instagram and Facebook campaigns with reporting."] },
+      { i: '<rect x="20" y="6" width="24" height="52" rx="5"/><path d="M29 50h6"/><path class="a" d="M26 20l6 6 8-10"/>', by: "AppsLift", de: ["Apps & App Store", "Apps von der Idee bis zum Start, gefunden im App Store."], en: ["Apps & app stores", "Apps from idea to launch, found on the app stores."] }
+    ];
+    const REASONS = [
+      { n: "01", de: ["Fester Preis", "Sie kennen den Preis vor dem Start. Keine Stundenabrechnung."], en: ["Fixed price", "You know the price before we start. No hourly billing."] },
+      { n: "02", de: ["Feste Termine", "Ihre Website ist je nach Paket in 4 bis 8 Wochen online."], en: ["Fixed dates", "Your website is live in 4 to 8 weeks, depending on the package."] },
+      { n: "03", de: ["Google und KI", "Wir bauen für die Suche von heute: Google, ChatGPT, Perplexity, Gemini."], en: ["Google and AI", "We build for today’s search: Google, ChatGPT, Perplexity, Gemini."] },
+      { n: "04", de: ["Alles aus einer Hand", "Website, Sichtbarkeit und Werbung von einem Team, ohne Abstimmungschaos."], en: ["One team", "Website, visibility and ads from one team, without coordination chaos."] }
+    ];
+    // Each package says who it is for, the way the pricing reference does.
+    const FOR = [
+      { de: "Für: Unternehmen, die eine neue, schnelle Website brauchen und die Vermarktung selbst übernehmen.", en: "For: businesses that need a new, fast website and handle marketing themselves." },
+      { de: "Für: Unternehmen, die über Google und KI-Assistenten neue Kunden gewinnen wollen.", en: "For: businesses that want new customers through Google and AI assistants." },
+      { de: "Für: Unternehmen mit Wachstumszielen, neuer Marke oder Kunden im Ausland.", en: "For: businesses with growth goals, a new brand or customers abroad." }
+    ];
+    // Work cards lead with the result where we have one, otherwise with what the product does.
+    const RESULT = { magiscan: { de: "4M+ Installationen und 16M+ 3D-Modelle weltweit", en: "4M+ installs and 16M+ 3D models worldwide" } };
+
+    function render() {
+      document.documentElement.lang = lang;
+      document.documentElement.dataset.l = lang;
+      document.querySelectorAll("[data-lang]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.lang === lang)));
+      $("check-url").placeholder = lang === "de" ? "ihre-firma.de" : "your-company.com";
+      $("trust").innerHTML = S.stats.slice(0, 3).map((s) => `<span><b>${s.n}</b>${esc(s[lang])}</span>`).join("");
+      $("disc").innerHTML = DISC.map((d, i) => `<div class="dc">${d.by ? `<span class="by">${d.by}</span>` : ""}<div class="dc__ic">${ic(d.i)}</div><div class="dc__body"><span class="dc__n">0${i + 1}</span><h3>${esc(d[lang][0])}</h3><p>${esc(d[lang][1])}</p></div></div>`).join("");
+      $("reasons").innerHTML = REASONS.map((r) => `<div class="reason"><b>${r.n}</b><h3>${esc(r[lang][0])}</h3><p>${esc(r[lang][1])}</p></div>`).join("");
+      $("works").innerHTML = S.projects.slice(0, 8).map((p) => {
+        const tag = p.url ? "a" : "div";
+        return `<${tag} class="work"${p.url ? ` href="${p.url}" target="_blank" rel="noopener"` : ""}><img src="/sustain/assets/thumbs/${p.id}-cover.webp" alt="${esc(p.name)}" loading="lazy"><div class="work__body"><span class="work__who">${esc(p.name)}</span><h3>${esc(L(RESULT[p.id] || p.line))}</h3><span class="work__tag">${esc(L(p.tag))}${p.url ? " ↗" : ""}</span></div></${tag}>`;
+      }).join("");
+      $("steps").innerHTML = S.steps.map((s, i) => `<div class="step"><b>0${i + 1}</b><h3>${esc(s[lang][0])}</h3><p>${esc(s[lang][1])}</p></div>`).join("");
+      $("prices").innerHTML = S.packs.map((p, i) => `<div class="price${p.hot ? " price--hot" : ""}">${p.hot ? `<span class="price__rec">${lang === "de" ? "Unsere Empfehlung" : "Our recommendation"}</span>` : ""}
+        <span class="price__name">${esc(L(p.name))} · ${lang === "de" ? `${p.weeks} Wochen` : `${p.weeks} weeks`}</span>
+        <div class="price__amount">${L(p.price)}</div><div class="price__sub">${lang === "de" ? "Festpreis · zzgl. MwSt." : "Fixed price · excl. VAT"}</div>
+        <div class="price__for">${esc(L(FOR[i]))}</div>
+        <ul>${L(p.items).map((x) => `<li>${esc(x)}</li>`).join("")}</ul>
+        <a class="btn ${p.hot ? "btn--red" : "btn--line"}" href="#anfrage" data-pack="${i}">${lang === "de" ? "Angebot anfragen" : "Request an offer"}</a></div>`).join("");
+      document.querySelectorAll("[data-pack]").forEach((a) => a.addEventListener("click", () => { $("msg-in").value = (lang === "de" ? "Ich interessiere mich für das Paket „" : "I’m interested in the “") + L(S.packs[+a.dataset.pack].name) + (lang === "de" ? "“." : "” package."); }));
+      const F = S.founder;
+      $("hello").textContent = L(F.hello);
+      $("about-text").innerHTML = L(F.text).map((t) => `<p>${esc(t)}</p>`).join("");
+      $("creds").innerHTML = `<div><span>${esc(L(F.role))}</span><b>${F.name}</b></div>` + F.creds.map((c) => `<div><span>${esc(c[lang][0])}</span><b>${esc(c[lang][1])}</b></div>`).join("");
+      $("faqs").innerHTML = S.faq.map((q, i) => `<details${i === 0 ? " open" : ""}><summary>${esc(q[lang][0])}</summary><p>${esc(q[lang][1])}</p></details>`).join("");
+      const keep = $("topic").value;
+      $("topic").innerHTML = `<option value="">${lang === "de" ? "Bitte wählen" : "Please choose"}</option>` + DISC.map((d, i) => `<option value="${i}">${esc(d[lang][0])}</option>`).join("") + `<option value="x">${lang === "de" ? "Alles aus einer Hand" : "Everything from one team"}</option>`;
+      $("topic").value = keep;
+    }
+
+    // The contents pills follow the reader down the page.
+    const pills = [...document.querySelectorAll(".pills a")];
+    const io = new IntersectionObserver((es) => es.forEach((e) => {
+      if (!e.isIntersecting) return;
+      pills.forEach((a) => a.classList.toggle("on", a.getAttribute("href") === "#" + e.target.id));
+    }), { rootMargin: "-45% 0px -50% 0px" });
+    pills.forEach((a) => { const t = document.querySelector(a.getAttribute("href")); if (t) io.observe(t); });
+
+    document.querySelectorAll("[data-lang]").forEach((b) => b.addEventListener("click", () => {
+      lang = b.dataset.lang;
+      try { localStorage.setItem("studio-lang", lang); } catch (e) {}
+      render();
+    }));
+
+    $("checkform").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const u = $("check-url").value.trim();
+      location.href = `/sustain/${lang}${u ? `?url=${encodeURIComponent(u)}` : ""}#check`;
+    });
+
+    $("contact").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const f = e.target;
+      if (!f.name.value.trim() || !f.email.value || !f.email.checkValidity()) {
+        $("c-status").textContent = lang === "de" ? "Bitte Name und E-Mail angeben." : "Please enter your name and email.";
+        return;
+      }
+      if (S.email === "YOUR_STUDIO_EMAIL") {
+        $("c-status").textContent = lang === "de" ? "Es wurde nichts gesendet: die E-Mail-Adresse des Studios fehlt noch auf dieser Seite." : "Nothing was sent: the studio’s email address is not on this page yet.";
+        return;
+      }
+      const topic = f.topic.options[f.topic.selectedIndex]?.text || "";
+      const body = `Name: ${f.name.value}\nE-Mail: ${f.email.value}\n${lang === "de" ? "Leistung" : "Service"}: ${topic}\nWebsite: ${f.site.value}\n\n${f.message.value}`;
+      location.href = `mailto:${S.email}?subject=${encodeURIComponent(lang === "de" ? "Anfrage über die Website" : "Enquiry from the website")}&body=${encodeURIComponent(body)}`;
+      $("c-status").textContent = lang === "de" ? "Ihr E-Mail-Programm öffnet sich. Von dieser Seite wurde nichts gesendet." : "Your email app is opening. Nothing was sent from this page.";
+    });
+
+    render();
+  </script>
+</body>
+</html>
