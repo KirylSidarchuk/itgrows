@@ -43,7 +43,7 @@ const nextConfig: NextConfig = {
   // Shared by link only: search engines are told to keep the page and its images out of results.
   async headers() {
     const noindex = [{ key: "X-Robots-Tag", value: "noindex, nofollow" }]
-    return ["/sustain/:path*", "/sustain1/:path*", "/sustain2/:path*", "/sustain3/:path*", "/sustain4/:path*"].map((source) => ({ source, headers: noindex }))
+    return ["/sustain/:path*", "/sustain1/:path*", "/sustain2/:path*", "/sustain3/:path*", "/sustain4/:path*", "/game/:path*"].map((source) => ({ source, headers: noindex }))
   },
   async rewrites() {
     return {
@@ -61,6 +61,8 @@ const nextConfig: NextConfig = {
         // A service map in the manner of webnetz.de, and a simply-explained page in the manner of suchhelden.de.
         { source: "/sustain3", destination: "/sustain3/index.html" },
         { source: "/sustain4", destination: "/sustain4/index.html" },
+        // Personal games made to order (public/game): a plain HTML draft shared by link until it gets its own domain.
+        { source: "/game", destination: "/game/index.html" },
       ],
       afterFiles: [
         // Serve a clean markdown alternate for each article at /blog/{slug}.md without giving up

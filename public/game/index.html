@@ -1,0 +1,560 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Черновик: только по ссылке, пока не выбран свой домен -->
+<meta name="robots" content="noindex, nofollow">
+<title>Игра, где главный герой — тот, кого вы любите</title>
+<meta name="description" content="Персональные игры на заказ: игра про конкретного человека — его день, питомцев, шутки и любимые дела. Подарок, обучение и летопись жизни.">
+<meta property="og:title" content="Игра, где главный герой — тот, кого вы любите">
+<meta property="og:description" content="Персональные игры на заказ — для детей и взрослых.">
+<meta property="og:image" content="/game/assets/map.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#fff8f1; --bg2:#fff0e4; --card:#ffffff;
+  --ink:#372d46; --muted:#6e6482; --line:#f1e2d6;
+  --pink:#ff78af; --pink-d:#d9467f; --yellow:#ffd246; --sky:#96d7ff;
+  --green:#6ecd78; --purple:#aa78eb;
+  --r:22px; --shadow:0 18px 40px -22px rgba(80,40,70,.35);
+  color-scheme: light;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:400 18px/1.6 Nunito,system-ui,-apple-system,"Segoe UI",sans-serif;
+  -webkit-font-smoothing:antialiased;overflow-x:hidden}
+img{max-width:100%;display:block}
+[hidden]{display:none!important}
+a{color:inherit}
+.wrap{max-width:1120px;margin:0 auto;padding:0 20px}
+h1,h2,h3{line-height:1.15;margin:0;font-weight:900;letter-spacing:-.01em}
+h2{font-size:clamp(30px,4.2vw,46px)}
+h3{font-size:22px;font-weight:800}
+p{margin:0}
+.kicker{display:inline-block;font-weight:800;font-size:14px;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--pink-d);margin-bottom:12px}
+section{padding:88px 0}
+.center{text-align:center}
+.lead{font-size:20px;color:var(--muted)}
+
+/* ---------- кнопки ---------- */
+.btn{display:inline-flex;align-items:center;gap:10px;font:800 18px/1 Nunito,sans-serif;
+  padding:18px 28px;border-radius:999px;text-decoration:none;cursor:pointer;border:0;
+  transition:transform .15s ease, box-shadow .15s ease}
+.btn:active{transform:translateY(1px)}
+.btn-main{background:var(--pink-d);color:#fff;box-shadow:0 10px 0 -2px #a8305f, 0 18px 30px -12px rgba(217,70,127,.55)}
+.btn-main:hover{transform:translateY(-2px)}
+.btn-soft{background:#fff;color:var(--ink);box-shadow:inset 0 0 0 2px var(--line)}
+.btn-soft:hover{box-shadow:inset 0 0 0 2px var(--pink)}
+
+/* ---------- шапка ---------- */
+header{position:sticky;top:0;z-index:20;background:rgba(255,248,241,.86);
+  backdrop-filter:saturate(1.4) blur(10px);-webkit-backdrop-filter:saturate(1.4) blur(10px);
+  border-bottom:1px solid transparent;transition:border-color .2s}
+header.scrolled{border-bottom-color:var(--line)}
+.bar{display:flex;align-items:center;justify-content:space-between;height:68px;gap:16px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:900;font-size:20px;text-decoration:none}
+.brand svg{flex:none}
+nav{display:flex;align-items:center;gap:26px}
+nav a.lnk{text-decoration:none;font-weight:700;color:var(--muted)}
+nav a.lnk:hover{color:var(--ink)}
+.lang{display:flex;background:#fff;border-radius:999px;padding:3px;box-shadow:inset 0 0 0 2px var(--line)}
+.lang button{border:0;background:none;font:800 13px Nunito,sans-serif;color:var(--muted);
+  padding:7px 11px;border-radius:999px;cursor:pointer}
+.lang button.on{background:var(--ink);color:#fff}
+.bar .btn{padding:12px 20px;font-size:16px}
+
+/* ---------- первый экран ---------- */
+.hero{padding:64px 0 96px;position:relative}
+.hero .grid{display:grid;grid-template-columns:1.05fr 1fr;gap:56px;align-items:center}
+.hero h1{font-size:clamp(40px,6vw,68px)}
+.hl{background:linear-gradient(transparent 62%, var(--yellow) 62%, var(--yellow) 90%, transparent 90%);padding:0 .08em}
+.hero .lead{margin:22px 0 32px;max-width:34ch}
+.hero .ctas{display:flex;flex-wrap:wrap;gap:14px;align-items:center}
+.hero .note{margin-top:18px;font-size:15px;color:var(--muted);display:flex;gap:8px;align-items:center}
+.tablet{position:relative;background:#2d2638;border-radius:34px;padding:16px;
+  box-shadow:0 40px 60px -30px rgba(55,45,70,.6);transform:rotate(2deg)}
+.tablet img{border-radius:20px;aspect-ratio:16/9;object-fit:cover;width:100%;height:auto}
+.tablet::after{content:"";position:absolute;right:7px;top:50%;width:6px;height:46px;
+  margin-top:-23px;border-radius:6px;background:#4a4058}
+.float{position:absolute;pointer-events:none}
+.f1{left:-34px;bottom:-28px;width:96px;animation:bob 5s ease-in-out infinite}
+.f2{right:-18px;top:-30px;width:62px;animation:bob 6s ease-in-out infinite reverse}
+.f3{left:40%;top:-40px;width:36px;animation:bob 4.4s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-12px) rotate(6deg)}}
+
+/* ---------- история ---------- */
+.story{background:var(--bg2)}
+.story .grid{display:grid;grid-template-columns:.9fr 1.1fr;gap:64px;align-items:center}
+.photo{position:relative;border-radius:30px;overflow:hidden;background:#f6dccb;aspect-ratio:4/5;
+  box-shadow:var(--shadow);transform:rotate(-2deg)}
+.photo img{width:100%;height:100%;object-fit:cover}
+.photo .ph{position:absolute;inset:0;display:grid;place-items:center;text-align:center;
+  color:#b48a74;font-weight:800;padding:20px}
+.photo figcaption{position:absolute;left:16px;bottom:16px;background:#fff;border-radius:999px;
+  padding:8px 16px;font-weight:800;font-size:15px;box-shadow:var(--shadow)}
+.story .txt p{margin-top:16px;font-size:19px}
+.story .txt p.big{font-size:22px;font-weight:800;color:var(--pink-d);margin-top:22px}
+.sign{margin-top:26px;display:flex;align-items:center;gap:12px;font-weight:800;color:var(--muted)}
+.sign::before{content:"";width:34px;height:3px;border-radius:3px;background:var(--pink)}
+
+/* ---------- миссия ---------- */
+.mission{padding:96px 0}
+.mission blockquote{margin:0 auto;max-width:880px;text-align:center;
+  font-size:clamp(24px,3vw,34px);line-height:1.4;font-weight:800}
+.mission blockquote::before{content:"“";display:block;font-size:110px;line-height:.6;color:var(--pink);
+  margin-bottom:14px}
+
+/* ---------- карточки ---------- */
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:44px}
+.card{background:var(--card);border-radius:var(--r);padding:30px;box-shadow:var(--shadow);
+  border:1px solid var(--line)}
+.card .ic{width:58px;height:58px;border-radius:18px;display:grid;place-items:center;margin-bottom:18px}
+.card p{margin-top:10px;color:var(--muted)}
+
+/* ---------- галерея ---------- */
+.gallery{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:44px}
+.shot{margin:0;background:#fff;border-radius:var(--r);padding:10px;box-shadow:var(--shadow);border:1px solid var(--line)}
+.shot img{border-radius:14px;aspect-ratio:16/9;object-fit:cover;width:100%;height:auto}
+.shot figcaption{padding:14px 8px 6px;font-weight:700;font-size:16px;color:var(--muted)}
+
+/* ---------- шаги ---------- */
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:22px;margin-top:48px;counter-reset:s}
+.step{position:relative;background:#fff;border-radius:var(--r);padding:28px 24px;border:1px solid var(--line)}
+.step::before{counter-increment:s;content:counter(s);display:grid;place-items:center;
+  width:44px;height:44px;border-radius:50%;background:var(--yellow);font-weight:900;font-size:20px;margin-bottom:16px}
+.step p{margin-top:10px;color:var(--muted);font-size:17px}
+
+/* ---------- цены ---------- */
+.prices{display:grid;grid-template-columns:1.15fr 1fr 1fr;gap:22px;margin-top:48px;align-items:stretch}
+.price{background:#fff;border-radius:26px;padding:32px 28px;border:2px solid var(--line);display:flex;flex-direction:column}
+.price.main{border-color:var(--pink);box-shadow:0 30px 50px -30px rgba(217,70,127,.6)}
+.price .name{font-weight:800;color:var(--muted)}
+.price .sum{font-size:52px;font-weight:900;line-height:1.05;margin:10px 0 4px}
+.price .time{display:inline-flex;align-items:center;gap:8px;font-weight:800;background:var(--bg2);
+  border-radius:999px;padding:6px 14px;font-size:15px;width:max-content}
+.price .split{margin-top:18px;color:var(--muted);font-size:16px}
+.pnote{margin-top:20px;color:var(--muted);font-size:16px}
+.sub{margin-top:26px;display:grid;grid-template-columns:auto 1fr auto;gap:24px;align-items:center;
+  background:linear-gradient(120deg,#ffe7f1,#fff3cf);border-radius:26px;padding:28px 32px}
+.sub .sum{font-size:34px;font-weight:900;white-space:nowrap}
+.sub p{color:var(--muted);margin-top:6px}
+
+/* ---------- что внутри ---------- */
+.inside{display:grid;grid-template-columns:repeat(2,1fr);gap:14px 34px;margin-top:34px;padding:0;list-style:none}
+.inside li{display:flex;gap:12px;align-items:flex-start;font-weight:700}
+.inside li::before{content:"";flex:none;width:24px;height:24px;margin-top:3px;border-radius:50%;
+  background:var(--green) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6 12.5l4 4 8-9' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/16px no-repeat}
+
+/* ---------- вопросы ---------- */
+.faq{max-width:820px;margin:40px auto 0}
+.faq details{background:#fff;border-radius:18px;border:1px solid var(--line);padding:4px 24px;margin-bottom:12px}
+.faq summary{cursor:pointer;list-style:none;font-weight:800;font-size:19px;padding:18px 0;
+  display:flex;justify-content:space-between;gap:20px}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{content:"+";font-size:26px;line-height:1;color:var(--pink-d);transition:transform .2s}
+.faq details[open] summary::after{transform:rotate(45deg)}
+.faq details p{padding:0 0 20px;color:var(--muted)}
+
+/* ---------- финал ---------- */
+.final{padding:40px 0 100px}
+.final .box{background:var(--ink);color:#fff;border-radius:34px;padding:64px 40px;text-align:center;position:relative;overflow:hidden}
+.final h2{color:#fff}
+.final p{color:#d9d2e6;margin:16px auto 30px;max-width:50ch}
+.final .f4{left:6%;top:18%;width:54px;opacity:.9}
+.final .f5{right:7%;bottom:14%;width:80px;opacity:.95}
+footer{padding:28px 0 40px;color:var(--muted);font-size:15px;text-align:center}
+
+/* ---------- узкие экраны ---------- */
+@media (max-width:920px){
+  nav a.lnk{display:none}
+  .hero .grid,.story .grid{grid-template-columns:1fr;gap:44px}
+  .tablet{max-width:560px;margin:0 auto}
+  .photo{max-width:420px;margin:0 auto}
+  .cards,.gallery,.prices{grid-template-columns:1fr}
+  .steps{grid-template-columns:1fr 1fr}
+  .sub{grid-template-columns:1fr;gap:12px;text-align:left}
+}
+@media (max-width:560px){
+  body{font-size:17px}
+  .wrap{padding:0 16px}
+  section{padding:64px 0}
+  .hero{padding:36px 0 64px}
+  .steps{grid-template-columns:1fr}
+  .inside{grid-template-columns:1fr}
+  .bar .btn{display:none}
+  .f1{left:-10px;width:70px}.f2{right:-6px;width:46px}
+  .final .box{padding:48px 22px}
+  .price .sum{font-size:44px}
+}
+@media (prefers-reduced-motion:reduce){.float{animation:none}}
+</style>
+</head>
+<body>
+
+<header id="top">
+  <div class="wrap bar">
+    <a class="brand" href="#top">
+      <svg width="34" height="34" viewBox="0 0 40 40" aria-hidden="true">
+        <circle cx="20" cy="20" r="18" fill="#ff78af"/><circle cx="20" cy="20" r="7" fill="#fff8f1"/>
+        <circle cx="12" cy="11" r="2" fill="#ffd246"/><circle cx="27" cy="9" r="2" fill="#96d7ff"/>
+        <circle cx="30" cy="25" r="2" fill="#6ecd78"/><circle cx="10" cy="27" r="2" fill="#fff"/>
+      </svg>
+      <span data-i18n="brand">Игры про вас</span>
+    </a>
+    <nav>
+      <a class="lnk" href="#story" data-i18n="nav_story">Наша история</a>
+      <a class="lnk" href="#how" data-i18n="nav_how">Как это работает</a>
+      <a class="lnk" href="#prices" data-i18n="nav_price">Цены</a>
+      <div class="lang" role="group" aria-label="Язык / Language">
+        <button type="button" data-lang="ru">RU</button><button type="button" data-lang="en">EN</button>
+      </div>
+      <a class="btn btn-main" href="#start" data-i18n="cta_top">Начать</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+<!-- ======================================================= ПЕРВЫЙ ЭКРАН -->
+<section class="hero">
+  <div class="wrap grid">
+    <div>
+      <span class="kicker" data-i18n="hero_kicker">Персональные игры на заказ</span>
+      <h1 data-i18n="hero_h1">Игра, где главный герой&nbsp;— <span class="hl">тот, кого вы любите</span></h1>
+      <p class="lead" data-i18n="hero_sub">Мы делаем игру про конкретного человека: его день, его питомцев, его семейные шутки и любимые дела. Она открывается по ссылке — на телефоне, планшете и компьютере.</p>
+      <div class="ctas">
+        <a class="btn btn-main" href="#start" data-i18n="hero_cta">Начать со сценария — $49</a>
+        <a class="btn btn-soft" href="#story" data-i18n="hero_cta2">Как всё началось</a>
+      </div>
+      <p class="note" data-i18n="hero_note">⏱ Готовая игра — через 5 дней после согласования сценария</p>
+    </div>
+    <div style="position:relative">
+      <div class="tablet"><img src="/game/assets/map.png" alt="" data-i18n-alt="alt_map" width="1280" height="720"></div>
+      <svg class="float f1" viewBox="0 0 100 100" aria-hidden="true">
+        <circle cx="50" cy="50" r="44" fill="#e8a25a"/><circle cx="50" cy="50" r="38" fill="#ff8fbd"/>
+        <circle cx="50" cy="50" r="15" fill="#fff8f1"/>
+        <rect x="28" y="30" width="9" height="4" rx="2" fill="#fff" transform="rotate(-30 32 32)"/>
+        <rect x="62" y="28" width="9" height="4" rx="2" fill="#ffd246" transform="rotate(25 66 30)"/>
+        <rect x="66" y="62" width="9" height="4" rx="2" fill="#96d7ff" transform="rotate(-20 70 64)"/>
+        <rect x="26" y="64" width="9" height="4" rx="2" fill="#6ecd78" transform="rotate(35 30 66)"/>
+      </svg>
+      <svg class="float f2" viewBox="0 0 100 100" aria-hidden="true"><path d="M50 6l12.6 28.4 30.9 3.1-23.2 20.6 6.7 30.4L50 72.9 23 88.5l6.7-30.4L6.5 37.5l30.9-3.1z" fill="#ffd246" stroke="#e8b31c" stroke-width="4" stroke-linejoin="round"/></svg>
+      <svg class="float f3" viewBox="0 0 100 100" aria-hidden="true"><path d="M50 88S10 62 10 36a20 20 0 0140-6 20 20 0 0140 6c0 26-40 52-40 52z" fill="#ff78af"/></svg>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ ИСТОРИЯ -->
+<section class="story" id="story">
+  <div class="wrap grid">
+    <figure class="photo" style="margin:0">
+      <!-- Фото Авы и Куки — ставится, когда Кирилл пришлёт файл -->
+      <img id="storyPhoto" src="" alt="" data-i18n-alt="photo_cap" hidden>
+      <div class="ph" id="photoPh" data-i18n="photo_wait">Здесь будет фото Авы и Куки</div>
+      <figcaption data-i18n="photo_cap">Ава и Куки</figcaption>
+    </figure>
+    <div class="txt">
+      <span class="kicker" data-i18n="story_kicker">Наша история</span>
+      <h2 data-i18n="story_h">Всё началось с Авы</h2>
+      <p data-i18n="story_p1">Меня зовут Кирилл. Больше 16 лет я делаю приложения и сайты. А ещё я папа Авы.</p>
+      <p data-i18n="story_p2">Однажды мы с ней решили сделать что-то по-настоящему классное — для неё и про неё. Не очередную игру из магазина, а такую, которой больше нет ни у кого на свете.</p>
+      <p data-i18n="story_p3">Получилась игра про её день. Утром собрать рюкзак, пока мальтипу Куки — он же Огурчик — ворует носок. В школе ответить на вопросы, погулять, поплавать, покормить хомяка Хамю. А вечером приходит бабушка Ира, чтобы испортить веселье, — и отогнать её можно только пончиками.</p>
+      <p data-i18n="story_p4">Ава хохотала. Потом попросила конструктор, чтобы самой выбирать причёску и наряды. Потом мы придумали уровень про деда Валеру: он всегда отказывается идти в кафе, а когда приходит — съедает всё.</p>
+      <p class="big" data-i18n="story_p5">Тогда я понял, что такое нужно не только нам.</p>
+      <div class="sign" data-i18n="story_sign">Кирилл, папа Авы</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================= МИССИЯ -->
+<section class="mission">
+  <div class="wrap">
+    <blockquote data-i18n="mission">Мы делаем это с большой любовью и глубокой экспертизой — чтобы дарить людям то, чего у них нет: мир их фантазий, их лучшие дни и любимые дела, которыми теперь можно напрямую делиться с близкими.</blockquote>
+  </div>
+</section>
+
+<!-- ============================================================ ДЛЯ КОГО -->
+<section style="padding-top:0">
+  <div class="wrap">
+    <div class="center">
+      <span class="kicker" data-i18n="for_kicker">Для кого</span>
+      <h2 data-i18n="for_h">Для детей и для взрослых</h2>
+    </div>
+    <div class="cards">
+      <div class="card">
+        <div class="ic" style="background:#ffe3ee"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#d9467f" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="9" width="18" height="12" rx="2"/><path d="M12 9v12M3 13h18M12 9c-2-4-6-4-6-1.5S9 9 12 9zm0 0c2-4 6-4 6-1.5S15 9 12 9z"/></svg></div>
+        <h3 data-i18n="for1_h">Подарок</h3>
+        <p data-i18n="for1_p">Ребёнку на день рождения, паре на годовщину, другу, родителям, команде на прощание с коллегой. Игра, в которой все узнают себя.</p>
+      </div>
+      <div class="card">
+        <div class="ic" style="background:#e1f2ff"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#3d8fd9" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 8l10-5 10 5-10 5z"/><path d="M6 10v5c0 1.5 3 3 6 3s6-1.5 6-3v-5M22 8v6"/></svg></div>
+        <h3 data-i18n="for2_h">Обучение</h3>
+        <p data-i18n="for2_p">Таблица умножения, английские слова, буквы — внутри игры, где герой сам ребёнок, а рядом его питомцы и друзья.</p>
+      </div>
+      <div class="card">
+        <div class="ic" style="background:#fff2c6"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#c99a0e" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h12a4 4 0 014 4v12H8a4 4 0 01-4-4z"/><path d="M8 9h8M8 13h6"/></svg></div>
+        <h3 data-i18n="for3_h">Летопись жизни</h3>
+        <p data-i18n="for3_p">Каждый месяц — новая глава: первый класс, отпуск, щенок, переезд. Мир растёт вместе с человеком, а прошлые главы остаются навсегда — в них можно вернуться.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ ГАЛЕРЕЯ -->
+<section style="padding-top:0">
+  <div class="wrap">
+    <div class="center">
+      <span class="kicker" data-i18n="gal_kicker">Как это выглядит</span>
+      <h2 data-i18n="gal_h">Настоящая игра Авы</h2>
+    </div>
+    <div class="gallery">
+      <figure class="shot"><img src="/game/assets/map.png" alt="" loading="lazy" width="1280" height="720"><figcaption data-i18n="gal1">Карта дня: занятия идут по порядку, а вечером приходит бабушка</figcaption></figure>
+      <figure class="shot"><img src="/game/assets/dress.png" alt="" loading="lazy" width="1280" height="720"><figcaption data-i18n="gal2">Конструктор: Ава сама выбирает причёску, наряд и обувь</figcaption></figure>
+      <figure class="shot"><img src="/game/assets/cafe.png" alt="" loading="lazy" width="1280" height="720"><figcaption data-i18n="gal3">Кафе с дедом Валерой: успей взять своё, пока дед не съел</figcaption></figure>
+    </div>
+  </div>
+</section>
+
+<!-- ======================================================== КАК ЭТО РАБОТАЕТ -->
+<section class="story" id="how">
+  <div class="wrap">
+    <div class="center">
+      <span class="kicker" data-i18n="how_kicker">Как это работает</span>
+      <h2 data-i18n="how_h">От брифа до игры — четыре шага</h2>
+    </div>
+    <div class="steps">
+      <div class="step"><h3 data-i18n="s1_h">Бриф</h3><p data-i18n="s1_p">Рассказываете о герое: близкие, питомцы, любимые дела, словечки и шутки, которые есть только у вас. Внешность собираете сами в конструкторе.</p></div>
+      <div class="step"><h3 data-i18n="s2_h">Сценарий — $49</h3><p data-i18n="s2_p">Пишем сценарий: уровни, сюжет, кто мешает и как с ним справиться. Показываем и правим — до трёх раундов, пока не скажете «да».</p></div>
+      <div class="step"><h3 data-i18n="s3_h">Игра — за 5 дней</h3><p data-i18n="s3_p">После согласования сценария вносите остаток и через 5 дней получаете ссылку на игру: 5–6 уровней, босс и финал.</p></div>
+      <div class="step"><h3 data-i18n="s4_h">Новые главы</h3><p data-i18n="s4_p">По желанию — подписка: каждый месяц добавляем новую главу из вашей жизни. Старые главы не меняются и остаются навсегда.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- =============================================================== ЦЕНЫ -->
+<section id="prices">
+  <div class="wrap">
+    <div class="center">
+      <span class="kicker" data-i18n="price_kicker">Цены</span>
+      <h2 data-i18n="price_h">Понятная цена — без сюрпризов</h2>
+    </div>
+    <div class="prices">
+      <div class="price main">
+        <span class="name" data-i18n="p_std_name">Игра</span>
+        <div class="sum">$999</div>
+        <span class="time" data-i18n="p_std_time">⏱ 5 дней</span>
+        <p class="split" data-i18n="p_std_split">$49 за сценарий сейчас · $950 после того, как сценарий согласован</p>
+      </div>
+      <div class="price">
+        <span class="name" data-i18n="p_fast_name">Срочно</span>
+        <div class="sum">$1 999</div>
+        <span class="time" data-i18n="p_fast_time">⚡ 48 часов</span>
+        <p class="split" data-i18n="p_split_all">$49 за сценарий входят в цену</p>
+      </div>
+      <div class="price">
+        <span class="name" data-i18n="p_rush_name">Очень срочно</span>
+        <div class="sum">$4 999</div>
+        <span class="time" data-i18n="p_rush_time">🚀 24 часа</span>
+        <p class="split" data-i18n="p_split_all">$49 за сценарий входят в цену</p>
+      </div>
+    </div>
+    <p class="pnote center" data-i18n="p_note">Срок считается с момента, когда сценарий согласован.</p>
+
+    <div class="sub">
+      <svg width="54" height="54" viewBox="0 0 24 24" fill="none" stroke="#d9467f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="17" rx="3"/><path d="M3 9h18M8 2v4M16 2v4M12 13v4M10 15h4"/></svg>
+      <div>
+        <h3 data-i18n="sub_h">Новая глава каждый месяц</h3>
+        <p data-i18n="sub_p">Продолжение вашей истории: новый уровень о том, что случилось за месяц. Остановить можно в любой момент — всё, что уже сделано, останется.</p>
+      </div>
+      <div class="sum" data-i18n="sub_price">$99 / мес</div>
+    </div>
+
+    <h3 class="center" style="margin-top:64px;font-size:28px" data-i18n="inside_h">Что внутри каждой игры</h3>
+    <ul class="inside">
+      <li data-i18n="in1">5–6 уровней, босс и финал</li>
+      <li data-i18n="in2">Герой, близкие и питомцы — с настоящими именами</li>
+      <li data-i18n="in3">Конструктор внешности героя</li>
+      <li data-i18n="in4">Альбом наклеек за достижения</li>
+      <li data-i18n="in5">Русский и английский язык</li>
+      <li data-i18n="in6">Телефон, планшет, компьютер — без установки</li>
+      <li data-i18n="in7">Закрыта от поисковиков: открывается только по вашей ссылке</li>
+      <li data-i18n="in8">40–60 минут игры, а наклейки и рекорды зовут переиграть</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============================================================ ВОПРОСЫ -->
+<section class="story">
+  <div class="wrap">
+    <h2 class="center" data-i18n="faq_h">Частые вопросы</h2>
+    <div class="faq">
+      <details><summary data-i18n="q1">Что если сценарий не понравится?</summary><p data-i18n="a1">Правим до трёх раундов. Если и после этого не то — дальше вы ничего не платите, а $49 остаются за работу над сценарием.</p></details>
+      <details><summary data-i18n="q2">На чём играть?</summary><p data-i18n="a2">На телефоне (лучше горизонтально), планшете или компьютере. Ничего устанавливать не нужно — игра открывается по ссылке в браузере.</p></details>
+      <details><summary data-i18n="q3">Кто увидит игру?</summary><p data-i18n="a3">Только те, кому вы дадите ссылку. Игра закрыта от поисковиков.</p></details>
+      <details><summary data-i18n="q4">Можно сделать игру для взрослого?</summary><p data-i18n="a4">Да. Для пары на годовщину, для друга на день рождения, для родителей на юбилей, для коллеги на прощание. Подойдёт любая история, где есть люди, их привычки и общие шутки.</p></details>
+      <details><summary data-i18n="q5">Что будет, если отменить подписку?</summary><p data-i18n="a5">Новые главы перестанут добавляться. Всё, что уже сделано, останется вашим и будет открываться всегда.</p></details>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================== ФИНАЛ -->
+<section class="final" id="start">
+  <div class="wrap">
+    <div class="box">
+      <svg class="float f4" viewBox="0 0 100 100" aria-hidden="true"><path d="M50 6l12.6 28.4 30.9 3.1-23.2 20.6 6.7 30.4L50 72.9 23 88.5l6.7-30.4L6.5 37.5l30.9-3.1z" fill="#ffd246"/></svg>
+      <svg class="float f5" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="44" fill="#e8a25a"/><circle cx="50" cy="50" r="38" fill="#ff8fbd"/><circle cx="50" cy="50" r="15" fill="#372d46"/></svg>
+      <h2 data-i18n="start_h">Расскажите нам о своём герое</h2>
+      <p data-i18n="start_p">Начните с брифа. За $49 вы получите сценарий и увидите, какой будет игра, — ещё до основной оплаты.</p>
+      <a class="btn btn-main" href="/game/brief" data-i18n="start_btn">Заполнить бриф</a>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer><div class="wrap" data-i18n="foot">Сделано с любовью — Кириллом и Авой</div></footer>
+
+<script>
+// Тексты на двух языках. Апострофы в английском — только ’ (прямой ломает строку).
+const T = {
+ru: {
+  brand:"Игры про вас", nav_story:"Наша история", nav_how:"Как это работает", nav_price:"Цены", cta_top:"Начать",
+  hero_kicker:"Персональные игры на заказ",
+  hero_h1:"Игра, где главный герой&nbsp;— <span class=\"hl\">тот, кого вы любите</span>",
+  hero_sub:"Мы делаем игру про конкретного человека: его день, его питомцев, его семейные шутки и любимые дела. Она открывается по ссылке — на телефоне, планшете и компьютере.",
+  hero_cta:"Начать со сценария — $49", hero_cta2:"Как всё началось",
+  hero_note:"⏱ Готовая игра — через 5 дней после согласования сценария",
+  alt_map:"Карта дня в игре Авы",
+  photo_wait:"Здесь будет фото Авы и Куки", photo_cap:"Ава и Куки",
+  story_kicker:"Наша история", story_h:"Всё началось с Авы",
+  story_p1:"Меня зовут Кирилл. Больше 16 лет я делаю приложения и сайты. А ещё я папа Авы.",
+  story_p2:"Однажды мы с ней решили сделать что-то по-настоящему классное — для неё и про неё. Не очередную игру из магазина, а такую, которой больше нет ни у кого на свете.",
+  story_p3:"Получилась игра про её день. Утром собрать рюкзак, пока мальтипу Куки — он же Огурчик — ворует носок. В школе ответить на вопросы, погулять, поплавать, покормить хомяка Хамю. А вечером приходит бабушка Ира, чтобы испортить веселье, — и отогнать её можно только пончиками.",
+  story_p4:"Ава хохотала. Потом попросила конструктор, чтобы самой выбирать причёску и наряды. Потом мы придумали уровень про деда Валеру: он всегда отказывается идти в кафе, а когда приходит — съедает всё.",
+  story_p5:"Тогда я понял, что такое нужно не только нам.",
+  story_sign:"Кирилл, папа Авы",
+  mission:"Мы делаем это с большой любовью и глубокой экспертизой — чтобы дарить людям то, чего у них нет: мир их фантазий, их лучшие дни и любимые дела, которыми теперь можно напрямую делиться с близкими.",
+  for_kicker:"Для кого", for_h:"Для детей и для взрослых",
+  for1_h:"Подарок", for1_p:"Ребёнку на день рождения, паре на годовщину, другу, родителям, команде на прощание с коллегой. Игра, в которой все узнают себя.",
+  for2_h:"Обучение", for2_p:"Таблица умножения, английские слова, буквы — внутри игры, где герой сам ребёнок, а рядом его питомцы и друзья.",
+  for3_h:"Летопись жизни", for3_p:"Каждый месяц — новая глава: первый класс, отпуск, щенок, переезд. Мир растёт вместе с человеком, а прошлые главы остаются навсегда — в них можно вернуться.",
+  gal_kicker:"Как это выглядит", gal_h:"Настоящая игра Авы",
+  gal1:"Карта дня: занятия идут по порядку, а вечером приходит бабушка",
+  gal2:"Конструктор: Ава сама выбирает причёску, наряд и обувь",
+  gal3:"Кафе с дедом Валерой: успей взять своё, пока дед не съел",
+  how_kicker:"Как это работает", how_h:"От брифа до игры — четыре шага",
+  s1_h:"Бриф", s1_p:"Рассказываете о герое: близкие, питомцы, любимые дела, словечки и шутки, которые есть только у вас. Внешность собираете сами в конструкторе.",
+  s2_h:"Сценарий — $49", s2_p:"Пишем сценарий: уровни, сюжет, кто мешает и как с ним справиться. Показываем и правим — до трёх раундов, пока не скажете «да».",
+  s3_h:"Игра — за 5 дней", s3_p:"После согласования сценария вносите остаток и через 5 дней получаете ссылку на игру: 5–6 уровней, босс и финал.",
+  s4_h:"Новые главы", s4_p:"По желанию — подписка: каждый месяц добавляем новую главу из вашей жизни. Старые главы не меняются и остаются навсегда.",
+  price_kicker:"Цены", price_h:"Понятная цена — без сюрпризов",
+  p_std_name:"Игра", p_std_time:"⏱ 5 дней", p_std_split:"$49 за сценарий сейчас · $950 после того, как сценарий согласован",
+  p_fast_name:"Срочно", p_fast_time:"⚡ 48 часов", p_rush_name:"Очень срочно", p_rush_time:"🚀 24 часа",
+  p_split_all:"$49 за сценарий входят в цену",
+  p_note:"Срок считается с момента, когда сценарий согласован.",
+  sub_h:"Новая глава каждый месяц", sub_p:"Продолжение вашей истории: новый уровень о том, что случилось за месяц. Остановить можно в любой момент — всё, что уже сделано, останется.",
+  sub_price:"$99 / мес",
+  inside_h:"Что внутри каждой игры",
+  in1:"5–6 уровней, босс и финал", in2:"Герой, близкие и питомцы — с настоящими именами",
+  in3:"Конструктор внешности героя", in4:"Альбом наклеек за достижения",
+  in5:"Русский и английский язык", in6:"Телефон, планшет, компьютер — без установки",
+  in7:"Закрыта от поисковиков: открывается только по вашей ссылке",
+  in8:"40–60 минут игры, а наклейки и рекорды зовут переиграть",
+  faq_h:"Частые вопросы",
+  q1:"Что если сценарий не понравится?", a1:"Правим до трёх раундов. Если и после этого не то — дальше вы ничего не платите, а $49 остаются за работу над сценарием.",
+  q2:"На чём играть?", a2:"На телефоне (лучше горизонтально), планшете или компьютере. Ничего устанавливать не нужно — игра открывается по ссылке в браузере.",
+  q3:"Кто увидит игру?", a3:"Только те, кому вы дадите ссылку. Игра закрыта от поисковиков.",
+  q4:"Можно сделать игру для взрослого?", a4:"Да. Для пары на годовщину, для друга на день рождения, для родителей на юбилей, для коллеги на прощание. Подойдёт любая история, где есть люди, их привычки и общие шутки.",
+  q5:"Что будет, если отменить подписку?", a5:"Новые главы перестанут добавляться. Всё, что уже сделано, останется вашим и будет открываться всегда.",
+  start_h:"Расскажите нам о своём герое", start_p:"Начните с брифа. За $49 вы получите сценарий и увидите, какой будет игра, — ещё до основной оплаты.",
+  start_btn:"Заполнить бриф", foot:"Сделано с любовью — Кириллом и Авой",
+  title:"Игра, где главный герой — тот, кого вы любите"
+},
+en: {
+  brand:"Games About You", nav_story:"Our story", nav_how:"How it works", nav_price:"Pricing", cta_top:"Start",
+  hero_kicker:"Personal games, made to order",
+  hero_h1:"A game where the hero is <span class=\"hl\">someone you love</span>",
+  hero_sub:"We build a game about one real person: their day, their pets, their family jokes and favourite things. It opens from a link — on a phone, a tablet or a computer.",
+  hero_cta:"Start with the story — $49", hero_cta2:"How it began",
+  hero_note:"⏱ Your finished game in 5 days after the story is approved",
+  alt_map:"The day map in Ava’s game",
+  photo_wait:"A photo of Ava and Cookie goes here", photo_cap:"Ava and Cookie",
+  story_kicker:"Our story", story_h:"It all started with Ava",
+  story_p1:"I’m Kiryl. I’ve been building apps and websites for more than 16 years. I’m also Ava’s dad.",
+  story_p2:"One day the two of us decided to make something truly special — for her and about her. Not another game from a store, but one that nobody else in the world has.",
+  story_p3:"It became a game about her day. In the morning, pack the school bag while Cookie the maltipoo — a.k.a. Pickle — steals a sock. Answer questions at school, go for a walk, swim, feed Hammy the hamster. And in the evening Granny Ira shows up to spoil the fun — and the only way to send her off is with donuts.",
+  story_p4:"Ava laughed and laughed. Then she asked for a dress-up screen to pick her own hair and outfits. Then we made a level about Grandpa Valera, who always refuses to go to the cafe — and once he’s there, eats everything.",
+  story_p5:"That’s when I realised it isn’t only us who need this.",
+  story_sign:"Kiryl, Ava’s dad",
+  mission:"We make these with great love and deep expertise — to give people something they don’t have yet: the world of their imagination, their best days and favourite things, now something they can share directly with the people they love.",
+  for_kicker:"Who it’s for", for_h:"For kids and for grown-ups",
+  for1_h:"A gift", for1_p:"For a child’s birthday, a couple’s anniversary, a friend, your parents, a team saying goodbye to a colleague. A game where everyone recognises themselves.",
+  for2_h:"Learning", for2_p:"Times tables, English words, letters — inside a game where the child is the hero, with their pets and friends right beside them.",
+  for3_h:"A life chronicle", for3_p:"A new chapter every month: first day of school, a holiday, a new puppy, a move. The world grows with the person, and past chapters stay forever — you can always go back.",
+  gal_kicker:"What it looks like", gal_h:"Ava’s real game",
+  gal1:"The day map: activities in order, and Granny arrives in the evening",
+  gal2:"Dress-up: Ava picks her own hair, outfit and shoes",
+  gal3:"The cafe with Grandpa Valera: grab yours before he eats it",
+  how_kicker:"How it works", how_h:"From brief to game in four steps",
+  s1_h:"The brief", s1_p:"Tell us about the hero: family, pets, favourite things, the words and jokes only you share. Build their look yourself in the dress-up tool.",
+  s2_h:"The story — $49", s2_p:"We write the script: levels, plot, who gets in the way and how to beat them. We show it and revise — up to three rounds, until you say yes.",
+  s3_h:"The game — in 5 days", s3_p:"Once the story is approved, you pay the rest and get a link to your game in 5 days: 5–6 levels, a boss and a finale.",
+  s4_h:"New chapters", s4_p:"Optional subscription: every month we add a new chapter from your life. Earlier chapters never change and stay forever.",
+  price_kicker:"Pricing", price_h:"Clear pricing — no surprises",
+  p_std_name:"Game", p_std_time:"⏱ 5 days", p_std_split:"$49 for the story now · $950 once the story is approved",
+  p_fast_name:"Fast", p_fast_time:"⚡ 48 hours", p_rush_name:"Express", p_rush_time:"🚀 24 hours",
+  p_split_all:"The $49 story fee is included",
+  p_note:"Delivery time starts when the story is approved.",
+  sub_h:"A new chapter every month", sub_p:"Your story continues: a new level about what happened this month. Stop anytime — everything already made stays yours.",
+  sub_price:"$99 / mo",
+  inside_h:"What every game includes",
+  in1:"5–6 levels, a boss and a finale", in2:"The hero, family and pets — with their real names",
+  in3:"A dress-up tool for the hero", in4:"A sticker album for achievements",
+  in5:"English and Russian", in6:"Phone, tablet, computer — nothing to install",
+  in7:"Hidden from search engines: opens only from your link",
+  in8:"40–60 minutes of play, and stickers and high scores invite replays",
+  faq_h:"Questions",
+  q1:"What if I don’t like the story?", a1:"We revise up to three rounds. If it’s still not right, you pay nothing more — the $49 covers the work on the story.",
+  q2:"What can it be played on?", a2:"A phone (best held sideways), a tablet or a computer. Nothing to install — the game opens from a link in the browser.",
+  q3:"Who will see the game?", a3:"Only the people you share the link with. The game is hidden from search engines.",
+  q4:"Can you make one for a grown-up?", a4:"Yes. For a couple’s anniversary, a friend’s birthday, your parents’ jubilee, a colleague’s farewell. Any story with real people, their habits and shared jokes works.",
+  q5:"What happens if I cancel the subscription?", a5:"New chapters stop being added. Everything already made stays yours and keeps opening forever.",
+  start_h:"Tell us about your hero", start_p:"Start with the brief. For $49 you get the story and see what the game will be — before the main payment.",
+  start_btn:"Fill in the brief", foot:"Made with love — by Kiryl and Ava",
+  title:"A game where the hero is someone you love"
+}};
+
+function setLang(l){
+  const d = T[l] || T.ru;
+  document.documentElement.lang = l;
+  document.querySelectorAll("[data-i18n]").forEach(el => {
+    const v = d[el.dataset.i18n]; if (v != null) el.innerHTML = v;
+  });
+  document.querySelectorAll("[data-i18n-alt]").forEach(el => {
+    const v = d[el.dataset.i18nAlt]; if (v != null) el.alt = v;
+  });
+  document.title = d.title;
+  document.querySelectorAll(".lang button").forEach(b => b.classList.toggle("on", b.dataset.lang === l));
+  try { localStorage.setItem("game_lang", l); } catch (e) {}
+}
+let start = new URLSearchParams(location.search).get("lang");
+if (!start) { try { start = localStorage.getItem("game_lang"); } catch (e) {} }
+if (!start) start = (navigator.language || "").toLowerCase().startsWith("ru") ? "ru" : "en";
+setLang(start === "en" ? "en" : "ru");
+document.querySelectorAll(".lang button").forEach(b => b.addEventListener("click", () => setLang(b.dataset.lang)));
+
+// Фото истории: показываем, когда файл на месте, иначе остаётся заглушка
+const ph = document.getElementById("storyPhoto");
+ph.onload = () => { ph.hidden = false; document.getElementById("photoPh").remove(); };
+// Фото лежит на сервере картинок, а не в репозитории: репозиторий публичный,
+// и из истории git снимок ребёнка уже не убрать, а с сервера — одной командой.
+ph.src = "https://blogs.itgrows.ai/images/game-ava-cookie.jpg";
+
+const hdr = document.querySelector("header");
+addEventListener("scroll", () => hdr.classList.toggle("scrolled", scrollY > 8), { passive: true });
+</script>
+</body>
+</html>
