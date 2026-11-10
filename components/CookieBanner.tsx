@@ -15,6 +15,7 @@ import {
   type ConsentChoice,
 } from "@/components/consent/consent"
 import { GEO_SANS, isGeoPage } from "@/lib/geo-pages"
+import { PRICE_TEST } from "@/lib/geo-pricing"
 import { t } from "@/lib/i18n/messages"
 import { usePageLocale } from "@/lib/i18n/page-locale"
 import { rich } from "@/lib/i18n/rich"
@@ -32,11 +33,14 @@ import ns from "@/lib/i18n/messages/cookieBanner"
 // /cabinet, /dashboard, /reddit…), and /login and /signup, which that product shares; those two have the
 // GEO type and BANNER_TEXT, because they set the price test's cookies.
 
-// The price test's cookies are set whatever the visitor chooses (app/privacy/page.tsx), and only on GEO
-// pages, /login and /signup (middleware.ts): the LinkedIn/X pages set none.
-const BANNER_TEXT =
-  "We use third-party analytics and advertising cookies only if you accept. Cookies for sign-in and for keeping the price you were shown are always on."
-const ESSENTIAL_TEXT = "Sign-in, security, your cookie choice and the price you were shown."
+// While the price test is on, its cookies are set whatever the visitor chooses (app/privacy/page.tsx), and only on
+// GEO pages, /login and /signup (middleware.ts): the LinkedIn/X pages set none. With it off (10 Nov 2026) none are.
+const BANNER_TEXT = PRICE_TEST.enabled
+  ? "We use third-party analytics and advertising cookies only if you accept. Cookies for sign-in and for keeping the price you were shown are always on."
+  : "We use third-party analytics and advertising cookies only if you accept. Essential cookies for sign-in are always on."
+const ESSENTIAL_TEXT = PRICE_TEST.enabled
+  ? "Sign-in, security, your cookie choice and the price you were shown."
+  : "Sign-in, security and your cookie choice."
 
 // Keeps a record of each choice in our own analytics (no id unless the visitor accepted).
 function recordChoice(choice: ConsentChoice) {

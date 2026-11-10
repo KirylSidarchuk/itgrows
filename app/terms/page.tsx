@@ -1,15 +1,15 @@
 import type { Metadata } from "next"
 import type { ReactNode } from "react"
 import Link from "next/link"
-import { YEAR_DISCOUNT } from "@/lib/geo-pricing"
+import { GEO_PRICES, YEAR_DISCOUNT } from "@/lib/geo-pricing"
 import CompanyLine from "@/components/CompanyLine"
 
 export const dynamic = "force-static"
 
 // Terms of Service for both products: AI visibility (ItGrows for Business) and LinkedIn & X posts.
-// This page is static and names no price of the AI visibility plan: since 2 Nov 2026 (the price test,
-// lib/geo-pricing.ts) that is the price shown in the account and at checkout; the #plan section says so,
-// and that prices may differ between visitors while we test them.
+// This page is static and names the AI visibility plan's one price (GEO_PRICES, lib/geo-pricing.ts): the price
+// test of 5-10 Nov 2026 is closed (Kiryl, 10 Nov 2026: "$499 for everyone"), which is the effective date of
+// 10 Nov 2026. A new test would need the "In short" line and the #plan section reworded again.
 // Refunds and taxes
 // are the owner's decisions of 23 Oct 2026. Since 27 Oct 2026 (the effective date) the detailed report
 // is free once an account is created, one per account and per connection; the quick check and the
@@ -98,7 +98,7 @@ export default function TermsPage() {
         <p className="text-[11px] uppercase tracking-[0.14em] font-bold text-violet-700">Legal</p>
         <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight mt-2">Terms of Service</h1>
         <p className="text-slate-500 text-sm mt-2">
-          Effective date: 5 November 2026
+          Effective date: 10 November 2026
         </p>
 
         <div className="mt-8 rounded-2xl border border-black/10 bg-white overflow-hidden">
@@ -108,8 +108,8 @@ export default function TermsPage() {
             <ul className="mt-3 space-y-2 text-sm text-slate-700 leading-relaxed list-disc pl-5">
               <li>ItGrows has two products: AI visibility for businesses, and LinkedIn &amp; X posts for founders and companies.</li>
               <li>
-                AI visibility: a quick check, a detailed report that is free once you create an account, and a plan at the price shown in your
-                account, plus a one-time setup of one month&apos;s price (no setup fee when you pay for 3 months or a year). Cancel any time; the plan runs to the end of
+                AI visibility: a quick check, a detailed report that is free once you create an account, and a plan at {GEO_PRICES.month.label} a
+                month, plus a one-time setup of {GEO_PRICES.setup.label} (no setup fee when you pay for 3 months or a year). Cancel any time; the plan runs to the end of
                 the paid period.
               </li>
               <li>You see every article 2 days before it goes live, and can edit or stop it.</li>
@@ -193,18 +193,17 @@ export default function TermsPage() {
             <p>The plan is bought for one site. You choose how to pay:</p>
             <List>
               <li>
-                <strong>Month to month:</strong> the plan&apos;s monthly price, plus a one-time setup of one month&apos;s price, charged with the first payment.
+                <strong>Month to month:</strong> {GEO_PRICES.month.label} a month, plus a one-time setup of {GEO_PRICES.setup.label}, charged with the first payment.
               </li>
               <li>
-                <strong>3 months upfront:</strong> three months&apos; price every 3 months, no setup fee.
+                <strong>3 months upfront:</strong> {GEO_PRICES.quarter.label} every 3 months, no setup fee.
               </li>
               <li>
-                <strong>A year upfront:</strong> twelve months at {YEAR_OFF} off, paid once a year, no setup fee.
+                <strong>A year upfront:</strong> {GEO_PRICES.year.label} a year (twelve months at {YEAR_OFF} off, {GEO_PRICES.year.perMonth} a month), no setup fee.
               </li>
             </List>
             <p>
-              The prices are the ones shown in your account and at checkout. Prices may differ between visitors while we test them; you pay the
-              price shown at checkout and keep it.
+              These are the plan&apos;s standard prices. You pay the price shown at checkout and keep it.
             </p>
             <p>
               The setup gets your site ready: it is tested the way AI crawlers see it, what blocks them is fixed with you, Bing and Google are set up,

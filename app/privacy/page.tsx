@@ -14,9 +14,9 @@ export const dynamic = "force-static"
 // detailed report once an account is created (its IP address is kept with it, cleared by the purge
 // after 90 days like the quick check's). Since 29 Oct 2026 the website may offer the launch-rewards
 // wheel before an account (components/geo/ExitWheel.tsx): itg_wheel and itg_exit_wheel below.
-// Since 2 Nov 2026 the plan's price test (lib/geo-pricing.ts): itg_vid and itg_price below, the visitor
-// log (geo_price_exposures, purged after 24 months) and the look at earlier visits on a first visit
-// (lib/geo-price-returning.ts).
+// From 5 to 10 Nov 2026 the plan's price test (lib/geo-pricing.ts PRICE_TEST, off since 10 Nov, Kiryl: "$499 for
+// everyone"): its cookies (one row below, no longer set or read; app/layout.tsx runs the earlier-visit script
+// only while the test is on) and its visitor log (geo_price_exposures, purged after 24 months), in the past tense.
 
 export const metadata: Metadata = {
   title: "Privacy Policy & Cookie Policy — ItGrows.ai",
@@ -116,16 +116,8 @@ const COOKIES = [
   { name: "Sign-in cookie", text: "Keeps you signed in. Essential. Lasts until you sign out or it expires." },
   { name: "cookie_consent", text: "Stored in your browser. Remembers what you chose in the cookie banner. Essential." },
   {
-    name: "itg_vid",
-    text: "Set the first time you open one of our AI visibility pages, a blog article, or the sign-up or sign-in page, or our Terms through a link we sent you, whatever you choose in the cookie banner. Lasts up to 400 days. A random id, with nothing about you in it. It ties the price you were shown to your visit, and it lets us count what visitors did at each price (see Testing the plan’s price above).",
-  },
-  {
-    name: "itg_price",
-    text: "Set with itg_vid, whatever you choose in the cookie banner. Lasts up to 400 days. Remembers the price of the AI visibility plan you were shown, so that it stays the same on your next visit. If you create an account in this browser, that price goes with the account.",
-  },
-  {
-    name: "itg_fresh, itg_had_storage",
-    text: "Set when a visit begins, on any page of our site, whatever you choose in the cookie banner. itg_had_storage is stored in your browser and is gone when you close the tab. itg_fresh is a cookie, set only if your browser held nothing from an earlier visit, and is gone when you close the browser. Each holds only a yes or no: whether your browser already held anything from an earlier visit. We use it to keep people who visited before on the price they had, and so that a choice you make in the cookie banner during this visit is not mistaken for an earlier visit.",
+    name: "itg_vid, itg_price, itg_fresh, itg_had_storage",
+    text: "Used only for our test of the AI visibility plan’s price, from 5 to 10 November 2026. The test has ended and we no longer set or read them. Copies left in your browser hold nothing about you and expire on their own (itg_vid and itg_price within 400 days of being set); you can also delete them in your browser.",
   },
   {
     name: "itg_wheel",
@@ -196,7 +188,7 @@ export default function PrivacyPage() {
         <p className="text-[11px] uppercase tracking-[0.14em] font-bold text-violet-700">Legal</p>
         <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight mt-2">Privacy Policy &amp; Cookie Policy</h1>
         <p className="text-slate-500 text-sm mt-2">
-          Effective date: 5 November 2026
+          Effective date: 10 November 2026
         </p>
 
         <div className="mt-8 rounded-2xl border border-black/10 bg-white overflow-hidden">
@@ -207,7 +199,7 @@ export default function PrivacyPage() {
               <li>We keep what we need to run your account, check your site, write your articles and posts, and bill you.</li>
               <li>Stripe handles payments. We never see your card number.</li>
               <li>
-                Third-party analytics tools and advertising cookies load only after you accept them in the cookie banner; before that, the Google Ads tag sends only signals without cookies; the price test’s cookies are set either way. You can change your choice at any time in{" "}
+                Third-party analytics tools and advertising cookies load only after you accept them in the cookie banner; before that, the Google Ads tag sends only signals without cookies. You can change your choice at any time in{" "}
                 <CookieSettings />.
               </li>
               <li>We do not sell your personal data.</li>
@@ -301,9 +293,9 @@ export default function PrivacyPage() {
                 basis={`${INTEREST} in answering the people who write to us.`}
               />
               <DataBlock
-                title="Testing the plan’s price"
-                what="While we test the price of the AI visibility plan: a random id (the itg_vid cookie), the price you were shown, when you first saw it, the referring site, host only, campaign tags in the link such as utm, the page you arrived on, and whether the price card came into view and a quick check was started. No IP address and no account."
-                why="To learn which price works, and to keep showing you the same one. The price you are shown first is picked from a keyed hash of your IP address, and that hash is not stored. To keep their price, we recognise people who visited before: on a first visit we compare your IP address and browser with our existing visit and quick-check records, and keep only the yes or no."
+                title="The test of the plan’s price (5 to 10 November 2026)"
+                what="During the test, which has ended: a random id (the itg_vid cookie), the price you were shown, when you first saw it, the referring site, host only, campaign tags in the link such as utm, the page you arrived on, and whether the price card came into view and a quick check was started. No IP address and no account. We no longer collect this."
+                why="To learn which price works, and to keep showing each visitor the same one. The price was picked from a keyed hash of the IP address, and that hash was not stored. To keep their price, people who had visited before were recognised on a first visit by comparing the IP address and browser with our existing visit and quick-check records, keeping only the yes or no."
                 basis={`${INTEREST} in setting our prices and treating returning visitors consistently.`}
               />
               <DataBlock
@@ -361,7 +353,7 @@ export default function PrivacyPage() {
                 IP addresses saved with quick checks, free reports and free post previews, the code made from your internet address with a launch-rewards wheel spin, and the daily visitor hash: 90 days. The result of a quick check stays
                 with the website, like the AI assistants’ other answers.
               </li>
-              <li>Usage analytics, and the log of the price test: 24 months.</li>
+              <li>Usage analytics, and the log of the price test of 5 to 10 November 2026: 24 months.</li>
               <li>Messages you send us through our contact forms: 24 months.</li>
               <li>Billing records: as long as tax law requires.</li>
               <li>LinkedIn and X tokens: deleted as soon as you disconnect the account.</li>
