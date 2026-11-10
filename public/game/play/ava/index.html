@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#f8b6d2">
+<meta name="robots" content="noindex, nofollow">
+<!-- витрина: игра называет себя и свою хронику, ассеты — по абсолютным путям -->
+<meta name="game-id" content="ava">
+<meta name="chronicle" content="/game/play/ava/chronicle.json">
+<title>Ава и Огурчик: Идеальный день</title>
+
+<!-- карточка для мессенджеров: её видят до открытия ссылки -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="Ава и Огурчик: Идеальный день">
+<meta property="og:description" content="Игра про Аву, её мальтипу Куки и хомяка Хамю. Один идеальный день — и бабушка Ира, которую отгоняют пончиками.">
+<meta property="og:image" content="/game/play/ava/poster.jpg">
+<meta name="twitter:card" content="summary_large_image">
+
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;overflow:hidden;background:#12101c;overscroll-behavior:none;
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    -webkit-tap-highlight-color:transparent;
+    /* Палец держат на кнопке движения долго — без этого браузер решает,
+       что человек выделяет текст, и заливает экран синим. */
+    -webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+  /* Размер холста задаёт JS по видимой области: на iPhone и iPad часть экрана
+     занимают панели Safari, и height:100% залезает под них. */
+  #game{position:fixed;left:0;top:0;display:block;
+    touch-action:none;opacity:0;transition:opacity .35s;
+    -webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+  #game.on{opacity:1}
+
+  /* Обложка. Рисуется мгновенно — это обычный HTML, ждать нечего. */
+  #cover{position:fixed;inset:0;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;gap:18px;text-align:center;padding:24px;
+    background:linear-gradient(180deg,#fabad6 0%,#d2c3f0 55%,#96c8ff 100%);
+    transition:opacity .35s}
+  #cover.gone{opacity:0;pointer-events:none}
+  #shot{width:min(72vw,420px);aspect-ratio:16/9;border-radius:18px;object-fit:cover;
+    border:5px solid #fff;box-shadow:0 12px 34px rgba(60,30,80,.3);background:#ffe8d6}
+  h1{font-size:clamp(26px,6vw,46px);color:#fff;text-shadow:0 3px 0 #e1508c,0 6px 18px rgba(0,0,0,.2);
+    letter-spacing:.5px}
+  h2{font-size:clamp(15px,3.4vw,24px);color:#e1508c;font-weight:700}
+  #play{margin-top:6px;padding:16px 52px;font-size:clamp(20px,4.6vw,30px);font-weight:800;
+    color:#fff;background:#ff78af;border:4px solid #fff;border-radius:20px;cursor:pointer;
+    box-shadow:0 7px 0 #c8467f;transition:transform .08s}
+  #play:active{transform:translateY(4px);box-shadow:0 3px 0 #c8467f}
+  #play:disabled{opacity:.55;box-shadow:0 7px 0 #c8467f}
+  small{color:#6b4f78;font-size:clamp(12px,2.8vw,16px);max-width:34ch;line-height:1.5}
+</style>
+</head>
+<body>
+<canvas id="game"></canvas>
+
+<div id="cover">
+  <img id="shot" src="/game/play/ava/poster.jpg" alt="" fetchpriority="high">
+  <h1 data-ru="Ава и Огурчик" data-en="Ava &amp; Cookie">Ава и Огурчик</h1>
+  <h2 data-ru="Идеальный день" data-en="One Perfect Day">Идеальный день</h2>
+  <button id="play" disabled>Загружаем…</button>
+  <small data-ru="7 занятий, 40 минут. Стрелки и пробел — на компьютере, пальцем — на телефоне. Телефон держи горизонтально." data-en="7 activities, 40 minutes. Arrows and space on a computer, your finger on a phone. Hold the phone sideways.">7 занятий, 40 минут. Стрелки и пробел — на компьютере, пальцем — на телефоне. Телефон держи горизонтально.</small>
+</div>
+
+<script>
+  // Язык обложки — как на витрине (?lang=en), до загрузки движка
+  (function () {
+    var l = new URLSearchParams(location.search).get("lang");
+    if (l !== "en") return;
+    document.documentElement.lang = "en";
+    document.querySelectorAll("[data-en]").forEach(function (el) { el.textContent = el.getAttribute("data-en"); });
+  })();
+</script>
+<script type="module" src="/game/play/game.js"></script>
+</body>
+</html>

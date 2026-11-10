@@ -1,0 +1,603 @@
+{
+  "schema": 1,
+  "id": "ava",
+  "hero": [
+    "Ава",
+    "Ava"
+  ],
+  "lang": "ru",
+  "createdAt": "2026-08-05",
+  "cover": {
+    "title": [
+      "Ава и Огурчик",
+      "Ava & Cookie"
+    ],
+    "subtitle": [
+      "Идеальный день",
+      "One Perfect Day"
+    ],
+    "description": [
+      "Игра про Аву, её мальтипу Куки и хомяка Хамю. Один идеальный день — и бабушка Ира, которую отгоняют пончиками.",
+      "A game about Ava, her maltipoo Cookie and Hammy the hamster. One perfect day — and Granny Ira, sent off with donuts."
+    ],
+    "note": [
+      "7 занятий, 40 минут. Стрелки и пробел — на компьютере, пальцем — на телефоне. Телефон держи горизонтально.",
+      "7 activities, 40 minutes. Arrows and space on a computer, your finger on a phone. Hold the phone sideways."
+    ]
+  },
+  "chapters": [
+    {
+      "id": "ch1",
+      "month": "2026-08",
+      "engine": 1,
+      "paid": true,
+      "title": [
+        "Идеальный день",
+        "One Perfect Day"
+      ],
+      "cast": [
+        {
+          "id": "ava",
+          "kind": "child",
+          "name": [
+            "Ава",
+            "Ava"
+          ],
+          "look": {
+            "hair": "#6e3e28",
+            "hairStyle": "tails",
+            "skin": "#ffdbbe",
+            "outfit": "#ff69a0",
+            "outfitStyle": "dress",
+            "shoes": "#5a82ff",
+            "shoeStyle": "sneakers",
+            "bow": "#ff78af"
+          }
+        },
+        {
+          "id": "cookie",
+          "kind": "dog",
+          "name": [
+            "Куки (Огурчик)",
+            "Cookie (Pickle)"
+          ],
+          "look": {
+            "fur": "#faf0dc",
+            "furDark": "#e2d2ba"
+          }
+        },
+        {
+          "id": "hammy",
+          "kind": "hamster",
+          "name": [
+            "Хамя",
+            "Hammy"
+          ],
+          "look": {
+            "fur": "#f0c482",
+            "furDark": "#d6a260"
+          }
+        },
+        {
+          "id": "granny",
+          "kind": "grownup",
+          "name": [
+            "Бабушка Ира",
+            "Granny Ira"
+          ],
+          "look": {
+            "hair": "#cdcdd2",
+            "robe": "#966eaf"
+          }
+        },
+        {
+          "id": "grandpa",
+          "kind": "grownup",
+          "name": [
+            "Дед Валера",
+            "Grandpa Valera"
+          ],
+          "look": {
+            "hair": "#6b625a",
+            "grey": "#cfcbc6",
+            "skin": "#f0c8a5",
+            "shirt": "#5f87b4",
+            "trousers": "#4b4b5a",
+            "moustache": "no",
+            "beard": "no",
+            "glasses": "no"
+          }
+        }
+      ],
+      "scenes": [
+        {
+          "mechanic": "gather",
+          "title": [
+            "Утро: сборы в школу",
+            "Morning: get ready for school"
+          ],
+          "params": {
+            "items": 6,
+            "chaser": "cookie",
+            "steals": "sock",
+            "sticker": "tidy"
+          },
+          "id": "loc_morning"
+        },
+        {
+          "mechanic": "quiz",
+          "title": [
+            "Школа: урок",
+            "School: lesson"
+          ],
+          "params": {
+            "questions": 8,
+            "seconds": 14,
+            "sticker": "smart"
+          },
+          "id": "loc_school"
+        },
+        {
+          "mechanic": "runner",
+          "title": [
+            "Прогулка с Огурчиком",
+            "A walk with Cookie"
+          ],
+          "params": {
+            "companion": "cookie",
+            "goal": "park",
+            "sticker": "cookie"
+          },
+          "id": "loc_walk"
+        },
+        {
+          "mechanic": "assemble",
+          "title": [
+            "Поделки",
+            "Crafts"
+          ],
+          "params": {
+            "crafts": [
+              "flower",
+              "house",
+              "card"
+            ],
+            "sticker": "artist"
+          },
+          "id": "loc_crafts"
+        },
+        {
+          "mechanic": "collect",
+          "title": [
+            "Бассейн",
+            "Swimming pool"
+          ],
+          "params": {
+            "hazard": "crocodile",
+            "sticker": "swimmer"
+          },
+          "id": "loc_pool"
+        },
+        {
+          "mechanic": "maze",
+          "title": [
+            "Хомяк Хамя",
+            "Hammy the hamster"
+          ],
+          "params": {
+            "pet": "hammy",
+            "treat": "seeds",
+            "sticker": "hammy"
+          },
+          "id": "loc_hamster"
+        },
+        {
+          "mechanic": "feast",
+          "id": "loc_cafe",
+          "title": [
+            "Кафе с дедом Валерой",
+            "At the cafe with Grandpa Valera"
+          ],
+          "params": {
+            "dishes": 7,
+            "speed": 132,
+            "bite": 0.85,
+            "jokeChance": 0.18,
+            "time": 70,
+            "story": "cafe",
+            "sticker": "feast"
+          }
+        },
+        {
+          "mechanic": "boss",
+          "title": [
+            "Вечер: бабушка Ира",
+            "Evening: Granny Ira"
+          ],
+          "params": {
+            "boss": "granny",
+            "ammo": "donut",
+            "need": 18,
+            "sticker": "donut",
+            "unlockAfter": 4
+          },
+          "id": "loc_boss"
+        }
+      ],
+      "story": {
+        "intro": [
+          "story1_1",
+          "story1_2",
+          "story1_3",
+          "story1_4",
+          "story1_5",
+          "story1_6"
+        ],
+        "outro": [
+          "story3_1",
+          "story3_2",
+          "story3_3",
+          "story3_4"
+        ],
+        "boss": [
+          "story2_1",
+          "story2_2",
+          "story2_3",
+          "story2_4"
+        ],
+        "cafe": [
+          "v_no1",
+          "v_no2",
+          "v_no3",
+          "v_came"
+        ]
+      },
+      "strings": {
+        "boss_bar": [
+          "ЗАНУДСТВО",
+          "GRUMPINESS"
+        ],
+        "boss_hint": [
+          "Бегай, уворачивайся от слов и кидай пончики!",
+          "Run, dodge the words and throw donuts!"
+        ],
+        "boss_lose": [
+          "Ой... Бабушка заставила убирать комнату!",
+          "Oops... Granny made you tidy your room!"
+        ],
+        "boss_no_ammo": [
+          "Пончики кончились! Куки принесёт ещё!",
+          "Out of donuts! Cookie will bring more!"
+        ],
+        "boss_ready": [
+          "Бабушка Ира идёт! Нажми на неё!",
+          "Granny Ira is coming! Tap her!"
+        ],
+        "boss_win": [
+          "Бабушка подобрела!",
+          "Granny cheered up!"
+        ],
+        "c_title": [
+          "Одень Аву",
+          "Dress Ava up"
+        ],
+        "cafe_goal": [
+          "Успей взять своё, пока дед не съел!",
+          "Grab yours before Grandpa eats it!"
+        ],
+        "cafe_hint": [
+          "Стрелки — бежать вдоль стола. Дед не кусается, он просто ест",
+          "Arrows to run along the table. Grandpa doesn't bite, he just eats"
+        ],
+        "controls": [
+          "Стрелки — двигаться, Пробел — бросить пончик",
+          "Arrows to move, Space to throw a donut"
+        ],
+        "craft_card": [
+          "Открытка для папы",
+          "A card for daddy"
+        ],
+        "craft_flower": [
+          "Цветок",
+          "Flower"
+        ],
+        "craft_house": [
+          "Домик для Хами",
+          "A house for Hammy"
+        ],
+        "crafts_goal": [
+          "Собери поделку по образцу",
+          "Build the craft from the picture"
+        ],
+        "donuts": [
+          "Пончики",
+          "Donuts"
+        ],
+        "eaten": [
+          "Съел дед",
+          "Grandpa ate"
+        ],
+        "g1": [
+          "А уроки сделала?",
+          "Did you do your homework?"
+        ],
+        "g2": [
+          "Не сутулься!",
+          "Don't slouch!"
+        ],
+        "g3": [
+          "Хватит планшета!",
+          "Enough tablet!"
+        ],
+        "g4": [
+          "Доедай суп!",
+          "Finish your soup!"
+        ],
+        "g5": [
+          "Надень шапку!",
+          "Put on a hat!"
+        ],
+        "g7": [
+          "Убери в комнате!",
+          "Tidy your room!"
+        ],
+        "g8": [
+          "Вот я в твои годы...",
+          "When I was your age..."
+        ],
+        "g9": [
+          "Помой руки!",
+          "Wash your hands!"
+        ],
+        "hamster_goal": [
+          "Проведи Хамю к семечкам",
+          "Guide Hammy to the seeds"
+        ],
+        "loc_boss": [
+          "Вечер: бабушка Ира",
+          "Evening: Granny Ira"
+        ],
+        "loc_cafe": [
+          "Кафе с дедом Валерой",
+          "At the cafe with Grandpa Valera"
+        ],
+        "loc_crafts": [
+          "Поделки",
+          "Crafts"
+        ],
+        "loc_hamster": [
+          "Хомяк Хамя",
+          "Hammy the hamster"
+        ],
+        "loc_morning": [
+          "Утро: сборы в школу",
+          "Morning: get ready for school"
+        ],
+        "loc_pool": [
+          "Бассейн",
+          "Swimming pool"
+        ],
+        "loc_school": [
+          "Школа: урок",
+          "School: lesson"
+        ],
+        "loc_walk": [
+          "Прогулка с Огурчиком",
+          "A walk with Cookie"
+        ],
+        "made_by": [
+          "Сделано Авой и папой",
+          "Made by Ava and Daddy"
+        ],
+        "map_title": [
+          "День Авы",
+          "Ava's day"
+        ],
+        "morning_cookie": [
+          "Куки утащил носок! Догони его!",
+          "Cookie stole a sock! Chase him!"
+        ],
+        "morning_goal": [
+          "Собери 6 вещей в рюкзак!",
+          "Put 6 things in the backpack!"
+        ],
+        "morning_hint": [
+          "Стрелки — идти. Подбирай вещи и неси к рюкзаку. Пробел — пончик в бабушку",
+          "Arrows to walk. Bring things to the backpack. Space throws a donut"
+        ],
+        "st_artist": [
+          "Мастерица",
+          "Crafter"
+        ],
+        "st_artist_d": [
+          "Собрала все поделки",
+          "Built every craft"
+        ],
+        "st_cookie": [
+          "Огурчик",
+          "Cookie"
+        ],
+        "st_cookie_d": [
+          "Погуляла с Куки",
+          "Walked Cookie"
+        ],
+        "st_donut": [
+          "Пончик-мастер",
+          "Donut master"
+        ],
+        "st_donut_d": [
+          "Победила бабушку Иру",
+          "Beat Granny Ira"
+        ],
+        "st_feast": [
+          "Быстрее деда",
+          "Faster than Grandpa"
+        ],
+        "st_feast_d": [
+          "Успела раньше деда Валеры",
+          "Grabbed it before Grandpa Valera"
+        ],
+        "st_hammy": [
+          "Хамя",
+          "Hammy"
+        ],
+        "st_hammy_d": [
+          "Собрала все семечки",
+          "Collected the seeds"
+        ],
+        "st_perfect": [
+          "Идеальный день",
+          "Perfect day"
+        ],
+        "st_perfect_d": [
+          "Все звёздочки за день",
+          "All stars in a day"
+        ],
+        "st_smart": [
+          "Умница",
+          "Smart one"
+        ],
+        "st_smart_d": [
+          "Все ответы верные",
+          "All answers correct"
+        ],
+        "st_swimmer": [
+          "Пловчиха",
+          "Swimmer"
+        ],
+        "st_swimmer_d": [
+          "Плавала как рыбка",
+          "Swam like a fish"
+        ],
+        "st_tidy": [
+          "Собранная",
+          "Packed up"
+        ],
+        "st_tidy_d": [
+          "Собралась в школу вовремя",
+          "Packed in time"
+        ],
+        "sticker_title": [
+          "Наклейки Авы",
+          "Ava's stickers"
+        ],
+        "story1_1": [
+          "Доброе утро! Меня зовут Ава.",
+          "Good morning! My name is Ava."
+        ],
+        "story1_2": [
+          "Это мой пёсик — мальтипу Куки.\nНо я зову его Огурчик.",
+          "This is my dog — a maltipoo named Cookie.\nBut I call him Pickle."
+        ],
+        "story1_3": [
+          "А ещё у нас живёт хомяк Хамя.",
+          "And we also have a hamster named Hammy."
+        ],
+        "story1_4": [
+          "Сегодня будет самый лучший день!",
+          "Today is going to be the best day ever!"
+        ],
+        "story1_5": [
+          "Только бы не пришла бабушка Ира...",
+          "If only Granny Ira doesn't come..."
+        ],
+        "story1_6": [
+          "Секрет: бабушка обожает пончики.\nКинь в неё пончик — и она отвлечётся!",
+          "Secret: Granny loves donuts.\nThrow one and she gets distracted!"
+        ],
+        "story2_1": [
+          "Вечер. Ава наигралась и устала.",
+          "Evening. Ava had a great day."
+        ],
+        "story2_2": [
+          "Дзинь-дзинь! Это бабушка Ира!",
+          "Ding-dong! It's Granny Ira!"
+        ],
+        "story2_3": [
+          "«А почему собака на диване?! А уроки?!»",
+          "\"Why is the dog on the sofa?! What about homework?!\""
+        ],
+        "story2_4": [
+          "Ава, доставай пончики!",
+          "Ava, get the donuts ready!"
+        ],
+        "story3_1": [
+          "Бабушка съела пончик... и улыбнулась.",
+          "Granny ate a donut... and smiled."
+        ],
+        "story3_2": [
+          "«Ладно, Авочка. Давай лепить вместе.»",
+          "\"Alright, Ava. Let's craft together.\""
+        ],
+        "story3_3": [
+          "Они делали поделки до самой ночи.",
+          "They made crafts until nightfall."
+        ],
+        "story3_4": [
+          "Это был идеальный день.\nКОНЕЦ",
+          "It was a perfect day.\nTHE END"
+        ],
+        "subtitle": [
+          "Идеальный день",
+          "One Perfect Day"
+        ],
+        "title": [
+          "Ава и Огурчик",
+          "Ava & Cookie"
+        ],
+        "v1": [
+          "Ну раз уж принесли...",
+          "Well, since they brought it..."
+        ],
+        "v2": [
+          "Не пропадать же добру.",
+          "Can't let it go to waste."
+        ],
+        "v3": [
+          "А это что? Тоже съем.",
+          "What's this? I'll have it too."
+        ],
+        "v4": [
+          "Порции у них маленькие.",
+          "Tiny portions here."
+        ],
+        "v5": [
+          "Я же говорил — я не голодный.",
+          "I told you — I'm not hungry."
+        ],
+        "v_came": [
+          "Через десять минут дед уже сидел за столом.\n— Я только чайку.",
+          "Ten minutes later Grandpa was at the table.\n— Just tea for me."
+        ],
+        "v_joke": [
+          "Это тоже съедобное?",
+          "Is this edible too?"
+        ],
+        "v_no1": [
+          "— Дед Валера, пойдём в кафе!\n— Да не пойду я. Чего я там не видел.",
+          "— Grandpa Valera, let's go to the cafe!\n— Nah. Nothing to see there."
+        ],
+        "v_no2": [
+          "— Ну пойдём!\n— Дома поем. У меня суп есть.",
+          "— Come on!\n— I'll eat at home. I have soup."
+        ],
+        "v_no3": [
+          "— Ну де-е-ед!\n— Дорого там у вас. И порции маленькие.",
+          "— Grandpa, pleeease!\n— It's pricey there. And tiny portions."
+        ],
+        "walk_goal": [
+          "Добеги с Куки до парка!",
+          "Run to the park with Cookie!"
+        ],
+        "walk_hint": [
+          "Вверх — прыжок, вниз — пригнуться, кнопка — пончик",
+          "Up to jump, down to duck, button throws a donut"
+        ],
+        "well_done": [
+          "Молодец, Ава!",
+          "Well done, Ava!"
+        ]
+      }
+    }
+  ]
+}

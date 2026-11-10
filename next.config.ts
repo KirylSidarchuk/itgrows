@@ -63,6 +63,9 @@ const nextConfig: NextConfig = {
         { source: "/sustain4", destination: "/sustain4/index.html" },
         // Personal games made to order (public/game): a plain HTML draft shared by link until it gets its own domain.
         { source: "/game", destination: "/game/index.html" },
+        // Playable example games: one shared engine at /game/play/game.js, one folder per game.
+        // The id allows only letters, digits and dashes, so game.js itself is never rewritten.
+        { source: "/game/play/:id([a-z0-9-]+)", destination: "/game/play/:id/index.html" },
       ],
       afterFiles: [
         // Serve a clean markdown alternate for each article at /blog/{slug}.md without giving up
