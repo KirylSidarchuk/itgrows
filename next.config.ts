@@ -18,6 +18,10 @@ const nextConfig: NextConfig = {
       { type: "query" as const, key: "utm_medium", value: "cpc" },
     ]
     return [
+      // Personal games moved to their own domain (Kiryl bought youmoir.com, 10 Nov 2026).
+      // Temporary (307) on purpose: the old address was a draft shared by link.
+      { source: "/game", destination: "https://youmoir.com/", permanent: false },
+      { source: "/game/:path*", destination: "https://youmoir.com/:path*", permanent: false },
       // Ad clicks are for the LinkedIn/X product, which left "/" for /personal on 22 Oct 2026.
       { source: "/", has: [{ type: "query", key: "gclid" }], destination: "/personal", permanent: false },
       { source: "/", has: [{ type: "query", key: "gbraid" }], destination: "/personal", permanent: false },
@@ -43,7 +47,7 @@ const nextConfig: NextConfig = {
   // Shared by link only: search engines are told to keep the page and its images out of results.
   async headers() {
     const noindex = [{ key: "X-Robots-Tag", value: "noindex, nofollow" }]
-    return ["/sustain/:path*", "/sustain1/:path*", "/sustain2/:path*", "/sustain3/:path*", "/sustain4/:path*", "/game/:path*"].map((source) => ({ source, headers: noindex }))
+    return ["/sustain/:path*", "/sustain1/:path*", "/sustain2/:path*", "/sustain3/:path*", "/sustain4/:path*"].map((source) => ({ source, headers: noindex }))
   },
   async rewrites() {
     return {
@@ -61,13 +65,6 @@ const nextConfig: NextConfig = {
         // A service map in the manner of webnetz.de, and a simply-explained page in the manner of suchhelden.de.
         { source: "/sustain3", destination: "/sustain3/index.html" },
         { source: "/sustain4", destination: "/sustain4/index.html" },
-        // Personal games made to order (public/game): a plain HTML draft shared by link until it gets its own domain.
-        { source: "/game", destination: "/game/index.html" },
-        // The kids and grown-ups pages of the same site.
-        { source: "/game/:page(kids|adults)", destination: "/game/:page/index.html" },
-        // Playable example games: one shared engine at /game/play/game.js, one folder per game.
-        // The id allows only letters, digits and dashes, so game.js itself is never rewritten.
-        { source: "/game/play/:id([a-z0-9-]+)", destination: "/game/play/:id/index.html" },
       ],
       afterFiles: [
         // Serve a clean markdown alternate for each article at /blog/{slug}.md without giving up
