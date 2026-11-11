@@ -65,6 +65,10 @@ const nextConfig: NextConfig = {
         // A service map in the manner of webnetz.de, and a simply-explained page in the manner of suchhelden.de.
         { source: "/sustain3", destination: "/sustain3/index.html" },
         { source: "/sustain4", destination: "/sustain4/index.html" },
+        // The owner's own song page (access by code): the page, the queue and the library live on the
+        // backend server, which sends "noindex" itself. Songs are rendered by a machine that fetches jobs from it.
+        { source: "/music", destination: "https://blogs.itgrows.ai/music" },
+        { source: "/music/:path*", destination: "https://blogs.itgrows.ai/music/:path*" },
       ],
       afterFiles: [
         // Serve a clean markdown alternate for each article at /blog/{slug}.md without giving up
