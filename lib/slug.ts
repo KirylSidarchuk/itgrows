@@ -9,6 +9,15 @@ const SPELLED_OUT: Record<string, string> = {
   ä: "ae", ö: "oe", ü: "ue", ß: "ss", Ä: "ae", Ö: "oe", Ü: "ue",
 }
 
+// Cyrillic (youmoir.com/ru/blog, 12 Nov 2026): the regex below kept only a-z, so a Russian title
+// came out as "2026" plus the random tail. Spelled out in Latin letters the common way (щ → shch).
+const CYRILLIC: Record<string, string> = {
+  а: "a", б: "b", в: "v", г: "g", д: "d", е: "e", ё: "e", ж: "zh", з: "z", и: "i", й: "y",
+  к: "k", л: "l", м: "m", н: "n", о: "o", п: "p", р: "r", с: "s", т: "t", у: "u", ф: "f",
+  х: "kh", ц: "ts", ч: "ch", ш: "sh", щ: "shch", ъ: "", ы: "y", ь: "", э: "e", ю: "yu", я: "ya",
+  і: "i", ї: "yi", є: "ye", ґ: "g", ў: "u",
+}
+
 /**
  * Slug without any uniqueness suffix. Long titles are cut at a word boundary
  * so the address stays readable.
@@ -16,6 +25,8 @@ const SPELLED_OUT: Record<string, string> = {
 export function slugBase(text: string, maxLength = 80): string {
   let slug = text
     .replace(/[äöüßÄÖÜ]/g, (c) => SPELLED_OUT[c])
+    .toLowerCase()
+    .replace(/[а-яёіїєґў]/g, (c) => CYRILLIC[c] ?? "")
     .normalize("NFKD")
     .replace(/[̀-ͯ]/g, "")
     .toLowerCase()
