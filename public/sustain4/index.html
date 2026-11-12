@@ -196,7 +196,10 @@
     .chart.on .grow { transform: scaleY(1); }
     .pulse { transform-box: fill-box; transform-origin: center; animation: pulse 1.8s ease-out infinite; }
     @keyframes pulse { from { transform: scale(1); opacity: 0.6; } to { transform: scale(3.2); opacity: 0; } }
-    .facts { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 20px; }
+    .facts { display: grid; grid-template-columns: repeat(6, 1fr); gap: 16px; margin-top: 20px; }
+    .fact { grid-column: span 3; }
+    .fact--ours { grid-column: span 2; }
+    .fact__k { font-size: 11.5px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: #ff8a8e; margin-bottom: 10px; }
     .fact { border-radius: 18px; padding: 22px 22px 20px; background: var(--soft); display: flex; flex-direction: column; }
     .fact b { font-size: 34px; line-height: 1.05; font-weight: 800; letter-spacing: -0.04em; color: var(--red); }
     .fact p { margin: 10px 0 12px; font-size: 14.5px; line-height: 1.45; }
@@ -345,6 +348,8 @@
       .offer > div:first-child { grid-column: 1 / -1; }
       .shift { grid-template-columns: 1fr; }
       .facts { grid-template-columns: repeat(2, 1fr); }
+      .fact, .fact--ours { grid-column: auto; }
+      .fact--ours:last-child { grid-column: 1 / -1; }
     }
     @media (max-width: 760px) {
       :root { --pad: 16px; }
@@ -374,6 +379,7 @@
       .offer h3 { font-size: 24px; }
       .chart { padding: 24px 18px 20px; border-radius: 20px; }
       .facts { grid-template-columns: 1fr; }
+      .fact--ours:last-child { grid-column: auto; }
       .chart svg text { font-size: 16px; }
       .chart svg g.pop text { font-size: 13px; }
       .chart svg text.tt { font-size: 14px; }
@@ -675,12 +681,13 @@
       en: { name: "Everything together: growth on subscription", promise: "Your website grows every week, stays technically fit and runs on fast hosting. All in one contract, with one contact person.", result: "Best combined with the redesign and conversion optimisation.",
         items: ["03 · One new article every week", "04 · Technical updates and monitoring", "05 · Managed hosting", "Monthly check of your visibility in AI", "One contract, one invoice, one contact"], save: "with yearly upfront payment" }
     };
-    // Two market numbers come from published studies; the other two are itgrows.ai's own measured results.
+    // Two market numbers come from published studies; the three short cases (no names) come from our measurements and logs.
     const FACTS = [
       { de: ["−34,5 %", "weniger Klicks auf das erste Google-Ergebnis, wenn oben eine KI-Übersicht steht."], en: ["−34.5%", "fewer clicks on the top Google result when an AI Overview appears above it."], src: ["Ahrefs, 2025", "https://ahrefs.com/blog/ai-overviews-reduce-clicks/"] },
       { de: ["8 % statt 15 %", "der Suchen enden mit einem Klick auf eine Website, wenn Google eine KI-Zusammenfassung zeigt."], en: ["8% vs 15%", "of searches end with a click on a website when Google shows an AI summary."], src: ["Pew Research Center, 2025", "https://www.pewresearch.org/short-reads/2025/07/22/google-users-are-less-likely-to-click-on-links-when-an-ai-summary-appears-in-the-results/"] },
-      { ours: true, de: ["356 Zitate", "in Microsoft Copilot in nur drei Wochen für itgrows.ai."], en: ["356 citations", "in Microsoft Copilot in just three weeks for itgrows.ai."], src: { de: "Bing Webmaster Tools, Okt.–Nov. 2026", en: "Bing Webmaster Tools, Oct–Nov 2026" } },
-      { ours: true, de: ["0 → 5", "Nennungen in ChatGPT, Claude, Perplexity und Gemini in zwei Wochen für itgrows.ai."], en: ["0 → 5", "mentions in ChatGPT, Claude, Perplexity and Gemini in two weeks for itgrows.ai."], src: { de: "Eigene Messung: 160 Kundenfragen, 21.10.–05.11.2026", en: "Own measurement: 160 customer questions, 21 Oct–5 Nov 2026" } }
+      { ours: true, k: { de: "Fallstudie · B2B-Logistik", en: "Case study · B2B logistics" }, de: ["2 neue B2B-Kunden", "in einem Monat für ein Logistik-Startup aus den USA. Beide kamen über ChatGPT."], en: ["2 new B2B clients", "in one month for a US logistics start-up. Both came via ChatGPT."], src: { de: "Angabe des Kunden", en: "As reported by the client" } },
+      { ours: true, k: { de: "Fallstudie · SaaS", en: "Case study · SaaS" }, de: ["0 → 356 Zitate", "in Microsoft Copilot in drei Wochen für eine neue Website. Dazu 0 → 5 Nennungen in ChatGPT, Claude, Perplexity und Gemini."], en: ["0 → 356 citations", "in Microsoft Copilot in three weeks for a new website. Plus 0 → 5 mentions in ChatGPT, Claude, Perplexity and Gemini."], src: { de: "Bing Webmaster Tools und eigene Messung, Okt.–Nov. 2026", en: "Bing Webmaster Tools and own measurement, Oct–Nov 2026" } },
+      { ours: true, k: { de: "Fallstudie · Marktplatz", en: "Case study · Marketplace" }, de: ["1.918 Abrufe", "in zwei Wochen: So oft holten sich ChatGPT, Perplexity & Co. ihre Antwort bei einem Kursmarktplatz."], en: ["1,918 fetches", "in two weeks: that’s how often ChatGPT, Perplexity & co. took their answer from a course marketplace."], src: { de: "Server-Logs, 2026", en: "Server logs, 2026" } }
     ];
     // Case studies, built only from measured results: our logs, Bing Webmaster Tools and our 4-assistant measurement.
     const CASES = [
@@ -861,7 +868,7 @@
       $("steps").innerHTML = S.steps.map((s, i) => `<div class="step"><b>0${i + 1}</b><h3>${esc(s[lang][0])}</h3><p>${esc(s[lang][1])}</p></div>`).join("");
       lossChart();
       winChart();
-      $("facts").innerHTML = FACTS.map((f) => `<div class="fact${f.ours ? " fact--ours" : ""}"><b>${esc(f[lang][0])}</b><p>${esc(f[lang][1])}</p><small>${f.ours ? esc(L(f.src)) : `${lang === "de" ? "Quelle" : "Source"}: <a href="${f.src[1]}" target="_blank" rel="noopener">${esc(f.src[0])}</a>`}</small></div>`).join("");
+      $("facts").innerHTML = FACTS.map((f) => `<div class="fact${f.ours ? " fact--ours" : ""}">${f.k ? `<span class="fact__k">${esc(L(f.k))}</span>` : ""}<b>${esc(f[lang][0])}</b><p>${esc(f[lang][1])}</p><small>${f.ours ? esc(L(f.src)) : `${lang === "de" ? "Quelle" : "Source"}: <a href="${f.src[1]}" target="_blank" rel="noopener">${esc(f.src[0])}</a>`}</small></div>`).join("");
       $("offers").innerHTML = OFFERS.map(offerHTML).join("") + allHTML();
       $("cases").innerHTML = CASES.map(caseHTML).join("");
       document.querySelectorAll("[data-case]").forEach((a) => a.addEventListener("click", () => {
