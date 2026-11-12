@@ -239,6 +239,43 @@
     footer .brand { color: var(--ink); margin-right: auto; }
     .side { position: fixed; right: 0; top: 50%; transform: translateY(-50%); z-index: 50; writing-mode: vertical-rl; background: var(--red); color: #fff; padding: 18px 10px; border-radius: 14px 0 0 14px; font-size: 13px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; text-decoration: none; box-shadow: 0 10px 24px rgba(224,36,43,0.35); }
 
+    .cases-s { background: var(--ink); color: #fff; }
+    .cases-s h2.h { color: #fff; }
+    .cases-s .lead { color: rgba(255,255,255,0.72); }
+    .cases-s .kick { color: #ff8a8e; }
+    .cases-s .kick::before { background: #ff8a8e; }
+    .cases { display: grid; gap: 22px; margin-top: 46px; }
+    .case { display: grid; grid-template-columns: 0.78fr 1.22fr; background: #fff; color: var(--ink); border-radius: 26px; overflow: hidden; transition: transform 0.3s, box-shadow 0.3s; }
+    .case:nth-child(even) { grid-template-columns: 1.22fr 0.78fr; }
+    .case:nth-child(even) .case__img { order: 2; }
+    .case__img { position: relative; background: var(--soft); min-height: 320px; overflow: hidden; }
+    .case__img img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: left center; transition: transform 0.8s cubic-bezier(.2,.7,.2,1); }
+    .case__badge { position: absolute; left: 18px; bottom: 18px; background: #fff; border-radius: 999px; padding: 7px 14px; font-size: 12.5px; font-weight: 800; box-shadow: 0 8px 24px rgba(0,0,0,0.15); }
+    .case__badge span { color: var(--red); }
+    .case__body { padding: 36px 38px 34px; display: flex; flex-direction: column; }
+    .case__kick { font-size: 12px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--red); }
+    .case h3 { font-size: clamp(26px, 2.6vw, 36px); line-height: 1.08; letter-spacing: -0.035em; margin: 10px 0 18px; }
+    .case__row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 22px; }
+    .case__row h4 { font-size: 11.5px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--grey); margin: 0 0 6px; }
+    .case__row p { margin: 0; font-size: 14.5px; color: #3d3d42; line-height: 1.5; }
+    .case__stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
+    .stat { background: var(--soft); border-radius: 16px; padding: 16px 16px 14px; transition: background 0.25s, color 0.25s, transform 0.3s; }
+    .stat b { display: block; font-size: 30px; line-height: 1.05; font-weight: 800; letter-spacing: -0.04em; color: var(--red); }
+    .stat b s { color: #a0a0a6; font-weight: 700; font-size: 0.7em; text-decoration-thickness: 2px; margin-right: 2px; }
+    .stat span { display: block; font-size: 13px; line-height: 1.4; margin-top: 6px; color: #3d3d42; }
+    .case__why { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 22px; }
+    .case__why span { background: var(--red-soft); color: var(--red); font-weight: 700; font-size: 13px; padding: 6px 12px; border-radius: 999px; }
+    .case__why span::before { content: "✓ "; }
+    .case__foot { margin-top: auto; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+    .case__foot small { font-size: 12px; color: var(--grey); }
+    @media (hover: hover) {
+      .case:hover { transform: translateY(-5px); box-shadow: 0 30px 70px rgba(0,0,0,0.35); }
+      .case:hover .case__img img { transform: scale(1.06); }
+      .stat:hover { background: var(--ink); color: #fff; transform: translateY(-3px); }
+      .stat:hover span { color: rgba(255,255,255,0.8); }
+      .stat:hover b { color: #ff8a8e; }
+    }
+
     /* Life: blocks rise in on scroll and respond to the pointer. */
     .rv { opacity: 0; }
     .rv.in { opacity: 1; animation: rise 0.75s cubic-bezier(.2,.7,.2,1) backwards; animation-delay: var(--d, 0s); }
@@ -302,6 +339,9 @@
       .reason:nth-child(3) { padding-left: 0; border-left: 0; }
       .steps { grid-template-columns: repeat(3, 1fr); }
       .offer { grid-template-columns: 1fr 1fr; }
+      .case, .case:nth-child(even) { grid-template-columns: 1fr; }
+      .case:nth-child(even) .case__img { order: 0; }
+      .case__img { min-height: 260px; }
       .offer > div:first-child { grid-column: 1 / -1; }
       .shift { grid-template-columns: 1fr; }
       .facts { grid-template-columns: repeat(2, 1fr); }
@@ -327,6 +367,10 @@
       .about img { max-width: 320px; }
       .creds { grid-template-columns: 1fr; }
       .offer { grid-template-columns: 1fr; gap: 22px; padding: 26px 20px; }
+      .case__body { padding: 26px 20px 24px; }
+      .case__row, .case__stats { grid-template-columns: 1fr; }
+      .case__img { min-height: 210px; }
+      .stat b { font-size: 28px; }
       .offer h3 { font-size: 24px; }
       .chart { padding: 24px 18px 20px; border-radius: 20px; }
       .facts { grid-template-columns: 1fr; }
@@ -346,7 +390,7 @@
         <a class="brand" href="#"><i>PS</i>PRODUCT STUDIO</a>
         <nav class="nav">
           <a href="#leistungen"><span class="de">Leistungen</span><span class="en">Services</span></a>
-          <a href="#projekte"><span class="de">Projekte</span><span class="en">Work</span></a>
+          <a href="#fallstudien"><span class="de">Fallstudien</span><span class="en">Cases</span></a>
           <a href="#angebot"><span class="de">Angebot</span><span class="en">Offer</span></a>
           <a href="#team"><span class="de">Über uns</span><span class="en">About</span></a>
           <a href="#faq">FAQ</a>
@@ -362,6 +406,7 @@
       <div class="wrap">
         <b><span class="de">Inhalt</span><span class="en">Contents</span></b>
         <a href="#wandel"><span class="de">Was passiert</span><span class="en">The shift</span></a>
+        <a href="#fallstudien"><span class="de">Fallstudien</span><span class="en">Case studies</span></a>
         <a href="#erklaert"><span class="de">Einfach erklärt</span><span class="en">Explained</span></a>
         <a href="#leistungen"><span class="de">Leistungen</span><span class="en">Services</span></a>
         <a href="#warum"><span class="de">Warum wir</span><span class="en">Why us</span></a>
@@ -428,6 +473,15 @@
       </div>
       <div class="facts" id="facts"></div>
       <p class="shift__note"><span class="de">Die Grafiken sind schematisch und zeigen den typischen Verlauf. Wie schnell es geht, hängt von Branche und Ausgangslage ab.</span><span class="en">The charts are schematic and show the typical course. How fast it goes depends on the industry and the starting point.</span></p>
+    </div>
+  </section>
+
+  <section class="s cases-s" id="fallstudien">
+    <div class="wrap">
+      <p class="kick"><span class="de">Fallstudien</span><span class="en">Case studies</span></p>
+      <h2 class="h"><span class="de">Was passiert, wenn die KI Sie empfiehlt. <span class="r">Echte Zahlen.</span></span><span class="en">What happens when AI recommends you. <span class="r">Real numbers.</span></span></h2>
+      <p class="lead"><span class="de">Drei Projekte aus unserem Portfolio: neue Kunden, Sichtbarkeit aus dem Nichts und Reichweite, die jeden Monat wächst.</span><span class="en">Three projects from our portfolio: new customers, visibility from nowhere, and reach that grows every month.</span></p>
+      <div class="cases" id="cases"></div>
     </div>
   </section>
 
@@ -628,6 +682,34 @@
       { ours: true, de: ["356 Zitate", "in Microsoft Copilot in nur drei Wochen für itgrows.ai."], en: ["356 citations", "in Microsoft Copilot in just three weeks for itgrows.ai."], src: { de: "Bing Webmaster Tools, Okt.–Nov. 2026", en: "Bing Webmaster Tools, Oct–Nov 2026" } },
       { ours: true, de: ["0 → 5", "Nennungen in ChatGPT, Claude, Perplexity und Gemini in zwei Wochen für itgrows.ai."], en: ["0 → 5", "mentions in ChatGPT, Claude, Perplexity and Gemini in two weeks for itgrows.ai."], src: { de: "Eigene Messung: 160 Kundenfragen, 21.10.–05.11.2026", en: "Own measurement: 160 customer questions, 21 Oct–5 Nov 2026" } }
     ];
+    // Case studies, built only from measured results: our logs, Bing Webmaster Tools and our 4-assistant measurement.
+    const CASES = [
+      { id: "freightsizer", name: "FreightSizer", tag: { de: "B2B · Logistik · USA", en: "B2B · Logistics · USA" },
+        de: { h: "2 neue B2B-Kunden in einem Monat. Beide kamen über ChatGPT.", before: "Neues B2B-Produkt, das Fracht per Foto vermisst. Kaum bekannt, und Einkäufer fragen zunehmend ChatGPT, welches Tool sie nehmen sollen.", did: "Website und Fachblog mit über 40 Artikeln zum Start, strukturiert für KI-Antworten, angebunden an Search Console und Bing, jeden Monat geprüft.",
+          stats: [["2", "neue B2B-Kunden in einem Monat, beide über ChatGPT"], ["18 von 80", "KI-Antworten auf Einkäuferfragen nennen FreightSizer"], ["Hunderte", "Unternehmen nutzen FreightSizer"]], why: ["Neue Kunden ohne Werbebudget", "Die KI empfiehlt Sie direkt"], src: "Eigene Messung in ChatGPT, Claude, Perplexity, Gemini, Nov. 2026" },
+        en: { h: "2 new B2B clients in one month. Both came via ChatGPT.", before: "A new B2B product that measures freight from a photo. Barely known, while buyers increasingly ask ChatGPT which tool to use.", did: "Website and expert blog with 40+ articles at launch, structured for AI answers, connected to Search Console and Bing, checked every month.",
+          stats: [["2", "new B2B clients in one month, both via ChatGPT"], ["18 of 80", "AI answers to buyer questions name FreightSizer"], ["Hundreds", "of companies use FreightSizer"]], why: ["New customers without ad spend", "AI recommends you directly"], src: "Own measurement in ChatGPT, Claude, Perplexity, Gemini, Nov 2026" } },
+      { id: "itgrows", name: "itgrows.ai", tag: { de: "SaaS · KI-Sichtbarkeit", en: "SaaS · AI visibility" },
+        de: { h: "Von unsichtbar zu zitiert: in nur drei Wochen.", before: "Neue Website, in keiner einzigen KI-Antwort: 0 von 160 Kundenfragen auf Deutsch und Englisch.", did: "Technik für KI-Crawler, jede Woche neue Artikel zu echten Kundenfragen, strukturierte Daten, Meldung an Google und Bing.",
+          stats: [["<s>0</s>→ 356", "Zitate in Microsoft Copilot in drei Wochen"], ["<s>0</s>→ 5", "Nennungen in ChatGPT, Claude, Perplexity, Gemini"], ["<s>93</s>→ 247", "Abrufe durch ChatGPT pro Woche, um Nutzern zu antworten"]], why: ["Ergebnis in Wochen, nicht Jahren", "Jede Woche messbar"], src: "Bing Webmaster Tools und eigene Messung, Okt.–Nov. 2026" },
+        en: { h: "From invisible to cited: in just three weeks.", before: "A new website, in not a single AI answer: 0 of 160 customer questions in German and English.", did: "Engineering for AI crawlers, new articles on real customer questions every week, structured data, submissions to Google and Bing.",
+          stats: [["<s>0</s>→ 356", "citations in Microsoft Copilot in three weeks"], ["<s>0</s>→ 5", "mentions in ChatGPT, Claude, Perplexity, Gemini"], ["<s>93</s>→ 247", "ChatGPT fetches a week to answer users"]], why: ["Results in weeks, not years", "Measurable every week"], src: "Bing Webmaster Tools and own measurement, Oct–Nov 2026" } },
+      { id: "pickaclass", name: "PickAClass", tag: { de: "Marktplatz · Online-Kurse", en: "Marketplace · Online courses" },
+        de: { h: "1.918 Mal in zwei Wochen holte sich die KI ihre Antwort bei PickAClass.", before: "Ein Kursmarktplatz mit großem Katalog, der bei Google und in der KI gegen bekannte Plattformen bestehen muss.", did: "Katalog und Ratgeber so aufgebaut, dass KI sie lesen kann: eine Adresse pro Seite, mehrsprachige Sitemaps, sofortige Meldung neuer Seiten.",
+          stats: [["1.918", "Abrufe durch ChatGPT, Perplexity & Co., während sie echten Menschen antworteten"], ["190.000+", "Seiten von KI-Crawlern gelesen"], ["1.000+", "Ratgeberseiten in mehreren Sprachen"]], why: ["Die KI greift auf Sie zurück", "Wächst ohne Mehraufwand"], src: "Server-Logs, zwei Wochen, 2026" },
+        en: { h: "1,918 times in two weeks, AI went to PickAClass for its answer.", before: "A course marketplace with a large catalog that has to hold its own on Google and in AI against well-known platforms.", did: "Catalog and guides built so AI can read them: one address per page, multilingual sitemaps, instant notification of new pages.",
+          stats: [["1,918", "fetches by ChatGPT, Perplexity & co. while answering real people"], ["190,000+", "pages read by AI crawlers"], ["1,000+", "guide pages in several languages"]], why: ["AI relies on you", "Grows without extra effort"], src: "Server logs, two weeks, 2026" } }
+    ];
+    function caseHTML(c) {
+      const d = c[lang];
+      return `<article class="case"><div class="case__img"><img src="/sustain/assets/thumbs/${c.id}-cover.webp" alt="${esc(c.name)}" loading="lazy"><span class="case__badge">${esc(c.name)} <span>· ${esc(L(c.tag))}</span></span></div>
+        <div class="case__body"><span class="case__kick">${lang === "de" ? "Fallstudie" : "Case study"} · ${esc(c.name)}</span><h3>${esc(d.h)}</h3>
+        <div class="case__row"><div><h4>${lang === "de" ? "Ausgangslage" : "Starting point"}</h4><p>${esc(d.before)}</p></div><div><h4>${lang === "de" ? "Was wir gemacht haben" : "What we did"}</h4><p>${esc(d.did)}</p></div></div>
+        <div class="case__stats">${d.stats.map(([b, t]) => `<div class="stat"><b>${b}</b><span>${esc(t)}</span></div>`).join("")}</div>
+        <div class="case__why">${d.why.map((w) => `<span>${esc(w)}</span>`).join("")}</div>
+        <div class="case__foot"><a class="btn btn--red" href="#anfrage" data-case="${c.id}">${lang === "de" ? "Das will ich auch" : "I want this too"} →</a><small>${esc(d.src)}</small></div></div></article>`;
+    }
+
     // Shared FAQ entries that talked about packages, rewritten for prices on request.
     const FAQ_FIX = {
       "Was kostet eine Website bei Ihnen?": { de: "Den Preis nennen wir Ihnen im kostenlosen Erstgespräch, fest und vor dem Start. Relaunch und Conversion-Optimierung kosten einmalig, Artikel, technische Betreuung und Hosting monatlich. Bei jährlicher Vorauszahlung des Komplettpakets sparen Sie 30 %.", en: "We tell you the price in a free first call, fixed and before we start. The redesign and conversion optimisation are one-time fees; articles, technical care and hosting are monthly. Pay the full bundle yearly upfront and you save 30%." },
@@ -781,6 +863,11 @@
       winChart();
       $("facts").innerHTML = FACTS.map((f) => `<div class="fact${f.ours ? " fact--ours" : ""}"><b>${esc(f[lang][0])}</b><p>${esc(f[lang][1])}</p><small>${f.ours ? esc(L(f.src)) : `${lang === "de" ? "Quelle" : "Source"}: <a href="${f.src[1]}" target="_blank" rel="noopener">${esc(f.src[0])}</a>`}</small></div>`).join("");
       $("offers").innerHTML = OFFERS.map(offerHTML).join("") + allHTML();
+      $("cases").innerHTML = CASES.map(caseHTML).join("");
+      document.querySelectorAll("[data-case]").forEach((a) => a.addEventListener("click", () => {
+        const c = CASES.find((x) => x.id === a.dataset.case);
+        $("msg-in").value = lang === "de" ? `Ich möchte Ergebnisse wie bei ${c.name}. Was ist bei uns möglich?` : `I want results like ${c.name}. What is possible for us?`;
+      }));
       document.querySelectorAll("[data-offer]").forEach((a) => a.addEventListener("click", () => {
         const n = a.dataset.offer;
         $("topic").value = n;
@@ -837,7 +924,7 @@
     document.querySelectorAll(".chart").forEach((c) => cio.observe(c));
 
     // Blocks rise in as they scroll into view, one after another inside each group.
-    const RV = ".disc > *, .reasons > *, .works > *, .steps > *, .offers > *, .facts > *, .shift > *, .three > div, .creds > div, .faq details, .explain__card, .analysis";
+    const RV = ".cases > *, .disc > *, .reasons > *, .works > *, .steps > *, .offers > *, .facts > *, .shift > *, .three > div, .creds > div, .faq details, .explain__card, .analysis";
     const rio = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) { e.target.classList.add("in"); rio.unobserve(e.target); } }), { threshold: 0.12 });
     function armReveal() {
       document.querySelectorAll(RV).forEach((el) => {
