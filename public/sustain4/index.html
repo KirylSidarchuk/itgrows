@@ -1039,11 +1039,24 @@ const BRAND = {"googletagmanager":{"c":"#246FDB","d":"M12.003 0a3 3 0 0 0-2.121 
         $("c-status").textContent = lang === "de" ? "Bitte Name und E-Mail angeben." : "Please enter your name and email.";
         return;
       }
+      const topic = f.topic.options[f.topic.selectedIndex]?.text || "";
+      // On the Sustain Impact domains the form posts to the site's existing lead handler (/request/), which emails info@sustain-impact.de.
+      if (/(^|\.)sustain-impact\.(ai|de)$/.test(location.hostname)) {
+        const btn = f.querySelector("button[type=submit]"); btn.disabled = true;
+        $("c-status").textContent = lang === "de" ? "Wird gesendet…" : "Sending…";
+        fetch("/request/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: f.name.value.trim(), email: f.email.value.trim(), service: topic, website: f.site.value.trim(), message: f.message.value.trim(), language: lang, page: location.href }) })
+          .then((r) => r.json()).then((j) => {
+            if (!j.success) throw new Error("fail");
+            f.reset(); $("c-status").style.color = "#2F9E44";
+            $("c-status").textContent = lang === "de" ? "Danke! Ihre Anfrage ist angekommen. Wir melden uns innerhalb eines Werktages." : "Thank you! Your enquiry has arrived. We will reply within one working day.";
+          }).catch(() => { $("c-status").textContent = lang === "de" ? "Das hat nicht geklappt. Bitte schreiben Sie uns an info@sustain-impact.de." : "That didn’t work. Please email us at info@sustain-impact.de."; })
+          .finally(() => { btn.disabled = false; });
+        return;
+      }
       if (S.email === "YOUR_STUDIO_EMAIL") {
         $("c-status").textContent = lang === "de" ? "Es wurde nichts gesendet: die E-Mail-Adresse des Studios fehlt noch auf dieser Seite." : "Nothing was sent: the studio’s email address is not on this page yet.";
         return;
       }
-      const topic = f.topic.options[f.topic.selectedIndex]?.text || "";
       const body = `Name: ${f.name.value}\nE-Mail: ${f.email.value}\n${lang === "de" ? "Leistung" : "Service"}: ${topic}\nWebsite: ${f.site.value}\n\n${f.message.value}`;
       location.href = `mailto:${S.email}?subject=${encodeURIComponent(lang === "de" ? "Anfrage über die Website" : "Enquiry from the website")}&body=${encodeURIComponent(body)}`;
       $("c-status").textContent = lang === "de" ? "Ihr E-Mail-Programm öffnet sich. Von dieser Seite wurde nichts gesendet." : "Your email app is opening. Nothing was sent from this page.";
