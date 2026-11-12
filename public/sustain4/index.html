@@ -239,6 +239,60 @@
     footer .brand { color: var(--ink); margin-right: auto; }
     .side { position: fixed; right: 0; top: 50%; transform: translateY(-50%); z-index: 50; writing-mode: vertical-rl; background: var(--red); color: #fff; padding: 18px 10px; border-radius: 14px 0 0 14px; font-size: 13px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; text-decoration: none; box-shadow: 0 10px 24px rgba(224,36,43,0.35); }
 
+    /* Life: blocks rise in on scroll and respond to the pointer. */
+    .rv { opacity: 0; }
+    .rv.in { opacity: 1; animation: rise 0.75s cubic-bezier(.2,.7,.2,1) backwards; animation-delay: var(--d, 0s); }
+    @keyframes rise { from { opacity: 0; transform: translateY(28px); } to { opacity: 1; transform: none; } }
+    .bob { animation: bob 3.2s ease-in-out infinite; transform-box: fill-box; }
+    @keyframes bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+    .formcard .stamp { animation: wobble 5s ease-in-out infinite; }
+    @keyframes wobble { 0%, 100% { transform: rotate(-6deg); } 50% { transform: rotate(6deg) scale(1.04); } }
+    .explain__card::after { animation: breathe 6s ease-in-out infinite; }
+    @keyframes breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.12) translate(-8px, -8px); } }
+    .chart svg { touch-action: pan-y; cursor: crosshair; }
+    .hov { opacity: 0; transition: opacity 0.2s; pointer-events: none; }
+    .chart.hovering .hov { opacity: 1; }
+    .btn i, .btn { transition: transform 0.2s, box-shadow 0.2s, background 0.2s; }
+    .dc::after { content: ""; position: absolute; left: 0; top: 0; height: 3px; width: 100%; background: var(--red); transform: scaleX(0); transform-origin: left; transition: transform 0.35s ease; }
+    .dc__ic { transition: background 0.3s; }
+    .dc__ic svg { transition: transform 0.4s cubic-bezier(.3,1.6,.6,1), color 0.2s; }
+    .reason b { display: inline-block; transition: transform 0.35s cubic-bezier(.3,1.6,.6,1); }
+    .reason h3, .step h3, .faq summary { transition: color 0.2s; }
+    .work { transition: box-shadow 0.25s, transform 0.25s; }
+    .work img { transition: transform 0.7s cubic-bezier(.2,.7,.2,1); transform-origin: top center; }
+    .work__body { position: relative; z-index: 1; background: #fff; }
+    .step { position: relative; }
+    .step::before { content: ""; position: absolute; top: -2px; left: 0; height: 3px; width: 100%; background: var(--red); transform: scaleX(0); transform-origin: left; transition: transform 0.45s ease; }
+    .offer { transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s; }
+    .offer li { transition: transform 0.2s; }
+    .chips span { transition: background 0.2s, color 0.2s, border-color 0.2s, transform 0.2s; }
+    .save { transition: transform 0.4s cubic-bezier(.3,1.6,.6,1); }
+    .fact, .chart { transition: transform 0.3s, box-shadow 0.3s; }
+    .fact b { display: inline-block; transition: transform 0.35s cubic-bezier(.3,1.6,.6,1); transform-origin: left bottom; }
+    .three b { transition: background 0.25s, color 0.25s, transform 0.3s cubic-bezier(.3,1.6,.6,1); }
+    .creds > div { transition: transform 0.25s, border-color 0.25s; }
+    @media (hover: hover) {
+      .btn:hover { box-shadow: 0 10px 24px rgba(0,0,0,0.14); }
+      .btn:hover i { transform: translateX(3px); }
+      .dc:hover::after { transform: scaleX(1); }
+      .dc:hover .dc__ic { background: var(--red-soft); }
+      .dc:hover .dc__ic svg { transform: scale(1.14) rotate(-5deg); }
+      .reason:hover b { transform: translateY(-6px) scale(1.1); }
+      .reason:hover h3, .step:hover h3, .faq summary:hover { color: var(--red); }
+      a.work:hover { transform: translateY(-5px); }
+      a.work:hover img { transform: scale(1.07); }
+      .step:hover::before { transform: scaleX(1); }
+      .offer:hover { transform: translateY(-4px); box-shadow: 0 26px 60px rgba(0,0,0,0.09); border-color: #d2d2d6; }
+      .offer--all:hover { box-shadow: 0 26px 60px rgba(224,36,43,0.28); border-color: var(--ink); }
+      .offer li:hover { transform: translateX(5px); }
+      .chips span:hover { background: var(--ink); color: #fff; border-color: var(--ink); transform: translateY(-2px); }
+      .offer--all:hover .save { transform: rotate(-2.5deg) scale(1.04); }
+      .fact:hover, .chart:hover { transform: translateY(-5px); box-shadow: 0 24px 56px rgba(0,0,0,0.12); }
+      .fact:hover b { transform: scale(1.08); }
+      .three > div:hover b { background: var(--red); color: #fff; transform: rotate(-8deg) scale(1.08); }
+      .creds > div:hover { transform: translateY(-3px); }
+    }
+
     @media (max-width: 1100px) {
       .nav { display: none; }
       .langs { margin-left: auto; }
@@ -278,10 +332,11 @@
       .facts { grid-template-columns: 1fr; }
       .chart svg text { font-size: 16px; }
       .chart svg g.pop text { font-size: 13px; }
+      .chart svg text.tt { font-size: 14px; }
       .save b { font-size: 52px; }
       .side { display: none; }
     }
-    @media (prefers-reduced-motion: reduce) { * { transition: none !important; } .draw { stroke-dashoffset: 0; } .fade, .pop { opacity: 1; transform: none; } .grow { transform: none; } .pulse { animation: none; } html { scroll-behavior: auto; } }
+    @media (prefers-reduced-motion: reduce) { * { transition: none !important; } .draw { stroke-dashoffset: 0; } .fade, .pop { opacity: 1; transform: none; } .grow { transform: none; } .pulse { animation: none; } .rv { opacity: 1 !important; animation: none !important; } .bob, .formcard .stamp, .explain__card::after { animation: none !important; } html { scroll-behavior: auto; } }
   </style>
 </head>
 <body>
@@ -365,7 +420,7 @@
         </figure>
         <figure class="chart chart--win">
           <span class="chart__tag"><span class="de">Unsere Kunden</span><span class="en">Our clients</span></span>
-          <h3><span class="de">Ab Woche 3 bis 10 <span class="hl">geht es steil nach oben.</span></span><span class="en">From week 3 to 10 <span class="hl">it climbs steeply.</span></span></h3>
+          <h3><span class="de">Nach 3 bis 10 Wochen <span class="hl">geht es steil nach oben.</span></span><span class="en">After 3 to 10 weeks <span class="hl">it climbs steeply.</span></span></h3>
           <p class="chart__sub"><span class="de">Besucher und Nennungen in KI-Antworten nach dem Start mit uns</span><span class="en">Visitors and mentions in AI answers after starting with us</span></p>
           <svg id="ch-win" viewBox="0 0 480 290" role="img"></svg>
           <div class="legend"><span><i></i><span class="de">Besucher aus Google und KI</span><span class="en">Visitors from Google and AI</span></span><span><i class="bar"></i><span class="de">Nennungen in ChatGPT, Claude, Perplexity, Gemini</span><span class="en">Mentions in ChatGPT, Claude, Perplexity, Gemini</span></span></div>
@@ -605,9 +660,14 @@
         ${[[6, t.a, "end"], [11, t.b, "start"]].map(([m, l, an]) => `<g class="fade"><line x1="${xm(m)}" y1="14" x2="${xm(m)}" y2="${BASE}" stroke="#111" stroke-opacity=".25" stroke-dasharray="3 4"/><text x="${xm(m) + (an === "end" ? -7 : 7)}" y="22" text-anchor="${an}" font-size="13" font-weight="700" fill="#111">${l[0]}</text><text x="${xm(m) + (an === "end" ? -7 : 7)}" y="38" text-anchor="${an}" font-size="13" fill="#6E6E73">${l[1]}</text></g>`).join("")}
         <g class="fade"><text x="${xm(14.6)}" y="${yv(84)}" text-anchor="middle" font-size="14" font-weight="800" fill="#E0242B">${t.gap[0]}</text><text x="${xm(14.6)}" y="${yv(84) + 17}" text-anchor="middle" font-size="14" font-weight="800" fill="#E0242B">${t.gap[1]}</text></g>
         <path class="draw" pathLength="1" d="${line}" fill="none" stroke="#E0242B" stroke-width="5" stroke-linecap="round"/>
+        <g class="fade"><g>${comet(line, 8, "#E0242B", "#fff", "#E0242B")}</g></g>
         <g class="fade"><circle class="pulse" cx="${end[0]}" cy="${end[1]}" r="7" fill="#E0242B"/><circle cx="${end[0]}" cy="${end[1]}" r="7" fill="#E0242B" stroke="#fff" stroke-width="3"/>
         <path d="M${end[0] - 22},${end[1] + 14} l0,22 m-7,-8 l7,8 l7,-8" stroke="#E0242B" stroke-width="3.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></g>
+        ${hoverLayer(false)}
         ${t.x.map((l, i) => `<text x="${[X0, xm(6), xm(12), X1][i]}" y="${BASE + 26}" text-anchor="${["start", "middle", "middle", "end"][i]}" font-size="13" fill="#6E6E73"${i === 3 ? ' font-weight="800"' : ""}>${l}</text>`).join("")}`;
+      armHover($("ch-loss"), 18, (m) => lang === "de"
+        ? [m >= 18 ? "Heute" : `Vor ${18 - m} ${18 - m === 1 ? "Monat" : "Monaten"}`, m < 6 ? "Noch stabil: Google schickt Besucher" : m < 11 ? "KI-Antworten über den Ergebnissen" : m < 15 ? "Kunden fragen direkt ChatGPT & Co." : "Der Verlust beschleunigt sich"]
+        : [m >= 18 ? "Today" : `${18 - m} ${18 - m === 1 ? "month" : "months"} ago`, m < 6 ? "Still stable: Google sends visitors" : m < 11 ? "AI answers above the results" : m < 15 ? "Customers ask ChatGPT & co. directly" : "The loss speeds up"]);
     }
     function winChart() {
       const W = 26, xw = (w) => X0 + w * (X1 - X0) / W;
@@ -618,21 +678,71 @@
       const at = (w) => { let i = wk.findIndex((x) => x >= w); if (wk[i] === w) return v[i]; const r = (w - wk[i - 1]) / (wk[i] - wk[i - 1]); return v[i - 1] + r * (v[i] - v[i - 1]); };
       const bars = [0, 0, 0, 0.6, 1.2, 1.9, 2.8, 3.8, 4.8, 5.9, 7.1, 8.3, 9.6];
       const ai = [[10, "ChatGPT"], [14, "Perplexity"], [18, "Claude"], [22, "Gemini"]];
-      const t = lang === "de" ? { band: ["Woche 3–10", "Wachstum startet"], x: ["Start", "Woche 3–10", "Monat 6"], named: "genannt" } : { band: ["Week 3–10", "growth starts"], x: ["Start", "Week 3–10", "Month 6"], named: "named" };
+      armHover($("ch-win"), W, (w) => lang === "de"
+        ? [w === 0 ? "Start" : `Woche ${w}`, w < 3 ? "Start: Technik, Inhalte, Vertrauen" : w < 10 ? "Die KI beginnt, Sie zu nennen" : w < 18 ? "Mehr Besucher, mehr Nennungen" : "Das Wachstum hält an"]
+        : [w === 0 ? "Start" : `Week ${w}`, w < 3 ? "Start: engineering, content, trust" : w < 10 ? "AI starts to name you" : w < 18 ? "More visitors, more mentions" : "Growth keeps going"]);
+      const t = lang === "de" ? { band: ["3 bis 10 Wochen", "bis zum ersten Anstieg", "je nach Branche"], x: ["Start", "Woche 3–10", "Monat 6"], named: "genannt" } : { band: ["3 to 10 weeks", "to the first rise", "depending on industry"], x: ["Start", "Week 3–10", "Month 6"], named: "named" };
       $("ch-win").setAttribute("aria-label", lang === "de" ? "Schematische Grafik: Nach dem Start steigen die Besucher ab Woche 3 bis 10 steil an, und die Nennungen in ChatGPT, Perplexity, Claude und Gemini nehmen zu." : "Schematic chart: after the start, visitors climb steeply from week 3 to 10, and mentions in ChatGPT, Perplexity, Claude and Gemini increase.");
       $("ch-win").innerHTML = `
         <defs><linearGradient id="lg-win" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".28"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient></defs>
         <rect x="${xw(3)}" y="10" width="${xw(10) - xw(3)}" height="${BASE - 10}" fill="#E0242B" fill-opacity=".16" rx="6"/>
         <text x="${xw(3) + 10}" y="30" font-size="13" font-weight="800" fill="#ff8a8e">${t.band[0]}</text>
-        <text x="${xw(3) + 10}" y="46" font-size="13" fill="rgba(255,255,255,.7)">${t.band[1]}</text>
+        <text x="${xw(3) + 10}" y="47" font-size="13" font-weight="700" fill="#fff">${t.band[1]}</text>
+        <text x="${xw(3) + 10}" y="63" font-size="12" fill="rgba(255,255,255,.6)">${t.band[2]}</text>
+        <path d="M${xw(3) + 8},80 H${xw(10) - 8} M${xw(3) + 14},75 l-6,5 6,5 M${xw(10) - 14},75 l6,5 -6,5" stroke="#ff8a8e" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
         <line x1="${X0}" y1="${BASE}" x2="${X1}" y2="${BASE}" stroke="rgba(255,255,255,.25)" stroke-width="1.5"/>
         ${bars.map((h, i) => h ? `<rect class="grow" style="transition-delay:${0.9 + i * 0.09}s" x="${xw(1 + i * 2) - 5}" y="${BASE - h * 8}" width="10" height="${h * 8}" rx="2.5" fill="#E0242B"/>` : "").join("")}
         <path class="fade" d="${line}L${X1},${BASE}L${X0},${BASE}Z" fill="url(#lg-win)"/>
         <path class="draw" pathLength="1" d="${line}" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round"/>
-        ${ai.map(([w, n], i) => { const x = xw(w), y = yv(at(w)), bw = n.length * 7.6 + 30; return `<g class="pop" style="transition-delay:${1.3 + i * 0.25}s"><circle cx="${x}" cy="${y}" r="5.5" fill="#E0242B" stroke="#fff" stroke-width="2.5"/><line x1="${x}" y1="${y - 7}" x2="${x}" y2="${y - 20}" stroke="rgba(255,255,255,.5)"/><rect x="${x - bw / 2}" y="${y - 44}" width="${bw}" height="24" rx="12" fill="#fff"/><text x="${x}" y="${y - 27.5}" text-anchor="middle" font-size="12.5" font-weight="800" fill="#111"><tspan fill="#E0242B">✓</tspan> ${n}</text></g>`; }).join("")}
+        <g class="fade"><g>${comet(line, 6, "#fff", "#E0242B", "#fff")}</g></g>
+        ${ai.map(([w, n], i) => { const x = xw(w), y = yv(at(w)), bw = n.length * 7.6 + 30; return `<g class="pop" style="transition-delay:${1.3 + i * 0.25}s"><circle cx="${x}" cy="${y}" r="5.5" fill="#E0242B" stroke="#fff" stroke-width="2.5"/><g class="bob" style="animation-delay:${i * 0.45}s"><line x1="${x}" y1="${y - 7}" x2="${x}" y2="${y - 20}" stroke="rgba(255,255,255,.5)"/><rect x="${x - bw / 2}" y="${y - 44}" width="${bw}" height="24" rx="12" fill="#fff"/><text x="${x}" y="${y - 27.5}" text-anchor="middle" font-size="12.5" font-weight="800" fill="#111"><tspan fill="#E0242B">✓</tspan> ${n}</text></g></g>`; }).join("")}
         <g class="fade"><circle class="pulse" cx="${end[0]}" cy="${end[1]}" r="7" fill="#fff"/><circle cx="${end[0]}" cy="${end[1]}" r="7" fill="#fff" stroke="#E0242B" stroke-width="3"/>
         <path d="M${end[0] - 24},${end[1] + 36} l0,-22 m-7,8 l7,-8 l7,8" stroke="#fff" stroke-width="3.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></g>
+        ${hoverLayer(true)}
         ${t.x.map((l, i) => `<text x="${[X0, (xw(3) + xw(10)) / 2, X1][i]}" y="${BASE + 26}" text-anchor="${["start", "middle", "end"][i]}" font-size="13" fill="rgba(255,255,255,.65)"${i === 2 ? ' font-weight="800" fill-opacity="1"' : ""}>${l}</text>`).join("")}`;
+    }
+    // Pointer readout: a crosshair follows the curve and names the phase. The curve is schematic, so the label says
+    // what happens at that moment rather than showing a number.
+    // A dot that travels the curve on its own: slides down on the left chart, climbs on the right.
+    function comet(d, dur, glow, fill, stroke) {
+      const mv = `<animateMotion dur="${dur}s" repeatCount="indefinite" path="${d}" keyPoints="0;1;1" keyTimes="0;0.88;1" calcMode="linear"/>`;
+      return `<animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.05;0.94;1" dur="${dur}s" repeatCount="indefinite"/>
+        <circle r="14" fill="${glow}" opacity=".22">${mv}</circle><circle r="6.5" fill="${fill}" stroke="${stroke}" stroke-width="3">${mv}</circle>`;
+    }
+    function hoverLayer(dark) {
+      const ink = dark ? "#fff" : "#111", tipBg = dark ? "#fff" : "#111", tipFg = dark ? "#111" : "#fff";
+      return `<g class="hov"><line class="hx" y1="10" y2="${BASE}" stroke="${ink}" stroke-opacity=".35" stroke-dasharray="3 4"/>
+        <circle class="hd" r="7" fill="${dark ? "#fff" : "#E0242B"}" stroke="${dark ? "#E0242B" : "#fff"}" stroke-width="3"/>
+        <g class="htip"><rect class="hr" height="48" rx="10" fill="${tipBg}"/><text class="tt ht1" font-size="13" font-weight="800" fill="${dark ? "#E0242B" : "#ff8a8e"}"></text><text class="tt ht2" font-size="13" fill="${tipFg}"></text></g></g>`;
+    }
+    function armHover(svg, span, label) {
+      svg._label = label; svg._span = span;
+      if (svg._armed) return;
+      svg._armed = true;
+      const fig = svg.closest(".chart");
+      const move = (e) => {
+        const path = svg.querySelector("path.draw"), hov = svg.querySelector(".hov");
+        if (!path || !hov) return;
+        const pt = svg.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY;
+        const p = pt.matrixTransform(svg.getScreenCTM().inverse());
+        const x = Math.max(X0, Math.min(X1, p.x));
+        let lo = 0, hi = path.getTotalLength(), q = path.getPointAtLength(0);
+        for (let k = 0; k < 22; k++) { const mid = (lo + hi) / 2; q = path.getPointAtLength(mid); if (q.x < x) lo = mid; else hi = mid; }
+        const unit = Math.round((x - X0) / (X1 - X0) * svg._span);
+        const [a, b] = svg._label(unit);
+        hov.querySelector(".hx").setAttribute("x1", q.x); hov.querySelector(".hx").setAttribute("x2", q.x);
+        hov.querySelector(".hd").setAttribute("cx", q.x); hov.querySelector(".hd").setAttribute("cy", q.y);
+        const t1 = hov.querySelector(".ht1"), t2 = hov.querySelector(".ht2"), r = hov.querySelector(".hr");
+        t1.textContent = a; t2.textContent = b;
+        const w = Math.max(t1.getComputedTextLength(), t2.getComputedTextLength()) + 24;
+        const tx = Math.max(0, Math.min(480 - w, q.x - w / 2)), ty = q.y - 66 < 0 ? q.y + 16 : q.y - 66;
+        r.setAttribute("x", tx); r.setAttribute("y", ty); r.setAttribute("width", w);
+        t1.setAttribute("x", tx + 12); t1.setAttribute("y", ty + 20); t2.setAttribute("x", tx + 12); t2.setAttribute("y", ty + 38);
+        fig.classList.add("hovering");
+      };
+      svg.addEventListener("pointermove", move);
+      svg.addEventListener("pointerdown", move);
+      svg.addEventListener("pointerleave", () => fig.classList.remove("hovering"));
     }
     function offerHTML(o) {
       const d = o[lang];
@@ -726,7 +836,31 @@
     const cio = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) { e.target.classList.add("on"); cio.unobserve(e.target); } }), { threshold: 0.35 });
     document.querySelectorAll(".chart").forEach((c) => cio.observe(c));
 
+    // Blocks rise in as they scroll into view, one after another inside each group.
+    const RV = ".disc > *, .reasons > *, .works > *, .steps > *, .offers > *, .facts > *, .shift > *, .three > div, .creds > div, .faq details, .explain__card, .analysis";
+    const rio = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) { e.target.classList.add("in"); rio.unobserve(e.target); } }), { threshold: 0.12 });
+    function armReveal() {
+      document.querySelectorAll(RV).forEach((el) => {
+        if (el.dataset.rv) return;
+        el.dataset.rv = "1";
+        const sib = el.parentElement ? [...el.parentElement.children].indexOf(el) : 0;
+        el.style.setProperty("--d", `${Math.min(sib, 6) * 0.08}s`);
+        el.classList.add("rv");
+        rio.observe(el);
+      });
+    }
+    const render0 = render;
+    render = function () { render0(); armReveal(); };
+
     render();
+
+    // The hero numbers count up once on load.
+    if (!matchMedia("(prefers-reduced-motion: reduce)").matches) document.querySelectorAll("#trust b").forEach((b) => {
+      const m = b.textContent.match(/^(\d+)(.*)$/); if (!m) return;
+      const to = +m[1], suf = m[2], t0 = performance.now();
+      const step = (t) => { const k = Math.min(1, (t - t0) / 1500); b.textContent = Math.round(to * (1 - Math.pow(1 - k, 3))) + suf; if (k < 1) requestAnimationFrame(step); };
+      requestAnimationFrame(step);
+    });
   </script>
 </body>
 </html>
