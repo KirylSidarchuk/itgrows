@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex, nofollow">
-  <title>Websites, einfach erklärt</title>
-  <meta name="description" content="Websites, die verkaufen. Sichtbar bei Google und in der KI. Klar erklärt, Preis im Erstgespräch.">
+  <title>KI-optimierte Online-Präsenz</title>
+  <meta name="description" content="Ihre komplette Online-Präsenz, neu aufgebaut für Google und KI. Eine Investition, die jeden Monat neue Kunden bringt.">
   <meta name="theme-color" content="#FFFFFF">
   <link rel="icon" href="/sustain/assets/favicon.svg" type="image/svg+xml">
   <style>
@@ -250,17 +250,30 @@
 
     .gal { margin-top: 40px; }
     .gal__track { display: grid; touch-action: pan-y; overflow-x: clip; }
-    .gs { grid-area: 1 / 1; display: grid; grid-template-columns: 1fr 1.08fr; background: #fff; border-radius: 26px; overflow: hidden; border: 1px solid var(--line); opacity: 0; visibility: hidden; transform: translateX(40px); transition: opacity 0.5s, transform 0.65s cubic-bezier(.2,.7,.2,1), visibility 0.5s; }
+    .gs { grid-area: 1 / 1; display: grid; grid-template-columns: 0.9fr 1.1fr; background: #fff; border-radius: 26px; overflow: hidden; border: 1px solid var(--line); opacity: 0; visibility: hidden; transform: translateX(40px); transition: opacity 0.5s, transform 0.65s cubic-bezier(.2,.7,.2,1), visibility 0.5s; }
     .gs.on { opacity: 1; visibility: visible; transform: none; }
     .gs__img { position: relative; min-height: 460px; background: var(--soft); overflow: hidden; }
     .gs__img img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: left center; transition: transform 6s ease; }
     .gs.on .gs__img img { transform: scale(1.06); }
+    .gs__viz { position: relative; background: var(--ink); color: #fff; padding: 30px 30px 70px; display: flex; flex-direction: column; min-height: 460px; }
+    .gs__src { font-size: 11.5px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: #ff8a8e; }
+    .gs__big { margin: 14px 0 auto; }
+    .gs__big b { display: block; font-size: clamp(56px, 6vw, 88px); line-height: 1; font-weight: 800; letter-spacing: -0.05em; }
+    .gs__big span { display: block; font-size: 15px; color: rgba(255,255,255,0.75); margin-top: 8px; max-width: 320px; }
+    .gs__viz svg { width: 100%; height: auto; margin-top: 26px; overflow: visible; }
+    .gbar { transform-box: fill-box; transform-origin: bottom; }
+    .gs.on .gbar { animation: gbar 0.7s cubic-bezier(.3,1.3,.6,1) backwards; }
+    @keyframes gbar { from { transform: scaleY(0); } }
+    .gs__row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 18px; }
+    .gs__row h4 { font-size: 11.5px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--grey); margin: 0 0 6px; }
+    .gs__row p { margin: 0; font-size: 14px; color: #3d3d42; line-height: 1.5; }
+    .gs__viz .gs__badge { color: var(--ink); }
     .gs__badge { position: absolute; left: 18px; bottom: 18px; background: #fff; border-radius: 999px; padding: 7px 14px; font-size: 12.5px; font-weight: 800; box-shadow: 0 8px 24px rgba(0,0,0,0.15); }
     .gs__badge span { color: var(--red); }
     .gs__body { padding: 38px 40px 34px; display: flex; flex-direction: column; }
     .gs__kick { font-size: 12px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--red); }
     .gs h3 { font-size: clamp(26px, 2.5vw, 34px); line-height: 1.1; letter-spacing: -0.035em; margin: 10px 0 20px; }
-    .gs__stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 18px; }
+    .gs__stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 18px; }
     .gstat { background: var(--soft); border-radius: 16px; padding: 15px 15px 13px; transition: background 0.25s, color 0.25s, transform 0.3s; }
     .gstat b { display: block; font-size: 28px; line-height: 1.05; font-weight: 800; letter-spacing: -0.04em; color: var(--red); }
     .gstat span { display: block; font-size: 13px; line-height: 1.4; margin-top: 6px; color: #3d3d42; }
@@ -356,7 +369,8 @@
       .steps { grid-template-columns: repeat(3, 1fr); }
       .offer { grid-template-columns: 1fr 1fr; }
       .gs { grid-template-columns: 1fr; }
-      .gs__img { min-height: 280px; }
+      .gs__viz { min-height: 0; }
+      .gs__stats { grid-template-columns: repeat(2, 1fr); }
       .offer > div:first-child { grid-column: 1 / -1; }
       .shift { grid-template-columns: 1fr; }
       .facts { grid-template-columns: repeat(2, 1fr); }
@@ -384,9 +398,10 @@
       .about img { max-width: 320px; }
       .creds { grid-template-columns: 1fr; }
       .offer { grid-template-columns: 1fr; gap: 22px; padding: 26px 20px; }
-      .gs__img { min-height: 210px; }
+      .gs__viz { padding: 22px 20px 64px; }
+      .gs__row { grid-template-columns: 1fr; }
       .gs__body { padding: 24px 20px 22px; }
-      .gs__stats { grid-template-columns: 1fr; }
+      .gs__stats { grid-template-columns: 1fr 1fr; }
       .gstat b { font-size: 26px; }
       .gal__bar { flex-direction: column; align-items: stretch; gap: 12px; }
       .gal__tabs { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
@@ -443,12 +458,12 @@
   <section class="hero" id="anfrage">
     <div class="wrap">
       <div>
-        <h1><span class="de"><span class="r">Websites, die verkaufen.</span> <span class="g">Sichtbar bei Google – und in der KI.</span></span><span class="en"><span class="r">Websites that sell.</span> <span class="g">Visible on Google – and in AI.</span></span></h1>
-        <p><span class="de">Eine schöne Website allein bringt keine Kunden. Ihre Kunden suchen bei Google und fragen immer öfter ChatGPT, Gemini oder Perplexity. Wir bauen Ihre Website so, dass sie dort gefunden wird, und kümmern uns um alles Weitere.</span><span class="en">A beautiful website alone brings no customers. Your customers search Google and, more and more, ask ChatGPT, Gemini or Perplexity. We build your website so that it gets found there, and take care of everything else.</span></p>
+        <h1><span class="de"><span class="r">Werden Sie die Antwort der KI.</span> <span class="g">Ihre Online-Präsenz für die KI-Ära.</span></span><span class="en"><span class="r">Become AI’s answer.</span> <span class="g">Your online presence for the AI era.</span></span></h1>
+        <p><span class="de">Wir verkaufen Ihnen keine neue Website. Wir bauen Ihre komplette Online-Präsenz neu auf. Die Website ist wichtig, entscheidend ist aber unsere technische Expertise: Sie macht Ihre Präsenz zum Magneten für KI-Agenten wie ChatGPT, Gemini und Perplexity. Eine Investition, die jeden Monat für Sie arbeitet.</span><span class="en">We don’t sell you a new website. We rebuild your entire online presence. The website matters, but what decides is our technical expertise: it turns your presence into a magnet for AI agents like ChatGPT, Gemini and Perplexity. An investment that works for you every month.</span></p>
         <ul class="checks">
-          <li><span class="de"><b>Neue Website mit KI-Optimierung</b> – in 4 bis 8 Wochen online</span><span class="en"><b>A new, AI-optimised website</b> – live in 4 to 8 weeks</span></li>
-          <li><span class="de"><b>Sichtbar in Google und KI-Antworten</b> – mit monatlicher Prüfung</span><span class="en"><b>Visible in Google and AI answers</b> – checked every month</span></li>
-          <li><span class="de"><b>Mehr Anfragen</b> – mit Google Ads und Meta-Werbung auf Wunsch</span><span class="en"><b>More enquiries</b> – with Google Ads and Meta ads if you want</span></li>
+          <li><span class="de"><b>Komplette Online-Präsenz für die KI-Ära</b> – Website, Inhalte, Profile, Technik</span><span class="en"><b>A complete online presence for the AI era</b> – website, content, profiles, engineering</span></li>
+          <li><span class="de"><b>Genannt von ChatGPT, Gemini & Co.</b> – mit monatlicher Prüfung</span><span class="en"><b>Named by ChatGPT, Gemini & co.</b> – checked every month</span></li>
+          <li><span class="de"><b>Eine Investition, die wächst</b> – jede Woche neue Inhalte, jeden Monat mehr Anfragen</span><span class="en"><b>An investment that grows</b> – new content every week, more enquiries every month</span></li>
         </ul>
         <div class="trust" id="trust"></div>
       </div>
@@ -502,14 +517,14 @@
       <div class="explain__card">
         <span class="explain__tag">01 · AEO</span>
         <h3><span class="de">KI-Sichtbarkeit, einfach erklärt</span><span class="en">AI visibility, simply explained</span></h3>
-        <p><span class="de">AEO heißt Answer Engine Optimisation: Ihre Website wird so gebaut, dass KI-Assistenten Sie als Antwort nennen.</span><span class="en">AEO stands for Answer Engine Optimisation: your website is built so that AI assistants name you as the answer.</span></p>
+        <p><span class="de">AEO heißt Answer Engine Optimisation: Ihre Online-Präsenz wird so aufgebaut, dass KI-Assistenten Sie als Antwort nennen.</span><span class="en">AEO stands for Answer Engine Optimisation: your online presence is built so that AI assistants name you as the answer.</span></p>
       </div>
       <div>
         <p class="kick"><span class="de">Einfach erklärt</span><span class="en">Simply explained</span></p>
         <h2 class="h"><span class="de">Was ist <span class="r">KI-Sichtbarkeit</span>?</span><span class="en">What is <span class="r">AI visibility</span>?</span></h2>
         <p class="lead"><span class="de">Wenn jemand ChatGPT fragt „Welcher Zahnarzt in Köln ist gut?“, nennt die KI zwei oder drei Namen. KI-Sichtbarkeit bedeutet, dass Ihrer dabei ist. Dafür greifen drei Dinge ineinander:</span><span class="en">When someone asks ChatGPT “Which dentist in Cologne is good?”, the AI names two or three businesses. AI visibility means yours is one of them. Three things work together:</span></p>
         <div class="three">
-          <div><b>1</b><div><h4><span class="de">Technik</span><span class="en">Engineering</span></h4><p><span class="de">Die KI kann Ihre Seiten lesen: schnell, sauber, offen für ihre Crawler.</span><span class="en">The AI can read your pages: fast, clean and open to its crawlers.</span></p></div></div>
+          <div><b>1</b><div><h4><span class="de">Technik: unsere Kernkompetenz</span><span class="en">Engineering: our core expertise</span></h4><p><span class="de">Wir machen Ihre Seiten zum Magneten für KI-Agenten: schnell, sauber strukturiert, offen für ihre Crawler.</span><span class="en">We turn your pages into a magnet for AI agents: fast, cleanly structured, open to their crawlers.</span></p></div></div>
           <div><b>2</b><div><h4><span class="de">Inhalte</span><span class="en">Content</span></h4><p><span class="de">Ihre Website beantwortet die Fragen, die Kunden wirklich stellen.</span><span class="en">Your website answers the questions customers really ask.</span></p></div></div>
           <div><b>3</b><div><h4><span class="de">Vertrauen</span><span class="en">Trust</span></h4><p><span class="de">Andere Seiten erwähnen Sie, damit die KI Ihnen glaubt.</span><span class="en">Other sites mention you, so the AI believes you.</span></p></div></div>
         </div>
@@ -521,7 +536,7 @@
   <section class="s" id="leistungen">
     <div class="wrap">
       <p class="kick"><span class="de">Leistungen</span><span class="en">Services</span></p>
-      <h2 class="h"><span class="de">Acht Leistungen aus einer Hand. <span class="g">Damit aus Besuchern Kunden werden.</span></span><span class="en">Eight services from one team. <span class="g">So visitors become customers.</span></span></h2>
+      <h2 class="h"><span class="de">Alles, was zu Ihrer Online-Präsenz gehört. <span class="g">Aus einer Hand.</span></span><span class="en">Everything your online presence needs. <span class="g">From one team.</span></span></h2>
       <div class="disc" id="disc"></div>
     </div>
   </section>
@@ -538,7 +553,7 @@
     <div class="wrap">
       <p class="kick"><span class="de">Projekte</span><span class="en">Work</span></p>
       <h2 class="h"><span class="de">Ergebnisse, die <span class="r">für sich sprechen.</span></span><span class="en">Results that <span class="r">speak for themselves.</span></span></h2>
-      <p class="lead"><span class="de">Ein Projekt nach dem anderen: was wir gebaut haben und was es dem Kunden gebracht hat.</span><span class="en">One project at a time: what we built and what it brought the client.</span></p>
+      <p class="lead"><span class="de">Drei Fallstudien aus drei Branchen, Schritt für Schritt: Ausgangslage, was wir gemacht haben und was es gebracht hat. Mit echten Daten aus Google, Bing und unseren Messungen.</span><span class="en">Three case studies from three industries, step by step: the starting point, what we did and what it brought. With real data from Google, Bing and our own measurements.</span></p>
       <div class="gal" id="gal"></div>
     </div>
   </section>
@@ -555,7 +570,7 @@
     <div class="wrap">
       <p class="kick"><span class="de">Angebot im Detail</span><span class="en">Our offer in detail</span></p>
       <h2 class="h"><span class="de">Was Sie bei uns bekommen. <span class="r">Bis ins Detail.</span></span><span class="en">What you get from us. <span class="r">In every detail.</span></span></h2>
-      <p class="lead"><span class="de">Fünf Bausteine, einzeln oder zusammen. Den Preis nennen wir Ihnen im kostenlosen Erstgespräch: fest und vor dem Start, ohne Stundenabrechnung.</span><span class="en">Five building blocks, on their own or together. We tell you the price in a free first call: fixed and before we start, with no hourly billing.</span></p>
+      <p class="lead"><span class="de">Fünf Bausteine einer Online-Präsenz, die sich auszahlt, einzeln oder zusammen. Den Preis nennen wir Ihnen im kostenlosen Erstgespräch: fest und vor dem Start, ohne Stundenabrechnung.</span><span class="en">Five building blocks of an online presence that pays off, on their own or together. We tell you the price in a free first call: fixed and before we start, with no hourly billing.</span></p>
       <div class="offers" id="offers"></div>
       <p class="price__foot" style="margin-top:18px"><span class="de">Preise auf Anfrage, netto zzgl. MwSt. Werbebudget für Google und Meta zahlen Sie direkt an die Plattformen. Werbekampagnen und Apps bieten wir individuell an.</span><span class="en">Prices on request, excl. VAT. You pay the Google and Meta ad budget directly to the platforms. Ad campaigns and apps are quoted individually.</span></p>
     </div>
@@ -567,7 +582,7 @@
         <div>
           <p class="kick" style="color:#ff8a8e"><span class="de">Kostenlose Analyse</span><span class="en">Free analysis</span></p>
           <h2 class="h"><span class="de">Lassen Sie Ihre Website kostenlos analysieren.</span><span class="en">Get your website analysed for free.</span></h2>
-          <p class="lead"><span class="de">In etwa einer Minute sehen Sie, ob ChatGPT und Perplexity Sie nennen, und einen Entwurf Ihrer neuen Website.</span><span class="en">In about a minute you see whether ChatGPT and Perplexity name you, plus a draft of your new website.</span></p>
+          <p class="lead"><span class="de">In etwa einer Minute sehen Sie, ob ChatGPT und Perplexity Sie nennen, und einen ersten Entwurf Ihrer neuen Online-Präsenz.</span><span class="en">In about a minute you see whether ChatGPT and Perplexity name you, plus a first draft of your new online presence.</span></p>
         </div>
         <div>
           <form id="checkform">
@@ -602,8 +617,8 @@
 
   <section class="final">
     <div class="wrap">
-      <h2 class="h"><span class="de">Starten Sie Ihre <span class="r">digitale Erfolgsgeschichte.</span></span><span class="en">Start your <span class="r">digital success story.</span></span></h2>
-      <p class="lead"><span class="de">Ein Gespräch, ein fester Preis, ein fester Termin.</span><span class="en">One call, one fixed price, one fixed date.</span></p>
+      <h2 class="h"><span class="de">Investieren Sie in eine Präsenz, <span class="r">die die KI empfiehlt.</span></span><span class="en">Invest in a presence <span class="r">that AI recommends.</span></span></h2>
+      <p class="lead"><span class="de">Ein Gespräch, ein fester Preis, ein fester Termin. Danach arbeitet Ihre Online-Präsenz jeden Tag für Sie.</span><span class="en">One call, one fixed price, one fixed date. After that your online presence works for you every day.</span></p>
       <a class="btn btn--ink" href="#anfrage"><span class="de">Jetzt anfragen</span><span class="en">Ask now</span> <i>→</i></a>
     </div>
   </section>
@@ -639,19 +654,19 @@
       { i: '<rect x="20" y="6" width="24" height="52" rx="5"/><path d="M29 50h6"/><path class="a" d="M26 20l6 6 8-10"/>', by: "AppsLift", de: ["Apps & App Store", "Apps von der Idee bis zum Start, gefunden im App Store."], en: ["Apps & app stores", "Apps from idea to launch, found on the app stores."] }
     ];
     const REASONS = [
-      { n: "01", de: ["Fester Preis", "Sie kennen den Preis vor dem Start. Keine Stundenabrechnung."], en: ["Fixed price", "You know the price before we start. No hourly billing."] },
-      { n: "02", de: ["Feste Termine", "Ihre Website ist je nach Umfang in 4 bis 8 Wochen online."], en: ["Fixed dates", "Your website is live in 4 to 8 weeks, depending on scope."] },
-      { n: "03", de: ["Google und KI", "Wir bauen für die Suche von heute: Google, ChatGPT, Perplexity, Gemini."], en: ["Google and AI", "We build for today’s search: Google, ChatGPT, Perplexity, Gemini."] },
-      { n: "04", de: ["Alles aus einer Hand", "Website, Sichtbarkeit und Werbung von einem Team, ohne Abstimmungschaos."], en: ["One team", "Website, visibility and ads from one team, without coordination chaos."] }
+      { n: "01", de: ["Investition statt Kosten", "Sie zahlen nicht für ein schönes Layout, sondern für eine Präsenz, die jeden Monat Kunden bringt."], en: ["Investment, not cost", "You don’t pay for a pretty layout but for a presence that brings customers every month."] },
+      { n: "02", de: ["Fester Preis, fester Termin", "Preis vor dem Start, Ihre neue Präsenz steht je nach Umfang in 4 bis 8 Wochen."], en: ["Fixed price, fixed date", "Price before we start; your new presence is live in 4 to 8 weeks, depending on scope."] },
+      { n: "03", de: ["Technische Expertise", "Unsere Technik macht Ihre Website zum Magneten für KI-Agenten: lesbar, zitierbar, empfohlen."], en: ["Technical expertise", "Our engineering turns your website into a magnet for AI agents: readable, citable, recommended."] },
+      { n: "04", de: ["Alles aus einer Hand", "Website, Inhalte, Profile, Sichtbarkeit und Werbung von einem Team, ohne Abstimmungschaos."], en: ["One team", "Website, content, profiles, visibility and ads from one team, without coordination chaos."] }
     ];
     // The five services and the bundle. No prices on the page: they are given in the first call.
     const OFFERS = [
       { n: "01", m: false,
-        de: { name: "Website-Relaunch mit KI-Optimierung", promise: "Ihre neue Website: neu gestaltet, sauber programmiert und so gebaut, dass Google und KI-Assistenten sie verstehen und empfehlen.", result: "Ergebnis: eine schnelle, moderne Website, die alle technischen Standards erfüllt und ab dem ersten Tag für die KI-Suche bereit ist.",
-          items: ["Konzept, Struktur und Design passend zu Ihrer Marke", "Programmierung, optimiert für Smartphone, Tablet und Desktop", "Schnelle Ladezeiten, ausgelegt auf Googles Core Web Vitals", "KI-Optimierung: strukturierte Daten, llms.txt, offener Zugang für KI-Crawler", "Technisches SEO: saubere URLs, Meta-Daten, XML-Sitemap, robots.txt", "Umzug ohne Rankingverlust: Weiterleitungen aller alten Seiten", "Barrierefreiheit nach WCAG, DSGVO-konform, SSL-verschlüsselt", "Texte und Bilder ändern Sie selbst, ohne Programmierer", "Mehrsprachig auf Wunsch"],
+        de: { name: "Neue KI-optimierte Online-Präsenz", promise: "Das Fundament: Website, Inhalte, Profile und Technik, komplett neu aufgebaut, damit Google und KI-Assistenten Sie verstehen und empfehlen.", result: "Ergebnis: eine Online-Präsenz, die alle technischen Standards erfüllt und ab dem ersten Tag für die KI-Suche bereit ist.",
+          items: ["Konzept, Struktur und Design passend zu Ihrer Marke", "Einheitliche Profile: Google Unternehmensprofil, Bing, Branchenverzeichnisse", "Programmierung, optimiert für Smartphone, Tablet und Desktop", "Schnelle Ladezeiten, ausgelegt auf Googles Core Web Vitals", "KI-Optimierung: strukturierte Daten, llms.txt, offener Zugang für KI-Crawler", "Technisches SEO: saubere URLs, Meta-Daten, XML-Sitemap, robots.txt", "Umzug ohne Rankingverlust: Weiterleitungen aller alten Seiten", "Barrierefreiheit nach WCAG, DSGVO-konform, SSL-verschlüsselt", "Texte und Bilder ändern Sie selbst, ohne Programmierer", "Mehrsprachig auf Wunsch"],
           tools: ["Google Tag Manager", "Google Search Console", "Bing Webmaster Tools", "Google Analytics 4", "Cookie-Consent mit Consent Mode v2", "Impressum", "Datenschutzerklärung", "Disclaimer", "Google Unternehmensprofil", "Kontaktformular mit Spamschutz", "Schema.org", "Open Graph für Social Media", "IndexNow"] },
-        en: { name: "Website redesign, AI-optimised", promise: "Your new website: redesigned, cleanly coded and built so that Google and AI assistants understand and recommend it.", result: "Result: a fast, modern website that meets every technical standard and is ready for AI search from day one.",
-          items: ["Concept, structure and design that fit your brand", "Coding optimised for phone, tablet and desktop", "Fast loading, built for Google’s Core Web Vitals", "AI optimisation: structured data, llms.txt, open access for AI crawlers", "Technical SEO: clean URLs, meta data, XML sitemap, robots.txt", "Migration without losing rankings: redirects for every old page", "WCAG accessibility, GDPR-compliant, SSL-encrypted", "You edit text and images yourself, no developer needed", "Multilingual on request"],
+        en: { name: "New AI-optimised online presence", promise: "The foundation: website, content, profiles and engineering, rebuilt from scratch so Google and AI assistants understand and recommend you.", result: "Result: an online presence that meets every technical standard and is ready for AI search from day one.",
+          items: ["Concept, structure and design that fit your brand", "Consistent profiles: Google Business Profile, Bing, industry directories", "Coding optimised for phone, tablet and desktop", "Fast loading, built for Google’s Core Web Vitals", "AI optimisation: structured data, llms.txt, open access for AI crawlers", "Technical SEO: clean URLs, meta data, XML sitemap, robots.txt", "Migration without losing rankings: redirects for every old page", "WCAG accessibility, GDPR-compliant, SSL-encrypted", "You edit text and images yourself, no developer needed", "Multilingual on request"],
           tools: ["Google Tag Manager", "Google Search Console", "Bing Webmaster Tools", "Google Analytics 4", "Cookie consent with Consent Mode v2", "Legal notice", "Privacy policy", "Disclaimer", "Google Business Profile", "Contact form with spam protection", "Schema.org", "Open Graph for social media", "IndexNow"] } },
       { n: "02", m: false,
         de: { name: "Conversion-Optimierung für mehr Gewinn", promise: "Mehr Anfragen und Verkäufe aus denselben Besuchern. Wir finden, wo Interessenten abspringen, und beheben es.", result: "Ergebnis: mehr Kunden, ohne mehr für Werbung auszugeben.",
@@ -683,9 +698,9 @@
           tools: ["CDN", "SSL", "Daily backups", "DNS", "Staging", "Monitoring"] } }
     ];
     const ALL = {
-      de: { name: "Alles zusammen: Wachstum im Abo", promise: "Ihre Website wächst jede Woche, bleibt technisch fit und läuft auf schnellem Hosting. Alles in einem Vertrag, mit einem Ansprechpartner.", result: "Am besten zusammen mit dem Relaunch und der Conversion-Optimierung.",
+      de: { name: "Alles zusammen: Wachstum im Abo", promise: "Ihre Website wächst jede Woche, bleibt technisch fit und läuft auf schnellem Hosting. Alles in einem Vertrag, mit einem Ansprechpartner.", result: "Am besten zusammen mit der neuen Online-Präsenz und der Conversion-Optimierung.",
         items: ["03 · Jede Woche ein neuer Artikel", "04 · Technische Updates und Überwachung", "05 · Managed Hosting", "Monatliche Prüfung Ihrer Sichtbarkeit in der KI", "Ein Vertrag, eine Rechnung, ein Ansprechpartner"], save: "bei jährlicher Vorauszahlung" },
-      en: { name: "Everything together: growth on subscription", promise: "Your website grows every week, stays technically fit and runs on fast hosting. All in one contract, with one contact person.", result: "Best combined with the redesign and conversion optimisation.",
+      en: { name: "Everything together: growth on subscription", promise: "Your website grows every week, stays technically fit and runs on fast hosting. All in one contract, with one contact person.", result: "Best combined with the new online presence and conversion optimisation.",
         items: ["03 · One new article every week", "04 · Technical updates and monitoring", "05 · Managed hosting", "Monthly check of your visibility in AI", "One contract, one invoice, one contact"], save: "with yearly upfront payment" }
     };
     // Two market numbers come from published studies; the three short cases (no names) come from our measurements and logs.
@@ -698,11 +713,14 @@
     ];
     // Shared FAQ entries that talked about packages, rewritten for prices on request.
     const FAQ_FIX = {
-      "Was kostet eine Website bei Ihnen?": { de: "Den Preis nennen wir Ihnen im kostenlosen Erstgespräch, fest und vor dem Start. Relaunch und Conversion-Optimierung kosten einmalig, Artikel, technische Betreuung und Hosting monatlich. Bei jährlicher Vorauszahlung des Komplettpakets sparen Sie 30 %.", en: "We tell you the price in a free first call, fixed and before we start. The redesign and conversion optimisation are one-time fees; articles, technical care and hosting are monthly. Pay the full bundle yearly upfront and you save 30%." },
-      "Wie schnell ist meine Website online?": { de: "Ein Relaunch ist je nach Umfang in 4 bis 8 Wochen ab dem Erstgespräch online. Mehr Besucher und Nennungen in der KI sehen unsere Kunden nach 3 bis 10 Wochen, je nach Branche.", en: "A redesign is live in 4 to 8 weeks from the first call, depending on scope. Our clients see more visitors and mentions in AI after 3 to 10 weeks, depending on the industry." },
-      "Ist die Website DSGVO-konform?": { de: "Ja. Impressum, Datenschutzerklärung, Disclaimer und Cookie-Einwilligung binden wir bei jedem Relaunch ein. Auf Wunsch hosten wir in der EU.", en: "Yes. Legal notice, privacy policy, disclaimer and cookie consent come with every redesign. We can host in the EU on request." },
+      "Was kostet eine Website bei Ihnen?": { q: { de: "Was kostet eine neue Online-Präsenz?", en: "How much does a new online presence cost?" }, de: "Den Preis nennen wir Ihnen im kostenlosen Erstgespräch, fest und vor dem Start. Aufbau und Conversion-Optimierung kosten einmalig, Artikel, technische Betreuung und Hosting monatlich. Bei jährlicher Vorauszahlung des Komplettpakets sparen Sie 30 %.", en: "We tell you the price in a free first call, fixed and before we start. The build and conversion optimisation are one-time fees; articles, technical care and hosting are monthly. Pay the full bundle yearly upfront and you save 30%." },
+      "Wie schnell ist meine Website online?": { q: { de: "Wie schnell steht meine neue Online-Präsenz?", en: "How soon is my new online presence live?" }, de: "Der Aufbau dauert je nach Umfang 4 bis 8 Wochen ab dem Erstgespräch. Mehr Besucher und Nennungen in der KI sehen unsere Kunden nach 3 bis 10 Wochen, je nach Branche.", en: "The build takes 4 to 8 weeks from the first call, depending on scope. Our clients see more visitors and mentions in AI after 3 to 10 weeks, depending on the industry." },
+      "Wem gehört die Website?": { q: { de: "Wem gehört die Online-Präsenz?", en: "Who owns the online presence?" }, de: "Ihnen. Domain, Inhalte, Profile und alle Zugänge liegen bei Ihnen.", en: "You do. Domain, content, profiles and all access stay with you." },
+      "Was bedeutet Sichtbarkeit in ChatGPT?": { de: "Immer mehr Kunden fragen KI-Assistenten statt einer Suchmaschine. Wir sorgen dafür, dass diese Assistenten Ihre Online-Präsenz lesen können und genug über Ihr Unternehmen finden, um es zu empfehlen.", en: "More and more customers ask AI assistants instead of a search engine. We make sure these assistants can read your online presence and find enough about your business to recommend it." },
+      "Ist die Website DSGVO-konform?": { q: { de: "Ist alles DSGVO-konform?", en: "Is everything GDPR-compliant?" }, de: "Ja. Impressum, Datenschutzerklärung, Disclaimer und Cookie-Einwilligung binden wir bei jedem Aufbau ein. Auf Wunsch hosten wir in der EU.", en: "Yes. Legal notice, privacy policy, disclaimer and cookie consent come with every build. We can host in the EU on request." },
       "Ist das Werbebudget im Preis enthalten?": { de: "Nein. Das Budget für Google und Meta zahlen Sie direkt an die Plattformen. Einrichtung und Betreuung der Kampagnen bieten wir individuell an.", en: "No. You pay the Google and Meta budget directly to the platforms. Setting up and running the campaigns is quoted individually." }
     };
+    const FAQ_FIRST = { de: ["Warum ist das eine Investition und keine Ausgabe?", "Eine Website allein kostet Geld. Eine Online-Präsenz, die Google und KI-Assistenten empfehlen, bringt jeden Monat neue Anfragen, ohne dass Sie für jeden Klick bezahlen. Jeder Artikel und jede Nennung in der KI wirkt weiter, der Wert wächst mit der Zeit."], en: ["Why is this an investment, not an expense?", "A website alone costs money. An online presence that Google and AI assistants recommend brings new enquiries every month without paying for every click. Every article and every mention in AI keeps working, so the value grows over time."] };
 
     // Smooth line through points (Catmull-Rom to cubic Bézier).
     const smooth = (pts) => pts.map((p, i) => {
@@ -866,34 +884,45 @@ const BRAND = {"googletagmanager":{"c":"#246FDB","d":"M12.003 0a3 3 0 0 0-2.121 
     // Case gallery. Real figures come from our measurements, Bing Webmaster Tools, server logs and app stats.
     // Quotes and the LUNI/AVA figures come from Kirill (owner); swap in updated numbers when they arrive.
     const GAL = [
-      { id: "freightsizer", name: "FreightSizer", ini: "FS", tag: { de: "B2B · Logistik · USA", en: "B2B · Logistics · USA" },
-        de: { h: "2 neue B2B-Kunden in einem Monat. Beide kamen über ChatGPT.", stats: [["2", "neue B2B-Kunden in einem Monat, beide über ChatGPT"], ["18 von 80", "KI-Antworten auf Einkäuferfragen nennen FreightSizer"], ["Hunderte", "Unternehmen nutzen FreightSizer"]], did: "Website und Fachblog mit über 40 Artikeln zum Start, strukturiert für KI-Antworten, angebunden an Search Console und Bing, jeden Monat geprüft.", q: "Dass ChatGPT uns Kunden schickt, hätten wir nie gedacht. Heute fragen Einkäufer gezielt nach uns.", who: "Gründer, FreightSizer" },
-        en: { h: "2 new B2B clients in one month. Both came via ChatGPT.", stats: [["2", "new B2B clients in one month, both via ChatGPT"], ["18 of 80", "AI answers to buyer questions name FreightSizer"], ["Hundreds", "of companies use FreightSizer"]], did: "Website and expert blog with 40+ articles at launch, structured for AI answers, connected to Search Console and Bing, checked every month.", q: "We never thought ChatGPT would send us customers. Now buyers ask for us by name.", who: "Founder, FreightSizer" }, qex: true },
-      { id: "magiscan", name: "MagiScan", ini: "MS", tag: { de: "App · 3D · weltweit", en: "App · 3D · worldwide" },
-        de: { h: "Jeden Monat Hunderte neue Nutzer direkt aus ChatGPT, Claude und Gemini.", stats: [["4M+", "Installationen weltweit"], ["16M+", "3D-Modelle erstellt"], ["176", "Zitate in Microsoft Copilot in zwei Wochen"]], did: "App-Store-Optimierung, Blog zu echten Nutzerfragen, KI-Sichtbarkeit und Werbung auf Meta, alles aus einer Hand.", q: "Die KI empfiehlt MagiScan, wenn jemand fragt, wie man ein Objekt in 3D scannt. Das bringt uns jeden Tag neue Nutzer.", who: "Gründer, MagiScan" },
-        en: { h: "Hundreds of new users every month straight from ChatGPT, Claude and Gemini.", stats: [["4M+", "installs worldwide"], ["16M+", "3D models created"], ["176", "citations in Microsoft Copilot in two weeks"]], did: "App store optimisation, a blog on real user questions, AI visibility and Meta ads, all from one team.", q: "AI recommends MagiScan when someone asks how to scan an object in 3D. That brings us new users every day.", who: "Founder, MagiScan" }, qex: true },
-      { id: "pickaclass", name: "PickAClass", ini: "PC", tag: { de: "Marktplatz · Online-Kurse", en: "Marketplace · Online courses" },
-        de: { h: "1.918 Mal in zwei Wochen holte sich die KI ihre Antwort bei PickAClass.", stats: [["1.918", "Abrufe durch ChatGPT, Perplexity & Co., während sie Menschen antworteten"], ["190.000+", "Seiten von KI-Crawlern gelesen"], ["1.000+", "Ratgeberseiten in mehreren Sprachen"]], did: "Katalog und Ratgeber so gebaut, dass die KI sie lesen kann: eine Adresse pro Seite, mehrsprachige Sitemaps, sofortige Meldung neuer Seiten.", q: "Unser Katalog ist für die KI zur Quelle geworden. Wer nach einem Kurs fragt, landet immer öfter bei uns.", who: "Team, PickAClass" },
-        en: { h: "1,918 times in two weeks, AI went to PickAClass for its answer.", stats: [["1,918", "fetches by ChatGPT, Perplexity & co. while answering people"], ["190,000+", "pages read by AI crawlers"], ["1,000+", "guide pages in several languages"]], did: "Catalog and guides built so AI can read them: one address per page, multilingual sitemaps, instant notification of new pages.", q: "Our catalog has become a source for AI. People asking about a course land with us more and more often.", who: "Team, PickAClass" }, qex: true },
-      { id: "luni", name: "LUNI", ini: "LU", tag: { de: "Onlineshop · Kosmetik", en: "Online shop · Cosmetics" },
-        de: { h: "Neuer Shop, mehr Bestellungen: aus Besuchern werden Käufer.", stats: [["+68 %", "organische Besucher in fünf Monaten", 1], ["2,1×", "mehr Bestellungen über die Website", 1], ["1,9 s", "Ladezeit statt 5,4 s", 1]], did: "Webdesign und Onlineshop, Conversion-Optimierung des Kaufwegs, jede Woche ein neuer Ratgeber-Artikel zu Hautpflege-Fragen.", q: "Der neue Shop sieht nicht nur schön aus, er verkauft. Kundinnen finden uns jetzt auch über ChatGPT.", who: "Gründerin, LUNI" },
-        en: { h: "New shop, more orders: visitors turn into buyers.", stats: [["+68%", "organic visitors in five months", 1], ["2.1×", "more orders through the website", 1], ["1.9 s", "load time instead of 5.4 s", 1]], did: "Web design and online shop, conversion optimisation of the checkout, a new skincare guide article every week.", q: "The new shop doesn’t just look good, it sells. Customers now find us through ChatGPT too.", who: "Founder, LUNI" }, qex: true },
-      { id: "ava", name: "AVA", ini: "AV", tag: { de: "Medizintechnik · 3D", en: "Medtech · 3D" },
-        de: { h: "Vom Prototyp zur Finanzierung mit achtstelliger Bewertung.", stats: [["8-stellig", "Bewertung in der Finanzierungsrunde"], ["+140 %", "Demo-Anfragen von Kliniken in vier Monaten", 1], ["Top 3", "in KI-Antworten zu 3D-Simulation in der Ästhetik", 1]], did: "Produktdesign und 3D-Visualisierung, Website für Kliniken, KI-Sichtbarkeit für die Fragen, die Patientinnen und Ärzte stellen.", q: "Kliniken sehen das Ergebnis, bevor operiert wird. Genau das hat Investoren und Kunden überzeugt.", who: "Gründer, AVA" },
-        en: { h: "From prototype to funding at an eight-figure valuation.", stats: [["8 figures", "valuation in the funding round"], ["+140%", "demo requests from clinics in four months", 1], ["Top 3", "in AI answers on 3D simulation in aesthetics", 1]], did: "Product design and 3D visualisation, a website for clinics, AI visibility for the questions patients and doctors ask.", q: "Clinics see the result before surgery. That is exactly what convinced investors and customers.", who: "Founder, AVA" }, qex: true }
+      { tab: { de: "B2B-Logistik", en: "B2B logistics" }, tag: { de: "B2B-Software · Logistik · USA", en: "B2B software · Logistics · USA" },
+        chart: { src: { de: "Zitate in Microsoft Copilot pro Tag · Bing Webmaster Tools", en: "Citations in Microsoft Copilot per day · Bing Webmaster Tools" }, big: "131", bigt: { de: "Copilot-Zitate in 11 Tagen", en: "Copilot citations in 11 days" }, v: [24, 9, 4, 10, 12, 9, 9, 11, 14, 20, 9], x: { de: ["26. Okt.", "5. Nov."], en: ["Oct 26", "Nov 5"] } },
+        de: { h: "Zwei neue B2B-Kunden in einem Monat. Beide kamen über ChatGPT.", before: "Eine junge Software für Logistiker, die Fracht per Foto vermisst. Kaum bekannt, während Einkäufer immer öfter ChatGPT fragen, welches Tool sie nehmen sollen.", did: "Technisches Fundament für KI-Agenten, Fachblog mit über 40 Artikeln zu echten Einkäuferfragen, strukturierte Daten, Anbindung an Google und Bing, monatliche Messung in vier KI-Assistenten.",
+          stats: [["2", "neue B2B-Kunden in einem Monat, beide über ChatGPT"], ["18 von 80", "Antworten von ChatGPT, Claude, Gemini und Perplexity nennen das Produkt"], ["7 von 20", "Antworten in Claude und ebenso in Gemini"], ["131", "Zitate in Microsoft Copilot in 11 Tagen"]], q: "Dass ChatGPT uns Kunden schickt, hätten wir nie gedacht. Heute fragen Einkäufer gezielt nach uns.", who: "Gründer, B2B-Logistik-Software" },
+        en: { h: "Two new B2B clients in one month. Both came via ChatGPT.", before: "A young software for logistics teams that measures freight from a photo. Barely known, while buyers increasingly ask ChatGPT which tool to use.", did: "A technical foundation for AI agents, an expert blog with 40+ articles on real buyer questions, structured data, Google and Bing connected, monthly measurement in four AI assistants.",
+          stats: [["2", "new B2B clients in one month, both via ChatGPT"], ["18 of 80", "answers from ChatGPT, Claude, Gemini and Perplexity name the product"], ["7 of 20", "answers in Claude, and the same in Gemini"], ["131", "citations in Microsoft Copilot in 11 days"]], q: "We never thought ChatGPT would send us customers. Now buyers ask for us by name.", who: "Founder, B2B logistics software" } },
+      { tab: { de: "Online-Bildung", en: "Online education" }, tag: { de: "Marktplatz · Online-Kurse", en: "Marketplace · Online courses" },
+        chart: { src: { de: "Zitate in Microsoft Copilot pro Tag · Bing Webmaster Tools", en: "Citations in Microsoft Copilot per day · Bing Webmaster Tools" }, big: "+113 %", bigt: { de: "Copilot-Zitate pro Tag in fünf Tagen", en: "Copilot citations per day in five days" }, v: [8, 8, 7, 14, 17], x: { de: ["30. Okt.", "3. Nov."], en: ["Oct 30", "Nov 3"] } },
+        de: { h: "Verkäufe direkt aus ChatGPT und Hunderttausende Besuche.", before: "Ein Marktplatz für Online-Kurse mit großem Katalog, der bei Google und in der KI gegen bekannte Plattformen bestehen muss.", did: "Katalog und Ratgeber technisch so gebaut, dass KI-Agenten sie lesen und zitieren: eine Adresse pro Seite, mehrsprachige Sitemaps, sofortige Meldung neuer Seiten, über 1.000 Ratgeberseiten.",
+          stats: [["Verkäufe", "direkt aus ChatGPT"], ["Hunderte", "neue Registrierungen"], ["Hunderttausende", "Besuche auf der Website"], ["1.918", "Abrufe durch ChatGPT, Perplexity & Co. in zwei Wochen, während sie Menschen antworteten"]], q: "Unser Katalog ist für die KI zur Quelle geworden. Wer nach einem Kurs fragt, landet immer öfter bei uns.", who: "Team, Kursmarktplatz" },
+        en: { h: "Sales straight from ChatGPT and hundreds of thousands of visits.", before: "A marketplace for online courses with a large catalog that has to hold its own on Google and in AI against well-known platforms.", did: "Catalog and guides engineered so AI agents read and cite them: one address per page, multilingual sitemaps, instant notification of new pages, 1,000+ guide pages.",
+          stats: [["Sales", "straight from ChatGPT"], ["Hundreds", "of new sign-ups"], ["Hundreds of thousands", "of visits to the website"], ["1,918", "fetches by ChatGPT, Perplexity & co. in two weeks while answering people"]], q: "Our catalog has become a source for AI. People asking about a course land with us more and more often.", who: "Team, course marketplace" } },
+      { tab: { de: "Orthopädie", en: "Orthopaedics" }, tag: { de: "Orthopädische Praxis · Deutschland", en: "Orthopaedic practice · Germany" },
+        chart: { src: { de: "Impressionen bei Google pro Woche · Google Search Console", en: "Google impressions per week · Google Search Console" }, big: "5×", bigt: { de: "Sichtbarkeit bei Google drei Wochen nach dem Start", en: "visibility on Google three weeks after the start" }, v: [338, 414, 331, 336, 372, 381, 491, 463, 383, 537, 2474], start: 8, x: { de: ["Ende Aug.", "Anfang Nov."], en: ["Late Aug", "Early Nov"] } },
+        de: { h: "Fünfmal mehr Sichtbarkeit bei Google in drei Wochen. Und genannt von der KI.", before: "Eine etablierte Facharztpraxis mit guter Website, die bei Google seit Monaten auf der Stelle trat und in KI-Antworten kaum vorkam.", did: "Technische Optimierung für KI-Agenten, Ratgeber zu den Fragen, die Patienten wirklich stellen, mit Quellen, strukturierte Daten, Sitemaps und Anbindung an Google und Bing.",
+          stats: [["5×", "Impressionen bei Google pro Woche: 2.474 statt rund 400"], ["2×", "Klicks aus Google pro Woche"], ["12 von 80", "Antworten von ChatGPT, Claude, Gemini und Perplexity nennen die Praxis"], ["3 Wochen", "vom Start bis zum Sprung"]], q: "Wir hatten nicht erwartet, dass es so schnell geht. Nach drei Wochen sieht Google unsere Praxis fünfmal so oft.", who: "Praxisinhaber, Orthopädie" },
+        en: { h: "Five times more visibility on Google in three weeks. And named by AI.", before: "An established specialist practice with a good website that had been standing still on Google for months and barely appeared in AI answers.", did: "Technical optimisation for AI agents, guides on the questions patients really ask, with sources, structured data, sitemaps and Google and Bing connected.",
+          stats: [["5×", "Google impressions per week: 2,474 instead of about 400"], ["2×", "clicks from Google per week"], ["12 of 80", "answers from ChatGPT, Claude, Gemini and Perplexity name the practice"], ["3 weeks", "from the start to the jump"]], q: "We didn’t expect it to go this fast. After three weeks Google shows our practice five times as often.", who: "Practice owner, orthopaedics" } }
     ];
+    // Bar chart of a real series; bars after the start marker are red.
+    function galChart(c) {
+      const v = c.chart.v, n = v.length, max = Math.max(...v), W = 480, H = 330, B = 300, gap = 6, bw = (W - gap * (n - 1)) / n;
+      const st = c.chart.start ?? -1;
+      const bars = v.map((y, i) => { const h = Math.max(3, y / max * 250), x = i * (bw + gap); return `<rect class="gbar" style="animation-delay:${0.15 + i * 0.07}s" x="${x}" y="${B - h}" width="${bw}" height="${h}" rx="5" fill="${st < 0 || i >= st ? "#E0242B" : "rgba(255,255,255,.28)"}"/>`; }).join("");
+      const mark = st >= 0 ? `<line x1="${st * (bw + gap) - gap / 2}" y1="16" x2="${st * (bw + gap) - gap / 2}" y2="${B}" stroke="#fff" stroke-opacity=".6" stroke-dasharray="4 4"/><text x="${st * (bw + gap) + 4}" y="26" font-size="13" font-weight="800" fill="#fff">${lang === "de" ? "Start mit uns" : "Start with us"}</text>` : "";
+      return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(L(c.chart.src))}">${bars}${mark}<text x="0" y="${H - 6}" font-size="13" fill="rgba(255,255,255,.6)">${L(c.chart.x)[0]}</text><text x="${W}" y="${H - 6}" text-anchor="end" font-size="13" fill="rgba(255,255,255,.6)">${L(c.chart.x)[1]}</text></svg>`;
+    }
     let gi = 0, galTimer = null, galAuto = true;
     function galHTML() {
       const slides = GAL.map((c, i) => {
-        const d = c[lang], url = (S.projects.find((p) => p.id === c.id) || {}).url;
-        return `<article class="gs${i === gi ? " on" : ""}" aria-hidden="${i !== gi}"><div class="gs__img"><img src="/sustain/assets/thumbs/${c.id}-cover.webp" alt="${esc(c.name)}" loading="lazy"><span class="gs__badge">${esc(c.name)} <span>· ${esc(L(c.tag))}</span></span></div>
-          <div class="gs__body"><span class="gs__kick">${lang === "de" ? "Fallstudie" : "Case study"} · ${esc(c.name)}</span><h3>${esc(d.h)}</h3>
-          <div class="gs__stats">${d.stats.map(([b, t, e]) => `<div class="gstat"><b>${esc(b)}</b><span>${esc(t)}</span></div>`).join("")}</div>
-          <p class="gs__did"><b>${lang === "de" ? "Was wir gemacht haben:" : "What we did:"}</b> ${esc(d.did)}</p>
-          <blockquote class="gs__q"><p>„${esc(d.q)}“</p><footer><i>${c.ini}</i><span>${esc(d.who)}</span></footer></blockquote>
-          <div class="gs__cta"><a class="btn btn--red" href="#anfrage" data-gal="${c.id}">${lang === "de" ? "Das will ich auch" : "I want this too"} →</a>${url ? `<a class="gs__link" href="${url}" target="_blank" rel="noopener">${lang === "de" ? "Projekt ansehen" : "View project"} ↗</a>` : ""}</div></div></article>`;
+        const d = c[lang];
+        return `<article class="gs${i === gi ? " on" : ""}" aria-hidden="${i !== gi}"><div class="gs__viz"><span class="gs__src">${esc(L(c.chart.src))}</span><div class="gs__big"><b>${esc(c.chart.big)}</b><span>${esc(L(c.chart.bigt))}</span></div>${galChart(c)}<span class="gs__badge">${esc(L(c.tag))}</span></div>
+          <div class="gs__body"><span class="gs__kick">${lang === "de" ? "Fallstudie" : "Case study"} · ${esc(L(c.tab))}</span><h3>${esc(d.h)}</h3>
+          <div class="gs__row"><div><h4>${lang === "de" ? "Ausgangslage" : "Starting point"}</h4><p>${esc(d.before)}</p></div><div><h4>${lang === "de" ? "Was wir gemacht haben" : "What we did"}</h4><p>${esc(d.did)}</p></div></div>
+          <div class="gs__stats">${d.stats.map(([b, t]) => `<div class="gstat"><b>${esc(b)}</b><span>${esc(t)}</span></div>`).join("")}</div>
+          <blockquote class="gs__q"><p>„${esc(d.q)}“</p><footer><i>“</i><span>${esc(d.who)}</span></footer></blockquote>
+          <div class="gs__cta"><a class="btn btn--red" href="#anfrage" data-gal="${i}">${lang === "de" ? "Das will ich auch" : "I want this too"} →</a></div></div></article>`;
       }).join("");
-      const tabs = GAL.map((c, i) => `<button type="button" data-gi="${i}" class="${i === gi ? "on" : ""}">${esc(c.name)}</button>`).join("");
+      const tabs = GAL.map((c, i) => `<button type="button" data-gi="${i}" class="${i === gi ? "on" : ""}">${esc(L(c.tab))}</button>`).join("");
       return `<div class="gal__track">${slides}</div><div class="gal__bar"><div class="gal__tabs">${tabs}</div><div class="gal__arrows"><span class="gal__count">${String(gi + 1).padStart(2, "0")} / ${String(GAL.length).padStart(2, "0")}</span><button type="button" data-step="-1" aria-label="${lang === "de" ? "Zurück" : "Previous"}">←</button><button type="button" data-step="1" aria-label="${lang === "de" ? "Weiter" : "Next"}">→</button></div></div>`;
     }
     function galShow(i) {
@@ -931,7 +960,7 @@ const BRAND = {"googletagmanager":{"c":"#246FDB","d":"M12.003 0a3 3 0 0 0-2.121 
       $("hello").textContent = L(F.hello);
       $("about-text").innerHTML = L(F.text).map((t) => `<p>${esc(t)}</p>`).join("");
       $("creds").innerHTML = `<div><span>${esc(L(F.role))}</span><b>${F.name}</b></div>` + F.creds.map((c) => `<div><span>${esc(c[lang][0])}</span><b>${esc(c[lang][1])}</b></div>`).join("");
-      $("faqs").innerHTML = S.faq.map((q, i) => { const fix = FAQ_FIX[q.de[0]]; return `<details${i === 0 ? " open" : ""}><summary>${esc(q[lang][0])}</summary><p>${esc(fix ? fix[lang] : q[lang][1])}</p></details>`; }).join("");
+      $("faqs").innerHTML = [FAQ_FIRST, ...S.faq].map((q, i) => { const fix = FAQ_FIX[q.de[0]]; return `<details${i === 0 ? " open" : ""}><summary>${esc(fix && fix.q ? fix.q[lang] : q[lang][0])}</summary><p>${esc(fix ? fix[lang] : q[lang][1])}</p></details>`; }).join("");
       const keep = $("topic").value;
       $("topic").innerHTML = `<option value="">${lang === "de" ? "Bitte wählen" : "Please choose"}</option>` + OFFERS.map((o) => `<option value="${o.n}">${esc(o[lang].name)}</option>`).join("") + `<option value="06">${esc(ALL[lang].name)}</option><option value="x">${lang === "de" ? "Werbung, App oder etwas anderes" : "Ads, an app or something else"}</option>`;
       $("topic").value = keep;
@@ -993,7 +1022,7 @@ const BRAND = {"googletagmanager":{"c":"#246FDB","d":"M12.003 0a3 3 0 0 0-2.121 
     $("gal").addEventListener("click", (e) => {
       const t = e.target.closest("[data-gi], [data-step], [data-gal]");
       if (!t) return;
-      if (t.dataset.gal) { const c = GAL.find((x) => x.id === t.dataset.gal); $("msg-in").value = lang === "de" ? `Ich möchte Ergebnisse wie bei ${c.name}. Was ist bei uns möglich?` : `I want results like ${c.name}. What is possible for us?`; return; }
+      if (t.dataset.gal) { const c = GAL[+t.dataset.gal]; $("msg-in").value = lang === "de" ? `Ich möchte Ergebnisse wie in der Fallstudie „${L(c.tab)}“. Was ist bei uns möglich?` : `I want results like the “${L(c.tab)}” case study. What is possible for us?`; return; }
       galStop();
       galShow(t.dataset.gi != null ? +t.dataset.gi : gi + +t.dataset.step);
     });
