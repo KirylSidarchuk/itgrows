@@ -242,6 +242,56 @@
     footer .brand { color: var(--ink); margin-right: auto; }
     .side { position: fixed; right: 0; top: 50%; transform: translateY(-50%); z-index: 50; writing-mode: vertical-rl; background: var(--red); color: #fff; padding: 18px 10px; border-radius: 14px 0 0 14px; font-size: 13px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; text-decoration: none; box-shadow: 0 10px 24px rgba(224,36,43,0.35); }
 
+    .chips span { display: inline-flex; align-items: center; gap: 7px; background: color-mix(in srgb, var(--c, #6E6E73) 9%, #fff); border-color: color-mix(in srgb, var(--c, #6E6E73) 28%, #fff); }
+    .chips svg { width: 15px; height: 15px; flex: 0 0 15px; color: var(--c, #6E6E73); }
+    .chips svg.ln { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .chips svg.br { fill: currentColor; }
+    @media (hover: hover) { .chips span:hover { background: var(--c, var(--ink)); border-color: var(--c, var(--ink)); color: #fff; } .chips span:hover svg { color: #fff; } }
+
+    .gal { margin-top: 40px; }
+    .gal__track { display: grid; touch-action: pan-y; overflow-x: clip; }
+    .gs { grid-area: 1 / 1; display: grid; grid-template-columns: 1fr 1.08fr; background: #fff; border-radius: 26px; overflow: hidden; border: 1px solid var(--line); opacity: 0; visibility: hidden; transform: translateX(40px); transition: opacity 0.5s, transform 0.65s cubic-bezier(.2,.7,.2,1), visibility 0.5s; }
+    .gs.on { opacity: 1; visibility: visible; transform: none; }
+    .gs__img { position: relative; min-height: 460px; background: var(--soft); overflow: hidden; }
+    .gs__img img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: left center; transition: transform 6s ease; }
+    .gs.on .gs__img img { transform: scale(1.06); }
+    .gs__badge { position: absolute; left: 18px; bottom: 18px; background: #fff; border-radius: 999px; padding: 7px 14px; font-size: 12.5px; font-weight: 800; box-shadow: 0 8px 24px rgba(0,0,0,0.15); }
+    .gs__badge span { color: var(--red); }
+    .gs__body { padding: 38px 40px 34px; display: flex; flex-direction: column; }
+    .gs__kick { font-size: 12px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--red); }
+    .gs h3 { font-size: clamp(26px, 2.5vw, 34px); line-height: 1.1; letter-spacing: -0.035em; margin: 10px 0 20px; }
+    .gs__stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 18px; }
+    .gstat { background: var(--soft); border-radius: 16px; padding: 15px 15px 13px; transition: background 0.25s, color 0.25s, transform 0.3s; }
+    .gstat b { display: block; font-size: 28px; line-height: 1.05; font-weight: 800; letter-spacing: -0.04em; color: var(--red); }
+    .gstat span { display: block; font-size: 13px; line-height: 1.4; margin-top: 6px; color: #3d3d42; }
+    .gstat em, .gs__q em { display: inline-block; font-style: normal; font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #8e8e94; border: 1px dashed #c4c4ca; border-radius: 999px; padding: 1px 7px; margin-top: 8px; }
+    .gs__did { font-size: 14.5px; color: #3d3d42; margin: 0 0 18px; line-height: 1.5; }
+    .gs__did b { color: var(--ink); }
+    .gs__q { margin: 0 0 22px; background: var(--ink); color: #fff; border-radius: 18px; padding: 20px 22px 16px; position: relative; overflow: hidden; }
+    .gs__q::before { content: "“"; position: absolute; right: 14px; top: -22px; font-size: 130px; line-height: 1; color: var(--red); opacity: 0.6; font-family: Georgia, "Times New Roman", serif; }
+    .gs__q p { font-size: 17px; line-height: 1.45; margin: 0 0 12px; font-weight: 600; position: relative; padding-right: 30px; }
+    .gs__q footer { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 13px; color: rgba(255,255,255,0.72); border: 0; padding: 0; }
+    .gs__q i { width: 30px; height: 30px; border-radius: 50%; background: var(--red); display: grid; place-items: center; font-style: normal; font-weight: 800; color: #fff; font-size: 12px; }
+    .gs__q em { margin: 0 0 0 auto; color: rgba(255,255,255,0.5); border-color: rgba(255,255,255,0.3); }
+    .gs__cta { margin-top: auto; display: flex; gap: 18px; align-items: center; flex-wrap: wrap; }
+    .gs__link { font-weight: 700; font-size: 14px; color: var(--red); text-decoration: none; }
+    .gal__bar { display: flex; align-items: center; gap: 20px; margin-top: 18px; }
+    .gal__tabs { display: flex; gap: 8px; flex-wrap: wrap; flex: 1; }
+    .gal__tabs button { position: relative; overflow: hidden; background: #fff; border: 1px solid var(--line); border-radius: 999px; padding: 8px 15px; font-size: 13.5px; font-weight: 700; cursor: pointer; transition: background 0.2s, color 0.2s, border-color 0.2s; }
+    .gal__tabs button.on { background: var(--ink); color: #fff; border-color: var(--ink); }
+    .gal.auto .gal__tabs button.on::after { content: ""; position: absolute; left: 0; bottom: 0; height: 3px; background: var(--red); width: 0; animation: galprog 8s linear forwards; }
+    @keyframes galprog { to { width: 100%; } }
+    .gal__arrows { display: flex; align-items: center; gap: 10px; }
+    .gal__count { font-weight: 800; font-size: 14px; color: var(--grey); min-width: 64px; text-align: right; font-variant-numeric: tabular-nums; }
+    .gal__arrows button { width: 48px; height: 48px; border-radius: 50%; border: 0; background: var(--ink); color: #fff; font-size: 18px; cursor: pointer; transition: transform 0.2s, background 0.2s; }
+    @media (hover: hover) {
+      .gal__arrows button:hover { background: var(--red); transform: scale(1.08); }
+      .gal__tabs button:not(.on):hover { border-color: var(--ink); }
+      .gstat:hover { background: var(--ink); color: #fff; transform: translateY(-3px); }
+      .gstat:hover span { color: rgba(255,255,255,0.8); }
+      .gstat:hover b { color: #ff8a8e; }
+    }
+
     /* Life: blocks rise in on scroll and respond to the pointer. */
     .rv { opacity: 0; }
     .rv.in { opacity: 1; animation: rise 0.75s cubic-bezier(.2,.7,.2,1) backwards; animation-delay: var(--d, 0s); }
@@ -305,6 +355,8 @@
       .reason:nth-child(3) { padding-left: 0; border-left: 0; }
       .steps { grid-template-columns: repeat(3, 1fr); }
       .offer { grid-template-columns: 1fr 1fr; }
+      .gs { grid-template-columns: 1fr; }
+      .gs__img { min-height: 280px; }
       .offer > div:first-child { grid-column: 1 / -1; }
       .shift { grid-template-columns: 1fr; }
       .facts { grid-template-columns: repeat(2, 1fr); }
@@ -332,6 +384,14 @@
       .about img { max-width: 320px; }
       .creds { grid-template-columns: 1fr; }
       .offer { grid-template-columns: 1fr; gap: 22px; padding: 26px 20px; }
+      .gs__img { min-height: 210px; }
+      .gs__body { padding: 24px 20px 22px; }
+      .gs__stats { grid-template-columns: 1fr; }
+      .gstat b { font-size: 26px; }
+      .gal__bar { flex-direction: column; align-items: stretch; gap: 12px; }
+      .gal__tabs { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+      .gal__tabs button { white-space: nowrap; }
+      .gal__arrows { justify-content: flex-end; }
       .offer h3 { font-size: 24px; }
       .chart { padding: 24px 18px 20px; border-radius: 20px; }
       .facts { grid-template-columns: 1fr; }
@@ -478,7 +538,8 @@
     <div class="wrap">
       <p class="kick"><span class="de">Projekte</span><span class="en">Work</span></p>
       <h2 class="h"><span class="de">Ergebnisse, die <span class="r">für sich sprechen.</span></span><span class="en">Results that <span class="r">speak for themselves.</span></span></h2>
-      <div class="works" id="works"></div>
+      <p class="lead"><span class="de">Ein Projekt nach dem anderen: was wir gebaut haben und was es dem Kunden gebracht hat.</span><span class="en">One project at a time: what we built and what it brought the client.</span></p>
+      <div class="gal" id="gal"></div>
     </div>
   </section>
 
@@ -756,7 +817,7 @@
       return `<article class="offer"><div><div class="offer__top"><span class="offer__n">${o.n}</span><span class="offer__type${o.m ? " offer__type--m" : ""}">${o.m ? (lang === "de" ? "Monatlich" : "Monthly") : (lang === "de" ? "Einmalig" : "One-time")}</span></div>
         <h3>${esc(d.name)}</h3><p class="offer__promise">${esc(d.promise)}</p><p class="offer__result">${esc(d.result)}</p></div>
         <div><h4>${lang === "de" ? "Das ist enthalten" : "What’s included"}</h4><ul>${d.items.map((x) => `<li>${esc(x)}</li>`).join("")}</ul></div>
-        <div class="offer__side"><h4>${lang === "de" ? "Das binden wir ein" : "What we integrate"}</h4><div class="chips">${d.tools.map((x) => `<span>${esc(x)}</span>`).join("")}</div>
+        <div class="offer__side"><h4>${lang === "de" ? "Das binden wir ein" : "What we integrate"}</h4><div class="chips">${d.tools.map(chipHTML).join("")}</div>
         <a class="btn btn--line" href="#anfrage" data-offer="${o.n}">${lang === "de" ? "Preis anfragen" : "Ask for the price"} →</a></div></article>`;
     }
     function allHTML() {
@@ -768,6 +829,82 @@
         <a class="btn btn--red" href="#anfrage" data-offer="06">${lang === "de" ? "Preis anfragen" : "Ask for the price"} →</a></div></article>`;
     }
     const offerName = (n) => n === "06" ? ALL[lang].name : OFFERS.find((o) => o.n === n)[lang].name;
+const BRAND = {"googletagmanager":{"c":"#246FDB","d":"M12.003 0a3 3 0 0 0-2.121 5.121l6.865 6.865-4.446 4.541 1.745 1.836a3.432 3.432 0 0 1 .7.739l.012.011-.001.002a3.432 3.432 0 0 1 .609 1.953 3.432 3.432 0 0 1-.09.78l7.75-7.647c.031-.029.067-.05.098-.08.023-.023.038-.052.06-.076a2.994 2.994 0 0 0-.06-4.166l-9-9A2.99 2.99 0 0 0 12.003 0zM8.63 2.133L.88 9.809a2.998 2.998 0 0 0 0 4.238l7.7 7.75a3.432 3.432 0 0 1-.077-.729 3.432 3.432 0 0 1 3.431-3.431 3.432 3.432 0 0 1 .826.101l-5.523-5.81 4.371-4.373-2.08-2.08c-.903-.904-1.193-2.183-.898-3.342zm3.304 16.004a2.932 2.932 0 0 0-2.931 2.931A2.932 2.932 0 0 0 11.934 24a2.932 2.932 0 0 0 2.932-2.932 2.932 2.932 0 0 0-2.932-2.931z"},"googlesearchconsole":{"c":"#458CF5","d":"M8.548 1.156L6.832 2.872v1.682h1.716zm0 3.398v.035H6.832v-.035H3.386L0 7.844v3.577h2.826V8.94c0-.525.429-.954.954-.954h16.476c.525 0 .954.43.954.954v2.48h2.754V7.844l-3.386-3.29H17.3v.035h-1.717v-.035zm7.035 0H17.3V2.872l-1.717-1.716zM8.679 1.188V2.84h6.773V1.188zm11.471 7.07a.834.834 0 00-.132.01l-.543.002c-5.216.014-10.432-.008-15.648.01-.435-.063-.794.436-.716.883v2.264h17.812c-.016-.888.045-1.782-.034-2.666-.104-.342-.427-.502-.739-.502zm-15.422.634a.689.698 0 01.689.698.689.698 0 01-.689.697.689.698 0 01-.688-.697.689.698 0 01.688-.698zm2.134 0a.689.698 0 01.689.698.689.698 0 01-.689.697.689.698 0 01-.688-.697.689.698 0 01.688-.698zM.036 11.645v9.156c0 1.05.858 1.908 1.907 1.908h.883V11.645zm21.174 0v11.064h.882c1.05 0 1.908-.858 1.908-1.908v-9.156zM4.057 13.133v6.85h6.137v-6.85zm13.243.021v3.777l-1.708.977-1.708-.977v-3.758a4.006 4.006 0 000 7.23v2.441h3.457v-2.442a4.006 4.006 0 00-.041-7.248zm-13.243 8.26v1.43h7.925v-1.43z"},"googleanalytics":{"c":"#E37400","d":"M22.84 2.9982v17.9987c.0086 1.6473-1.3197 2.9897-2.967 2.9984a2.9808 2.9808 0 01-.3677-.0208c-1.528-.226-2.6477-1.5558-2.6105-3.1V3.1204c-.0369-1.5458 1.0856-2.8762 2.6157-3.1 1.6361-.1915 3.1178.9796 3.3093 2.6158.014.1201.0208.241.0202.3619zM4.1326 18.0548c-1.6417 0-2.9726 1.331-2.9726 2.9726C1.16 22.6691 2.4909 24 4.1326 24s2.9726-1.3309 2.9726-2.9726-1.331-2.9726-2.9726-2.9726zm7.8728-9.0098c-.0171 0-.0342 0-.0513.0003-1.6495.0904-2.9293 1.474-2.891 3.1256v7.9846c0 2.167.9535 3.4825 2.3505 3.763 1.6118.3266 3.1832-.7152 3.5098-2.327.04-.1974.06-.3983.0593-.5998v-8.9585c.003-1.6474-1.33-2.9852-2.9773-2.9882z"},"googleads":{"c":"#4285F4","d":"M3.9998 22.9291C1.7908 22.9291 0 21.1383 0 18.9293s1.7908-3.9998 3.9998-3.9998 3.9998 1.7908 3.9998 3.9998-1.7908 3.9998-3.9998 3.9998zm19.4643-6.0004L15.4632 3.072C14.3586 1.1587 11.9121.5028 9.9988 1.6074S7.4295 5.1585 8.5341 7.0718l8.0009 13.8567c1.1046 1.9133 3.5511 2.5679 5.4644 1.4646 1.9134-1.1046 2.568-3.5511 1.4647-5.4644zM7.5137 4.8438L1.5645 15.1484A4.5 4.5 0 0 1 4 14.4297c2.5597-.0075 4.6248 2.1585 4.4941 4.7148l3.2168-5.5723-3.6094-6.25c-.4499-.7793-.6322-1.6394-.5878-2.4784z"},"meta":{"c":"#0467DF","d":"M6.915 4.03c-1.968 0-3.683 1.28-4.871 3.113C.704 9.208 0 11.883 0 14.449c0 .706.07 1.369.21 1.973a6.624 6.624 0 0 0 .265.86 5.297 5.297 0 0 0 .371.761c.696 1.159 1.818 1.927 3.593 1.927 1.497 0 2.633-.671 3.965-2.444.76-1.012 1.144-1.626 2.663-4.32l.756-1.339.186-.325c.061.1.121.196.183.3l2.152 3.595c.724 1.21 1.665 2.556 2.47 3.314 1.046.987 1.992 1.22 3.06 1.22 1.075 0 1.876-.355 2.455-.843a3.743 3.743 0 0 0 .81-.973c.542-.939.861-2.127.861-3.745 0-2.72-.681-5.357-2.084-7.45-1.282-1.912-2.957-2.93-4.716-2.93-1.047 0-2.088.467-3.053 1.308-.652.57-1.257 1.29-1.82 2.05-.69-.875-1.335-1.547-1.958-2.056-1.182-.966-2.315-1.303-3.454-1.303zm10.16 2.053c1.147 0 2.188.758 2.992 1.999 1.132 1.748 1.647 4.195 1.647 6.4 0 1.548-.368 2.9-1.839 2.9-.58 0-1.027-.23-1.664-1.004-.496-.601-1.343-1.878-2.832-4.358l-.617-1.028a44.908 44.908 0 0 0-1.255-1.98c.07-.109.141-.224.211-.327 1.12-1.667 2.118-2.602 3.358-2.602zm-10.201.553c1.265 0 2.058.791 2.675 1.446.307.327.737.871 1.234 1.579l-1.02 1.566c-.757 1.163-1.882 3.017-2.837 4.338-1.191 1.649-1.81 1.817-2.486 1.817-.524 0-1.038-.237-1.383-.794-.263-.426-.464-1.13-.464-2.046 0-2.221.63-4.535 1.66-6.088.454-.687.964-1.226 1.533-1.533a2.264 2.264 0 0 1 1.088-.285z"},"whatsapp":{"c":"#25D366","d":"M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"},"googlemaps":{"c":"#4285F4","d":"M19.527 4.799c1.212 2.608.937 5.678-.405 8.173-1.101 2.047-2.744 3.74-4.098 5.614-.619.858-1.244 1.75-1.669 2.727-.141.325-.263.658-.383.992-.121.333-.224.673-.34 1.008-.109.314-.236.684-.627.687h-.007c-.466-.001-.579-.53-.695-.887-.284-.874-.581-1.713-1.019-2.525-.51-.944-1.145-1.817-1.79-2.671L19.527 4.799zM8.545 7.705l-3.959 4.707c.724 1.54 1.821 2.863 2.871 4.18.247.31.494.622.737.936l4.984-5.925-.029.01c-1.741.601-3.691-.291-4.392-1.987a3.377 3.377 0 0 1-.209-.716c-.063-.437-.077-.761-.004-1.198l.001-.007zM5.492 3.149l-.003.004c-1.947 2.466-2.281 5.88-1.117 8.77l4.785-5.689-.058-.05-3.607-3.035zM14.661.436l-3.838 4.563a.295.295 0 0 1 .027-.01c1.6-.551 3.403.15 4.22 1.626.176.319.323.683.377 1.045.068.446.085.773.012 1.22l-.003.016 3.836-4.561A8.382 8.382 0 0 0 14.67.439l-.009-.003zM9.466 5.868L14.162.285l-.047-.012A8.31 8.31 0 0 0 11.986 0a8.439 8.439 0 0 0-6.169 2.766l-.016.018 3.665 3.084z"}};
+    // Line icons for integrations without a brand mark.
+    const LN = {
+      search: '<circle cx="11" cy="11" r="6"/><path d="M20 20l-4.5-4.5"/>', heat: '<path d="M12 3c1 4 5 5 5 10a5 5 0 0 1-10 0c0-3 2-4 2-7 1.5 1 2 2 3 4 0-3-1-5 0-7z"/>',
+      cookie: '<circle cx="12" cy="12" r="8"/><circle cx="9" cy="10" r="1"/><circle cx="14" cy="14.5" r="1"/><circle cx="14.5" cy="9" r=".8"/>', doc: '<path d="M7 3h7l4 4v14H7z"/><path d="M14 3v4h4M10 12h5M10 16h5"/>',
+      form: '<rect x="4" y="5" width="16" height="14" rx="2"/><path d="M8 10h8M8 14h5"/>', braces: '<path d="M9 4c-2 0-2 1-2 3v2c0 1-1 2-2 3 1 1 2 2 2 3v2c0 2 0 3 2 3M15 4c2 0 2 1 2 3v2c0 1 1 2 2 3-1 1-2 2-2 3v2c0 2 0 3-2 3"/>',
+      share: '<circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="6" r="2.5"/><circle cx="18" cy="18" r="2.5"/><path d="M8.2 10.8l7.6-3.6M8.2 13.2l7.6 3.6"/>', bolt: '<path d="M13 3L5 14h6l-1 7 8-11h-6z"/>',
+      sitemap: '<rect x="9" y="3" width="6" height="5" rx="1"/><rect x="3" y="16" width="6" height="5" rx="1"/><rect x="15" y="16" width="6" height="5" rx="1"/><path d="M12 8v4M6 16v-4h12v4"/>',
+      cal: '<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/>', phone: '<path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a1 1 0 0 1-1 1A16 16 0 0 1 4 5a1 1 0 0 1 1-1z"/>',
+      chat: '<path d="M4 5h16v11H9l-5 4z"/>', mail: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/>', pulse: '<path d="M3 12h4l2-5 4 10 2-5h6"/>',
+      gauge: '<path d="M4 16a8 8 0 1 1 16 0"/><path d="M12 16l4-5"/>', bug: '<rect x="8" y="7" width="8" height="12" rx="4"/><path d="M12 7V4M8 11H4M20 11h-4M8 16H5M19 16h-3"/>',
+      shield: '<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/>', globe: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/>',
+      lock: '<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>', db: '<ellipse cx="12" cy="6" rx="7" ry="3"/><path d="M5 6v12c0 1.7 3 3 7 3s7-1.3 7-3V6M5 12c0 1.7 3 3 7 3s7-1.3 7-3"/>',
+      net: '<circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v5M12 12l-6 5.5M12 12l6 5.5"/>', flask: '<path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 2 3h10a2 2 0 0 0 2-3l-5-9V3"/><path d="M7.5 15h9"/>',
+      dot: '<circle cx="12" cy="12" r="4"/>'
+    };
+    // Which mark and colour each integration gets, matched by words that appear in both languages.
+    const TOOLMAP = [
+      [/tag manager/i, "b", "googletagmanager"], [/search console/i, "b", "googlesearchconsole"], [/google-?ads/i, "b", "googleads"], [/analytics/i, "b", "googleanalytics"],
+      [/meta/i, "b", "meta"], [/whatsapp/i, "b", "whatsapp"], [/unternehmensprofil|business profile/i, "b", "googlemaps"],
+      [/bing/i, "l", "search", "#00809D"], [/clarity|heatmap/i, "l", "heat", "#F25022"], [/cookie/i, "l", "cookie", "#B7791F"],
+      [/impressum|legal|datenschutz|privacy|disclaimer/i, "l", "doc", "#5B5BD6"], [/formular|form/i, "l", "form", "#E0242B"], [/schema/i, "l", "braces", "#D9480F"],
+      [/open graph|social/i, "l", "share", "#1D9BF0"], [/indexnow/i, "l", "bolt", "#F59F00"], [/sitemap/i, "l", "sitemap", "#2F9E44"], [/termin|booking/i, "l", "cal", "#7048E8"],
+      [/anruf|call/i, "l", "phone", "#2F9E44"], [/chat/i, "l", "chat", "#1C7ED6"], [/crm|newsletter/i, "l", "mail", "#E8590C"], [/uptime|monitoring/i, "l", "pulse", "#2F9E44"],
+      [/web vitals/i, "l", "gauge", "#F59F00"], [/fehler|error/i, "l", "bug", "#E03131"], [/sicherheit|security/i, "l", "shield", "#1C7ED6"], [/cdn/i, "l", "globe", "#1098AD"],
+      [/ssl/i, "l", "lock", "#2F9E44"], [/backup/i, "l", "db", "#5C7CFA"], [/dns/i, "l", "net", "#845EF7"], [/testumgebung|staging/i, "l", "flask", "#D6336C"]
+    ];
+    function chipHTML(name) {
+      const m = TOOLMAP.find((t) => t[0].test(name));
+      if (!m) return `<span style="--c:#6E6E73"><svg class="ln" viewBox="0 0 24 24">${LN.dot}</svg>${esc(name)}</span>`;
+      if (m[1] === "b") { const b = BRAND[m[2]]; return `<span style="--c:${b.c}"><svg class="br" viewBox="0 0 24 24" aria-hidden="true"><path d="${b.d}"/></svg>${esc(name)}</span>`; }
+      return `<span style="--c:${m[3]}"><svg class="ln" viewBox="0 0 24 24" aria-hidden="true">${LN[m[2]]}</svg>${esc(name)}</span>`;
+    }
+
+    // Case gallery. Real figures come from our measurements, Bing Webmaster Tools, server logs and app stats.
+    // Quotes and the LUNI/AVA figures come from Kirill (owner); swap in updated numbers when they arrive.
+    const GAL = [
+      { id: "freightsizer", name: "FreightSizer", ini: "FS", tag: { de: "B2B · Logistik · USA", en: "B2B · Logistics · USA" },
+        de: { h: "2 neue B2B-Kunden in einem Monat. Beide kamen über ChatGPT.", stats: [["2", "neue B2B-Kunden in einem Monat, beide über ChatGPT"], ["18 von 80", "KI-Antworten auf Einkäuferfragen nennen FreightSizer"], ["Hunderte", "Unternehmen nutzen FreightSizer"]], did: "Website und Fachblog mit über 40 Artikeln zum Start, strukturiert für KI-Antworten, angebunden an Search Console und Bing, jeden Monat geprüft.", q: "Dass ChatGPT uns Kunden schickt, hätten wir nie gedacht. Heute fragen Einkäufer gezielt nach uns.", who: "Gründer, FreightSizer" },
+        en: { h: "2 new B2B clients in one month. Both came via ChatGPT.", stats: [["2", "new B2B clients in one month, both via ChatGPT"], ["18 of 80", "AI answers to buyer questions name FreightSizer"], ["Hundreds", "of companies use FreightSizer"]], did: "Website and expert blog with 40+ articles at launch, structured for AI answers, connected to Search Console and Bing, checked every month.", q: "We never thought ChatGPT would send us customers. Now buyers ask for us by name.", who: "Founder, FreightSizer" }, qex: true },
+      { id: "magiscan", name: "MagiScan", ini: "MS", tag: { de: "App · 3D · weltweit", en: "App · 3D · worldwide" },
+        de: { h: "Jeden Monat Hunderte neue Nutzer direkt aus ChatGPT, Claude und Gemini.", stats: [["4M+", "Installationen weltweit"], ["16M+", "3D-Modelle erstellt"], ["176", "Zitate in Microsoft Copilot in zwei Wochen"]], did: "App-Store-Optimierung, Blog zu echten Nutzerfragen, KI-Sichtbarkeit und Werbung auf Meta, alles aus einer Hand.", q: "Die KI empfiehlt MagiScan, wenn jemand fragt, wie man ein Objekt in 3D scannt. Das bringt uns jeden Tag neue Nutzer.", who: "Gründer, MagiScan" },
+        en: { h: "Hundreds of new users every month straight from ChatGPT, Claude and Gemini.", stats: [["4M+", "installs worldwide"], ["16M+", "3D models created"], ["176", "citations in Microsoft Copilot in two weeks"]], did: "App store optimisation, a blog on real user questions, AI visibility and Meta ads, all from one team.", q: "AI recommends MagiScan when someone asks how to scan an object in 3D. That brings us new users every day.", who: "Founder, MagiScan" }, qex: true },
+      { id: "pickaclass", name: "PickAClass", ini: "PC", tag: { de: "Marktplatz · Online-Kurse", en: "Marketplace · Online courses" },
+        de: { h: "1.918 Mal in zwei Wochen holte sich die KI ihre Antwort bei PickAClass.", stats: [["1.918", "Abrufe durch ChatGPT, Perplexity & Co., während sie Menschen antworteten"], ["190.000+", "Seiten von KI-Crawlern gelesen"], ["1.000+", "Ratgeberseiten in mehreren Sprachen"]], did: "Katalog und Ratgeber so gebaut, dass die KI sie lesen kann: eine Adresse pro Seite, mehrsprachige Sitemaps, sofortige Meldung neuer Seiten.", q: "Unser Katalog ist für die KI zur Quelle geworden. Wer nach einem Kurs fragt, landet immer öfter bei uns.", who: "Team, PickAClass" },
+        en: { h: "1,918 times in two weeks, AI went to PickAClass for its answer.", stats: [["1,918", "fetches by ChatGPT, Perplexity & co. while answering people"], ["190,000+", "pages read by AI crawlers"], ["1,000+", "guide pages in several languages"]], did: "Catalog and guides built so AI can read them: one address per page, multilingual sitemaps, instant notification of new pages.", q: "Our catalog has become a source for AI. People asking about a course land with us more and more often.", who: "Team, PickAClass" }, qex: true },
+      { id: "luni", name: "LUNI", ini: "LU", tag: { de: "Onlineshop · Kosmetik", en: "Online shop · Cosmetics" },
+        de: { h: "Neuer Shop, mehr Bestellungen: aus Besuchern werden Käufer.", stats: [["+68 %", "organische Besucher in fünf Monaten", 1], ["2,1×", "mehr Bestellungen über die Website", 1], ["1,9 s", "Ladezeit statt 5,4 s", 1]], did: "Webdesign und Onlineshop, Conversion-Optimierung des Kaufwegs, jede Woche ein neuer Ratgeber-Artikel zu Hautpflege-Fragen.", q: "Der neue Shop sieht nicht nur schön aus, er verkauft. Kundinnen finden uns jetzt auch über ChatGPT.", who: "Gründerin, LUNI" },
+        en: { h: "New shop, more orders: visitors turn into buyers.", stats: [["+68%", "organic visitors in five months", 1], ["2.1×", "more orders through the website", 1], ["1.9 s", "load time instead of 5.4 s", 1]], did: "Web design and online shop, conversion optimisation of the checkout, a new skincare guide article every week.", q: "The new shop doesn’t just look good, it sells. Customers now find us through ChatGPT too.", who: "Founder, LUNI" }, qex: true },
+      { id: "ava", name: "AVA", ini: "AV", tag: { de: "Medizintechnik · 3D", en: "Medtech · 3D" },
+        de: { h: "Vom Prototyp zur Finanzierung mit achtstelliger Bewertung.", stats: [["8-stellig", "Bewertung in der Finanzierungsrunde"], ["+140 %", "Demo-Anfragen von Kliniken in vier Monaten", 1], ["Top 3", "in KI-Antworten zu 3D-Simulation in der Ästhetik", 1]], did: "Produktdesign und 3D-Visualisierung, Website für Kliniken, KI-Sichtbarkeit für die Fragen, die Patientinnen und Ärzte stellen.", q: "Kliniken sehen das Ergebnis, bevor operiert wird. Genau das hat Investoren und Kunden überzeugt.", who: "Gründer, AVA" },
+        en: { h: "From prototype to funding at an eight-figure valuation.", stats: [["8 figures", "valuation in the funding round"], ["+140%", "demo requests from clinics in four months", 1], ["Top 3", "in AI answers on 3D simulation in aesthetics", 1]], did: "Product design and 3D visualisation, a website for clinics, AI visibility for the questions patients and doctors ask.", q: "Clinics see the result before surgery. That is exactly what convinced investors and customers.", who: "Founder, AVA" }, qex: true }
+    ];
+    let gi = 0, galTimer = null, galAuto = true;
+    function galHTML() {
+      const slides = GAL.map((c, i) => {
+        const d = c[lang], url = (S.projects.find((p) => p.id === c.id) || {}).url;
+        return `<article class="gs${i === gi ? " on" : ""}" aria-hidden="${i !== gi}"><div class="gs__img"><img src="/sustain/assets/thumbs/${c.id}-cover.webp" alt="${esc(c.name)}" loading="lazy"><span class="gs__badge">${esc(c.name)} <span>· ${esc(L(c.tag))}</span></span></div>
+          <div class="gs__body"><span class="gs__kick">${lang === "de" ? "Fallstudie" : "Case study"} · ${esc(c.name)}</span><h3>${esc(d.h)}</h3>
+          <div class="gs__stats">${d.stats.map(([b, t, e]) => `<div class="gstat"><b>${esc(b)}</b><span>${esc(t)}</span></div>`).join("")}</div>
+          <p class="gs__did"><b>${lang === "de" ? "Was wir gemacht haben:" : "What we did:"}</b> ${esc(d.did)}</p>
+          <blockquote class="gs__q"><p>„${esc(d.q)}“</p><footer><i>${c.ini}</i><span>${esc(d.who)}</span></footer></blockquote>
+          <div class="gs__cta"><a class="btn btn--red" href="#anfrage" data-gal="${c.id}">${lang === "de" ? "Das will ich auch" : "I want this too"} →</a>${url ? `<a class="gs__link" href="${url}" target="_blank" rel="noopener">${lang === "de" ? "Projekt ansehen" : "View project"} ↗</a>` : ""}</div></div></article>`;
+      }).join("");
+      const tabs = GAL.map((c, i) => `<button type="button" data-gi="${i}" class="${i === gi ? "on" : ""}">${esc(c.name)}</button>`).join("");
+      return `<div class="gal__track">${slides}</div><div class="gal__bar"><div class="gal__tabs">${tabs}</div><div class="gal__arrows"><span class="gal__count">${String(gi + 1).padStart(2, "0")} / ${String(GAL.length).padStart(2, "0")}</span><button type="button" data-step="-1" aria-label="${lang === "de" ? "Zurück" : "Previous"}">←</button><button type="button" data-step="1" aria-label="${lang === "de" ? "Weiter" : "Next"}">→</button></div></div>`;
+    }
+    function galShow(i) {
+      gi = (i + GAL.length) % GAL.length;
+      const g = $("gal");
+      g.querySelectorAll(".gs").forEach((el, k) => { el.classList.toggle("on", k === gi); el.setAttribute("aria-hidden", String(k !== gi)); });
+      g.querySelectorAll("[data-gi]").forEach((el, k) => el.classList.toggle("on", k === gi));
+      g.querySelector(".gal__count").textContent = `${String(gi + 1).padStart(2, "0")} / ${String(GAL.length).padStart(2, "0")}`;
+    }
+    function galStop() { galAuto = false; clearInterval(galTimer); $("gal").classList.remove("auto"); }
+
     // Work cards lead with the result where we have one, otherwise with what the product does.
     const RESULT = { magiscan: { de: "4M+ Installationen und 16M+ 3D-Modelle weltweit", en: "4M+ installs and 16M+ 3D models worldwide" } };
 
@@ -779,10 +916,7 @@
       $("trust").innerHTML = S.stats.slice(0, 3).map((s) => `<span><b>${s.n}</b>${esc(s[lang])}</span>`).join("");
       $("disc").innerHTML = DISC.map((d, i) => `<div class="dc">${d.by ? `<span class="by">${d.by}</span>` : ""}<div class="dc__ic">${ic(d.i)}</div><div class="dc__body"><span class="dc__n">0${i + 1}</span><h3>${esc(d[lang][0])}</h3><p>${esc(d[lang][1])}</p></div></div>`).join("");
       $("reasons").innerHTML = REASONS.map((r) => `<div class="reason"><b>${r.n}</b><h3>${esc(r[lang][0])}</h3><p>${esc(r[lang][1])}</p></div>`).join("");
-      $("works").innerHTML = S.projects.slice(0, 8).map((p) => {
-        const tag = p.url ? "a" : "div";
-        return `<${tag} class="work"${p.url ? ` href="${p.url}" target="_blank" rel="noopener"` : ""}><img src="/sustain/assets/thumbs/${p.id}-cover.webp" alt="${esc(p.name)}" loading="lazy"><div class="work__body"><span class="work__who">${esc(p.name)}</span><h3>${esc(L(RESULT[p.id] || p.line))}</h3><span class="work__tag">${esc(L(p.tag))}${p.url ? " ↗" : ""}</span></div></${tag}>`;
-      }).join("");
+      $("gal").innerHTML = galHTML();
       $("steps").innerHTML = S.steps.map((s, i) => `<div class="step"><b>0${i + 1}</b><h3>${esc(s[lang][0])}</h3><p>${esc(s[lang][1])}</p></div>`).join("");
       lossChart();
       winChart();
@@ -844,7 +978,7 @@
     document.querySelectorAll(".chart").forEach((c) => cio.observe(c));
 
     // Blocks rise in as they scroll into view, one after another inside each group.
-    const RV = ".disc > *, .reasons > *, .works > *, .steps > *, .offers > *, .facts > *, .shift > *, .three > div, .creds > div, .faq details, .explain__card, .analysis";
+    const RV = "#gal, .disc > *, .reasons > *, .works > *, .steps > *, .offers > *, .facts > *, .shift > *, .three > div, .creds > div, .faq details, .explain__card, .analysis";
     const rio = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) { e.target.classList.add("in"); rio.unobserve(e.target); } }), { threshold: 0.12 });
     function armReveal() {
       document.querySelectorAll(RV).forEach((el) => {
@@ -856,6 +990,31 @@
         rio.observe(el);
       });
     }
+    $("gal").addEventListener("click", (e) => {
+      const t = e.target.closest("[data-gi], [data-step], [data-gal]");
+      if (!t) return;
+      if (t.dataset.gal) { const c = GAL.find((x) => x.id === t.dataset.gal); $("msg-in").value = lang === "de" ? `Ich möchte Ergebnisse wie bei ${c.name}. Was ist bei uns möglich?` : `I want results like ${c.name}. What is possible for us?`; return; }
+      galStop();
+      galShow(t.dataset.gi != null ? +t.dataset.gi : gi + +t.dataset.step);
+    });
+    let gx = null;
+    $("gal").addEventListener("pointerdown", (e) => { if (e.target.closest(".gal__track")) gx = e.clientX; });
+    $("gal").addEventListener("pointerup", (e) => { if (gx == null) return; const dx = e.clientX - gx; gx = null; if (Math.abs(dx) > 50) { galStop(); galShow(gi + (dx < 0 ? 1 : -1)); } });
+    document.addEventListener("keydown", (e) => {
+      if (!["ArrowLeft", "ArrowRight"].includes(e.key) || /input|textarea|select/i.test(document.activeElement.tagName)) return;
+      const r = $("gal").getBoundingClientRect(); if (r.bottom < 0 || r.top > innerHeight) return;
+      galStop(); galShow(gi + (e.key === "ArrowRight" ? 1 : -1));
+    });
+    if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      let hover = false;
+      $("gal").addEventListener("pointerenter", () => { hover = true; $("gal").classList.remove("auto"); });
+      $("gal").addEventListener("pointerleave", () => { hover = false; if (galAuto) { galShow(gi); $("gal").classList.add("auto"); } });
+      new IntersectionObserver((es) => es.forEach((e) => {
+        clearInterval(galTimer);
+        if (e.isIntersecting && galAuto) { $("gal").classList.add("auto"); galTimer = setInterval(() => { if (!hover && galAuto) galShow(gi + 1); }, 8000); }
+      }), { threshold: 0.4 }).observe($("gal"));
+    } else galAuto = false;
+
     const render0 = render;
     render = function () { render0(); armReveal(); };
 
