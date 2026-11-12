@@ -23,7 +23,8 @@
     }
     * { box-sizing: border-box; }
     html { scroll-behavior: smooth; overflow-x: hidden; }
-    section[id] { scroll-margin-top: 120px; }
+    section[id] { scroll-margin-top: 80px; }
+    .pills { display: none; }
     body { margin: 0; background: var(--bg); color: var(--ink); font-family: "Inter", system-ui, sans-serif; font-size: 16px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
     a { color: inherit; }
     img { max-width: 100%; display: block; }
@@ -393,6 +394,8 @@
     }
 
     @media (max-width: 1100px) {
+      .pills { display: block; }
+      section[id] { scroll-margin-top: 120px; }
       .nav { display: none; }
       .langs { margin-left: auto; }
       .hero .wrap, .explain, .analysis, .about, .final__grid { grid-template-columns: 1fr; }
@@ -474,7 +477,6 @@
     </div>
     <nav class="pills" aria-label="Inhalt">
       <div class="wrap">
-        <b><span class="de">Inhalt</span><span class="en">Contents</span></b>
         <a href="#wandel"><span class="de">Was passiert</span><span class="en">The shift</span></a>
         <a href="#erklaert"><span class="de">Einfach erklärt</span><span class="en">Explained</span></a>
         <a href="#leistungen"><span class="de">Leistungen</span><span class="en">Services</span></a>
