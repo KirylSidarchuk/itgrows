@@ -6,6 +6,7 @@ import { noteVisitorCheck } from "@/lib/geo-price-test"
 import { sendOwner } from "@/lib/telegram"
 import { visitSource } from "@/lib/visit-source"
 import { findName, readsAsBusiness } from "@/lib/geo-names"
+import { withSustainCors, sustainPreflight } from "@/lib/cors-sustain"
 
 // The instant check on /business: five questions a buyer of this business would ask, put to ChatGPT
 // and Perplexity. POST starts it (or returns a result under a day old at once); GET ?id= follows it,
@@ -159,7 +160,7 @@ async function relay(status: number, data: Partial<PublicRun> & { error?: string
   return NextResponse.json({ status: "failed", error: data.error ?? "unavailable" }, { status: status >= 400 && status < 600 ? status : 502 })
 }
 
-export async function POST(req: NextRequest) {
+async function handlePOST(req: NextRequest) {
   let url = ""
   try {
     url = String(((await req.json()) as { url?: unknown }).url ?? "").trim()
@@ -179,7 +180,7 @@ export async function POST(req: NextRequest) {
   }
 }
 
-export async function GET(req: NextRequest) {
+async function handleGET(req: NextRequest) {
   const id = req.nextUrl.searchParams.get("id") ?? ""
   if (!RUN_ID.test(id)) return NextResponse.json({ status: "failed", error: "not_found" }, { status: 404 })
   try {
@@ -194,3 +195,8 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ status: "failed", error: "unavailable" }, { status: 502 })
   }
 }
+
+// Also callable from the Sustain Impact site (lib/cors-sustain.ts).
+export const POST = withSustainCors(handlePOST)
+export const GET = withSustainCors(handleGET)
+export const OPTIONS = sustainPreflight

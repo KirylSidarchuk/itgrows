@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { callLLM } from "@/lib/llm-client"
 import { sendOwner } from "@/lib/telegram"
 import { clientIp } from "@/lib/geo-check"
+import { withSustainCors, sustainPreflight } from "@/lib/cors-sustain"
 
 // "Your website, reimagined" on /sustain/de and /sustain/en: a visitor gives the address of their site and gets
 // back what a new version of it would say, built from their own site only. This route reads the page (name, logo,
@@ -295,7 +296,7 @@ function parseCopy(raw: string): Copy | null {
   }
 }
 
-export async function POST(req: NextRequest) {
+async function handlePOST(req: NextRequest) {
   let raw = ""
   let english = false
   try {
@@ -377,3 +378,7 @@ export async function POST(req: NextRequest) {
     copy,
   })
 }
+
+// Also callable from the Sustain Impact site (lib/cors-sustain.ts).
+export const POST = withSustainCors(handlePOST)
+export const OPTIONS = sustainPreflight

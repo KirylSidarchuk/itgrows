@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
+import { withSustainCors, sustainPreflight } from "@/lib/cors-sustain"
 
 // Google's own measurement of a site on a phone, for the "Heute" panel on /sustain/de. Without a key the
 // PageSpeed API shares one daily quota with everyone and is usually used up, so the key (PAGESPEED_API_KEY,
@@ -27,7 +28,7 @@ interface Lighthouse {
   audits?: Record<string, { displayValue?: string; numericValue?: number; details?: { data?: string } }>
 }
 
-export async function GET(req: NextRequest) {
+async function handleGET(req: NextRequest) {
   const target = normalise(req.nextUrl.searchParams.get("url") ?? "")
   if (!target) return NextResponse.json({ error: "invalid_url" }, { status: 400 })
 
@@ -68,3 +69,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "timeout" }, { status: 504 })
   }
 }
+
+// Also callable from the Sustain Impact site (lib/cors-sustain.ts).
+export const GET = withSustainCors(handleGET)
+export const OPTIONS = sustainPreflight
