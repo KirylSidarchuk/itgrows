@@ -196,9 +196,10 @@
     .chart.on .grow { transform: scaleY(1); }
     .pulse { transform-box: fill-box; transform-origin: center; animation: pulse 1.8s ease-out infinite; }
     @keyframes pulse { from { transform: scale(1); opacity: 0.6; } to { transform: scale(3.2); opacity: 0; } }
-    .facts { display: grid; grid-template-columns: repeat(6, 1fr); gap: 16px; margin-top: 20px; }
+    .facts__h { font-size: 13px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--grey); margin: 40px 0 0; }
+    .facts { display: grid; grid-template-columns: repeat(12, 1fr); gap: 16px; margin-top: 16px; }
     .fact { grid-column: span 3; }
-    .fact--ours { grid-column: span 2; }
+    .fact--ours { grid-column: span 4; }
     .fact__k { font-size: 11.5px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: #ff8a8e; margin-bottom: 10px; }
     .fact { border-radius: 18px; padding: 22px 22px 20px; background: var(--soft); display: flex; flex-direction: column; }
     .fact b { font-size: 34px; line-height: 1.05; font-weight: 800; letter-spacing: -0.04em; color: var(--red); }
@@ -234,9 +235,32 @@
     .faq details[open] summary::after { content: "–"; }
     .faq p { margin: 12px 0 0; color: var(--grey); }
 
-    .final { text-align: center; padding: 100px 0 110px; }
-    .final h2.h { margin-left: auto; margin-right: auto; }
-    .final .lead { margin: 0 auto 30px; }
+    .final { padding: 100px 0 110px; background: var(--soft); }
+    .final__grid { display: grid; grid-template-columns: 1fr 0.95fr; gap: 56px; align-items: start; }
+    .final .lead { margin: 0 0 24px; }
+    .final__checks { margin-bottom: 0; }
+    .hero__cta { display: flex; gap: 12px; flex-wrap: wrap; margin: 0 0 30px; }
+    .aimock { background: #fff; border-radius: 22px; box-shadow: 0 30px 70px rgba(0,0,0,0.1), 0 0 0 1px var(--line); overflow: hidden; position: relative; }
+    .aimock__top { display: flex; align-items: center; gap: 10px; padding: 14px 18px; border-bottom: 1px solid var(--line); font-size: 13px; font-weight: 700; }
+    .aimock__dots { display: flex; gap: 6px; }
+    .aimock__dots i { width: 10px; height: 10px; border-radius: 50%; background: #e2e2e5; }
+    .aimock__dots i:first-child { background: var(--red); }
+    .aimock__eng { margin-left: auto; font-size: 12px; font-weight: 800; color: #fff; background: var(--ink); border-radius: 999px; padding: 4px 10px; transition: opacity 0.3s; }
+    .aimock__q { margin: 22px 22px 0 auto; max-width: 82%; background: var(--ink); color: #fff; border-radius: 18px 18px 4px 18px; padding: 14px 16px; font-size: 15.5px; font-weight: 600; min-height: 52px; width: fit-content; margin-left: auto; margin-right: 22px; }
+    .aimock__caret { display: inline-block; width: 2px; height: 1em; background: #ff8a8e; margin-left: 2px; vertical-align: -2px; animation: blink 1s step-end infinite; }
+    @keyframes blink { 50% { opacity: 0; } }
+    .aimock__a { padding: 18px 22px 8px; min-height: 290px; }
+    .aimock__lead { font-size: 14.5px; color: #3d3d42; margin: 0 0 12px; }
+    .airow { display: flex; gap: 12px; align-items: flex-start; border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; margin-bottom: 10px; opacity: 0; transform: translateY(10px); transition: opacity 0.45s, transform 0.45s; }
+    .airow.in { opacity: 1; transform: none; }
+    .airow b { flex: 0 0 26px; height: 26px; border-radius: 50%; background: var(--soft); display: grid; place-items: center; font-size: 13px; }
+    .airow div { font-size: 14px; line-height: 1.45; color: #3d3d42; }
+    .airow strong { display: block; color: var(--ink); font-size: 15px; }
+    .airow--you { border: 2px solid var(--red); background: var(--red-soft); position: relative; }
+    .airow--you b { background: var(--red); color: #fff; }
+    .airow--you em { position: absolute; top: -10px; right: 12px; background: var(--red); color: #fff; font-style: normal; font-size: 10.5px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; border-radius: 999px; padding: 3px 9px; }
+    .airow--dim strong { filter: blur(3.5px); }
+    .aimock__foot { border-top: 1px solid var(--line); padding: 12px 22px; font-size: 12.5px; color: var(--grey); }
     footer { border-top: 1px solid var(--line); padding: 34px 0 54px; font-size: 14px; color: var(--grey); }
     footer .wrap { display: flex; gap: 24px; align-items: center; }
     footer .brand { color: var(--ink); margin-right: auto; }
@@ -362,7 +386,7 @@
     @media (max-width: 1100px) {
       .nav { display: none; }
       .langs { margin-left: auto; }
-      .hero .wrap, .explain, .analysis, .about { grid-template-columns: 1fr; }
+      .hero .wrap, .explain, .analysis, .about, .final__grid { grid-template-columns: 1fr; }
       .disc, .works { grid-template-columns: repeat(2, 1fr); }
       .reasons { grid-template-columns: repeat(2, 1fr); }
       .reason:nth-child(3) { padding-left: 0; border-left: 0; }
@@ -455,7 +479,7 @@
     </nav>
   </header>
 
-  <section class="hero" id="anfrage">
+  <section class="hero">
     <div class="wrap">
       <div>
         <h1><span class="de"><span class="r">Werden Sie die Antwort der KI.</span> <span class="g">Ihre Online-Präsenz für die KI-Ära.</span></span><span class="en"><span class="r">Become AI’s answer.</span> <span class="g">Your online presence for the AI era.</span></span></h1>
@@ -465,23 +489,14 @@
           <li><span class="de"><b>Genannt von ChatGPT, Gemini & Co.</b> – mit monatlicher Prüfung</span><span class="en"><b>Named by ChatGPT, Gemini & co.</b> – checked every month</span></li>
           <li><span class="de"><b>Eine Investition, die wächst</b> – jede Woche neue Inhalte, jeden Monat mehr Anfragen</span><span class="en"><b>An investment that grows</b> – new content every week, more enquiries every month</span></li>
         </ul>
+        <div class="hero__cta"><a class="btn btn--red" href="#anfrage"><span class="de">Kostenlos anfragen</span><span class="en">Ask for free</span> →</a><a class="btn btn--line" href="#analyse"><span class="de">Kostenlose Analyse</span><span class="en">Free analysis</span></a></div>
         <div class="trust" id="trust"></div>
       </div>
-      <div class="formcard">
-        <div class="stamp"><span><span class="de">Erstgespräch</span><span class="en">First call</span><b><span class="de">gratis</span><span class="en">free</span></b></span></div>
-        <h2><span class="de">Jetzt kostenlos & <span class="r">unverbindlich</span> anfragen.</span><span class="en">Ask now, free & <span class="r">without obligation</span>.</span></h2>
-        <form id="contact" novalidate>
-          <label><span class="de">Leistung</span><span class="en">Service</span><select name="topic" id="topic"></select></label>
-          <div class="row2">
-            <label><span class="de">Name*</span><span class="en">Name*</span><input name="name" required autocomplete="name"></label>
-            <label><span class="de">E-Mail*</span><span class="en">Email*</span><input name="email" type="email" required autocomplete="email"></label>
-          </div>
-          <label><span class="de">Website</span><span class="en">Website</span><input name="site" autocomplete="url" id="site-in"></label>
-          <label><span class="de">Ihre Nachricht</span><span class="en">Your message</span><textarea name="message" id="msg-in"></textarea></label>
-          <button class="btn btn--red" type="submit"><span class="de">Anfrage vorbereiten</span><span class="en">Prepare enquiry</span> →</button>
-          <p id="c-status" role="status"></p>
-        </form>
-        <small><span class="de">Antwort innerhalb eines Werktages.</span><span class="en">Reply within one working day.</span></small>
+      <div class="aimock" id="aimock" aria-label="Beispiel einer KI-Antwort">
+        <div class="aimock__top"><span class="aimock__dots"><i></i><i></i><i></i></span><span><span class="de">KI-Assistent</span><span class="en">AI assistant</span></span><span class="aimock__eng" id="ai-eng">ChatGPT</span></div>
+        <div class="aimock__q"><span id="ai-q"></span><b class="aimock__caret"></b></div>
+        <div class="aimock__a" id="ai-a"></div>
+        <div class="aimock__foot"><span class="de">So sieht es aus, wenn Ihre Kunden fragen.</span><span class="en">This is what it looks like when your customers ask.</span></div>
       </div>
     </div>
   </section>
@@ -507,6 +522,7 @@
           <div class="legend"><span><i></i><span class="de">Besucher aus Google und KI</span><span class="en">Visitors from Google and AI</span></span><span><i class="bar"></i><span class="de">Nennungen in ChatGPT, Claude, Perplexity, Gemini</span><span class="en">Mentions in ChatGPT, Claude, Perplexity, Gemini</span></span></div>
         </figure>
       </div>
+      <p class="facts__h"><span class="de">Das zeigen Studien aus Deutschland – und unsere Kunden</span><span class="en">What studies in Germany show – and our clients</span></p>
       <div class="facts" id="facts"></div>
       <p class="shift__note"><span class="de">Die Grafiken sind schematisch und zeigen den typischen Verlauf. Wie schnell es geht, hängt von Branche und Ausgangslage ab.</span><span class="en">The charts are schematic and show the typical course. How fast it goes depends on the industry and the starting point.</span></p>
     </div>
@@ -576,7 +592,7 @@
     </div>
   </section>
 
-  <section class="s" style="padding-top:0">
+  <section class="s" id="analyse" style="padding-top:0">
     <div class="wrap">
       <div class="analysis">
         <div>
@@ -615,11 +631,34 @@
     </div>
   </section>
 
-  <section class="final">
-    <div class="wrap">
-      <h2 class="h"><span class="de">Investieren Sie in eine Präsenz, <span class="r">die die KI empfiehlt.</span></span><span class="en">Invest in a presence <span class="r">that AI recommends.</span></span></h2>
-      <p class="lead"><span class="de">Ein Gespräch, ein fester Preis, ein fester Termin. Danach arbeitet Ihre Online-Präsenz jeden Tag für Sie.</span><span class="en">One call, one fixed price, one fixed date. After that your online presence works for you every day.</span></p>
-      <a class="btn btn--ink" href="#anfrage"><span class="de">Jetzt anfragen</span><span class="en">Ask now</span> <i>→</i></a>
+  <section class="final" id="anfrage">
+    <div class="wrap final__grid">
+      <div>
+        <p class="kick"><span class="de">Anfrage</span><span class="en">Enquiry</span></p>
+        <h2 class="h"><span class="de">Investieren Sie in eine Präsenz, <span class="r">die die KI empfiehlt.</span></span><span class="en">Invest in a presence <span class="r">that AI recommends.</span></span></h2>
+        <p class="lead"><span class="de">Ein Gespräch, ein fester Preis, ein fester Termin. Danach arbeitet Ihre Online-Präsenz jeden Tag für Sie.</span><span class="en">One call, one fixed price, one fixed date. After that your online presence works for you every day.</span></p>
+        <ul class="checks final__checks">
+          <li><span class="de"><b>Kostenloses Erstgespräch</b> – 30 Minuten zu Zielen und Kunden</span><span class="en"><b>Free first call</b> – 30 minutes on goals and customers</span></li>
+          <li><span class="de"><b>Entwurf vor dem Start</b> – Sie sehen Ihre neue Präsenz, bevor die Arbeit beginnt</span><span class="en"><b>Draft before we start</b> – you see your new presence before work begins</span></li>
+          <li><span class="de"><b>Antwort innerhalb eines Werktages</b></span><span class="en"><b>Reply within one working day</b></span></li>
+        </ul>
+      </div>
+      <div class="formcard">
+        <div class="stamp"><span><span class="de">Erstgespräch</span><span class="en">First call</span><b><span class="de">gratis</span><span class="en">free</span></b></span></div>
+        <h2><span class="de">Jetzt kostenlos & <span class="r">unverbindlich</span> anfragen.</span><span class="en">Ask now, free & <span class="r">without obligation</span>.</span></h2>
+        <form id="contact" novalidate>
+          <label><span class="de">Leistung</span><span class="en">Service</span><select name="topic" id="topic"></select></label>
+          <div class="row2">
+            <label><span class="de">Name*</span><span class="en">Name*</span><input name="name" required autocomplete="name"></label>
+            <label><span class="de">E-Mail*</span><span class="en">Email*</span><input name="email" type="email" required autocomplete="email"></label>
+          </div>
+          <label><span class="de">Website</span><span class="en">Website</span><input name="site" autocomplete="url" id="site-in"></label>
+          <label><span class="de">Ihre Nachricht</span><span class="en">Your message</span><textarea name="message" id="msg-in"></textarea></label>
+          <button class="btn btn--red" type="submit"><span class="de">Anfrage vorbereiten</span><span class="en">Prepare enquiry</span> →</button>
+          <p id="c-status" role="status"></p>
+        </form>
+        <small><span class="de">Antwort innerhalb eines Werktages.</span><span class="en">Reply within one working day.</span></small>
+      </div>
     </div>
   </section>
 
@@ -703,10 +742,12 @@
       en: { name: "Everything together: growth on subscription", promise: "Your website grows every week, stays technically fit and runs on fast hosting. All in one contract, with one contact person.", result: "Best combined with the new online presence and conversion optimisation.",
         items: ["03 · One new article every week", "04 · Technical updates and monitoring", "05 · Managed hosting", "Monthly check of your visibility in AI", "One contract, one invoice, one contact"], save: "with yearly upfront payment" }
     };
-    // Two market numbers come from published studies; the three short cases (no names) come from our measurements and logs.
+    // Four German sources on the problem (checked 12.11.2026); the three short cases (no names) come from our measurements and logs.
     const FACTS = [
-      { de: ["−34,5 %", "weniger Klicks auf das erste Google-Ergebnis, wenn oben eine KI-Übersicht steht."], en: ["−34.5%", "fewer clicks on the top Google result when an AI Overview appears above it."], src: ["Ahrefs, 2025", "https://ahrefs.com/blog/ai-overviews-reduce-clicks/"] },
-      { de: ["8 % statt 15 %", "der Suchen enden mit einem Klick auf eine Website, wenn Google eine KI-Zusammenfassung zeigt."], en: ["8% vs 15%", "of searches end with a click on a website when Google shows an AI summary."], src: ["Pew Research Center, 2025", "https://www.pewresearch.org/short-reads/2025/07/22/google-users-are-less-likely-to-click-on-links-when-an-ai-summary-appears-in-the-results/"] },
+      { de: ["27 % → 11 %", "Klickrate auf das erste Google-Ergebnis, sobald eine KI-Übersicht erscheint. In Deutschland gehen so über 250 Mio. Klicks pro Monat verloren."], en: ["27% → 11%", "click rate on the top Google result once an AI Overview appears. In Germany that costs over 250 million clicks a month."], src: ["Sistrix via OMR, März 2026", "https://omr.com/de/daily/ai-overview-traffic-einbruch-liste"] },
+      { de: ["93 %", "der KI-Anfragen nennen die geprüften Mittelständler nicht. 10 von 24 tauchen in keiner KI auf, trotz guter Google-Rankings."], en: ["93%", "of AI queries do not name the mid-sized companies tested. 10 of 24 appear in no AI at all, despite good Google rankings."], src: ["GEO-Studie DACH-Mittelstand, marconomy, Mai 2026", "https://www.marconomy.de/unsichtbar-fuer-ki-unsichtbar-im-b2b-einkauf-a-4bff0814c9e1969de98df343d96d780c/"] },
+      { de: ["58 %", "der KI-Nutzer in Deutschland sagen: Lange Internetrecherche brauche ich nicht mehr. 67 % nutzen generative KI."], en: ["58%", "of AI users in Germany say they no longer need lengthy web research. 67% use generative AI."], src: ["Bitkom, Mai 2025", "https://www.bitkom.org/Presse/Presseinformation/KI-Nutzung-boomt-Angst-vor-Abhaengigkeit-Ausland-gross"] },
+      { de: ["−43 %", "Such-Traffic erwarten Medienhäuser in den nächsten drei Jahren. Befragt wurden 280 Medienmanager aus 51 Ländern."], en: ["−43%", "search traffic is what media companies expect over the next three years. 280 media leaders from 51 countries were surveyed."], src: ["Reuters Institute, Januar 2026", "https://reutersinstitute.politics.ox.ac.uk/journalism-media-and-technology-trends-and-predictions-2026"] },
       { ours: true, k: { de: "Fallstudie · B2B-Logistik", en: "Case study · B2B logistics" }, de: ["2 neue B2B-Kunden", "in einem Monat für ein Logistik-Startup aus den USA. Beide kamen über ChatGPT."], en: ["2 new B2B clients", "in one month for a US logistics start-up. Both came via ChatGPT."], src: { de: "Angabe des Kunden", en: "As reported by the client" } },
       { ours: true, k: { de: "Fallstudie · SaaS", en: "Case study · SaaS" }, de: ["0 → 356 Zitate", "in Microsoft Copilot in drei Wochen für eine neue Website. Dazu 0 → 5 Nennungen in ChatGPT, Claude, Perplexity und Gemini."], en: ["0 → 356 citations", "in Microsoft Copilot in three weeks for a new website. Plus 0 → 5 mentions in ChatGPT, Claude, Perplexity and Gemini."], src: { de: "Bing Webmaster Tools und eigene Messung, Okt.–Nov. 2026", en: "Bing Webmaster Tools and own measurement, Oct–Nov 2026" } },
       { ours: true, k: { de: "Fallstudie · Marktplatz", en: "Case study · Marketplace" }, de: ["1.918 Abrufe", "in zwei Wochen: So oft holten sich ChatGPT, Perplexity & Co. ihre Antwort bei einem Kursmarktplatz."], en: ["1,918 fetches", "in two weeks: that’s how often ChatGPT, Perplexity & co. took their answer from a course marketplace."], src: { de: "Server-Logs, 2026", en: "Server logs, 2026" } }
@@ -1044,8 +1085,35 @@ const BRAND = {"googletagmanager":{"c":"#246FDB","d":"M12.003 0a3 3 0 0 0-2.121 
       }), { threshold: 0.4 }).observe($("gal"));
     } else galAuto = false;
 
+    // Hero mock: a customer asks an assistant, the answer names "you" first. Rotates through three industries.
+    const AIQ = [
+      { eng: "ChatGPT", de: ["Welche Orthopädie-Praxis in Köln ist gut bei Sportverletzungen?", "Spezialisiert auf Sportorthopädie, sehr gute Bewertungen, Termine innerhalb einer Woche."], en: ["Which orthopaedic practice in Cologne is good for sports injuries?", "Specialised in sports orthopaedics, excellent reviews, appointments within a week."] },
+      { eng: "Gemini", de: ["Welcher Steuerberater in München kennt sich mit Start-ups aus?", "Fokus auf Gründer, feste Pakete, Antwort am selben Tag."], en: ["Which tax adviser in Munich knows start-ups well?", "Focused on founders, fixed packages, same-day replies."] },
+      { eng: "Perplexity", de: ["Welche Software misst Fracht per Foto?", "Misst Paletten per Kamera auf den Zentimeter, im Einsatz bei Hunderten Firmen."], en: ["Which software measures freight from a photo?", "Measures pallets by camera to the centimetre, used by hundreds of companies."] }
+    ];
+    let aiI = 0, aiTimer = null;
+    function aiPlay() {
+      clearTimeout(aiTimer);
+      const it = AIQ[aiI % AIQ.length], d = it[lang], qEl = $("ai-q"), aEl = $("ai-a");
+      $("ai-eng").textContent = it.eng;
+      aEl.innerHTML = "";
+      const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+      let k = still ? d[0].length : 0;
+      const you = lang === "de" ? "Ihr Unternehmen" : "Your business", tag = lang === "de" ? "Das sind Sie" : "That’s you";
+      const answer = () => {
+        aEl.innerHTML = `<p class="aimock__lead">${lang === "de" ? "Diese drei kann ich empfehlen:" : "I can recommend these three:"}</p>
+          <div class="airow airow--you"><em>${tag}</em><b>1</b><div><strong>${you}</strong>${esc(d[1])}</div></div>
+          <div class="airow airow--dim"><b>2</b><div><strong>Mitbewerber Nord</strong>${lang === "de" ? "Gute Bewertungen, längere Wartezeiten." : "Good reviews, longer waiting times."}</div></div>
+          <div class="airow airow--dim"><b>3</b><div><strong>Mitbewerber Süd</strong>${lang === "de" ? "Breites Angebot, wenig Spezialisierung." : "Broad offer, little specialisation."}</div></div>`;
+        [...aEl.querySelectorAll(".airow")].forEach((r, i) => setTimeout(() => r.classList.add("in"), still ? 0 : 250 + i * 350));
+        aiTimer = setTimeout(() => { aiI++; aiPlay(); }, 6500);
+      };
+      const type = () => { qEl.textContent = d[0].slice(0, k); if (k < d[0].length) { k += 2; aiTimer = setTimeout(type, 28); } else aiTimer = setTimeout(answer, 350); };
+      type();
+    }
+
     const render0 = render;
-    render = function () { render0(); armReveal(); };
+    render = function () { render0(); armReveal(); aiPlay(); };
 
     render();
 
