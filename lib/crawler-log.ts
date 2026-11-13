@@ -50,12 +50,26 @@ function identify(ua: string): string | null {
   return null
 }
 
-export async function noteCrawler(path: string): Promise<void> {
+// Our own visits (props.self): the VM that runs our checks, and our checker's agent string.
+const SELF_IP = "136.114.136.34"
+const SELF_UA = /ItGrowsCheck/i
+
+// A crawler_hit that counts as an assistant's visit, for every count of them (app/api/admin/*): not a
+// developer's coding agent (Claude Code says "claude-code" in its Claude-User agent string; it made 47
+// of the 92 Claude-User visits from 27 Oct to 13 Nov 2026) and not our own checks (props.self, recorded
+// since 13 Nov 2026).
+export const COUNTED_VISIT = sql`coalesce(props->>'ua', '') NOT ILIKE '%claude-code%' AND coalesce(props->>'self', '') <> 'true'`
+
+export async function noteCrawler(path: string, extra?: Record<string, string | boolean>): Promise<void> {
   try {
     const h = await headers()
     const ua = h.get("user-agent") ?? ""
     const bot = identify(ua)
     if (!bot) return
+    // What it asked for (an agent that wants markdown says so in Accept) and whether it was us.
+    const accept = (h.get("accept") ?? "").slice(0, 200)
+    const ip = h.get("x-real-ip") ?? h.get("x-forwarded-for")?.split(",")[0]?.trim() ?? ""
+    const self = ip === SELF_IP || SELF_UA.test(ua)
 
     // after() is the documented way to do post-response work. A bare fire-and-forget promise is
     // killed the moment the serverless function returns its response, which is why the first
@@ -67,6 +81,9 @@ export async function noteCrawler(path: string): Promise<void> {
           VALUES ('crawler_hit', ${path.slice(0, 300)}, ${JSON.stringify({
             bot,
             ua: ua.slice(0, 200),
+            accept,
+            ...(self ? { self: true } : {}),
+            ...extra,
           })}::jsonb)`)
       } catch {}
     })

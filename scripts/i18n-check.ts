@@ -422,6 +422,55 @@ async function main() {
     assert.equal(r.location, "/business/blog/geo-agentur-auswaehlen")
   })
 
+  console.log("middleware: markdown for the agents that ask for it (lib/md-negotiation.ts)")
+  const { wantsMarkdown, MD_NEGOTIATED_HEADER } = await import("../lib/md-negotiation")
+  const BROWSER_ACCEPT = "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8"
+  const raw = async (p: string, accept: string) => {
+    const req = new NextRequest(`${SITE}${p}`, { headers: { "user-agent": BROWSER, "accept-language": "en-US,en;q=0.9", accept } })
+    return (await mw.default(req, { waitUntil() {} } as never)) as Response
+  }
+  await check("wantsMarkdown: named and not outranked by text/html; browsers and wildcards get the page", () => {
+    for (const a of ["text/markdown", "text/markdown, text/html, */*", "text/html;q=0.9, text/markdown", "text/markdown;q=0.5, text/plain"]) {
+      assert.equal(wantsMarkdown(a), true, a)
+    }
+    for (const a of [null, "", "*/*", BROWSER_ACCEPT, "text/markdown;q=0.5, text/html", "text/markdown;q=0.5, */*", "text/markdown;q=0", "text/x-markdown"]) {
+      assert.equal(wantsMarkdown(a), false, String(a))
+    }
+  })
+  await check("an article asked for as markdown -> its markdown copy at the same address, marked, Vary: Accept, no cookie", async () => {
+    for (const [p, to] of [["/blog/some-post", "/blog-md/some-post"], ["/business/blog/geo-agentur-auswaehlen", "/business-blog-md/geo-agentur-auswaehlen"]]) {
+      const res = await raw(p, "text/markdown, text/html, */*")
+      assert.equal(new URL(res.headers.get("x-middleware-rewrite") ?? "/none", SITE).pathname, to, p)
+      assert.equal(res.headers.get(`x-middleware-request-${MD_NEGOTIATED_HEADER}`), "1", p)
+      assert.match(res.headers.get("vary") ?? "", /Accept/, p)
+      assert.equal(res.headers.get("set-cookie"), null, p)
+    }
+  })
+  await check("an article for a browser -> the page as before, plus Vary: Accept and a Link to its markdown copy and the sitemap", async () => {
+    for (const [p, md] of [["/blog/some-post", "/blog/some-post.md"], ["/business/blog/geo-vs-seo", "/business/blog/geo-vs-seo.md"]]) {
+      const res = await raw(p, BROWSER_ACCEPT)
+      assert.equal(res.headers.get("x-middleware-rewrite"), null, p)
+      assert.equal(res.headers.get("x-middleware-next"), "1", p)
+      assert.equal(res.headers.get(`x-middleware-request-${MD_NEGOTIATED_HEADER}`), null, p)
+      assert.match(res.headers.get("vary") ?? "", /Accept/, p)
+      assert.equal(res.headers.get("link"), `<${SITE}${md}>; rel="alternate"; type="text/markdown", <${SITE}/sitemap.xml>; rel="sitemap"`, p)
+    }
+  })
+  await check("the markdown copies (.md) are left alone, markdown asked for or not", async () => {
+    for (const p of ["/blog/some-post.md", "/business/blog/geo-vs-seo.md"]) {
+      const res = await raw(p, "text/markdown")
+      assert.equal(res.headers.get(`x-middleware-request-${MD_NEGOTIATED_HEADER}`), null, p)
+      assert.equal(res.headers.get("link"), null, p)
+    }
+  })
+  await check("home page: a Link to the sitemap and llms.txt; asked for as markdown it is still the page", async () => {
+    for (const accept of [BROWSER_ACCEPT, "text/markdown"]) {
+      const res = await raw("/", accept)
+      assert.equal(res.headers.get("x-middleware-request-" + MD_NEGOTIATED_HEADER), null)
+      assert.equal(res.headers.get("link"), `<${SITE}/sitemap.xml>; rel="sitemap", <${SITE}/llms.txt>; rel="describedby"; type="text/markdown"`)
+    }
+  })
+
   console.log("matcher")
   const requireFromRoot = createRequire(path.join(ROOT, "package.json"))
   const { getMiddlewareMatchers } = requireFromRoot("next/dist/build/analysis/get-page-static-info.js") as {
@@ -861,7 +910,7 @@ async function main() {
     assert.equal(localizedMetadata("en", "/", { title: "T", description: "D" }).alternates?.canonical, `${SITE}/`)
   })
   await check("robots.txt keeps the sign-in pages closed in every language", async () => {
-    const robots = (await import("../app/robots")).default()
+    const robots = (await import("../lib/site-robots")).robotsRules()
     const rules = Array.isArray(robots.rules) ? robots.rules : [robots.rules]
     const disallow = ([] as string[]).concat(rules[0].disallow ?? [])
     for (const l of cfg.LOCALES) {
@@ -873,6 +922,17 @@ async function main() {
       const blocked = disallow.filter((d) => (d.endsWith("$") ? p === d.slice(0, -1) : p.startsWith(d)))
       assert.deepEqual(blocked, [], `${p} blocked by ${blocked.join(", ")}`)
     }
+  })
+  await check("robots.txt: Next's text for the same rules, plus one Content-Signal line in the * group", async () => {
+    const { robotsRules, robotsTxt } = await import("../lib/site-robots")
+    const { resolveRobots } = createRequire(path.join(ROOT, "package.json"))(
+      "next/dist/build/webpack/loaders/metadata/resolve-route-data.js",
+    ) as { resolveRobots: (r: unknown) => string }
+    const signal = "Content-Signal: search=yes, ai-input=yes, ai-train=yes\n"
+    const txt = robotsTxt()
+    assert.ok(txt.startsWith(`User-Agent: *\n${signal}Allow: /\n`), txt.slice(0, 120))
+    assert.equal(txt.split("Content-Signal:").length, 2)
+    assert.equal(txt.replace(signal, ""), resolveRobots(robotsRules()))
   })
   await check("localizedSitemapEntries: 5 urls, each with all alternates", () => {
     const e = localizedSitemapEntries("/", { priority: 1 })

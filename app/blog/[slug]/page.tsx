@@ -74,6 +74,9 @@ export async function generateMetadata({
     keywords: Array.isArray(post.keywords) ? (post.keywords as string[]).join(", ") : undefined,
     alternates: {
       canonical: `https://www.itgrows.ai/blog/${slug}`,
+      // The markdown copy as <link rel="alternate" type="text/markdown">, as the guides have. app/blog-md
+      // serves the itgrows blog's posts, which are all the posts of /blog today.
+      ...(post.siteSlug === "itgrows" ? { types: { "text/markdown": `https://www.itgrows.ai/blog/${slug}.md` } } : {}),
     },
     openGraph: {
       title: post.title,

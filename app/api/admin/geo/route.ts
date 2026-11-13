@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server"
 import { db } from "@/lib/db"
 import { sql } from "drizzle-orm"
+import { COUNTED_VISIT } from "@/lib/crawler-log"
 
 // One page that answers "how are the two sites doing" without opening a database client.
 // Written to be read by someone who did not build it: every block says what question it answers,
@@ -75,7 +76,7 @@ export async function GET(req: NextRequest) {
            count(*) FILTER (WHERE props->>'live'='true')::int AS live,
            CASE WHEN props->>'source'='nginx' THEN 'client blog' ELSE 'our pages' END AS where_,
            to_char(max(created_at),'MM-DD HH24:MI') AS last
-    FROM analytics_events WHERE event='crawler_hit' AND created_at > ${since}
+    FROM analytics_events WHERE event='crawler_hit' AND ${COUNTED_VISIT} AND created_at > ${since}
     GROUP BY 1,4 ORDER BY 2 DESC LIMIT 25`))
 
   const hosts = rows(await db.execute(sql`
@@ -83,7 +84,7 @@ export async function GET(req: NextRequest) {
            count(*)::int AS hits,
            count(*) FILTER (WHERE props->>'live'='true')::int AS live
     FROM analytics_events
-    WHERE event='crawler_hit' AND props->>'host' IS NOT NULL AND created_at > ${since}
+    WHERE event='crawler_hit' AND ${COUNTED_VISIT} AND props->>'host' IS NOT NULL AND created_at > ${since}
     GROUP BY 1,2 ORDER BY 3 DESC LIMIT 15`))
 
   const blogs = rows(await db.execute(sql`

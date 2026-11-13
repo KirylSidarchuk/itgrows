@@ -1,6 +1,10 @@
 import type { MetadataRoute } from "next"
 import { PREFIXED } from "@/lib/i18n/config"
 
+// robots.txt of www.itgrows.ai, served by app/robots.txt/route.ts. Until 13 Nov 2026 this was
+// app/robots.ts, whose text Next writes itself and cannot give a Content-Signal line; the rules
+// moved here unchanged, and robotsTxt() below writes them as Next did, plus that one line.
+
 // Private areas — kept in one place so every crawler rule below stays in step.
 const PRIVATE = [
   "/api/",
@@ -59,7 +63,7 @@ const AI_CRAWLERS = [
 // in every group, so crawlers may fetch the images and nothing else under /api/.
 const ALLOW = ["/", "/blog/", "/blog/*", "/api/blog/image/"]
 
-export default function robots(): MetadataRoute.Robots {
+export function robotsRules(): MetadataRoute.Robots {
   return {
     rules: [
       { userAgent: "*", allow: ALLOW, disallow: PRIVATE },
@@ -72,4 +76,31 @@ export default function robots(): MetadataRoute.Robots {
     sitemap: "https://www.itgrows.ai/sitemap.xml",
     // No "host": it is a Yandex directive that Bing's robots.txt tester reports as an error.
   }
+}
+
+// Content Signals (contentsignals.org): what the site's content may be used for. Yes to search
+// results, to answers built from a page (ai-input) and to training (ai-train). Kiryl, 13 Nov 2026.
+export const CONTENT_SIGNAL = "search=yes, ai-input=yes, ai-train=yes"
+
+const list = <T>(v: T | T[] | undefined): T[] => (v === undefined ? [] : Array.isArray(v) ? v : [v])
+
+// The text Next writes for robotsRules() (resolveRobots in next/dist/build/webpack/loaders/metadata/
+// resolve-route-data.js; scripts/i18n-check.ts compares the two), with Content-Signal right after
+// "User-Agent: *". A crawler reads only the group that names it, so the line speaks to the crawlers
+// not named in a group of their own.
+export function robotsTxt(): string {
+  const data = robotsRules()
+  let out = ""
+  for (const rule of list(data.rules)) {
+    const agents = list(rule.userAgent || "*")
+    for (const agent of agents) out += `User-Agent: ${agent}\n`
+    if (agents.includes("*")) out += `Content-Signal: ${CONTENT_SIGNAL}\n`
+    if (rule.allow) for (const item of list(rule.allow)) out += `Allow: ${item}\n`
+    if (rule.disallow) for (const item of list(rule.disallow)) out += `Disallow: ${item}\n`
+    if (rule.crawlDelay) out += `Crawl-delay: ${rule.crawlDelay}\n`
+    out += "\n"
+  }
+  if (data.host) out += `Host: ${data.host}\n`
+  if (data.sitemap) for (const item of list(data.sitemap)) out += `Sitemap: ${item}\n`
+  return out
 }

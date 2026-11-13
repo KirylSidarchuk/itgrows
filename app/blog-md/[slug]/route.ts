@@ -2,6 +2,7 @@ import { db } from "@/lib/db"
 import { blogPosts } from "@/lib/db/schema"
 import { and, eq } from "drizzle-orm"
 import { noteCrawler } from "@/lib/crawler-log"
+import { MD_NEGOTIATED_HEADER } from "@/lib/md-negotiation"
 
 // Clean markdown alternates for every article, at /blog/{slug}.md
 // An assistant fetching the HTML page has to carry a navigation bar, a cookie banner and a
@@ -14,11 +15,13 @@ import { noteCrawler } from "@/lib/crawler-log"
 export const dynamic = "force-dynamic"
 
 export async function GET(
-  _req: Request,
+  req: Request,
   { params }: { params: Promise<{ slug: string }> }
 ) {
   const { slug } = await params
-  void noteCrawler(`/blog/${slug}.md`)
+  // Asked for at the article's own address with "Accept: text/markdown" (middleware.ts), not at .md.
+  const negotiated = req.headers.get(MD_NEGOTIATED_HEADER) === "1"
+  void noteCrawler(`/blog/${slug}.md`, negotiated ? { via: "accept" } : undefined)
 
   const [post] = await db
     .select({
@@ -26,6 +29,7 @@ export async function GET(
       content: blogPosts.content,
       metaDescription: blogPosts.metaDescription,
       publishedAt: blogPosts.publishedAt,
+      redirectTo: blogPosts.redirectTo,
     })
     .from(blogPosts)
     .where(and(eq(blogPosts.slug, slug), eq(blogPosts.siteSlug, "itgrows")))
@@ -35,6 +39,14 @@ export async function GET(
     return new Response("Not found\n", {
       status: 404,
       headers: { "Content-Type": "text/plain; charset=utf-8" },
+    })
+  }
+
+  // A merged post at the article's address: on to the post it was merged into, as the page does.
+  if (negotiated && post.redirectTo) {
+    return new Response(null, {
+      status: 308,
+      headers: { Location: `https://www.itgrows.ai${post.redirectTo}`, Vary: "Accept", "Cache-Control": "private, no-store" },
     })
   }
 
@@ -56,9 +68,11 @@ export async function GET(
   return new Response(body, {
     headers: {
       "Content-Type": "text/markdown; charset=utf-8",
-      "Cache-Control": "public, max-age=3600, s-maxage=3600",
+      // At the article's address the answer depends on Accept: no shared cache may keep it.
+      "Cache-Control": negotiated ? "private, no-store" : "public, max-age=3600, s-maxage=3600",
       // The HTML article is the page to index; this is its plain-text copy.
       Link: `<https://www.itgrows.ai/blog/${slug}>; rel="canonical"`,
+      ...(negotiated ? { Vary: "Accept" } : {}),
     },
   })
 }

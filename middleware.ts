@@ -4,6 +4,7 @@ import { localeMiddleware } from "@/lib/i18n/middleware"
 import { LOCALE_HEADER } from "@/lib/i18n/config"
 import { GERMAN_GUIDE_SLUGS } from "@/lib/geo-guides"
 import { decidePrice, isPricedPath, priceCookieOptions, priceRequestHeaders } from "@/lib/geo-price-visitor"
+import { MD_NEGOTIATED_HEADER, wantsMarkdown } from "@/lib/md-negotiation"
 
 // Two jobs, kept apart so the public pages never wait on a session lookup:
 // 1. The cabinets (/dashboard, /business/dashboard, /cabinet) require a login, exactly as before.
@@ -14,6 +15,9 @@ import { decidePrice, isPricedPath, priceCookieOptions, priceRequestHeaders } fr
 // 4. The plan's price test: the price a public GEO page shows is decided here, before it renders, and
 //    reaches it in request headers (lib/geo-price-visitor.ts). The cabinets and the LinkedIn/X product
 //    are not part of it.
+// 5. The articles (/blog/<slug>, /business/blog/<slug>) answer "Accept: text/markdown" with their
+//    markdown copy (lib/md-negotiation.ts), and the articles and the home page name their machine-readable
+//    versions in a Link header: the markdown copy, the sitemap, llms.txt (13 Nov 2026).
 
 const CABINETS = ["/dashboard", "/business/dashboard", "/cabinet"]
 
@@ -74,6 +78,33 @@ function respond(req: NextRequest, forwarded: Headers): NextResponse {
   return localeMiddleware(req, forwarded)
 }
 
+const BASE = "https://www.itgrows.ai"
+
+// An article at its own address. Its markdown copy ("<slug>.md") has a dot and does not match.
+const ARTICLE = /^\/(business\/)?blog\/([a-z0-9-]+)\/?$/
+
+// An agent that asked for markdown gets the article's markdown copy at the article's address: the copy's
+// route (app/blog-md, app/business-blog-md) answers, told by MD_NEGOTIATED_HEADER to keep the answer out of
+// shared caches. No price and no language here: the copy is the stored text, the same as at "<slug>.md".
+function markdownCopy(req: NextRequest, article: RegExpExecArray): NextResponse {
+  const url = req.nextUrl.clone()
+  url.pathname = `/${article[1] ? "business-blog-md" : "blog-md"}/${article[2]}`
+  const headers = new Headers(req.headers)
+  headers.set(MD_NEGOTIATED_HEADER, "1")
+  const res = NextResponse.rewrite(url, { request: { headers } })
+  res.headers.set("Vary", "Accept")
+  return res
+}
+
+// Where the machine-readable versions are, for agents that read response headers (RFC 8288). Every
+// article of /blog and /business/blog has a markdown copy; a missing slug is a 404 page either way.
+function linkHeader(pathname: string, article: RegExpExecArray | null): string | null {
+  const sitemap = `<${BASE}/sitemap.xml>; rel="sitemap"`
+  if (article) return `<${BASE}/${article[1] ? "business/" : ""}blog/${article[2]}.md>; rel="alternate"; type="text/markdown", ${sitemap}`
+  if (pathname === "/") return `${sitemap}, <${BASE}/llms.txt>; rel="describedby"; type="text/markdown"`
+  return null
+}
+
 export default async function middleware(req: NextRequest, event: NextFetchEvent) {
   const { pathname } = req.nextUrl
   if (CABINETS.some((p) => pathname === p || pathname.startsWith(`${p}/`))) {
@@ -87,6 +118,8 @@ export default async function middleware(req: NextRequest, event: NextFetchEvent
     res.headers.set("Cache-Control", "private, no-store")
     return res
   }
+  const article = ARTICLE.exec(pathname)
+  if (article && wantsMarkdown(req.headers.get("accept"))) return markdownCopy(req, article)
   // /terms shows no price and stays cached, but letters link it and it links "/": only a sales link is decided there.
   const termsSales = pathname === "/terms" && req.nextUrl.searchParams.get("ref") === "li"
   const price = isPricedPath(pathname) || termsSales ? await decidePrice(req) : null
@@ -95,6 +128,12 @@ export default async function middleware(req: NextRequest, event: NextFetchEvent
     const options = priceCookieOptions(req.nextUrl.protocol === "https:")
     for (const [name, value] of Object.entries(price.cookies)) res.cookies.set(name, value, options)
   }
+  // An article's address answers by Accept now (above), so caches keep the page and the markdown apart.
+  // Next's page renderer sets its own Vary on the page and drops this one under next start (16.2.2);
+  // that stays safe: the page is "private, no-store", and so is the markdown answer, which keeps its Vary.
+  if (article) res.headers.append("Vary", "Accept")
+  const link = linkHeader(pathname, article)
+  if (link && !res.headers.has("location")) res.headers.append("Link", link)
   return res
 }
 

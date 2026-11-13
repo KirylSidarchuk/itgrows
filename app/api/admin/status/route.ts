@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db"
 import { sql } from "drizzle-orm"
+import { COUNTED_VISIT } from "@/lib/crawler-log"
 import Stripe from "stripe"
 
 const TOKEN = "trace_7Kx9mQ2vLp8sRt4wYz"
@@ -102,18 +103,18 @@ export async function GET(req: NextRequest) {
           WHERE e.event IN ('signup','signup_view','free_signup_clicked')) AS then_reached_signup`))
     // Which answer engines actually visit, and what they fetch. Vercel gives us no request logs,
     // so without this we cannot tell whether any GEO work changed anything — the same blindness
-    // that let a month of advertising run unmeasured.
+    // that let a month of advertising run unmeasured. Coding agents and our own checks are left out (COUNTED_VISIT).
     const crawlers = rows(await db.execute(sql`
       SELECT props->>'bot' AS bot, count(*)::int AS hits,
              count(DISTINCT path)::int AS urls,
              to_char(max(created_at),'MM-DD HH24:MI') AS last_seen
       FROM analytics_events
-      WHERE event = 'crawler_hit' AND created_at > now() - interval '1 day' * ${days}
+      WHERE event = 'crawler_hit' AND ${COUNTED_VISIT} AND created_at > now() - interval '1 day' * ${days}
       GROUP BY 1 ORDER BY hits DESC LIMIT 20`))
     const crawlerPaths = rows(await db.execute(sql`
       SELECT path, count(*)::int AS hits
       FROM analytics_events
-      WHERE event = 'crawler_hit' AND created_at > now() - interval '1 day' * ${days}
+      WHERE event = 'crawler_hit' AND ${COUNTED_VISIT} AND created_at > now() - interval '1 day' * ${days}
       GROUP BY 1 ORDER BY hits DESC LIMIT 15`))
     const gclidRecon = rows(await db.execute(sql`
       SELECT to_char(date_trunc('day', created_at),'YYYY-MM-DD') AS day,
