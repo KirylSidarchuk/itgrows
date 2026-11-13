@@ -463,11 +463,40 @@ async function main() {
       assert.equal(res.headers.get("link"), null, p)
     }
   })
-  await check("home page: a Link to the sitemap and llms.txt; asked for as markdown it is still the page", async () => {
-    for (const accept of [BROWSER_ACCEPT, "text/markdown"]) {
+  const HOME_LINK = `<${SITE}/sitemap.xml>; rel="sitemap", <${SITE}/llms.txt>; rel="describedby"; type="text/markdown"`
+  const homeAs = async (method: string, accept: string, lang = "en-US,en;q=0.9", p = "/") => {
+    const req = new NextRequest(`${SITE}${p}`, { method, headers: { "user-agent": BROWSER, "accept-language": lang, accept } })
+    return (await mw.default(req, { waitUntil() {} } as never)) as Response
+  }
+  await check("home page for a browser: the page as before, plus Vary: Accept and a Link to the sitemap and llms.txt", async () => {
+    for (const accept of [BROWSER_ACCEPT, "*/*", "text/markdown;q=0.5, text/html"]) {
       const res = await raw("/", accept)
-      assert.equal(res.headers.get("x-middleware-request-" + MD_NEGOTIATED_HEADER), null)
-      assert.equal(res.headers.get("link"), `<${SITE}/sitemap.xml>; rel="sitemap", <${SITE}/llms.txt>; rel="describedby"; type="text/markdown"`)
+      assert.equal(res.headers.get("x-middleware-rewrite"), null, accept)
+      assert.equal(res.headers.get("x-middleware-next"), "1", accept)
+      assert.equal(res.headers.get(`x-middleware-request-${MD_NEGOTIATED_HEADER}`), null, accept)
+      assert.match(res.headers.get("vary") ?? "", /Accept/, accept)
+      assert.equal(res.headers.get("link"), HOME_LINK, accept)
+    }
+  })
+  await check("home page asked for as markdown -> app/home-md at the home address, marked, Vary: Accept; no cookie, no redirect to /de", async () => {
+    for (const [accept, lang] of [["text/markdown", "en-US,en;q=0.9"], ["text/markdown, text/html, */*", "de-DE,de;q=0.9"]]) {
+      for (const method of ["GET", "HEAD"]) {
+        const res = await homeAs(method, accept, lang)
+        const what = `${method} ${accept} ${lang}`
+        assert.equal(new URL(res.headers.get("x-middleware-rewrite") ?? "/none", SITE).pathname, "/home-md", what)
+        assert.equal(res.headers.get(`x-middleware-request-${MD_NEGOTIATED_HEADER}`), "1", what)
+        assert.match(res.headers.get("vary") ?? "", /Accept/, what)
+        assert.equal(res.headers.get("set-cookie"), null, what)
+        assert.equal(res.headers.get("location"), null, what)
+      }
+    }
+  })
+  await check("asked for as markdown, a POST to / and the home pages in other languages stay pages", async () => {
+    assert.equal((await homeAs("POST", "text/markdown")).headers.get(`x-middleware-request-${MD_NEGOTIATED_HEADER}`), null)
+    for (const p of ["/de", "/fr", "/es", "/ru"]) {
+      const res = await homeAs("GET", "text/markdown", "en-US,en;q=0.9", p)
+      assert.equal(new URL(res.headers.get("x-middleware-rewrite") ?? "/none", SITE).pathname, "/", p)
+      assert.equal(res.headers.get(`x-middleware-request-${MD_NEGOTIATED_HEADER}`), null, p)
     }
   })
 
@@ -498,6 +527,7 @@ async function main() {
     const extra = [
       "/personal", "/company", "/reddit", "/blog", "/blog/x/y", "/business/x", "/business/blog", "/business/blog/x/y",
       "/api/geo/teaser", "/_next/static/chunks/a.js", "/og/geo", "/privacy", "/sitemap.xml", "/robots.txt",
+      "/home-md", "/llms.txt",
       "/deutsch", "/rus", "/english", "/enterprise",
     ].filter(matched)
     assert.deepEqual(extra, [])
@@ -866,6 +896,14 @@ async function main() {
     }
     const ours = "It costs $499 a month plus a one-time $499 setup."
     assert.equal(priceArticleText(ours, GEO_PRICES), ours)
+  })
+  await check("llms.txt and the home page in markdown name the plan's price only in these sentences", async () => {
+    const { llmsText } = await import("@/lib/llms-text")
+    const text = llmsText({ guides: "", posts: "" })
+    const moved = priceArticleText(text, P199)
+    const l = geoPriceLabels("en", GEO_PRICES)
+    assert.notEqual(moved, text)
+    for (const label of [l.month, l.setup, l.quarter, l.year, l.yearPerMonth]) assert.ok(!moved.includes(label), `${label} outside a price sentence`)
   })
 
   console.log("links, metadata, sitemap")

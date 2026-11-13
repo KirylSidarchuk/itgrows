@@ -6,9 +6,10 @@
 // address (Claude Code made 47 of the 92 Claude-User visits from 27 Oct to 13 Nov). middleware.ts
 // answers those with the markdown copy and marks the request with MD_NEGOTIATED_HEADER, so the copy's
 // route keeps that answer out of shared caches and says "Vary: Accept". Browsers never list
-// text/markdown, so they get the page exactly as before.
+// text/markdown, so they get the page exactly as before. The home page ("/") answers the same way, with
+// the text of llms.txt (app/home-md, lib/llms-text.ts).
 
-// Request header middleware.ts sets when it rewrites an article to its markdown copy.
+// Request header middleware.ts sets when it rewrites an article to its markdown copy, or "/" to app/home-md.
 export const MD_NEGOTIATED_HEADER = "x-itg-md"
 
 type Range = { type: string; q: number }
