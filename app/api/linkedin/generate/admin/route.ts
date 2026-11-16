@@ -1,21 +1,21 @@
 import { NextRequest, NextResponse } from "next/server"
+import { isAdminRequest } from "@/lib/admin-auth"
 import { generateForUser } from "@/lib/linkedin-generate"
 
 // Run one generation for a named account and report what happened.
 //
-// The normal trigger needs a logged-in session and the cron needs a secret that only exists in
-// the deployment environment, which left no way to watch a real run from outside. Whether the
-// batch checks fired and whether the end-of-batch question was attached are exactly the things
-// worth being able to see.
+// The normal trigger needs a logged-in session, which left no way to watch a real run from
+// outside. Whether the batch checks fired and whether the end-of-batch question was attached are
+// exactly the things worth being able to see.
+//
+// Every call spends money (text + image generation + an email), so it answers only to a key from
+// the deployment environment, sent in a header (see lib/admin-auth). Never in the query string.
 
 export const dynamic = "force-dynamic"
 export const maxDuration = 300
 
-const ADMIN_TOKEN = "trace_7Kx9mQ2vLp8sRt4wYz"
-
 export async function POST(req: NextRequest) {
-  const token = req.headers.get("x-admin-token") ?? new URL(req.url).searchParams.get("token")
-  if (token !== ADMIN_TOKEN && token !== process.env.CRON_SECRET) {
+  if (!isAdminRequest(req)) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 })
   }
 

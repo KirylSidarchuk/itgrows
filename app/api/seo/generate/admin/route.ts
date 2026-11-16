@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
+import { isAdminRequest } from "@/lib/admin-auth"
 import { db } from "@/lib/db"
 import { connectedSites } from "@/lib/db/schema"
 import { eq } from "drizzle-orm"
@@ -21,8 +22,6 @@ import { slugBase } from "@/lib/slug"
 export const dynamic = "force-dynamic"
 export const maxDuration = 300
 
-const ADMIN_TOKEN = "trace_7Kx9mQ2vLp8sRt4wYz"
-
 interface SiteProfile {
   niche?: string
   targetAudience?: string
@@ -36,8 +35,7 @@ function generateSlug(t: string): string {
 }
 
 export async function POST(req: NextRequest) {
-  const token = req.headers.get("x-admin-token") ?? new URL(req.url).searchParams.get("token")
-  if (token !== ADMIN_TOKEN && token !== process.env.CRON_SECRET) {
+  if (!isAdminRequest(req)) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 })
   }
 

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
+import { isAdminRequest } from "@/lib/admin-auth"
 import { db } from "@/lib/db"
 import { linkedinAccounts, linkedinPosts, postThreads } from "@/lib/db/schema"
 import { and, asc, eq, inArray, isNull, sql } from "drizzle-orm"
@@ -21,11 +22,9 @@ const VALID = new Set(["question", "hypothesis", "evidence", "provisional", "cha
 type Thread = { name: string; posts: number[]; state: string; position?: string }
 
 export async function POST(req: NextRequest) {
-  // Same token as the other admin surfaces. Seeding rewrites nothing an author wrote, but it does
-  // read their whole corpus, so it stays behind a token rather than a session.
-  const ADMIN_TOKEN = "trace_7Kx9mQ2vLp8sRt4wYz"
-  const secret = req.headers.get("x-admin-token") ?? new URL(req.url).searchParams.get("token")
-  if (secret !== ADMIN_TOKEN && secret !== process.env.CRON_SECRET) {
+  // Same keys as the other admin surfaces (lib/admin-auth). Seeding rewrites nothing an author
+  // wrote, but it does read their whole corpus, so it stays behind a key rather than a session.
+  if (!isAdminRequest(req)) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 })
   }
 

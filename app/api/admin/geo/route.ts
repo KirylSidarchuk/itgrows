@@ -1,4 +1,5 @@
 import { NextRequest } from "next/server"
+import { isAdminRequest } from "@/lib/admin-auth"
 import { db } from "@/lib/db"
 import { sql } from "drizzle-orm"
 import { COUNTED_VISIT } from "@/lib/crawler-log"
@@ -8,7 +9,6 @@ import { COUNTED_VISIT } from "@/lib/crawler-log"
 // and every number is phrased as the thing a person did rather than the name of an event.
 export const dynamic = "force-dynamic"
 
-const TOKEN = "trace_7Kx9mQ2vLp8sRt4wYz"
 type Row = Record<string, unknown>
 const rows = (r: unknown): Row[] => (Array.isArray(r) ? (r as Row[]) : ((r as { rows?: Row[] }).rows ?? []))
 const esc = (v: unknown) =>
@@ -37,7 +37,10 @@ const num = (r: Row[], k = "n") => Number(r[0]?.[k] ?? 0)
 
 export async function GET(req: NextRequest) {
   const p = req.nextUrl.searchParams
-  if (p.get("token") !== TOKEN) return new Response("forbidden", { status: 403 })
+  if (!isAdminRequest(req, { allowQueryToken: true })) return new Response("forbidden", { status: 403 })
+  // The day links carry the key the page was opened with (only ever ADMIN_PAGES_TOKEN).
+  const pageToken = p.get("token")
+  const tokenQs = pageToken ? `token=${encodeURIComponent(pageToken)}&` : ""
   const days = Math.min(Math.max(Number(p.get("days") || 7), 1), 90)
   const since = sql`now() - interval '1 day' * ${days}`
 
@@ -126,7 +129,7 @@ export async function GET(req: NextRequest) {
 </style>
 <h1>ItGrows status</h1>
 <div class="sub">last ${days} days · <span class="days">${[1, 7, 30, 90]
-    .map((d) => `<a href="?token=${TOKEN}&days=${d}">${d}d</a>`)
+    .map((d) => `<a href="?${tokenQs}days=${d}">${d}d</a>`)
     .join("")}</span></div>
 
 <h2>The $499 product — /business</h2>

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
+import { isAdminRequest } from "@/lib/admin-auth"
 import { db } from "@/lib/db"
 import { sql } from "drizzle-orm"
 
@@ -6,13 +7,12 @@ import { sql } from "drizzle-orm"
 // stored token is still usable, and what is queued to go out next. The audit found we had no way to
 // see a broken connection before the customer told us -- every incident so far was caught by hand.
 // Read-only and token-gated; it touches no customer content.
-const TOKEN = "trace_7Kx9mQ2vLp8sRt4wYz"
 type Row = Record<string, unknown>
 const rows = (r: unknown): Row[] => (Array.isArray(r) ? (r as Row[]) : ((r as { rows?: Row[] }).rows ?? []))
 
 export async function GET(req: NextRequest) {
   const p = req.nextUrl.searchParams
-  if (p.get("token") !== TOKEN) return NextResponse.json({ error: "forbidden" }, { status: 403 })
+  if (!isAdminRequest(req, { allowQueryToken: true })) return NextResponse.json({ error: "forbidden" }, { status: 403 })
   const email = p.get("email")
   const probe = p.get("probe") === "yes"
 

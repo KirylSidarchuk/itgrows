@@ -1,15 +1,15 @@
 import { NextRequest, NextResponse } from "next/server"
+import { isAdminRequest } from "@/lib/admin-auth"
 import { db } from "@/lib/db"
 import { sql } from "drizzle-orm"
 
 // Read a user's full event journey + a funnel snapshot. Token-gated, read-only.
-const TOKEN = "trace_7Kx9mQ2vLp8sRt4wYz"
 type Row = Record<string, unknown>
 const rows = (r: unknown): Row[] => (Array.isArray(r) ? (r as Row[]) : ((r as { rows?: Row[] }).rows ?? []))
 
 export async function GET(req: NextRequest) {
   const p = req.nextUrl.searchParams
-  if (p.get("token") !== TOKEN) return NextResponse.json({ error: "forbidden" }, { status: 403 })
+  if (!isAdminRequest(req, { allowQueryToken: true })) return NextResponse.json({ error: "forbidden" }, { status: 403 })
   const email = p.get("email")
   const limit = Math.min(Number(p.get("limit") || 200), 500)
   try {

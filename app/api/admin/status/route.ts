@@ -1,16 +1,16 @@
 import { NextRequest, NextResponse } from "next/server"
+import { isAdminRequest } from "@/lib/admin-auth"
 import { db } from "@/lib/db"
 import { sql } from "drizzle-orm"
 import { COUNTED_VISIT } from "@/lib/crawler-log"
 import Stripe from "stripe"
 
-const TOKEN = "trace_7Kx9mQ2vLp8sRt4wYz"
 type Row = Record<string, unknown>
 const rows = (r: unknown): Row[] => (Array.isArray(r) ? (r as Row[]) : ((r as { rows?: Row[] }).rows ?? []))
 const O1 = "kiryl@itgrows.ai", O2 = "kiryl.sidarchuk@gmail.com", O3 = "futurecodefounder@gmail.com"
 
 export async function GET(req: NextRequest) {
-  if (req.nextUrl.searchParams.get("token") !== TOKEN) return NextResponse.json({ error: "forbidden" }, { status: 403 })
+  if (!isAdminRequest(req, { allowQueryToken: true })) return NextResponse.json({ error: "forbidden" }, { status: 403 })
   const days = Math.min(Number(req.nextUrl.searchParams.get("days") || 3), 14)
   try {
     const regsByDay = rows(await db.execute(sql`

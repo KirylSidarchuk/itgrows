@@ -1,17 +1,17 @@
 import { NextRequest, NextResponse } from "next/server"
+import { isAdminRequest } from "@/lib/admin-auth"
 import { db } from "@/lib/db"
 import { sql } from "drizzle-orm"
 import Stripe from "stripe"
 
 // TEMP diagnostic: latest registrant(s) + their activity + ad source. Token-gated. Remove after use.
-const TOKEN = "trace_7Kx9mQ2vLp8sRt4wYz"
 
 type Row = Record<string, unknown>
 const rows = (r: unknown): Row[] =>
   Array.isArray(r) ? (r as Row[]) : ((r as { rows?: Row[] }).rows ?? [])
 
 export async function GET(req: NextRequest) {
-  if (req.nextUrl.searchParams.get("token") !== TOKEN)
+  if (!isAdminRequest(req, { allowQueryToken: true }))
     return NextResponse.json({ error: "forbidden" }, { status: 403 })
   const n = Math.min(Number(req.nextUrl.searchParams.get("n") || 1), 5)
   try {

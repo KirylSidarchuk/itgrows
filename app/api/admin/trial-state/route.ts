@@ -1,17 +1,17 @@
 import { NextRequest, NextResponse } from "next/server"
+import { isAdminRequest } from "@/lib/admin-auth"
 import { db } from "@/lib/db"
 import { sql } from "drizzle-orm"
 import Stripe from "stripe"
 
 // What actually happens when a trial ends is decided by Stripe, not by our tables: whether a card
 // is on file, and what end_behavior we asked for. Read it from the source rather than infer it.
-const TOKEN = "trace_7Kx9mQ2vLp8sRt4wYz"
 type Row = Record<string, unknown>
 const rows = (r: unknown): Row[] => (Array.isArray(r) ? (r as Row[]) : ((r as { rows?: Row[] }).rows ?? []))
 
 export async function GET(req: NextRequest) {
   const p = req.nextUrl.searchParams
-  if (p.get("token") !== TOKEN) return NextResponse.json({ error: "forbidden" }, { status: 403 })
+  if (!isAdminRequest(req, { allowQueryToken: true })) return NextResponse.json({ error: "forbidden" }, { status: 403 })
   const email = p.get("email")
 
   try {
