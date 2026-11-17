@@ -69,6 +69,8 @@ const nextConfig: NextConfig = {
         // backend server, which sends "noindex" itself. Songs are rendered by a machine that fetches jobs from it.
         { source: "/music", destination: "https://blogs.itgrows.ai/music" },
         { source: "/music/:path*", destination: "https://blogs.itgrows.ai/music/:path*" },
+        // The owner's BTC forecast page (a static page on the backend server, refreshed there; it sends "noindex" itself).
+        { source: "/trade", destination: "https://blogs.itgrows.ai/trade" },
       ],
       afterFiles: [
         // Serve a clean markdown alternate for each article at /blog/{slug}.md without giving up
