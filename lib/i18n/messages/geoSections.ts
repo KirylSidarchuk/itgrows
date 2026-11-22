@@ -36,7 +36,7 @@ const en = {
       {
         step: "Re-ask and push",
         l: "full recounts a year, against day 0",
-        d: "Every two weeks the same questions go back to all four assistants, against day 0. Wherever you're still missing is where the next work goes. A separate test checks that each assistant can find your new articles, so an indexing gap gets fixed instead of blamed on the writing. Once a month, a report in your language, read by a person before it reaches you.",
+        d: "Every two weeks the same questions go back to all four assistants, against day 0. Wherever you're still missing is where the next work goes. Once a month, a report in your language, in your cabinet.",
       },
     ],
     inside: "What we do inside each step",
@@ -91,7 +91,7 @@ const en = {
       "Every week you're not in the answer, those customers go to whoever is. See who's getting yours: free, in 30 seconds.",
     cta: "See who's taking my customers →",
     footnote:
-      "Ad costs: WordStream by LocaliQ 2026, US Google and Microsoft search campaigns, April 2025 – March 2026; the publisher's averages are medians; a lead is an inquiry, not a sale. Cost per customer: First Page Sage's own B2B client data, January 2022 – August 2025; “paid” there means mainly search ads and paid social. Each survey figure shows who was asked and when.",
+      "Ad costs: WordStream by LocaliQ 2026, US Google and Microsoft search campaigns, April 2025 – March 2026; a lead is an inquiry, not a sale. Cost per customer: First Page Sage's own B2B client data, January 2022 – October 2026; “paid” there means mainly search ads and paid social. Each survey figure shows who was asked and when.",
     newTab: "(opens in a new tab)",
   },
   // Owner-approved copy, 30 Oct 2026: two panels, what article-only services do (them) and what we
@@ -131,7 +131,7 @@ const en = {
     "The sites the assistants quote instead of you: we prepare the profiles and the letters to editors",
     "Blog hosting with the machine-readable layer built in — one DNS record",
     "You see every article 2 days before it goes live, and can edit or stop it",
-    "A monthly report in your language, read by a person first",
+    "A monthly report in your language, in your cabinet",
     "A human who knows your account",
   ],
 }
@@ -166,7 +166,7 @@ export default defineMessages(en, {
         {
           step: "Neu fragen und nachlegen",
           l: "vollständige Nachzählungen pro Jahr, im Vergleich zu Tag 0",
-          d: "Alle zwei Wochen gehen dieselben Fragen erneut an alle vier Assistenten, im Vergleich zu Tag 0. Wo Sie noch fehlen, dorthin geht die nächste Arbeit. Ein separater Test prüft, ob jeder Assistent Ihre neuen Artikel finden kann, damit eine Indexierungslücke behoben wird, statt den Texten angelastet zu werden. Einmal im Monat ein Bericht in Ihrer Sprache, von einem Menschen gelesen, bevor er Sie erreicht.",
+          d: "Alle zwei Wochen gehen dieselben Fragen erneut an alle vier Assistenten, im Vergleich zu Tag 0. Wo Sie noch fehlen, dorthin geht die nächste Arbeit. Einmal im Monat ein Bericht in Ihrer Sprache, in Ihrem Kundenbereich.",
         },
       ],
       inside: "Was wir in jedem Schritt tun",
@@ -218,7 +218,7 @@ export default defineMessages(en, {
         "Jede Woche, in der Sie nicht in der Antwort stehen, gehen diese Kunden zu dem, der dort steht. Sehen Sie, wer Ihre bekommt: kostenlos, in 30 Sekunden.",
       cta: "Wer nimmt mir die Kunden weg? →",
       footnote:
-        "Werbekosten: WordStream by LocaliQ 2026, Suchkampagnen bei Google und Microsoft in den USA, April 2025 – März 2026; die Durchschnittswerte des Herausgebers sind Mediane; ein Lead ist eine Anfrage, kein Verkauf. Kosten pro Kunde: eigene B2B-Kundendaten von First Page Sage, Januar 2022 – August 2025; „bezahlt“ heißt dort vor allem Suchanzeigen und bezahlte Social-Media-Werbung. Bei jeder Umfragezahl steht, wer wann befragt wurde.",
+        "Werbekosten: WordStream by LocaliQ 2026, Suchkampagnen bei Google und Microsoft in den USA, April 2025 – März 2026; ein Lead ist eine Anfrage, kein Verkauf. Kosten pro Kunde: eigene B2B-Kundendaten von First Page Sage, Januar 2022 – Oktober 2026; „bezahlt“ heißt dort vor allem Suchanzeigen und bezahlte Social-Media-Werbung. Bei jeder Umfragezahl steht, wer wann befragt wurde.",
       newTab: "(öffnet in neuem Tab)",
     },
     versus: {
@@ -253,7 +253,7 @@ export default defineMessages(en, {
       "Die Websites, die die Assistenten statt Ihnen zitieren: Wir bereiten die Profile und die Briefe an die Redaktionen vor",
       "Blog-Hosting mit eingebauter maschinenlesbarer Ebene — ein DNS-Eintrag",
       "Sie sehen jeden Artikel 2 Tage vor der Veröffentlichung und können ihn bearbeiten oder stoppen",
-      "Ein monatlicher Bericht in Ihrer Sprache, vorher von einem Menschen gelesen",
+      "Ein monatlicher Bericht in Ihrer Sprache, in Ihrem Kundenbereich",
       "Ein Mensch, der Ihr Konto kennt",
     ],
   },
@@ -287,7 +287,7 @@ export default defineMessages(en, {
         {
           step: "Redemander et pousser",
           l: "décomptes complets par an, comparés au jour 0",
-          d: "Toutes les deux semaines, les mêmes questions repartent vers les quatre assistants, comparées au jour 0. Là où vous manquez encore, c’est là que va le travail suivant. Un test distinct vérifie que chaque assistant trouve vos nouveaux articles, pour qu’un trou d’indexation soit corrigé au lieu d’être mis sur le compte de la rédaction. Une fois par mois, un rapport dans votre langue, relu par une personne avant de vous parvenir.",
+          d: "Toutes les deux semaines, les mêmes questions repartent vers les quatre assistants, comparées au jour 0. Là où vous manquez encore, c’est là que va le travail suivant. Une fois par mois, un rapport dans votre langue, dans votre espace client.",
         },
       ],
       inside: "Ce que nous faisons à chaque étape",
@@ -341,7 +341,7 @@ export default defineMessages(en, {
         "Chaque semaine où vous n’êtes pas dans la réponse, ces clients vont chez ceux qui y sont. Voyez qui récupère les vôtres : gratuitement, en 30 secondes.",
       cta: "Qui me prend mes clients ? →",
       footnote:
-        "Coûts publicitaires : WordStream by LocaliQ 2026, campagnes sur le réseau de recherche Google et Microsoft aux États-Unis, avril 2025 – mars 2026 ; les moyennes de l’éditeur sont des médianes ; un lead est une demande, pas une vente. Coût par client : données B2B des propres clients de First Page Sage, janvier 2022 – août 2025 ; « payant » y désigne surtout les annonces sur les moteurs de recherche et les réseaux sociaux payants. Chaque chiffre d’enquête indique qui a été interrogé et quand.",
+        "Coûts publicitaires : WordStream by LocaliQ 2026, campagnes sur le réseau de recherche Google et Microsoft aux États-Unis, avril 2025 – mars 2026 ; un lead est une demande, pas une vente. Coût par client : données B2B des propres clients de First Page Sage, janvier 2022 – octobre 2026 ; « payant » y désigne surtout les annonces sur les moteurs de recherche et les réseaux sociaux payants. Chaque chiffre d’enquête indique qui a été interrogé et quand.",
       newTab: "(s’ouvre dans un nouvel onglet)",
     },
     versus: {
@@ -376,7 +376,7 @@ export default defineMessages(en, {
       "Les sites que citent les assistants à votre place : nous préparons les profils et les lettres aux rédactions",
       "Hébergement de blog avec la couche lisible par machine intégrée — un seul enregistrement DNS",
       "Vous voyez chaque article 2 jours avant sa mise en ligne, et pouvez le modifier ou l’arrêter",
-      "Un rapport mensuel dans votre langue, relu d’abord par une personne",
+      "Un rapport mensuel dans votre langue, dans votre espace client",
       "Un interlocuteur humain qui connaît votre compte",
     ],
   },
@@ -410,7 +410,7 @@ export default defineMessages(en, {
         {
           step: "Volver a preguntar y empujar",
           l: "recuentos completos al año, frente al día 0",
-          d: "Cada dos semanas las mismas preguntas vuelven a los cuatro asistentes, frente al día 0. Allí donde aún no aparece es adonde va el siguiente trabajo. Una prueba aparte comprueba que cada asistente encuentra sus artículos nuevos, para que un fallo de indexación se corrija en lugar de achacarse a los textos. Una vez al mes, un informe en su idioma, leído por una persona antes de llegarle.",
+          d: "Cada dos semanas las mismas preguntas vuelven a los cuatro asistentes, frente al día 0. Allí donde aún no aparece es adonde va el siguiente trabajo. Una vez al mes, un informe en su idioma, en su área de cliente.",
         },
       ],
       inside: "Qué hacemos en cada paso",
@@ -464,7 +464,7 @@ export default defineMessages(en, {
         "Cada semana que no está en la respuesta, esos clientes se van con quien sí está. Vea quién se queda con los suyos: gratis, en 30 segundos.",
       cta: "¿Quién se lleva mis clientes? →",
       footnote:
-        "Costes publicitarios: WordStream by LocaliQ 2026, campañas de búsqueda de Google y Microsoft en EE. UU., abril de 2025 – marzo de 2026; las medias del editor son medianas; un lead es una consulta, no una venta. Coste por cliente: datos propios de First Page Sage sobre sus clientes B2B, enero de 2022 – agosto de 2025; «de pago» significa allí sobre todo anuncios de búsqueda y redes sociales de pago. Cada cifra de encuesta indica a quién se preguntó y cuándo.",
+        "Costes publicitarios: WordStream by LocaliQ 2026, campañas de búsqueda de Google y Microsoft en EE. UU., abril de 2025 – marzo de 2026; un lead es una consulta, no una venta. Coste por cliente: datos propios de First Page Sage sobre sus clientes B2B, enero de 2022 – octubre de 2026; «de pago» significa allí sobre todo anuncios de búsqueda y redes sociales de pago. Cada cifra de encuesta indica a quién se preguntó y cuándo.",
       newTab: "(se abre en una pestaña nueva)",
     },
     versus: {
@@ -499,7 +499,7 @@ export default defineMessages(en, {
       "Los sitios que citan los asistentes en su lugar: preparamos los perfiles y las cartas a las redacciones",
       "Alojamiento del blog con la capa legible por máquinas integrada — un solo registro DNS",
       "Usted ve cada artículo 2 días antes de que se publique y puede editarlo o detenerlo",
-      "Un informe mensual en su idioma, leído antes por una persona",
+      "Un informe mensual en su idioma, en su área de cliente",
       "Una persona que conoce su cuenta",
     ],
   },
@@ -533,7 +533,7 @@ export default defineMessages(en, {
         {
           step: "Переспросить и дожать",
           l: "полных пересчётов в год — в сравнении с днём 0",
-          d: "Раз в две недели те же вопросы снова уходят ко всем четырём ассистентам — в сравнении с днём 0. Где вас ещё нет, туда и идёт следующая работа. Отдельный тест проверяет, находит ли каждый ассистент ваши новые статьи, чтобы пробел в индексации исправили, а не списали на тексты. Раз в месяц — отчёт на вашем языке, который читает человек, прежде чем он попадёт к вам.",
+          d: "Раз в две недели те же вопросы снова уходят ко всем четырём ассистентам — в сравнении с днём 0. Где вас ещё нет, туда и идёт следующая работа. Раз в месяц — отчёт на вашем языке в личном кабинете.",
         },
       ],
       inside: "Что мы делаем на каждом шаге",
@@ -585,7 +585,7 @@ export default defineMessages(en, {
         "Каждую неделю, пока вас нет в ответе, эти клиенты уходят к тем, кто там есть. Посмотрите, кто забирает ваших: бесплатно, за 30 секунд.",
       cta: "Кто забирает моих клиентов? →",
       footnote:
-        "Стоимость рекламы: WordStream by LocaliQ 2026, поисковые кампании Google и Microsoft в США, апрель 2025 – март 2026; средние значения издателя — медианы; лид — это обращение, а не продажа. Стоимость клиента: собственные данные First Page Sage по B2B-клиентам, январь 2022 – август 2025; «платные» там — в основном поисковая реклама и платные соцсети. У каждой цифры из опроса указано, кого и когда спрашивали.",
+        "Стоимость рекламы: WordStream by LocaliQ 2026, поисковые кампании Google и Microsoft в США, апрель 2025 – март 2026; лид — это обращение, а не продажа. Стоимость клиента: собственные данные First Page Sage по B2B-клиентам, январь 2022 – октябрь 2026; «платные» там — в основном поисковая реклама и платные соцсети. У каждой цифры из опроса указано, кого и когда спрашивали.",
       newTab: "(откроется в новой вкладке)",
     },
     versus: {
@@ -620,7 +620,7 @@ export default defineMessages(en, {
       "Сайты, которые ассистенты цитируют вместо вас: мы готовим профили и письма редакторам",
       "Хостинг блога со встроенным машиночитаемым слоем — одна DNS-запись",
       "Вы видите каждую статью за 2 дня до публикации и можете её отредактировать или остановить",
-      "Ежемесячный отчёт на вашем языке, который сначала читает человек",
+      "Ежемесячный отчёт на вашем языке в личном кабинете",
       "Живой человек, который знает ваш аккаунт",
     ],
   },

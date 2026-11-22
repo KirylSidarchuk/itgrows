@@ -155,8 +155,9 @@ export async function WorkSystem({ id = "how" }: { id?: string }) {
   )
 }
 
-// The sources of WhyThisMatters. Each figure was checked on its page on 29 Oct 2026 (quoted words are
-// the page's own):
+// The sources of WhyThisMatters. Each figure was checked on its page on 29 Oct 2026 and again on 22 Nov 2026
+// (quoted words are the page's own; WordStream answers 403 to fetchers since, its figures were matched to
+// pages quoting the report, and the "averages are medians" remark left the footnote):
 //  - OpenAI, 31 Aug 2026: "more than 1 billion weekly active users"; "Advertising does not influence
 //    the answers ChatGPT provides."
 //  - BrightLocal, Local Consumer Review Survey 2026, 1,002 US adults: use of ChatGPT and other
@@ -166,10 +167,11 @@ export async function WorkSystem({ id = "how" }: { id?: string }) {
 //  - Pew Research Center, browsing data of 900 US adults, March 2025: a traditional result was clicked
 //    in 8% of visits with an AI summary, 15% without
 //  - WordStream by LocaliQ 2026, 13,474 US Google and Microsoft search campaigns, Apr 2025 - Mar 2026,
-//    "averages" are medians: cost per lead $66.69; Attorneys & Legal Services $131.63, Home & Home
+//    cost per lead $66.69; Attorneys & Legal Services $131.63, Home & Home
 //    Improvement $90.92, Dentists & Dental Services $72.97
-//  - First Page Sage, B2B CAC from its own clients, Jan 2022 - Aug 2025, inorganic ("primarily PPC / SEM
-//    and Paid Social"): Legal Services $1,245, Transportation & Logistics $732, Construction $486
+//  - First Page Sage, B2B CAC from its own clients, edition of 4 Nov 2026, Jan 2022 - Oct 2026, inorganic
+//    ("primarily PPC / SEM and Paid Social"): Legal Services $1,303, Transportation & Logistics $766,
+//    Construction $509 (the edition read on 29 Oct said $1,245 / $732 / $486, Jan 2022 - Aug 2025)
 //  - Alphabet 10-K 2025: Google Search & other, cost-per-click change 2024 -> 2025: 7%
 //  - Meta 10-K 2025: "average price per ad increased 9% year-over-year in 2025"
 // None of it is our own result: no ItGrows price, no invented number, no promise beyond the growth
@@ -196,7 +198,7 @@ const WHY = {
   clickWithout: 0.15,
   pewPanel: 900,
   lead: { avg: 66.69, law: 131.63, home: 90.92, dent: 72.97 },
-  customer: { legal: 1245, logistics: 732, construction: 486 },
+  customer: { legal: 1303, logistics: 766, construction: 509 },
   cpc: 0.07,
   pricePerAd: 0.09,
 }

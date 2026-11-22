@@ -54,7 +54,7 @@ const WE_DO = [
   "Fix crawler access and indexing: robots.txt, sitemaps, Bing and Google, IndexNow",
   "Prepare your profiles and listings on the sites the assistants quote, and the letters to their editors",
   "Put all 20 questions to ChatGPT, Claude, Gemini and Perplexity, 3 asks each, every two weeks, and push wherever you're still missing",
-  "A monthly report, read by a person before it reaches you",
+  "A monthly report in your cabinet",
 ]
 
 const ARTICLES_YOU = "You see every article 2 days before it goes live, and can edit or stop it."
