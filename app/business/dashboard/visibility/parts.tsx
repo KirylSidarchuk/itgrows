@@ -1574,9 +1574,15 @@ export function YourPlan({
   const sample = mode === "sample"
   const planHref = sample ? PLAN_HOME : `/business/dashboard/plan?site=${encodeURIComponent(site.domain)}`
   const visitor = usePlanPrices()
-  const p = sample ? visitor : (prices ?? null)
+  // 22 Nov 2026 (Venture OS task 73): the price is always named. The account's own prices when they are
+  // read; until then, or if they cannot be read, the public price every visitor sees ($499 for everyone
+  // since 10 Nov 2026), never "you see your price on the next page".
+  const p = sample ? visitor : (prices ?? visitor)
   const yearOff = `${Math.round(YEAR_DISCOUNT * 100)}% off`
   const items = planItems(steps)
+  // Who the assistants name instead, from the same report the page shows (top 3), and the plan's first step.
+  const rivals = (fullReport(site)?.summary.named_instead ?? []).slice(0, 3).map((r) => r.name)
+  const nextStep = steps[0]?.title ?? ""
   // Free setup won or given for this site: the line above the reward's panel must not still charge for it.
   const [promo] = usePromo(mode === "offer")
   const setupWon = liveReward(promo, site.domain) === "setup_free"
@@ -1607,6 +1613,17 @@ export function YourPlan({
               </p>
               {/* The growth guarantee (owner's decision, 30 Oct 2026): the line with its "*"; its footnote
                   (GuaranteeFootnote) is the last line of the page. */}
+              {rivals.length > 0 && (
+                <p className="text-sm text-white/80 mt-3 leading-relaxed">
+                  <span className="text-white/60">Named instead of {sample ? "this site" : "you"} right now:</span>{" "}
+                  <b className="text-white">{rivals.join(", ")}</b>
+                </p>
+              )}
+              {nextStep && (
+                <p className="text-sm text-white/80 mt-1.5 leading-relaxed">
+                  <span className="text-white/60">First step we take:</span> <b className="text-white">{nextStep}</b>
+                </p>
+              )}
               <p className="text-sm sm:text-base font-bold text-white mt-3">In 90 days, AI assistants will name you more often than on launch day — or we work for free.*</p>
               <div data-attention="report-price" className="mt-4 flex flex-col sm:flex-row sm:items-center gap-3">
                 {p && setupWon ? (
@@ -1633,12 +1650,22 @@ export function YourPlan({
                 </a>
               </div>
               {!sample && (
-                <a
-                  href={`${SUPPORT}?site=${encodeURIComponent(site.domain)}&walkthrough=1`}
-                  className="mt-3 inline-block text-sm font-semibold text-violet-200 hover:text-white hover:underline"
-                >
-                  Ask for a 15-minute walkthrough →
-                </a>
+                <div className="mt-3 flex flex-col sm:flex-row gap-2.5">
+                  {/* Two ways in besides the card (task 73): an invoice, made by hand in Stripe, and a 15-minute call.
+                      Both open "Write to us" with the request written; /api/business/contact stores the topic. */}
+                  <a
+                    href={`${SUPPORT}?site=${encodeURIComponent(site.domain)}&invoice=1`}
+                    className="inline-flex justify-center rounded-xl border border-white/30 hover:bg-white/[0.08] px-4 py-2.5 text-sm font-semibold text-white"
+                  >
+                    Get an invoice
+                  </a>
+                  <a
+                    href={`${SUPPORT}?site=${encodeURIComponent(site.domain)}&walkthrough=1`}
+                    className="inline-flex justify-center rounded-xl border border-white/30 hover:bg-white/[0.08] px-4 py-2.5 text-sm font-semibold text-white"
+                  >
+                    Book 15 minutes
+                  </a>
+                </div>
               )}
               {!sample && <ReportRewards site={site.domain} prices={p} planHref={planHref} />}
             </div>

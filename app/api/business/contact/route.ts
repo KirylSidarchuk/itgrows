@@ -35,6 +35,10 @@ export async function POST(req: NextRequest) {
   }
 
   const message = clean(String(body.message ?? "").slice(0, 5000)).trim()
+  // The report's "Get an invoice" / "Book 15 minutes" (22 Nov 2026): the request's topic, counted from
+  // analytics_events (event geo_contact, props.topic) and named first in the email and Telegram.
+  const topic = body.topic === "invoice" || body.topic === "walkthrough" ? body.topic : null
+  const topicLabel = topic === "invoice" ? "INVOICE REQUEST" : topic === "walkthrough" ? "15-MINUTE CALL REQUEST" : ""
   if (!message) return NextResponse.json({ error: "empty" }, { status: 400 })
 
   // The address always comes from the account, never from the request.
@@ -73,7 +77,7 @@ export async function POST(req: NextRequest) {
         await tx.execute(sql`
           INSERT INTO analytics_events (user_id, event, path, props)
           VALUES (${userId}::uuid, 'geo_contact', '/business/dashboard/support',
-                  ${JSON.stringify({ email, site: site || null, message })}::jsonb)
+                  ${JSON.stringify({ email, site: site || null, message, topic, cta: topic ? "report" : null })}::jsonb)
           RETURNING id`)
       )[0]
       return { limited: false, eventId: row?.id ? String(row.id) : null }
@@ -94,7 +98,7 @@ export async function POST(req: NextRequest) {
       from: "ItGrows.ai <noreply@itgrows.ai>",
       to: "kiryl.sidarchuk@gmail.com",
       replyTo: email,
-      subject: `GEO cabinet: message from ${email}`,
+      subject: `${topicLabel ? `${topicLabel} · ` : ""}GEO cabinet: message from ${email}`,
       html: `<p><strong>From:</strong> ${esc(email)}</p>
 <p><strong>Site:</strong> ${site ? esc(site) : "—"}</p>
 <p><strong>User id:</strong> ${esc(userId)}</p>
@@ -114,7 +118,7 @@ export async function POST(req: NextRequest) {
   // notifyOwner has no timeout; a hanging Telegram call must not hold the reply after the email went out.
   await Promise.race([
     notifyOwner(
-      `GEO cabinet message${emailed ? "" : " (EMAIL FAILED)"}\nFrom: ${email}${site ? `\nSite: ${site}` : ""}\n\n${tgBody}`
+      `${topicLabel ? `${topicLabel}\n` : ""}GEO cabinet message${emailed ? "" : " (EMAIL FAILED)"}\nFrom: ${email}${site ? `\nSite: ${site}` : ""}\n\n${tgBody}`
     ),
     new Promise((resolve) => setTimeout(resolve, 5000)),
   ])

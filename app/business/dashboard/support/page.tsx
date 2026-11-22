@@ -3,12 +3,14 @@
 import { useEffect, useState } from "react"
 import { useSession } from "next-auth/react"
 import { card } from "../visibility/parts"
+import { GEO_PRICES } from "@/lib/geo-pricing"
 
 // "Write to us": one message box, the account email shown (replies go there), and optionally the
 // site the message is about. Posts to /api/business/contact, which emails and pings us; the page
 // only says "sent" when the server says the email went out. ?site= picks a followed site; ?report=
 // (from "contact us and we'll run it for you", past the free report) starts the message with the
-// request for that site's report.
+// request for that site's report. ?invoice= and ?walkthrough= (the report's "Get an invoice" and "Book 15
+// minutes", 22 Nov 2026) start the message with that request and send its topic, which the route stores.
 
 const FALLBACK = "kiryl@itgrows.ai"
 
@@ -29,15 +31,27 @@ export default function SupportPage() {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState("")
   const [sent, setSent] = useState(false)
+  const [topic, setTopic] = useState<"" | "invoice" | "walkthrough">("")
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
     const wanted = params.get("site") ?? ""
     const report = (params.get("report") ?? "").trim().slice(0, 200)
     const walkthrough = params.has("walkthrough")
+    const invoice = params.has("invoice")
+    const P = GEO_PRICES
     // Said once the sites are in, so the box is filled in the same render as the list.
     const prefill = () => {
+      setTopic(invoice ? "invoice" : walkthrough ? "walkthrough" : "")
       if (report) setMessage((m) => m || `Please run the AI visibility report for ${report}.`)
+      else if (invoice)
+        setMessage(
+          (m) =>
+            m ||
+            `Please send me an invoice for the AI visibility plan${wanted ? ` for ${wanted}` : ""}.\n` +
+              `Billing (keep one): monthly, ${P.month.label} a month + ${P.setup.label} one-time setup / 3 months upfront, ${P.quarter.label}, no setup / a year upfront, ${P.year.label}, no setup.\n` +
+              `Company name:\nBilling address:\nVAT ID (if any):\n`
+        )
       else if (walkthrough) setMessage((m) => m || "I'd like a 15-minute walkthrough of my report. Times that suit me: ")
     }
     fetch("/api/geo/report", { cache: "no-store" })
@@ -65,7 +79,7 @@ export default function SupportPage() {
       const r = await fetch("/api/business/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message, site: site || null }),
+        body: JSON.stringify({ message, site: site || null, topic: topic || null }),
       })
       const j = (await r.json().catch(() => ({}))) as { ok?: boolean; error?: string }
       if (r.ok && j.ok) {
