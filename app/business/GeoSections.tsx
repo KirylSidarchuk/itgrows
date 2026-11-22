@@ -144,6 +144,19 @@ export async function WorkSystem({ id = "how" }: { id?: string }) {
           </div>
         </details>
 
+        {/* The one measurement method (geoSections work.method): the same facts as the cabinet and the Terms. */}
+        <div id="how-we-count" className="mt-8 rounded-2xl border border-slate-200 bg-white/70 p-5 sm:p-6 scroll-mt-20">
+          <h3 className="text-sm font-bold text-[#1b1916]">{m.method.title}</h3>
+          <dl className="mt-3 grid gap-x-6 gap-y-2.5 sm:grid-cols-2 lg:grid-cols-5 text-sm">
+            {m.method.items.map((x) => (
+              <div key={x.k}>
+                <dt className="text-xs font-bold text-violet-700">{x.k}</dt>
+                <dd className="text-slate-600 leading-relaxed mt-0.5">{x.v}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+
         <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4 text-center sm:text-left">
           <p className="text-sm sm:text-base font-semibold max-w-xl">{m.closing}</p>
           <a href={pricingAnchor(id)} className={`shrink-0 rounded-xl bg-violet-600 hover:bg-violet-500 text-white px-5 py-3 text-sm font-semibold shadow-lg shadow-violet-600/20 ${SHINE}`}>

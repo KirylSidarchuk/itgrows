@@ -15,7 +15,7 @@ export const ENTITY_ONE_LINER =
   "ItGrows is an AI visibility (generative engine optimization, GEO) service that gets businesses named when their customers ask ChatGPT, Claude, Gemini and Perplexity: it publishes answer pages on the company's own website, makes the site readable for AI crawlers and search indexes, and re-asks the customers' questions to all four assistants every two weeks."
 
 export const ENTITY_ABOUT = [
-  "ItGrows gets a company named when its customers ask an AI assistant. We put the questions those customers ask to ChatGPT, Claude, Gemini and Perplexity, several times each, and see who is named in its place and which sites are cited. Then we do the work: we open the site to AI crawlers and search indexes, publish pages on the company's own domain that answer those questions, and prepare its profiles on the sites the assistants quote. Every two weeks we ask again and push wherever the company is still missing.",
+  "ItGrows gets a company named when its customers ask an AI assistant. We put the questions those customers ask to ChatGPT, Claude, Gemini and Perplexity, 3 times each, and see who is named in its place and which sites are cited. Then we do the work: we open the site to AI crawlers and search indexes, publish pages on the company's own domain that answer those questions, and prepare its profiles on the sites the assistants quote. Every two weeks we ask again and push wherever the company is still missing.",
   "Every paid plan carries a growth guarantee: in 90 days, AI assistants will name you more often than on launch day, or we work for free (conditions: itgrows.ai/terms#growth-guarantee).",
 ]
 

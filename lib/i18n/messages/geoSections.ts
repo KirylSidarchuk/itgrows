@@ -1,7 +1,9 @@
 import { defineMessages } from "../messages"
 
 // app/business/GeoSections.tsx: WorkSystem (work), WhyThisMatters (why), VersusArticles (versus) and
-// what the plan includes (included). The big numbers of the five stages stay in the component; the
+// what the plan includes (included). work.method is the one measurement method (22 Nov 2026, Venture OS
+// task 60), the same facts as the cabinet's MethodNote (visibility/parts.tsx) and /terms#growth-guarantee;
+// it must follow /root/geo_check (service.py baseline samples, weekly.py asks_for). The big numbers of the five stages stay in the component; the
 // findings' numbers carry words, so they are here. The plan's price is named by the pricing card and
 // the FAQ (pricingPlans.ts, home.ts), not here.
 // Since 30 Oct 2026 (owner's decision) the copy sells the outcome: no hedging lines, no guarantee word
@@ -11,7 +13,7 @@ const en = {
   work: {
     kicker: "How we get you named",
     h2: "Five steps that put you in the answer. We do all five.",
-    lead: "We do the work every week and keep pushing until the assistants name you. You see every article 2 days before it goes live, and can edit or stop it.",
+    lead: "We do the work every week and push until the assistants name you more often — counted, not claimed: the same questions every two weeks, against day 0. You see every article 2 days before it goes live, and can edit or stop it.",
     stages: [
       {
         step: "Find the gap",
@@ -39,6 +41,16 @@ const en = {
         d: "Every two weeks the same questions go back to all four assistants, against day 0. Wherever you're still missing is where the next work goes. Once a month, a report in your language, in your cabinet.",
       },
     ],
+    method: {
+      title: "How we count",
+      items: [
+        { k: "Questions", v: "20 your customers would type, in their language, with your city and country if you serve one area. None contains your name. Fixed on day 0, the same every time." },
+        { k: "Assistants", v: "ChatGPT, Claude, Gemini and Perplexity, with web search on; each assistant decides when to search." },
+        { k: "Asks", v: "On the plan, each question goes 3 times to each assistant: 240 answers per measurement, every two weeks. The free report asks once: 80 answers." },
+        { k: "Named", v: "The answer names your business or links to your site. Your score: how many of the 80 question-and-assistant pairs name you at least once." },
+        { k: "Growth", v: "Only like with like: the same questions, the same number of asks. Answers vary from ask to ask, so we judge by the average of two measurements against day 0, not by one answer." },
+      ],
+    },
     inside: "What we do inside each step",
     closing: "Anyone can publish an article. We do everything that decides whether an assistant reads it and names you.",
     seePlan: "Get me into the answers →",
@@ -141,7 +153,7 @@ export default defineMessages(en, {
     work: {
       kicker: "So bringen wir Sie in die Antworten",
       h2: "Fünf Schritte, die Sie in die Antwort bringen. Wir erledigen alle fünf.",
-      lead: "Wir erledigen die Arbeit jede Woche und legen nach, bis die Assistenten Sie nennen. Sie sehen jeden Artikel 2 Tage vor der Veröffentlichung und können ihn bearbeiten oder stoppen.",
+      lead: "Wir erledigen die Arbeit jede Woche und legen nach, bis die Assistenten Sie öfter nennen — gezählt, nicht behauptet: alle zwei Wochen dieselben Fragen, im Vergleich zu Tag 0. Sie sehen jeden Artikel 2 Tage vor der Veröffentlichung und können ihn bearbeiten oder stoppen.",
       stages: [
         {
           step: "Lücke finden",
@@ -169,6 +181,16 @@ export default defineMessages(en, {
           d: "Alle zwei Wochen gehen dieselben Fragen erneut an alle vier Assistenten, im Vergleich zu Tag 0. Wo Sie noch fehlen, dorthin geht die nächste Arbeit. Einmal im Monat ein Bericht in Ihrer Sprache, in Ihrem Kundenbereich.",
         },
       ],
+      method: {
+        title: "So zählen wir",
+        items: [
+          { k: "Fragen", v: "20 Fragen, wie Ihre Kunden sie eintippen, in deren Sprache, mit Stadt und Land, wenn Sie eine Region bedienen. Keine enthält Ihren Namen. An Tag 0 festgelegt, jedes Mal dieselben." },
+          { k: "Assistenten", v: "ChatGPT, Claude, Gemini und Perplexity mit eingeschalteter Websuche; wann gesucht wird, entscheidet jeder Assistent selbst." },
+          { k: "Durchläufe", v: "Im Plan geht jede Frage 3-mal an jeden Assistenten: 240 Antworten pro Messung, alle zwei Wochen. Der kostenlose Bericht fragt einmal: 80 Antworten." },
+          { k: "Genannt", v: "Die Antwort nennt Ihr Unternehmen oder verlinkt Ihre Website. Ihr Wert: wie viele der 80 Paare aus Frage und Assistent Sie mindestens einmal nennen." },
+          { k: "Wachstum", v: "Verglichen wird nur Gleiches mit Gleichem: dieselben Fragen, gleich viele Durchläufe. Antworten schwanken von Durchlauf zu Durchlauf, deshalb zählt der Durchschnitt zweier Messungen gegenüber Tag 0, nicht eine einzelne Antwort." },
+        ],
+      },
       inside: "Was wir in jedem Schritt tun",
       closing: "Einen Artikel veröffentlichen kann jeder. Wir erledigen alles, was entscheidet, ob ein Assistent ihn liest und Sie nennt.",
       seePlan: "Bringen Sie mich in die Antworten →",
@@ -262,7 +284,7 @@ export default defineMessages(en, {
     work: {
       kicker: "Comment nous vous faisons mentionner",
       h2: "Cinq étapes qui vous placent dans la réponse. Nous faisons les cinq.",
-      lead: "Nous faisons le travail chaque semaine et poussons jusqu’à ce que les assistants vous mentionnent. Vous voyez chaque article 2 jours avant sa mise en ligne, et pouvez le modifier ou l’arrêter.",
+      lead: "Nous faisons le travail chaque semaine et poussons jusqu’à ce que les assistants vous mentionnent plus souvent — compté, pas affirmé : les mêmes questions toutes les deux semaines, face au jour 0. Vous voyez chaque article 2 jours avant sa mise en ligne, et pouvez le modifier ou l’arrêter.",
       stages: [
         {
           step: "Trouver la brèche",
@@ -290,6 +312,16 @@ export default defineMessages(en, {
           d: "Toutes les deux semaines, les mêmes questions repartent vers les quatre assistants, comparées au jour 0. Là où vous manquez encore, c’est là que va le travail suivant. Une fois par mois, un rapport dans votre langue, dans votre espace client.",
         },
       ],
+      method: {
+        title: "Comment nous comptons",
+        items: [
+          { k: "Questions", v: "20 questions que vos clients taperaient, dans leur langue, avec votre ville et votre pays si vous servez une zone. Aucune ne contient votre nom. Fixées au jour 0, les mêmes à chaque fois." },
+          { k: "Assistants", v: "ChatGPT, Claude, Gemini et Perplexity, recherche web activée ; chaque assistant décide quand chercher." },
+          { k: "Passages", v: "Avec le plan, chaque question part 3 fois vers chaque assistant : 240 réponses par mesure, toutes les deux semaines. Le rapport gratuit pose chaque question une fois : 80 réponses." },
+          { k: "Mentionné", v: "La réponse cite votre entreprise ou renvoie vers votre site. Votre score : combien des 80 paires question-assistant vous mentionnent au moins une fois." },
+          { k: "Croissance", v: "Nous ne comparons que ce qui est comparable : mêmes questions, même nombre de passages. Les réponses varient d’un passage à l’autre, donc nous jugeons sur la moyenne de deux mesures face au jour 0, pas sur une seule réponse." },
+        ],
+      },
       inside: "Ce que nous faisons à chaque étape",
       closing: "N’importe qui peut publier un article. Nous faisons tout ce qui décide si un assistant le lit et vous mentionne.",
       seePlan: "Faites-moi entrer dans les réponses →",
@@ -385,7 +417,7 @@ export default defineMessages(en, {
     work: {
       kicker: "Cómo conseguimos que le mencionen",
       h2: "Cinco pasos que le ponen en la respuesta. Hacemos los cinco.",
-      lead: "Hacemos el trabajo cada semana y seguimos empujando hasta que los asistentes le mencionen. Usted ve cada artículo 2 días antes de que se publique y puede editarlo o detenerlo.",
+      lead: "Hacemos el trabajo cada semana y seguimos empujando hasta que los asistentes le mencionen más a menudo — contado, no prometido: las mismas preguntas cada dos semanas, frente al día 0. Usted ve cada artículo 2 días antes de que se publique y puede editarlo o detenerlo.",
       stages: [
         {
           step: "Encontrar el hueco",
@@ -413,6 +445,16 @@ export default defineMessages(en, {
           d: "Cada dos semanas las mismas preguntas vuelven a los cuatro asistentes, frente al día 0. Allí donde aún no aparece es adonde va el siguiente trabajo. Una vez al mes, un informe en su idioma, en su área de cliente.",
         },
       ],
+      method: {
+        title: "Cómo contamos",
+        items: [
+          { k: "Preguntas", v: "20 preguntas como las escribirían sus clientes, en su idioma, con su ciudad y país si atiende una zona. Ninguna contiene su nombre. Fijadas el día 0, siempre las mismas." },
+          { k: "Asistentes", v: "ChatGPT, Claude, Gemini y Perplexity, con la búsqueda web activada; cada asistente decide cuándo buscar." },
+          { k: "Repeticiones", v: "Con el plan, cada pregunta va 3 veces a cada asistente: 240 respuestas por medición, cada dos semanas. El informe gratuito pregunta una vez: 80 respuestas." },
+          { k: "Mencionado", v: "La respuesta nombra su empresa o enlaza a su web. Su puntuación: cuántos de los 80 pares de pregunta y asistente le nombran al menos una vez." },
+          { k: "Crecimiento", v: "Solo comparamos lo comparable: mismas preguntas, mismo número de repeticiones. Las respuestas cambian de una vez a otra, así que juzgamos por la media de dos mediciones frente al día 0, no por una sola respuesta." },
+        ],
+      },
       inside: "Qué hacemos en cada paso",
       closing: "Cualquiera puede publicar un artículo. Nosotros hacemos todo lo que decide si un asistente lo lee y le menciona.",
       seePlan: "Quiero estar en las respuestas →",
@@ -508,7 +550,7 @@ export default defineMessages(en, {
     work: {
       kicker: "Как мы добиваемся, чтобы вас называли",
       h2: "Пять шагов, которые приводят вас в ответ. Все пять делаем мы.",
-      lead: "Мы делаем работу каждую неделю и дожимаем, пока ассистенты не начнут называть вас. Вы видите каждую статью за 2 дня до публикации и можете её отредактировать или остановить.",
+      lead: "Мы делаем работу каждую неделю и дожимаем, пока ассистенты не начнут называть вас чаще, — и это видно в цифрах: те же вопросы раз в две недели, против дня 0. Вы видите каждую статью за 2 дня до публикации и можете её отредактировать или остановить.",
       stages: [
         {
           step: "Найти пробел",
@@ -536,6 +578,16 @@ export default defineMessages(en, {
           d: "Раз в две недели те же вопросы снова уходят ко всем четырём ассистентам — в сравнении с днём 0. Где вас ещё нет, туда и идёт следующая работа. Раз в месяц — отчёт на вашем языке в личном кабинете.",
         },
       ],
+      method: {
+        title: "Как мы считаем",
+        items: [
+          { k: "Вопросы", v: "20 вопросов, которые задают ваши клиенты, на их языке, с городом и страной, если вы работаете в одном регионе. Вашего названия ни в одном нет. Фиксируются в день 0 и не меняются." },
+          { k: "Ассистенты", v: "ChatGPT, Claude, Gemini и Perplexity с включённым веб-поиском; когда искать, решает сам ассистент." },
+          { k: "Заходы", v: "В плане каждый вопрос задаётся каждому ассистенту 3 раза: 240 ответов за замер, раз в две недели. Бесплатный отчёт спрашивает один раз: 80 ответов." },
+          { k: "Назван", v: "В ответе есть название вашей компании или ссылка на ваш сайт. Ваш счёт — сколько из 80 пар «вопрос × ассистент» назвали вас хотя бы раз." },
+          { k: "Рост", v: "Сравниваем только одинаковое: те же вопросы, то же число заходов. Ответы меняются от захода к заходу, поэтому судим по среднему двух замеров против дня 0, а не по одному ответу." },
+        ],
+      },
       inside: "Что мы делаем на каждом шаге",
       closing: "Опубликовать статью может кто угодно. Мы делаем всё, от чего зависит, прочитает ли её ассистент и назовёт ли вас.",
       seePlan: "Хочу в ответы ИИ →",

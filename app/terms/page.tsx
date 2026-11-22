@@ -9,7 +9,9 @@ export const dynamic = "force-static"
 // Terms of Service for both products: AI visibility (ItGrows for Business) and LinkedIn & X posts.
 // This page is static and names the AI visibility plan's one price (GEO_PRICES, lib/geo-pricing.ts): the price
 // test of 5-10 Nov 2026 is closed (Kiryl, 10 Nov 2026: "$499 for everyone"), which is the effective date of
-// 10 Nov 2026. A new test would need the "In short" line and the #plan section reworded again.
+// 10 Nov 2026. 22 Nov 2026: the guarantee counts on a stable question set (at least 15 questions, 3 asks,
+// question-and-assistant pairs), the method the landing (geoSections work.method) and the cabinet state, and #plan says
+// what the plan does not include. A new test would need the "In short" line and the #plan section reworded again.
 // Refunds and taxes
 // are the owner's decisions of 23 Oct 2026. Since 27 Oct 2026 (the effective date) the detailed report
 // is free once an account is created, one per account and per connection; the quick check and the
@@ -98,7 +100,7 @@ export default function TermsPage() {
         <p className="text-[11px] uppercase tracking-[0.14em] font-bold text-violet-700">Legal</p>
         <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight mt-2">Terms of Service</h1>
         <p className="text-slate-500 text-sm mt-2">
-          Effective date: 10 November 2026
+          Effective date: 22 November 2026
         </p>
 
         <div className="mt-8 rounded-2xl border border-black/10 bg-white overflow-hidden">
@@ -209,7 +211,8 @@ export default function TermsPage() {
               The setup gets your site ready: it is tested the way AI crawlers see it, what blocks them is fixed with you, Bing and Google are set up,
               and you get a launch report on the “Your website” page. What the plan includes after that is listed on our pricing page when you buy it;
               today that is the day-0 report, a re-check against day 0 every two weeks, up to 12 researched articles a month on your own domain, and a monthly
-              report. The plan has no trial period.
+              report. It does not include advertising, building or redesigning your site, reviews or paid links, a second site, or a set place in a
+              particular answer. The plan has no trial period.
             </p>
             <p>
               <strong>Renewal.</strong> The plan renews automatically at the end of each paid period (every month, every 3 months or every year, as
@@ -254,12 +257,20 @@ export default function TermsPage() {
             <ol className="list-decimal pl-5 space-y-1.5">
               <li>It applies to every paid ItGrows for Business (AI visibility, GEO) plan, from its launch.</li>
               <li>
-                It is measured with our standard measurement: the set of up to 20 customer questions agreed at launch, none of which contains your
-                business’s name, asked to ChatGPT, Claude, Gemini and Perplexity. The result is the number of answers that name your business.
+                It is measured with our standard measurement, on a stable set of questions: the customer questions fixed at launch (up to 20, at
+                least 15; none contains your business’s name; a local business’s questions name its city and country), each asked 3 times to each
+                of ChatGPT, Claude, Gemini and Perplexity, with their web search on. Every scheduled measurement uses the same questions and the same
+                number of asks. They change only if you ask in writing, and then day 0 is measured again on the new set. If fewer than 15 questions can
+                be set for your site, we tell you at launch and this guarantee does not apply.
+              </li>
+              <li>
+                A question counts for an assistant when at least one of its 3 answers names your business or links to your site. The result of a
+                measurement is the number of such question-and-assistant pairs (at most 80 with 20 questions). A pair an assistant did not answer in
+                one of the measurements compared, for example during an outage, is left out of all of them.
               </li>
               <li>
                 Day 0 is the launch measurement. At day 90 we compare the average of the last two scheduled measurements up to day 90 with day 0.
-                The guarantee is met if that average is higher than day 0 (if every answer already named your business on day 0, if it stays at
+                The guarantee is met if that average is higher than day 0 (if every pair already named your business on day 0, if it stays at
                 that level).
               </li>
               <li>

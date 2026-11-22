@@ -91,7 +91,7 @@ const en = {
     },
     {
       q: "How will we know it's working?",
-      a: "You see it every two weeks. The same questions your customers ask go to ChatGPT, Claude, Gemini and Perplexity, several times each, and we count against day 0 the answers that name you and the sites they cite. On blogs we host, the server log also shows AI crawlers fetching your pages and assistants pulling specific articles into live answers: ChatGPT-User and Perplexity-User only show up mid-conversation.",
+      a: "You see it every two weeks. The same questions your customers ask go to ChatGPT, Claude, Gemini and Perplexity, 3 times each, and we count against day 0 the answers that name you and the sites they cite. On blogs we host, the server log also shows AI crawlers fetching your pages and assistants pulling specific articles into live answers: ChatGPT-User and Perplexity-User only show up mid-conversation.",
     },
     {
       q: "How fast do we start?",
@@ -200,7 +200,7 @@ export default defineMessages(en, {
     faq: ({ sample, month, setup, quarter, year, yearPerMonth, yearOff }) => [
       {
         q: "Was ist ItGrows?",
-        a: "ItGrows sorgt dafür, dass ein Unternehmen genannt wird, wenn seine Kunden einen KI-Assistenten fragen. Wir stellen ChatGPT, Claude, Gemini und Perplexity die Fragen, die diese Kunden stellen, jeweils mehrmals, und sehen, wer an seiner Stelle genannt wird und welche Websites zitiert werden. Dann erledigen wir die Arbeit: Wir öffnen die Website für KI-Crawler und Suchindizes, veröffentlichen auf der eigenen Domain des Unternehmens Seiten, die diese Fragen beantworten, und bereiten seine Profile auf den Websites vor, die die Assistenten zitieren. Alle zwei Wochen fragen wir erneut und legen überall nach, wo das Unternehmen noch fehlt.",
+        a: "ItGrows sorgt dafür, dass ein Unternehmen genannt wird, wenn seine Kunden einen KI-Assistenten fragen. Wir stellen ChatGPT, Claude, Gemini und Perplexity die Fragen, die diese Kunden stellen, jeweils 3-mal, und sehen, wer an seiner Stelle genannt wird und welche Websites zitiert werden. Dann erledigen wir die Arbeit: Wir öffnen die Website für KI-Crawler und Suchindizes, veröffentlichen auf der eigenen Domain des Unternehmens Seiten, die diese Fragen beantworten, und bereiten seine Profile auf den Websites vor, die die Assistenten zitieren. Alle zwei Wochen fragen wir erneut und legen überall nach, wo das Unternehmen noch fehlt.",
       },
       {
         q: "Wird ChatGPT uns nennen?",
@@ -212,7 +212,7 @@ export default defineMessages(en, {
       },
       {
         q: "Woran sehen wir, dass es wirkt?",
-        a: "Sie sehen es alle zwei Wochen. Dieselben Fragen, die Ihre Kunden stellen, gehen an ChatGPT, Claude, Gemini und Perplexity, jeweils mehrmals, und wir zählen im Vergleich zu Tag 0 die Antworten, die Sie nennen, und die Websites, die sie zitieren. Bei Blogs, die wir hosten, zeigt das Server-Log außerdem, wie KI-Crawler Ihre Seiten abrufen und Assistenten bestimmte Artikel in Live-Antworten holen: ChatGPT-User und Perplexity-User tauchen nur mitten in einem Gespräch auf.",
+        a: "Sie sehen es alle zwei Wochen. Dieselben Fragen, die Ihre Kunden stellen, gehen an ChatGPT, Claude, Gemini und Perplexity, jeweils 3-mal, und wir zählen im Vergleich zu Tag 0 die Antworten, die Sie nennen, und die Websites, die sie zitieren. Bei Blogs, die wir hosten, zeigt das Server-Log außerdem, wie KI-Crawler Ihre Seiten abrufen und Assistenten bestimmte Artikel in Live-Antworten holen: ChatGPT-User und Perplexity-User tauchen nur mitten in einem Gespräch auf.",
       },
       {
         q: "Wie schnell legen wir los?",
@@ -321,7 +321,7 @@ export default defineMessages(en, {
     faq: ({ sample, month, setup, quarter, year, yearPerMonth, yearOff }) => [
       {
         q: "Qu’est-ce qu’ItGrows ?",
-        a: "ItGrows fait mentionner une entreprise quand ses clients interrogent un assistant IA. Nous posons à ChatGPT, Claude, Gemini et Perplexity les questions que posent ces clients, plusieurs fois chacune, et voyons qui est mentionné à sa place et quels sites sont cités. Puis nous faisons le travail : nous ouvrons le site aux robots d’IA et aux index de recherche, publions sur le propre domaine de l’entreprise des pages qui répondent à ces questions, et préparons ses profils sur les sites que citent les assistants. Toutes les deux semaines, nous reposons les questions et poussons partout où l’entreprise manque encore.",
+        a: "ItGrows fait mentionner une entreprise quand ses clients interrogent un assistant IA. Nous posons à ChatGPT, Claude, Gemini et Perplexity les questions que posent ces clients, 3 fois chacune, et voyons qui est mentionné à sa place et quels sites sont cités. Puis nous faisons le travail : nous ouvrons le site aux robots d’IA et aux index de recherche, publions sur le propre domaine de l’entreprise des pages qui répondent à ces questions, et préparons ses profils sur les sites que citent les assistants. Toutes les deux semaines, nous reposons les questions et poussons partout où l’entreprise manque encore.",
       },
       {
         q: "ChatGPT va-t-il nous mentionner ?",
@@ -333,7 +333,7 @@ export default defineMessages(en, {
       },
       {
         q: "Comment saurons-nous que ça marche ?",
-        a: "Vous le voyez toutes les deux semaines. Les questions que posent vos clients partent à ChatGPT, Claude, Gemini et Perplexity, plusieurs fois chacune, et nous comptons, par rapport au jour 0, les réponses qui vous mentionnent et les sites qu’elles citent. Sur les blogs que nous hébergeons, le journal serveur montre aussi les robots d’IA qui récupèrent vos pages et les assistants qui puisent des articles précis pour des réponses en direct : ChatGPT-User et Perplexity-User n’apparaissent qu’en pleine conversation.",
+        a: "Vous le voyez toutes les deux semaines. Les questions que posent vos clients partent à ChatGPT, Claude, Gemini et Perplexity, 3 fois chacune, et nous comptons, par rapport au jour 0, les réponses qui vous mentionnent et les sites qu’elles citent. Sur les blogs que nous hébergeons, le journal serveur montre aussi les robots d’IA qui récupèrent vos pages et les assistants qui puisent des articles précis pour des réponses en direct : ChatGPT-User et Perplexity-User n’apparaissent qu’en pleine conversation.",
       },
       {
         q: "En combien de temps démarre-t-on ?",
@@ -442,7 +442,7 @@ export default defineMessages(en, {
     faq: ({ sample, month, setup, quarter, year, yearPerMonth, yearOff }) => [
       {
         q: "¿Qué es ItGrows?",
-        a: "ItGrows consigue que mencionen a una empresa cuando sus clientes preguntan a un asistente de IA. Planteamos a ChatGPT, Claude, Gemini y Perplexity las preguntas que hacen esos clientes, varias veces cada una, y vemos a quién mencionan en su lugar y qué sitios citan. Después hacemos el trabajo: abrimos el sitio a los rastreadores de IA y a los índices de búsqueda, publicamos en el propio dominio de la empresa páginas que responden a esas preguntas y preparamos sus perfiles en los sitios que citan los asistentes. Cada dos semanas volvemos a preguntar y empujamos allí donde la empresa aún no aparece.",
+        a: "ItGrows consigue que mencionen a una empresa cuando sus clientes preguntan a un asistente de IA. Planteamos a ChatGPT, Claude, Gemini y Perplexity las preguntas que hacen esos clientes, 3 veces cada una, y vemos a quién mencionan en su lugar y qué sitios citan. Después hacemos el trabajo: abrimos el sitio a los rastreadores de IA y a los índices de búsqueda, publicamos en el propio dominio de la empresa páginas que responden a esas preguntas y preparamos sus perfiles en los sitios que citan los asistentes. Cada dos semanas volvemos a preguntar y empujamos allí donde la empresa aún no aparece.",
       },
       {
         q: "¿Nos mencionará ChatGPT?",
@@ -454,7 +454,7 @@ export default defineMessages(en, {
       },
       {
         q: "¿Cómo sabremos que funciona?",
-        a: "Lo ve cada dos semanas. Las mismas preguntas que hacen sus clientes van a ChatGPT, Claude, Gemini y Perplexity, varias veces cada una, y contamos frente al día 0 las respuestas que le mencionan y los sitios que citan. En los blogs que alojamos, el registro del servidor muestra además a los rastreadores de IA descargando sus páginas y a los asistentes usando artículos concretos en respuestas en directo: ChatGPT-User y Perplexity-User solo aparecen en mitad de una conversación.",
+        a: "Lo ve cada dos semanas. Las mismas preguntas que hacen sus clientes van a ChatGPT, Claude, Gemini y Perplexity, 3 veces cada una, y contamos frente al día 0 las respuestas que le mencionan y los sitios que citan. En los blogs que alojamos, el registro del servidor muestra además a los rastreadores de IA descargando sus páginas y a los asistentes usando artículos concretos en respuestas en directo: ChatGPT-User y Perplexity-User solo aparecen en mitad de una conversación.",
       },
       {
         q: "¿Cuánto tardamos en empezar?",

@@ -40,6 +40,7 @@ const en = {
   startMonthly: "Start monthly",
   startQuarter: (quarter: string) => `3 months upfront — ${quarter}, no setup fee`,
   startYearly: (year: string) => `Start yearly — ${year}`,
+  notIncluded: "Not included: ads, building or redesigning your site, reviews or paid links, a second site (one plan, one site), a set spot in a given answer.",
 }
 
 export default defineMessages(en, {
@@ -74,6 +75,7 @@ export default defineMessages(en, {
     startMonthly: "Monatlich starten",
     startQuarter: (quarter) => `3 Monate im Voraus — ${quarter}, ohne Einrichtungsgebühr`,
     startYearly: (year) => `Jährlich starten — ${year}`,
+    notIncluded: "Nicht enthalten: Werbung, Bau oder Redesign Ihrer Website, Bewertungen oder gekaufte Links, eine zweite Website (ein Plan, eine Website), ein fester Platz in einer bestimmten Antwort.",
   },
   fr: {
     h2: "Voyez qui vous prend vos clients. Ensuite, nous vous faisons entrer dans les réponses.",
@@ -106,6 +108,7 @@ export default defineMessages(en, {
     startMonthly: "Commencer au mois",
     startQuarter: (quarter) => `3 mois d’avance — ${quarter}, sans frais de mise en place`,
     startYearly: (year) => `Commencer à l’année — ${year}`,
+    notIncluded: "Non inclus : publicité, création ou refonte de votre site, avis ou liens payants, un second site (un plan, un site), une place fixe dans une réponse donnée.",
   },
   es: {
     h2: "Vea quién se lleva a sus clientes. Después le metemos en las respuestas.",
@@ -138,6 +141,7 @@ export default defineMessages(en, {
     startMonthly: "Empezar mensual",
     startQuarter: (quarter) => `3 meses por adelantado — ${quarter}, sin cuota de configuración`,
     startYearly: (year) => `Empezar anual — ${year}`,
+    notIncluded: "No incluye: anuncios, crear o rediseñar su web, reseñas o enlaces pagados, una segunda web (un plan, una web), un puesto fijo en una respuesta concreta.",
   },
   ru: {
     h2: "Узнайте, кто забирает ваших клиентов. А дальше мы выведем вас в ответы.",
@@ -170,5 +174,6 @@ export default defineMessages(en, {
     startMonthly: "Начать помесячно",
     startQuarter: (quarter) => `3 месяца вперёд — ${quarter}, без платы за настройку`,
     startYearly: (year) => `Начать на год — ${year}`,
+    notIncluded: "Не входит: реклама, создание или переделка сайта, отзывы и покупные ссылки, второй сайт (один план — один сайт), конкретное место в конкретном ответе.",
   },
 })

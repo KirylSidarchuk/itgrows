@@ -271,6 +271,7 @@ export default function PricingPlans({
               </Tick>
             ))}
           </ul>
+          <p className="mt-4 text-xs text-white/60 leading-relaxed">{m.notIncluded}</p>
           <div className="mt-5 rounded-xl border border-violet-400/40 bg-violet-500/10 p-4">
             <p className="text-[11px] uppercase tracking-[0.15em] font-bold text-violet-300">{g.label}</p>
             <p className="mt-1 font-bold text-white leading-snug">{g.line}</p>

@@ -1700,7 +1700,8 @@ export function YourPlan({
 export function GuaranteeFootnote() {
   return (
     <p className="text-xs text-slate-500">
-      * Growth guarantee: we keep working for free until they do. Conditions:{" "}
+      * Growth guarantee: counted on your day-0 questions, 4 assistants, 3 asks each — the average of the last two measurements before day 90
+      against day 0. If it is not higher, we keep working for free until it is. Conditions:{" "}
       <a href="/terms#growth-guarantee" className="underline">
         Terms
       </a>
@@ -1760,7 +1761,31 @@ export function ReportSections({
         <Sources summary={full.summary} />
       </div>
       <WhereNamed rows={full.rows} engines={full.engines} samples={full.samples} asked={full.finishedAt} />
+      <MethodNote questions={full.rows.length} engines={full.engines.length} samples={full.samples} />
     </>
+  )
+}
+
+/** The one measurement method (22 Nov 2026, Venture OS task 60), the same facts as the landing
+ *  (geoSections work.method) and /terms#growth-guarantee; it must follow /root/geo_check (service.py
+ *  baseline samples, weekly.py asks_for). Internally a move of 2 pairs or less out of 80 is read as noise
+ *  (the three same-day passes of one site gave 7 / 9 / 8); publicly we only say "judge by the average". */
+function MethodNote({ questions, engines, samples }: { questions: number; engines: number; samples: number }) {
+  return (
+    <section id="how-we-count" className={`${card} text-sm text-slate-600 leading-relaxed`}>
+      <h2 className="font-bold text-base text-[#1b1916]">How we count</h2>
+      <p className="mt-2">
+        The same customer questions every time, none with your name, in your customers&apos; language (with the city and country for a local
+        business), asked to ChatGPT, Claude, Gemini and Perplexity with web search on. This report: {questions} questions × {engines} assistants,{" "}
+        {samples === 1 ? "each asked once" : `${samples} asks each`} ({questions * engines * samples} answers). On the plan every question is asked 3 times,
+        every two weeks.
+      </p>
+      <p className="mt-2">
+        A question counts for an assistant when at least one of its answers names you or links to your site, so the score is out of{" "}
+        {questions * engines}. Reports are compared only when measured the same way. Answers vary from ask to ask, so judge by the average of two
+        checks against day 0, not by one answer.
+      </p>
+    </section>
   )
 }
 
