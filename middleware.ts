@@ -64,6 +64,20 @@ function guide(forwarded: Headers, slug: string): NextResponse {
   return res
 }
 
+// German-only pages outside the localized GEO pages (22 Nov 2026, Venture OS №72): the page for orthodontists and
+// dental practices exists in German alone. Marked German like a German guide: the language header and
+// Content-Language, no cookie, no redirect. /de/business/kieferorthopaedie is sent here by lib/i18n/middleware.ts
+// (307 to the unprefixed address, as for every page that is not localized).
+const GERMAN_PAGES = /^\/business\/kieferorthopaedie\/?$/
+
+function germanPage(forwarded: Headers): NextResponse {
+  const headers = new Headers(forwarded)
+  headers.set(LOCALE_HEADER, "de")
+  const res = NextResponse.next({ request: { headers } })
+  res.headers.set("Content-Language", "de")
+  return res
+}
+
 // An article of the blog at /blog/<slug> shows a price too; "<slug>.md" is a rewrite, and stays as it is.
 const BLOG_POST = /^\/blog\/[a-z0-9-]+\/?$/
 
@@ -73,6 +87,7 @@ function respond(req: NextRequest, forwarded: Headers): NextResponse {
     const slug = GUIDE.exec(pathname)?.[1]
     return slug ? guide(forwarded, slug) : NextResponse.next()
   }
+  if (GERMAN_PAGES.test(pathname)) return germanPage(forwarded)
   // An ad's landing page (/business is "/" at its own address, next.config.ts) and the blog's articles
   // have no language of their own.
   if (pathname === "/business" || BLOG_POST.test(pathname)) return NextResponse.next({ request: { headers: forwarded } })
@@ -162,6 +177,8 @@ export const config = {
     "/business/ai-visibility-checker",
     "/business/ai-crawler-checker",
     "/business/sample-report",
+    // A German-only page: marked German (GERMAN_PAGES above).
+    "/business/kieferorthopaedie",
     "/about",
     "/login",
     "/signup",
