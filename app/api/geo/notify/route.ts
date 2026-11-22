@@ -4,6 +4,7 @@ import { db } from "@/lib/db"
 import { sql } from "drizzle-orm"
 import { vmAuthorized, ENGINE_LABEL, ENGINE_ORDER, unsubscribeUrl, type RunSummary } from "@/lib/geo-check"
 import { clientOwnsSql } from "@/lib/geo-role"
+import { GEO_PRICES } from "@/lib/geo-pricing"
 
 // Called by the VM worker when a day-0 or weekly report is ready. Emails each follower of the site
 // who followed before the report finished and has not been told about this run yet — anyone who
@@ -11,9 +12,11 @@ import { clientOwnsSql } from "@/lib/geo-role"
 // sign-up and always goes. The weekly re-check is part of the plan, so weekly mail goes only to a
 // follower who pays the plan for the site or is a client we set up by hand with the site connected
 // (geo_clients, lib/geo-role.ts), and has not unsubscribed.
-// The detailed report is free since 27 Oct 2026 and opens whole in the cabinet, so the day-0 email
-// gives the count, the first names given instead and the most-cited site, and links the report; a
-// follower not on the plan is told the report ends with our plan for the site, and how to reach us.
+// The detailed report is free since 27 Oct 2026 and opens whole in the cabinet. A client's day-0 email gives
+// the count per assistant and links the report. Since 22 Nov 2026 (Venture OS task 74) a follower not on
+// the plan gets one short email: the count, the list of who is named instead of them, the report link and
+// two ways in: book 15 minutes, or reply START (we answer with the invoice). No method, no per-assistant
+// breakdown, and no second email: nothing else is sent after it (geo_report_email marks it sent once).
 // The VM authenticates with its API token.
 
 export const dynamic = "force-dynamic"
@@ -46,6 +49,9 @@ ${footer}
 const button = (label: string, href = REPORT) =>
   `<p style="margin:22px 0"><a href="${href}" style="display:inline-block;background:#7c3aed;color:#ffffff;text-decoration:none;font-weight:600;padding:12px 20px;border-radius:10px">${label}</a></p>`
 
+const SUPPORT = `${APP}/business/dashboard/support`
+const START_TO = OWNER
+
 function readyEmail(
   first: string,
   domain: string,
@@ -53,17 +59,18 @@ function readyEmail(
   questions: number,
   samples: number,
   s: RunSummary,
-  weekly: boolean,
+  client: boolean,
   accountSource: string | null = null
 ) {
   const who = esc(business || domain)
+  const href = `${REPORT}?site=${encodeURIComponent(domain)}`
+  const subject = `${domain}: named in ${s.named} of ${s.of} AI answers`
+  if (!client) return leadEmail(first, domain, who, questions, s, href, subject, accountSource)
   const perEngine = ENGINE_ORDER.filter((e) => s.engines[e])
     .map((e) => `${ENGINE_LABEL[e]} ${s.engines[e].named}/${s.engines[e].of}`)
     .join(" &nbsp;·&nbsp; ")
   const rivals = s.named_instead.slice(0, 2)
   const source = s.sources?.[0]
-  const href = `${REPORT}?site=${encodeURIComponent(domain)}`
-  const subject = `${domain}: named in ${s.named} of ${s.of} AI answers`
   const html = wrap(`<p>Hi ${esc(first)},</p>
 <p>Your AI visibility report for <strong>${esc(domain)}</strong> is ready. We asked ChatGPT, Claude, Gemini and Perplexity ${questions} questions your buyers ask, ${samples === 1 ? "once each" : `${samples} times each`}.</p>
 <div style="background:#f8f7f6;border-radius:12px;padding:16px 18px;margin:18px 0">
@@ -73,15 +80,56 @@ function readyEmail(
 </div>
 ${rivals.length ? `<p style="font-size:14px">Named instead: ${rivals.map((r) => `<strong>${esc(r.name)}</strong> (${r.count})`).join(", ")}.</p>` : ""}
 ${source ? `<p style="font-size:14px">Most-cited site in your field: <strong>${esc(source.domain)}</strong> (${source.count} answers).</p>` : ""}
-${
-  weekly
-    ? button("See every answer →", href)
-    : `<p style="font-size:14px">All of it is open in your account, free: every answer to all ${questions} questions, everyone named instead of you, the sites the assistants quote, and at the end our plan for ${esc(domain)}: what we would do and why.</p>
-${button("See your report →", href)}
-${accountSource === "meta_form" || accountSource === "site_email" ? `<p style="font-size:13px;margin-top:-10px;color:#555">You asked for this report ${accountSource === "meta_form" ? "through our form on Facebook or Instagram" : "on our site"}, so we opened an account for this email. Enter this email on the next screen and we'll send you a one-time code.</p>` : ""}
-<p style="font-size:13px;margin-top:-10px;color:#555">Questions about it, or want a 15-minute walkthrough? Reply with a time that suits you.</p>`
+${button("See every answer →", href)}
+<p style="color:#555;font-size:13px">We re-check every two weeks and tell you what changed.</p>`)
+  return { subject, html }
 }
-${weekly ? `<p style="color:#555;font-size:13px">We re-check every two weeks and tell you what changed.</p>` : ""}`)
+
+/** The one email after a new free report (task 74): who is named instead, then 15 minutes or START. */
+function leadEmail(
+  first: string,
+  domain: string,
+  who: string,
+  questions: number,
+  s: RunSummary,
+  href: string,
+  subject: string,
+  accountSource: string | null
+) {
+  // Real names from this report only: no blanks, no repeats, at most 5, fewer if the report has fewer.
+  const seen = new Set<string>()
+  const rivals = [...s.named_instead]
+    .sort((a, b) => b.count - a.count)
+    .filter((r) => {
+      const k = String(r.name ?? "").trim().toLowerCase()
+      if (!k || seen.has(k) || !(r.count > 0)) return false
+      seen.add(k)
+      return true
+    })
+    .slice(0, 5)
+  const call = `${SUPPORT}?site=${encodeURIComponent(domain)}&walkthrough=1`
+  const start = `mailto:${START_TO}?subject=${encodeURIComponent(`START ${domain}`)}&body=${encodeURIComponent(
+    `START ${domain}\n\nCompany name and billing address for the invoice:\n`
+  )}`
+  const cta = (label: string, link: string, solid: boolean) =>
+    `<a href="${link}" style="display:inline-block;margin:0 8px 10px 0;${
+      solid ? "background:#7c3aed;color:#ffffff;" : "background:#ffffff;color:#7c3aed;border:2px solid #7c3aed;"
+    }text-decoration:none;font-weight:600;padding:11px 18px;border-radius:10px">${label}</a>`
+  const html = wrap(`<p>Hi ${esc(first)},</p>
+<p>Your report for <strong>${esc(domain)}</strong> is ready. Asked ${questions} questions your buyers ask, ChatGPT, Claude, Gemini and Perplexity named ${who} in <strong>${s.named} of ${s.of}</strong> answers.</p>
+${
+  rivals.length
+    ? `<p style="margin-bottom:4px"><strong>Named instead of you:</strong></p>
+<ul style="margin-top:0;padding-left:18px">${rivals
+        .map((r) => `<li>${esc(r.name)} <span style="color:#777">(${r.count} ${r.count === 1 ? "answer" : "answers"})</span></li>`)
+        .join("")}</ul>`
+    : ""
+}
+<p style="font-size:14px"><a href="${href}" style="color:#7c3aed;font-weight:600">See every answer in your report →</a></p>
+<p style="margin-bottom:12px">Want them to name you instead?</p>
+<div>${cta("Book 15 minutes", call, true)}${cta("Reply START", start, false)}</div>
+<p style="font-size:13px;color:#555">START: we send the invoice within a day and begin. ${GEO_PRICES.month.label} a month + ${GEO_PRICES.setup.label} one-time setup, the same public price for everyone.</p>
+${accountSource === "meta_form" || accountSource === "site_email" ? `<p style="font-size:12px;color:#777">You asked for this report ${accountSource === "meta_form" ? "through our form on Facebook or Instagram" : "on our site"}, so we opened an account for this email. To open the report, enter this email on the next screen and we'll send you a one-time code.</p>` : ""}`)
   return { subject, html }
 }
 
