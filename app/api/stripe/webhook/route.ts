@@ -86,6 +86,14 @@ export async function POST(req: NextRequest) {
           const plan = subscription.metadata?.plan ?? session.metadata?.plan
           const organizationId = subscription.metadata?.organizationId ?? session.metadata?.organizationId
 
+          // A fixed payment link (app/pay/[plan]/route.ts): not tied to a site account. Telegram only;
+          // the plan is switched on by hand after the money arrives.
+          if (plan === "geo_direct") {
+            const amt = ((session.amount_total ?? 0) / 100).toFixed(2)
+            void sendOwner(`💳 ОПЛАТА GEO по ссылке /pay/${session.metadata?.link ?? "?"}: $${amt}\n👤 ${session.customer_details?.email ?? ""} ${session.customer_details?.name ?? ""}\n🌐 ${session.metadata?.domain || "сайт не указан"}\nВключить план вручную: activate_client.py`)
+            break
+          }
+
           // ItGrows for Business (AI visibility plan): its own state, never the LinkedIn/X plan.
           if (plan === GEO_PLAN) {
             await geoPlanCheckoutCompleted(session, subscription, event.type)
