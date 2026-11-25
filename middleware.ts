@@ -68,7 +68,7 @@ function guide(forwarded: Headers, slug: string): NextResponse {
 // dental practices exists in German alone. Marked German like a German guide: the language header and
 // Content-Language, no cookie, no redirect. /de/business/kieferorthopaedie is sent here by lib/i18n/middleware.ts
 // (307 to the unprefixed address, as for every page that is not localized).
-const GERMAN_PAGES = /^\/business\/(kieferorthopaedie|partner)\/?$/
+const GERMAN_PAGES = /^\/business\/(kieferorthopaedie|kieferorthopaedie\/beispielbericht|partner)\/?$/
 
 function germanPage(forwarded: Headers): NextResponse {
   const headers = new Headers(forwarded)

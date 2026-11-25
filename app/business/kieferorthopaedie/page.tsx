@@ -179,6 +179,11 @@ export default async function KieferorthopaediePage({
             Stichprobe an einem Tag: Sie zeigt, wie die Antworten aussehen, und ist keine feste Rangliste. Die Praxen sind
             nummeriert statt genannt.
           </p>
+          <p className="mt-3 text-sm">
+            <a href="/business/kieferorthopaedie/beispielbericht" className="underline font-semibold">
+              Der ausführliche Beispielbericht, mit einem anonymen Praxisfall aus Bonn
+            </a>
+          </p>
         </section>
 
         <section className="grid sm:grid-cols-2 gap-5">
