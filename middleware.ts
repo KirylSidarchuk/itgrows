@@ -179,6 +179,7 @@ export const config = {
     "/business/sample-report",
     // A German-only page: marked German (GERMAN_PAGES above).
     "/business/kieferorthopaedie",
+    "/business/kieferorthopaedie/beispielbericht",
     "/business/partner",
     "/about",
     "/login",
