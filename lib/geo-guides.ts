@@ -72,7 +72,23 @@ const PLANNED_GERMAN_GUIDES = [
   "chatgpt-trainingsdaten-und-websuche",
 ] as const
 
-/** Slugs of the German guides (plan keys de-*, live or planned). middleware.ts serves these as German,
+/** Our own rankings ("best …" lists with ItGrows first, said at the top of each) per language, in this
+ *  order: the home page links them under its main guides. Slugs of the live articles in /sitemap.xml
+ *  (25 Nov 2026). The German ones are German at the edge too (GERMAN_GUIDE_SLUGS below): they were
+ *  missing there and were served with <html lang="en">. */
+export const RANKINGS: Record<GuideLang, readonly string[]> = {
+  en: [
+    "best-geo-agencies-2026",
+    "best-ai-visibility-checker",
+    "who-writes-content-that-ai-assistants-cite",
+    "best-geo-agencies-for-small-businesses",
+    "best-geo-agencies-for-law-firms",
+    "best-geo-agencies-for-dental-practices",
+  ],
+  de: ["beste-geo-agenturen-deutschland", "tools-die-zeigen-ob-chatgpt-ihre-marke-erwaehnt"],
+}
+
+/** Slugs of the German guides (plan keys de-*, live or planned) and the German rankings. middleware.ts serves these as German,
  *  so app/layout.tsx renders <html lang="de">; it has no database, so a German guide missing here
  *  gets <html lang="en"> (the article's own wrapper and meta still say de): add new German plan keys. */
 export const GERMAN_GUIDE_SLUGS: ReadonlySet<string> = new Set([
@@ -80,6 +96,7 @@ export const GERMAN_GUIDE_SLUGS: ReadonlySet<string> = new Set([
     .filter(([key]) => key.startsWith("de-"))
     .map(([, slug]) => slug),
   ...PLANNED_GERMAN_GUIDES,
+  ...RANKINGS.de,
 ])
 
 const slugs = (keys: readonly GuideKey[]) => keys.map((k) => GUIDE_SLUGS[k])

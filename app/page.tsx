@@ -8,7 +8,7 @@ import SignIn from "./_home/SignIn"
 import SiteFooter from "./_home/SiteFooter"
 import { ORGANIZATION } from "@/lib/entity"
 import { noteCrawler } from "@/lib/crawler-log"
-import { mainGuides } from "@/components/geo/guide-data"
+import { mainGuides, rankingGuides } from "@/components/geo/guide-data"
 import { VersusArticles, WhyThisMatters, WorkSystem, geoIncluded } from "./business/GeoSections"
 import PricingPlans from "./business/PricingPlans"
 import { SAMPLE_PATH, YEAR_DISCOUNT, geoPriceLabels } from "@/lib/geo-pricing"
@@ -103,7 +103,8 @@ export default async function Home() {
   // The main guides in the page's language, always the same six (lib/geo-guides.ts): German on /de,
   // English everywhere else (fr/es/ru say "(in English)" in the heading).
   const guideLang = locale === "de" ? "de" : "en"
-  const latest = await mainGuides(guideLang)
+  // Under them, our rankings in the same language (lib/geo-guides.ts RANKINGS): six English, two German.
+  const [latest, ranked] = await Promise.all([mainGuides(guideLang), rankingGuides(guideLang)])
   // The yearly discount: "20%" in English, "20 %" in German and French.
   const yearOff = formatNumber(locale, YEAR_DISCOUNT, { style: "percent", maximumFractionDigits: 0 })
   const { prices: P } = await visitorPrice()
@@ -301,7 +302,7 @@ export default async function Home() {
           </div>
         </section>
 
-        {latest.length > 0 && (
+        {(latest.length > 0 || ranked.length > 0) && (
           <section className="px-4 sm:px-6 py-14">
             <div className="max-w-5xl mx-auto">
               <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight">{m.guidesTitle}</h2>
@@ -312,6 +313,18 @@ export default async function Home() {
                   </Link>
                 ))}
               </div>
+              {ranked.length > 0 && (
+                <>
+                  <h3 className="mt-10 text-xl sm:text-2xl font-extrabold tracking-tight">{m.rankingsTitle}</h3>
+                  <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-5">
+                    {ranked.map((g) => (
+                      <Link key={g.slug} href={`/business/blog/${g.slug}`} className={`reveal rounded-2xl bg-white border border-black/10 p-5 font-semibold text-sm leading-snug ${LIFT}`}>
+                        {g.title}
+                      </Link>
+                    ))}
+                  </div>
+                </>
+              )}
               <p className="mt-5 text-sm">
                 <Link href={guideLang === "de" ? "/business/blog#de" : "/business/blog"} className="text-violet-700 font-semibold hover:underline">{m.allGuides}</Link>
                 <span className="mx-2 text-slate-400">·</span>

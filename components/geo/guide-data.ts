@@ -2,7 +2,7 @@ import { unstable_cache } from "next/cache"
 import { and, eq, inArray, isNull } from "drizzle-orm"
 import { db } from "@/lib/db"
 import { blogPosts } from "@/lib/db/schema"
-import { MAIN_GUIDES, type GuideLang } from "@/lib/geo-guides"
+import { MAIN_GUIDES, RANKINGS, type GuideLang } from "@/lib/geo-guides"
 
 export type GuideLink = { slug: string; title: string }
 
@@ -27,6 +27,20 @@ const cachedMain = unstable_cache(async (lang: GuideLang) => liveGuides(MAIN_GUI
 export async function mainGuides(lang: GuideLang): Promise<GuideLink[]> {
   try {
     return await cachedMain(lang)
+  } catch {
+    return []
+  }
+}
+
+// Our rankings of a language (lib/geo-guides.ts RANKINGS), cached the same way as the main guides.
+const cachedRankings = unstable_cache(async (lang: GuideLang) => liveGuides(RANKINGS[lang]), ["geo-rankings"], {
+  revalidate: 3600,
+})
+
+/** Our rankings of a language with their titles, for the home page. A failed query gives none. */
+export async function rankingGuides(lang: GuideLang): Promise<GuideLink[]> {
+  try {
+    return await cachedRankings(lang)
   } catch {
     return []
   }

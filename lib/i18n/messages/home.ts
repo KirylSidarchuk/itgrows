@@ -147,6 +147,8 @@ const en = {
 
   // Latest guides (the guides themselves are in English)
   guidesTitle: "Guides on AI visibility",
+  // Our own rankings under the guides (lib/geo-guides.ts RANKINGS; German ones on /de, English elsewhere)
+  rankingsTitle: "Our rankings",
   allGuides: "All guides →",
   expertsBlog: "How AI assistants find and name experts →",
 }
@@ -269,6 +271,7 @@ export default defineMessages(en, {
     runIt: "Kostenlos starten",
 
     guidesTitle: "Leitfäden zur KI-Sichtbarkeit",
+    rankingsTitle: "Unsere Rankings",
     allGuides: "Alle Leitfäden →",
     expertsBlog: "Wie KI-Assistenten Experten finden und nennen →",
   },
@@ -390,6 +393,7 @@ export default defineMessages(en, {
     runIt: "Lancer gratuitement",
 
     guidesTitle: "Guides sur la visibilité dans l’IA (en anglais)",
+    rankingsTitle: "Nos classements (en anglais)",
     allGuides: "Tous les guides →",
     expertsBlog: "Comment les assistants IA trouvent et mentionnent les experts →",
   },
@@ -511,6 +515,7 @@ export default defineMessages(en, {
     runIt: "Probar gratis",
 
     guidesTitle: "Guías sobre visibilidad en IA (en inglés)",
+    rankingsTitle: "Nuestros rankings (en inglés)",
     allGuides: "Todas las guías →",
     expertsBlog: "Cómo los asistentes de IA encuentran y mencionan a expertos →",
   },
@@ -632,6 +637,7 @@ export default defineMessages(en, {
     runIt: "Запустить бесплатно",
 
     guidesTitle: "Руководства по видимости в ИИ (на английском)",
+    rankingsTitle: "Наши рейтинги (на английском)",
     allGuides: "Все руководства →",
     expertsBlog: "Как ИИ-ассистенты находят и называют экспертов →",
   },
