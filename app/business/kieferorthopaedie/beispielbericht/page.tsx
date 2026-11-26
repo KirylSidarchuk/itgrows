@@ -12,8 +12,10 @@ import { noteCrawler } from "@/lib/crawler-log"
 // No new measurement was made for this page.
 //
 // Part 2 is a client who allowed us on 23 Nov 2026 to describe the work anonymously, as an "orthopädische
-// Privatpraxis in Bonn". It says what was done and what was seen, and claims no growth: no client has yet grown
-// above the noise in two measurements on the same basis.
+// Privatpraxis in Bonn". It says what was done and what was seen. 26 Nov 2026 (Kiryl): the Google Search Console
+// figures from the GEO Results Update of 25 Nov (report "Generative AI features": 181 -> 3,928 impressions, 29.09-26.10
+// vs 27.10-23.11; clicks 111 -> 301), the same as on "/" (app/_home/Cases.tsx). Mentions by the four assistants in our
+// 20-question measurement are unchanged (12 of 80), so no growth is claimed for those.
 
 const PATH = "/business/kieferorthopaedie/beispielbericht"
 const MAIL = "kiryl@itgrows.ai"
@@ -198,12 +200,17 @@ export default function BeispielberichtPage() {
           <h3 className="mt-4 font-bold">Was wir beobachtet haben</h3>
           <ul className="mt-2 text-sm space-y-2 list-disc pl-5 text-slate-700">
             <li>Perplexity (29. Oktober) und Gemini (13. November) haben je einen dieser Artikel als Quelle angeführt.</li>
+            <li>
+              Google Search Console: Einblendungen in KI-Antworten von Google 3.928 in 28 Tagen (27.10.–23.11.) statt 181 in den
+              28 Tagen davor; Klicks aus der Google-Suche 111 → 301.
+            </li>
           </ul>
           <div className="mt-4 rounded-xl bg-slate-50 border border-black/10 p-4 text-sm leading-relaxed">
             <p className="font-bold">Was wir noch nicht behaupten</p>
             <p className="mt-1">
-              Einzelne Zitate sind noch kein messbarer Zuwachs. Einen Anstieg der Nennungen zeigen wir erst, wenn er zwischen zwei
-              Messungen auf gleicher Basis über dem Rauschen liegt. Die nächste Vergleichsmessung folgt.
+              Bei den Nennungen durch die vier KI-Assistenten (unsere Messung mit 20 Fragen) steht die Praxis weiterhin bei 12 von 80,
+              ohne Veränderung. Einen Anstieg dieser Nennungen zeigen wir erst, wenn er zwischen zwei Messungen auf gleicher Basis über
+              dem Rauschen liegt. Die nächste Vergleichsmessung folgt.
             </p>
           </div>
         </section>
