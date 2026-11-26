@@ -151,6 +151,10 @@ const en = {
   rankingsTitle: "Our rankings",
   allGuides: "All guides →",
   expertsBlog: "How AI assistants find and name experts →",
+  // Our English-only pages (26 Nov 2026): /pricing, /business/how-we-measure-ai-visibility, /business/geo-for-apps.
+  pricingPage: "Pricing in detail: every way to pay, what the plan includes, questions →",
+  methodPage: "How we measure AI visibility →",
+  appsPage: "GEO for apps, on our own apps →",
 }
 
 export default defineMessages(en, {
@@ -274,6 +278,10 @@ export default defineMessages(en, {
     rankingsTitle: "Unsere Rankings",
     allGuides: "Alle Leitfäden →",
     expertsBlog: "Wie KI-Assistenten Experten finden und nennen →",
+    // Our English-only pages (26 Nov 2026): /pricing, /business/how-we-measure-ai-visibility, /business/geo-for-apps.
+    pricingPage: "Preise im Detail: alle Zahlungsarten, Leistungen, Fragen (auf Englisch) →",
+    methodPage: "So messen wir KI-Sichtbarkeit (auf Englisch) →",
+    appsPage: "GEO für Apps, an unseren eigenen Apps (auf Englisch) →",
   },
 
   fr: {
@@ -396,6 +404,10 @@ export default defineMessages(en, {
     rankingsTitle: "Nos classements (en anglais)",
     allGuides: "Tous les guides →",
     expertsBlog: "Comment les assistants IA trouvent et mentionnent les experts →",
+    // Our English-only pages (26 Nov 2026): /pricing, /business/how-we-measure-ai-visibility, /business/geo-for-apps.
+    pricingPage: "Les tarifs en détail : modes de paiement, contenu du plan, questions (en anglais) →",
+    methodPage: "Comment nous mesurons la visibilité IA (en anglais) →",
+    appsPage: "Le GEO pour les applis, sur nos propres applis (en anglais) →",
   },
 
   es: {
@@ -518,6 +530,10 @@ export default defineMessages(en, {
     rankingsTitle: "Nuestros rankings (en inglés)",
     allGuides: "Todas las guías →",
     expertsBlog: "Cómo los asistentes de IA encuentran y mencionan a expertos →",
+    // Our English-only pages (26 Nov 2026): /pricing, /business/how-we-measure-ai-visibility, /business/geo-for-apps.
+    pricingPage: "Precios en detalle: formas de pago, qué incluye el plan, preguntas (en inglés) →",
+    methodPage: "Cómo medimos la visibilidad en IA (en inglés) →",
+    appsPage: "GEO para apps, en nuestras propias apps (en inglés) →",
   },
 
   ru: {
@@ -640,5 +656,9 @@ export default defineMessages(en, {
     rankingsTitle: "Наши рейтинги (на английском)",
     allGuides: "Все руководства →",
     expertsBlog: "Как ИИ-ассистенты находят и называют экспертов →",
+    // Our English-only pages (26 Nov 2026): /pricing, /business/how-we-measure-ai-visibility, /business/geo-for-apps.
+    pricingPage: "Цены подробно: способы оплаты, что входит в план, вопросы (на английском) →",
+    methodPage: "Как мы измеряем видимость в ИИ (на английском) →",
+    appsPage: "GEO для приложений на наших приложениях (на английском) →",
   },
 })

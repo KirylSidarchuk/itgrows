@@ -16,6 +16,7 @@ const ITGROWS_OWNER_USER_ID = "7cd0011c-fadd-4ff5-bd1e-6445fea70b22"
 import sanitizeHtml from "sanitize-html"
 import type { Metadata } from "next"
 import CompanyLine from "@/components/CompanyLine"
+import { ORGANIZATION_SAME_AS } from "@/lib/entity"
 
 function formatDate(date: Date): string {
   return date.toLocaleDateString("en-US", {
@@ -221,6 +222,7 @@ export default async function BlogPostPage({
       name: "ItGrows",
       url: "https://www.itgrows.ai",
       logo: { "@type": "ImageObject", url: "https://www.itgrows.ai/logo.jpg" },
+      sameAs: [...ORGANIZATION_SAME_AS],
     },
     mainEntityOfPage: {
       "@type": "WebPage",

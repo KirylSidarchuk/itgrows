@@ -23,10 +23,13 @@ export const ENTITY_ABOUT = [
 export const OG_GEO = { url: "https://www.itgrows.ai/og/geo", width: 1200, height: 630 }
 export const OG_PERSONAL = { url: "https://www.itgrows.ai/og-image.png", width: 1200, height: 630 }
 
-// No sameAs yet: on 26 Oct 2026 ItGrows had no profile of its own (OMR Reviews, LinkedIn
-// /company/itgrows-ai: 404; Clutch, Product Hunt, SaaSHub: 404 in a browser; Wikidata: no item; G2:
-// none found), and linkedin.com/company/itgrows is another company. Add each profile here once it
-// exists and opens.
+// sameAs: the profiles that are ours and open. 26 Nov 2026: our LinkedIn company page,
+// linkedin.com/company/itgrowsai (Kiryl is its admin, checked 24 Nov 2026). NOT linkedin.com/company/itgrows:
+// that is another company (IT grows DOO, Novi Sad), and its address must never be ours anywhere. On 26 Oct 2026
+// there was no other profile (OMR Reviews, Clutch, Product Hunt, SaaSHub: 404; Wikidata: no item); add each one
+// here once it exists and opens. No postal address here: ItGrows is run by Magiscan Inc. (components/CompanyLine.tsx).
+export const ORGANIZATION_SAME_AS = ["https://www.linkedin.com/company/itgrowsai/"] as const
+
 export const ORGANIZATION = {
   "@type": "Organization",
   "@id": "https://www.itgrows.ai/#organization",
@@ -36,6 +39,7 @@ export const ORGANIZATION = {
   logo: "https://www.itgrows.ai/logo.jpg",
   email: "kiryl@itgrows.ai",
   description: ENTITY_ONE_LINER,
+  sameAs: [...ORGANIZATION_SAME_AS],
   knowsAbout: [
     "Generative engine optimization",
     "AI visibility",

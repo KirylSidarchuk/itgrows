@@ -47,6 +47,8 @@ export default async function ToolShell({ children, guaranteeFootnote = false }:
         {children}
         <footer className="border-t border-black/10 px-6 py-8 text-center text-slate-500 text-sm bg-[#ebe9e5] mt-16">
           © 2026 ItGrows.ai · <Link href={localePath(locale, "/")} className="hover:text-[#1b1916]">{m.footerHome}</Link> ·{" "}
+          {/* The pricing page is English only (26 Nov 2026); the other languages keep the pricing block of their home page. */}
+          <Link href={locale === "en" ? "/pricing" : localePath(locale, "/#geo-pricing")} className="hover:text-[#1b1916]">{m.pricing}</Link> ·{" "}
           <Link href="/business/blog" className="hover:text-[#1b1916]">{m.guides}</Link>
           <CompanyLine className="mt-2" />
           {guaranteeFootnote && (

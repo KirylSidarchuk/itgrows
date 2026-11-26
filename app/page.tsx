@@ -243,6 +243,10 @@ export default async function Home() {
               ),
             })}
           </p>
+          {/* The pricing page of its own (English only, 26 Nov 2026): every way to pay, what is included, questions. */}
+          <p className="text-center text-sm mt-4">
+            <Link href="/pricing" className="text-violet-700 font-semibold hover:underline">{m.pricingPage}</Link>
+          </p>
         </section>
 
         <section id="geo-faq" className="px-4 sm:px-6 py-14 sm:py-20 scroll-mt-20" style={{ backgroundColor: "#ebe9e5" }}>
@@ -329,6 +333,12 @@ export default async function Home() {
                 <Link href={guideLang === "de" ? "/business/blog#de" : "/business/blog"} className="text-violet-700 font-semibold hover:underline">{m.allGuides}</Link>
                 <span className="mx-2 text-slate-400">·</span>
                 <Link href="/blog" className="text-violet-700 font-semibold hover:underline">{m.expertsBlog}</Link>
+              </p>
+              {/* Our method and our own apps (English only, 26 Nov 2026). */}
+              <p className="mt-2 text-sm">
+                <Link href="/business/how-we-measure-ai-visibility" className="text-violet-700 font-semibold hover:underline">{m.methodPage}</Link>
+                <span className="mx-2 text-slate-400">·</span>
+                <Link href="/business/geo-for-apps" className="text-violet-700 font-semibold hover:underline">{m.appsPage}</Link>
               </p>
             </div>
           </section>

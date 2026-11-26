@@ -13,6 +13,7 @@ import CompanyLine from "@/components/CompanyLine"
 import { priceArticleText } from "@/lib/geo-price-article"
 import { visitorPrice } from "@/lib/geo-price-server"
 import PriceScope from "@/components/geo/PriceScope"
+import { ORGANIZATION_SAME_AS } from "@/lib/entity"
 
 const SITE_SLUG = "itgrows-business"
 const BASE = "https://www.itgrows.ai"
@@ -190,6 +191,7 @@ export default async function BusinessBlogPostPage({ params }: { params: Promise
       name: "ItGrows",
       url: BASE,
       logo: { "@type": "ImageObject", url: `${BASE}/logo.jpg` },
+      sameAs: [...ORGANIZATION_SAME_AS],
     },
     mainEntityOfPage: { "@type": "WebPage", "@id": `${BASE}/business/blog/${slug}` },
     ...(post.coverImageUrl ? { image: `${BASE}/api/blog/image/${post.id}` } : {}),

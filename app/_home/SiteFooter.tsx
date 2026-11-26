@@ -17,13 +17,18 @@ import CompanyLine from "@/components/CompanyLine"
 
 type M = (typeof siteFooter)["en"]
 
-const COLUMNS: { title: keyof M["titles"]; links: { href: string; label: keyof M["links"] }[] }[] = [
+// `en`: the address in English when it differs: the pricing page /pricing exists in English only (26 Nov 2026),
+// so the other languages keep the pricing block of their own home page. The method and the apps pages are
+// English only too; their labels say so in the other languages.
+const COLUMNS: { title: keyof M["titles"]; links: { href: string; en?: string; label: keyof M["links"] }[] }[] = [
   {
     title: "geo",
     links: [
       { href: "/#geo-check", label: "check" },
-      { href: "/#geo-pricing", label: "pricing" },
+      { href: "/#geo-pricing", en: "/pricing", label: "pricing" },
       { href: "/business/sample-report", label: "sample" },
+      { href: "/business/how-we-measure-ai-visibility", label: "method" },
+      { href: "/business/geo-for-apps", label: "apps" },
       { href: "/business/blog", label: "guides" },
     ],
   },
@@ -76,7 +81,7 @@ export default async function SiteFooter() {
                 <ul className="mt-4 space-y-2.5 text-sm">
                   {c.links.map((l) => (
                     <li key={l.href}>
-                      <Link href={localePath(locale, l.href)} className="hover:text-white transition-colors">{m.links[l.label]}</Link>
+                      <Link href={localePath(locale, locale === "en" && l.en ? l.en : l.href)} className="hover:text-white transition-colors">{m.links[l.label]}</Link>
                     </li>
                   ))}
                 </ul>

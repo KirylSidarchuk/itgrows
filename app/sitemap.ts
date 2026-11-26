@@ -24,6 +24,10 @@ const PAGE_LASTMOD = {
   "/reddit": "2026-10-14",
   "/privacy": "2026-10-29",
   "/terms": "2026-10-30",
+  // English-only pages of 26 Nov 2026 (ChatGPT visibility plan): the pricing page, our method, GEO for apps.
+  "/pricing": "2026-11-26",
+  "/business/how-we-measure-ai-visibility": "2026-11-26",
+  "/business/geo-for-apps": "2026-11-26",
 } as const
 // The day the page around every guide and /blog post last changed (26.10: the "AI visibility
 // guides" block, "Keep reading" by topic, the "About ItGrows" box): a post is listed as modified on
@@ -74,6 +78,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...localizedSitemapEntries("/business/sample-report", { lastModified: D("/business/sample-report"), changeFrequency: "monthly", priority: 0.6 }),
     ...localizedSitemapEntries("/about", { lastModified: D("/about"), changeFrequency: "monthly", priority: 0.6 }),
     { url: "https://www.itgrows.ai/reddit", lastModified: D("/reddit"), changeFrequency: "weekly", priority: 0.8 },
+    { url: "https://www.itgrows.ai/pricing", lastModified: D("/pricing"), changeFrequency: "monthly", priority: 0.9 },
+    { url: "https://www.itgrows.ai/business/how-we-measure-ai-visibility", lastModified: D("/business/how-we-measure-ai-visibility"), changeFrequency: "monthly", priority: 0.7 },
+    { url: "https://www.itgrows.ai/business/geo-for-apps", lastModified: D("/business/geo-for-apps"), changeFrequency: "monthly", priority: 0.7 },
     ...businessPosts.map((post) => {
       // English <-> German versions of the same guide (lib/geo-guides.ts), as in the page's metadata.
       const languages = guideAlternates(post.slug)

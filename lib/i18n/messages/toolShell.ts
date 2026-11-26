@@ -8,6 +8,7 @@ const en = {
   navCrawler: "AI crawler check",
   guides: "Guides",
   footerHome: "AI visibility for businesses",
+  pricing: "Pricing",
   faqTitle: "Frequently Asked Questions",
 }
 
@@ -17,6 +18,7 @@ export default defineMessages(en, {
     navCrawler: "KI-Crawler-Check",
     guides: "Leitfäden",
     footerHome: "KI-Sichtbarkeit für Unternehmen",
+    pricing: "Preise",
     faqTitle: "Häufige Fragen",
   },
   fr: {
@@ -24,6 +26,7 @@ export default defineMessages(en, {
     navCrawler: "Test des robots d’IA",
     guides: "Guides",
     footerHome: "La visibilité IA pour les entreprises",
+    pricing: "Tarifs",
     faqTitle: "Questions fréquentes",
   },
   es: {
@@ -31,6 +34,7 @@ export default defineMessages(en, {
     navCrawler: "Comprobador de rastreadores",
     guides: "Guías",
     footerHome: "Visibilidad en IA para empresas",
+    pricing: "Precios",
     faqTitle: "Preguntas frecuentes",
   },
   ru: {
@@ -38,6 +42,7 @@ export default defineMessages(en, {
     navCrawler: "Проверка ИИ-краулеров",
     guides: "Руководства",
     footerHome: "Видимость в ИИ для бизнеса",
+    pricing: "Цены",
     faqTitle: "Частые вопросы",
   },
 })
