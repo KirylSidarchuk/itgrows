@@ -22,7 +22,7 @@ const en = {
     l2: "First article on 29 October",
   },
   firma: {
-    name: "firma-ausland.de, company formation abroad",
+    name: "Company formation abroad",
     caption: "Answers that name the firm, of 80",
     l1: (n: string) => `${n} citations in Microsoft Copilot since 26 October`,
     l2: (pct: string, n: string) => `Google AI-answer impressions ${pct} (${n} in 28 days)`,
@@ -65,7 +65,7 @@ export default defineMessages(en, {
       l2: "Erster Artikel am 29. Oktober",
     },
     firma: {
-      name: "firma-ausland.de, Firmengründung im Ausland",
+      name: "Firmengründung im Ausland",
       caption: "Antworten, die die Firma nennen, von 80",
       l1: (n) => `${n} Zitate in Microsoft Copilot seit dem 26. Oktober`,
       l2: (pct, n) => `Einblendungen in Googles KI-Antworten ${pct} (${n} in 28 Tagen)`,
@@ -106,7 +106,7 @@ export default defineMessages(en, {
       l2: "Premier article le 29 octobre",
     },
     firma: {
-      name: "firma-ausland.de, création d'entreprise à l'étranger",
+      name: "Création d'entreprise à l'étranger",
       caption: "Réponses qui citent le cabinet, sur 80",
       l1: (n) => `${n} citations dans Microsoft Copilot depuis le 26 octobre`,
       l2: (pct, n) => `Affichages dans les réponses IA de Google ${pct} (${n} en 28 jours)`,
@@ -147,7 +147,7 @@ export default defineMessages(en, {
       l2: "Primer artículo el 29 de octubre",
     },
     firma: {
-      name: "firma-ausland.de, constitución de empresas en el extranjero",
+      name: "Constitución de empresas en el extranjero",
       caption: "Respuestas que nombran a la firma, de 80",
       l1: (n) => `${n} citas en Microsoft Copilot desde el 26 de octubre`,
       l2: (pct, n) => `Impresiones en respuestas de IA de Google ${pct} (${n} en 28 días)`,
@@ -188,7 +188,7 @@ export default defineMessages(en, {
       l2: "Первая статья 29 октября",
     },
     firma: {
-      name: "firma-ausland.de, регистрация компаний за рубежом",
+      name: "Регистрация компаний за рубежом",
       caption: "Ответы, где названа фирма, из 80",
       l1: (n) => `${n} цитирований в Microsoft Copilot с 26 октября`,
       l2: (pct, n) => `Показы в ИИ-ответах Google ${pct} (${n} за 28 дней)`,
