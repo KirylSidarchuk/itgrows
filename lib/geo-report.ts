@@ -40,6 +40,8 @@ interface Report {
   samples: unknown
   summary: Record<string, unknown> | null
   rows: Row[]
+  /** Share of voice (geo_check/sov.py, geo_run_metrics), null when the VM has not stored it. */
+  voice: Record<string, unknown> | null
 }
 
 /** What the viewer may see of a site: whether its weekly runs are theirs (they belong to the plan),
@@ -63,6 +65,19 @@ async function viewOf(f: Row, sample = false) {
   }
 }
 
+/** How a report's mentions split between the site and the businesses named instead, as the VM stored it
+ *  for a day-0 or 14-day report (geo_check/sov.py: written when the report is done, from the stored
+ *  answers, no API). A separate read that never holds the report back: no row, no table or any error,
+ *  and the page is the report without the card. */
+async function voiceOf(id: string): Promise<Record<string, unknown> | null> {
+  try {
+    const [m] = rows(await db.execute(sql`SELECT sov FROM geo_run_metrics WHERE run_id = ${id}::uuid AND version >= 1`))
+    return (m?.sov as Record<string, unknown> | undefined) ?? null
+  } catch {
+    return null
+  }
+}
+
 /** A finished run whole, every answer included. */
 async function runReport(id: string): Promise<Report | null> {
   const [r] = rows(
@@ -77,6 +92,7 @@ async function runReport(id: string): Promise<Report | null> {
     samples: r.samples,
     summary: (r.summary as Report["summary"]) ?? null,
     rows: (r.results as Row[]) ?? [],
+    voice: r.kind === "baseline" || r.kind === "weekly" ? await voiceOf(id) : null,
   }
 }
 

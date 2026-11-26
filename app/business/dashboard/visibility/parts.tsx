@@ -24,6 +24,7 @@ import { usePlanPrices } from "@/components/geo/PriceProvider"
 import { listQuestions } from "@/lib/geo-list-question"
 import { useT } from "@/components/i18n/LocaleProvider"
 import visibilityOpening from "@/lib/i18n/messages/visibilityOpening"
+import visibilityVoice from "@/lib/i18n/messages/visibilityVoice"
 import { PendingReward, ReportRewards, liveReward, usePromo } from "../launch-wheel"
 import { GrowthChart, type GrowthPoint } from "./charts"
 
@@ -63,6 +64,27 @@ export interface Report {
   samples: number
   summary: Summary
   rows: Row[]
+  /** How the mentions split between the site and the businesses named instead (ShareOfVoice); null or
+   *  absent when the VM has not stored it for this report. */
+  voice?: Voice | null
+}
+/** One report's share of voice as geo_check/sov.py stores it (geo_run_metrics, lib/geo-report.ts voiceOf).
+ *  Counted by question x assistant: `you` = pairs whose answers name the site in the text, `mentions` =
+ *  that plus every rival's pairs, `link_only` = pairs that only link to the site, `capped` = pairs where
+ *  the extractor's 6 names were reached. */
+export interface VoiceCount {
+  pairs: number
+  you: number
+  link_only: number
+  mentions: number
+  capped: number
+}
+export interface Voice {
+  v: number
+  /** brands: the other businesses named; ahead: those named in more pairs than the site. */
+  all: VoiceCount & { brands: number; ahead: number }
+  engines: Record<string, VoiceCount & { top: { name: string; count: number }[] }>
+  rivals: { name: string; count: number; engines: Record<string, number> }[]
 }
 /** A row of the block: a count and what it counts, or only what was done on the site (n null). */
 export interface WorkRow {
@@ -643,6 +665,116 @@ export function Sources({ summary }: { summary: Summary }) {
           ))}
         </ul>
       )}
+    </section>
+  )
+}
+
+// ── share of voice ────────────────────────────────────────────────────────────────────────────
+
+/** How the assistants' mentions split between the site and the businesses they name instead, overall and
+ *  per assistant (geo_check/sov.py, stored when the report is done; nothing is asked again). Counts, as on
+ *  every card: a bar's length shows the share, the screen never prints a percentage. The site counts by its
+ *  name in the text only, so this can be lower than the headline's "answers named you" (a link alone counts
+ *  there); the card says by how many. The rivals' own totals stay on "Named instead of you": here they are
+ *  summed, and per assistant only the most named one is shown. Translated (visibilityVoice): the sample
+ *  report reads its page's language, the cabinet English. Without a stored row the card is not drawn. */
+export function ShareOfVoice({ voice, engines, you }: { voice?: Voice | null; engines: string[]; you: string }) {
+  const m = useT(visibilityVoice)
+  if (!voice?.all || !voice.engines || !(voice.all.mentions > 0)) return null
+  const a = voice.all
+  const top = (voice.rivals ?? []).slice(0, 5)
+  const topSum = top.reduce((n, r) => n + r.count, 0)
+  const rest = Math.max(0, a.mentions - a.you - topSum)
+  const others = Math.max(0, a.brands - top.length)
+  const width = (n: number, of: number) => ({ width: `${of > 0 ? (n / of) * 100 : 0}%` })
+  const cols = ENGINES.filter((e) => engines.includes(e) && (voice.engines[e]?.pairs ?? 0) > 0)
+  return (
+    <section data-attention="report-voice" className={`${card} min-w-0`}>
+      <h2 className="font-bold text-lg">{m.title}</h2>
+      <p className="text-xs text-slate-500 mt-1 leading-relaxed">{m.intro}</p>
+      <div className="mt-4 grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="min-w-0">
+          <p className="font-bold text-violet-700 tabular-nums">{m.youOf(a.you, a.mentions)}</p>
+          <p className="text-sm text-slate-600 mt-0.5">{a.you > 0 ? m.ahead(a.ahead, a.brands) : m.notYet(a.brands)}</p>
+          <div className="mt-3 flex h-3 rounded-full bg-slate-100 overflow-hidden" aria-hidden>
+            <div className="bg-violet-600" style={width(a.you, a.mentions)} />
+            <div className="bg-slate-500" style={width(topSum, a.mentions)} />
+            <div className="bg-slate-300" style={width(rest, a.mentions)} />
+          </div>
+          <ul className="mt-3 space-y-2 text-sm">
+            <li className="flex items-center justify-between gap-3">
+              <span className="flex items-center gap-2 min-w-0">
+                <span className="shrink-0 w-2.5 h-2.5 rounded-sm bg-violet-600" />
+                <span className="font-bold text-violet-700 truncate">
+                  {m.you} · {you}
+                </span>
+              </span>
+              <span className="shrink-0 font-bold text-violet-700 tabular-nums">{a.you}</span>
+            </li>
+            {top.length > 0 && (
+              <li className="flex items-start justify-between gap-3">
+                <span className="flex items-start gap-2 min-w-0">
+                  <span className="shrink-0 mt-1.5 w-2.5 h-2.5 rounded-sm bg-slate-500" />
+                  <span className="min-w-0">
+                    <span className="font-medium">{m.top(top.length)}</span>
+                    <span className="block text-xs text-slate-500 break-words">{top.map((r) => r.name).join(", ")}</span>
+                  </span>
+                </span>
+                <span className="shrink-0 font-semibold text-slate-600 tabular-nums">{topSum}</span>
+              </li>
+            )}
+            {others > 0 && (
+              <li className="flex items-center justify-between gap-3">
+                <span className="flex items-center gap-2 min-w-0">
+                  <span className="shrink-0 w-2.5 h-2.5 rounded-sm bg-slate-300" />
+                  <span className="font-medium truncate">{m.rest(others)}</span>
+                </span>
+                <span className="shrink-0 font-semibold text-slate-600 tabular-nums">{rest}</span>
+              </li>
+            )}
+          </ul>
+        </div>
+        {cols.length > 0 && (
+          <div className="min-w-0">
+            <h3 className={label}>{m.byAssistant}</h3>
+            <ul className="mt-2 space-y-3">
+              {cols.map((e) => {
+                const v = voice.engines[e]
+                const lead = v.top?.[0]
+                return (
+                  <li key={e}>
+                    <div className="flex items-center justify-between gap-3 text-sm">
+                      <span className="flex items-center gap-1.5 font-semibold min-w-0">
+                        <EngineMark engine={e} className="w-4 h-4 shrink-0" />
+                        {LABEL[e] ?? e}
+                      </span>
+                      <span className="shrink-0 text-xs text-slate-500 tabular-nums">{m.mentions(v.mentions)}</span>
+                    </div>
+                    <div className="mt-1 flex h-2 rounded-full bg-slate-100 overflow-hidden" aria-hidden>
+                      <div className="bg-violet-600" style={width(v.you, v.mentions)} />
+                      {lead && <div className="bg-slate-400" style={width(lead.count, v.mentions)} />}
+                    </div>
+                    <p className="mt-1 text-xs flex flex-wrap gap-x-3 gap-y-0.5">
+                      <span className="font-semibold text-violet-700 tabular-nums">
+                        {m.you}: {v.you}
+                      </span>
+                      {lead && (
+                        <span className="min-w-0 text-slate-600 break-words">
+                          {m.mostNamed}: {lead.name} · <span className="tabular-nums">{lead.count}</span>
+                        </span>
+                      )}
+                    </p>
+                  </li>
+                )
+              })}
+            </ul>
+          </div>
+        )}
+      </div>
+      <p className="mt-5 text-xs text-slate-500 leading-relaxed">
+        <b className="font-semibold text-slate-600">{m.howTitle}</b> {m.how}
+        {a.link_only > 0 ? ` ${m.linkOnly(a.link_only)}` : ""}
+      </p>
     </section>
   )
 }
@@ -1787,6 +1919,7 @@ export function ReportSections({
         <NamedInstead summary={full.summary} you={you} />
         <Sources summary={full.summary} />
       </div>
+      <ShareOfVoice voice={full.voice} engines={full.engines} you={you} />
       <WhereNamed rows={full.rows} engines={full.engines} samples={full.samples} asked={full.finishedAt} />
       <MethodNote questions={full.rows.length} engines={full.engines.length} samples={full.samples} />
     </>
@@ -2055,6 +2188,7 @@ export function RunView({
         <NamedInstead summary={run.summary} you={site.business || site.domain} />
         <Sources summary={run.summary} />
       </div>
+      <ShareOfVoice voice={run.voice} engines={run.engines} you={site.business || site.domain} />
       <WhereNamed rows={run.rows} engines={run.engines} samples={run.samples} asked={run.finishedAt} />
     </>
   )

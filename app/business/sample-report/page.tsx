@@ -25,7 +25,8 @@ const cachedSample = unstable_cache(
     const site = await sampleSiteReport()
     return site?.latest ? (JSON.parse(JSON.stringify(site)) as SiteReport) : null
   },
-  ["geo-sample-report"],
+  // "voice": the report carries its share of voice since 26 Nov 2026; a new key so no hour-old copy without it is served.
+  ["geo-sample-report", "voice"],
   { revalidate: 3600 },
 )
 
