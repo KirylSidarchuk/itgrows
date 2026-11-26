@@ -6,6 +6,7 @@ import { plural } from "../format"
 // detailed report and /business/sample-report. The cabinet has no LocaleProvider yet, so it reads English;
 // the sample report reads its page's language. Counts only, never a percentage (the rule of parts.tsx).
 // "Above" is the headline card: "N of 80 answers named you", where a link alone counts; here it does not.
+// Every colon is in the strings, not in parts.tsx: French puts a non-breaking space before it.
 
 const en = {
   title: "Share of voice",
@@ -24,9 +25,10 @@ const en = {
   rest: (n: number) => `All the others (${n} ${n === 1 ? "business" : "businesses"})`,
   byAssistant: "By assistant",
   mentions: (n: number) => `${n} ${n === 1 ? "mention" : "mentions"}`,
-  mostNamed: "Most named",
+  youCount: (n: number) => `You: ${n}`,
+  mostNamed: (name: string) => `Most named: ${name}`,
   howTitle: "How we count:",
-  how: "a mention is a business named in the text of the answers to one question by one assistant. A link without the name is not a mention, for you or for anyone else. For each question and assistant we count up to the first 6 businesses named.",
+  how: "a mention is a business named in the text of the answers to one question by one assistant. A link without the name is not a mention, for you or for anyone else. For each question and assistant we count up to the first 6 businesses named. Your name is counted even when it comes after those first 6, so your share may look higher than it really is.",
   linkOnly: (n: number) =>
     n === 1
       ? "1 answer that named you only links to your site: it counts above, not here."
@@ -52,9 +54,10 @@ export default defineMessages(en, {
     rest: (n) => `Alle anderen (${n} Unternehmen)`,
     byAssistant: "Nach Assistent",
     mentions: (n) => `${n} ${plural("de", n, { one: "Nennung", other: "Nennungen" })}`,
-    mostNamed: "Am häufigsten genannt",
+    youCount: (n) => `Sie: ${n}`,
+    mostNamed: (name) => `Am häufigsten genannt: ${name}`,
     howTitle: "So zählen wir:",
-    how: "Eine Nennung ist ein Unternehmen, dessen Name im Text der Antworten eines Assistenten auf eine Frage steht. Ein Link ohne den Namen ist keine Nennung, weder bei Ihnen noch bei anderen. Pro Frage und Assistent zählen wir bis zu den ersten 6 genannten Unternehmen.",
+    how: "Eine Nennung ist ein Unternehmen, dessen Name im Text der Antworten eines Assistenten auf eine Frage steht. Ein Link ohne den Namen ist keine Nennung, weder bei Ihnen noch bei anderen. Pro Frage und Assistent zählen wir bis zu den ersten 6 genannten Unternehmen. Ihr Name wird auch dann gezählt, wenn er nach diesen ersten 6 steht, daher kann Ihr Anteil höher wirken, als er tatsächlich ist.",
     linkOnly: (n) =>
       n === 1
         ? "1 Antwort, die Sie nennt, verlinkt nur Ihre Website: Sie zählt oben, hier nicht."
@@ -64,7 +67,7 @@ export default defineMessages(en, {
     title: "Part de voix",
     intro:
       "Comment les mentions des assistants se répartissent entre vous et les autres entreprises qu’ils citent pour vos questions. Chaque entreprise compte une fois par question et par assistant, comme les réponses qui vous citent, plus haut.",
-    youOf: (n, of) => `Vous : ${n} sur ${of} ${plural("fr", of, { one: "mention", other: "mentions" })}`,
+    youOf: (n, of) => `Vous\u00a0: ${n} sur ${of} ${plural("fr", of, { one: "mention", other: "mentions" })}`,
     ahead: (n, brands) =>
       brands === 0
         ? "Aucune autre entreprise n’a été citée."
@@ -74,19 +77,20 @@ export default defineMessages(en, {
             ? `1 des ${brands} autres entreprises a été citée plus souvent que vous.`
             : `${n} des ${brands} autres entreprises ont été citées plus souvent que vous.`,
     notYet: (brands) =>
-      `Votre nom n’apparaît pas encore dans le texte des réponses ; ${plural("fr", brands, { one: `${brands} autre entreprise y figure`, other: `${brands} autres entreprises y figurent` })}.`,
+      `Votre nom n’apparaît pas encore dans le texte des réponses\u00a0; ${plural("fr", brands, { one: `${brands} autre entreprise y figure`, other: `${brands} autres entreprises y figurent` })}.`,
     you: "Vous",
     top: (n) => `Les ${n} plus citées`,
     rest: (n) => `Toutes les autres (${n} ${plural("fr", n, { one: "entreprise", other: "entreprises" })})`,
     byAssistant: "Par assistant",
     mentions: (n) => `${n} ${plural("fr", n, { one: "mention", other: "mentions" })}`,
-    mostNamed: "La plus citée",
-    howTitle: "Notre méthode :",
-    how: "une mention, c’est une entreprise nommée dans le texte des réponses d’un assistant à une question. Un lien sans le nom n’est pas une mention, ni pour vous ni pour les autres. Pour chaque question et chaque assistant, nous comptons jusqu’aux 6 premières entreprises citées.",
+    youCount: (n) => `Vous\u00a0: ${n}`,
+    mostNamed: (name) => `La plus citée\u00a0: ${name}`,
+    howTitle: "Notre méthode\u00a0:",
+    how: "une mention, c’est une entreprise nommée dans le texte des réponses d’un assistant à une question. Un lien sans le nom n’est pas une mention, ni pour vous ni pour les autres. Pour chaque question et chaque assistant, nous comptons jusqu’aux 6 premières entreprises citées. Votre nom, lui, est compté même s’il vient après ces 6 premières\u00a0: votre part peut donc paraître plus élevée qu’elle ne l’est vraiment.",
     linkOnly: (n) =>
       n === 1
-        ? "1 réponse qui vous cite ne fait que renvoyer vers votre site : elle compte plus haut, pas ici."
-        : `${n} réponses qui vous citent ne font que renvoyer vers votre site : elles comptent plus haut, pas ici.`,
+        ? "1 réponse qui vous cite ne fait que renvoyer vers votre site\u00a0: elle compte plus haut, pas ici."
+        : `${n} réponses qui vous citent ne font que renvoyer vers votre site\u00a0: elles comptent plus haut, pas ici.`,
   },
   es: {
     title: "Cuota de voz",
@@ -108,9 +112,10 @@ export default defineMessages(en, {
     rest: (n) => `Todas las demás (${n} ${plural("es", n, { one: "empresa", other: "empresas" })})`,
     byAssistant: "Por asistente",
     mentions: (n) => `${n} ${plural("es", n, { one: "mención", other: "menciones" })}`,
-    mostNamed: "La más nombrada",
+    youCount: (n) => `Usted: ${n}`,
+    mostNamed: (name) => `La más nombrada: ${name}`,
     howTitle: "Cómo contamos:",
-    how: "una mención es una empresa nombrada en el texto de las respuestas de un asistente a una pregunta. Un enlace sin el nombre no es una mención, ni para usted ni para nadie. Por cada pregunta y asistente contamos hasta las 6 primeras empresas nombradas.",
+    how: "una mención es una empresa nombrada en el texto de las respuestas de un asistente a una pregunta. Un enlace sin el nombre no es una mención, ni para usted ni para nadie. Por cada pregunta y asistente contamos hasta las 6 primeras empresas nombradas. Su nombre, en cambio, se cuenta aunque aparezca después de esas 6 primeras, así que su cuota puede parecer más alta de lo que realmente es.",
     linkOnly: (n) =>
       n === 1
         ? "1 respuesta que le nombra solo enlaza a su sitio: cuenta más arriba, no aquí."
@@ -133,9 +138,10 @@ export default defineMessages(en, {
     rest: (n) => `Все остальные (${n} ${plural("ru", n, { one: "компания", few: "компании", many: "компаний", other: "компании" })})`,
     byAssistant: "По ассистентам",
     mentions: (n) => `${n} ${plural("ru", n, { one: "упоминание", few: "упоминания", many: "упоминаний", other: "упоминания" })}`,
-    mostNamed: "Чаще всех",
+    youCount: (n) => `Вы: ${n}`,
+    mostNamed: (name) => `Чаще всех: ${name}`,
     howTitle: "Как мы считаем:",
-    how: "упоминание — это компания, названная в тексте ответов одного ассистента на один вопрос. Ссылка без названия — не упоминание, ни у вас, ни у других. По каждому вопросу и ассистенту мы считаем до первых 6 названных компаний.",
+    how: "упоминание — это компания, названная в тексте ответов одного ассистента на один вопрос. Ссылка без названия — не упоминание, ни у вас, ни у других. По каждому вопросу и ассистенту мы считаем до первых 6 названных компаний. Вас мы считаем, даже если вас назвали после этих первых 6, поэтому ваша доля может выглядеть выше настоящей.",
     linkOnly: (n) =>
       plural("ru", n, {
         one: `${n} ответ, где назвали вас, только ссылается на ваш сайт: он считается выше, здесь — нет.`,

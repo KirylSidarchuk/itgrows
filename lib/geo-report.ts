@@ -68,10 +68,11 @@ async function viewOf(f: Row, sample = false) {
 /** How a report's mentions split between the site and the businesses named instead, as the VM stored it
  *  for a day-0 or 14-day report (geo_check/sov.py: written when the report is done, from the stored
  *  answers, no API). A separate read that never holds the report back: no row, no table or any error,
- *  and the page is the report without the card. */
+ *  and the page is the report without the card. Without `asks` (the site's place in each answer, kept
+ *  for later and not shown): the public /api/geo/sample sends this object as it is. */
 async function voiceOf(id: string): Promise<Record<string, unknown> | null> {
   try {
-    const [m] = rows(await db.execute(sql`SELECT sov FROM geo_run_metrics WHERE run_id = ${id}::uuid AND version >= 1`))
+    const [m] = rows(await db.execute(sql`SELECT sov - 'asks' AS sov FROM geo_run_metrics WHERE run_id = ${id}::uuid AND version >= 1`))
     return (m?.sov as Record<string, unknown> | undefined) ?? null
   } catch {
     return null

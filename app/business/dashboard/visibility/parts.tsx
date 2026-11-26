@@ -695,6 +695,7 @@ export function ShareOfVoice({ voice, engines, you }: { voice?: Voice | null; en
       <div className="mt-4 grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="min-w-0">
           <p className="font-bold text-violet-700 tabular-nums">{m.youOf(a.you, a.mentions)}</p>
+          {a.link_only > 0 && <p className="text-xs text-slate-500 mt-0.5">{m.linkOnly(a.link_only)}</p>}
           <p className="text-sm text-slate-600 mt-0.5">{a.you > 0 ? m.ahead(a.ahead, a.brands) : m.notYet(a.brands)}</p>
           <div className="mt-3 flex h-3 rounded-full bg-slate-100 overflow-hidden" aria-hidden>
             <div className="bg-violet-600" style={width(a.you, a.mentions)} />
@@ -755,12 +756,10 @@ export function ShareOfVoice({ voice, engines, you }: { voice?: Voice | null; en
                       {lead && <div className="bg-slate-400" style={width(lead.count, v.mentions)} />}
                     </div>
                     <p className="mt-1 text-xs flex flex-wrap gap-x-3 gap-y-0.5">
-                      <span className="font-semibold text-violet-700 tabular-nums">
-                        {m.you}: {v.you}
-                      </span>
+                      <span className="font-semibold text-violet-700 tabular-nums">{m.youCount(v.you)}</span>
                       {lead && (
                         <span className="min-w-0 text-slate-600 break-words">
-                          {m.mostNamed}: {lead.name} · <span className="tabular-nums">{lead.count}</span>
+                          {m.mostNamed(lead.name)} · <span className="tabular-nums">{lead.count}</span>
                         </span>
                       )}
                     </p>
@@ -773,7 +772,6 @@ export function ShareOfVoice({ voice, engines, you }: { voice?: Voice | null; en
       </div>
       <p className="mt-5 text-xs text-slate-500 leading-relaxed">
         <b className="font-semibold text-slate-600">{m.howTitle}</b> {m.how}
-        {a.link_only > 0 ? ` ${m.linkOnly(a.link_only)}` : ""}
       </p>
     </section>
   )

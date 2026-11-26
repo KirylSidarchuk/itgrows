@@ -25,8 +25,9 @@ const cachedSample = unstable_cache(
     const site = await sampleSiteReport()
     return site?.latest ? (JSON.parse(JSON.stringify(site)) as SiteReport) : null
   },
-  // "voice": the report carries its share of voice since 26 Nov 2026; a new key so no hour-old copy without it is served.
-  ["geo-sample-report", "voice"],
+  // "voice2": the report carries its share of voice since 26 Nov 2026 (v2 without `asks`, rivals tied in
+  // the order of "Named instead of you"); a new key so no hour-old copy of the old shape is served.
+  ["geo-sample-report", "voice2"],
   { revalidate: 3600 },
 )
 
