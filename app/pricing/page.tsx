@@ -34,10 +34,10 @@ export const dynamic = "force-dynamic"
 const TITLE = "Pricing: the AI visibility plan, done for you | ItGrows"
 const P = geoPriceLabels("en")
 const PRO = geoPriceLabels("en", PRO_PRICES)
-const PRO_SENTENCE = `For firms where one client is worth $5,000 or more, Pro costs ${PRO.month} a month plus a one-time ${PRO.setup} setup, or ${PRO.quarter} for 3 months with the setup free.`
+const PRO_SENTENCE = `Pro, for several locations or practice areas, weekly checks and a business ready for AI agents, costs ${PRO.month} a month plus a one-time ${PRO.setup} setup, or ${PRO.quarter} for 3 months with the setup free.`
 const YEAR_OFF = `${Math.round(YEAR_DISCOUNT * 100)}%`
 const PRICE_SENTENCE = `The plan costs ${P.month} a month, month to month, plus a one-time ${P.setup} setup. The setup is free with ${P.quarter} for 3 months upfront or ${P.year} for a year (${P.yearPerMonth} a month, ${YEAR_OFF} off).`
-const DESCRIPTION = `The ItGrows AI visibility plan: ${P.month} a month, month to month, plus a one-time ${P.setup} setup; the setup is free with ${P.quarter} for 3 months or ${P.year} for a year (${P.yearPerMonth} a month, ${YEAR_OFF} off). Pro, for firms where one client is worth $5,000+: ${PRO.month} a month. The detailed report is free.`
+const DESCRIPTION = `The ItGrows AI visibility plan: ${P.month} a month, month to month, plus a one-time ${P.setup} setup; the setup is free with ${P.quarter} for 3 months or ${P.year} for a year (${P.yearPerMonth} a month, ${YEAR_OFF} off). Pro, for several locations and AI-agent readiness: ${PRO.month} a month. The detailed report is free.`
 
 export const metadata: Metadata = {
   title: TITLE,

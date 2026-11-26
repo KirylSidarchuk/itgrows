@@ -301,7 +301,7 @@ export default function PricingPlans({
       {/* Pro (Kiryl, 26 Nov 2026): firms where one client is worth $5,000 or more. Sold after a call, so its
           button is the page's way to talk to us. */}
       <div className={`reveal group mt-4 rounded-2xl bg-white border-2 border-[#1b1916] p-6 sm:p-7 ${LIFT}`}>
-        <div className="grid md:grid-cols-[1fr_1.3fr] gap-6">
+        <div className="grid md:grid-cols-[1fr_1.6fr] gap-6">
           <div className="flex flex-col">
             <h3 className="font-bold text-lg">{m.proTitle}</h3>
             <p className="text-sm text-slate-600 mt-1">{m.proFor}</p>
@@ -320,11 +320,42 @@ export default function PricingPlans({
               </Go>
             </div>
           </div>
-          <ul className="space-y-2.5 text-sm text-slate-700">
-            {m.proPoints.map((f) => (
-              <Tick key={f}>{f}</Tick>
-            ))}
-          </ul>
+          {/* Business or Pro, side by side (Kiryl, 26 Nov 2026: "в чем разница планов… ставь таблицу на сайт"). */}
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm text-slate-700">
+              <thead>
+                <tr className="text-left text-xs uppercase tracking-wide text-slate-500">
+                  {m.cmpHead.map((h, i) => (
+                    <th key={i} scope="col" className={`pb-2 font-bold ${i === 2 ? "text-violet-700" : ""} ${i ? "text-center px-2" : ""}`}>
+                      {h}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-black/5">
+                <tr>
+                  <th scope="row" className="py-2 pr-2 text-left font-normal">{m.cmpPrice}</th>
+                  <td className="py-2 px-2 text-center font-semibold tabular-nums">
+                    {P.month}
+                    {m.perMonth}
+                    <span className="block text-[11px] font-normal text-slate-500">+ {P.setup} · {m.cmpSetupFree}</span>
+                  </td>
+                  <td className="py-2 px-2 text-center font-semibold tabular-nums text-violet-700">
+                    {PRO.month}
+                    {m.perMonth}
+                    <span className="block text-[11px] font-normal text-slate-500">+ {PRO.setup} · {m.cmpSetupFree}</span>
+                  </td>
+                </tr>
+                {m.cmpRows.map(([label, business, pro]) => (
+                  <tr key={label}>
+                    <th scope="row" className="py-2 pr-2 text-left font-normal leading-snug">{label}</th>
+                    <td className={`py-2 px-2 text-center ${business === "—" ? "text-slate-400" : ""}`}>{business}</td>
+                    <td className={`py-2 px-2 text-center font-semibold ${pro === "✓" ? "text-violet-700" : ""}`}>{pro}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>
