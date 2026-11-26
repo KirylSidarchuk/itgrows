@@ -6,7 +6,7 @@ import PricingPlans from "../business/PricingPlans"
 import { geoIncluded } from "../business/GeoSections"
 import { ORGANIZATION, OG_GEO } from "@/lib/entity"
 import { noteCrawler } from "@/lib/crawler-log"
-import { GEO_PRICES, SAMPLE_PATH, YEAR_DISCOUNT, geoPriceLabels } from "@/lib/geo-pricing"
+import { GEO_PRICES, PRO_PRICES, SAMPLE_PATH, YEAR_DISCOUNT, geoPriceLabels } from "@/lib/geo-pricing"
 import { t } from "@/lib/i18n/messages"
 import homeMessages from "@/lib/i18n/messages/home"
 import pricingPlans from "@/lib/i18n/messages/pricingPlans"
@@ -33,9 +33,11 @@ export const dynamic = "force-dynamic"
 
 const TITLE = "Pricing: the AI visibility plan, done for you | ItGrows"
 const P = geoPriceLabels("en")
+const PRO = geoPriceLabels("en", PRO_PRICES)
+const PRO_SENTENCE = `For firms where one client is worth $5,000 or more, Pro costs ${PRO.month} a month plus a one-time ${PRO.setup} setup, or ${PRO.quarter} for 3 months with the setup free.`
 const YEAR_OFF = `${Math.round(YEAR_DISCOUNT * 100)}%`
 const PRICE_SENTENCE = `The plan costs ${P.month} a month, month to month, plus a one-time ${P.setup} setup. The setup is free with ${P.quarter} for 3 months upfront or ${P.year} for a year (${P.yearPerMonth} a month, ${YEAR_OFF} off).`
-const DESCRIPTION = `The ItGrows AI visibility plan: ${P.month} a month, month to month, plus a one-time ${P.setup} setup; the setup is free with ${P.quarter} for 3 months or ${P.year} for a year (${P.yearPerMonth} a month, ${YEAR_OFF} off). The detailed report is free.`
+const DESCRIPTION = `The ItGrows AI visibility plan: ${P.month} a month, month to month, plus a one-time ${P.setup} setup; the setup is free with ${P.quarter} for 3 months or ${P.year} for a year (${P.yearPerMonth} a month, ${YEAR_OFF} off). Pro, for firms where one client is worth $5,000+: ${PRO.month} a month. The detailed report is free.`
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -155,6 +157,8 @@ export default async function PricingPage() {
           },
           recurring(m.offerQuarter, GEO_PRICES.quarter.cents, 3, "MON"),
           recurring(m.offerYear(YEAR_OFF), GEO_PRICES.year.cents, 1, "ANN"),
+          recurring("Pro, month to month", PRO_PRICES.month.cents, 1, "MON"),
+          recurring("Pro, 3 months upfront", PRO_PRICES.quarter.cents, 3, "MON"),
         ],
       },
       faqSchema(items),
@@ -177,9 +181,9 @@ export default async function PricingPage() {
         </nav>
         <section className="mt-3 text-center max-w-3xl mx-auto">
           <p className="text-[11px] font-bold uppercase tracking-[0.15em] text-violet-600">Pricing</p>
-          <h1 className="mt-2 text-3xl sm:text-5xl font-extrabold tracking-tight leading-tight">One plan, done for you. One public price.</h1>
+          <h1 className="mt-2 text-3xl sm:text-5xl font-extrabold tracking-tight leading-tight">Done for you. Public prices, the same for everyone.</h1>
           <p className="mt-4 text-slate-700 leading-relaxed">
-            {PRICE_SENTENCE} The detailed report, our diagnosis and plan for your site, is free once you create an account.
+            {PRICE_SENTENCE} {PRO_SENTENCE} The detailed report, our diagnosis and plan for your site, is free once you create an account.
           </p>
           <div className="mt-6 rounded-2xl border-2 border-violet-300 bg-white/70 px-5 py-4">
             <p className="text-[11px] uppercase tracking-[0.15em] font-bold text-violet-600">{g.label}</p>

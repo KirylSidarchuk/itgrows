@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import Link from "next/link"
 import AuditForm from "./business/AuditForm"
 import ContactForm from "./business/ContactForm"
+import Cases from "./_home/Cases"
 import HashForward from "./_home/HashForward"
 import ScrollReveal from "./_home/ScrollReveal"
 import SignIn from "./_home/SignIn"
@@ -225,6 +226,9 @@ export default async function Home() {
             <AuditForm />
           </div>
         </section>
+
+        {/* Real results with names and links (Kiryl, 26 Nov 2026), right under the check. */}
+        <Cases locale={locale} id="geo-results" />
 
         <WhyThisMatters id="geo-why" checkHref="#geo-check" />
 

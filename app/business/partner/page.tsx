@@ -80,7 +80,7 @@ export default async function PartnerPage() {
             <h2 className="mt-1 text-lg font-extrabold">Sie empfehlen, wir liefern</h2>
             <ul className="mt-3 text-sm space-y-2 list-disc pl-5 text-slate-700">
               <li>Ihr Kunde schließt direkt mit uns ab, zum öffentlichen Preis.</li>
-              <li>Sie erhalten 20 % der Zahlungen, die wir von diesem Kunden in den ersten 3 Monaten tatsächlich erhalten.</li>
+              <li>Sie erhalten 20 % der Zahlungen, die wir von diesem Kunden in den ersten 6 Monaten tatsächlich erhalten.</li>
               <li>Kein Aufwand für Sie nach der Empfehlung; Sie sehen die Berichte, wenn Ihr Kunde zustimmt.</li>
             </ul>
           </div>
@@ -89,7 +89,7 @@ export default async function PartnerPage() {
             <h2 className="mt-1 text-lg font-extrabold">Unter Ihrem Namen</h2>
             <ul className="mt-3 text-sm space-y-2 list-disc pl-5 text-slate-700">
               <li>Sie verkaufen KI-Sichtbarkeit als eigene Leistung und legen Ihren Preis selbst fest.</li>
-              <li>Wir liefern zum öffentlichen Preis: Messung, Artikel, Berichte, ohne unseren Namen beim Kunden.</li>
+              <li>Wir liefern zu einem Partnerpreis für Agenturen, den wir Ihnen auf Anfrage nennen: Messung, Artikel, Berichte, ohne unseren Namen beim Kunden.</li>
               <li>Ihr Aufschlag bleibt bei Ihnen.</li>
             </ul>
           </div>

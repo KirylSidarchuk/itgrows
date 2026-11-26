@@ -7,8 +7,8 @@ import pricingPlans from "@/lib/i18n/messages/pricingPlans"
 
 // Partner page for web, SEO and marketing agencies worldwide, in English (24 Nov 2026, Venture OS mission 52, sprint
 // test T4b "agencies worldwide"; the German version is /business/partner). Two ways to work together: a referral (20% of
-// the payments ItGrows actually receives from the referred client in the first 3 months, the client pays the public
-// price) or white label (the agency resells under its own name; ItGrows delivers at the public price, the agency sets its
+// the payments ItGrows actually receives from the referred client in the first 6 months since 26 Nov 2026, the client pays the public
+// price) or white label (the agency resells under its own name; ItGrows delivers at a partner price, unpublished, shared on request, the agency sets its
 // markup). Proof is only what is real: the Cologne quick check of 22 Nov 2026 and an anonymous client mention allowed on
 // 23 Nov 2026 ("a private orthopaedic practice in Bonn"); no growth claims.
 
@@ -80,7 +80,7 @@ export default async function AgenciesPage() {
             <h2 className="mt-1 text-lg font-extrabold">You refer, we deliver</h2>
             <ul className="mt-3 text-sm space-y-2 list-disc pl-5 text-slate-700">
               <li>Your client signs up with us directly, at the public price.</li>
-              <li>You receive 20% of the payments we actually receive from that client in the first 3 months.</li>
+              <li>You receive 20% of the payments we actually receive from that client in the first 6 months.</li>
               <li>No work for you after the intro; you see the reports if your client agrees.</li>
             </ul>
           </div>
@@ -89,7 +89,7 @@ export default async function AgenciesPage() {
             <h2 className="mt-1 text-lg font-extrabold">Under your name</h2>
             <ul className="mt-3 text-sm space-y-2 list-disc pl-5 text-slate-700">
               <li>You sell AI visibility as your own service and set your own price.</li>
-              <li>We deliver at the public price: measurement, articles, reports, with no ItGrows name in front of the client.</li>
+              <li>We deliver at a partner price for agencies, which we share when you write to us: measurement, articles, reports, with no ItGrows name in front of the client.</li>
               <li>Your markup stays with you.</li>
             </ul>
           </div>

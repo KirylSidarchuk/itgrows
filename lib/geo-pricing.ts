@@ -162,6 +162,16 @@ export function geoPrices(monthCents: number): GeoPrices {
  *  The default of every page, llms.txt, the Stripe prices by lookup key, and a checkout from before the test. */
 export const GEO_PRICES = geoPrices(ONE_PRICE_MONTH)
 
+/** Pro (Kiryl, 26 Nov 2026: "Утверждаю"): for firms where one client is worth $5,000 or more (law firms,
+ *  clinic groups, B2B suppliers). The plan plus AI-agent readiness (business data kept accurate in Google,
+ *  Bing and Apple; services and prices machine-readable; a booking or quote page assistants can read), up to
+ *  3 locations or practice areas, measurement every week, a call with the founder every 3 months.
+ *  $1,000 a month plus a one-time $1,000 setup, or $3,000 for 3 months with the setup free; no yearly price.
+ *  Sold after a call, through /pay/2000 and /pay/3000 (charged inline: no Stripe price is made for it); the
+ *  cabinet's plan page stays on the plan. Public, the same for everyone, like the plan's price. */
+export const PRO_MONTH = 100000
+export const PRO_PRICES = geoPrices(PRO_MONTH)
+
 /** The plan's prices as a page in one language writes them (lib/i18n/format.ts formatUsd). */
 export interface GeoPriceLabels {
   month: string

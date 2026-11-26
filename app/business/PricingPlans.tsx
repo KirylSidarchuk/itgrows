@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import { SAMPLE_PATH, YEAR_DISCOUNT, geoPriceLabels, type GeoInterval } from "@/lib/geo-pricing"
+import { PRO_PRICES, SAMPLE_PATH, YEAR_DISCOUNT, geoPriceLabels, type GeoInterval } from "@/lib/geo-pricing"
 import { usePlanPrices, usePriceCardSeen } from "@/components/geo/PriceProvider"
 import LocaleLink from "@/components/i18n/LocaleLink"
 import { useLocale, useT } from "@/components/i18n/LocaleProvider"
@@ -179,6 +179,8 @@ export default function PricingPlans({
   // The plan's prices, written the language's way ("$499" in English, "499 $" in German), and the
   // yearly discount: "20%" in English, "20 %" in German and French.
   const P = geoPriceLabels(locale, usePlanPrices())
+  // Pro: one public price, outside the price test (lib/geo-pricing.ts PRO_PRICES).
+  const PRO = geoPriceLabels(locale, PRO_PRICES)
   const yearOff = formatNumber(locale, YEAR_DISCOUNT, { style: "percent", maximumFractionDigits: 0 })
   const start: Record<"month" | "year", { i: GeoInterval; label: string }[]> = {
     month: [
@@ -293,6 +295,36 @@ export default function PricingPlans({
               {planLabel}
             </Go>
           </div>
+        </div>
+      </div>
+
+      {/* Pro (Kiryl, 26 Nov 2026): firms where one client is worth $5,000 or more. Sold after a call, so its
+          button is the page's way to talk to us. */}
+      <div className={`reveal group mt-4 rounded-2xl bg-white border-2 border-[#1b1916] p-6 sm:p-7 ${LIFT}`}>
+        <div className="grid md:grid-cols-[1fr_1.3fr] gap-6">
+          <div className="flex flex-col">
+            <h3 className="font-bold text-lg">{m.proTitle}</h3>
+            <p className="text-sm text-slate-600 mt-1">{m.proFor}</p>
+            <p className="mt-3 flex items-baseline gap-2.5">
+              <span className={`text-4xl font-extrabold tabular-nums ${NUM}`}>{PRO.month}</span>
+              <span className="text-slate-500 font-semibold">{m.perMonth}</span>
+            </p>
+            <p className="text-sm text-slate-600 mt-2">{m.proNote(PRO.setup, PRO.quarter)}</p>
+            <div className="mt-auto pt-6">
+              <Go
+                href={planHref}
+                onClick={() => track(locale, "pro_talk")}
+                className={`block text-center rounded-xl bg-[#1b1916] hover:bg-black text-white px-5 py-3 text-sm font-semibold ${SHINE}`}
+              >
+                {m.proCta}
+              </Go>
+            </div>
+          </div>
+          <ul className="space-y-2.5 text-sm text-slate-700">
+            {m.proPoints.map((f) => (
+              <Tick key={f}>{f}</Tick>
+            ))}
+          </ul>
         </div>
       </div>
     </div>

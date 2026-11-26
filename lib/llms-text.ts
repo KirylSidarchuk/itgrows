@@ -1,4 +1,4 @@
-import { GEO_PRICES, SAMPLE_PATH, YEAR_DISCOUNT } from "@/lib/geo-pricing"
+import { GEO_PRICES, PRO_PRICES, SAMPLE_PATH, YEAR_DISCOUNT } from "@/lib/geo-pricing"
 import { ENTITY_ONE_LINER } from "@/lib/entity"
 
 // The text of /llms.txt: what ItGrows is and where its substance lives, in one fetch. app/llms.txt/route.ts
@@ -27,6 +27,7 @@ export function llmsText({ guides, posts }: { guides: string; posts: string }): 
 - Quick check (free): ${BASE}/ puts five buyer questions to ChatGPT and Perplexity in about 30 seconds, without an account; one answer shows right away, all five once the visitor creates an account.
 - Detailed report (the diagnosis and our plan): free once an account is created, one site per account. 20 buyer questions × ChatGPT, Claude, Gemini and Perplexity, each asked once: every answer, who is named instead, which sites the assistants cite, and the plan of what we will do for the site; all of it is open. A real example: ${BASE}${SAMPLE_PATH}
 - The plan (done for you): ${GEO_PRICES.month.label} a month, month to month, plus a one-time ${GEO_PRICES.setup.label} setup (site and index setup, delivered as a launch report); the setup is free with ${GEO_PRICES.quarter.label} for 3 months paid upfront or ${GEO_PRICES.year.label} for a year (${GEO_PRICES.year.perMonth} a month, ${Math.round(YEAR_DISCOUNT * 100)}% off). In US dollars. Every two weeks all 20 questions are put to all four assistants, 3 times each. The detailed report is included. Articles are ready 2 days before they go live; the client can edit or stop each one.
+- Pro (for firms where one client is worth $5,000 or more: law firms, clinic groups, B2B suppliers): ${PRO_PRICES.month.label} a month plus a one-time ${PRO_PRICES.setup.label} setup, or ${PRO_PRICES.quarter.label} for 3 months with the setup free. Everything in the plan, plus the business data kept accurate in Google, Bing and Apple, services and prices machine-readable on the client's site, a booking or quote page assistants can read, up to 3 locations or practice areas, measurement every week and a call with the founder every 3 months. Starts after a 15-minute call.
 - Pricing page: ${BASE}/pricing (every way to pay, what the plan includes, questions).
 - How we measure AI visibility: ${BASE}/business/how-we-measure-ai-visibility (the questions, the four assistants and how each is asked, what counts as named, why ChatGPT is asked through its API, the limits of the count).
 - GEO for apps: ${BASE}/business/geo-for-apps (how we get apps named in AI answers, with the counts of our own apps MagiScan, FreightSizer and AppsLift).
