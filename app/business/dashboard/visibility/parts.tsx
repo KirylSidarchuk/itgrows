@@ -83,7 +83,8 @@ export interface Voice {
   v: number
   /** v3: false when sov.py could not find a count of "Named instead of you" (the card then shows no names). */
   aligned?: boolean
-  /** brands: the other businesses named; ahead: those named in more pairs than the site. */
+  /** brands: the other businesses named; ahead: those named in more pairs than the site's count on "Named
+   *  instead of you" (summary.named: the name in the text or only a link; v3 and older: the text alone). */
   all: VoiceCount & { brands: number; ahead: number }
   engines: Record<string, VoiceCount & { top: { name: string; count: number }[] }>
   rivals: { name: string; count: number; engines: Record<string, number> }[]
@@ -683,7 +684,9 @@ export function Sources({ summary }: { summary: Summary }) {
  *  names and counts; the names are shown only when the five are the list's first five with the same counts,
  *  so a list changed by hand after the row was stored never reads against this card (then one grey part,
  *  all the other businesses). Translated (visibilityVoice): the sample report reads its page's language, the
- *  cabinet English. Without a stored row the card is not drawn. */
+ *  cabinet English. Without a stored row the card is not drawn. "N of M named more often than you" sets
+ *  the businesses against "You" on that list (summary.named, a link alone counts), not against the share
+ *  above it: a business the list ranks at or below "You" is never called more often named (sov.py v4). */
 export function ShareOfVoice({
   voice,
   engines,

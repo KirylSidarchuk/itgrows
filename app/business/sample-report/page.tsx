@@ -25,10 +25,10 @@ const cachedSample = unstable_cache(
     const site = await sampleSiteReport()
     return site?.latest ? (JSON.parse(JSON.stringify(site)) as SiteReport) : null
   },
-  // "voice3": the report carries its share of voice since 26 Nov 2026 (without `asks`; v3: the rivals
-  // grouped, named and counted as in "Named instead of you", plus `aligned`); a new key so no hour-old
-  // copy of an older row is served.
-  ["geo-sample-report", "voice3"],
+  // "voice4": the report carries its share of voice since 26 Nov 2026 (without `asks`; v3: the rivals
+  // grouped, named and counted as in "Named instead of you", plus `aligned`; v4: "named more often than
+  // you" against the list's "You", summary.named); a new key so no hour-old copy of an older row is served.
+  ["geo-sample-report", "voice4"],
   { revalidate: 3600 },
 )
 
