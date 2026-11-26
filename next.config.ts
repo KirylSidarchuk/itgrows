@@ -45,9 +45,10 @@ const nextConfig: NextConfig = {
     ]
   },
   // Shared by link only: search engines are told to keep the page and its images out of results.
+  // /partners holds the agency partner offer (PDF, German and English), sent by link in LinkedIn (26 Nov 2026).
   async headers() {
     const noindex = [{ key: "X-Robots-Tag", value: "noindex, nofollow" }]
-    return ["/sustain/:path*", "/sustain1/:path*", "/sustain2/:path*", "/sustain3/:path*", "/sustain4/:path*"].map((source) => ({ source, headers: noindex }))
+    return ["/sustain/:path*", "/sustain1/:path*", "/sustain2/:path*", "/sustain3/:path*", "/sustain4/:path*", "/partners/:path*"].map((source) => ({ source, headers: noindex }))
   },
   async rewrites() {
     return {
