@@ -81,6 +81,8 @@ export interface VoiceCount {
 }
 export interface Voice {
   v: number
+  /** v3: false when sov.py could not find a count of "Named instead of you" (the card then shows no names). */
+  aligned?: boolean
   /** brands: the other businesses named; ahead: those named in more pairs than the site. */
   all: VoiceCount & { brands: number; ahead: number }
   engines: Record<string, VoiceCount & { top: { name: string; count: number }[] }>
@@ -675,14 +677,31 @@ export function Sources({ summary }: { summary: Summary }) {
  *  per assistant (geo_check/sov.py, stored when the report is done; nothing is asked again). Counts, as on
  *  every card: a bar's length shows the share, the screen never prints a percentage. The site counts by its
  *  name in the text only, so this can be lower than the headline's "answers named you" (a link alone counts
- *  there); the card says by how many. The rivals' own totals stay on "Named instead of you": here they are
- *  summed, and per assistant only the most named one is shown. Translated (visibilityVoice): the sample
- *  report reads its page's language, the cabinet English. Without a stored row the card is not drawn. */
-export function ShareOfVoice({ voice, engines, you }: { voice?: Voice | null; engines: string[]; you: string }) {
+ *  there); the card says by how many. The rivals' own totals stay on "Named instead of you" (`named`, the
+ *  same report's summary.named_instead, drawn next to this card): here the first five are summed, and per
+ *  assistant only the most named one is shown. sov.py groups the spellings as that list does and keeps its
+ *  names and counts; the names are shown only when the five are the list's first five with the same counts,
+ *  so a list changed by hand after the row was stored never reads against this card (then one grey part,
+ *  all the other businesses). Translated (visibilityVoice): the sample report reads its page's language, the
+ *  cabinet English. Without a stored row the card is not drawn. */
+export function ShareOfVoice({
+  voice,
+  engines,
+  you,
+  named,
+}: {
+  voice?: Voice | null
+  engines: string[]
+  you: string
+  named: Summary["named_instead"]
+}) {
   const m = useT(visibilityVoice)
   if (!voice?.all || !voice.engines || !(voice.all.mentions > 0)) return null
   const a = voice.all
-  const top = (voice.rivals ?? []).slice(0, 5)
+  const five = (voice.rivals ?? []).slice(0, 5)
+  const agree =
+    voice.aligned !== false && five.length > 0 && five.every((r, i) => named?.[i]?.name === r.name && named[i].count === r.count)
+  const top = agree ? five : []
   const topSum = top.reduce((n, r) => n + r.count, 0)
   const rest = Math.max(0, a.mentions - a.you - topSum)
   const others = Math.max(0, a.brands - top.length)
@@ -741,7 +760,7 @@ export function ShareOfVoice({ voice, engines, you }: { voice?: Voice | null; en
             <ul className="mt-2 space-y-3">
               {cols.map((e) => {
                 const v = voice.engines[e]
-                const lead = v.top?.[0]
+                const lead = agree ? v.top?.[0] : undefined
                 return (
                   <li key={e}>
                     <div className="flex items-center justify-between gap-3 text-sm">
@@ -1917,7 +1936,7 @@ export function ReportSections({
         <NamedInstead summary={full.summary} you={you} />
         <Sources summary={full.summary} />
       </div>
-      <ShareOfVoice voice={full.voice} engines={full.engines} you={you} />
+      <ShareOfVoice voice={full.voice} engines={full.engines} you={you} named={full.summary.named_instead} />
       <WhereNamed rows={full.rows} engines={full.engines} samples={full.samples} asked={full.finishedAt} />
       <MethodNote questions={full.rows.length} engines={full.engines.length} samples={full.samples} />
     </>
@@ -2186,7 +2205,7 @@ export function RunView({
         <NamedInstead summary={run.summary} you={site.business || site.domain} />
         <Sources summary={run.summary} />
       </div>
-      <ShareOfVoice voice={run.voice} engines={run.engines} you={site.business || site.domain} />
+      <ShareOfVoice voice={run.voice} engines={run.engines} you={site.business || site.domain} named={run.summary.named_instead} />
       <WhereNamed rows={run.rows} engines={run.engines} samples={run.samples} asked={run.finishedAt} />
     </>
   )

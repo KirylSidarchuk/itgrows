@@ -7,6 +7,8 @@ import { plural } from "../format"
 // the sample report reads its page's language. Counts only, never a percentage (the rule of parts.tsx).
 // "Above" is the headline card: "N of 80 answers named you", where a link alone counts; here it does not.
 // Every colon is in the strings, not in parts.tsx: French puts a non-breaking space before it.
+// German: "sie" for the answers never starts a sentence, where it would read as "Sie" (you); nor "die Sie nennen"
+// (answers that name you, or that you name): "in denen Sie genannt werden".
 
 const en = {
   title: "Share of voice",
@@ -39,7 +41,7 @@ export default defineMessages(en, {
   de: {
     title: "Ihr Anteil an den Nennungen",
     intro:
-      "Wie sich die Nennungen der Assistenten zwischen Ihnen und den anderen Unternehmen aufteilen, die sie zu Ihren Fragen genannt haben. Jedes Unternehmen zählt einmal pro Frage und Assistent, so wie oben die Antworten gezählt werden, die Sie nennen.",
+      "Wie sich die Nennungen der Assistenten zwischen Ihnen und den anderen Unternehmen aufteilen, die sie zu Ihren Fragen genannt haben. Jedes Unternehmen zählt einmal pro Frage und Assistent, genauso wie oben die Antworten, in denen Sie genannt werden.",
     youOf: (n, of) => `Sie: ${n} von ${of} ${plural("de", of, { one: "Nennung", other: "Nennungen" })}`,
     ahead: (n, brands) =>
       brands === 0
@@ -60,8 +62,8 @@ export default defineMessages(en, {
     how: "Eine Nennung ist ein Unternehmen, dessen Name im Text der Antworten eines Assistenten auf eine Frage steht. Ein Link ohne den Namen ist keine Nennung, weder bei Ihnen noch bei anderen. Pro Frage und Assistent zählen wir bis zu den ersten 6 genannten Unternehmen. Ihr Name wird auch dann gezählt, wenn er nach diesen ersten 6 steht, daher kann Ihr Anteil höher wirken, als er tatsächlich ist.",
     linkOnly: (n) =>
       n === 1
-        ? "1 Antwort, die Sie nennt, verlinkt nur Ihre Website: Sie zählt oben, hier nicht."
-        : `${n} Antworten, die Sie nennen, verlinken nur Ihre Website: Sie zählen oben, hier nicht.`,
+        ? "1 Antwort verlinkt nur Ihre Website, ohne Ihren Namen zu nennen: Oben zählt sie mit, hier nicht."
+        : `${n} Antworten verlinken nur Ihre Website, ohne Ihren Namen zu nennen: Oben zählen sie mit, hier nicht.`,
   },
   fr: {
     title: "Part de voix",
@@ -118,8 +120,8 @@ export default defineMessages(en, {
     how: "una mención es una empresa nombrada en el texto de las respuestas de un asistente a una pregunta. Un enlace sin el nombre no es una mención, ni para usted ni para nadie. Por cada pregunta y asistente contamos hasta las 6 primeras empresas nombradas. Su nombre, en cambio, se cuenta aunque aparezca después de esas 6 primeras, así que su cuota puede parecer más alta de lo que realmente es.",
     linkOnly: (n) =>
       n === 1
-        ? "1 respuesta que le nombra solo enlaza a su sitio: cuenta más arriba, no aquí."
-        : `${n} respuestas que le nombran solo enlazan a su sitio: cuentan más arriba, no aquí.`,
+        ? "1 respuesta que le nombra solo enlaza a su sitio: esa respuesta cuenta más arriba, no aquí."
+        : `${n} respuestas que le nombran solo enlazan a su sitio: esas respuestas cuentan más arriba, no aquí.`,
   },
   ru: {
     title: "Доля голоса",
