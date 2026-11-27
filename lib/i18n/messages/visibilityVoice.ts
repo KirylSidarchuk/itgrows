@@ -35,6 +35,23 @@ const en = {
     n === 1
       ? "1 answer that named you only links to your site: it counts above, not here."
       : `${n} answers that named you only link to your site: they count above, not here.`,
+  // The tone part (parts.tsx VoiceTone, geo_check/tone.py). `tones` label a count of answers, so they read
+  // as what the answers do. The quotes stay in the answers' language; `quote` only puts the marks around one.
+  toneTitle: "How the answers describe you",
+  toneIntro: (n: number) =>
+    n === 1
+      ? "We read the answer that names you and sorted it by how it presents you to the person who asked."
+      : `We read the ${n} answers that name you and sorted them by how they present you to the person who asked.`,
+  tones: {
+    recommended: "Recommend you",
+    neutral: "Name you, facts only",
+    caveat: "With a caveat",
+    negative: "Speak against you",
+    unsure: "Know little about you",
+  },
+  quote: (s: string) => `“${s}”`,
+  toneHow:
+    "“Recommend you”: praise, a top pick or a recommendation. “With a caveat”: something that could put a customer off, such as the price, the reviews or a limit to what you offer. “Speak against you”: advice not to choose you, complaints, or a report that you have closed. “Know little about you”: the assistant found little about you or could not confirm it. An answer is one question to one assistant; when its asks differ, it takes the tone most of them show. A language model sorts each answer; the quotes are copied from the answers, in their original language.",
 }
 
 export default defineMessages(en, {
@@ -64,6 +81,21 @@ export default defineMessages(en, {
       n === 1
         ? "1 Antwort verlinkt nur Ihre Website, ohne Ihren Namen zu nennen: Oben zählt sie mit, hier nicht."
         : `${n} Antworten verlinken nur Ihre Website, ohne Ihren Namen zu nennen: Oben zählen sie mit, hier nicht.`,
+    toneTitle: "Wie die Antworten Sie darstellen",
+    toneIntro: (n) =>
+      n === 1
+        ? "Wir haben die Antwort, in der Sie genannt werden, danach eingeordnet, wie Sie darin der fragenden Person präsentiert werden."
+        : `Wir haben die ${n} Antworten, in denen Sie genannt werden, danach eingeordnet, wie Sie darin der fragenden Person präsentiert werden.`,
+    tones: {
+      recommended: "Mit Empfehlung",
+      neutral: "Nur sachlich",
+      caveat: "Mit Vorbehalt",
+      negative: "Gegen Sie",
+      unsure: "Kaum Angaben zu Ihnen",
+    },
+    quote: (s) => `„${s}“`,
+    toneHow:
+      "„Mit Empfehlung“: Lob, eine Nennung als erste Wahl oder der ausdrückliche Rat, sich an Sie zu wenden. „Mit Vorbehalt“: etwas, das Kunden abschrecken könnte, etwa der Preis, die Bewertungen oder eine Einschränkung Ihres Angebots. „Gegen Sie“: der Rat, sich nicht an Sie zu wenden, Beschwerden oder die Angabe, Sie hätten geschlossen. „Kaum Angaben zu Ihnen“: Der Assistent hat wenig über Sie gefunden oder konnte es nicht bestätigen. Eine Antwort ist eine Frage an einen Assistenten; weichen ihre Abfragen voneinander ab, zählt die Einordnung, die die meisten zeigen. Ein Sprachmodell ordnet jede Antwort ein; die Zitate stammen wörtlich aus den Antworten, in der Originalsprache.",
   },
   fr: {
     title: "Part de voix",
@@ -93,6 +125,21 @@ export default defineMessages(en, {
       n === 1
         ? "1 réponse qui vous cite ne fait que renvoyer vers votre site\u00a0: elle compte plus haut, pas ici."
         : `${n} réponses qui vous citent ne font que renvoyer vers votre site\u00a0: elles comptent plus haut, pas ici.`,
+    toneTitle: "Comment les réponses vous présentent",
+    toneIntro: (n) =>
+      n === 1
+        ? "Nous avons classé la réponse qui vous cite selon la façon dont elle vous présente à la personne qui a posé la question."
+        : `Nous avons classé les ${n} réponses qui vous citent selon la façon dont elles vous présentent à la personne qui a posé la question.`,
+    tones: {
+      recommended: "Vous recommandent",
+      neutral: "Vous citent, sans jugement",
+      caveat: "Avec une réserve",
+      negative: "Vous déconseillent",
+      unsure: "En savent peu sur vous",
+    },
+    quote: (s) => `« ${s} »`,
+    toneHow:
+      "« Vous recommandent » : un éloge, un premier choix ou une recommandation. « Avec une réserve » : un point qui pourrait freiner un client, comme le prix, les avis ou une limite de votre offre. « Vous déconseillent » : un avis défavorable, des plaintes ou l’indication que vous avez fermé. « En savent peu sur vous » : l’assistant a trouvé peu d’informations sur vous ou n’a pas pu les vérifier. Une réponse correspond à une question posée à un assistant ; si ses requêtes diffèrent, elle prend le ton que montrent la plupart d’entre elles. Un modèle de langage classe chaque réponse ; les citations sont reprises telles quelles des réponses, dans leur langue d’origine.",
   },
   es: {
     title: "Cuota de voz",
@@ -122,6 +169,21 @@ export default defineMessages(en, {
       n === 1
         ? "1 respuesta que le nombra solo enlaza a su sitio: esa respuesta cuenta más arriba, no aquí."
         : `${n} respuestas que le nombran solo enlazan a su sitio: esas respuestas cuentan más arriba, no aquí.`,
+    toneTitle: "Cómo le presentan las respuestas",
+    toneIntro: (n) =>
+      n === 1
+        ? "Clasificamos la respuesta que le nombra según cómo le presenta a quien hizo la pregunta."
+        : `Clasificamos las ${n} respuestas que le nombran según cómo le presentan a quien hizo la pregunta.`,
+    tones: {
+      recommended: "Le recomiendan",
+      neutral: "Le nombran, sin opinión",
+      caveat: "Con reparos",
+      negative: "Le desaconsejan",
+      unsure: "Saben poco de usted",
+    },
+    quote: (s) => `«${s}»`,
+    toneHow:
+      "«Le recomiendan»: un elogio, una primera opción o una recomendación. «Con reparos»: algo que podría frenar a un cliente, como el precio, las reseñas o una limitación de su oferta. «Le desaconsejan»: un consejo de no elegirle, quejas o la afirmación de que usted ha cerrado. «Saben poco de usted»: el asistente encontró poco sobre usted o no pudo confirmarlo. Una respuesta es una pregunta a un asistente; si sus consultas difieren, toma el tono que muestra la mayoría. Un modelo de lenguaje clasifica cada respuesta; las citas se copian tal cual de las respuestas, en el idioma original.",
   },
   ru: {
     title: "Доля голоса",
@@ -151,5 +213,26 @@ export default defineMessages(en, {
         many: `${n} ответов, где назвали вас, только ссылаются на ваш сайт: они считаются выше, здесь — нет.`,
         other: `${n} ответа, где назвали вас, только ссылаются на ваш сайт: они считаются выше, здесь — нет.`,
       }),
+    toneTitle: "Как ответы описывают вас",
+    toneIntro: (n) =>
+      plural("ru", n, {
+        one:
+          n === 1
+            ? "Мы разобрали 1 ответ, где вас назвали, по тому, как он представляет вас спросившему."
+            : `Мы разобрали ${n} ответ, где вас назвали, по тому, как они представляют вас спросившему.`,
+        few: `Мы разобрали ${n} ответа, где вас назвали, по тому, как они представляют вас спросившему.`,
+        many: `Мы разобрали ${n} ответов, где вас назвали, по тому, как они представляют вас спросившему.`,
+        other: `Мы разобрали ${n} ответа, где вас назвали, по тому, как они представляют вас спросившему.`,
+      }),
+    tones: {
+      recommended: "Рекомендуют вас",
+      neutral: "Называют, без оценки",
+      caveat: "С оговоркой",
+      negative: "Не в вашу пользу",
+      unsure: "Мало сведений о вас",
+    },
+    quote: (s) => `«${s}»`,
+    toneHow:
+      "«Рекомендуют вас» — похвала, первый выбор или совет обратиться к вам. «С оговоркой» — то, что может оттолкнуть клиента: цена, отзывы или ограничение вашего предложения. «Не в вашу пользу» — совет не обращаться к вам, жалобы или сведения, что вы закрылись. «Мало сведений о вас» — ассистент почти ничего не нашёл о вас или не смог это подтвердить. Ответ — это один вопрос одному ассистенту; если его запросы расходятся, берётся оценка, которую показывает большинство. Каждый ответ разбирает языковая модель; цитаты взяты из ответов дословно, на языке оригинала.",
   },
 })

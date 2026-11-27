@@ -40,7 +40,8 @@ interface Report {
   samples: unknown
   summary: Record<string, unknown> | null
   rows: Row[]
-  /** Share of voice (geo_check/sov.py, geo_run_metrics), null when the VM has not stored it. */
+  /** Share of voice (geo_check/sov.py, geo_run_metrics) with its `tone` (geo_check/tone.py), null when the
+   *  VM has not stored it. */
   voice: Record<string, unknown> | null
 }
 
@@ -69,13 +70,66 @@ async function viewOf(f: Row, sample = false) {
  *  for a day-0 or 14-day report (geo_check/sov.py: written when the report is done, from the stored
  *  answers, no API). A separate read that never holds the report back: no row, no table or any error,
  *  and the page is the report without the card. Without `asks` (the site's place in each answer, kept
- *  for later and not shown): the public /api/geo/sample sends this object as it is. */
-async function voiceOf(id: string): Promise<Record<string, unknown> | null> {
+ *  for later and not shown): the public /api/geo/sample sends this object as it is. With `tone`
+ *  (toneOf), null until geo_check/tone.py has read the answers. */
+async function voiceOf(id: string, results: Row[]): Promise<Record<string, unknown> | null> {
   try {
-    const [m] = rows(await db.execute(sql`SELECT sov - 'asks' AS sov FROM geo_run_metrics WHERE run_id = ${id}::uuid AND version >= 1`))
-    return (m?.sov as Record<string, unknown> | undefined) ?? null
+    const [m] = rows(await db.execute(sql`SELECT sov - 'asks' AS sov, tone FROM geo_run_metrics WHERE run_id = ${id}::uuid AND version >= 1`))
+    const sov = m?.sov as Record<string, unknown> | undefined
+    return sov ? { ...sov, tone: toneOf(m.tone, results) } : null
   } catch {
     return null
+  }
+}
+
+const TONES = ["recommended", "neutral", "caveat", "negative", "unsure"] as const
+/** tone.py VERSION 3 (two readings, checked against blind labels); rows of the first day's tries are never shown. */
+const TONE_VERSION = 3
+/** An answer's tone when its asks differ: the one most of them show; on a tie the first here, so a problem is
+ *  counted only where it outnumbers the rest. */
+const TIE: readonly string[] = ["recommended", "neutral", "caveat", "unsure", "negative"]
+type ToneItem = { q: number; e: string; s: number; tone: string; quote: string | null }
+
+/** The tone part of the card (parts.tsx VoiceTone) from geo_run_metrics.tone (geo_check/tone.py: a model read
+ *  each ask whose text names the site). Counted as the rest of the page counts: one answer per question and
+ *  assistant (its up to 3 asks), with the tone most of its asks show ("other", the name meant someone else, left
+ *  out). Up to 3 quotes copied from the answers, one per answer, from an ask with the answer's tone: first what
+ *  holds something against the site (negative, caveat, then unsure; 2 at most), then one that recommends it, then
+ *  neutral ones until there are 2; the first question first. Without the items and the model's notes: the public
+ *  /api/geo/sample sends this as it is. null when nothing was read. */
+function toneOf(t: unknown, results: Row[]) {
+  const d = t as { v?: number; all?: Record<string, number>; items?: ToneItem[] } | null
+  if (!d?.all || !Array.isArray(d.items) || Number(d.v ?? 0) < TONE_VERSION) return null
+  const answers = new Map<string, ToneItem[]>()
+  for (const i of d.items)
+    if ((TONES as readonly string[]).includes(i.tone)) answers.set(`${i.q}|${i.e}`, [...(answers.get(`${i.q}|${i.e}`) ?? []), i])
+  const counts = Object.fromEntries(TONES.map((k) => [k, 0])) as Record<(typeof TONES)[number], number>
+  const quoted: ToneItem[] = []
+  for (const asks of answers.values()) {
+    const n = (k: string) => asks.filter((a) => a.tone === k).length
+    const tone = TIE.reduce((best, k) => (n(k) > n(best) ? k : best), TIE[0]) as (typeof TONES)[number]
+    counts[tone]++
+    const q = asks.find((a) => a.tone === tone && a.quote)
+    if (q) quoted.push(q)
+  }
+  const read = TONES.reduce((n, k) => n + counts[k], 0)
+  if (read === 0) return null
+  const pick: ToneItem[] = []
+  const take = (tones: string[], upTo: number) => {
+    for (const tone of tones) for (const i of quoted) if (pick.length < upTo && i.tone === tone && !pick.includes(i)) pick.push(i)
+  }
+  take(["negative", "caveat", "unsure"], 2)
+  take(["recommended"], pick.length + 1)
+  take(["neutral"], Math.max(2, pick.length))
+  return {
+    read,
+    counts,
+    examples: pick.slice(0, 3).map((i) => ({
+      tone: i.tone,
+      quote: i.quote as string,
+      engine: i.e,
+      question: String(results[i.q]?.q ?? ""),
+    })),
   }
 }
 
@@ -93,7 +147,7 @@ async function runReport(id: string): Promise<Report | null> {
     samples: r.samples,
     summary: (r.summary as Report["summary"]) ?? null,
     rows: (r.results as Row[]) ?? [],
-    voice: r.kind === "baseline" || r.kind === "weekly" ? await voiceOf(id) : null,
+    voice: r.kind === "baseline" || r.kind === "weekly" ? await voiceOf(id, (r.results as Row[]) ?? []) : null,
   }
 }
 

@@ -88,6 +88,17 @@ export interface Voice {
   all: VoiceCount & { brands: number; ahead: number }
   engines: Record<string, VoiceCount & { top: { name: string; count: number }[] }>
   rivals: { name: string; count: number; engines: Record<string, number> }[]
+  /** How the answers that name the site present it (lib/geo-report.ts toneOf, geo_check/tone.py); null or
+   *  absent until the model has read them. */
+  tone?: VoiceToneData | null
+}
+export type ToneKind = "recommended" | "neutral" | "caveat" | "negative" | "unsure"
+export interface VoiceToneData {
+  /** answers whose text names the site, read by the model ("other", the name meant someone else, left out) */
+  read: number
+  counts: Record<ToneKind, number>
+  /** up to 3 quotes copied from the answers, what holds something against the site first */
+  examples: { tone: ToneKind; quote: string; engine: string; question: string }[]
 }
 /** A row of the block: a count and what it counts, or only what was done on the site (n null). */
 export interface WorkRow {
@@ -795,7 +806,71 @@ export function ShareOfVoice({
       <p className="mt-5 text-xs text-slate-500 leading-relaxed">
         <b className="font-semibold text-slate-600">{m.howTitle}</b> {m.how}
       </p>
+      {voice.tone && voice.tone.read > 0 && <VoiceTone tone={voice.tone} />}
     </section>
+  )
+}
+
+const TONE_ORDER: ToneKind[] = ["recommended", "neutral", "caveat", "negative", "unsure"]
+const TONE_COLOR: Record<ToneKind, string> = {
+  recommended: "bg-emerald-600",
+  neutral: "bg-slate-400",
+  caveat: "bg-amber-500",
+  negative: "bg-red-600",
+  unsure: "bg-slate-200",
+}
+
+/** Part of the share-of-voice card: how the answers whose text names the site present it, counted per tone
+ *  (geo_check/tone.py: a model reads each of them), and up to 3 quotes copied from the answers with the
+ *  assistant and the question, what holds something against the site first (lib/geo-report.ts toneOf). The
+ *  quotes stay in the answers' language; every label is translated (visibilityVoice). Each tone has its
+ *  name next to its colour, so the colour never carries it alone. */
+function VoiceTone({ tone }: { tone: VoiceToneData }) {
+  const m = useT(visibilityVoice)
+  const shown = TONE_ORDER.filter((k) => (tone.counts[k] ?? 0) > 0)
+  const width = (n: number) => ({ width: `${(n / tone.read) * 100}%` })
+  return (
+    <div data-attention="report-tone" className="mt-6 pt-5 border-t border-black/5">
+      <h3 className={label}>{m.toneTitle}</h3>
+      <p className="text-xs text-slate-500 mt-1 leading-relaxed">{m.toneIntro(tone.read)}</p>
+      <div className="mt-3 flex h-3 rounded-full bg-slate-100 overflow-hidden" aria-hidden>
+        {shown.map((k) => (
+          <div key={k} className={TONE_COLOR[k]} style={width(tone.counts[k])} />
+        ))}
+      </div>
+      <ul className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1.5 text-sm">
+        {shown.map((k) => (
+          <li key={k} className="flex items-center justify-between gap-3">
+            <span className="flex items-center gap-2 min-w-0">
+              <span className={`shrink-0 w-2.5 h-2.5 rounded-sm ${TONE_COLOR[k]}`} />
+              <span className="truncate">{m.tones[k]}</span>
+            </span>
+            <span className="shrink-0 font-semibold text-slate-600 tabular-nums">{tone.counts[k]}</span>
+          </li>
+        ))}
+      </ul>
+      {tone.examples.length > 0 && (
+        <ul className="mt-4 space-y-2">
+          {tone.examples.map((x, i) => (
+            <li key={i} className="rounded-xl bg-[#f8f7f6] p-3 min-w-0">
+              <p className="text-sm leading-relaxed break-words">{m.quote(x.quote)}</p>
+              <p className="mt-1.5 text-xs text-slate-500 flex flex-wrap items-center gap-x-3 gap-y-0.5">
+                <span className="flex items-center gap-1.5 font-semibold text-slate-600">
+                  <span className={`shrink-0 w-2 h-2 rounded-sm ${TONE_COLOR[x.tone] ?? "bg-slate-300"}`} />
+                  {m.tones[x.tone] ?? x.tone}
+                </span>
+                <span className="flex items-center gap-1">
+                  <EngineMark engine={x.engine} className="w-3.5 h-3.5 shrink-0" />
+                  {LABEL[x.engine] ?? x.engine}
+                </span>
+                {x.question && <span className="min-w-0 break-words">{x.question}</span>}
+              </p>
+            </li>
+          ))}
+        </ul>
+      )}
+      <p className="mt-3 text-xs text-slate-500 leading-relaxed">{m.toneHow}</p>
+    </div>
   )
 }
 
