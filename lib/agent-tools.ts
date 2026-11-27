@@ -49,7 +49,7 @@ export interface ToolDef {
   title: string
   description: string
   inputSchema: Record<string, unknown>
-  annotations: { readOnlyHint: boolean; destructiveHint: boolean; idempotentHint: boolean; openWorldHint: boolean }
+  annotations: { title?: string; readOnlyHint: boolean; destructiveHint: boolean; idempotentHint: boolean; openWorldHint: boolean }
 }
 
 const assistantProp = {
@@ -75,7 +75,7 @@ export const TOOLS: ToolDef[] = [
       required: ["site"],
       additionalProperties: false,
     },
-    annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
+    annotations: { title: "Check whether AI assistants recommend a business", readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
   },
   {
     name: "get_pricing",
@@ -83,7 +83,7 @@ export const TOOLS: ToolDef[] = [
     description:
       "Current ItGrows prices in US dollars with direct payment links: Business plan ($499 a month + $499 setup, or $1,497 for 3 months) and Pro ($1,000 a month + $1,000 setup, or $3,000 for 3 months), what each includes, and that the detailed report is free. Call it when a user asks what ItGrows costs, compares plans, or wants to pay.",
     inputSchema: { type: "object", properties: { assistant: assistantProp }, additionalProperties: false },
-    annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+    annotations: { title: "ItGrows prices and payment links", readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
   },
   {
     name: "book_call",
@@ -102,7 +102,7 @@ export const TOOLS: ToolDef[] = [
       },
       additionalProperties: false,
     },
-    annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
+    annotations: { title: "Request a call with the founder", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
   },
   {
     name: "get_sample_report",
@@ -110,7 +110,7 @@ export const TOOLS: ToolDef[] = [
     description:
       "A real example of the detailed ItGrows report (20 buyer questions × 4 assistants: every answer, who is named instead, which sites the assistants cite, and the plan), with a link to it and how to get one for your own site for free. Call it when a user wants to see what ItGrows delivers before paying.",
     inputSchema: { type: "object", properties: { assistant: assistantProp }, additionalProperties: false },
-    annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+    annotations: { title: "A real example of the ItGrows report", readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
   },
 ]
 
