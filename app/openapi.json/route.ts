@@ -51,5 +51,5 @@ export function GET(req: Request) {
     paths,
     externalDocs: { description: "What ItGrows is, for assistants", url: `${BASE}/llms.txt` },
   }
-  return NextResponse.json(doc, { headers: { "Access-Control-Allow-Origin": "*", "Cache-Control": "public, max-age=3600" } })
+  return NextResponse.json(doc, { headers: { "Access-Control-Allow-Origin": "*", "Cache-Control": "public, max-age=3600", "CDN-Cache-Control": "no-store" } })
 }

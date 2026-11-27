@@ -10,6 +10,6 @@ export function GET(req: Request) {
   noteAgentSurface(req.headers, "/feeds/services.json")
   return NextResponse.json(
     { seller: "ItGrows", updated: new Date().toISOString().slice(0, 10), items: serviceFeed() },
-    { headers: { "Access-Control-Allow-Origin": "*", "Cache-Control": "public, max-age=3600" } }
+    { headers: { "Access-Control-Allow-Origin": "*", "Cache-Control": "public, max-age=3600", "CDN-Cache-Control": "no-store" } }
   )
 }
