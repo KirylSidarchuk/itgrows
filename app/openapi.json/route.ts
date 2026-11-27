@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server"
 import { TOOLS, BASE } from "@/lib/agent-tools"
+import { noteAgentSurface } from "@/lib/agent-analytics"
 
 // OpenAPI 3.1 for the agent API (/api/agent/<tool>), written from the same tool list as the MCP server, so the
 // two never disagree. Agents that do not speak MCP read this.
-export const dynamic = "force-static"
+// Per request (not prerendered), so a crawler reading it is counted (lib/agent-analytics.ts noteAgentSurface).
+export const dynamic = "force-dynamic"
 
 const result = {
   type: "object",
@@ -11,7 +13,8 @@ const result = {
   required: ["text", "data"],
 }
 
-export function GET() {
+export function GET(req: Request) {
+  noteAgentSurface(req.headers, "/openapi.json")
   const paths: Record<string, unknown> = {}
   for (const t of TOOLS) {
     const schema = t.inputSchema as { properties?: Record<string, { type?: string; description?: string }>; required?: string[] }

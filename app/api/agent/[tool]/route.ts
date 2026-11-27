@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { after } from "next/server"
 import { TOOLS, runTool, assistantOf } from "@/lib/agent-tools"
-import { aaRecord } from "@/lib/agent-analytics"
+import { aaRecord, aaSelf, noteAgentSurface } from "@/lib/agent-analytics"
 import { clientIp } from "@/lib/geo-check"
 import { ipHash, overMinuteLimit } from "@/lib/agent-limits"
 
@@ -16,6 +16,7 @@ const CORS = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Methods
 const POST_ONLY = new Set(["book_call"])
 
 async function serve(req: NextRequest, tool: string, args: Record<string, unknown>) {
+  noteAgentSurface(req.headers, `/api/agent/${tool.slice(0, 40)}`)
   // At most 30 requests a minute from one address, together with /mcp (lib/agent-limits.ts).
   if (await overMinuteLimit(clientIp(req.headers), `/api/agent/${tool.slice(0, 40)}`)) {
     return NextResponse.json({ error: "rate limited, retry later" }, { status: 429, headers: { ...CORS, "Retry-After": "60" } })
@@ -24,7 +25,7 @@ async function serve(req: NextRequest, tool: string, args: Record<string, unknow
   if (!args.assistant) args.assistant = req.headers.get("user-agent") ?? ""
   const res = await runTool(tool, args, clientIp(req.headers), "api")
   if (!res) return NextResponse.json({ error: "unknown_tool" }, { status: 404, headers: CORS })
-  after(() => aaRecord("itgrows.ai", "mcp", `/api/agent/${tool}`, { tool, assistant: assistantOf(args.assistant), via: "api", ok: !res.isError, ip: ipHash(clientIp(req.headers)) }))
+  after(() => aaRecord("itgrows.ai", "mcp", `/api/agent/${tool}`, { tool, assistant: assistantOf(args.assistant), via: "api", ok: !res.isError, ip: ipHash(clientIp(req.headers)), ...(aaSelf(req.headers.get("user-agent") ?? "") ? { self: true } : {}) }))
   return NextResponse.json({ text: res.text, data: res.data, ...(res.isError ? { error: true } : {}) }, { status: res.isError ? 400 : 200, headers: { ...CORS, "Cache-Control": "no-store" } })
 }
 

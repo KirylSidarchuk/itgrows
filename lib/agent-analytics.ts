@@ -2,6 +2,8 @@ import { sql } from "drizzle-orm"
 import { db } from "@/lib/db"
 import { createHmac } from "crypto"
 import { vmAuthorized } from "@/lib/geo-check"
+import { after } from "next/server"
+import { identify } from "@/lib/crawler-log"
 
 // Agent Analytics (ALG step 07, Kiryl 27 Nov 2026): what AI agents do on a site, counted on one basis for our own
 // projects and, later, for clients. Four kinds of event, all in analytics_events with event "aa_<kind>" and the
@@ -165,4 +167,18 @@ export async function aaReport(site: string, days = 7) {
     checkouts: { total: total(c), previous: total(cp), by_assistant: c },
     note: "Counts are events in the period against the same number of days before. Small numbers move a lot by chance: read a change as real only when it repeats.",
   }
+}
+
+/** Our own traffic (checks, smoke tests, coding agents, the shipper): marked so the ALG 30-day test counts only outside agents. */
+export function aaSelf(ua: string): boolean {
+  return /ItGrowsCheck|claude-code|ItGrows-AA|smoke/i.test(ua)
+}
+
+/** A crawler or assistant reading one of the agent doors of itgrows.ai (/mcp, /openapi.json, /feeds/*, the server card):
+ *  one "bot" row, after the response. Gate 2 of the ALG 30-day test: does an agent find these on its own. */
+export function noteAgentSurface(headers: Headers, path: string): void {
+  const ua = headers.get("user-agent") ?? ""
+  const bot = identify(ua)
+  if (!bot) return
+  after(() => aaRecord("itgrows.ai", "bot", path, { bot, via: "agent-surface", ...(aaSelf(ua) ? { self: true } : {}) }))
 }

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { after } from "next/server"
 import { TOOLS, runTool, assistantOf, BASE } from "@/lib/agent-tools"
-import { aaRecord } from "@/lib/agent-analytics"
+import { aaRecord, aaSelf, noteAgentSurface } from "@/lib/agent-analytics"
 import { clientIp } from "@/lib/geo-check"
 import { SERVER_INFO, INSTRUCTIONS } from "@/lib/agent-card"
 import { ipHash, overMinuteLimit } from "@/lib/agent-limits"
@@ -86,7 +86,7 @@ async function handle(m: Msg, req: NextRequest, modern: boolean): Promise<{ body
       const res = await runTool(name, args, clientIp(req.headers), "mcp")
       if (!res) return { body: rpcError(id, -32602, `Unknown tool: ${name}`) }
       const assistant = assistantOf(args.assistant)
-      after(() => aaRecord("itgrows.ai", "mcp", "/mcp", { tool: name, assistant, client: clientName(m).slice(0, 80), ok: !res.isError, ip: ipHash(clientIp(req.headers)) }))
+      after(() => aaRecord("itgrows.ai", "mcp", "/mcp", { tool: name, assistant, client: clientName(m).slice(0, 80), ok: !res.isError, ip: ipHash(clientIp(req.headers)), ...(aaSelf(req.headers.get("user-agent") ?? "") ? { self: true } : {}) }))
       return done({ content: [{ type: "text", text: res.text }], structuredContent: res.data, isError: !!res.isError })
     }
     default:
@@ -95,6 +95,7 @@ async function handle(m: Msg, req: NextRequest, modern: boolean): Promise<{ body
 }
 
 export async function POST(req: NextRequest) {
+  noteAgentSurface(req.headers, "/mcp")
   // At most 30 requests a minute from one address (lib/agent-limits.ts).
   if (await overMinuteLimit(clientIp(req.headers), "/mcp")) {
     return NextResponse.json(rpcError(null, -32000, "rate limited, retry later"), { status: 429, headers: { ...CORS, "Retry-After": "60" } })
@@ -132,7 +133,8 @@ export async function POST(req: NextRequest) {
 
 // A GET is someone (or something) opening the address: a short pointer instead of a bare 405 page would mislead
 // clients that probe for an SSE stream, so the status stays 405, with a body that says where things are.
-export async function GET() {
+export async function GET(req: NextRequest) {
+  noteAgentSurface(req.headers, "/mcp")
   return NextResponse.json(
     {
       error: "This is an MCP endpoint (Streamable HTTP): send JSON-RPC over POST.",

@@ -45,7 +45,7 @@ const BOTS: [RegExp, string][] = [
   [/SemrushBot|AhrefsBot|MJ12bot|DotBot/i, "seo-tool"],
 ]
 
-function identify(ua: string): string | null {
+export function identify(ua: string): string | null {
   for (const [re, name] of BOTS) if (re.test(ua)) return name
   return null
 }
