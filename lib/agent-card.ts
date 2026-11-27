@@ -1,6 +1,6 @@
 // Who the itgrows.ai MCP server is, in one place: the MCP handshake (app/mcp/route.ts), the Server Card at
 // /mcp/server-card (MCP extension SEP-2127, schema v1, read 27 Nov 2026) and its copy at
-// /.well-known/mcp.json (public/.well-known/mcp.json — keep the two the same; scripts write it from here).
+// /.well-known/mcp.json (public/.well-known/mcp.json): a pointer to the card (url, serverCard, tools), as MagiScan and Youmoir do.
 
 export const MCP_URL = "https://www.itgrows.ai/mcp"
 export const SERVER_VERSION = "1.0.0"
