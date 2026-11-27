@@ -14,7 +14,17 @@ import { vmAuthorized } from "@/lib/geo-check"
 // report bots, MCP calls and checkouts through the same endpoint with the VM token. /api/aa/report sums a week.
 // itgrows itself also has its older crawler_hit rows (lib/crawler-log.ts): the report counts both.
 
-export const AA_SITES = ["itgrows.ai", "youmoir.com", "magiscan.app", "tarot.coffee"] as const
+export const AA_SITES = ["itgrows.ai", "youmoir.com", "magiscan.app", "tarot.coffee", "sustain-impact.de", "pickaclass.com"] as const
+
+// Other hosts of the same site, counted under its main host (sustain-impact.ai answers too; its main host is .de).
+const AA_ALIASES: Record<string, string> = { "sustain-impact.ai": "sustain-impact.de" }
+
+/** A host (or a subdomain of it) as the site it belongs to, aliases resolved: "www.sustain-impact.ai" -> "sustain-impact.de". */
+export function aaHostSite(host: string): string {
+  let h = host.toLowerCase().replace(/^www\./, "")
+  for (const [alias, main] of Object.entries(AA_ALIASES)) if (h === alias || h.endsWith("." + alias)) h = h.slice(0, h.length - alias.length) + main
+  return h
+}
 
 export function aaSite(v: unknown): string | null {
   const s = String(v ?? "")
@@ -23,7 +33,8 @@ export function aaSite(v: unknown): string | null {
     .replace(/^https?:\/\//, "")
     .replace(/^www\./, "")
     .replace(/[/:].*$/, "")
-  return (AA_SITES as readonly string[]).includes(s) ? s : null
+  const main = aaHostSite(s)
+  return (AA_SITES as readonly string[]).includes(main) ? main : null
 }
 
 export type AaKind = "bot" | "referral" | "mcp" | "checkout"

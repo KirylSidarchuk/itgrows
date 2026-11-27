@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import { aaRecord, aaSite, aaClip, assistantFrom, type AaKind, aaAuthorized } from "@/lib/agent-analytics"
+import { aaRecord, aaSite, aaClip, assistantFrom, type AaKind, aaAuthorized, aaHostSite } from "@/lib/agent-analytics"
 
 // Agent Analytics intake (lib/agent-analytics.ts).
 // 1. Browsers (/aa.js on the site): { site, kind: "referral", ref, utm_source, utm_medium, utm_campaign, path } —
@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
   }
 
   // A browser: only from the site's own pages, only arrivals from an assistant.
-  const from = hostOf(origin ?? "") || hostOf(req.headers.get("referer") ?? "")
+  const from = aaHostSite(hostOf(origin ?? "") || hostOf(req.headers.get("referer") ?? ""))
   if (from !== site && !from.endsWith("." + site)) return NextResponse.json({ error: "origin" }, { status: 403, headers: cors(origin) })
   if (body.kind !== "referral") return NextResponse.json({ error: "kind" }, { status: 400, headers: cors(origin) })
   const ref = hostOf(String(body.ref ?? "")) || aaClip(body.ref, 100).toLowerCase()
