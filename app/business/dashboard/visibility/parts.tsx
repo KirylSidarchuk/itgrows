@@ -25,6 +25,7 @@ import { listQuestions } from "@/lib/geo-list-question"
 import { useT } from "@/components/i18n/LocaleProvider"
 import visibilityOpening from "@/lib/i18n/messages/visibilityOpening"
 import visibilityVoice from "@/lib/i18n/messages/visibilityVoice"
+import visibilityNamed from "@/lib/i18n/messages/visibilityNamed"
 import { PendingReward, ReportRewards, liveReward, usePromo } from "../launch-wheel"
 import { GrowthChart, type GrowthPoint } from "./charts"
 
@@ -589,21 +590,22 @@ export function WhatChanged({ changes, title = "What changed since the last chec
 // ── who is named instead ──────────────────────────────────────────────────────────────────────
 
 export function NamedInstead({ summary, you, firstLook }: { summary: Summary; you: string; firstLook?: boolean }) {
+  const m = useT(visibilityNamed)
   const top = summary.named_instead.slice(0, 8)
   const max = Math.max(summary.named, ...top.map((r) => r.count), 1)
   return (
     <section data-attention="report-named" className={`${card} min-w-0`}>
-      <h2 className="font-bold text-lg">Named instead of you{firstLook ? " (first look)" : ""}</h2>
-      <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-        Businesses the assistants named for your questions, counted like you: answers out of {summary.of}.
-      </p>
+      <h2 className="font-bold text-lg">{m.title(!!firstLook)}</h2>
+      <p className="text-xs text-slate-500 mt-1 leading-relaxed">{m.intro(summary.of)}</p>
       {top.length === 0 ? (
-        <p className="text-sm text-slate-600 mt-4">No businesses named. The assistants gave general advice.</p>
+        <p className="text-sm text-slate-600 mt-4">{m.none}</p>
       ) : (
         <ul className="mt-4 space-y-3">
           <li>
             <div className="flex items-center justify-between gap-3 text-sm">
-              <span className="min-w-0 font-bold text-violet-700 truncate">You · {you}</span>
+              <span className="min-w-0 font-bold text-violet-700 truncate">
+                {m.you} · {you}
+              </span>
               <span className="shrink-0 font-bold text-violet-700 tabular-nums">{summary.named}</span>
             </div>
             <div className="mt-1 h-2 rounded-full bg-violet-50 overflow-hidden">
