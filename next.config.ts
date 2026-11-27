@@ -48,7 +48,18 @@ const nextConfig: NextConfig = {
   // /partners holds the agency partner offer (PDF, German and English), sent by link in LinkedIn (26 Nov 2026).
   async headers() {
     const noindex = [{ key: "X-Robots-Tag", value: "noindex, nofollow" }]
-    return ["/sustain/:path*", "/sustain1/:path*", "/sustain2/:path*", "/sustain3/:path*", "/sustain4/:path*", "/partners/:path*"].map((source) => ({ source, headers: noindex }))
+    // The safe set of security headers, no CSP (security norm of 27 Nov 2026, /opt/venture_os/playbooks/security.md;
+    // HSTS comes from Vercel). No page of ours is framed by another site (the widget is a script), so SAMEORIGIN breaks nothing.
+    const security = [
+      { key: "X-Content-Type-Options", value: "nosniff" },
+      { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+      { key: "X-Frame-Options", value: "SAMEORIGIN" },
+      { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
+    ]
+    return [
+      { source: "/:path*", headers: security },
+      ...["/sustain/:path*", "/sustain1/:path*", "/sustain2/:path*", "/sustain3/:path*", "/sustain4/:path*", "/partners/:path*"].map((source) => ({ source, headers: noindex })),
+    ]
   },
   async rewrites() {
     return {

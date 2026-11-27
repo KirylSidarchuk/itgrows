@@ -4,6 +4,7 @@ import { TOOLS, runTool, assistantOf, BASE } from "@/lib/agent-tools"
 import { aaRecord } from "@/lib/agent-analytics"
 import { clientIp } from "@/lib/geo-check"
 import { SERVER_INFO, INSTRUCTIONS } from "@/lib/agent-card"
+import { ipHash, overMinuteLimit } from "@/lib/agent-limits"
 
 // The public MCP server of itgrows.ai (Agentic-Led Growth step 04, Kiryl 27 Nov 2026). Streamable HTTP, POST only,
 // stateless, no auth: read-only tools plus two safe actions (lib/agent-tools.ts). Speaks both generations of the
@@ -85,7 +86,7 @@ async function handle(m: Msg, req: NextRequest, modern: boolean): Promise<{ body
       const res = await runTool(name, args, clientIp(req.headers), "mcp")
       if (!res) return { body: rpcError(id, -32602, `Unknown tool: ${name}`) }
       const assistant = assistantOf(args.assistant)
-      after(() => aaRecord("itgrows.ai", "mcp", "/mcp", { tool: name, assistant, client: clientName(m).slice(0, 80), ok: !res.isError }))
+      after(() => aaRecord("itgrows.ai", "mcp", "/mcp", { tool: name, assistant, client: clientName(m).slice(0, 80), ok: !res.isError, ip: ipHash(clientIp(req.headers)) }))
       return done({ content: [{ type: "text", text: res.text }], structuredContent: res.data, isError: !!res.isError })
     }
     default:
@@ -94,6 +95,10 @@ async function handle(m: Msg, req: NextRequest, modern: boolean): Promise<{ body
 }
 
 export async function POST(req: NextRequest) {
+  // At most 30 requests a minute from one address (lib/agent-limits.ts).
+  if (await overMinuteLimit(clientIp(req.headers), "/mcp")) {
+    return NextResponse.json(rpcError(null, -32000, "rate limited, retry later"), { status: 429, headers: { ...CORS, "Retry-After": "60" } })
+  }
   let payload: unknown
   try {
     payload = await req.json()

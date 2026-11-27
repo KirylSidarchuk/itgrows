@@ -3,6 +3,7 @@ import { db } from "@/lib/db"
 import { GEO_PRICES, PRO_PRICES, SAMPLE_PATH, YEAR_DISCOUNT } from "@/lib/geo-pricing"
 import { geoCheck, type PublicRun } from "@/lib/geo-check"
 import { sendOwner } from "@/lib/telegram"
+import { callAllowed, checkBlocked, noteCeiling, noteCheck, recentCheck, siteKey } from "@/lib/agent-limits"
 
 // What an AI agent can do on itgrows.ai without a person in the loop (Agentic-Led Growth, Kiryl 27 Nov 2026:
 // "make every business discoverable, understandable, accessible and purchasable by AI agents", starting with
@@ -214,21 +215,52 @@ export async function checkVisibility(
     return { isError: true, text: "Give the business website, e.g. example.com.", data: { error: "invalid_site" } }
   }
   const started = Date.now()
-  let r = await geoCheck<PublicRun>("/teaser", { url: site, ip }, 25_000).catch(() => null)
-  void sendOwner(
-    `🤖 Агент (${assistant}, ${campaign}) запустил проверку: ${site}${args.city ? ` · город ${String(args.city).slice(0, 60)}` : ""}${args.niche ? ` · ниша ${String(args.niche).slice(0, 60)}` : ""}${r ? ` — ${r.data.status ?? r.status}` : " — сервис не ответил"}`
-  )
-  if (!r || (r.status !== 200 && r.status !== 202)) {
+  const key = siteKey(site)
+  // A site checked through these doors in the last 24 hours is answered from that check: free, counted against nothing.
+  const reuse = await recentCheck(key)
+  if (reuse && RUN_ID.test(reuse)) {
+    const prev = await geoCheck<PublicRun>(`/run/${reuse}`, undefined, 10_000).catch(() => null)
+    if (prev && prev.status === 200 && prev.data.kind === "teaser" && prev.data.status !== "failed") {
+      return describeRun(await follow(prev.data, started, waitMs), site, assistant, campaign)
+    }
+  }
+  const blocked = await checkBlocked(ip)
+  if (blocked) {
+    if (blocked === "daily") await noteCeiling("check_ai_visibility", "daily_total")
+    return {
+      isError: true,
+      text:
+        blocked === "daily"
+          ? `Today's free checks through the agent API are used up. The user can run the same check on the site: ${aiLink("/", assistant, campaign)}`
+          : `This address has used its free checks for today (3 a day). The user can run the check on the site: ${aiLink("/", assistant, campaign)}`,
+      data: { error: blocked === "daily" ? "daily_limit" : "address_limit" },
+    }
+  }
+  const r = await geoCheck<PublicRun>("/teaser", { url: site, ip }, 25_000).catch(() => null)
+  const ok = !!r && (r.status === 200 || r.status === 202)
+  const isNew = ok && !(r!.data as Partial<PublicRun>).cached && (r!.data as Partial<PublicRun>).status !== "done"
+  if (ok) await noteCheck(key, ip, (r!.data as Partial<PublicRun>).run_id ?? null, isNew, assistant)
+  if (!ok || isNew) {
+    void sendOwner(
+      `🤖 Агент (${assistant}, ${campaign}) запустил проверку: ${site}${args.city ? ` · город ${String(args.city).slice(0, 60)}` : ""}${args.niche ? ` · ниша ${String(args.niche).slice(0, 60)}` : ""}${r ? ` — ${r.data.status ?? r.status}` : " — сервис не ответил"}`
+    )
+  }
+  if (!ok) {
     const e = r?.data?.error ?? "unavailable"
     return { isError: true, text: `The check could not start (${e}). Try again in a minute, or start it at ${aiLink("/", assistant, campaign)}`, data: { error: e } }
   }
-  let run = r.data as Partial<PublicRun>
+  return describeRun(await follow(r!.data as Partial<PublicRun>, started, waitMs), site, assistant, campaign)
+}
+
+/** Follows a check until it is done, failed, or the wait is over. */
+async function follow(first: Partial<PublicRun>, started: number, waitMs: number): Promise<Partial<PublicRun>> {
+  let run = first
   while (run.status !== "done" && run.status !== "failed" && run.run_id && RUN_ID.test(run.run_id) && Date.now() - started < waitMs) {
     await sleep(4000)
     const next = await geoCheck<PublicRun>(`/run/${run.run_id}`, undefined, 10_000).catch(() => null)
     if (next && next.status === 200 && next.data.kind === "teaser") run = next.data
   }
-  return describeRun(run, site, assistant, campaign)
+  return run
 }
 
 function describeRun(run: Partial<PublicRun>, site: string, assistant: Assistant, campaign: "mcp" | "api"): ToolResult {
@@ -313,6 +345,21 @@ export async function bookCall(args: Record<string, unknown>, assistant: Assista
     message: clean(args.message, 2000),
     assistant,
     via: campaign,
+  }
+  // Each request is a Telegram message to the founder: 1 per email an hour, 10 a day, the same request never twice.
+  const allowed = await callAllowed(email, req.message)
+  if (allowed === "duplicate" || allowed === "email_hour") {
+    return {
+      text: `This request already reached Kiryl, the founder of ItGrows; he replies to ${email} with times. No need to send it again.`,
+      data: { booked: true, reply_to: email, already_received: true },
+    }
+  }
+  if (allowed === "daily") {
+    await noteCeiling("book_call", "daily_total")
+    return {
+      text: `Call requests through the agent API are paused for today. The user can write to ${CONTACT_EMAIL} or use the form at ${contact}.`,
+      data: { booked: false, email: CONTACT_EMAIL, contact_form: contact, error: "daily_limit" },
+    }
   }
   try {
     await db.execute(sql`INSERT INTO analytics_events (event, path, props) VALUES ('agent_call_request', '/mcp', ${JSON.stringify(req)}::jsonb)`)
