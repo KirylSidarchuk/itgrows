@@ -88,7 +88,7 @@ const TONE_VERSION = 3
 /** An answer's tone when its asks differ: the one most of them show; on a tie the first here, so a problem is
  *  counted only where it outnumbers the rest. */
 const TIE: readonly string[] = ["recommended", "neutral", "caveat", "unsure", "negative"]
-type ToneItem = { q: number; e: string; s: number; tone: string; quote: string | null }
+type ToneItem = { q: number; e: string; s: number; tone: string; quote: string | null; excerpt?: string | null }
 
 /** The tone part of the card (parts.tsx VoiceTone) from geo_run_metrics.tone (geo_check/tone.py: a model read
  *  each ask whose text names the site). Counted as the rest of the page counts: one answer per question and
@@ -109,7 +109,7 @@ function toneOf(t: unknown, results: Row[]) {
     const n = (k: string) => asks.filter((a) => a.tone === k).length
     const tone = TIE.reduce((best, k) => (n(k) > n(best) ? k : best), TIE[0]) as (typeof TONES)[number]
     counts[tone]++
-    const q = asks.find((a) => a.tone === tone && a.quote)
+    const q = asks.find((a) => a.tone === tone && (a.excerpt || a.quote))
     if (q) quoted.push(q)
   }
   const read = TONES.reduce((n, k) => n + counts[k], 0)
@@ -126,7 +126,8 @@ function toneOf(t: unknown, results: Row[]) {
     counts,
     examples: pick.slice(0, 3).map((i) => ({
       tone: i.tone,
-      quote: i.quote as string,
+      // tone.py `excerpt`: the quote, with the line that names the business when the quote lacks its name
+      quote: (i.excerpt || i.quote) as string,
       engine: i.e,
       question: String(results[i.q]?.q ?? ""),
     })),

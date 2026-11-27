@@ -28,8 +28,8 @@ const cachedSample = unstable_cache(
   // "voice4": the report carries its share of voice since 26 Nov 2026 (without `asks`; v3: the rivals
   // grouped, named and counted as in "Named instead of you", plus `aligned`; v4: "named more often than
   // you" against the list's "You", summary.named); "tone1": with the tone of the answers that name the site
-  // (geo_check/tone.py, 27 Nov 2026). A new key so no hour-old copy of an older row is served.
-  ["geo-sample-report", "tone1"],
+  // (geo_check/tone.py, 27 Nov 2026; tone2: quotes with the business line). A new key so no hour-old copy of an older row is served.
+  ["geo-sample-report", "tone2"],
   { revalidate: 3600 },
 )
 
