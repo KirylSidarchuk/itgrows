@@ -130,6 +130,8 @@ export default async function RootLayout({
           {exitWheelOn() && <ExitWheel />}
         </SessionProvider>
         <VisitBeacon />
+        {/* Agent Analytics: counts arrivals from AI assistants (public/aa.js, lib/agent-analytics.ts). */}
+        <script async src="/aa.js" data-site="itgrows.ai" />
         <AdsConversion />
         <ProductAnalytics />
         <CookieBanner />

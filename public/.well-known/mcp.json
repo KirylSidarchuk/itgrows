@@ -1,0 +1,23 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/v1/server-card.schema.json",
+  "name": "ai.itgrows/visibility",
+  "version": "1.0.0",
+  "description": "Does ChatGPT, Claude, Gemini, Perplexity recommend a business? Free check, prices, booking.",
+  "title": "ItGrows — AI visibility",
+  "websiteUrl": "https://www.itgrows.ai",
+  "icons": [
+    {
+      "src": "https://www.itgrows.ai/apple-touch-icon.png",
+      "mimeType": "image/png",
+      "sizes": [
+        "180x180"
+      ]
+    }
+  ],
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://www.itgrows.ai/mcp"
+    }
+  ]
+}

@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server"
 import { GEO_PRICES, PRO_PRICES } from "@/lib/geo-pricing"
 import { geoLineItems, normaliseDomain, stripeClient } from "@/lib/geo-business"
 import { sendOwner } from "@/lib/telegram"
+import { after } from "next/server"
+import { aaRecord, assistantFrom } from "@/lib/agent-analytics"
 
 // Fixed payment links for the AI-visibility plan, to send in reply to START or an invoice request
 // (Venture OS: itgrows START → invoice path). Same public price as everywhere (lib/geo-pricing.ts):
@@ -30,7 +32,15 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ plan: strin
   const email = (q.get("email") ?? "").trim()
   const site = normaliseDomain(q.get("site")) ?? ""
   const stripe = stripeClient()
-  const meta = { plan: "geo_direct", tier: p.pro ? "pro" : "plan", link: plan, interval: p.interval, setup: p.setup ? "1" : "0", domain: site }
+  // A link an AI agent gave (utm_source=<assistant>, llms.txt and the MCP tools), or a click from an assistant's page:
+  // the session carries ai_source, so a payment that follows counts as the agent's (Agent Analytics).
+  let refHost = ""
+  try {
+    refHost = new URL(req.headers.get("referer") ?? "").hostname
+  } catch {}
+  const aiSource = assistantFrom(refHost, q.get("utm_source") ?? "") ?? (q.get("utm_medium") === "ai-agent" ? "other" : null)
+  const meta = { plan: "geo_direct", tier: p.pro ? "pro" : "plan", link: plan, interval: p.interval, setup: p.setup ? "1" : "0", domain: site, ...(aiSource ? { ai_source: aiSource } : {}) }
+  if (aiSource) after(() => aaRecord("itgrows.ai", "checkout", `/pay/${plan}`, { assistant: aiSource, plan, utm_campaign: (q.get("utm_campaign") ?? "").slice(0, 40) }))
   const session = await stripe.checkout.sessions.create({
     mode: "subscription",
     line_items: await geoLineItems(stripe, p.pro ? PRO_PRICES : GEO_PRICES, p.interval, p.setup),
@@ -43,6 +53,6 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ plan: strin
     metadata: meta,
     subscription_data: { metadata: meta, description: `AI visibility${p.pro ? " Pro" : ""}${site ? ` for ${site}` : ""}` },
   })
-  void sendOwner(`🛒 Открыта оплата GEO по ссылке /pay/${plan}${site ? ` — ${site}` : ""}${email ? ` — ${email}` : ""}`)
+  void sendOwner(`🛒 Открыта оплата GEO по ссылке /pay/${plan}${site ? ` — ${site}` : ""}${email ? ` — ${email}` : ""}${aiSource ? ` — от ИИ (${aiSource})` : ""}`)
   return NextResponse.redirect(session.url!, 303)
 }

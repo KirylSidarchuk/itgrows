@@ -28,6 +28,7 @@ const PAGE_LASTMOD = {
   "/pricing": "2026-11-26",
   "/business/how-we-measure-ai-visibility": "2026-11-26",
   "/business/geo-for-apps": "2026-11-26",
+  "/agentic-growth": "2026-11-27",
 } as const
 // The day the page around every guide and /blog post last changed (26.10: the "AI visibility
 // guides" block, "Keep reading" by topic, the "About ItGrows" box): a post is listed as modified on
@@ -81,6 +82,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: "https://www.itgrows.ai/pricing", lastModified: D("/pricing"), changeFrequency: "monthly", priority: 0.9 },
     { url: "https://www.itgrows.ai/business/how-we-measure-ai-visibility", lastModified: D("/business/how-we-measure-ai-visibility"), changeFrequency: "monthly", priority: 0.7 },
     { url: "https://www.itgrows.ai/business/geo-for-apps", lastModified: D("/business/geo-for-apps"), changeFrequency: "monthly", priority: 0.7 },
+    { url: "https://www.itgrows.ai/agentic-growth", lastModified: D("/agentic-growth"), changeFrequency: "monthly", priority: 0.8 },
     ...businessPosts.map((post) => {
       // English <-> German versions of the same guide (lib/geo-guides.ts), as in the page's metadata.
       const languages = guideAlternates(post.slug)
